@@ -95,6 +95,7 @@ namespace MumbleVoip
         void Participant::SetName(QString name)
         {
             name_ = name;
+            emit Communications::InWorldVoice::ParticipantInterface::StateChanged();
         }
 
     } // InWorldVoice

@@ -290,7 +290,7 @@ namespace MumbleVoip
                     emit ParticipantLeft(p);
                     continue;
                 }
-                if (p->AvatarUUID() == p->Name())
+                if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()))
                 {
                     // For some reason do not have real name for this participant here!
                     p->SetName( GetAvatarFullName(p->AvatarUUID()) );
@@ -404,7 +404,13 @@ namespace MumbleVoip
                     EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
                     if (presence_component)
                         if (presence_component->agentId.ToQString() == uuid)
-                            return QString(presence_component->GetFullName().c_str());
+                        {
+                            QString name = ""; 
+                            name = QString(presence_component->GetFullName().c_str());
+                            if (name.length() == 0)
+                                name = QString(presence_component->GetFirstName().c_str());
+                            return name;
+                        }
                 }
             }
             return "";
