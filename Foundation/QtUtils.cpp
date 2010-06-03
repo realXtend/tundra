@@ -9,9 +9,53 @@
 #include <QString>
 #include <QFileDialog>
 #include <QDir>
+#include <QCloseEvent>
 
 namespace Foundation
 {
+
+class CustomFileDialog : public QFileDialog
+{
+    public:
+        CustomFileDialog(QWidget* parent, const QString& caption, const QString& dir, const QString& filter) :
+            QFileDialog(parent, caption, dir, filter)
+        {
+        }
+    
+    protected:
+        virtual void hideEvent(QHideEvent* e)
+        {
+            if (e->type() == QEvent::Hide)
+            {
+                emit finished(0);
+                deleteLater();
+            }
+        }
+        virtual void closeEvent(QCloseEvent* e)
+        {
+            if (e->type() == QEvent::Hide)
+            {
+                emit finished(0);
+            }
+        }
+};
+
+QFileDialog* QtUtils::OpenFileDialogNonModal(
+    const std::string& filter,
+    const std::string& caption,
+    const std::string& dir,
+    QWidget* parent,
+    QObject* initiator,
+    const char* slot)
+{
+    QFileDialog* dialog = new CustomFileDialog(parent, QString::fromStdString(caption), QString::fromStdString(dir), 
+        QString::fromStdString(filter));
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
+    dialog->show();
+    dialog->resize(500, 300);
+    return dialog;
+}
 
 std::string QtUtils::GetOpenFileName(
     const std::string &filter,

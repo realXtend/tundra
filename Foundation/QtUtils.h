@@ -9,6 +9,8 @@
 #include "CoreTypes.h"
 #include <QStringList>
 
+class QFileDialog;
+
 namespace Foundation
 {
     class QtUtils
@@ -19,6 +21,25 @@ namespace Foundation
 
         /// Default destructor.
         virtual ~QtUtils() {}
+
+        //! Opens a non-modal file dialog
+        /*! @param filter The files to be shown.
+            @param caption Dialog's caption @todo does not show anything
+            @param dir Working directory.
+            @param parent Parent widget for dialog
+            @param initiator QObject that initiated the dialog and wants the results
+            @param slot Slot on initiator object, to which dialog's finished() signal will be 
+                   connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
+                   cast to QFileDialog to get to know the chosen file(s)
+            @return The created file dialog
+         */
+        static QFileDialog* OpenFileDialogNonModal(
+            const std::string& filter,
+            const std::string& caption,
+            const std::string& dir,
+            QWidget* parent,
+            QObject* initiator,
+            const char* slot);
 
         /** Opens the OS's open file dialog.
          *  @param filter The files to be shown.
