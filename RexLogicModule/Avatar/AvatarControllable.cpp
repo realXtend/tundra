@@ -154,6 +154,11 @@ namespace RexLogic
             current_state_ = InActive;
         }
 
+		if (event_id == Input::Events::INPUTSTATE_FOCUSONOBJECT && current_state_ != InActive)
+        {
+            current_state_ = InActive;
+        }
+
         if (event_id == Input::Events::MOUSELOOK)
         {
             Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
@@ -213,18 +218,21 @@ namespace RexLogic
                     } else
                     {
                         // No control flags for rotation, do as special cases
-
+	
                         switch (event_id)
                         {
                         case RA::RotateLeft:
-                            avatar->yaw = -1;
+							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+								avatar->yaw = -1;
                             break;
                         case RA::RotateRight:
-                            avatar->yaw = 1;
+							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+								avatar->yaw = 1;
                             break;
                         case RA::RotateLeft + 1:
                         case RA::RotateRight + 1:
-                            avatar->yaw = 0;
+							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+								avatar->yaw = 0;
                             break;
                         }
                     }

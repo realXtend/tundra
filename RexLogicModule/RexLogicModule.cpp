@@ -496,6 +496,23 @@ void RexLogicModule::CameraTripod()
 	}
 }
 
+void RexLogicModule::FocusOnObject()
+{
+	if (camera_state_ == CS_Follow)
+	{
+		camera_state_ = CS_FocusOnObject;
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
+	}
+	else
+	{
+		camera_state_ = CS_Follow;
+
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+	}
+}
+
 AvatarPtr RexLogicModule::GetAvatarHandler() const
 {
     return avatar_;
@@ -1040,10 +1057,11 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
-
-    boost::shared_ptr<EC_3DCanvasSource> canvas = entity->GetComponent<EC_3DCanvasSource>();
-    if(canvas.get())
-        canvas->Clicked();
+	
+    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+	if (canvas_source){
+        canvas_source->Clicked();
+	}
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1258,6 +1276,125 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
 }
 
 }
+
+        Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
+        Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
+
+        //expand to range -1 -> 1
+        scr_x = (scr_x*2)-1;
+        scr_y = (scr_y*2)-1;
+
+        //divert y because after view/projection transforms, y increses upwards
+        scr_y = -scr_y;
+
+        OgreRenderer::EC_OgreCamera * camera;
+        
+
+        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        if (!current_scene.get())
+            return ret_val;
+
+        Scene::SceneManager::iterator iter = current_scene->begin();
+        Scene::SceneManager::iterator end = current_scene->end();
+
+        while (iter != end)
+        {
+            Scene::EntityPtr entity = (*iter);
+            ++iter;
+            if (!entity.get())
+                continue;
+
+            EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+            OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            if(c)
+            {
+                camera = c;
+            }
+            if(widget && widget->IsVisible())
+                visible_widgets.append(widget);
+        }
+        if(!camera)
+        {
+            return false;
+        }
+  
+        Ogre::Vector3 nearest_world_pos(Ogre::Vector3::ZERO);
+        QRectF nearest_rect;
+        Ogre::Vector3 cam_pos = camera->GetCamera()->getDerivedPosition();
+        EC_HoveringWidget* nearest_widget = 0;
+        for(int i=0; i< visible_widgets.size();i++)
+        {
+            Ogre::Matrix4 worldmat;
+            Ogre::Vector3 world_pos;
+            EC_HoveringWidget* widget = visible_widgets.at(i);
+            if(!widget)
+                continue;
+            Ogre::BillboardSet* bbset = widget->GetButtonsBillboardSet();
+            Ogre::Billboard* board = widget->GetButtonsBillboard();
+            if(!bbset || !board)
+                continue;
+            QSizeF scr_size = widget->GetButtonsBillboardScreenSpaceSize();
+            Ogre::Vector3 pos = board->getPosition();
+            
+            
+            
+            bbset->getWorldTransforms(&worldmat);
+            pos = worldmat*pos;
+            world_pos = pos;
+            pos = camera->GetCamera()->getViewMatrix()*pos;
+            pos = camera->GetCamera()->getProjectionMatrix()*pos;
+            
+            QRectF rect(pos.x - scr_size.width()*0.5, pos.y - scr_size.height()*0.5, scr_size.width(), scr_size.height());
+
+          
+            if(rect.contains(scr_x, scr_y))
+            {
+                if(nearest_widget!=0)
+                {
+                    if((world_pos-cam_pos).length() > (nearest_world_pos-cam_pos).length())
+                    {
+                        continue;
+                    }
+                }
+                nearest_world_pos = world_pos;
+                nearest_rect = rect;
+                nearest_widget = widget;
+            }
+        }
+
+        //check if entity is between the board and mouse
+        if(result->entity_)
+        {
+            Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+			camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
+
+            //if true, the entity is closer to camera
+            if(Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
+            {
+                EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
+				if(widget){
+                    widget->EntityClicked();
+				}
+                return ret_val;
+            }
+        }
+        if(nearest_widget)
+        {
+
+            scr_x -=nearest_rect.left();
+            scr_y -=nearest_rect.top();
+
+            scr_x /= nearest_rect.width();
+            scr_y /= nearest_rect.height();
+
+            nearest_widget->WidgetClicked(scr_x, 1-scr_y);
+            ret_val = true;
+        }
+
+        return ret_val;
+    }
+
+} // namespace RexLogic
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
