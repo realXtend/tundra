@@ -24,7 +24,7 @@ namespace Foundation
 
         //! Opens a non-modal file dialog
         /*! @param filter The files to be shown.
-            @param caption Dialog's caption @todo does not show anything
+            @param caption Dialog's caption
             @param dir Working directory.
             @param parent Parent widget for dialog
             @param initiator QObject that initiated the dialog and wants the results

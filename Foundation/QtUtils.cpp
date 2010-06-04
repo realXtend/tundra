@@ -10,6 +10,7 @@
 #include <QFileDialog>
 #include <QDir>
 #include <QCloseEvent>
+#include <QGraphicsProxyWidget>
 
 namespace Foundation
 {
@@ -54,6 +55,10 @@ QFileDialog* QtUtils::OpenFileDialogNonModal(
     QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
     dialog->show();
     dialog->resize(500, 300);
+    if (dialog->graphicsProxyWidget())
+    {
+        dialog->graphicsProxyWidget()->setWindowTitle(QString::fromStdString(caption));
+    }
     return dialog;
 }
 
