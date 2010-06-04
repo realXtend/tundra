@@ -98,6 +98,11 @@ namespace Ether
             emit StartTaigaLogin(url);
         }
 
+        void EtherLoginNotifier::EmitDisconnectRequest()
+        {
+            emit Disconnect();
+        }
+
         void EtherLoginNotifier::ExitApplication()
         {
             emit Quit();
