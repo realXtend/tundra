@@ -1058,10 +1058,10 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if(info_icon.get())
         info_icon->EntityClicked();*/
 	
-    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-	if (canvas_source){
-        canvas_source->Clicked();
-	}
+//    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+//	if (canvas_source){
+//        canvas_source->Clicked();
+//	}
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1150,6 +1150,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     if (result->entity_)
     {
         Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+		camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
