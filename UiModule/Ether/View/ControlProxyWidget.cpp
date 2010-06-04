@@ -32,7 +32,8 @@ namespace Ether
               move_animation_(0),
               text_label_(0),
               suppress_buttons_(false),
-              overlay_widget_(0)
+              overlay_widget_(0),
+              connected_(false)
         {
             parent_->setObjectName("containerWidget");
             setWidget(parent_);
@@ -177,14 +178,14 @@ namespace Ether
             if (direction_ == TopToBottom)
             {
                 // Exit 
-                QPushButton *exit_button = new QPushButton(parent_);
-                exit_button->setMinimumWidth(216);
-                exit_button->setMinimumHeight(56);
-                exit_button->setFlat(true);
-                exit_button->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
+                exit_button_ = new QPushButton(parent_);
+                exit_button_->setMinimumWidth(216);
+                exit_button_->setMinimumHeight(56);
+                exit_button_->setFlat(true);
+                exit_button_->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
                                                    "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_hover.png'); }"
                                                    "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_click.png'); }").arg(button_style));
-                connect(exit_button, SIGNAL( clicked() ), SLOT( ExitHandler() ));
+                connect(exit_button_, SIGNAL( clicked() ), SLOT( ExitHandler() ));
 
                 // Enter world
                 QPushButton *enter_world_button = new QPushButton(parent_);
@@ -213,7 +214,7 @@ namespace Ether
 
                 // Fill layout
                 layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Expanding));
-                layout->addWidget(exit_button);
+                layout->addWidget(exit_button_);
 
                 QVBoxLayout *layout_middle = new QVBoxLayout();
                 layout_middle->setSpacing(0);
@@ -466,7 +467,12 @@ namespace Ether
 
         void ControlProxyWidget::ExitHandler()
         {
-            emit ActionRequest("exit");
+            if (connected_)
+                emit ActionRequest("disconnect");
+            else if (!suppress_buttons_)
+                emit ActionRequest("exit");
+            else
+                emit ActionRequest("cancel");
         }
 
         void ControlProxyWidget::ConnectHandler()
@@ -498,6 +504,27 @@ namespace Ether
         void ControlProxyWidget::SuppressButtons(bool suppress)
         {
             suppress_buttons_ = suppress;
+
+            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px; color: white;";
+            if (suppress_buttons_)
+                exit_button_->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_CANCEL_normal.png'); }"
+                    "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_CANCEL_hover.png'); }"
+                    "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_CANCEL_click.png'); }").arg(button_style));  
+        }
+
+        void ControlProxyWidget::SetConnected(bool connected)
+        {
+            connected_ = connected;
+
+            QString button_style = "QPushButton { padding: 0px; margin: 0px; background-color: transparent; border: 0px; color: white;";
+            if (connected_)
+                exit_button_->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_DISCON_normal.png'); }"
+                    "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_DISCON_hover.png'); }"
+                    "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_DISCON_click.png'); }").arg(button_style));
+            else
+                exit_button_->setStyleSheet(QString("%1 background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_normal.png'); }"
+                    "QPushButton::hover { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_hover.png'); }"
+                    "QPushButton::pressed { background-image: url('./data/ui/images/ether/buttons/bbutton_EXIT_click.png'); }").arg(button_style));       
         }
     }
 }
