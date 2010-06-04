@@ -132,6 +132,8 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
    QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
+   QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+
    frame_time_update_x_pos_ = 0;
 }
 
@@ -499,6 +501,81 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
 
     QTimer::singleShot(500, this, SLOT(RefreshOgreProfilingWindow()));
 }
+
+
+struct ResNameAndSize
+{
+    std::string name;
+    bool isLoaded;
+    size_t size;
+
+    bool operator <(const ResNameAndSize &rhs) const
+    {
+        return size < rhs.size;
+    }
+};
+
+static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
+{
+    std::vector<ResNameAndSize> resources;
+
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    file << "In load order(?): " << std::endl;
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        file << "Name: \"" << resource->getName() << "\", size: " << resource->getSize() 
+            << ", isReloadable: " << resource->isReloadable() 
+            << ", isManuallyLoaded: " << resource->isManuallyLoaded() 
+            << ", isPrepared: " << resource->isPrepared() 
+            << ", isLoaded: " << resource->isLoaded()
+            << ", isLoading: " << resource->isLoading()
+            << ", getLoadingState: " << resource->getLoadingState() // todo: Could convert this enum to string.
+            << ", isBackgroundLoaded: " << resource->isBackgroundLoaded()
+            << ", group: " << resource->getGroup()
+            << ", origin: " << resource->getOrigin()
+            << ", stateCount: " << resource->getStateCount() << std::endl;
+
+        ResNameAndSize r;
+        r.name = resource->getName();
+        r.size = resource->getSize();
+        r.isLoaded = resource->isLoaded();
+        resources.push_back(r);
+    }
+
+    file << "By descending size: " << std::endl;
+    std::sort(resources.begin(), resources.end());
+    for(int i = resources.size()-1; i >= 0; --i)
+    {
+        if (!resources[i].isLoaded)
+            file << "(";
+        file << resources[i].name << ": " << resources[i].size;
+        if (!resources[i].isLoaded)
+            file << ")";
+        file << std::endl;
+    }
+}
+
+void TimeProfilerWindow::DumpOgreResourceStatsToFile()
+{
+    std::ofstream file("ogrestats.txt");
+    file << "Ogre Texture Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::TextureManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre Mesh Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::MeshManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre Material Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::MaterialManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre Skeleton Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::SkeletonManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre Compositor Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::CompositorManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre GPUProgram Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::HighLevelGpuProgramManager::getSingleton(), file);
+    file << std::endl << std::endl << std::endl << "Ogre Font Manager:" << std::endl;
+    DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingleton(), file);
+}
+
+
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
