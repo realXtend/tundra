@@ -14,11 +14,16 @@ uniform float gradientClamp;
 uniform float gradientScaleBias; */
 uniform float4 shadowMapParams;
 
-uniform float inverseShadowmapSize;
 
-uniform float4x4 lightViewProj;
+uniform float4 invShadowmapSize0;
+uniform float4 invShadowmapSize1;
+uniform float4 invShadowmapSize2;
 
-float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV, float viewZ)
+uniform float4x4 lightViewProj0;
+uniform float4x4 lightViewProj1;
+uniform float4x4 lightViewProj2;
+
+float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV,float inverseShadowmapSize, float viewZ)
 {
     const float shadowFuzzyWidth = shadowMapParams.x;
     const float fixedDepthBias = shadowMapParams.y;
@@ -28,15 +33,15 @@ float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV, float viewZ)
 	// point on shadowmap
 	shadowUV = shadowUV / shadowUV.w;
 
-	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+	float centerdepth = tex2Dlod(shadowMap, float4(shadowUV.xy,0.f, 0.f) ).x;
     
     // gradient calculation
   	float pixeloffset = inverseShadowmapSize;
     float4 depths = float4(
-    	tex2D(shadowMap, shadowUV.xy + float2(-pixeloffset, 0)).x,
-    	tex2D(shadowMap, shadowUV.xy + float2(+pixeloffset, 0)).x,
-    	tex2D(shadowMap, shadowUV.xy + float2(0, -pixeloffset)).x,
-    	tex2D(shadowMap, shadowUV.xy + float2(0, +pixeloffset)).x);
+    	tex2Dlod(shadowMap, float4(shadowUV.xy + float2(-pixeloffset, 0),0.f, 0.f)).x,
+    	tex2Dlod(shadowMap, float4(shadowUV.xy + float2(+pixeloffset, 0),0.f, 0.f)).x,
+    	tex2Dlod(shadowMap, float4(shadowUV.xy + float2(0, -pixeloffset),0.f, 0.f)).x,
+    	tex2Dlod(shadowMap, float4(shadowUV.xy + float2(0, +pixeloffset),0.f, 0.f)).x);
 
 	float2 differences = abs( depths.yw - depths.xz );
 	float gradient = min(gradientClamp, max(differences.x, differences.y));

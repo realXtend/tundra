@@ -280,7 +280,9 @@ vertex_program rex/DiffShadowVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -303,8 +305,9 @@ fragment_program rex/DiffShadowFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
     }
 }
 
@@ -332,7 +335,9 @@ vertex_program rex/DiffShadowVColVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -355,8 +360,10 @@ fragment_program rex/DiffShadowVColFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
     }
 }
 
@@ -388,7 +395,9 @@ vertex_program rex/DiffSpecflatNormalShadowLumVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -411,8 +420,9 @@ fragment_program rex/DiffSpecflatNormalShadowLumFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
     }
 }
 
@@ -442,7 +452,9 @@ vertex_program rex/DiffSpecflatShadowVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -464,9 +476,10 @@ fragment_program rex/DiffSpecflatShadowFP cg
 				
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
-
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -498,7 +511,9 @@ vertex_program rex/DiffSpecmapNormalShadowLumVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -521,8 +536,9 @@ fragment_program rex/DiffSpecmapNormalShadowLumFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 	
     }
 }
@@ -554,7 +570,9 @@ vertex_program rex/DiffSpecmapNormalShadowVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -577,8 +595,9 @@ fragment_program rex/DiffSpecmapNormalShadowFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -657,7 +676,9 @@ vertex_program rex/DiffSpecmapNormalShadowLumOpaVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -680,8 +701,9 @@ fragment_program rex/DiffSpecmapNormalShadowLumOpaFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 	
     }
 }
@@ -758,7 +780,9 @@ vertex_program rex/DiffSpecmapShadowLumOpaVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -781,8 +805,9 @@ fragment_program rex/DiffSpecmapShadowLumOpaFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 	
     }
 }
@@ -813,7 +838,9 @@ vertex_program rex/DiffSpecmapShadowLumVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -836,8 +863,9 @@ fragment_program rex/DiffSpecmapShadowLumFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 	
     }
 }
@@ -868,7 +896,9 @@ vertex_program rex/DiffSpecmapShadowOpaVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -891,8 +921,9 @@ fragment_program rex/DiffSpecmapShadowOpaFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -923,7 +954,9 @@ vertex_program rex/DiffSpecmapShadowVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -946,8 +979,9 @@ fragment_program rex/DiffSpecmapShadowFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -1068,7 +1102,9 @@ vertex_program rex/DiffSpecmapShadowReflVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -1091,8 +1127,9 @@ fragment_program rex/DiffSpecmapShadowReflFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 	
     }
 }
@@ -1166,7 +1203,9 @@ vertex_program rex/DiffShadowLightmapVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -1187,8 +1226,9 @@ fragment_program rex/DiffShadowLightmapFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -1217,7 +1257,9 @@ vertex_program rex/DiffNormalShadowLightmapVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -1238,8 +1280,9 @@ fragment_program rex/DiffNormalShadowLightmapFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
     }
 }
@@ -1269,7 +1312,9 @@ vertex_program rex/DiffNormalShadowVP cg
 		param_named_auto fogColor fog_colour
 
 		// Shadow mapping parameters.
-		param_named_auto lightViewProj texture_viewproj_matrix
+		param_named_auto lightViewProj0	texture_worldviewproj_matrix 0
+		param_named_auto lightViewProj1	texture_worldviewproj_matrix 1
+		param_named_auto lightViewProj2	texture_worldviewproj_matrix 2
 	}
 }
 
@@ -1292,8 +1337,9 @@ fragment_program rex/DiffNormalShadowFP cg
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
 		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
 
-		// todo: Determine this at runtime.
-		param_named inverseShadowmapSize float 0.00048828125
+		param_named_auto invShadowmapSize0	inverse_texture_size 0
+		param_named_auto invShadowmapSize1	inverse_texture_size 1
+		param_named_auto invShadowmapSize2	inverse_texture_size 2
 		
     }
 }
