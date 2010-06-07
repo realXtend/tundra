@@ -1935,7 +1935,7 @@ namespace RexLogic
         std::string leafname = path.leaf();
         
         if (!entity)
-            return false;                             
+            return false;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return false;
@@ -1945,10 +1945,10 @@ namespace RexLogic
         mesh.name_ = leafname;
         appearance->SetMesh(mesh);
         
-        std::string xmlname = ReplaceSubstring(filename, ".mesh", ".xml");       
+        std::string xmlname = ReplaceSubstring(filename, ".mesh", ".xml");
         
-        // Now optionally read parameters from an xml file that perhaps exists, but it's not fatal if it's not found           
-        QFile file(filename.c_str());
+        // Now optionally read parameters from an xml file that perhaps exists, but it's not fatal if it's not found
+        QFile file(xmlname.c_str());
         QDomDocument avatar_doc("Avatar");
         
         if (!file.open(QIODevice::ReadOnly))
