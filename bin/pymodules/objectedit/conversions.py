@@ -82,7 +82,9 @@ class Quat:
         
 if __name__ == '__main__': 
     def doTest(x, y, z):
+        print "-" * 20
         euler = (x, y, z)
+        print "Start euler is:", euler
         quat = euler_to_quat(euler)
         print "Quat is:", quat
         euler = quat_to_euler(quat)
