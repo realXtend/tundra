@@ -84,7 +84,7 @@ class ObjectEditWindow:
 
         def rotchanger(i):
             def rot_at_index(v):
-                self.controller.changerot(i, v)
+                self.controller.changerot(i, (self.mainTab.rot_x.value, self.mainTab.rot_y.value, self.mainTab.rot_z.value))
             return rot_at_index
         for i, rotwidget in enumerate([self.mainTab.rot_x, self.mainTab.rot_y, self.mainTab.rot_z]):
             rotwidget.connect('valueChanged(double)', rotchanger(i))
