@@ -4,7 +4,8 @@ import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
-from conversions import quat_to_euler #for euler - quat -euler conversions
+import conversions as conv
+reload(conv)
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 
 try:
@@ -138,7 +139,7 @@ class ObjectEditWindow:
         
     def update_rotvals(self, rot):
         qrot = list((rot.x(), rot.y(), rot.z(), rot.scalar()))
-        euler = quat_to_euler(qrot)
+        euler = conv.quat_to_euler(qrot)
         self.mainTab.rot_x.setValue(euler[0])
         self.mainTab.rot_y.setValue(euler[1])
         self.mainTab.rot_z.setValue(euler[2])   

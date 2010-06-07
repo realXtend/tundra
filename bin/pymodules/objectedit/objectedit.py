@@ -22,7 +22,8 @@ import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
-from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
+import conversions as conv
+reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
 
@@ -668,11 +669,11 @@ class ObjectEdit(Component):
         ent = self.active
         if ent is not None:
             qquat = ent.placeable.Orientation
-            euler = list(quat_to_euler((qquat.x(), qquat.y(), qquat.z(), qquat.scalar())))
+            euler = list(conv.quat_to_euler((qquat.x(), qquat.y(), qquat.z(), qquat.scalar())))
                 
             if not self.float_equal(euler[i],v):
                 euler[i] = v
-                ort = euler_to_quat(euler)
+                ort = conv.euler_to_quat(euler)
                 #print euler, ort
                 #print euler, ort
                 ort = Quat(ort[3], ort[0], ort[1], ort[2])
