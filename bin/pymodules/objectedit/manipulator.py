@@ -322,7 +322,7 @@ class RotationManipulator(Manipulator):
             upvec = Vector3(r.getCameraUp())
             
             ort = ent.placeable.Orientation
-            euler = list((0, 0, 0))
+            euler = (0, 0, 0)
             
             if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
                 #print "green axis", self.grabbed_axis
@@ -337,7 +337,7 @@ class RotationManipulator(Manipulator):
                 mov = amounty * 30
                 euler[0] -= mov 
                 
-            rotationQuat = list(euler_to_quat(euler))
+            rotationQuat = euler_to_quat(euler)
 
             ort *= Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2])
             
