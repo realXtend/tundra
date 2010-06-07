@@ -670,7 +670,11 @@ class ObjectEdit(Component):
         if ent is not None:
             quat = conv.euler_to_quat(v)
             # convert between conversions.Quat tuple (x,y,z,w) format and QQuaternion (w,x,y,z)
-            ort = Quat(quat[3], quat[0], quat[1], quat[2])
+            # TODO: it seems that visualisation compared to what we give/understand on ob edit
+            # level is shifted. For now leave this 'shift' in, but need to investigate later. At
+            # least visual changes triggered through ob edit window widgets seem to correspond
+            # better to what one expects.
+            ort = Quat(quat[3], quat[1], quat[2], quat[0])
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
             if not self.dragging:
