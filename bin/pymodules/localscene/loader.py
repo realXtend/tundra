@@ -134,8 +134,8 @@ def load_dotscene(fname):
 def unload_dotscene(ds):
     print "unload_dotscene"
     for k, oNode in ds.dotscenemanager.nodes.iteritems():
-        print "removing " + k
-        print oNode.naali_ent.id
+        # print "removing " + k
+        # print oNode.naali_ent.id
         try:
             rexviewer.removeEntity(oNode.naali_ent.id)
         except:
