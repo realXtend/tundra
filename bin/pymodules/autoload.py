@@ -25,7 +25,7 @@ modulenames = [
     #("webserver.webcontroller", "WebServer"),
     ("localscene.localscene", "LocalScene"),
     ("objectedit.objectedit", "ObjectEdit"),
-    #("apitest.attrsync", "AnimationSync"),
+    ("apitest.attrsync", "AnimationSync"),
     #("apitest.door", "DoorHandler"),
     #("apitest.jscomponent", "JavascriptHandler")
     ]

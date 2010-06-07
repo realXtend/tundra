@@ -18,7 +18,7 @@ EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module) :
 {
   //QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
   //emit On
-    LogInfo("Constructor");
+    //LogInfo("Constructor");
     /* the parent entity is not set here yet, so could not do this.
        but discovered that rexlogic already emits ComponentAdded upon loading, so using that now
     Scene::Entity* entity = GetParentEntity();
@@ -42,12 +42,12 @@ EC_DynamicComponent::~EC_DynamicComponent()
 
 void EC_DynamicComponent::AddAttribute()
 {
-    LogInfo("AddAttribute");
+    //LogInfo("AddAttribute");
 }
 
 QVariant EC_DynamicComponent::GetAttribute()
 {
-    LogInfo("GetAttribute");
+    //LogInfo("GetAttribute");
     //QVariant v(x_.Get());
     QVariant v(QString::fromStdString(json_.Get()));
     return v;
@@ -56,7 +56,7 @@ QVariant EC_DynamicComponent::GetAttribute()
 //void EC_DynamicComponent::SetAttribute(float new_x)
 void EC_DynamicComponent::SetAttribute(QString new_json)
 {
-    LogInfo("SetAttribute");
+    //LogInfo("SetAttribute");
     //x_.Set(new_x, Foundation::ComponentInterface::Local);
     json_.Set(new_json.toStdString(), Foundation::ComponentInterface::Local);
     ComponentChanged(Foundation::ComponentInterface::Local);

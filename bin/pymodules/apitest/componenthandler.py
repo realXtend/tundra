@@ -16,8 +16,6 @@ class DynamiccomponentHandler(circuits.Component):
         self.widget = None
         self.proxywidget = None
         self.initgui()
-        if self.widget is not None:
-            self.registergui()
 
     def initgui(self):
         pass #overridden in subclasses
@@ -31,7 +29,7 @@ class DynamiccomponentHandler(circuits.Component):
             print "Adding the ProxyWidget to the bar failed."
 
     def on_sceneadded(self, name):
-        print "Scene added:", name#,
+        #print "Scene added:", name#,
         s = naali.getScene(name)
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
@@ -51,12 +49,17 @@ class DynamiccomponentHandler(circuits.Component):
             else:
                 print "ANOTHER DynamicComponent found - only one supported now, ignoring", entity, comp
 
+    def on_logout(self, idt):
+        if self.comp is not None:
+            self.comp.disconnect("OnChanged()", self.onChanged)
+            self.comp = None
+
     def add_component(self, ent):
         try:
             ent.dynamic
         except AttributeError:
             ent.createComponent("EC_DynamicComponent")
-        print ent.dynamic
+        #print ent.dynamic
             
         comp = ent.dynamic
         #print dir(d)
