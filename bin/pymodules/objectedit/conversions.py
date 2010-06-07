@@ -4,9 +4,9 @@ radians2degrees = 57.2957795
 
 def euler_to_quat(euler):
     #let's assume that the euler has the yaw,pitch and roll and they are in degrees, changing to radians
-    yaw = euler[0] * degrees2radians
-    pitch = euler[1] * degrees2radians
-    roll = euler[2] * degrees2radians
+    yaw = math.radians(euler[0])
+    pitch = math.radians(euler[1])
+    roll = math.radians(euler[2])
     
     c1 = math.cos(yaw/2)
     c2 = math.cos(pitch/2)
@@ -51,11 +51,26 @@ def quat_to_euler(quat):
     return convert_to_degrees(yaw, pitch, roll)
 
 def convert_to_degrees(yaw, pitch, roll):
-    yaw *= radians2degrees
-    pitch *= radians2degrees
-    roll *= radians2degrees
+    yaw = math.degrees(yaw)
+    pitch = math.degrees(pitch)
+    roll = math.degrees(roll)
+
+    if yaw-math.floor(yaw) > 0.5:
+        yaw = math.ceil(yaw)
+    else:
+        yaw = math.floor(yaw)
+
+    if pitch-math.floor(pitch) > 0.5:
+        pitch = math.ceil(pitch)
+    else:
+        pitch = math.floor(pitch)
     
-    return math.ceil(yaw), math.ceil(pitch), math.ceil(roll)
+    if roll-math.floor(roll) > 0.5:
+        roll = math.ceil(roll)
+    else:
+        roll = math.floor(roll)
+
+    return yaw, pitch, roll
     
     
 class Quat:
@@ -66,12 +81,20 @@ class Quat:
         self.w = quat[3]
         
 if __name__ == '__main__': 
+    def doTest(x, y, z):
+        print "-" * 20
+        euler = (x, y, z)
+        print "Start euler is:", euler
+        quat = euler_to_quat(euler)
+        print "Quat is:", quat
+        euler = quat_to_euler(quat)
+        print "Euler is:", euler
+
     x = 0 #yaw / heading
     y = 0 #pitch / attitude 
     z = 90 #roll / bank
-    euler = (x, y, z)
-    quat = euler_to_quat(euler)
-    print "Quat is:", quat
-    
-    euler = quat_to_euler(quat)
-    print "Euler is:", euler
+    doTest(0, 0, 90)
+    doTest(0, 90, 0)
+    doTest(90, 0, 0)
+    doTest(90, 0, 90)
+    doTest(45, 45, 45)

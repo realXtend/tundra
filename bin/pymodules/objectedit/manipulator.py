@@ -302,7 +302,7 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0)
+    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
     
     MATERIALNAMES = {
         0: "asd",  #shodows?
