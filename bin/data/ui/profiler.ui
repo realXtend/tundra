@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>679</width>
+    <width>737</width>
     <height>541</height>
    </rect>
   </property>
@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>2</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="tab">
          <attribute name="title">
@@ -1353,6 +1353,106 @@
            </widget>
           </item>
          </layout>
+        </widget>
+        <widget class="QWidget" name="textures">
+         <attribute name="title">
+          <string>Textures</string>
+         </attribute>
+         <widget class="QTreeWidget" name="textureDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>635</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="texture_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Texture data</string>
+          </property>
+         </widget>
         </widget>
        </widget>
       </item>

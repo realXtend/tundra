@@ -65,6 +65,7 @@ namespace DebugStats
         void OnProfilerWindowTabChanged(int newPage);
         void RefreshOgreProfilingWindow();
         void RefreshNetworkProfilingData();
+        void RefressTextureProfilingData();
         void ToggleTreeButtonPressed();
         void CollapseAllButtonPressed();
         void ExpandAllButtonPressed();
@@ -114,6 +115,8 @@ namespace DebugStats
         void RefreshProfilingDataTree();
         void RefreshProfilingDataList();
         void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+
+        QTreeWidget *tree_texture_assets_;
     };
 }
 
