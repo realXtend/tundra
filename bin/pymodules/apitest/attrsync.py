@@ -53,12 +53,8 @@ class AnimationSync(DynamiccomponentHandler):
         d['animpos'] = val
         self.comp.SetAttribute(json.dumps(d))
         
-    def getval(self):
-        d = self.getdata()
-        return d['animpos']
-
     def sliderChanged(self, guival):
-        print guival
+        #print guival
         comp = self.comp
         if comp is not None:
             now = time.time()
@@ -69,7 +65,19 @@ class AnimationSync(DynamiccomponentHandler):
                 self.prev_sync = now
 
     def onChanged(self):
-        print "onChanged",
+        d = self.getdata()
+        if 'animpos' in d:
+            v = d['animpos']
+        else: #no data for this handler
+            return
+
+        if self.proxywidget is None and self.widget is not None:
+            #if self.widget is None:
+            #    self.initgui()
+            print "AnimSync DynamicComponent handler registering to GUI"
+            self.registergui()
+
+        #print "onChanged",
         comp = self.comp
         if comp is not None:
             #print comp.GetAttribute()
@@ -81,12 +89,20 @@ class AnimationSync(DynamiccomponentHandler):
                 return
 
             #print a
-            v = self.getval()
             a.SetAnimationTimePosition("Wave", v)
             self.widget.value = v * 100 #needs changetypes to work well, i guess
             
         else:
             print "- don't know what :o"
+    
+    #failed in the attempt to hide the tool when go out of scenes that have animsync - something of the widget stays there, so get error prints QPainter::end: Painter not active, aborted
+    #def on_logout(self, idt):
+    #    if self.proxywidget is not None:
+    #        self.proxywidget.hide()
+    #        uism = r.getUiSceneManager()
+    #        uism.RemoveProxyWidgetFromScene(self.proxywidget)
+    #        self.proxywidget = None
+    #        self.widget = None
 
 #    def update(self, frametime):
 #        comp = self.comp
