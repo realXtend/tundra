@@ -17,11 +17,14 @@ import time
 import shutil
 from xml.dom.minidom import getDOMImplementation
 
-MESH_MODEL_FOLDER = "media/models"
-MATERIAL_FOLDER = "media/materials/scripts"
-TEXTURE_FOLDER = "media/textures"
+import constants
+from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_UPLOAD_FOLDER
 
-TEMP_UPLOAD_FOLDER = "UploadPackage" # folder for creating zip file
+# MESH_MODEL_FOLDER = "media/models"
+# MATERIAL_FOLDER = "media/materials/scripts"
+# TEXTURE_FOLDER = "media/textures"
+
+# TEMP_UPLOAD_FOLDER = "UploadPackage" # folder for creating zip file
         
 
 class SceneUploader:
@@ -54,9 +57,9 @@ class SceneUploader:
         try:
             datagen, headers = multipart_encode({"uploadscene": open(self.file, "rb")})
             request = urllib2.Request(self.cap_url, datagen, headers) # post
-            print "------"
+            #print "------"
             r.logInfo(urllib2.urlopen(request).read())
-            print "------"
+            #print "------"
         except:
             r.logInfo("uploadScene failed")
 
@@ -119,7 +122,7 @@ class SceneUploader:
         else:
             #os.remove(TEMP_UPLOAD_FOLDER+os.sep+"*.*")
             shutil.rmtree("./" + TEMP_UPLOAD_FOLDER)
-            time.sleep(5)
+            time.sleep(1)
             os.mkdir(TEMP_UPLOAD_FOLDER)
         relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
         
@@ -288,6 +291,9 @@ class SceneUploader:
     def parentFolderFromFilePath(self, path):
         return os.path.dirname(path)
         
+    def copyLocalizedSceneFilesToNaalisFolders(self, sceneFilePath):
+        
+        pass
         
 class SceneSaver:
     """ For uploading scene different from the saver in localscene """
