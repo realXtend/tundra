@@ -1,0 +1,38 @@
+// Include only right after including CommonCode.cg first.
+
+// Supported #defines:
+
+// #define SHADOW_MAPPING
+
+#ifdef SHADOW_MAPPING
+
+uniform float4 invShadowmapSize0;
+uniform float4 invShadowmapSize1;
+uniform float4 invShadowmapSize2;
+
+uniform float4x4 lightViewProj0;
+uniform float4x4 lightViewProj1;
+uniform float4x4 lightViewProj2;
+uniform float4 shadowMapParams;
+float shadowPCF(sampler2D shadowMap, float4 shadowMapPos, float2 offset)
+{
+	const float fixedDepthBias = shadowMapParams.y;
+	shadowMapPos = shadowMapPos / shadowMapPos.w;
+	shadowMapPos.z -= fixedDepthBias;
+	float2 uv = shadowMapPos.xy;
+	float3 o = float3(offset, -offset.x) * 0.3f;
+
+	// Note: We using 2x2 PCF. Good enough and is alot faster.
+	//float c =	(shadowMapPos.z <= tex2D(shadowMap, uv.xy - o.xy).r) ? 1 : 0; // top left
+	//c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy + o.xy).r) ? 1 : 0; // bottom right
+	//c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy + o.zy).r) ? 1 : 0; // bottom left
+	//c +=		(shadowMapPos.z <= tex2D(shadowMap, uv.xy - o.zy).r) ? 1 : 0; // top right
+	float c =	(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy - o.xyyy).r) ? 1 : 0; // top left
+	c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy + o.xyyy).r) ? 1 : 0; // bottom right
+	c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy + o.zyyy).r) ? 1 : 0; // bottom left
+	c +=		(shadowMapPos.z <= tex2Dlod(shadowMap, uv.xyyy - o.zyyy).r) ? 1 : 0; // top right
+	return c / 4;
+}
+
+
+#endif

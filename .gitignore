@@ -60,3 +60,8 @@ build/
 # Binary compiled translation files
 bin/data/translations/*.qm
 bin/data/translations/*.ts
+
+# SVN admin
+*.svn-base
+*entries
+*all-wcprops

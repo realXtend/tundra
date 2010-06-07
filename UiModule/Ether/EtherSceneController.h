@@ -82,6 +82,7 @@ namespace Ether
             void StoreConfigs();
 
             void SetConnectingState(bool connecting) { login_in_progress_ = connecting; }
+            void SetConnected(bool connected);
 
         private slots:
             void ControlsWidgetHandler(QString request_type);
@@ -117,6 +118,9 @@ namespace Ether
             View::InfoCard *last_active_top_card_;
             View::InfoCard *last_active_bottom_card_;
 
+            //! Connected world card
+            View::InfoCard *connected_world_;
+
             //! Information widgets
             View::ControlProxyWidget *avatar_info_widget_;
             View::ControlProxyWidget *avatar_addremove_widget_;
@@ -146,6 +150,7 @@ namespace Ether
 
         signals:
             void ApplicationExitRequested();
+            void DisconnectCurrentConnection();
             void LoginRequest(QPair<View::InfoCard*, View::InfoCard*> selected_cards);
             void ObjectRemoved(QUuid);
         };

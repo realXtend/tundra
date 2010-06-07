@@ -28,6 +28,7 @@ namespace RexLogic
            return;
        layout->insertWidget(0,button);
        button->show();
+       this->update();
     }
     void DetachedWidgetController::DisableButtons(bool val)
     {
@@ -48,6 +49,7 @@ namespace RexLogic
     void DetachedWidgetController::SetText(QString text)
     {
         name->setText(text);
+        this->update();
     }
 
     void DetachedWidgetController::mousePressEvent ( QMouseEvent * event )

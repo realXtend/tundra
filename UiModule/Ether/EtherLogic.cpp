@@ -76,6 +76,8 @@ namespace Ether
             // Signals from scene contoller
             connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
                     login_notifier_, SLOT( ExitApplication() ));
+            connect(scene_controller_, SIGNAL( DisconnectCurrentConnection() ),
+                    login_notifier_, SLOT( EmitDisconnectRequest() ));
             connect(scene_controller_, SIGNAL( LoginRequest(QPair<View::InfoCard*, View::InfoCard*>) ),
                     SLOT( ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*>) ));
             connect(scene_controller_, SIGNAL( ObjectRemoved(QUuid) ),
@@ -500,16 +502,19 @@ namespace Ether
             {
                 case UiDefines::Connected:
                     scene_controller_->SetConnectingState(false);
+                    scene_controller_->SetConnected(true);
                     scene_controller_->ShowStatusInformation("Connected");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
                 case UiDefines::Disconnected:
                     UpdateUiPixmaps();
+                    scene_controller_->SetConnected(false);
                     scene_->SetConnectionStatus(false);
                     break;
                 case UiDefines::Failed:
                     scene_controller_->SetConnectingState(false);
+                    scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Failed to connect");
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);

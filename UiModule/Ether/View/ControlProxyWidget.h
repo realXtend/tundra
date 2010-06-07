@@ -64,6 +64,7 @@ namespace Ether
             void SetOverlayWidget(ControlProxyWidget *overlay_widget) { overlay_widget_ =  overlay_widget; }
 
             void SuppressButtons(bool suppress);
+            void SetConnected(bool connected);
 
         private slots:
             void InitCardWidgets();
@@ -103,7 +104,10 @@ namespace Ether
             QPropertyAnimation *scale_animation_;
             QPropertyAnimation *move_animation_;
 
+            QPushButton *exit_button_;
+
             bool suppress_buttons_;
+            bool connected_;
 
         signals:
             void ActionRequest(QString);

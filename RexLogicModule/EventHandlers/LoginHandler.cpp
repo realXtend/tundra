@@ -78,6 +78,8 @@ namespace RexLogic
                 SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
         connect(notifier, SIGNAL( StartRexLogin(QMap<QString, QString>) ), 
                 SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
+
+        connect(notifier, SIGNAL( Disconnect() ), SLOT( Logout() ));
         connect(notifier, SIGNAL( Quit() ), SLOT( Quit() ));
     }
 
@@ -98,8 +100,7 @@ namespace RexLogic
             if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule() )
             {    
                 SAFE_DELETE(opensim_world_session_);
-                // Done deleting sessions/credentials before new try! - Pforce
-                assert(!opensim_world_session_); ///<\todo Pforce: Perform proper teardown of previous session to avoid memory leaks.
+                assert(!opensim_world_session_);
                 opensim_world_session_ = new OpenSimProtocol::OpenSimWorldSession(framework_);
                 success = opensim_world_session_->StartSession(osCredentials, &server_entry_point_url_);
                 if (success)
@@ -133,8 +134,7 @@ namespace RexLogic
                 if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule() )
                 {    
                     SAFE_DELETE(realxtend_world_session_);
-                    // Done deleting sessions/credentials before new try! - Pforce
-                    assert(!realxtend_world_session_); ///<\todo Pforce: Perform proper teardown of previous session to avoid memory leaks.
+                    assert(!realxtend_world_session_);
                     realxtend_world_session_ = new OpenSimProtocol::RealXtendWorldSession(framework_);
                     success = realxtend_world_session_->StartSession(rexCredentials, &server_entry_point_url_);
                     if (success)

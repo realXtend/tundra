@@ -1,4 +1,7 @@
-#!/usr/bin/python
+
+"""
+Loads scene files to be locally in naali, currently all scene related files need to be copied to naali specific media folders by hand
+"""
 
 import rexviewer as r
 from circuits import Component
@@ -10,6 +13,8 @@ import window
 import loader
 import dotscenemanager
 import sceneuploader
+import scenedata
+
 import PythonQt
 import threading
 import time
@@ -17,6 +22,7 @@ import time
 from window import LocalSceneWindow as LCwindow
 from sceneuploader import SceneUploader as SUploader
 from sceneuploader import SceneSaver as SSaver
+from scenedata import SceneDataManager
 
 from xml.dom.minidom import getDOMImplementation
 
@@ -59,9 +65,17 @@ class LocalScene(Component):
         self.highlight = False
         self.uploader = None
         self.filename = ""        
+        self.scenedata = None
         pass
 
     def loadScene(self, filename):
+        # if material file exists copy needed files to needed locations
+        self.scenedata = SceneDataManager(filename)
+        if(self.scenedata.hasCopyFiles):
+            self.scenedata.copyFilesToDirs()
+            pass
+
+        time.sleep(1)
         if(filename!=None):
             if(filename!=""):
                 self.dotScene, self.dsManager = loader.load_dotscene(filename)
@@ -77,6 +91,8 @@ class LocalScene(Component):
 
     def unloadScene(self):
         loader.unload_dotscene(self.dotScene)
+        if(self.scenedata!=None and self.scenedata.hasCopyFiles == True):
+            self.scenedata.removeFiles()
         pass
         
     def publishScene(self, filename=""):
@@ -87,6 +103,10 @@ class LocalScene(Component):
             self.worldstream = r.getServerConnection()
         # try to get capability UploadScene
         uploadcap_url = self.worldstream.GetCapability('UploadScene')
+        if(uploadcap_url==None or uploadcap_url==""):
+            self.queue.put(('No upload capability', 'Check your rights to upload scene'))
+            #self.window.displayMessage("No upload capability", "Check your rights to upload scene")
+            return
         #print str(uploadcap_url)
         if(self.uploader==None):
             self.uploader=SUploader(uploadcap_url)
