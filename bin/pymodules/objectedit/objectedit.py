@@ -22,7 +22,8 @@ import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile
-from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
+import conversions as conv
+reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
 
@@ -664,27 +665,23 @@ class ObjectEdit(Component):
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
-        #print "pos index %i changed to: %f" % (i, v)
+        #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
         if ent is not None:
-            qquat = ent.placeable.Orientation
-            euler = list(quat_to_euler((qquat.x(), qquat.y(), qquat.z(), qquat.scalar())))
+            quat = conv.euler_to_quat(v)
+            # convert between conversions.Quat tuple (x,y,z,w) format and QQuaternion (w,x,y,z)
+            # TODO: it seems that visualisation compared to what we give/understand on ob edit
+            # level is shifted. For now leave this 'shift' in, but need to investigate later. At
+            # least visual changes triggered through ob edit window widgets seem to correspond
+            # better to what one expects.
+            ort = Quat(quat[3], quat[1], quat[2], quat[0])
+            ent.placeable.Orientation = ort
+            ent.network.Orientation = ort
+            if not self.dragging:
+                r.networkUpdate(ent.id)
                 
-            if not self.float_equal(euler[i],v):
-                euler[i] = v
-                ort = euler_to_quat(euler)
-                #print euler, ort
-                #print euler, ort
-                ort = Quat(ort[3], ort[0], ort[1], ort[2])
-                ent.placeable.Orientation = ort
-                ent.network.Orientation = ort
-                if not self.dragging:
-                    r.networkUpdate(ent.id)
-                    
-                self.modified = True
-                #self.window.update_rotvals(ort)
-                #self.selection_box.placeable.Orientation = ort
-    
+            self.modified = True
+
     def getActive(self):
         if len(self.sels) > 0:
             ent = self.sels[-1]

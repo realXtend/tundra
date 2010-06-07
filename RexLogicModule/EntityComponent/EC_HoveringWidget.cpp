@@ -89,6 +89,8 @@ namespace RexLogic
         QPushButton *b = new QPushButton("Attach");
         detachedwidget_->AddButton(b);
         QObject::connect(b, SIGNAL(pressed()), this, SLOT(Attach()));
+        Detach();
+        Attach();
 
     }
 

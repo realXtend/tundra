@@ -127,14 +127,16 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_asset_transfers_->header()->resizeSection(1, 90);
     tree_asset_transfers_->header()->resizeSection(2, 90);
     
-   QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-   QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-   QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-   QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+    tree_texture_assets_ = findChild<QTreeWidget* >("textureDataTree"); 
 
-   QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
+    QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
+    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
+    QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
-   frame_time_update_x_pos_ = 0;
+    QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+
+    frame_time_update_x_pos_ = 0;
 }
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
@@ -197,6 +199,9 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         break;
     case 5:
         RefreshAssetProfilingData();
+        break;
+    case 6:
+        RefressTextureProfilingData();
         break;
     }
 }
@@ -972,5 +977,55 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
+
+ void TimeProfilerWindow::RefressTextureProfilingData()
+ {
+     if (!tab_widget_ || tab_widget_->currentIndex() != 6)
+        return;
+
+     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
+    
+     while ( iter.hasMoreElements() )
+     {
+       
+       Ogre::ResourcePtr resource = iter.getNext();
+
+       // Is there allready this kind element? 
+       QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
+       
+       if ( item == 0) 
+        item = new QTreeWidgetItem(tree_texture_assets_);
+       
+       // Fill item. 
+
+       item->setText(0,resource->getName().c_str());
+       QString size;
+       size.setNum(resource->getSize());
+       item->setText(1,size);
+
+        
+       item->setText(2, resource->isReloadable() ? "Yes" : "False" );
+       item->setText(3, resource->isManuallyLoaded() ? "Yes" : "False");
+       item->setText(4, resource->isPrepared()  ? "Yes" : "False");
+       item->setText(5, resource->isLoaded()  ? "Yes" : "False");
+       item->setText(6, resource->isLoading()  ? "Yes" : "False");
+       
+       QString tmp;
+       tmp.setNum(resource->getLoadingState());
+       item->setText(7,tmp);
+
+       item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "False");
+       item->setText(9, resource->getGroup().c_str());
+       item->setText(10, resource->getOrigin().c_str());
+       tmp.clear();
+       tmp.setNum(resource->getStateCount());
+       item->setText(11,tmp);
+
+
+     }
+
+
+
+ }
 
 }

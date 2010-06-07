@@ -19,8 +19,12 @@
 	  matches to the order in which the shader reads the textures.
 */
 
+
+
+
 #include "CommonCode.cg"
-#include "Shadow4Tap.cg"
+#include "ShadowPCF2x2.cg"
+//#include "Shadow4Tap.cg"
 //#include "Shadow1Tap.cg"
 
 void mainVS
@@ -38,7 +42,7 @@ void mainVS
 	in float2 tex2 : TEXCOORD1, 
 #endif	
 	out float4 oPos : POSITION,
-	out float2 oTex,
+	out float3 oTex,
 #ifdef VERTEX_COLOR
 	out float4 oColor : COLOR,
 #endif
@@ -52,7 +56,10 @@ void mainVS
 	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
 	out float4 oLightDir[cNumPerPixelLights]
 #ifdef SHADOW_MAPPING
-	, out float4 oShadowTex
+	,out float4 oShadowTex0 
+	,out float4 oShadowTex1 
+	,out float4 oShadowTex2 
+	
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -60,10 +67,10 @@ void mainVS
 #endif
 )
 {
-    float4 worldPos = mul(worldMatrix, pos);
+	float4 worldPos = mul(worldMatrix, pos);
 
 	oPos = mul(worldViewProjMatrix, pos);
-	oTex = ComputeTexCoord(tex);
+	oTex.xy = ComputeTexCoord(tex);
 #ifdef LIGHT_MAPPING
 	oTex2 = tex2;
 #endif
@@ -103,16 +110,24 @@ void mainVS
 	oFog = ComputeFog(oPos.z);
 	
 #ifdef SHADOW_MAPPING
-	// Calculate shadow map coords
-	oShadowTex = mul(lightViewProj, worldPos);
+	
+
+	// Calculate shadow map coord
+	oShadowTex0 = mul(lightViewProj0, pos);
+	oTex.z = oPos.z;
+	oShadowTex1 = mul(lightViewProj1, pos);
+	oShadowTex2 = mul(lightViewProj2, pos);
 #endif
 }
+
+
+
 
 void mainPS(
 #ifdef VERTEX_COLOR
     in float4 color : COLOR,
 #endif
-	in float2 tex,
+	in float3 tex,
 #ifdef LIGHT_MAPPING
 	in float2 tex2, 
 #endif		
@@ -124,7 +139,10 @@ void mainPS(
 	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
 	in float4 lightDir[cNumPerPixelLights], // in tangent space
 #ifdef SHADOW_MAPPING
-	in float4 shadowTex,
+	in float4 shadowTex0,
+	in float4 shadowTex1,
+	in float4 shadowTex2,
+	
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -140,17 +158,17 @@ void mainPS(
 		lightDir[i].xyz = normalize(lightDir[i].xyz);
 
 #ifdef VERTEX_COLOR
-	float4 baseColor = color * SampleDiffuseColor(tex);
+	float4 baseColor = color * SampleDiffuseColor(tex.xy);
 #else
-	float4 baseColor = SampleDiffuseColor(tex);
+	float4 baseColor = SampleDiffuseColor(tex.xy);
 #endif
 
 #ifdef SPECULAR_LIGHTING
-	float3 specularColor = SampleSpecularColor(tex);
+	float3 specularColor = SampleSpecularColor(tex.xy);
 #endif
 
 #ifdef NORMAL_MAPPING
-	float3 normal = SampleNormalMap(normalMap, tex);
+	float3 normal = SampleNormalMap(normalMap, tex.xy);
 #else
 	normal = normalize(normal); // normal comes as an input from VS.	
 #endif	
@@ -174,8 +192,32 @@ void mainPS(
 		float lightness = 1.f;
 #ifdef SHADOW_MAPPING
 		if (i == 0) // Only the first light - the directional light uses a shadow map.
+		{
 //			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
-			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+//			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+
+
+			if (tex.z <= 3.0547550f)
+			{
+				lightness = shadowPCF(shadowMap0, shadowTex0, invShadowmapSize0.xy);
+
+			}
+			else if (tex.z <= 11.908566f)
+			{
+
+				lightness = shadowPCF(shadowMap1, shadowTex1, invShadowmapSize1.xy);
+
+			}
+			else if(tex.z <= 50.f)
+			{
+				lightness = shadowPCF(shadowMap2, shadowTex2, invShadowmapSize2.xy);
+
+
+			}
+
+		}
+			
+			
 #endif
 		float NdotL = max(0.f, dot(normal, lightDir[i].xyz));
 		diffuseLightFactor += lightness * NdotL * lightDiffuseColors[i];
@@ -188,7 +230,7 @@ void mainPS(
 
 #ifdef LUMINANCE_MAPPING
 	// Process the light accumulated from the luminance map.
-	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex);
+	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex.xy);
 #endif
 
     // Limit diffuse term to prevent overburn
@@ -208,6 +250,6 @@ void mainPS(
 #ifdef DIFFUSE_ALPHA
 	oCol.a = baseColor.a;
 #else
-	oCol.a = SampleFragmentAlpha(tex); // If alpha masking is enabled, we could move this to be the very first op in the shader, and early out.
+	oCol.a = SampleFragmentAlpha(tex.xy); // If alpha masking is enabled, we could move this to be the very first op in the shader, and early out.
 #endif
 }

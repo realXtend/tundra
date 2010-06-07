@@ -42,6 +42,7 @@ namespace Ether
               card_size_(card_size),
               last_active_top_card_(0),
               last_active_bottom_card_(0),
+              connected_world_(0),
               layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
               info_hide_timer_(new QTimer(this)),
               login_in_progress_(false),
@@ -93,6 +94,7 @@ namespace Ether
               login_in_progress_(false),
               last_active_top_card_(0),
               last_active_bottom_card_(0),
+              connected_world_(0),
               status_widget_(0),
               top_menu_(0),
               bottom_menu_(0),
@@ -482,9 +484,33 @@ namespace Ether
             else if (request_type == "hide")
                 status_widget_->hide();
             else if (request_type == "help")
+            {
+                ShowStatusInformation("Naalis help system is still under development, sorry.");
                 return;
+            }
             else if (request_type == "exit")
                 TryExitApplication();
+            else if (request_type == "cancel" || request_type == "disconnect")
+            {
+                login_in_progress_ = false;
+
+                if (request_type == "cancel")
+                {
+                    if (!bottom_menu_)
+                        return;
+                    View::InfoCard* world_card = bottom_menu_->GetHighlighted();
+                    if (!world_card)
+                        return;
+                    ShowStatusInformation(QString("Login to %1 canceled").arg(world_card->title()));
+                }
+                else if (request_type == "disconnect" && connected_world_)
+                    ShowStatusInformation(QString("Disconnected from %1").arg(connected_world_->title()));
+
+                emit DisconnectCurrentConnection();
+                SuppressControlWidgets(false);
+                scene_->SupressKeyEvents(false);
+                SceneRectChanged(scene_->sceneRect());
+            }
         }
 
         void EtherSceneController::TryStartLogin()
@@ -629,6 +655,15 @@ namespace Ether
                 SuppressControlWidgets(false);
         }
 
+        void EtherSceneController::SetConnected(bool connected)
+        {
+            control_widget_->SetConnected(connected);
+            if (connected)
+                connected_world_ = bottom_menu_->GetHighlighted();
+            else
+                connected_world_ = 0;
+        }
+
         void EtherSceneController::SuppressControlWidgets(bool suppress)
         {
             control_widget_->SuppressButtons(suppress);
@@ -653,6 +688,7 @@ namespace Ether
 
         void EtherSceneController::TryExitApplication()
         {
+            ShowStatusInformation("Exiting");
             emit ApplicationExitRequested();
         }
 

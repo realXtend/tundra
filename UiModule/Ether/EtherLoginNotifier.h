@@ -40,11 +40,15 @@ namespace Ether
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
+            
             void EmitOpenSimLogin(QMap<QString, QString> info_map);
             void EmitRealXtendLogin(QMap<QString, QString> info_map);
             void EmitTaigaLogin(QWebFrame *web_frame);
             void EmitTaigaLogin(QString url);
+            
+            void EmitDisconnectRequest();
             void ExitApplication();
+            
             UI_MODULE_API void Teleport(QString start_location);
             UI_MODULE_API void ScriptTeleportAnswer(QString answer, QString region_name);
             void ScriptTeleport();
@@ -61,6 +65,7 @@ namespace Ether
             void StartRexLogin(QMap<QString, QString> info_map);
             void StartTaigaLogin(QWebFrame *web_frame);
             void StartTaigaLogin(QString url);
+            void Disconnect();
             void Quit();
         };
     }
