@@ -6,6 +6,8 @@
 #include "EC_OgrePlaceable.h"
 #include "OgreConversionUtils.h"
 #include "EC_OgreEnvironment.h"
+//#include <OgreShadowCameraSetupPSSM.h>
+#include "OgreShadowCameraSetupFocusedPSSM.h"
 
 #include <Ogre.h>
 
@@ -386,6 +388,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
             camera->setFarClipDistance(farClip);
             cameraUnderWater_ = true;
         }
+       
     }
 
 #ifdef CAELUM 
@@ -604,8 +607,11 @@ void EC_OgreEnvironment::InitShadows()
     RendererPtr renderer = renderer_.lock();   
 
     float shadowFarDist = 50;
-    unsigned short shadowTextureSize = 2048;
-    size_t shadowTextureCount = 1;
+    unsigned short shadowTextureSize = 1024;
+
+    //this is also used to specify the number of frustrum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
+    //also.
+    size_t shadowTextureCount = 3;
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
 
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
@@ -616,21 +622,67 @@ void EC_OgreEnvironment::InitShadows()
 
     Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
-    sceneManager->setShadowFarDistance(shadowFarDist);
 
-    sceneManager->setShadowTextureSize(shadowTextureSize);
-    sceneManager->setShadowTextureCount(shadowTextureCount);
+    sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
+    sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_RGB);
+    
 
-    sceneManager->setShadowTexturePixelFormat(Ogre::PF_FLOAT16_R);
+    
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
 
-    Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(new Ogre::FocusedShadowCameraSetup());
+    OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
+    pssmSetup->calculateSplitPoints(shadowTextureCount, cameraNearClip_, shadowFarDist);
+
+
+
+    Ogre::PSSMShadowCameraSetup::SplitPointList splitpoints = pssmSetup->getSplitPoints();
+ 
+
+
+    Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
     sceneManager->setShadowCameraSetup(shadowCameraSetup);
+    sceneManager->setShadowFarDistance(shadowFarDist);
 
     // If set to true, problems with objects that clip into the ground
     sceneManager->setShadowCasterRenderBackFaces(false);
+
+    /*//DEBUG
+    if(renderer_.expired())
+        return;
+    Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
+    Ogre::TexturePtr shadowTex;
+    Ogre::String str("shadowDebug");
+    Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
+    if(!debugOverlay)
+        debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
+    for(int i = 0; i<3;i++)
+    {
+            shadowTex = mngr->getShadowTexture(i);
+
+		    // Set up a debug panel to display the shadow
+		    Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
+                "Ogre/DebugTexture" + Ogre::StringConverter::toString(i), 
+                Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+		    debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+		    Ogre::TextureUnitState *t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState(shadowTex->getName());
+            t->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
+		    //t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState("spot_shadow_fade.png");
+		    //t->setTextureAddressingMode(TextureUnitState::TAM_CLAMP);
+		    //t->setColourOperation(LBO_ADD);
+
+		    Ogre::OverlayContainer* debugPanel = (Ogre::OverlayContainer*)
+                (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "Ogre/DebugTexPanel" + Ogre::StringConverter::toString(i)));
+		    debugPanel->_setPosition(0.8, i*0.25+ 0.05);
+		    debugPanel->_setDimensions(0.2, 0.24);
+		    debugPanel->setMaterialName(debugMat->getName());
+		    debugOverlay->add2D(debugPanel);
+    }
+    debugOverlay->show();*/
+
+
+  
 }
 
 } // namespace OgreRenderer

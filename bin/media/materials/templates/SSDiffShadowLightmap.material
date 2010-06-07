@@ -21,9 +21,20 @@ material rex/DiffShadowLightmap
 			{
 				texture AddTextureNameHere
 			}
-			texture_unit shadowMap
+			texture_unit shadowMap0
 			{
-				content_type shadow	
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap1
+			{
+				content_type shadow
+				tex_address_mode clamp
+			}
+			texture_unit shadowMap2
+			{
+				content_type shadow
+				tex_address_mode clamp
 			}
 		}
 	}
