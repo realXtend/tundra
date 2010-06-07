@@ -1399,7 +1399,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
         pitch = cam->GetPitch();
         yaw = 0; //XXX not implemented yet (?)
 
-        return Py_BuildValue("ff", (float)pitch, float(yaw));
+        return Py_BuildValue("ff", (float)yaw, float(pitch));
     }
     //else - no logic module. can that ever happen?)
     return NULL; //rises py exception
