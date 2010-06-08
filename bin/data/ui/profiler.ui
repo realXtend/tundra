@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>737</width>
+    <width>808</width>
     <height>541</height>
    </rect>
   </property>
@@ -1451,6 +1451,606 @@
           </property>
           <property name="text">
            <string>Texture data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="meshes">
+         <attribute name="title">
+          <string>Meshes</string>
+         </attribute>
+         <widget class="QTreeWidget" name="meshDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="texture_label_3">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Mesh data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="material">
+         <attribute name="title">
+          <string>Materials</string>
+         </attribute>
+         <widget class="QTreeWidget" name="materialDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="material_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Material data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="skeleton">
+         <attribute name="title">
+          <string>Skeleton</string>
+         </attribute>
+         <widget class="QTreeWidget" name="skeletonDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="skeleton_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Skeleton data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="compositor">
+         <attribute name="title">
+          <string>Compositor</string>
+         </attribute>
+         <widget class="QTreeWidget" name="compositorDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="composition_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Composition data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="gpu">
+         <attribute name="title">
+          <string>Gpu</string>
+         </attribute>
+         <widget class="QTreeWidget" name="gpuDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="gpu_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Gpu data</string>
+          </property>
+         </widget>
+        </widget>
+        <widget class="QWidget" name="font">
+         <attribute name="title">
+          <string>Font</string>
+         </attribute>
+         <widget class="QTreeWidget" name="fontDataTree">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>50</y>
+            <width>711</width>
+            <height>431</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="verticalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <property name="horizontalScrollBarPolicy">
+           <enum>Qt::ScrollBarAlwaysOn</enum>
+          </property>
+          <column>
+           <property name="text">
+            <string>Name</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Total size</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Reloadable</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Manually loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Prepared</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Loading state</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Background loaded</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Group</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>Origin</string>
+           </property>
+          </column>
+          <column>
+           <property name="text">
+            <string>State count</string>
+           </property>
+          </column>
+         </widget>
+         <widget class="QLabel" name="font_label">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Font data</string>
           </property>
          </widget>
         </widget>
