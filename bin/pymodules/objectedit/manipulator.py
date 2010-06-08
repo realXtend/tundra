@@ -69,8 +69,12 @@ class Manipulator:
         #print "Showing arrows!"
         if self.usesManipulator:
             self.moveTo(ents)
-            self.manipulator.placeable.Scale = self.MANIPULATORSCALE#0.2, 0.2, 0.2
-            self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
+            self.manipulator.placeable.Scale = self.MANIPULATORSCALE
+            if self.controller.useLocalTransform:
+                # first according object, then manipulator orientation - otherwise they go wrong order
+                self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
+            else:
+                self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
             
     def getPivotPos(self, ents):        
         xs = [e.placeable.Position.x() for e in ents]
@@ -200,7 +204,7 @@ class MoveManipulator(Manipulator):
     
     MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
     # multiply the two orientations, so we get the proper end orientation for the widget
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
+    MANIPULATORORIENTATION = Manipulator.ninty_around_x * Manipulator.ninty_around_y
     
     BLUEARROW = [1,2]
     REDARROW = [5,6]
@@ -306,7 +310,7 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
+    MANIPULATORORIENTATION = Manipulator.ninty_around_x
     
     MATERIALNAMES = {
         0: "asd",  #shadows?
