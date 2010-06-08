@@ -33,9 +33,10 @@ def as_door(dct):
     return DoorState(dct['opened'], dct['locked'])
 """
 
-"""the synched attribute data - this is initial state if none comes from server"""
-doorinit = {'opened': False,
-            'locked': True}
+"""the synched attribute data - this is initial state if none comes from server
+not here anymore to not mess the currently shared data with other comps"""
+#doorinit = {'opened': False,
+#            'locked': True}
 
 class DoorHandler(DynamiccomponentHandler):
     GUINAME = "Door Handler"
