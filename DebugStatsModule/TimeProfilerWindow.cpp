@@ -22,7 +22,7 @@
 #include <QHeaderView>
 #include <QPainter>
 
-#include <Ogre.h>
+
 #include <OgreFontManager.h>
 
 #include "MemoryLeakCheck.h"
@@ -128,6 +128,13 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_asset_transfers_->header()->resizeSection(2, 90);
     
     tree_texture_assets_ = findChild<QTreeWidget* >("textureDataTree"); 
+    tree_mesh_assets_ = findChild<QTreeWidget* >("meshDataTree");
+    tree_material_assets_ = findChild<QTreeWidget*>("materialDataTree");
+    tree_skeleton_assets_ = findChild<QTreeWidget*>("skeletonDataTree");
+    tree_compositor_assets_ = findChild<QTreeWidget*>("compositorDataTree");
+    tree_gpu_assets_ = findChild<QTreeWidget*>("gpuDataTree");
+    tree_font_assets_ = findChild<QTreeWidget*>("fontDataTree");
+
 
     QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
     QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
@@ -200,9 +207,28 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 5:
         RefreshAssetProfilingData();
         break;
-    case 6:
-        RefressTextureProfilingData();
+    case 6: // Textures
+        RefressAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
+    case 7: // Meshes
+        RefressAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
+        break;
+    case 8: // Material
+        RefressAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
+        break;
+    case 9: // Skeleton
+        RefressAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
+        break;
+    case 10: // Composition
+        RefressAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
+        break;
+    case 11: // Gpu assets
+        RefressAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
+        break;
+    case 12: // Font assets
+        RefressAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
+        break;
+
     }
 }
 
@@ -996,7 +1022,41 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
        if ( item == 0) 
         item = new QTreeWidgetItem(tree_texture_assets_);
        
-       // Fill item. 
+       FillItem(item, resource);
+
+     }
+
+
+
+ }
+
+ void TimeProfilerWindow::RefressAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
+ {
+   
+     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+     
+     while ( iter.hasMoreElements() )
+     {
+       
+       Ogre::ResourcePtr resource = iter.getNext();
+
+       // Is there allready this kind element? 
+       QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
+       
+       if ( item == 0) 
+        item = new QTreeWidgetItem(widget);
+       
+       FillItem(item, resource);
+
+     }
+
+ }
+
+ 
+ void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
+ {
+       if ( item == 0)
+           return;
 
        item->setText(0,resource->getName().c_str());
        QString size;
@@ -1020,10 +1080,6 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
        tmp.clear();
        tmp.setNum(resource->getStateCount());
        item->setText(11,tmp);
-
-
-     }
-
 
 
  }
