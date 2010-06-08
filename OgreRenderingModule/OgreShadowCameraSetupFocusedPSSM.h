@@ -5,6 +5,10 @@
 
 #include <Ogre.h>
 
+/*
+This class is for PSSM focused shadow camera setup. It's mostly copy-paste from Ogres PSSMShadowCameraSetup, the difference is that we are not using
+LiSPSM.
+*/
 class OgreShadowCameraSetupFocusedPSSM: public Ogre::FocusedShadowCameraSetup
 {
     public:
@@ -40,10 +44,6 @@ class OgreShadowCameraSetupFocusedPSSM: public Ogre::FocusedShadowCameraSetup
 		*/
 		void setSplitPoints(const SplitPointList& newSplitPoints);
 
-		/** Set the LiSPSM optimal adjust factor for a given split (call after
-			configuring splits).
-		*/
-		void setOptimalAdjustFactor(size_t splitIndex, Real factor);
 
 		/** Set the padding factor to apply to the near & far distances when matching up
 			splits to one another, to avoid 'cracks'.
@@ -57,7 +57,7 @@ class OgreShadowCameraSetupFocusedPSSM: public Ogre::FocusedShadowCameraSetup
 		/// Get the number of splits. 
 		size_t getSplitCount() const { return mSplitCount; }
 
-		/// Returns a LiSPSM shadow camera with PSSM splits base on iteration.
+		/// Returns a shadow camera with PSSM splits base on iteration.
 		virtual void getShadowCamera(const Ogre::SceneManager *sm, const Ogre::Camera *cam,
 			const Ogre::Viewport *vp, const Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const;
 

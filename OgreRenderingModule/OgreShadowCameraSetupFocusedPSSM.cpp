@@ -6,9 +6,7 @@ OgreShadowCameraSetupFocusedPSSM::OgreShadowCameraSetupFocusedPSSM()
 		: mSplitPadding(1.0f)
 	{
 		calculateSplitPoints(3, 100, 100000);
-		setOptimalAdjustFactor(0, 5);
-		setOptimalAdjustFactor(1, 1);
-		setOptimalAdjustFactor(2, 0);
+
 
 
 	}
@@ -50,14 +48,7 @@ OgreShadowCameraSetupFocusedPSSM::OgreShadowCameraSetupFocusedPSSM()
 		mOptimalAdjustFactors.resize(mSplitCount);
 	}
 	//---------------------------------------------------------------------
-	void OgreShadowCameraSetupFocusedPSSM::setOptimalAdjustFactor(size_t splitIndex, Real factor)
-	{
-		if (splitIndex >= mOptimalAdjustFactors.size())
-            OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS, "Split index out of range", 
-			"PSSMShadowCameraSetup::setOptimalAdjustFactor");
-		mOptimalAdjustFactors[splitIndex] = factor;
-		
-	}
+
 	//---------------------------------------------------------------------
 	Real OgreShadowCameraSetupFocusedPSSM::getOptimalAdjustFactor() const
 	{

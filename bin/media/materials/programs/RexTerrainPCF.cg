@@ -1,5 +1,5 @@
 #include "Shadow4Tap.cg"
-
+//#include "ShadowPCF2x2.cg"
 float interp(float val, float min1, float max1, float max2, float min2)
 {
   return smoothstep(min1, max1, val) * (1 - smoothstep(max2, min2, val));
@@ -12,7 +12,6 @@ void mainVS(float4 pos    : POSITION,
           
           uniform float4x4 worldViewProjMatrix,
           uniform float4x4 worldMatrix,
-          uniform float4x4 lightViewProjMatrix,
           uniform float2 scale1,
           uniform float2 scale2,
           uniform float2 scale3,
@@ -47,21 +46,22 @@ void mainVS(float4 pos    : POSITION,
           
           out float4 oPos      : POSITION,
           out float3 oColor    : COLOR,
-          out float3 oDirectionalColor : TEXCOORD7, // Dynamic color based on the single sun directional light.
-          out float2 oTex1     : TEXCOORD0,
-          out float2 oTex2     : TEXCOORD1,
-          out float2 oTex3     : TEXCOORD2,
-          out float2 oTex4     : TEXCOORD3,
-          out float4 oTexVol   : TEXCOORD4,//Texture volumes
-          out float4 oFog      : TEXCOORD5,
-          out float4 oShadowTex : TEXCOORD6) // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
+          out float4 oDirectionalColor : TEXCOORD7, // Dynamic color based on the single sun directional light. the w value is just the z-coordinate of the vertex, packed here.
+          out float4 oTex12     : TEXCOORD0,
+          out float4 oTex34     : TEXCOORD1, //needed to pack "oTex3" to the same variable as oTex2
+          out float4 oTexVol   : TEXCOORD2,//Texture volumes
+          out float4 oFog      : TEXCOORD3,
+          out float4 oShadowTex0 : TEXCOORD4,
+	  out float4 oShadowTex1 : TEXCOORD5,
+	  out float4 oShadowTex2 : TEXCOORD6) // Stores the generated texcoords for the shadow map. We support only one dynamic light at a time.
 {
 	oPos = mul(worldViewProjMatrix, pos);
 	
-    oTex1 = tex / scale1;
-    oTex2 = tex / scale2;
-    oTex3 = tex / scale3;
-    oTex4 = tex / scale4;
+    oTex12.xy = tex / scale1;
+    oTex12.zw = tex / scale2;
+    oTex34.xy = tex / scale3;
+    oTex34.zw = tex / scale4;
+    
     
     float4 worldPos = mul(worldMatrix, pos);
 	
@@ -105,37 +105,57 @@ void mainVS(float4 pos    : POSITION,
     oFog.xyz = fogColor.rgb;
     
     // Shadow view-proj. Need to output all four coordinates for proper clipping (well, could potentially optimize one away, but not that useful).
-    oShadowTex = mul(lightViewProjMatrix, worldPos);
+    oDirectionalColor.w = oPos.z;
+    oShadowTex0 = mul(lightViewProj0, worldPos);
+    oShadowTex1 = mul(lightViewProj1, worldPos);
+    oShadowTex2 = mul(lightViewProj2, worldPos);
 }
 
 void mainPS(float4 pos    : POSITION,
           float3 color  : COLOR,
-          float3 directionalColor : TEXCOORD7,
-          float2 tex1   : TEXCOORD0,
-          float2 tex2   : TEXCOORD1,
-          float2 tex3   : TEXCOORD2,
-          float2 tex4   : TEXCOORD3,
-          float4 texVol : TEXCOORD4, //Texture volumes
-          float4 fog    : TEXCOORD5,
-          float4 shadowTex : TEXCOORD6,
+          float4 directionalColor : TEXCOORD7,
+          float4 tex12   : TEXCOORD0,
+          float4 tex34   : TEXCOORD1,
+          float4 texVol : TEXCOORD2, //Texture volumes
+          float4 fog    : TEXCOORD3,
+          float4 shadowTex0 : TEXCOORD4,
+	  float4 shadowTex1 : TEXCOORD5,
+	  float4 shadowTex2 : TEXCOORD6,
           uniform sampler2D map1 : register(s0), //Detail0
           uniform sampler2D map2 : register(s1), //Detail1
           uniform sampler2D map3 : register(s2), //Detail2
           uniform sampler2D map4 : register(s3), //Detail3
-          uniform sampler2D shadowMap : register(s4),
+          uniform sampler2D shadowMap0 : register(s4),
+	  uniform sampler2D shadowMap1 : register(s5),
+	  uniform sampler2D shadowMap2: register(s6),
           out float4 col: COLOR)
 {
     //Get texture and their volumes
-    float3 c1 = tex2D(map1, tex1) * texVol.x;
-    float3 c2 = tex2D(map2, tex2) * texVol.y;
-    float3 c3 = tex2D(map3, tex3) * texVol.z;
-    float3 c4 = tex2D(map4, tex4) * texVol.w;
+    float4 c1 = tex2D(map1, tex12.xy) * texVol.x;
+    float4 c2 = tex2D(map2, tex12.zw) * texVol.y;
+    float4 c3 = tex2D(map3, tex34.xy) * texVol.z;
+    float4 c4 = tex2D(map4, tex34.zw) * texVol.w;
 
+    float lightness = 1.f;
     // Do shadow. note: shadow color is superceded by fog - intentional to provide a nice fade.
-    float lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+    if (directionalColor.w <= 3.0547550f)
+    {
+	lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x,directionalColor.w);
+    }
+    else if (directionalColor.w <= 11.908566f)
+    {
+
+	lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1,invShadowmapSize1.x,directionalColor.w);
+
+    }else if(directionalColor.w <= 50.f)
+    {
+        lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x,directionalColor.w);
+
+    }
+    
     
     //Combine textures and the shadow map lighting value.
-    col.rgb = (c1.rgb + c2.rgb + c3.rgb + c4.rgb) * (color + (lightness*0.5f+0.5f) * directionalColor);
+    col.rgb = (c1.rgb + c2.rgb + c3.rgb + c4.rgb) * (color + (lightness*0.5f+0.5f) * directionalColor.rgb);
             
     //Fog
     //color * fogParams.w + fogParams.xyz * (1.f - fogParams.w);
