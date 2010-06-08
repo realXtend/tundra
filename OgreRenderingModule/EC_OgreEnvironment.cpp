@@ -9,6 +9,8 @@
 //#include <OgreShadowCameraSetupPSSM.h>
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
+#include <QSettings>
+#include <QFile>
 
 #include <Ogre.h>
 
@@ -607,10 +609,21 @@ void EC_OgreEnvironment::InitShadows()
         return;
     RendererPtr renderer = renderer_.lock();   
 
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend","configuration/RexOgreRenderer");
+    QFile file(settings.fileName());
+    if(!file.exists())
+    {
+        settings.beginGroup("shadow-options");
+        settings.setValue("depthmap_size", 1024);
+        settings.setValue("soft_shadow", "true");
+        settings.endGroup();
+    }
+    settings.beginGroup("shadow-options");
 
-    //If you change this value, you have to change the splitpoints int shaders too, because they are hardcoded.
+
+    
     float shadowFarDist = 50;
-    unsigned short shadowTextureSize = 1024;
+    unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  
 
     //this is also used to specify the number of frustrum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
     //also.
@@ -636,11 +649,15 @@ void EC_OgreEnvironment::InitShadows()
     sceneManager->setShadowTextureSelfShadow(true);
 
     OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-    pssmSetup->calculateSplitPoints(shadowTextureCount, cameraNearClip_, shadowFarDist);
 
 
+    OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
+    splitpoints.push_back(cameraNearClip_);
+    splitpoints.push_back(4.5);
+    splitpoints.push_back(11);
+    splitpoints.push_back(shadowFarDist);
 
-    Ogre::PSSMShadowCameraSetup::SplitPointList splitpoints = pssmSetup->getSplitPoints();
+    pssmSetup->setSplitPoints(splitpoints);
  
 
 
@@ -683,17 +700,21 @@ void EC_OgreEnvironment::InitShadows()
 		    debugOverlay->add2D(debugPanel);
     }
     debugOverlay->show();*/
-    for(int i=0;i<3;i++)
+    if(settings.value("soft_shadow", "true") == "true")
     {
-        OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
-        Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
-        Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
-        Ogre::Viewport* vp = shadowRtt->getViewport(0);
-	    Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
-        Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
-		instance->addListener(gaussianListener);
-		gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+        for(int i=0;i<3;i++)
+        {
+            OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
+            Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
+            Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
+            Ogre::Viewport* vp = shadowRtt->getViewport(0);
+	        Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
+            Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
+		    instance->addListener(gaussianListener);
+		    gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+        }
     }
+    settings.endGroup();
 
   
 }

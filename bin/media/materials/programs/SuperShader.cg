@@ -23,9 +23,13 @@
 
 
 #include "CommonCode.cg"
-//#include "ShadowPCF2x2.cg"
+//#define LOWEND_SHADOWS
+#ifdef LOWEND_SHADOWS
+#include "Shadow1Tap.cg"
+#else
 #include "Shadow4Tap.cg"
-//#include "Shadow1Tap.cg"
+#endif
+
 
 void mainVS
 (
@@ -195,23 +199,32 @@ void mainPS(
 		{
 //			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
 //			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
+			
 
-
-			if (tex.z <= 3.0547550f)
+			if (tex.z <= 4.5f)
 			{
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
+				#else
 				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x, tex.z);
+				#endif
 
 			}
-			else if (tex.z <= 11.908566f)
-			{
-
+			else if (tex.z <= 11.f)
+			{	
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap1, shadowTex1);
+				#else
 				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize1.x, tex.z);
-
+				#endif
 			}
 			else if(tex.z <= 50.f)
 			{
+				#ifdef LOWEND_SHADOWS
+				lightness = SampleShadowMap1TapPCF(shadowMap2, shadowTex2);
+				#else
 				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x, tex.z);
-
+				#endif
 
 			}
 
