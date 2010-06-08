@@ -8,6 +8,7 @@
 #include "EC_OgreEnvironment.h"
 //#include <OgreShadowCameraSetupPSSM.h>
 #include "OgreShadowCameraSetupFocusedPSSM.h"
+#include "CompositionHandler.h"
 
 #include <Ogre.h>
 
@@ -606,6 +607,8 @@ void EC_OgreEnvironment::InitShadows()
         return;
     RendererPtr renderer = renderer_.lock();   
 
+
+    //If you change this value, you have to change the splitpoints int shaders too, because they are hardcoded.
     float shadowFarDist = 50;
     unsigned short shadowTextureSize = 1024;
 
@@ -648,7 +651,7 @@ void EC_OgreEnvironment::InitShadows()
     // If set to true, problems with objects that clip into the ground
     sceneManager->setShadowCasterRenderBackFaces(false);
 
-    /*//DEBUG
+    //DEBUG
     if(renderer_.expired())
         return;
     Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
@@ -679,8 +682,18 @@ void EC_OgreEnvironment::InitShadows()
 		    debugPanel->setMaterialName(debugMat->getName());
 		    debugOverlay->add2D(debugPanel);
     }
-    debugOverlay->show();*/
-
+    debugOverlay->show();
+    for(int i=0;i<3;i++)
+    {
+        OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
+        Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
+        Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
+        Ogre::Viewport* vp = shadowRtt->getViewport(0);
+	    Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
+        Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
+		instance->addListener(gaussianListener);
+		gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+    }
 
   
 }

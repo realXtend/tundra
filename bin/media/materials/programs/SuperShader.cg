@@ -23,8 +23,8 @@
 
 
 #include "CommonCode.cg"
-#include "ShadowPCF2x2.cg"
-//#include "Shadow4Tap.cg"
+//#include "ShadowPCF2x2.cg"
+#include "Shadow4Tap.cg"
 //#include "Shadow1Tap.cg"
 
 void mainVS
@@ -199,18 +199,18 @@ void mainPS(
 
 			if (tex.z <= 3.0547550f)
 			{
-				lightness = shadowPCF(shadowMap0, shadowTex0, invShadowmapSize0.xy);
+				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x, tex.z);
 
 			}
 			else if (tex.z <= 11.908566f)
 			{
 
-				lightness = shadowPCF(shadowMap1, shadowTex1, invShadowmapSize1.xy);
+				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize1.x, tex.z);
 
 			}
 			else if(tex.z <= 50.f)
 			{
-				lightness = shadowPCF(shadowMap2, shadowTex2, invShadowmapSize2.xy);
+				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x, tex.z);
 
 
 			}
