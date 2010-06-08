@@ -652,7 +652,7 @@ void EC_OgreEnvironment::InitShadows()
     sceneManager->setShadowCasterRenderBackFaces(false);
 
     //DEBUG
-    if(renderer_.expired())
+    /*if(renderer_.expired())
         return;
     Ogre::SceneManager *mngr = renderer_.lock()->GetSceneManager();
     Ogre::TexturePtr shadowTex;
@@ -682,7 +682,7 @@ void EC_OgreEnvironment::InitShadows()
 		    debugPanel->setMaterialName(debugMat->getName());
 		    debugOverlay->add2D(debugPanel);
     }
-    debugOverlay->show();
+    debugOverlay->show();*/
     for(int i=0;i<3;i++)
     {
         OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
