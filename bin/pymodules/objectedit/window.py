@@ -118,6 +118,8 @@ class ObjectEditWindow:
         self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
         self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
 
+        self.mainTab.useLocalTransform.connect('toggled(bool)', self.controller.setUseLocalTransform)
+
         self.mainTabList = {}
         
         self.currentlySelectedTreeWidgetItem = []

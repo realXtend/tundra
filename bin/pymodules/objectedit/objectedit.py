@@ -72,6 +72,7 @@ class ObjectEdit(Component):
         self.resetValues()
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
+        self.useLocalTransform = False
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMousePressed,
@@ -747,3 +748,5 @@ class ObjectEdit(Component):
         self.resetValues()
         self.resetManipulators()
         
+    def setUseLocalTransform(self, local):
+        self.useLocalTransform = local
