@@ -88,7 +88,43 @@ namespace OgreRenderer
         const Ogre::Vector3& scale = scene_node_->getScale();
         return Vector3df(scale.x, scale.y, scale.z);
     }
+
+	Vector3df EC_OgrePlaceable::GetLocalXAxis() const
+	{
+		const Ogre::Vector3& xaxis = link_scene_node_->getOrientation().xAxis();
+		return Vector3df(xaxis.x, xaxis.y, xaxis.z);
+	}
+
+	QVector3D EC_OgrePlaceable::GetQLocalXAxis() const
+	{
+        Vector3df xaxis= GetLocalXAxis();
+        return QVector3D(xaxis.x, xaxis.y, xaxis.z);
+	}
     
+	Vector3df EC_OgrePlaceable::GetLocalYAxis() const
+	{
+		const Ogre::Vector3& yaxis = link_scene_node_->getOrientation().yAxis();
+		return Vector3df(yaxis.x, yaxis.y, yaxis.z);
+	}
+
+	QVector3D EC_OgrePlaceable::GetQLocalYAxis() const
+	{
+        Vector3df yaxis= GetLocalYAxis();
+        return QVector3D(yaxis.x, yaxis.y, yaxis.z);
+	}
+
+	Vector3df EC_OgrePlaceable::GetLocalZAxis() const
+	{
+		const Ogre::Vector3& zaxis = link_scene_node_->getOrientation().zAxis();
+		return Vector3df(zaxis.x, zaxis.y, zaxis.z);
+	}
+
+	QVector3D EC_OgrePlaceable::GetQLocalZAxis() const
+	{
+        Vector3df zaxis= GetLocalZAxis();
+        return QVector3D(zaxis.x, zaxis.y, zaxis.z);
+	}
+
     void EC_OgrePlaceable::SetPosition(const Vector3df& position)
     {
         link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));

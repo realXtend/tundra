@@ -34,6 +34,9 @@ namespace OgreRenderer
         Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
         Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
         Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
+		Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
+		Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
+		Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
 
     public:
         virtual ~EC_OgrePlaceable();
@@ -89,6 +92,13 @@ namespace OgreRenderer
         Quaternion GetOrientation() const;
         //! returns scale
         Vector3df GetScale() const;
+
+		Vector3df GetLocalXAxis() const;
+		Vector3df GetLocalYAxis() const;
+		Vector3df GetLocalZAxis() const;
+		QVector3D GetQLocalXAxis() const;
+		QVector3D GetQLocalYAxis() const;
+		QVector3D GetQLocalZAxis() const;
         
         //! returns Ogre scenenode for attaching geometry.
         /*! Do not manipulate the pos/orientation/scale of this node directly
@@ -113,6 +123,7 @@ namespace OgreRenderer
 
         QVector3D GetQScale() const;
         void SetQScale(const QVector3D newscale);
+
 
     private:
         //! constructor
