@@ -141,9 +141,9 @@ class ObjectEditWindow:
     def update_rotvals(self, rot):
         qrot = (rot.x(), rot.y(), rot.z(), rot.scalar())
         euler = conv.quat_to_euler(qrot)
-        self.mainTab.rot_x.setValue(euler[0])
-        self.mainTab.rot_y.setValue(euler[1])
-        self.mainTab.rot_z.setValue(euler[2])   
+        self.mainTab.rot_x.setValue(euler[2])
+        self.mainTab.rot_y.setValue(euler[0])
+        self.mainTab.rot_z.setValue(euler[1])   
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)
