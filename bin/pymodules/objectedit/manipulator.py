@@ -19,6 +19,10 @@ class Manipulator:
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
+    # some handy shortcut rotations for quats
+    ninty_around_x = Quat(math.sqrt(0.5), math.sqrt(0.5), 0, 0)
+    ninty_around_y = Quat(math.sqrt(0.5), 0, math.sqrt(0.5), 0)
+    ninty_around_z = Quat(math.sqrt(0.5), 0, 0, math.sqrt(0.5))
     
     def __init__(self, creator):
         self.controller = creator
