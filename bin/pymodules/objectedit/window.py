@@ -74,6 +74,8 @@ class ObjectEditWindow:
         self.propedit = r.getPropertyEditor()
         self.tabwidget.addTab(self.propedit, "Properties")
         self.tabwidget.setTabEnabled(2, False)
+
+        self.updatingSelection = False
         
         def poschanger(i):
             def pos_at_index(v):
@@ -84,7 +86,7 @@ class ObjectEditWindow:
 
         def rotchanger(i):
             def rot_at_index(v):
-                if not self.controller.usingManipulator:
+                if not self.controller.usingManipulator and not self.updatingSelection:
                     self.controller.changerot(i, (self.mainTab.rot_x.value, self.mainTab.rot_y.value, self.mainTab.rot_z.value))
             return rot_at_index
         for i, rotwidget in enumerate([self.mainTab.rot_x, self.mainTab.rot_y, self.mainTab.rot_z]):
@@ -120,7 +122,7 @@ class ObjectEditWindow:
         
         self.currentlySelectedTreeWidgetItem = []
 
-    def update_guivals(self, ent):   
+    def update_guivals(self, ent):
         #from quat to euler x.y,z
         if ent is not None:
             self.update_posvals(ent.placeable.Position)
@@ -141,6 +143,7 @@ class ObjectEditWindow:
     def update_rotvals(self, rot):
         qrot = (rot.x(), rot.y(), rot.z(), rot.scalar())
         euler = conv.quat_to_euler(qrot)
+        # TODO: figure out this shift.
         self.mainTab.rot_x.setValue(euler[2])
         self.mainTab.rot_y.setValue(euler[0])
         self.mainTab.rot_z.setValue(euler[1])   
@@ -362,7 +365,9 @@ class ObjectEditWindow:
         self.meshline.update_text(ent.prim.MeshID)
         self.updateMaterialTab(ent)
         self.updatePropertyEditor(ent)
+        self.updatingSelection = True
         self.update_guivals(ent)
+        self.updatingSelection = False
 
     def updatePropertyEditor(self, ent):
         qprim = ent.prim
