@@ -305,7 +305,7 @@ class RotationManipulator(Manipulator):
     MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
     
     MATERIALNAMES = {
-        0: "asd",  #shodows?
+        0: "asd",  #shadows?
         1: "resed", 
         2: "resed2", 
         3: "resed3"
@@ -322,58 +322,26 @@ class RotationManipulator(Manipulator):
             upvec = Vector3(r.getCameraUp())
             
             ort = ent.placeable.Orientation
-            euler = (0, 0, 0)
+            euler = [0, 0, 0]
             
-            if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #print "green axis", self.grabbed_axis
+            if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                # print "green axis", self.grabbed_axis,
                 mov = amountx * 30 
-                euler[2] += mov
-            elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #print "blue axis", self.grabbed_axis
-                mov = amountx * 30
                 euler[1] += mov
-            elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #print "red axis", self.grabbed_axis
+            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                # print "blue axis", self.grabbed_axis,
+                mov = amountx * 30
+                euler[2] += mov
+            elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                # print "red axis", self.grabbed_axis,
                 mov = amounty * 30
-                euler[0] -= mov 
-                
+                euler[0] -= mov
+
             rotationQuat = euler_to_quat(euler)
 
-            ort *= Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2])
+            # TODO: figure out the shifted members
+            ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
             
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
 
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ if self.grabbed and self.grabbed_axis is not None:
-            #~ #print "rotating...", self.grabbed_axis
-            #~ #print "amounts: ", amountx, amounty
-            #~ #print "lengths: ", lengthx, lengthy
-            
-            #~ rightvec = Vector3(r.getCameraRight())
-            #~ upvec = Vector3(r.getCameraUp())
-            #~ x, y, z, w = ent.orientation
-            
-            #~ ort = Quat(w, x, y, z)
-            #~ euler = list((0, 0, 0))
-            
-            #~ if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #~ #print "green axis", self.grabbed_axis
-                #~ mov = amountx * 30 
-                #~ euler[2] += mov
-            #~ elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #~ #print "blue axis", self.grabbed_axis
-                #~ mov = amountx * 30
-                #~ euler[1] += mov
-            #~ elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #~ #print "red axis", self.grabbed_axis
-                #~ mov = amounty * 30
-                #~ euler[0] -= mov 
-                
-            #~ rotationQuat = list(euler_to_quat(euler))
-
-            #~ ort.__imul__(Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
-            
-            #~ ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
-
-                        
