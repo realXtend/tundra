@@ -383,7 +383,7 @@ namespace RexLogic
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
         Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+        event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
     }
     
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
@@ -1368,7 +1368,7 @@ namespace RexLogic
             ++i;
         }
 
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST, &event_data);   
+        eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_ASSETS_UPLOAD_REQUEST, &event_data);   
     }
 
     void AvatarAppearance::WebDavExportAvatarFinalize(Scene::EntityPtr entity, const QStringList &file_list)
@@ -1419,7 +1419,7 @@ namespace RexLogic
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST, &event_data);       
+        eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_REQUEST, &event_data);       
     }
     
     void AvatarAppearance::InventoryExportAvatar(Scene::EntityPtr entity)
@@ -1468,7 +1468,7 @@ namespace RexLogic
             ++i;
         }
 
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);                   
+        eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);                   
     }                 
     
     void AvatarAppearance::InventoryExportAvatarFinalize(Scene::EntityPtr entity)
@@ -1507,7 +1507,7 @@ namespace RexLogic
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
-        eventmgr->SendEvent(eventmgr->QueryEventCategory("Inventory"), Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);       
+        eventmgr->SendEvent("Inventory", Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);       
     }
 
     void AvatarAppearance::InventoryExportReset()
@@ -2059,7 +2059,7 @@ namespace RexLogic
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
         Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+        event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                 
         return true;
     }        
