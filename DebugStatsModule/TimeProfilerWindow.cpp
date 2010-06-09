@@ -21,6 +21,8 @@
 #include <QFile>
 #include <QHeaderView>
 #include <QPainter>
+#include <QTreeWidgetItemIterator>
+#include <QtAlgorithms>
 
 
 #include <OgreFontManager.h>
@@ -135,7 +137,14 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_gpu_assets_ = findChild<QTreeWidget*>("gpuDataTree");
     tree_font_assets_ = findChild<QTreeWidget*>("fontDataTree");
 
+    QList<QPushButton* > buttons = findChildren<QPushButton* >();
+    for (int i = 0; i < buttons.size(); ++i )
+    {
+        if ( buttons[i]->objectName().contains("arrange") )
+            QObject::connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
 
+    }
+   
     QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
     QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
     QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
@@ -145,6 +154,95 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
 
     frame_time_update_x_pos_ = 0;
 }
+
+
+struct ResNameAndSize
+{
+    std::string name;
+    bool isLoaded;
+    size_t size;
+
+    bool operator <(const ResNameAndSize &rhs) const
+    {
+        return size < rhs.size;
+    }
+};
+
+bool LessThen(const QTreeWidgetItem* left, const QTreeWidgetItem* right)
+{
+    return left->text(1).toInt() < right->text(1).toInt();
+}
+
+void TimeProfilerWindow::Arrange()
+{
+    // Arrange. 
+    if (!tab_widget_)
+        return;
+
+    int index = tab_widget_->currentIndex();
+    QString name = QObject::sender()->objectName();
+
+    QTreeWidget* widget = 0;
+    switch (index)
+    {
+        case 6:  // Texture
+            widget =  tree_texture_assets_;
+            break;
+        case 7: // Mesh
+            widget =  tree_mesh_assets_;
+            break;
+        case 8: // Material
+            widget =  tree_material_assets_;
+            break;
+        case 9:
+            widget =  tree_skeleton_assets_;
+            break;
+        case 10:
+            widget = tree_compositor_assets_ ;
+            break;
+        case 11:
+            widget = tree_gpu_assets_;
+            break;
+        case 12:
+            widget = tree_font_assets_;
+            break;
+    }
+
+    if ( widget == 0)
+        return;
+
+    if ( name.contains("name") )
+    {
+        // By name
+        widget->sortItems(0, Qt::AscendingOrder);
+        
+    }
+    else if ( name.contains("size") )
+    {
+        // By size
+        
+        int va = widget->topLevelItemCount();
+        QList<QTreeWidgetItem* > items;
+        for ( int i = va; i--;)
+        {
+           QTreeWidgetItem* item =  widget->takeTopLevelItem(i);
+           if ( item != 0)
+               items.append(item);
+           else
+               break;
+        }
+        
+     
+        if ( items.size () != 0)
+        {
+            qStableSort(items.begin(), items.end(), LessThen);
+            widget->addTopLevelItems(items);
+        }
+        
+    }
+
+}
+
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
 {
@@ -534,23 +632,14 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
 }
 
 
-struct ResNameAndSize
-{
-    std::string name;
-    bool isLoaded;
-    size_t size;
 
-    bool operator <(const ResNameAndSize &rhs) const
-    {
-        return size < rhs.size;
-    }
-};
 
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
 {
     std::vector<ResNameAndSize> resources;
 
     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+
     file << "In load order(?): " << std::endl;
     while(iter.hasMoreElements())
     {
