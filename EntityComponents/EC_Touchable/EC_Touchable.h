@@ -50,6 +50,10 @@ public:
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
     void OnHover();
 
+    /// Called by rexlogic when EVENT_ENTITY_CLICKED on this
+    void OnClick();
+
+
 public slots:
     /// Shows the effect.
     void Show();
@@ -88,6 +92,7 @@ private:
 signals:
     //! Signal when mouse hovers over the entity with this touchable component
     void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
+    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
 };
 
 #endif
