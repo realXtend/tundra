@@ -196,6 +196,7 @@ namespace RexLogic
         else
             b.setPosition(b.getPosition().x  ,b.getPosition().y  ,bb_rel_posy +  (b.getOwnHeight()/2) );
 
+
     }
 
     void EC_HoveringWidget::AdjustWidgetinfo()

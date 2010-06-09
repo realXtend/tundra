@@ -1,4 +1,4 @@
-// The most tweaked and highest-res imaginable shadow map sampling.
+ // The most tweaked and highest-res imaginable shadow map sampling.
 // Include only right after including CommonCode.cg first.
 
 // Supported #defines:
