@@ -73,6 +73,7 @@ namespace DebugStats
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
         void DumpOgreResourceStatsToFile();
+        void Arrange();
 
     protected:
         void resizeEvent(QResizeEvent *event);

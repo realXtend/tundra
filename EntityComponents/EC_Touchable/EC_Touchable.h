@@ -47,6 +47,9 @@ public:
     /// Time the touchable effect is visible in seconds.
     Foundation::Attribute<float> visibilityTime;
 
+    /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
+    void OnHover();
+
 public slots:
     /// Shows the effect.
     void Show();
@@ -81,6 +84,10 @@ private:
 
     /// Name of the cloned entity used for highlighting
     std::string cloneName_;
+
+signals:
+    //! Signal when mouse hovers over the entity with this touchable component
+    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
 };
 
 #endif

@@ -71,6 +71,7 @@ class ObjectEdit(Component):
         self.window = window.ObjectEditWindow(self)
         self.resetValues()
         self.worldstream = r.getServerConnection()
+        self.usingManipulator = False
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMousePressed,
@@ -330,6 +331,7 @@ class ObjectEdit(Component):
                 manipulator.initVisuals()
             
         self.manipulator.initManipulation(ent, results)
+        self.usingManipulator = True
 
         if ent is not None:
             #print "Got entity:", ent, ent.editable
@@ -383,6 +385,7 @@ class ObjectEdit(Component):
             self.dragging = False
             
         self.manipulator.stopManipulating()
+        self.usingManipulator = False
         self.duplicateDragStart = False #XXXchange?
         
         if self.selection_rect_startpos is not None:
@@ -667,7 +670,7 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
-        if ent is not None:
+        if ent is not None and not self.usingManipulator:
             quat = conv.euler_to_quat(v)
             # convert between conversions.Quat tuple (x,y,z,w) format and QQuaternion (w,x,y,z)
             # TODO: it seems that visualisation compared to what we give/understand on ob edit

@@ -1209,6 +1209,34 @@ if 0: #create a new component, hilight
         print "vis"
     else:
         print "not"
+        
+if 0: #create a new component, touchable
+    avid = r.getUserAvatarId()
+    e = r.getEntity(avid)
+    try:
+        e.touchable
+    except AttributeError:
+        print e.createComponent("EC_Touchable")
+        print "created a new Touchable component"
+
+    t = e.touchable
+    print type(t), t
+    
+    def onhover():
+        print "hover on avatar"
+        
+    t.connect('MouseHover()', onhover)
+
+    
+    #h.Show()
+    #h.Hide()
+    
+    #vis = h.IsVisible()
+    #if vis:
+    #    print "vis"
+    #else:
+     #   print "not"
+
 
 if 0: #test adding a dynamiccomponent
     #entid = r.getUserAvatarId()
@@ -1233,10 +1261,10 @@ if 0: #test adding a dynamiccomponent
        
     if 1: #javascript source url .. and door data
         d.SetAttribute("""{
-        "js_src": "http://an.org/realxtend/door.js",
-        "locked": false, 
-        "opened": true
+        "js_src": "http://an.org/realxtend/door.js", "locked": false, "opened": true
         }""")
+    "js_src": "http://an.org/realxtend/door.js", "locked": false, "opened": true
+
 
     #print d.GetAttribute()
 

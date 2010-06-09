@@ -301,6 +301,8 @@ namespace RexLogic
                      
             if (targettype == "morph")
                 targetmodifier.type_ = AppearanceModifier::Morph;
+            if (targettype == "bone")
+                targetmodifier.type_ = AppearanceModifier::Bone;
             if (targettype == "dynamic_animation")
                 targetmodifier.type_ = AppearanceModifier::Bone;
                 

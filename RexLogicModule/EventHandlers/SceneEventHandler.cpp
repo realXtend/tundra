@@ -103,8 +103,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
             if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
             {
                 boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
-                if (!touchable->IsVisible())
-                    touchable->Show();
+                touchable->OnHover();
             }
         }
         break;

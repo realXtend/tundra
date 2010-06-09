@@ -48,6 +48,13 @@ EC_Touchable::~EC_Touchable()
     }
 }
 
+void EC_Touchable::OnHover()
+{
+    if (!IsVisible())
+        Show();
+    emit MouseHover();
+}
+
 void  EC_Touchable::Show()
 {
     if (!entityClone_)
