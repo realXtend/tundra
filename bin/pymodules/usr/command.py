@@ -1224,10 +1224,12 @@ if 0: #create a new component, touchable
     
     def onhover():
         print "hover on avatar"
-        
     t.connect('MouseHover()', onhover)
-
-    
+        
+    def onclick():
+        print "click on avatar"
+    t.connect('Click()', onclick)   
+        
     #h.Show()
     #h.Hide()
     
@@ -1263,7 +1265,6 @@ if 0: #test adding a dynamiccomponent
         d.SetAttribute("""{
         "js_src": "http://an.org/realxtend/door.js", "locked": false, "opened": true
         }""")
-    "js_src": "http://an.org/realxtend/door.js", "locked": false, "opened": true
 
 
     #print d.GetAttribute()
