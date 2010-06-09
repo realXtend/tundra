@@ -326,7 +326,7 @@ namespace RexLogic
                         firstperson_pitch_ += drag_pitch_ * firstperson_sensitivity_;
                         firstperson_pitch_ = clamp(firstperson_pitch_, -HALF_PI, HALF_PI);
                     }
-                    camera_placeable->Pitch(firstperson_pitch_);
+                    camera_placeable->SetPitch(firstperson_pitch_);
                 }
 
                 if (current_state_ == FreeLook)
@@ -338,8 +338,8 @@ namespace RexLogic
                     ClampPosition(pos);
                     camera_placeable->SetPosition(pos);
 
-                    camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
-                    camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
+                    camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
+                    camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
                 }
 
 				if (current_state_ == Tripod)

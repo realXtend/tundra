@@ -144,20 +144,36 @@ namespace OgreRenderer
         link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);        
     }
     
-    void EC_OgrePlaceable::Yaw(Real radians)
+    void EC_OgrePlaceable::SetYaw(Real radians)
     {
         link_scene_node_->yaw(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
     }
 
-    void EC_OgrePlaceable::Pitch(Real radians)
+    void EC_OgrePlaceable::SetPitch(Real radians)
     {
         link_scene_node_->pitch(Ogre::Radian(radians));
     }
  
-   void EC_OgrePlaceable::Roll(Real radians)
+   void EC_OgrePlaceable::SetRoll(Real radians)
     {
         link_scene_node_->roll(Ogre::Radian(radians));
     } 
+
+   float EC_OgrePlaceable::GetYaw() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+		return orientation.getYaw().valueRadians();
+   }
+   float EC_OgrePlaceable::GetPitch() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+		return orientation.getPitch().valueRadians();
+   }
+   float EC_OgrePlaceable::GetRoll() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+		return orientation.getRoll().valueRadians();
+   }
     
     void EC_OgrePlaceable::SetScale(const Vector3df& scale)
     {
