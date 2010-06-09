@@ -1,5 +1,6 @@
 <config>
     <entry>MumbleVoipModule</entry>
-	<dependency>OgreRenderingModule</dependency>
-	<dependency>RexLogicModule</dependency>
+    <dependency>CommunicationsModule</dependency>
+    <dependency>OgreRenderingModule</dependency>
+    <dependency>RexLogicModule</dependency>
 </config>
