@@ -332,23 +332,37 @@ class RotationManipulator(Manipulator):
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
             
-            if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                # print "green axis", self.grabbed_axis,
-                mov = amountx * 30 
-                euler[1] += mov
-            elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                # print "blue axis", self.grabbed_axis,
-                mov = amountx * 30
-                euler[2] += mov
-            elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                # print "red axis", self.grabbed_axis,
-                mov = amounty * 30
-                euler[0] -= mov
+            if self.controller.useLocalTransform:
+                if self.grabbed_axis == self.AXIS_RED:
+                    mov = amounty * 30
+                    axis = Vec(1, 0, 0)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    mov = amountx * 30 
+                    axis = Vec(0, 1, 0)
+                elif self.grabbed_axis == self.AXIS_BLUE:
+                    mov = amountx * 30
+                    axis = Vec(0, 0, 1)
+                dir = 1
+                math.copysign(dir, mov)
 
-            rotationQuat = euler_to_quat(euler)
-
-            # TODO: figure out the shifted members
-            ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
+                delta = Quat.fromAxisAndAngle(axis, dir)
+                ort *= delta
+            else:
+                if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                    # print "green axis", self.grabbed_axis,
+                    mov = amountx * 30 
+                    euler[1] += mov
+                elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                    # print "blue axis", self.grabbed_axis,
+                    mov = amountx * 30
+                    euler[2] += mov
+                elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                    # print "red axis", self.grabbed_axis,
+                    mov = amounty * 30
+                    euler[0] -= mov
+                rotationQuat = euler_to_quat(euler)
+                # TODO: figure out the shifted members
+                ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
             
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
