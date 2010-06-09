@@ -223,7 +223,7 @@ namespace RexLogic
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
                 event_data.fullName = presence->GetFullName();
                 event_data.localId = presence->localId;
-                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_CONNECTED, &event_data);
+                eventMgr->SendEvent("NetworkState", ProtocolUtilities::Events::EVENT_USER_CONNECTED, &event_data);
             }
 
             // Handle setting the avatar as child of another object, or possibly being parent itself
@@ -429,7 +429,7 @@ namespace RexLogic
                 ProtocolUtilities::UserConnectivityEvent event_data(presence->agentId);
                 event_data.fullName = presence->GetFullName();
                 event_data.localId = presence->localId;
-                eventMgr->SendEvent(eventMgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_DISCONNECTED, &event_data);
+                eventMgr->SendEvent("NetworkState", ProtocolUtilities::Events::EVENT_USER_DISCONNECTED, &event_data);
             }
         }
 
