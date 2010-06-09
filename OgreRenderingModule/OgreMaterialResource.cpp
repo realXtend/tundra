@@ -139,6 +139,40 @@ namespace OgreRenderer
             ogre_material_ = tempmat->clone(id_);
             tempmat.setNull();
             matmgr.remove(tempname);
+
+            //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
+            if(ogre_material_->getReceiveShadows())
+            {
+                Ogre::Technique *tech = ogre_material_->getTechnique(0);
+                if(tech)
+                {
+                    Ogre::Technique::PassIterator passiterator = tech->getPassIterator();
+                    while(passiterator.hasMoreElements())
+                    {
+                        Ogre::Pass* pass = passiterator.getNext();
+                        Ogre::Pass::TextureUnitStateIterator texiterator = pass->getTextureUnitStateIterator();
+                        int shadowmaps = 0;
+                        while(texiterator.hasMoreElements())
+                        {
+                            Ogre::TextureUnitState* state = texiterator.getNext();
+                            if(state->getContentType() == Ogre::TextureUnitState::CONTENT_SHADOW)
+                            {
+                                shadowmaps++;
+                            }
+                        }
+                        if(shadowmaps>0 && shadowmaps<3)
+                        {
+                            Ogre::TextureUnitState* sm2 = pass->createTextureUnitState();
+                            sm2->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+
+                            Ogre::TextureUnitState* sm3 = pass->createTextureUnitState();
+                            sm3->setContentType(Ogre::TextureUnitState::CONTENT_SHADOW);
+                        }
+                    }
+                }
+
+            }
+
         } catch (Ogre::Exception &e)
         {
             OgreRenderingModule::LogWarning(e.what());

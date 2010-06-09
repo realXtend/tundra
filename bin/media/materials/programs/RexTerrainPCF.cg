@@ -1,3 +1,4 @@
+//#define LOWEND_SHADOWS
 #ifdef LOWEND_SHADOWS
 #include "Shadow1Tap.cg"
 #else
@@ -142,12 +143,12 @@ void mainPS(float4 pos    : POSITION,
     float lightness = 1.f;
     // Do shadow. note: shadow color is superceded by fog - intentional to provide a nice fade.
     
-			if (directionalColor.w <= 4.5f)
+			if (directionalColor.w <= 4.5f)	
 			{
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x, directionalColor.w);
+				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x*0.25f, directionalColor.w);
 				#endif
 
 			}
@@ -156,7 +157,7 @@ void mainPS(float4 pos    : POSITION,
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap1, shadowTex1);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize1.x, directionalColor.w);
+				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize1.x*0.25f, directionalColor.w);
 				#endif
 			}
 			else if(directionalColor.w <= 50.f)
@@ -164,7 +165,7 @@ void mainPS(float4 pos    : POSITION,
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap2, shadowTex2);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x, directionalColor.w);
+				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x*0.25f, directionalColor.w);
 				#endif
 
 			}

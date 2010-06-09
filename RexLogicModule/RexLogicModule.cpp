@@ -375,6 +375,7 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 void RexLogicModule::Update(f64 frametime)
 {
     {
+
         PROFILE(RexLogicModule_Update);
 
         // interpolate & animate objects
@@ -410,8 +411,6 @@ void RexLogicModule::Update(f64 frametime)
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
             // Update overlays last, after camera update
-            //UpdateAvatarOverlays();
-            UpdateAvatarNameTags(avatar_->GetUserAvatar());
             input_handler_->Update(frametime);
 
             UpdateAvatarOverlays();
@@ -992,16 +991,24 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     if (!placeable)
         return;
 
-    Vector3Df camera_position = this->GetCameraPosition();
+
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
         placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         widget = avatar->GetComponent<EC_HoveringWidget>();
         if (!placeable || !widget)
             continue;
+        //we need to update the positions so that the distance is right, otherwise were always one frame behind.
+        GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
+        placeable->GetSceneNode()->_update(false, true);
+
+        Vector3Df camera_position = this->GetCameraPosition();
+        
+        
 
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
+        
     }
 }
 
@@ -1009,11 +1016,11 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 {
     /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
-        name_tag->Clicked();*/
+        name_tag->Clicked();
 
     boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
-        info_icon->EntityClicked();
+        info_icon->EntityClicked();*/
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const

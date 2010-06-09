@@ -609,13 +609,13 @@ void EC_OgreEnvironment::InitShadows()
         return;
     RendererPtr renderer = renderer_.lock();   
 
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend","configuration/RexOgreRenderer");
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend","configuration/OgreRenderer");
     QFile file(settings.fileName());
     if(!file.exists())
     {
         settings.beginGroup("shadow-options");
         settings.setValue("depthmap_size", 1024);
-        settings.setValue("soft_shadow", "true");
+        settings.setValue("soft_shadow", "false");
         settings.endGroup();
     }
     settings.beginGroup("shadow-options");

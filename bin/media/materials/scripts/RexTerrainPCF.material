@@ -49,7 +49,7 @@ fragment_program Rex/TerrainPCFFS cg
 		param_named_auto invShadowmapSize2	inverse_texture_size 2
 
 		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
-		param_named shadowMapParams float4 2000.0 0 0.02 0.03
+		param_named shadowMapParams float4 2000.0 0 0 0
 	}
 }
 
