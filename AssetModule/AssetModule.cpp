@@ -5,7 +5,6 @@
 #include "AssetManager.h"
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
-#include "HttpAssetProvider.h"
 #include "QtHttpAssetProvider.h"
 #include "NetworkEvents.h"
 #include "Framework.h"

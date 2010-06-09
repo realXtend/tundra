@@ -1444,13 +1444,52 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Texture data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_33">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_size">
+          <property name="geometry">
+           <rect>
+            <x>290</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Size</string>
           </property>
          </widget>
         </widget>
@@ -1544,13 +1583,52 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Mesh data</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_size_2">
+          <property name="geometry">
+           <rect>
+            <x>290</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Size</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_2">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_34">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
           </property>
          </widget>
         </widget>
@@ -1644,13 +1722,39 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Material data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_35">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_3">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
           </property>
          </widget>
         </widget>
@@ -1744,13 +1848,39 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Skeleton data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_40">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_4">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
           </property>
          </widget>
         </widget>
@@ -1844,13 +1974,39 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Composition data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_41">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_5">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
           </property>
          </widget>
         </widget>
@@ -1944,13 +2100,39 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Gpu data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_47">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_6">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
           </property>
          </widget>
         </widget>
@@ -2044,13 +2226,39 @@
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
+            <y>10</y>
             <width>101</width>
             <height>16</height>
            </rect>
           </property>
           <property name="text">
            <string>Font data</string>
+          </property>
+         </widget>
+         <widget class="QLabel" name="label_48">
+          <property name="geometry">
+           <rect>
+            <x>130</x>
+            <y>20</y>
+            <width>101</width>
+            <height>16</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Arrange by:</string>
+          </property>
+         </widget>
+         <widget class="QPushButton" name="arrange_name_7">
+          <property name="geometry">
+           <rect>
+            <x>200</x>
+            <y>20</y>
+            <width>75</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="text">
+           <string>Name</string>
           </property>
          </widget>
         </widget>

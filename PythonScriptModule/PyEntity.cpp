@@ -13,6 +13,7 @@
 #include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_Highlight.h"
+#include "EC_Touchable.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_DynamicComponent.h"
 
@@ -363,6 +364,24 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             return NULL;
         }
     }
+
+    else if (s_name.compare("touchable") == 0)
+    {
+        //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
+        const Foundation::ComponentInterfacePtr &touchable_componentptr = entity->GetComponent("EC_Touchable");
+        EC_Touchable* touchable = 0;
+        if (touchable_componentptr)
+        {
+            touchable = checked_static_cast<EC_Touchable*>(touchable_componentptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(touchable);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a touchable component.");
+            return NULL;
+        }
+    }
+
 
     else if (s_name.compare("dynamic") == 0)
     {
