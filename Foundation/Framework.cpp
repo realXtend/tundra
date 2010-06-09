@@ -59,8 +59,6 @@ namespace Task
 
 namespace Foundation
 {
-    const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
-
     Framework::Framework(int argc, char** argv) : 
         exit_signal_(false),
         argc_(argc),
@@ -262,9 +260,6 @@ namespace Foundation
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();
 
-        // add event subscribers now, that all modules are loaded/initialized
-        event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
-
         ProgramOptionsEvent *data = new ProgramOptionsEvent(cm_options_, argc_, argv_);
         event_manager_->SendEvent(framework_events, PROGRAM_OPTIONS, data);
         delete data;
@@ -400,7 +395,6 @@ namespace Foundation
             entry = params[1];
 
         bool result = module_manager_->LoadModuleByName(lib, entry);
-        event_manager_->ValidateEventSubscriberTree();
 
         if (!result)
             return Console::ResultFailure("Library or module not found.");
@@ -417,7 +411,6 @@ namespace Foundation
         if (module_manager_->HasModule(params[0]))
         {
             result = module_manager_->UnloadModuleByName(params[0]);
-            event_manager_->ValidateEventSubscriberTree();
         }
 
         if (!result)
