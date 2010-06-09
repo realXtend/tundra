@@ -37,6 +37,9 @@ namespace OgreRenderer
 		Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
 		Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
 		Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
+		Q_PROPERTY(float Yaw READ GetYaw)
+		Q_PROPERTY(float Pitch READ GetPitch)
+		Q_PROPERTY(float Roll READ GetRoll)
 
     public:
         virtual ~EC_OgrePlaceable();
@@ -63,15 +66,19 @@ namespace OgreRenderer
         //! yaws the node
         /*! \param radians how many radians to yaw
          */
-        void Yaw(Real radians);
+        void SetYaw(Real radians);
         //! pitches the node
-        /*! \param radians how many radians to yaw
+        /*! \param radians how many radians to pitch
          */
-        void Pitch(Real radians);        
+        void SetPitch(Real radians);        
         //! rolls the node
-        /*! \param radians how many radians to yaw
+        /*! \param radians how many radians to roll
          */
-        void Roll(Real radians);           
+        void SetRoll(Real radians);           
+
+		float GetYaw() const;
+		float GetPitch() const;
+		float GetRoll() const;
         
         //! sets scale
         /*! \param scale new scale

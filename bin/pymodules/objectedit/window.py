@@ -6,7 +6,7 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize
 import conversions as conv
 reload(conv)
-from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
+import math
 
 try:
     lines
@@ -125,11 +125,10 @@ class ObjectEditWindow:
         self.currentlySelectedTreeWidgetItem = []
 
     def update_guivals(self, ent):
-        #from quat to euler x.y,z
         if ent is not None:
             self.update_posvals(ent.placeable.Position)
             self.update_scalevals(ent.placeable.Scale)
-            self.update_rotvals(ent.placeable.Orientation)
+            self.update_rotvals(ent.placeable)
             #self.controller.updateSelectionBox(ent) #PositionAndOrientation(ent)
         
     def update_scalevals(self, scale):
@@ -142,13 +141,16 @@ class ObjectEditWindow:
         self.mainTab.ypos.setValue(pos.y())
         self.mainTab.zpos.setValue(pos.z())
         
-    def update_rotvals(self, rot):
-        qrot = (rot.x(), rot.y(), rot.z(), rot.scalar())
-        euler = conv.quat_to_euler(qrot)
-        # TODO: figure out this shift.
-        self.mainTab.rot_x.setValue(euler[2])
-        self.mainTab.rot_y.setValue(euler[0])
-        self.mainTab.rot_z.setValue(euler[1])   
+    def update_rotvals(self, placeable):
+        # We use now pitch, yaw and roll we get directly from placeable
+        # this ensures we don't have to do weird conversions with all
+        # potential problems :)
+        # TODO: figure out this shift - Looks like we need to give Ogre-style
+        # info. Yaw in viewer is around z axis, but placeable gets
+        # directly Ogre orientation
+        self.mainTab.rot_x.setValue(math.degrees(placeable.Pitch))
+        self.mainTab.rot_y.setValue(math.degrees(placeable.Yaw))
+        self.mainTab.rot_z.setValue(math.degrees(placeable.Roll))
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)
@@ -161,10 +163,10 @@ class ObjectEditWindow:
 
         self.mainTab.rot_x.setValue(0)
         self.mainTab.rot_y.setValue(0)
-        self.mainTab.rot_z.setValue(0)  
+        self.mainTab.rot_z.setValue(0)
     
     def deselected(self):
-        self.mainTab.label.text = "<none>"  
+        self.mainTab.label.text = "<none>"
         self.tabwidget.setTabEnabled(1, False)
         self.tabwidget.setTabEnabled(2, False)
         
