@@ -31,26 +31,22 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
             attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), browser, component, editor);
-
-        if(attributeEditor)
-        {
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), editor, SIGNAL(AttributeChanged(const std::string &)));
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), editor, SLOT(AttributeEditorUpdated(const std::string &)));
-        }
         return attributeEditor;
     }
 
-    ECComponentEditor::ECComponentEditor(std::vector<Foundation::ComponentInterfacePtr> components, QtAbstractPropertyBrowser *propertyBrowser, QObject *parent):
-        QObject(parent),
+    ECComponentEditor::ECComponentEditor(Foundation::ComponentInterfacePtr component, const std::string &typeName, QtAbstractPropertyBrowser *propertyBrowser):
+        typeName_(typeName),
+        QObject(propertyBrowser),
         groupProperty_(0),
         groupPropertyManager_(0),
         propertyBrowser_(propertyBrowser)
     {
-        InitializeEditor(components);
+        InitializeEditor(component);
     }
     
     ECComponentEditor::~ECComponentEditor()
     {
+        propertyBrowser_->unsetFactoryForManager(groupPropertyManager_);
         SAFE_DELETE(groupProperty_)
         SAFE_DELETE(groupPropertyManager_)
         while(!attributeEditors_.empty())
@@ -60,51 +56,113 @@ namespace ECEditor
         }
     }
 
-    void ECComponentEditor::InitializeEditor(std::vector<Foundation::ComponentInterfacePtr> components)
+    void ECComponentEditor::InitializeEditor(Foundation::ComponentInterfacePtr component)//std::vector<Foundation::ComponentInterfacePtr> components)
     {
-        if(propertyBrowser_ || components.size() > 0)
+        if(propertyBrowser_)
         {
             groupPropertyManager_ = new QtGroupPropertyManager(this);
             if(groupPropertyManager_)
             {
-                std::string groupText = std::string(components[0]->TypeName()); 
-                if( components.size() > 1)
-                    groupText += std::string(" (" + ::ToString<int>(components.size()) + " Components)");
-
-                //Create all attribute types that are supported and put them into a map container.
-                groupProperty_ = groupPropertyManager_->addProperty(groupText.c_str());
-                if(groupProperty_)
-                    CreateECAttributes(components[0]);
-
-                // And tell the editor what componets have that attribute in use so that user can change their values.
-                AttributeEditorMap::iterator iter = attributeEditors_.begin();
-                while(iter != attributeEditors_.end())
-                {
-                    iter->second->AddNewComponents(components);
-                    //iter->second->SetParentProperty(groupProperty_);
-                    iter->second->UpdateEditorUI();
-                    groupProperty_->addSubProperty(iter->second->GetProperty());
-                    iter++;
-                }
+                components_.insert(component);
+                groupProperty_ = groupPropertyManager_->addProperty(typeName_.c_str());
+                CreateAttriubteEditors(component);
             }
             propertyBrowser_->addProperty(groupProperty_);
         }
-        // If propertyBrowser is not valid or there isn't any components to edit no point to keep the editor alive.
-        else
-        {
-            deleteLater();
-        }
     }
 
-    void ECComponentEditor::CreateECAttributes(Foundation::ComponentInterfacePtr components)
+    void ECComponentEditor::CreateAttriubteEditors(Foundation::ComponentInterfacePtr component)
     {
-        Foundation::AttributeVector attributes = components->GetAttributes();
+        Foundation::AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
-            ECAttributeEditorBase *attributeEditor = ECComponentEditor::GetAttributeEditor(propertyBrowser_, this, *attributes[i], components);
+            ECAttributeEditorBase *attributeEditor = ECComponentEditor::GetAttributeEditor(propertyBrowser_, this, *attributes[i], component);
             if(!attributeEditor)
                 continue;
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
+            attributeEditor->UpdateEditorUI();
+            groupProperty_->addSubProperty(attributeEditor->GetProperty());
+
+            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SIGNAL(AttributeChanged(const std::string &)));
+            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
+            QObject::connect(this, SIGNAL(ComponentRemoved(Foundation::ComponentInterface *)), attributeEditor, SLOT(RemoveComponentFromEditor(Foundation::ComponentInterface *)));
+        }
+    }
+
+    void ECComponentEditor::UpdateGroupPropertyText()
+    {
+        if(groupProperty_)
+        {
+            if(components_.size() > 1)
+            {
+                QString groupPropertyName = QString(typeName_.c_str() + QString(" (%1 components)").arg(components_.size()));
+                groupProperty_->setPropertyName(groupPropertyName);
+            }
+            else
+            {
+                groupProperty_->setPropertyName(typeName_.c_str());
+            }
+        }
+    }
+
+    bool ECComponentEditor::ContainProperty(QtProperty *property) const
+    {
+        AttributeEditorMap::const_iterator constIter = attributeEditors_.begin();
+        while(constIter != attributeEditors_.end())
+        {
+            if(constIter->second->ContainProperty(property))
+                return true;
+            constIter++;
+        }
+        return false;
+    }
+
+    void ECComponentEditor::AddNewComponent(Foundation::ComponentInterfacePtr component)
+    {
+        //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
+        if(component->TypeName() == typeName_)
+        {
+            components_.insert(component);
+            AttributeEditorMap::iterator iter = attributeEditors_.begin();
+
+            //! insert new component for each attribute editor.
+            while(iter != attributeEditors_.end())
+            {
+                iter->second->AddNewComponent(component);
+                iter->second->UpdateEditorUI();
+                iter++;
+            }
+            UpdateGroupPropertyText();
+        }
+    }
+
+    void ECComponentEditor::RemoveComponent(Foundation::ComponentInterfacePtr component)
+    {
+        // If component is already destoyed from the attribute browser no point to try to do it again.
+        if(component.get())
+        {
+            if(component->TypeName() == typeName_)
+            {
+                ComponentSet::iterator iter = components_.begin();
+                while(iter != components_.end())
+                {
+                    if(iter->expired())
+                    {
+                        iter = components_.erase(iter);
+                        continue;
+                    }
+
+                    Foundation::ComponentPtr componentPtr = (*iter).lock();
+                    if(componentPtr.get() == component.get())
+                    {
+                        emit ComponentRemoved(componentPtr.get());
+                        components_.erase(iter);
+                        break;
+                    }
+                    iter++;
+                }
+                UpdateGroupPropertyText();
+            }
         }
     }
 
