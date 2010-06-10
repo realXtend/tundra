@@ -108,6 +108,11 @@ namespace Ether
             setBackgroundBrush(QBrush(bg));
         }
 
+        void EtherScene::SupressKeyEvents(bool enabled) 
+        { 
+            supress_key_events_ = enabled; 
+        }
+
         void EtherScene::EmitSwitchSignal()
         {
             emit EtherSceneReadyForSwitch();

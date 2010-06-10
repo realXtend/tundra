@@ -27,13 +27,16 @@ namespace Ether
             EtherScene(QObject *parent, const QRectF &scene_rect);
             virtual ~EtherScene();
 
-            void SupressKeyEvents(bool enabled) { supress_key_events_ = enabled; }
+            
             void EmitSwitchSignal();
             void SetConnectionStatus(bool connected);
 
         protected:
             void keyPressEvent(QKeyEvent *ke);
             void mousePressEvent(QGraphicsSceneMouseEvent *mouse_event);
+
+        public slots:
+            void SupressKeyEvents(bool enabled = false);
 
         private slots:
             void RectChanged(const QRectF &new_rect);

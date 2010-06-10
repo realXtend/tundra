@@ -298,7 +298,10 @@ namespace Ether
 
             // Default to correct view
             if (default_view)
+            {
                 classic_login_proxy_->show();
+                scene_->SupressKeyEvents(true);
+            }
             else
                 classic_login_proxy_->hide();
             scene_->addItem(classic_login_proxy_);
@@ -316,6 +319,7 @@ namespace Ether
             // Connect classic login signals/slots
             connect(classical_login_button, SIGNAL( clicked() ), classical_login_widget_, SLOT( show() ));
             connect(classical_login_button, SIGNAL( clicked() ), SLOT( StopActiveItemAnimations() ));
+            connect(classical_login_widget_, SIGNAL(ClassicLoginHidden()), scene_, SLOT(SupressKeyEvents()));
             connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
@@ -715,6 +719,7 @@ namespace Ether
         void EtherSceneController::StopActiveItemAnimations()
         {
             ActiveItemChanged(0);
+            scene_->SupressKeyEvents(true);
         }
     }
 }
