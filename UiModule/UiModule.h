@@ -27,6 +27,9 @@ namespace ProtocolUtilities
 
 namespace UiServices
 {
+    class UiSettingsService;
+    typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
+
     //! UiModule provides user interface services
     /// For details about Inworld Widget Services read UiWidgetServices.h
     /// For details about Notification Services read UiNotificationServices.h
@@ -107,6 +110,9 @@ namespace UiServices
 
         //! Current World Stream pointer
         boost::shared_ptr<ProtocolUtilities::WorldStream> current_world_stream_;
+
+        //! Ui settings service 
+        UiSettingsPtr ui_settings_service_;
 
     };
 }

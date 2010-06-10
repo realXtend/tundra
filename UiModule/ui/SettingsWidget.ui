@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>281</width>
-    <height>303</height>
+    <width>413</width>
+    <height>395</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -19,7 +19,6 @@
 }
 
 QWidget#uiTab {
-	background-color: white;
 }
 
 QFrame#ContentFrame {
@@ -161,10 +160,16 @@ QTabBar::tab:first {
             </property>
             <item>
              <widget class="QTabWidget" name="settingsTabWidget">
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
               <property name="currentIndex">
                <number>0</number>
               </property>
               <widget class="QWidget" name="uiTab">
+               <property name="autoFillBackground">
+                <bool>true</bool>
+               </property>
                <attribute name="title">
                 <string> User Interface</string>
                </attribute>
@@ -178,7 +183,7 @@ QTabBar::tab:first {
                    </font>
                   </property>
                   <property name="text">
-                   <string>Unfocused Window Ppacity</string>
+                   <string>Unfocused Window Opacity</string>
                   </property>
                  </widget>
                 </item>

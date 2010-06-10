@@ -4,9 +4,11 @@
 #include "DebugOperatorNew.h"
 
 #include "UiModule.h"
+#include "UiSettingsService.h"
 #include "UiProxyStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
+
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
 #include "Inworld/InworldSceneController.h"
@@ -22,6 +24,7 @@
 #include "Common/UiAction.h"
 
 #include "EventManager.h"
+#include "ServiceManager.h"
 #include "ConfigurationManager.h"
 #include "Framework.h"
 #include "WorldStream.h"
@@ -74,7 +77,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-        ui_view_ = framework_->GetUIView();
+        ui_view_ = GetFramework()->GetUIView();
         if (ui_view_)
         {
             ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
@@ -98,6 +101,9 @@ namespace UiServices
             ui_state_machine_->SetServiceGetter(service_getter_);
             LogDebug("Service getter READY");
 
+            ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
+            GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_UiSettings, ui_settings_service_);
+            LogDebug("UI Settings Service registered and READY");
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");

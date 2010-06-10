@@ -46,6 +46,7 @@ namespace Foundation
             ST_Sound,
             ST_Input,
             ST_Communications,
+            ST_UiSettings,
             ST_Unknown
         };
     }

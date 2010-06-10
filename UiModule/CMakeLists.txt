@@ -57,7 +57,6 @@ QT4_WRAP_CPP(MOC_SRCS ${H_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-
 add_definitions (-DUI_MODULE_EXPORTS)
 
 use_package (BOOST)
@@ -65,7 +64,7 @@ use_package (QT4)
 use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon ProtocolUtilities SupportModules WorldInputModule)
+use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules WorldInputModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

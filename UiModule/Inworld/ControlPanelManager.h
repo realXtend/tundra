@@ -24,6 +24,7 @@ namespace CoreUi
     class PersonalWidget;
     class LanguageWidget;
     class TeleportWidget;
+    class CacheSettingsWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -45,6 +46,9 @@ namespace CoreUi
         SettingsWidget *GetSettingsWidget() { return settings_widget_; }
         PersonalWidget *GetPersonalWidget() { return personal_widget_; }
         TeleportWidget *GetTeleportWidget() { return teleport_widget_; }
+        LanguageWidget *GetLanguageWidget() { return language_widget_; }
+        BindingWidget *GeBindingsWidget() { return binding_widget_; }
+        CacheSettingsWidget *GetCacheSettingsWidget() { return cache_settings_widget_; }
 
     private slots:
         void CreateBasicControls();
@@ -73,6 +77,7 @@ namespace CoreUi
         PersonalWidget *personal_widget_;
         LanguageWidget* language_widget_;
         TeleportWidget* teleport_widget_;
+        CacheSettingsWidget *cache_settings_widget_;
     };
 }
 

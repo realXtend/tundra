@@ -50,39 +50,34 @@ namespace OgreRenderer
         }
             
         Ogre::PixelFormat pixel_format;
-        switch (source->GetComponents())
+        if (source->GetFormat() != -1)
         {
-        case 1:
-            pixel_format = Ogre::PF_L8;
-            break;
+            pixel_format = (Ogre::PixelFormat)source->GetFormat();
+        }
+        else
+        {
+            switch (source->GetComponents())
+            {
+            case 1:
+                pixel_format = Ogre::PF_L8;
+                break;
 
-        case 2:
-            pixel_format = Ogre::PF_BYTE_LA;
-            break;
+            case 2:
+                pixel_format = Ogre::PF_BYTE_LA;
+                break;
 
-        case 3:
-            pixel_format = Ogre::PF_B8G8R8;
-            break;
+            case 3:
+                pixel_format = Ogre::PF_B8G8R8;
+                break;
 
-        case 4:
-            pixel_format = Ogre::PF_A8B8G8R8;
-            break;
+            case 4:
+                pixel_format = Ogre::PF_A8B8G8R8;
+                break;
 
-        case 5:
-            pixel_format = Ogre::PF_R5G6B5;
-            break;
-
-        case 6:
-            pixel_format = Ogre::PF_X8R8G8B8;
-            break;
-
-        case 7:
-            pixel_format = Ogre::PF_A8R8G8B8;
-            break;
-
-        default:
-            OgreRenderingModule::LogError("Illegal number of components in texture: " + ToString<uint>(source->GetComponents()));
-            return false; 
+            default:
+                OgreRenderingModule::LogError("Illegal number of components in texture: " + ToString<uint>(source->GetComponents()));
+                return false; 
+            }
         }
 
         try

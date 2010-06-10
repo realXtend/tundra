@@ -15,13 +15,17 @@
 #include "ServiceManager.h"
 #include "ThreadTaskManager.h"
 #include "ConfigurationManager.h"
+#include "TextureCache.h"
+
+#include <QStringList>
 
 namespace TextureDecoder
 {
     static const int DEFAULT_MAX_DECODES = 4;
     
     TextureService::TextureService(Foundation::Framework* framework) : 
-        framework_(framework)
+        framework_(framework),
+        cache_(new TextureCache(framework))
     {
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
 
@@ -52,11 +56,30 @@ namespace TextureDecoder
             requests_.find(asset_id)->second.InsertTag(tag);
             return tag; 
         }
-     
+
+        if (cache_replys_.find(asset_id) != cache_replys_.end())
+        {
+            // Already requested and found from cache, just add request tag
+            cache_replys_.find(asset_id)->second.tags.push_back(tag);
+            return tag;
+        }
+
+        // Check cache
+        TextureResource *texture = cache_->GetTexture(asset_id);
+        if (texture)
+        {
+            CacheReply reply;
+            reply.tags.push_back(tag);
+            reply.resource = Foundation::ResourcePtr(texture);
+            cache_replys_[asset_id] = reply;
+            return tag;
+        }
+
+        // Make new decoding thread later in update
         TextureRequest new_request(asset_id); 
         new_request.InsertTag(tag);
         requests_[asset_id] = new_request;
-        
+
         return tag;
     }
     
@@ -76,8 +99,32 @@ namespace TextureDecoder
         }
 
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-        if (!asset_service)
+        Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
+        if (!asset_service || !event_manager)
             return;
+
+        // Check if we want to send cached replies
+        CacheReplys::iterator cache_iter = cache_replys_.begin();
+        QStringList sent_replys;
+        while (cache_iter != cache_replys_.end())
+        {
+            std::string id = cache_iter->first;
+            CacheReply reply_data = cache_iter->second;
+            sent_replys.append(id.c_str());
+
+            if (!reply_data.resource.get())
+                break;
+
+            const RequestTagVector& tags = reply_data.tags;
+            for (uint j = 0; j < tags.size(); ++j)
+            { 
+                Resource::Events::ResourceReady event_data(id, reply_data.resource, tags[j]);
+                event_manager->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);    
+            }
+            cache_iter++;
+        }
+        foreach(QString sent, sent_replys)
+            cache_replys_.erase(sent.toStdString());
 
         // Check if assets have enough data to queue decode requests
         TextureRequestMap::iterator i = requests_.begin();
@@ -148,13 +195,21 @@ namespace TextureDecoder
 
                 // Send resource ready event for each request tag in the request
                 const RequestTagVector& tags = i->second.GetTags();
-
                 Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
                 for (uint j = 0; j < tags.size(); ++j)
-                { 
+                {
                     Resource::Events::ResourceReady event_data(i->second.GetId(), result->texture_, tags[j]);
                     event_manager->SendEvent(resource_event_category_, Resource::Events::RESOURCE_READY, &event_data);    
-                }      
+                }
+
+                // Store to cache if decoding is complete
+                if (result->level_ == 0)
+                {
+                    if (cache_->CacheEverything())
+                        cache_->StoreTexture(texture);
+                    else if (result->is_jpeg2000_)
+                        cache_->StoreTexture(texture);
+                }
             }   
             
             // Remove request if final quality level was decoded

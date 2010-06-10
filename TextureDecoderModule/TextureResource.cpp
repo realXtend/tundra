@@ -11,7 +11,8 @@ namespace TextureDecoder
         width_(0),
         height_(0),
         components_(0),
-        level_(-1)
+        level_(-1),
+        format_(-1)
     {
     }
 
@@ -20,9 +21,11 @@ namespace TextureDecoder
         width_(width),
         height_(height),
         components_(components),
-        level_(-1)
+        level_(-1),
+        format_(-1)
     {
         data_.resize(width * height * components);
+        data_size_ = width * height * components;
     }
 
     TextureResource::~TextureResource()
@@ -36,6 +39,7 @@ namespace TextureDecoder
         components_ = components;
 
         data_.resize(width * height * components);
+        data_size_ = width * height * components;
     }
 
     static const std::string texture_resource_name("Texture");
