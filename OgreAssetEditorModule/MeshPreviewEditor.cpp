@@ -48,12 +48,39 @@ namespace Naali
 
     MeshPreviewEditor::~MeshPreviewEditor()
     {
-
+    
     }
 
     void MeshPreviewEditor::HandleAssetReady(Foundation::AssetPtr asset)
     {
+        /*
+        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
+            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+        
+        if (!rendering_module)
+            return;
+
+        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+        
+        // Create scenenode and attach camera to it
+        
+        Ogre::Camera *screenshot_cam = GetSceneManager()->createCamera("ScreenshotCamera");
+        Ogre::SceneNode *cam_node = renderer->GetSceneManager()->createSceneNode("MeshShotNode");
+        cam_node->attachObject(screenshot_cam);
+
+         // Render camera view to texture and save to file
+        Ogre::TexturePtr avatar_screenshot = Ogre::TextureManager::getSingleton().createManual(
+            "ScreenshotTexture", Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, window_width, window_height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+
+        Ogre::RenderTexture *render_texture = avatar_screenshot->getBuffer()->getRenderTarget();
+        Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
+        render_texture->update();
+       */
+
+        qDebug()<<" Asset ready?";       
         //TODO! Add asset ready code in here.
+
     }
 
     void MeshPreviewEditor::Closed()
