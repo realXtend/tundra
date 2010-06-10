@@ -1054,14 +1054,14 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();
 
-    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+/*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
 	
-//    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-//	if (canvas_source){
-//        canvas_source->Clicked();
-//	}
+    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+	if (canvas_source){
+        canvas_source->Clicked();
+	}
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
