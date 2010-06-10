@@ -49,8 +49,7 @@ public:
     size_t getSplitCount() const { return mSplitCount; }
 
     /// Returns a shadow camera with PSSM splits base on iteration.
-    virtual void getShadowCamera(Ogre::SceneManager *sm, Ogre::Camera *cam, Ogre::Viewport *vp,
-        Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const;
+    virtual void getShadowCamera(const Ogre::SceneManager *sm, const Ogre::Camera *cam,const Ogre::Viewport *vp, const Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const;
 
     /// Returns the calculated split points.
     inline const SplitPointList& getSplitPoints() const { return mSplitPoints; }

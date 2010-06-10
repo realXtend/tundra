@@ -173,7 +173,7 @@ namespace RexLogic
         Ogre::Vector3 cam_up = camera->getDerivedUp();
         Ogre::Vector3 cam_right = camera->getDerivedRight();
 
-        //qDebug() << "( " << pos1.x  << "," << pos1.y << "," << pos1.z <<") , ("<< pos2.x << "," << pos2.y << "," << pos2.z << ")";
+
         
         Ogre::Vector3 diagonal = pos1 - pos2;
         
@@ -185,7 +185,7 @@ namespace RexLogic
         Ogre::Vector3 width_vec = cam_right.dotProduct(diagonal) * cam_right;
         Ogre::Vector3 height_vec = cam_up.dotProduct(diagonal) * cam_up;
 
-        qDebug() << "Width: " << width_vec.length() << " Length: " << height_vec.length();
+
         
         b.setDimensions(width_vec.length(), height_vec.length());
         
