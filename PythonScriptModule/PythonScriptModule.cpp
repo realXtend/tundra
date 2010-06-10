@@ -171,6 +171,9 @@ namespace PythonScript
     void PythonScriptModule::PostInitialize()
     {
         em_ = framework_->GetEventManager();
+        
+        // Reprioritize to be able to override behaviour
+        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories

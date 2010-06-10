@@ -168,6 +168,15 @@ namespace Foundation
             return ModuleWeakPtr();
         }
 
+        //! Returns module by raw pointer
+        ModuleWeakPtr GetModule(ModuleInterface* rawptr)
+        {
+            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+                if (it->module_.get() == rawptr)
+                    return ModuleWeakPtr(it->module_);
+            return ModuleWeakPtr();
+        }
+        
         //! Returns module by type
         /*!
             \note The pointer may invalidate between frames, always reacquire at begin of frame update

@@ -946,6 +946,7 @@ namespace OgreRenderer
         Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
         render_texture->update();
 
+        SAFE_DELETE(pixelData);
         pixelData = new Ogre::uchar[window_width * window_height * 4];
         pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, pixelData);
         render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
@@ -957,6 +958,7 @@ namespace OgreRenderer
         Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
         GetSceneManager()->destroySceneNode(cam_node);
         GetSceneManager()->destroyCamera(screenshot_cam);
+        SAFE_DELETE(pixelData);
 
         // Show ui
         q_ogre_world_view_->ShowUiOverlay();

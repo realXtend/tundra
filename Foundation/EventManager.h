@@ -25,10 +25,9 @@ namespace Foundation
     {
     public:
         struct EventSubscriber;
-        typedef boost::shared_ptr<EventSubscriber> EventSubscriberPtr;
-        typedef std::vector<EventSubscriberPtr> EventSubscriberVector;
+        typedef std::vector<EventSubscriber> EventSubscriberVector;
         
-        //! Event subscriber tree node. Used internally by EventManager.
+        //! Event subscriber. Used internally by EventManager.
         struct EventSubscriber
         {
             EventSubscriber() : priority_(0) {}
@@ -36,7 +35,6 @@ namespace Foundation
             ModuleWeakPtr module_;
             std::string module_name_;
             int priority_;
-            EventSubscriberVector children_;
         };
         
         //! Delayed event. Used internally by EventManager.
@@ -88,7 +86,15 @@ namespace Foundation
             \param data Pointer to event data structure (event-specific), can be 0 if not needed
             \return true if event was handled by some event handler
          */
-        bool SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
+        bool SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data);
+        
+        //! Sends an event
+        /*! \param category Event category name. Will be auto-registered if it does not exist
+            \param event_id Event ID
+            \param data Pointer to event data structure (event-specific), can be 0 if not needed
+            \return true if event was handled by some event handler
+         */
+        bool SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data);
         
        //! Sends a delayed event
         /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
@@ -112,18 +118,16 @@ namespace Foundation
             SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataInterface>(data), delay);
         }
 
-        //! Registers a module to the event subscriber tree
-        /*! Do not call while responding to an event!
+        //! Registers a module to the event subscriber list
+        /*! Do not call while responding to an event! Note that it is ok to resubscribe your module to change priority.
             \param module Module to register
-            \param priority Priority among siblings, higher priority = gets called first
-            \param parent Subscriber module to use as a parent, 0 to place into the tree root
+            \param priority Priority. Higher priority = gets called first
             \return true if successfully subscribed
          */
-        bool RegisterEventSubscriber(ModuleWeakPtr module, int priority, ModuleWeakPtr parent);
+        bool RegisterEventSubscriber(ModuleWeakPtr module, int priority);
 
         //! Unregisters a module from the subscriber tree
         /*! Do not call while responding to an event!
-            Note: possible children will be unsubscribed as well
             \param module Module to unregister
             \return true if successfully unsubscribed
          */
@@ -135,19 +139,11 @@ namespace Foundation
          */
         bool HasEventSubscriber(ModuleInterface* module);
         
-        //! Validates event subscriber tree when modules have been loaded/unloaded. Called by ModuleManager.
-        void ValidateEventSubscriberTree();
-        
         //! Processes delayed events. Called by the framework.
         /*! \param frametime Time since last frame
          */ 
         void ProcessDelayedEvents(f64 frametime);
         
-        //! Loads event subscriber tree from an XML file
-        /*! \param filename Path/filename of XML file
-         */
-        void LoadEventSubscriberTree(const std::string& filename);
-
         typedef std::map<std::string, event_category_id_t> EventCategoryMap;
 
         typedef std::map<event_category_id_t, std::map<event_id_t, std::string > > EventMap;
@@ -165,53 +161,30 @@ namespace Foundation
         request_tag_t GetNextRequestTag();
         
     private:
-        //! Validates event subscriber tree when modules have been loaded/unloaded
-        void ValidateEventSubscriberTree(EventSubscriber* node);
-        
-        //! Finds a node with certain module from the tree
-        /*! \param node Starting node for search
-            \param module Module to look for
-            \return Pointer to node, or 0 if not found
-         */
-        EventSubscriber* FindNodeWithModule(EventSubscriber* node, ModuleInterface* module) const;
-        
-        //! Finds a node from the tree which has certain module as a child
-        /*! \param node Starting node for search
-            \param module Module to look for
-            \return Pointer to node, or 0 if not found
-         */
-        EventSubscriber* FindNodeWithChild(EventSubscriber* node, ModuleInterface* module) const;
-        
-        //! Sends event to a module in the subscriber tree, propagate to children as necessary
-        /*! \param node Which tree node to send to
+        //! Sends event to a module in the subscriber vector
+        /*! \param subscriber Which subscriber to send to
             \param category_id Event category ID
             \param event_id Event ID
             \param data Pointer to event data structure (event-specific)
-            \return true if event handled and further nodes should not be processed
+            \return true if event handled and further subscribers should not be processed
          */
-        bool SendEvent(EventSubscriber* node, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
+        bool SendEvent(const EventSubscriber& subscriber, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
         
-        //! Populates subscriber tree from xml elements
-        /*! \param node Pointer to xml element
-            \param parent_name Current parent module name (empty for root)
-         */
-        void BuildTreeFromNode(QDomElement& elem, const std::string parent_name);
-
         //! Next event category ID that will be assigned
         event_category_id_t next_category_id_;
         
         //! Next free request tag to be used
         request_tag_t next_request_tag_;
-                
+        
         //! Map for assigned event category id's
         EventCategoryMap event_category_map_;
-
+        
         //! Map for registered events by category
         EventMap event_map_;
         
-        //! Event subscriber tree root node
-        EventSubscriberPtr event_subscriber_root_;
-      
+        //! Event subscribers
+        EventSubscriberVector subscribers_;
+        
         //! Delayed events
         typedef std::vector<DelayedEvent> DelayedEventVector;
         DelayedEventVector new_delayed_events_;

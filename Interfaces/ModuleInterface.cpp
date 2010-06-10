@@ -6,10 +6,14 @@
 #include "ModuleInterface.h"
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
+#include "EventManager.h"
+#include "ModuleManager.h"
 #include "ConsoleCommandServiceInterface.h"
 
 namespace Foundation
 {
+
+static const int DEFAULT_EVENT_PRIORITY = 100;
 
 ModuleInterfaceImpl::ModuleInterfaceImpl(const std::string &name) :
     name_(name), type_(Module::MT_Unknown), state_(Module::MS_Unloaded), framework_(0)
@@ -121,7 +125,10 @@ void ModuleInterfaceImpl::InitializeInternal()
                 console->RegisterCommand(*it);
         }
     }
-
+    
+    // Register to event system with default priority
+    framework_->GetEventManager()->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), DEFAULT_EVENT_PRIORITY);
+    
     Initialize();
 }
 
@@ -143,6 +150,9 @@ void ModuleInterfaceImpl::UninitializeInternal()
         }
     }
 
+    // Unregister from event system
+    framework_->GetEventManager()->UnregisterEventSubscriber(this);
+    
     Uninitialize();
 
     // The module is now uninitialized, but it is still loaded in memory.

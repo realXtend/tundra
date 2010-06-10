@@ -55,6 +55,12 @@ void EC_Touchable::OnHover()
     emit MouseHover();
 }
 
+//experimental, only for javascript DynamicComponent handlers now
+void EC_Touchable::OnClick()
+{
+    emit Clicked();
+}
+
 void  EC_Touchable::Show()
 {
     if (!entityClone_)
