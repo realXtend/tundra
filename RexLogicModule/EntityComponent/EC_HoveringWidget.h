@@ -144,7 +144,7 @@ namespace RexLogic
         //@param b billboard that we scale
         //@param size size in screenspace
         //@param next_to_nametag, if true, will try to place the billboard next to the namebillboard
-        void ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, QSizeF& size,bool next_to_nametag=false);
+        void ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, const QSizeF& size,bool next_to_nametag=false);
 
     private slots:
         /// Updates the animation
