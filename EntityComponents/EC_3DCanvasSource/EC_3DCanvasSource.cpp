@@ -54,14 +54,11 @@ EC_3DCanvasSource::~EC_3DCanvasSource()
             canvas->SetWidget(0);
         }
     }
-    
-    if (content_widget_)
-    {
-        content_widget_->deleteLater();
-        content_widget_ = 0;
-    }
+
     if (widget_)
     {
+        // Note: content widget is inside widget_s layout,
+        // no need to do a separate deleteLater for it. This would cause problems on rundown.
         widget_->deleteLater();
         widget_ = 0;
     }
@@ -195,9 +192,7 @@ void EC_3DCanvasSource::UpdateWidget()
 
                 webwidget->setUrl(QUrl(QString::fromStdString(source)));
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-                
                 content_widget_ = webwidget;
-                content_widget_->show();
                 
                 QObject::connect(webwidget, SIGNAL(loadFinished( bool )), this, SLOT(RepaintCanvas()));
                 QObject::connect(webwidget, SIGNAL(loadProgress( int )), this, SLOT(RepaintCanvas()));
