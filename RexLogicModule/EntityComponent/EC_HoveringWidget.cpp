@@ -147,7 +147,7 @@ namespace RexLogic
         }
     }
 
-    void EC_HoveringWidget::ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, QSizeF& size,bool next_to_name_tag)
+    void EC_HoveringWidget::ScaleWidget(Ogre::BillboardSet& bset, Ogre::Billboard& b, const QSizeF& size,bool next_to_name_tag)
     {
         if (renderer_.expired())
             return;
@@ -180,9 +180,12 @@ namespace RexLogic
         cam_up.normalise();
         cam_right.normalise();
 
-        Ogre::Vector3 width_vec = cam_right.absDotProduct(diagonal) * cam_right;
-        Ogre::Vector3 height_vec = cam_up.absDotProduct(diagonal) * cam_up;
+        
 
+        Ogre::Vector3 width_vec = cam_right.dotProduct(diagonal) * cam_right;
+        Ogre::Vector3 height_vec = cam_up.dotProduct(diagonal) * cam_up;
+
+        qDebug() << "Width: " << width_vec.length() << " Length: " << height_vec.length();
         
         b.setDimensions(width_vec.length(), height_vec.length());
         
@@ -418,8 +421,8 @@ namespace RexLogic
             buttonsbillboardSet_->setCastShadows(false);
 
 
-            namebillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
-            buttonsbillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
+            //namebillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
+            //buttonsbillboardSet_->setBillboardType(Ogre::BBT_ORIENTED_COMMON);
 
             namebillboardSet_->setCommonUpVector(Ogre::Vector3::UNIT_Z);
             buttonsbillboardSet_->setCommonUpVector(Ogre::Vector3::UNIT_Z);
