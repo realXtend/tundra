@@ -53,6 +53,7 @@ namespace Asset
         void Update(f64 frametime);
 
     private slots:
+        void InitDiskCaching();
         void ClearDiskCache();
         void CacheConfigChanged(int new_disk_max_size);
         void CheckDiskCacheSize(bool make_extra_space = true);
