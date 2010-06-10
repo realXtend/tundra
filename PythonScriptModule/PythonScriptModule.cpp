@@ -171,9 +171,6 @@ namespace PythonScript
     void PythonScriptModule::PostInitialize()
     {
         em_ = framework_->GetEventManager();
-        
-        // Reprioritize to be able to override behaviour
-        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
@@ -1112,13 +1109,15 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     {
         EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
         if (!ec_canvas_source)
+        {
             entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), Foundation::ComponentInterface::LocalOnly);
-        ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
+            ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
+        }
         if (ec_canvas_source)
         {
             QString url = webview->url().toString();
-            ec_canvas_source->source_.Set(url.toStdString(), Foundation::ComponentInterface::LocalOnly);
             ec_canvas_source->manipulate_ec_3dcanvas = false;
+            ec_canvas_source->source_.Set(url.toStdString(), Foundation::ComponentInterface::LocalOnly);
             ec_canvas_source->ComponentChanged(Foundation::ComponentInterface::LocalOnly);
         }
     }
