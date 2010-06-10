@@ -50,9 +50,7 @@ Real OgreShadowCameraSetupFocusedPSSM::getOptimalAdjustFactor() const
     return mOptimalAdjustFactors[mCurrentIteration];
 }
 
-void OgreShadowCameraSetupFocusedPSSM::getShadowCamera(
-    Ogre::SceneManager *sm, Ogre::Camera *cam, Ogre::Viewport *vp,
-    Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const
+void OgreShadowCameraSetupFocusedPSSM::getShadowCamera(const Ogre::SceneManager *sm, const Ogre::Camera *cam,const Ogre::Viewport *vp, const Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const
 {
     // apply the right clip distance.
     Real nearDist = mSplitPoints[iteration];
@@ -68,14 +66,15 @@ void OgreShadowCameraSetupFocusedPSSM::getShadowCamera(
 
     // Ouch, I know this is hacky, but it's the easiest way to re-use LiSPSM / Focussed
     // functionality right now without major changes
-    Real oldNear = cam->getNearClipDistance();
-    Real oldFar = cam->getFarClipDistance();
-    cam->setNearClipDistance(nearDist);
-    cam->setFarClipDistance(farDist);
+    Ogre::Camera* _cam = const_cast<Ogre::Camera*>(cam);
+    Real oldNear = _cam->getNearClipDistance();
+    Real oldFar = _cam->getFarClipDistance();
+    _cam->setNearClipDistance(nearDist);
+    _cam->setFarClipDistance(farDist);
 
     Ogre::FocusedShadowCameraSetup::getShadowCamera(sm, cam, vp, light, texCam, iteration);
 
     // restore near/far
-    cam->setNearClipDistance(oldNear);
-    cam->setFarClipDistance(oldFar);
+    _cam->setNearClipDistance(oldNear);
+    _cam->setFarClipDistance(oldFar);
 }
