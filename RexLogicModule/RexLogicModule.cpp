@@ -479,6 +479,40 @@ void RexLogicModule::SwitchCameraState()
     }
 }
 
+void RexLogicModule::CameraTripod()
+{
+	if (camera_state_ == CS_Follow)
+	{
+		camera_state_ = CS_Tripod;
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+	}
+	else
+	{
+		camera_state_ = CS_Follow;
+
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+	}
+}
+
+void RexLogicModule::FocusOnObject()
+{
+	if (camera_state_ == CS_Follow)
+	{
+		camera_state_ = CS_FocusOnObject;
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
+	}
+	else
+	{
+		camera_state_ = CS_Follow;
+
+		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+	}
+}
+
 AvatarPtr RexLogicModule::GetAvatarHandler() const
 {
     return avatar_;
@@ -1020,13 +1054,14 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     if (name_tag.get())
         name_tag->Clicked();
 
-    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+/*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
-
-    boost::shared_ptr<EC_3DCanvasSource> canvas = entity->GetComponent<EC_3DCanvasSource>();
-    if(canvas.get())
-        canvas->Clicked();
+	
+    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+	if (canvas_source){
+        canvas_source->Clicked();
+	}
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1115,6 +1150,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     if (result->entity_)
     {
         Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+		camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
@@ -1240,7 +1276,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     return Console::ResultSuccess();
 }
 
-}
+} // namespace RexLogic
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

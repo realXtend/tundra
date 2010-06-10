@@ -54,7 +54,9 @@ namespace Foundation
              << "python.duplicate.drag" << "python.object.toggle.move" << "python.object.toggle.scale" << "python.restart" << "python.run"
              << "toggle.camera" << "toggle.console" << "toggle.fly" 
              << "rotate.left" << "rotate.right"
-             << "zoom.in" << "zoom.out" << "naali.unfocus.ui";
+             << "zoom.in" << "zoom.out" << "naali.unfocus.ui"
+			 << "toggle.tripod"
+			 << "object.focus";
     }
 
     void KeyBindings::BindKey(Binding binding)
@@ -146,6 +148,15 @@ namespace Foundation
             case Input::Events::SWITCH_CAMERA_STATE:
                 name = "toggle.camera";
                 break;
+
+			// Lock Camera - Tripod
+			case Input::Events::CAMERA_TRIPOD:
+                name = "toggle.tripod";
+                break;
+
+			case Input::Events::FOCUS_ON_OBJECT:
+				name = "object.focus";
+				break;
 
             // Console
             case Input::Events::SHOW_DEBUG_CONSOLE:
@@ -249,6 +260,16 @@ namespace Foundation
         {
             id_pair.first = Input::Events::SWITCH_CAMERA_STATE;
             id_pair.second = 0;
+        }
+		else if (name == "toggle.tripod")
+        {
+			id_pair.first = Input::Events::CAMERA_TRIPOD;
+            id_pair.second = 0;
+        }
+		else if (name == "object.focus")
+        {
+			id_pair.first = Input::Events::FOCUS_ON_OBJECT;
+			id_pair.second = 0;
         }
         else if (name == "toggle.console")
         {

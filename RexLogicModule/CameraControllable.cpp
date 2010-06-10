@@ -21,6 +21,11 @@
 #include "ServiceManager.h"
 #include "ModuleManager.h"
 #include <Ogre.h>
+#include "math.h"
+
+using namespace RexTypes;
+
+namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
@@ -74,6 +79,9 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
+		
+		rotation_angle = 0;
+		current_angle = 0;
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -147,6 +155,18 @@ namespace RexLogic
             movement_.y_.abs_ = m->y_.abs_;
         }
 
+		if (event_id == Input::Events::INPUTSTATE_CAMERATRIPOD)
+		{
+			current_state_ = Tripod;
+			firstperson_pitch_ = 0.0f;
+		}
+
+		if (event_id == Input::Events::INPUTSTATE_FOCUSONOBJECT)
+		{
+			current_state_ = FocusOnObject;
+			rotation_angle = 0;
+			firstperson_pitch_ = 0.0f;
+		}
         return false;
     }
 
@@ -183,6 +203,27 @@ namespace RexLogic
             normalized_free_translation_ = free_translation_;
             normalized_free_translation_.normalize();
         }
+
+		switch (event_id)
+            {
+            case RA::RotateLeft:
+				if(current_state_ == FocusOnObject)
+				{
+					rotateCameraAroundObject();
+					rotation_angle += 5;
+				}
+                break;
+            case RA::RotateRight:
+				if(current_state_ == FocusOnObject)
+				{
+					rotateCameraAroundObject();
+					rotation_angle -= 5;
+				}
+                break;
+            case RA::RotateLeft + 1:
+            case RA::RotateRight + 1:
+                break;
+            }
 
         return false;
     }
@@ -300,6 +341,21 @@ namespace RexLogic
                     camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
                     camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
                 }
+
+				if (current_state_ == Tripod)
+				{
+					const float trans_dt = (float)frametime * sensitivity_;
+
+					RexTypes::Vector3 pos = camera_placeable->GetPosition();
+					pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
+					ClampPosition(pos);
+					camera_placeable->SetPosition(pos);
+
+					camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
+					camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
+				}
+
+				
             }
         }
         
@@ -376,5 +432,81 @@ namespace RexLogic
                 position.z = clamp(position.z, boundaryBoxMin_.z, boundaryBoxMax_.z);
         }
     }
+
+	void CameraControllable::funcFocusOnObject(float x, float y, float z)
+	{
+		if(current_state_ == FocusOnObject)
+		{
+			boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+			Scene::EntityPtr target = target_entity_.lock();
+			Scene::EntityPtr camera = camera_entity_.lock();
+
+			if (renderer && target && camera)
+			{
+				OgreRenderer::EC_OgrePlaceable *camera_placeable = 
+					checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+
+				EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
+				OgreRenderer::EC_OgrePlaceable *placeable = 
+					checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+				if (netpos && placeable)
+				{
+					Vector3df camera_position = camera_placeable->GetPosition();
+					center_x = x;
+					center_y = y;
+					center_z = z;
+
+					camera_position_x = camera_position.x;
+					camera_position_y = camera_position.y;
+
+					fixed_camera_position_z = camera_position.z;
+					focus_radius = sqrt((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y));
+					
+					current_angle = acos((camera_position_y - center_y) / focus_radius);
+				}	
+			}
+		}
+		
+	}
+
+	void CameraControllable::rotateCameraAroundObject()
+	{
+		drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
+		drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
+		movement_.x_.rel_ = 0;
+		movement_.y_.rel_ = 0;
+            
+		boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+		Scene::EntityPtr target = target_entity_.lock();
+		Scene::EntityPtr camera = camera_entity_.lock();
+
+		if (renderer && target && camera)
+		{
+			OgreRenderer::EC_OgrePlaceable *camera_placeable = 
+				checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+
+			EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
+			OgreRenderer::EC_OgrePlaceable *placeable = 
+				checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+			if (netpos && placeable)
+			{
+				Quaternion orientation = netpos->orientation_;
+				Vector3df camera_position = camera_placeable->GetPosition();
+
+				float ncv = sqrt(camera_position.x * camera_position.x + camera_position.y * camera_position.y);
+				float norm_vector_x = camera_position.x/ncv; 
+				float norm_vector_y = camera_position.y/ncv;
+				float an = acos(norm_vector_x);
+
+				new_x = center_x + focus_radius*sin((rotation_angle*PI)/180 + current_angle);
+				new_y = center_y + focus_radius*cos((rotation_angle*PI)/180 + current_angle);
+				camera_placeable->SetPosition(Vector3df(new_x, new_y, fixed_camera_position_z));
+				camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+			}	
+								
+		}		
+	}
+
+	
 }
 
