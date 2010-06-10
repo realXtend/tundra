@@ -13,9 +13,11 @@
   <property name="windowTitle">
    <string>Sound Settings</string>
   </property>
+  <property name="autoFillBackground">
+   <bool>true</bool>
+  </property>
   <property name="styleSheet">
    <string notr="true">QFrame#MainFrame {
-	background-color: white;
 	padding: 9px;
 }
 </string>

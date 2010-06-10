@@ -49,6 +49,8 @@ namespace TextureDecoder
 
         //! Amount of components in texture
         uint components_;
+
+        bool is_jpeg2000_;
     };
     
     typedef boost::shared_ptr<DecodeResult> DecodeResultPtr;

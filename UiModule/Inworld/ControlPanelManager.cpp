@@ -17,6 +17,7 @@
 #include "Inworld/ControlPanel/PersonalWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
+#include "Inworld/ControlPanel/CacheSettingsWidget.h"
 
 #include <QAction>
 #include "MemoryLeakCheck.h"
@@ -31,7 +32,6 @@ namespace CoreUi
         binding_widget_(0),
         language_widget_(0),
         teleport_widget_(0)
-
     {
         // Controls panel
         layout_manager_->AddCornerAnchor(backdrop_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
@@ -48,6 +48,10 @@ namespace CoreUi
         // Binding widget as settings tab
         binding_widget_ = new BindingWidget(settings_widget_);
         settings_widget_->AddWidget(binding_widget_, "Controls");
+
+        // Adding cache tab
+        cache_settings_widget_ = new CacheSettingsWidget(settings_widget_);
+        settings_widget_->AddWidget(cache_settings_widget_, "Cache");
 
         // Adding a language tab.
         language_widget_ = new LanguageWidget(settings_widget_);

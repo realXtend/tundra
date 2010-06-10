@@ -3,4 +3,6 @@
   <entry>AssetModule</entry>
    <dependency>ProtocolModuleOpenSim</dependency>
    <dependency>ProtocolModuleTaiga</dependency>
+   <!-- UiModule: Ensure load order, not a link dependency. Do not remove! -->
+   <dependency>UiModule</dependency> 
 </config>

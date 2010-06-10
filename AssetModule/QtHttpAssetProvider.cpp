@@ -31,13 +31,10 @@ namespace Asset
         filling_stack_(false),
         get_texture_cap_(QUrl())
     {
-		asset_timeout_ = framework_->GetDefaultConfig().DeclareSetting("AssetSystem", "http_timeout", 120.0);
         if (event_manager_)
             asset_event_category_ = event_manager_->QueryEventCategory("Asset");
-
         connect(network_manager_, SIGNAL(finished(QNetworkReply*)), SLOT(TranferCompleted(QNetworkReply*)));
-
-        AssetModule::LogWarning(QString("QtHttpAssetProvider >> Initialized with max %1 parallel HTTP connections").arg(QString::number(MAX_HTTP_CONNECTIONS)).toStdString());
+        AssetModule::LogInfo("HttpAssetProvider initialized");
     }
 
     QtHttpAssetProvider::~QtHttpAssetProvider()
@@ -254,7 +251,7 @@ namespace Asset
                 // Send metadata network request
                 //network_manager_->get(*metada_request);
                 
-                // HACK to avoid metadata fetch for now
+                // HACK to avoid metadata fetch for now, we dont use it to anything yet
                 fake_metadata_url_ = metada_request->url();
                 fake_metadata_fetch_ = true;
             }
@@ -263,9 +260,9 @@ namespace Asset
             {
                 AssetModule::LogDebug("HTTP asset " + tranfer_info.id.toStdString() + " completed");
 
-                // Store asset
+                // Store asset, but don't store textures, they have their own cache action after decoding
                 boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-                if (asset_service)
+                if (asset_service) 
                     asset_service->StoreAsset(asset_ptr);
 
                 // Send asset ready events

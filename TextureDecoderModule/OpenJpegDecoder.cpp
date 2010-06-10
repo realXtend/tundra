@@ -181,6 +181,8 @@ namespace TextureDecoder
                 TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
                 u8* data = texture->GetData();
                 texture->SetLevel(request->level_);
+                texture->SetDataSize(actual_width * actual_height * image->numcomps);
+
                 for (int y = 0; y < actual_height; ++y)
                 {
                     for (int x = 0; x < actual_width; ++x)
@@ -194,6 +196,7 @@ namespace TextureDecoder
                 }
          
                 result->texture_ = resource;
+                result->is_jpeg2000_ = true;
             }
 
             if (image)
@@ -209,6 +212,7 @@ namespace TextureDecoder
             {
                 int width = raw_image.width();
                 int height = raw_image.height();
+                int ogre_format = -1;
                 uint comps = 0;
 
                 // Check image format, support the ones 
@@ -216,24 +220,28 @@ namespace TextureDecoder
                 switch (raw_image.format())
                 {
                     case QImage::Format_RGB16:
-                        comps = 5;
+                        ogre_format = 6;
+                        comps = 3;
                         break;
 
                     case QImage::Format_RGB32:
-                        comps = 6;
+                        ogre_format = 26;
+                        comps = 4;
                         break;
 
                     case QImage::Format_ARGB32:
                     case QImage::Format_ARGB32_Premultiplied:
-                        comps = 7;
+                        ogre_format = 12;
+                        comps = 4;
                         break;
 
                     default:
+                        ogre_format = -1;
                         comps = 0;
                         break;
                 }
 
-                if (comps != 0)
+                if (comps != 0 && ogre_format != -1)
                 {
                     result->original_width_ = width;
                     result->original_height_ = height;
@@ -242,11 +250,14 @@ namespace TextureDecoder
 
                     Foundation::ResourcePtr resource(new TextureResource(request->source_->GetId(), width, height, comps));
                     TextureResource* texture = checked_static_cast<TextureResource*>(resource.get());
+                    texture->SetFormat(ogre_format);
                     texture->SetLevel(0);
+                    texture->SetDataSize(raw_image.byteCount());
                     u8* data = texture->GetData();
                     
                     memcpy(data, raw_image.bits(), raw_image.byteCount());
                     result->texture_ = resource;
+                    result->is_jpeg2000_ = false;
                 }
                 else
                 {
