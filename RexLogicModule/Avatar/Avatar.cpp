@@ -496,7 +496,7 @@ namespace RexLogic
             overlay->AddButton(*(new QPushButton("Chat")));
             overlay->AddButton(*(new QPushButton("Mute")));
             overlay->AddButton(*(new QPushButton("Follow")));*/
-            overlay->SetButtonsDisabled(true);
+
         }
     }
 /*
