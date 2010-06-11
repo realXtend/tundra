@@ -1096,7 +1096,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     {
         Scene::EntityPtr entity = (*iter);
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        OgreRenderer::EC_OgreCamera* c = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
         if (c)
             camera = c;
 
@@ -1150,7 +1150,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     if (result->entity_)
     {
         Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
-		camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
+        camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
