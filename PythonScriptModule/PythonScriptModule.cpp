@@ -1708,6 +1708,20 @@ PyObject* GetUserAvatarId(PyObject* self)
     Py_RETURN_NONE;
 }
 
+PyObject* GetCameraId(PyObject* self)
+{
+    RexLogic::RexLogicModule *rexlogic_;
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    if (rexlogic_)
+    {
+        Scene::EntityPtr camentptr = rexlogic_->GetCameraEntity();
+        entity_id_t id = camentptr->GetId();
+        return Py_BuildValue("I", id);
+    }
+
+    Py_RETURN_NONE;
+}
+
 PyObject* GetCameraUp(PyObject *self) 
 {
     Vector3df up;
@@ -2004,6 +2018,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
     "Returns the user's avatar's id."},
+
+    {"getCameraId", (PyCFunction)GetCameraId, METH_VARARGS, 
+    "Returns the camera entity id."},
 
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
     "Does a network update for the Scene."},

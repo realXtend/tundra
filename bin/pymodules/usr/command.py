@@ -154,21 +154,38 @@ if 0: #print test
     
 if 0: #camera pitch
     dy = 0.1
-    dp = 0
+    dp = 0.5
     #dp = -0.1
     #dp = 0.1
     r.setCameraYawPitch(dy, dp)
     print r.getCameraYawPitch()
+
+if 0: #camera entity - it is an entity nowadays, and there is EC cam even
+    camid = r.getCameraId()
+    print "CAM:", camid
+    cament = r.getEntity(camid)
+    p = cament.placeable
+    print p.Position, p.Orientation
+
+    import PythonQt.QtGui
+    from PythonQt.QtGui import QQuaternion as Quat
+    from PythonQt.QtGui import QVector3D as Vec
+    ort = p.Orientation
+    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
+    #ort *= Quat(0, -.707, 0, .707)
+    ort *= rot
+    p.Orientation = ort
         
 if 0: #avatar set yaw (turn)
-    a = -1.0
+    #a = -1.0
+    a = 0
     print "setting avatar yaw with %f" % a
     r.setAvatarYaw(a)
 
 if 0: #avatar rotation #XXX crashes when the avatar is not there! XXX
     x = 0
     y = 0 
-    z = -1 #this is the actual rotation thingie
+    z = 0.1 #this is the actual rotation thingie
     w = 0
     print "rotating the avatar to", (x, y, z, w)    
     r.setAvatarRotation(x, y, z, w)
@@ -1261,11 +1278,12 @@ if 0: #test adding a dynamiccomponent
     if 0: #door
         d.SetAttribute('{"locked": false, "opened": true}')
        
-    if 1: #javascript source url .. and door data
+    if 0: #javascript source url .. and door data
         d.SetAttribute("""{
-        "js_src": "http://an.org/realxtend/door.js", "locked": false, "opened": true
+        "js_src": "http://an.org/realxtend/door.js", 
+        "locked": false, 
+        "opened": true
         }""")
-
 
     #print d.GetAttribute()
 
