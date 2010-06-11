@@ -9,6 +9,7 @@
 #include <QObject>
 #include <QList>
 #include <QRectF>
+#include <QMap>
 
 class QRectF;
 class QGraphicsLinearLayout;
@@ -108,6 +109,15 @@ namespace UiServices
 		//Applying new proxy position
 		void ApplyNewProxyPosition(const QRectF &new_rect);
 
+		//Slot triggered by UiProxyWidget ProxyMoved() signal.
+		void ProxyWidgetMoved(UiProxyWidget* proxy_widget, QPointF proxy_pos);
+
+		//Slot triggered by UiProxyWidget ProxyUngrabed() signal.
+		void ProxyWidgetUngrabed(UiProxyWidget* proxy_widget, QPointF proxy_pos);
+
+		//Slot triggered by UiProxyWidget Closed() or Visible() signals
+		void ProxyClosed();
+
     private:
         Q_DISABLE_COPY(InworldSceneController);
 
@@ -132,15 +142,30 @@ namespace UiServices
         //! Internal list of UiProxyWidgets in scene
         QList<UiServices::UiProxyWidget *> all_proxy_widgets_in_scene_;
 
+		//! Internal list of all docked UiProxyWidgets
+		QList<UiServices::UiProxyWidget *> all_docked_proxy_widgets_;
+
+		//! QMap of docked UiProxyWidgets and their original size
+		QMap<UiProxyWidget*, QSizeF> old_proxy_size;
+
         //! Framework pointer.
         Foundation::Framework *framework_;
-	
-	//Store last scene rectangle 
-	QRectF last_scene_rect;
 
-    private slots:
+        //Store last scene rectangle 
+        QRectF last_scene_rect;
+
+        //! Widget that flashes when a UiProxyWidget is dragged to the area specified for docking.
+		QWidget *docking_widget_;
+
+		//! QGraphicsProxyWidget from dock_w widget.
+		QGraphicsProxyWidget *docking_widget_proxy_;
+
+	private slots:
         //! Slot for applying new ui settings to all proxy widgets
         void ApplyNewProxySettings(int new_opacity, int new_animation_speed) const;
+
+        //! Aligning widgets in the docking area
+        void DockLineup();
     };
 }
 
