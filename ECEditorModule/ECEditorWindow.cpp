@@ -262,11 +262,11 @@ namespace ECEditor
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         // No entities selected we can clear the attribute broser.
-        if(!entities.size())
+        /*if(!entities.size())
         {
             attribute_browser_->clear();
             return;
-        }
+        }*/
 
         EntityIdSet noneSelectedEntities = selectedEntities_;
         selectedEntities_.clear();
@@ -479,7 +479,7 @@ namespace ECEditor
         QWidget *browserWidget = findChild<QWidget*>("browser_widget");
         if(browserWidget)
         {
-            attribute_browser_ = new AttributeBrowser(browserWidget);
+            attribute_browser_ = new AttributeBrowser(framework_, browserWidget);
             QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
             if (property_layout)
                 property_layout->addWidget(attribute_browser_);
