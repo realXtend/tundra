@@ -173,4 +173,16 @@ namespace UiServices
         }
         return QGraphicsProxyWidget::itemChange(change, value);
     }
+
+	void UiProxyWidget::moveEvent(QGraphicsSceneMoveEvent *move_event)
+    {
+		emit ProxyMoved(this, move_event->newPos());
+        QGraphicsProxyWidget::moveEvent(move_event);
+    }
+
+	void UiProxyWidget::ungrabMouseEvent(QEvent *ungrab_event)
+	{
+		emit ProxyUngrabed(this, scenePos());
+        QGraphicsProxyWidget::ungrabMouseEvent(ungrab_event);
+	}
 }
