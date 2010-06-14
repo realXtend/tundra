@@ -578,8 +578,9 @@ class ObjectEdit(Component):
         avatar = r.getEntity(avatar_id)
         pos = avatar.placeable.Position#r.getUserAvatarPos()
 
-        start_x = pos.x()
-        start_y = pos.y()
+	# TODO determine what is right in front of avatar and use that instead
+        start_x = pos.x() + .5
+        start_y = pos.y() + .5
         start_z = pos.z()
         end_x = start_x
         end_y = start_y
