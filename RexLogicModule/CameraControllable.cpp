@@ -351,8 +351,8 @@ namespace RexLogic
 					ClampPosition(pos);
 					camera_placeable->SetPosition(pos);
 
-					camera_placeable->Pitch(drag_pitch_ * firstperson_sensitivity_);
-					camera_placeable->Yaw(drag_yaw_ * firstperson_sensitivity_);
+					camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
+					camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
 				}
 
 				
