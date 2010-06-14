@@ -230,22 +230,31 @@ class MoveManipulator(Manipulator):
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             qpos = ent.placeable.Position
-            if self.grabbed_axis == self.AXIS_BLUE:
-                mov = lengthy
-                qpos.setZ(qpos.z()-mov)
-            else:
-                mov = lengthx 
-                div = abs(rightvec[self.grabbed_axis])
-                if div == 0:
-                    div = 0.00001 #not the best of ideas but...
-                mov *= rightvec[self.grabbed_axis]/div
-                if self.grabbed_axis == self.AXIS_GREEN:
-                    qpos.setY(qpos.y()-mov)
-                else:
-                    qpos.setX(qpos.x()-mov)
 
-            ent.placeable.Position = qpos
-            ent.network.Position = qpos
+            mov = lengthx 
+            div = abs(rightvec[self.grabbed_axis])
+            if div == 0:
+                div = 0.00001 #not the best of ideas but...
+            mov *= rightvec[self.grabbed_axis]/div
+
+            if self.controller.useLocalTransform:
+                if self.grabbed_axis == self.AXIS_RED:
+                    ent.network.Position = ent.placeable.translate(0, -mov)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    ent.network.Position = ent.placeable.translate(1, -mov)
+                elif self.grabbed_axis == self.AXIS_BLUE:
+                    ent.network.Position = ent.placeable.translate(2, -lengthy)
+            else:
+                if self.grabbed_axis == self.AXIS_BLUE:
+                    mov = lengthy
+                    qpos.setZ(qpos.z()-mov)
+                else:
+                    if self.grabbed_axis == self.AXIS_GREEN:
+                        qpos.setY(qpos.y()-mov)
+                    else:
+                        qpos.setX(qpos.x()-mov)
+                ent.placeable.Position = qpos
+                ent.network.Position = qpos
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
