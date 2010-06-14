@@ -79,7 +79,7 @@ class ComponentRunner(Component):
         #XXX should this be using the __tick__ mechanism of circuits, and how?
         m = self.m
         m.tick()
-        m.flush()
+        while m: m.flush()
         #XXX NOTE: now that we tick & flush, circuits works normally, and we could change from send() to push() for the events
 
     def send_event(self, event, channel):
@@ -169,7 +169,7 @@ class ComponentRunner(Component):
         r.logInfo("Circuits manager stopping...")
         self.send_event(Exit(), "on_exit") #was originally not running the manager properly so the stop doesn't propagate to components. fix when switch to dev branch of circuits XXX
         self.m.stop() #was not going to components now so made the exit event above as a quick fix
-        #XXX now that we are using flush() and tick(), does stop() propagate to components too?
+        while self.m: self.m.flush()
         
     def restart(self):
         #r.restart = True
