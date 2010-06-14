@@ -36,7 +36,11 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class AttributeBrowser;
-
+    
+    //! ECEditorWindow
+    /*! /todo add description.
+     *  \ingroup ECEditorModuleClient.
+     */
     class ECEditorWindow : public QWidget
     {
         Q_OBJECT

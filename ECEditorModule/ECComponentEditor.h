@@ -25,7 +25,13 @@ namespace ECEditor
 {
     class ECAttributeEditorBase;
 
-    //! Todo! add description how this class works.
+    //! ECComponentEditor get components as it input and it is responsible to create all attribute editors for that compoennt.
+    /*! ECComponentEditor will only accept same type of component. When object is first time initialized user need tell the typename
+     *  of the component that we want to edit. ECComponentEditor is holding a GetAttributeEditor static method switch will check if 
+     *  component's attribute is holding a implementation for that spesific attriubte type (ECAttributeEditor) if attribute is supported
+     *  mehtod will create a new attriubte editor and return it's pointer to user.
+     *  \ingroup ECEditorModuleClient.
+     */
     class ECComponentEditor: public QObject
     {
         Q_OBJECT
@@ -49,6 +55,7 @@ namespace ECEditor
 
     public slots:
         //! Sometimes attribute editor need to recreate it's property and we need to insert this property into same location as previous the one was located.
+        //! \bug When user reinitialize the attribute editor's properties the order will go invalid.
         void AttributeEditorUpdated(const std::string &attributeName);
 
     signals:
