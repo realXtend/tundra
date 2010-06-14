@@ -269,4 +269,33 @@ namespace OgreRenderer
     {
         SetScale(Vector3df(newscale.x(), newscale.y(), newscale.z()));
     }
+
+	QVector3D EC_OgrePlaceable::translate(int axis, float amount)
+	{
+		Ogre::Matrix3 m;
+		Ogre::Vector3 v;
+		Real x, y, z;
+		x = y = z = 0.0;
+		m.SetColumn(0,  link_scene_node_->getOrientation().xAxis());
+		m.SetColumn(1,  link_scene_node_->getOrientation().yAxis());
+		m.SetColumn(2,  link_scene_node_->getOrientation().zAxis());
+		switch(axis) {
+			case 0:
+				x = amount;
+				break;
+			case 1:
+				y = amount;
+				break;
+			case 2:
+				z = amount;
+				break;
+			default:
+				// nothing, don't translate
+				break;
+
+		}
+		link_scene_node_->translate(m, Ogre::Vector3(x, y, z), Ogre::Node::TS_LOCAL);
+		const Ogre::Vector3 newpos = link_scene_node_->getPosition();
+		return QVector3D(newpos.x, newpos.y, newpos.z);
+	}
 }

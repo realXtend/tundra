@@ -131,6 +131,11 @@ namespace OgreRenderer
         QVector3D GetQScale() const;
         void SetQScale(const QVector3D newscale);
 
+	public slots:
+		//! translate
+		/* 0 = x, 1 = y, 2 = z. returns new position */
+		QVector3D translate( int axis, float amount);
+
 
     private:
         //! constructor
