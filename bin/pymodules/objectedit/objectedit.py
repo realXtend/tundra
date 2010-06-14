@@ -386,6 +386,7 @@ class ObjectEdit(Component):
             self.dragging = False
             
         self.manipulator.stopManipulating()
+        self.manipulator.showManipulator(self.sels)
         self.usingManipulator = False
         self.duplicateDragStart = False #XXXchange?
         
