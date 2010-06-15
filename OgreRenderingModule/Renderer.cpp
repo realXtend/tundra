@@ -30,6 +30,7 @@
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QCloseEvent>
 
 #include "MemoryLeakCheck.h"
 
@@ -71,6 +72,12 @@ namespace OgreRenderer
         //! list of subscribed listeners
         ListenerList listeners_;
     };
+
+    void NaaliMainWindow::closeEvent(QCloseEvent* e)
+    {
+        framework_->Exit();
+        e->ignore();
+    }
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
@@ -166,7 +173,7 @@ namespace OgreRenderer
     void Renderer::InitializeQt()
     {
         ///\todo Memory leak below, see very end of ~Renderer() for comments.
-        main_window_ = new QWidget;
+        main_window_ = new NaaliMainWindow(framework_);
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali

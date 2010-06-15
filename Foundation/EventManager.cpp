@@ -161,7 +161,22 @@ namespace Foundation
     {
         if (ModuleInterface* module = subscriber.module_.lock().get())
         {
-            return module->HandleEvent(category_id, event_id, data);
+            try
+            {
+                return module->HandleEvent(category_id, event_id, data);
+            }
+            catch(const std::exception &e)
+            {
+                std::cout << "HandleEvent caught an exception inside module " << module->Name() << ": " << (e.what() ? e.what() : "(null)") << std::endl;
+                RootLogCritical(std::string("HandleEvent caught an exception inside module " + module->Name() + ": " + (e.what() ? e.what() : "(null)")));
+                throw;
+            }
+            catch(...)
+            {
+                std::cout << "HandleEvent caught an unknown exception inside module " << module->Name() << std::endl;
+                RootLogCritical(std::string("HandleEvent caught an unknown exception inside module " + module->Name()));
+                throw;
+            }
         }
         
         return false;

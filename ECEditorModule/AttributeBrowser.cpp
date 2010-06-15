@@ -7,6 +7,8 @@
 #include "ComponentInterface.h"
 #include "ECComponentEditor.h"
 #include "SceneManager.h"
+#include "ECEditorModule.h"
+#include "Framework.h"
 
 //#include <QtAbstractEditorFactoryBase>
 #include <QtTreePropertyBrowser>
@@ -15,14 +17,16 @@
 #include <QLayout>
 #include <QShortcut>
 #include <QMenu>
+#include <QDomDocument>
 
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
 {
-    AttributeBrowser::AttributeBrowser(QWidget *parent): QtTreePropertyBrowser(parent),
+    AttributeBrowser::AttributeBrowser(Foundation::Framework *framework, QWidget *parent): QtTreePropertyBrowser(parent),
         menu_(0),
-        treeWidget_(0)
+        treeWidget_(0),
+        framework_(framework)
     {
         InitializeEditor();
     }
@@ -43,8 +47,9 @@ namespace ECEditor
             componentEditors_[typeName] = componentEditor;
             //QObject::connect(componentEditor, SIGNAL(destroyed(QObject *)), this, SLOT(RemoveComponentEditorFromMap(QObject *)));
 
-            componentsBrowserItemMap_[componentEditors_[typeName]->GetRootProperty()];
-            componentsBrowserItemMap_[componentEditors_[typeName]->GetRootProperty()].push_back(Foundation::ComponentWeakPtr(newComponent));
+            QtProperty *rootProperty = componentEditors_[typeName]->GetRootProperty();
+            componentsBrowserItemMap_[rootProperty];
+            componentsBrowserItemMap_[rootProperty].push_back(Foundation::ComponentWeakPtr(newComponent));
         }
         else
         {
@@ -82,6 +87,8 @@ namespace ECEditor
         QObject::connect(editXml, SIGNAL(triggered()), this, SLOT(OpenComponentXmlEditor()));
         QObject::connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()));
         QObject::connect(deleteComponent, SIGNAL(triggered()), this, SLOT(DeleteComponent()));
+        QObject::connect(copyComponent, SIGNAL(triggered()), this, SLOT(CopyComponent()));
+        QObject::connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()));
 
         //Check if any component is selected and if not disable delete component, and edit xml options.
         QtBrowserItem *item = currentItem();
@@ -150,12 +157,74 @@ namespace ECEditor
 
     void AttributeBrowser::CopyComponent()
     {
-        //TODO! add copy functionality.
+        QtBrowserItem *item = currentItem();
+        if(!item)
+            return;
+
+        QDomDocument temp_doc;
+        QDomElement entity_elem;
+        //temp_doc.appendChild(entity_elem);
+        QClipboard *clipboard = QApplication::clipboard();
+
+        QtProperty *property = item->property();
+        PropertyToComponentsMap::iterator iter = componentsBrowserItemMap_.find(property);
+        if(iter != componentsBrowserItemMap_.end())
+        {
+            ComponentWeakPtrVector::iterator componentIter = componentsBrowserItemMap_[property].begin();
+            while(componentIter != componentsBrowserItemMap_[property].end())
+            {
+                if(!iter->second.begin()->expired())
+                {
+                    Foundation::ComponentInterfacePtr component = iter->second.begin()->lock();
+                    component->SerializeTo(temp_doc, entity_elem);
+                    QString xmlText = temp_doc.toString();
+                    clipboard->setText(xmlText);
+                    break;
+                }
+                componentIter++;
+            }
+        }
     }
 
     void AttributeBrowser::PasteComponent()
     {
-        //TODO! add paste functionality.
+        if(!framework_)
+            return;
+        // \todo right now main scene on the viewer is name as "World" but if this changes paste is nolonger supported.
+        Scene::ScenePtr sceneMgr = framework_->GetScene("World");
+        if(!sceneMgr)
+        {
+            ECEditorModule::LogError("Cannot use component paste in AttributeEditor, cause framework didn't contain scene named \"World\". Make sure that world scene have been created properly.");
+            return;
+        }
+
+        QDomDocument temp_doc;
+        QClipboard *clipboard = QApplication::clipboard();
+        if (temp_doc.setContent(clipboard->text()))
+        {
+            // Only single component can be pasted.
+            // \todo add suport to multicomponent copy/paste feature.
+            QDomElement comp_elem = temp_doc.firstChildElement("component");
+            EntityIDSet::iterator entityIter = selectedEntities_.begin();
+            while(entityIter != selectedEntities_.end())
+            {
+                Scene::EntityPtr entityPtr = sceneMgr->GetEntity(*entityIter);
+                Scene::Entity *entity = entityPtr.get();
+                if(!entity)
+                    continue;
+
+                Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(comp_elem.attribute("type").toStdString(), Foundation::ComponentInterface::Local);
+                if(!component.get())
+                {
+                    entityIter++;
+                    continue;
+                }
+                component->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Local);
+                component->ComponentChanged(Foundation::ComponentInterface::Local);
+
+                entityIter++;
+            }
+        }
     }
 
     void AttributeBrowser::AddNewComponent(Foundation::ComponentInterfacePtr component)
@@ -243,8 +312,6 @@ namespace ECEditor
 
     void AttributeBrowser::clear()
     {
-        QtTreePropertyBrowser::clear();
-
         while(!componentsBrowserItemMap_.empty())
             componentsBrowserItemMap_.erase(componentsBrowserItemMap_.begin());
         while(!componentEditors_.empty())
@@ -254,16 +321,10 @@ namespace ECEditor
         }
         selectedEntities_.clear();
 
-        // QtTreePropertyBrowser clear seems to remove all it's children and so QShortcuts need to reinitialize.
-        if(treeWidget_)
-        {
-            QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), treeWidget_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), treeWidget_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), treeWidget_);
-            connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteComponent()));
-            connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyComponent()));
-            connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteComponent()));
-        }
+        QtTreePropertyBrowser::clear();
+        // For some odd reason the QtTreePropertyBrowser will destroy it's shortcuts when calling clear mehtod.
+        // So we need to reinitialize them.
+        //CreateShorcuts();
     }
 
     void AttributeBrowser::NewEntityComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp)
@@ -292,20 +353,20 @@ namespace ECEditor
 
     void AttributeBrowser::InitializeEditor()
     {
-        QList<QTreeWidget *> treeWidgets = findChildren<QTreeWidget *>();
-        for(uint i = 0; i < treeWidgets.size(); i++)
+        setResizeMode(QtTreePropertyBrowser::ResizeToContents);
+        setContextMenuPolicy(Qt::CustomContextMenu);
+        QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
+        treeWidget_ = findChild<QTreeWidget *>();
+        if(treeWidget_)
         {
-            treeWidget_ = treeWidgets[i];
             treeWidget_->setSelectionMode(QAbstractItemView::ExtendedSelection);
-            QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), treeWidget_);
+            treeWidget_->setFocusPolicy(Qt::StrongFocus);
+            QShortcut* delete_shortcut = new QShortcut(Qt::Key_Delete, treeWidget_);
             QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), treeWidget_);
             QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), treeWidget_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteComponent()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyComponent()));
             connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteComponent()));
         }
-        setResizeMode(QtTreePropertyBrowser::ResizeToContents);
-        setContextMenuPolicy(Qt::CustomContextMenu);
-        QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
     }
 }

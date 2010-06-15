@@ -37,6 +37,16 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
+AttributeInterface* ComponentInterface::GetAttributeByName(const std::string &name)
+{
+    for(unsigned int i = 0; i < attributes_.size(); i++)
+    {
+        if(attributes_[i]->GetNameString() == name)
+            return attributes_[i];
+    }
+    return 0;
+}
+
 QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
 {
     QDomElement comp_element = doc.createElement("component");

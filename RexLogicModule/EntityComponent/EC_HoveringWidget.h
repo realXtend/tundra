@@ -65,7 +65,6 @@ namespace RexLogic
     public:
         /// Destructor.
         ~EC_HoveringWidget();
-
         
         //! @return billboard that shows buttons
         Ogre::Billboard* const GetButtonsBillboard(){return buttonsbillboard_;}
@@ -74,10 +73,7 @@ namespace RexLogic
         //! @return get size of the button billboard in screenspace
         QSizeF GetButtonsBillboardScreenSpaceSize(){ return bb_buttons_size_view; }
 
-
-
     public slots:
-
         //!called when widget is hovered
         void HoveredOver();
         //!Initializes billboards, must be called before use
@@ -157,8 +153,10 @@ namespace RexLogic
         /// Redraws the hovering text with the current text, font and color.
         void Redraw();
 
-    private:
+        /// Check for name width
+        int CheckNameTagWidth();
 
+    private:
         /// Returns pixmap with widget rendered to it
         QPixmap GetPixmap(QWidget& w, QRect dimensions);
 
@@ -167,6 +165,7 @@ namespace RexLogic
 
         /// Ogre billboard set.
         Ogre::BillboardSet *namebillboardSet_;
+
         /// Ogre billboard set.
         Ogre::BillboardSet *buttonsbillboardSet_;
 
@@ -178,9 +177,9 @@ namespace RexLogic
 
         /// Name of the material used for the name billboard set.
         std::string namematerialName_;
+
         /// Name of the material used for the buttons billboard set.
         std::string buttonsmaterialName_;
-
 
         // Visibility animation timeline.
         QTimeLine *visibility_animation_timeline_;

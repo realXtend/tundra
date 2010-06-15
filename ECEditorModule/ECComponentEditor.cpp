@@ -64,10 +64,11 @@ namespace ECEditor
             if(groupPropertyManager_)
             {
                 components_.insert(component);
-                groupProperty_ = groupPropertyManager_->addProperty(typeName_.c_str());
+                groupProperty_ = groupPropertyManager_->addProperty();
                 CreateAttriubteEditors(component);
             }
             propertyBrowser_->addProperty(groupProperty_);
+            UpdateGroupPropertyText();
         }
     }
 
@@ -93,15 +94,12 @@ namespace ECEditor
     {
         if(groupProperty_)
         {
+            std::string componentName = typeName_;
+            ReplaceSubstringInplace(componentName, "EC_", "");
+            QString groupPropertyName = componentName.c_str();
             if(components_.size() > 1)
-            {
-                QString groupPropertyName = QString(typeName_.c_str() + QString(" (%1 components)").arg(components_.size()));
-                groupProperty_->setPropertyName(groupPropertyName);
-            }
-            else
-            {
-                groupProperty_->setPropertyName(typeName_.c_str());
-            }
+                groupPropertyName += QString(" (%1 components)").arg(components_.size());
+            groupProperty_->setPropertyName(groupPropertyName);
         }
     }
 

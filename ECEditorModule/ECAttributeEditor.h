@@ -38,6 +38,7 @@ namespace ECEditor
      * to see how other attribute types have been included into the editor.
      * Todo! Make this class struture more simple and rename those methods in a way so that they give a user a better picture what they are ment to do.
      * Todo! Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory need to be registered to PropertyBrowser elsewhere.
+     * \ingroup ECEditorModuleClient.
      */
     class ECAttributeEditorBase: public QObject
     {
@@ -75,18 +76,22 @@ namespace ECEditor
         //! Reintialize the editor's ui elements.
         void UpdateEditorUI();
 
-        //! Get new attribute values and update them in browser window.
+        //! Get new attribute values and update them in browser window. 
         virtual void UpdateEditorValue() = 0;
 
     public slots:
         //! update edtior ui when attribute value is changed.
         void AttributeValueChanged() 
         {
-            UpdateEditorValue();
+            UpdateEditorUI();
+            //UpdateEditorValue();
         }
         
         //! Listens if any of editor's values has been changed and then for it's attributes need to be updated.
-        void SendNewAttributeValue(QtProperty *property) { SendNewValueToAttribute(property); }
+        void SendNewAttributeValue(QtProperty *property) 
+        { 
+            SendNewValueToAttribute(property); 
+        }
 
         //! Add new entity component into the map. Note! editor wont update the editor's ui until the user
         //! has called updateEditor() method, this way editor wont redraw it's elements until the user has inserted
@@ -144,6 +149,7 @@ namespace ECEditor
         typedef std::map<Foundation::ComponentWeakPtr, Foundation::AttributeInterface *> ECAttributeMap;
         ECAttributeMap attributeMap_;
         bool useMultiEditor_;
+        bool isInitialized_;
     };
 
     //! ECAttributeEditor template class that initializes each attribute type that we want to support in QtPropertyBrowser.

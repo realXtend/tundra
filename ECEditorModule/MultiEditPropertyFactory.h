@@ -10,6 +10,12 @@
 
 namespace ECEditor
 {
+    //! MultiEditPropertyFactory is responsible to create all nessessary ui elements for each property.
+    /*! When user set focus for attriubte factory's createEditor method is called and the widget that factory
+     *  created will be released when it's focus is lost.
+     *  /todo Some unfocus probles has been occurred when using QtTreePropertyBrowser when user right click the TreeWidget.
+     *  \ingroup ECEditorModuleClient.
+     */
     class MultiEditPropertyFact: public QtAbstractEditorFactory<MultiEditPropertyManager>
     {
         Q_OBJECT
@@ -18,15 +24,23 @@ namespace ECEditor
         ~MultiEditPropertyFact();
 
     protected:
+        //! Override from QtAbstractEditorFactory.
         virtual void connectPropertyManager(MultiEditPropertyManager *manager);
+
+        //! Override from QtAbstractEditorFactory.
         virtual QWidget *createEditor(MultiEditPropertyManager *manager, QtProperty *proeprty, QWidget *parent);
+
+        //! Override from QtAbstractEditorFactory.
         virtual void disconnectPropertyManager(MultiEditPropertyManager *manager);
 
     private slots:
+        //! Called when user has picked one of the values.
         void DialogValueSelected(const QString &value);
-        void EditorDestroyed(QObject *object);
 
+        //! Remove dialog from the map when it's destoyed.
+        void EditorDestroyed(QObject *object);
     signals:
+        //! Value has been selected from a dialog window.
         void ValueSelected(QtProperty *property, const QString &value);
 
     private:
