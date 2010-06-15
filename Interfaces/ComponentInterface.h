@@ -11,6 +11,7 @@
 #include <QObject>
 
 #include <vector>
+#include <set>
 
 class QDomDocument;
 class QDomElement;
@@ -67,6 +68,11 @@ namespace Foundation
         virtual bool IsSerializable() const { return false; }
         //! Return attributes of this component for reflection
         const AttributeVector& GetAttributes() const { return attributes_; }
+        //! Iterate throught the attribute vector and try to find the match for name string.
+        /*! If attribute with same name is found return attriubte interface pointer, else return null.
+         *  @param name Attribute name.
+         */
+        AttributeInterface* GetAttributeByName(const std::string &name);
         //! Component has changed. Send notification & queue network replication as necessary
         /*! Note: call this when you're satisfied & done with your current modifications
          */
