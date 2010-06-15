@@ -133,10 +133,13 @@ namespace ECEditor
 
         typedef std::map<std::string, ECComponentEditor *> ComponentEditorMap;
         ComponentEditorMap componentEditors_;
+        //One component editor can contain many components that it's editing in the same time.
         typedef std::map<QtProperty *, ComponentWeakPtrVector> PropertyToComponentsMap;
         PropertyToComponentsMap componentsBrowserItemMap_;
         typedef std::set<entity_id_t> EntityIDSet;
         EntityIDSet selectedEntities_;
+        //typedef std::map<QWidget*, QtProperty> WidgetToPropertyMap;
+        //WidgetToPropertyMap widgetToPropertyMap_;
         QMenu *menu_;
         QTreeWidget *treeWidget_;
         Foundation::Framework *framework_;
