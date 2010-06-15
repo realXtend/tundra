@@ -21,6 +21,7 @@ class QTextEdit;
 
 namespace ECEditor
 {
+    //! \ingroup ECEditorModuleClient.
     class EcXmlEditorWidget : public QWidget
     {
         Q_OBJECT

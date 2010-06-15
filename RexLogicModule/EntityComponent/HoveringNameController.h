@@ -1,7 +1,5 @@
-/**
- *  For conditions of distribution and use, see copyright notice in license.txt
- *
-*/
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_HoveringNameController_h
 #define incl_HoveringNameController_h
 
@@ -12,14 +10,16 @@
 
 namespace RexLogic
 {
-    class HoveringNameController: public QWidget, private Ui::HoveringName
+    class HoveringNameController: public QWidget, public Ui::HoveringName
     {
-        Q_OBJECT
+        
+    Q_OBJECT
 
     public:
         HoveringNameController();
         virtual ~HoveringNameController();
 
+    public slots:
         void SetText(const QString& text);
 
     private:

@@ -21,6 +21,7 @@ class QMenu;
 
 namespace Foundation
 {
+    class Framework;
     class ComponentInterface;
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
@@ -38,11 +39,19 @@ namespace ECEditor
     class ECComponentEditor;
     typedef std::vector<Foundation::ComponentWeakPtr> ComponentWeakPtrVector;
 
+    //! AttributeBrowser is a widget that will display all selected entity components and their attributes.
+    /*! AttributeBrowser will iterate all entity's components and pass them throught to ECComponentEditor.
+     *  user can add and remove those entities by using AddNewEntity and RemoveEntity mehtods. !Note: It's also possible to
+     *  add components directly to editor but this option is not recommented case this part code isn't tested fully yet.
+     *  AttributeBrowser has implement options to add, delete, copy and paste components from the selected entities. Clear mehtod
+     *  is used to reset browser state where it was when it was first time intialized (All infomration is lost).
+     *  \ingroup ECEditorModuleClient.
+     */
     class AttributeBrowser : public QtTreePropertyBrowser
     {
         Q_OBJECT
     public:
-        AttributeBrowser(QWidget *parent = 0);
+        AttributeBrowser(Foundation::Framework *framework, QWidget *parent = 0);
         ~AttributeBrowser();
 
     public slots:
@@ -86,10 +95,10 @@ namespace ECEditor
         void DeleteComponent(const std::string &componentType);
 
         //! Copy components attribute values in clipboard.
-        void CopyComponent(Foundation::ComponentInterfacePtr component);
+        //void CopyComponent(Foundation::ComponentInterfacePtr component);
 
         //! If clipboard contain attribute valeus insert them into the selected components.
-        void PasteComponent(Foundation::ComponentInterfacePtr component);
+        //void PasteComponent(Foundation::ComponentInterfacePtr component);
 
     private slots:
         //! Listens when the entity has added a new component. Add new compoent to editor and update browser ui.
@@ -124,12 +133,16 @@ namespace ECEditor
 
         typedef std::map<std::string, ECComponentEditor *> ComponentEditorMap;
         ComponentEditorMap componentEditors_;
+        //One component editor can contain many components that it's editing in the same time.
         typedef std::map<QtProperty *, ComponentWeakPtrVector> PropertyToComponentsMap;
         PropertyToComponentsMap componentsBrowserItemMap_;
         typedef std::set<entity_id_t> EntityIDSet;
         EntityIDSet selectedEntities_;
+        //typedef std::map<QWidget*, QtProperty> WidgetToPropertyMap;
+        //WidgetToPropertyMap widgetToPropertyMap_;
         QMenu *menu_;
         QTreeWidget *treeWidget_;
+        Foundation::Framework *framework_;
     };
 }
 

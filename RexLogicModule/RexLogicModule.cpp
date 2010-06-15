@@ -67,6 +67,7 @@
 #include "EC_Touchable.h"
 #include "EC_3DCanvas.h"
 #include "EC_3DCanvasSource.h"
+#include "EC_ChatBubble.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -1023,28 +1024,38 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 
     // Get users position
     boost::shared_ptr<EC_HoveringWidget> widget;
+    boost::shared_ptr<EC_ChatBubble> chat_bubble;
     boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placeable)
         return;
 
-
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
+        // Update avatar name tag/hovering widget
         placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         widget = avatar->GetComponent<EC_HoveringWidget>();
         if (!placeable || !widget)
             continue;
-        //we need to update the positions so that the distance is right, otherwise were always one frame behind.
+
+        // We need to update the positions so that the distance is right, otherwise were always one frame behind.
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
         Vector3Df camera_position = this->GetCameraPosition();
-        
-        
-
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
-        
+
+        // Update chat bubble
+        chat_bubble = avatar->GetComponent<EC_ChatBubble>();
+        if (!chat_bubble)
+            continue;
+        if (!chat_bubble->IsVisible())
+        {
+            widget->Show();
+            continue;
+        }
+        chat_bubble->SetScale(distance/10);
+        widget->Hide();
     }
 }
 
