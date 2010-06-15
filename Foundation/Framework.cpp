@@ -325,7 +325,19 @@ namespace Foundation
     {
         exit_signal_ = true;
         if (engine_.get())
+            engine_->AboutToExit();
+    }
+    
+    void Framework::ForceExit()
+    {
+        exit_signal_ = true;
+        if (engine_.get())
             engine_->quit();
+    }
+    
+    void Framework::CancelExit()
+    {
+        exit_signal_ = false;
     }
 
     void Framework::LoadModules()

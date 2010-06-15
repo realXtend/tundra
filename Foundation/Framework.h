@@ -90,9 +90,15 @@ namespace Foundation
         ConfigurationManagerPtr GetConfigManager();
         ThreadTaskManagerPtr GetThreadTaskManager();
 
-        //! Signal the framework to exit at first possible opportunity
+        //! Signal the framework to exit
         void Exit();
-
+        
+        //! Cancel a pending exit
+        void CancelExit();
+        
+        //! Force immediate exit, with no possibility to cancel it
+        void ForceExit();
+        
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool IsExiting() { return exit_signal_; }
 
