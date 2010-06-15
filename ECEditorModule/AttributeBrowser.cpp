@@ -47,8 +47,9 @@ namespace ECEditor
             componentEditors_[typeName] = componentEditor;
             //QObject::connect(componentEditor, SIGNAL(destroyed(QObject *)), this, SLOT(RemoveComponentEditorFromMap(QObject *)));
 
-            componentsBrowserItemMap_[componentEditors_[typeName]->GetRootProperty()];
-            componentsBrowserItemMap_[componentEditors_[typeName]->GetRootProperty()].push_back(Foundation::ComponentWeakPtr(newComponent));
+            QtProperty *rootProperty = componentEditors_[typeName]->GetRootProperty();
+            componentsBrowserItemMap_[rootProperty];
+            componentsBrowserItemMap_[rootProperty].push_back(Foundation::ComponentWeakPtr(newComponent));
         }
         else
         {
