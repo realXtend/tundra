@@ -41,7 +41,7 @@ namespace Foundation
 
         this->installTranslator(native_translator_);
         
-        std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(), "language", std::string("data/translations/naali_fi"));
+        std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(), "language", std::string("data/translations/naali_en"));
         ChangeLanguage(QString::fromStdString(default_language));
     }
 
