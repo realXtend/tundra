@@ -1,0 +1,57 @@
+<html>
+
+ <head>
+  <title>Naali web ui</title>
+  <script script type="text/javascript" src="camcontrol.js"></script>
+ </head>
+
+ <body>
+  <h1>Naali</h1>
+
+  <img src="%s" style="float: right;"/>
+
+  <form name="camform" action="render" method="GET">
+  <b>Camera:</b><br/>
+
+  <p>Rotation:<br/>
+  <input type="text" name="camang" value="%f"/>
+  <input type="button" value="+" onclick="add('camang', 10)"/>
+  <input type="button" value="-" onclick="add('camang', -10)"/><br/>
+  </p>
+
+  <p>Position:<br/
+  <input type="text" name="camposx" value="%f"/>
+  <input type="button" value="+" onclick="add('camposx', 1)"/>
+  <input type="button" value="-" onclick="add('camposx', -1)"/><br/>
+
+  <input type="text" name="camposy" value="%f"/>
+  <input type="button" value="+" onclick="add('camposy', 1)"/>
+  <input type="button" value="-" onclick="add('camposy', -1)"/><br/>
+
+  <input type="text" name="camposz" value="%f"/>
+  <input type="button" value="+" onclick="add('camposz', 1)"/>
+  <input type="button" value="-" onclick="add('camposz', -1)"/><br/>
+  </p>
+
+  <!--p>Orientation: (quaternion)<br/
+  <input type="text" name="camortw" value=""/>
+  <input type="button" value="+" onclick="add('camortw', 0.1)"/>
+  <input type="button" value="-" onclick="add('camortw', -0.1)"/><br/>
+
+  <input type="text" name="camortx" value=""/>
+  <input type="button" value="+" onclick="add('camortx', 0.1)"/>
+  <input type="button" value="-" onclick="add('camortx', -0.1)"/><br/>
+
+  <input type="text" name="camorty" value=""/>
+  <input type="button" value="+" onclick="add('camorty', 0.1)"/>
+  <input type="button" value="-" onclick="add('camorty', -0.1)"/><br/>
+
+  <input type="text" name="camortz" value=""/>
+  <input type="button" value="+" onclick="add('camortz', 0.1)"/>
+  <input type="button" value="-" onclick="add('camortz', -0.1)"/><br/-->
+
+  <input type="submit"/>
+  </form>
+
+ </body>
+</html>
