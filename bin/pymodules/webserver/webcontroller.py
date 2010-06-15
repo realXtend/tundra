@@ -134,6 +134,23 @@ class WebController(Controller):
                           pos.x(), pos.y(), pos.z()
                           #ort.scalar(), ort.x(), ort.y(), ort.z(),
                           )
+
+    def renderimg(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
+        camid = r.getCameraId()
+        cament = r.getEntity(camid)
+        p = cament.placeable
+
+        if camposx is not None:
+            pos = Vec(*(float(v) for v in [camposx, camposy, camposz]))
+            p.Position = pos
+
+        if camortx is not None:
+            ort = Quat(*(float(v) for v in [camortw, camortx, camorty, camortz]))
+            p.Orientation = ort
+
+        imgurl = save_screenshot()
+        #return imgurl
+        return self.serve_file(SHOTPATH + imgurl)
         
     def render1(self, campos=None, camort=None):
         timestr = datetime.datetime.today().isoformat()

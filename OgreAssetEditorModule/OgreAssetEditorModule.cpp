@@ -211,22 +211,22 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 const QString &name = downloaded->name.c_str();
                 if(!editorManager_->Exists(id, at))
                 {
-                    MeshPreviewEditor *editor = new MeshPreviewEditor(framework_, id, at, name);
+                    MeshPreviewEditor *editor = new MeshPreviewEditor(framework_, id, at, name, downloaded->asset->GetId().c_str());
                     QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                             editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
-                    editor->HandleAssetReady(downloaded->asset);
+                    //editor->HandleAssetReady(downloaded->asset);
                 }
                 else
                 {
                     // Editor already exists, bring it to front.
                     QWidget *editor = editorManager_->GetEditor(id, at);
-                    if (editor)
+                    if (editor != 0)
                     {
                         uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
-                        AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
-                        if(audioWidget)
-                            audioWidget->HandleAssetReady(downloaded->asset);
+                        MeshPreviewEditor *editorWidget = qobject_cast<MeshPreviewEditor*>(editor);
+                        if(editorWidget)
+                            editorWidget->RequestMeshAsset(downloaded->asset->GetId().c_str());
                     }
                 }
 
@@ -296,8 +296,21 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     editorWidget->HandleResouceReady(res);
             }
         }
+
+        if ( res->resource_->GetType() == "Mesh" || res->resource_->GetType() == "OgreMesh")
+        {
+            QVector<QWidget*> editorList = editorManager_->GetEditorListByAssetType(RexTypes::RexAT_Mesh);
+            for(uint i = 0; i < editorList.size(); i++)
+            {
+                MeshPreviewEditor *editorWidget = qobject_cast<MeshPreviewEditor*>(editorList[i]);
+                if(editorWidget != 0)
+                    editorWidget->HandleResouceReady(res);
+            }
+
+        }
     }
 
+  
     return false;
 }
 
