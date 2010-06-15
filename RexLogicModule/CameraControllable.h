@@ -79,6 +79,7 @@ namespace RexLogic
 
         //! returns camera pitch
         Real GetPitch() const { return firstperson_pitch_; }
+        Real GetYaw() const { return firstperson_yaw_; }
         void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
 
         //! returns current state of camera
