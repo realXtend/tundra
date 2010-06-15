@@ -19,6 +19,7 @@ namespace Ogre
     class Billboard;
 }
 
+/// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
 class EC_Billboard : public Foundation::ComponentInterface
 {
     Q_OBJECT

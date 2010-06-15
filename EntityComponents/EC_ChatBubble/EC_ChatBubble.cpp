@@ -8,6 +8,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_ChatBubble.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
@@ -23,6 +24,7 @@
 #include <QFile>
 #include <QPainter>
 #include <QLinearGradient>
+#include <QTimer>
 
 #include "MemoryLeakCheck.h"
 
@@ -48,7 +50,8 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
 
 EC_ChatBubble::~EC_ChatBubble()
 {
-    RemoveAllMessages();
+    if (!renderer_.expired())
+        Ogre::TextureManager::getSingleton().remove(texture_name_);
 }
 
 void EC_ChatBubble::SetPosition(const Vector3df& position)
@@ -59,19 +62,16 @@ void EC_ChatBubble::SetPosition(const Vector3df& position)
 
 void EC_ChatBubble::SetScale(float scale)
 {
-    // \todo Make this get 2 desimac precision without QString... this is stupid
-    QString my_scale = QString::number(scale);
-    my_scale = my_scale.left(my_scale.indexOf(".")+3);
-    scale = my_scale.toFloat();
+    // Round the scale consist only to two decimals, other we get unwanted jittering
+    scale *= 100;
+    scale = floorf(scale);
+    scale /=100;
 
     if (!billboardSet_ || !billboard_ || (current_scale_ == scale))
         return;
 
     // Make scale go inside our range
-    if (scale > 2.5)
-        scale = 2.5;
-    if (scale < 0.5)
-        scale = 0.5;
+    clamp(scale, 0.5f, 2.5f);
 
     // Update dimension
     billboardSet_->setDefaultDimensions(2*scale, 1*scale);
@@ -91,12 +91,12 @@ void EC_ChatBubble::SetScale(float scale)
     current_scale_ = scale;
 }
 
-bool EC_ChatBubble::IsVisible()
+bool EC_ChatBubble::IsVisible() const
 {
-    if (!billboardSet_) 
-        return false; 
-    else 
+    if (billboardSet_)
         return billboardSet_->isVisible();
+    else
+        return false;
 }
 
 void EC_ChatBubble::ShowMessage(const QString &msg)
@@ -232,7 +232,7 @@ bool EC_ChatBubble::CheckMessageSize(QString message)
         return true;
 }
 
-QString EC_ChatBubble::ConstructCombined()
+QString EC_ChatBubble::ConstructCombined() const
 {
     // Format queued strings with line ending
     QStringList queued = messages_;
@@ -240,7 +240,7 @@ QString EC_ChatBubble::ConstructCombined()
     foreach(QString line, queued)
         queued_formatted += line.append('\n');
     queued_formatted = queued_formatted.left(queued_formatted.lastIndexOf('\n'));
-    
+
     // Join current and upcoming
     QString all_messages;
     if (!current_message_.isEmpty())
@@ -251,6 +251,7 @@ QString EC_ChatBubble::ConstructCombined()
     }
     else
         all_messages = queued_formatted;
+
     return all_messages;
 }
 

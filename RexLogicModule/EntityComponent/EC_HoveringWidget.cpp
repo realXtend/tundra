@@ -2,46 +2,43 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_HoveringWidget.cpp
- *  @brief  EC_HoveringWidget shows a hovering Widget attached to an entity.
- *  @note   The entity must EC_OgrePlaceable available in advance.
+ *  @brief  EC_HoveringWidget shows a hovering widget attached to an entity.
+ *  @note   The entity must have EC_OgrePlaceable component available in advance.
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "EC_HoveringWidget.h"
+#include "HoveringNameController.h"
+#include "HoveringButtonsController.h"
+#include "DetachedWidgetController.h"
+
 #include "ModuleInterface.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
-
-#include "HoveringNameController.h"
-#include "HoveringButtonsController.h"
-#include "DetachedWidgetController.h"
-
-#include <QPointF>
-#include <Ogre.h>
-#include <OgreBillboardSet.h>
-#include <OgreTextureManager.h>
-#include <OgreResource.h>
-#include <QSizeF>
-#include <QPushButton>
-#include <QPainter>
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "ModuleManager.h"
 #include "UiModule.h"
-#include <QTimeLine>
-#include <QDebug>
-#include <QGraphicsProxyWidget>
-#include <QGraphicsScene>
-#include <QLabel>
 
-//#include "MemoryLeakCheck.h"
+#include <Ogre.h>
+#include <OgreBillboardSet.h>
+#include <OgreTextureManager.h>
+#include <OgreResource.h>
+
+#include <QGraphicsScene>
+#include <QPushButton>
+#include <QPainter>
+
+#include "MemoryLeakCheck.h"
+
 namespace RexLogic
 {
-
     EC_HoveringWidget::EC_HoveringWidget(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+        Foundation::ComponentInterface(module->GetFramework()),
         namebillboardSet_(0),
         buttonsbillboardSet_(0),
         namebillboard_(0),
@@ -70,19 +67,14 @@ namespace RexLogic
         visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
         visibility_timer_->setSingleShot(true);
 
-        connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), 
-                SLOT(UpdateAnimationStep(int)));
-        connect(visibility_animation_timeline_, SIGNAL(finished()), 
-                SLOT(AnimationFinished()));
+        connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
+        connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
         visibility_timer_->setSingleShot(true);
 
-        connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)),
-                SLOT(UpdateAnimationStep(int)));
-        connect(visibility_animation_timeline_, SIGNAL(finished()),
-                SLOT(AnimationFinished()));
+        connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
+        connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-        
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
             Foundation::Module::MT_UiServices).lock();
         if (!ui_module.get())
@@ -102,8 +94,14 @@ namespace RexLogic
     {
         SAFE_DELETE(namewidget_);
         SAFE_DELETE(buttonswidget_);
+
+        if (!renderer_.expired())
+        {
+            Ogre::TextureManager::getSingleton().remove(hoveringTexture1Name_);
+            Ogre::TextureManager::getSingleton().remove(hoveringTexture2Name_);
+        }
     }
-  
+
     void EC_HoveringWidget::SetDisabled(bool val)
     {
         disabled_ = val;
@@ -123,10 +121,11 @@ namespace RexLogic
     void EC_HoveringWidget::ShowButtons(bool val)
     {
         buttons_visible_ = val;
-        if (buttons_visible_ && buttonsbillboardSet_ && !disabled_ && !buttons_disabled_)
-            buttonsbillboardSet_->setVisible(true);
-        else
-            buttonsbillboardSet_->setVisible(false);
+        if (buttonsbillboardSet_)
+            if (buttons_visible_ && !disabled_ && !buttons_disabled_)
+                buttonsbillboardSet_->setVisible(true);
+            else
+                buttonsbillboardSet_->setVisible(false);
     }
 
     void EC_HoveringWidget::SetCameraDistance(Real dist)
@@ -166,7 +165,7 @@ namespace RexLogic
         pos2 = viewproj.inverse() * pos2;
 
         Ogre::Vector3 cam_up = camera->getDerivedUp();
-        Ogre::Vector3 cam_right = camera->getDerivedRight();        
+        Ogre::Vector3 cam_right = camera->getDerivedRight();
         Ogre::Vector3 diagonal = pos1 - pos2;
         cam_up.normalise();
         cam_right.normalise();
@@ -278,7 +277,7 @@ namespace RexLogic
     {
         if (namebillboardSet_)
             namebillboardSet_->setVisible(false);
-        if(buttonsbillboardSet_)
+        if (buttonsbillboardSet_)
             buttonsbillboardSet_->setVisible(false);
     }
 
@@ -290,11 +289,11 @@ namespace RexLogic
         Hide();
         qreal scene_w = renderer_.lock()->GetWindowWidth();
         qreal scene_h = renderer_.lock()->GetWindowHeight();
-        
+
         proxy_->setGeometry(QRectF(name_scr_pos_.x()*scene_w, (1-name_scr_pos_.y())* scene_h,proxy_->preferredWidth(),proxy_->preferredHeight()));
         proxy_->show();
-        
     }
+
     void EC_HoveringWidget::Attach()
     {
         proxy_->hide();
@@ -383,10 +382,9 @@ namespace RexLogic
 
             namematerialName_ = std::string("material")+ std::string("name") + renderer_.lock()->GetUniqueObjectName();
             buttonsmaterialName_ = std::string("material")+ std::string("buttons") + renderer_.lock()->GetUniqueObjectName();
-            
+
             OgreRenderer::CloneMaterial("HoveringText", namematerialName_);
             OgreRenderer::CloneMaterial("HoveringText", buttonsmaterialName_);
-            
 
             namebillboardSet_->setMaterialName(namematerialName_);
             namebillboardSet_->setCastShadows(false);
@@ -405,7 +403,6 @@ namespace RexLogic
             namebillboard_->setDimensions(bb_name_size_view.width(), bb_name_size_view.height());
             sceneNode->attachObject(namebillboardSet_);
 
-            
             buttonsbillboard_ = buttonsbillboardSet_->createBillboard(Ogre::Vector3(0, 0, bb_rel_posy));
             assert(buttonsbillboard_);
             assert(namebillboard_);
@@ -461,49 +458,95 @@ namespace RexLogic
         if (pixmap1.isNull()||pixmap2.isNull())
             return;
 
-        // Create texture
         QImage img1 = pixmap1.toImage();
         QImage img2 = pixmap2.toImage();
 
-        Ogre::DataStreamPtr stream1(new Ogre::MemoryDataStream((void*)img1.bits(), img1.byteCount()));
-        Ogre::DataStreamPtr stream2(new Ogre::MemoryDataStream((void*)img2.bits(), img2.byteCount()));
-
-        std::string tex_name1("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
-        std::string tex_name2("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
-
+        // Create Ogre textures
         Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
+        Ogre::TexturePtr texPtr1, texPtr2;
+        try
+        {
+            // If texture don't exist, create them now.
+            if (hoveringTexture1Name_.empty() && hoveringTexture2Name_.empty())
+            {
+                hoveringTexture1Name_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
+                hoveringTexture2Name_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
 
-        Ogre::Texture *tex1 = checked_static_cast<Ogre::Texture *>(manager.create(
-            tex_name1, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
-        Ogre::Texture *tex2 = checked_static_cast<Ogre::Texture *>(manager.create(
-            tex_name2, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
+                texPtr1 = manager.createManual(hoveringTexture1Name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                    Ogre::TEX_TYPE_2D, img1.width(), img1.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
 
-        assert(tex1);
-        assert(tex2);
+                texPtr2 = manager.createManual(hoveringTexture2Name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                    Ogre::TEX_TYPE_2D, img2.width(), img2.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
 
-        tex1->loadRawData(stream1, img1.width(), img1.height(), Ogre::PF_A8R8G8B8);
-        tex2->loadRawData(stream2, img2.width(), img2.height(), Ogre::PF_A8R8G8B8);
+                if (texPtr1.isNull())
+                {
+                    std::cout << "Failed to create texture " << hoveringTexture1Name_ << std::endl;
+                    return;
+                }
+                if (texPtr2.isNull())
+                {
+                    std::cout << "Failed to create texture " << hoveringTexture2Name_ << std::endl;
+                    return;
+                }
+            }
+            else
+            {
+                // Textures already exists. Re-use them.
+                texPtr1 = manager.getByName(hoveringTexture1Name_);
+                texPtr2 = manager.getByName(hoveringTexture2Name_);
+                assert(!texPtr1.isNull() || !texPtr2.isNull());
+
+                // See if size/format changed, have to delete/recreate internal resources
+                if (img1.width() != texPtr1->getWidth() || img1.height() != texPtr1->getHeight())
+                {
+                    texPtr1->freeInternalResources();
+                    texPtr1->setWidth(img1.width());
+                    texPtr1->setHeight(img1.height());
+                    texPtr1->setFormat(Ogre::PF_A8R8G8B8);
+                    texPtr1->createInternalResources();
+                }
+                if (img2.width() != texPtr2->getWidth() || img2.height() != texPtr2->getHeight())
+                {
+                    texPtr2->freeInternalResources();
+                    texPtr2->setWidth(img2.width());
+                    texPtr2->setHeight(img2.height());
+                    texPtr2->setFormat(Ogre::PF_A8R8G8B8);
+                    texPtr2->createInternalResources();
+                }
+            }
+
+            Ogre::Box dimensions1(0,0, img1.width(), img1.height());
+            Ogre::PixelBox pixel_box1(dimensions1, Ogre::PF_A8R8G8B8, (void*)img1.bits());
+            texPtr1->getBuffer()->blitFromMemory(pixel_box1);
+
+            Ogre::Box dimensions2(0,0, img2.width(), img2.height());
+            Ogre::PixelBox pixel_box2(dimensions2, Ogre::PF_A8R8G8B8, (void*)img2.bits());
+            texPtr2->getBuffer()->blitFromMemory(pixel_box2);
+        }
+        catch (Ogre::Exception &e)
+        {
+            std::cout << "Failed to create textures: " << std::string(e.what()) << std::endl;
+            return;
+        }
 
         // Set new texture for the material
         assert(!namematerialName_.empty() || !buttonsmaterialName_.empty());
         if (!namematerialName_.empty() && !buttonsmaterialName_.empty())
         {
             Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
-
             Ogre::MaterialPtr material = mgr.getByName(namematerialName_);
             material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(Ogre::TFO_ANISOTROPIC);
-            assert(material.get()); 
-            OgreRenderer::SetTextureUnitOnMaterial(material, tex_name1);
-
+            assert(material.get());
+            OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture1Name_);
 
             material = mgr.getByName(buttonsmaterialName_);
             material->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureFiltering(Ogre::TFO_ANISOTROPIC);
             assert(material.get());
-            OgreRenderer::SetTextureUnitOnMaterial(material, tex_name2);
+            OgreRenderer::SetTextureUnitOnMaterial(material, hoveringTexture2Name_);
         }
     }
 
-    int EC_HoveringWidget::CheckNameTagWidth()
+    int EC_HoveringWidget::CheckNameTagWidth() const
     {
         QFontMetrics metric(namewidget_->label->font());
         int label_width = metric.width(namewidget_->label->text());
@@ -511,9 +554,9 @@ namespace RexLogic
         return label_width;
     }
 
-    QPixmap EC_HoveringWidget::GetPixmap(QWidget& w, QRect dimensions)
+    QPixmap EC_HoveringWidget::GetPixmap(QWidget &w, const QRect &dimensions)
     {
-        if (renderer_.expired() )
+        if (renderer_.expired())
             return 0;
 
         // Create transparent pixmap
