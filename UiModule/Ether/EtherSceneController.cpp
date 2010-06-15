@@ -28,25 +28,30 @@ namespace Ether
     namespace Logic
     {
         EtherSceneController::EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, 
-                                                   QPair<View::EtherMenu*, View::EtherMenu*> menus, QRectF card_size, int top_items, int bottom_items)
-            : QObject(parent),
-              data_manager_(data_manager),
-              scene_(scene),
-              active_menu_(0),
-              top_menu_(menus.first),
-              bottom_menu_(menus.second),
-              top_menu_visible_items_(top_items),
-              bottom_menu_visible_items_(bottom_items),
-              menu_cap_size_(10),
-              login_animations_(new QParallelAnimationGroup(this)),
-              card_size_(card_size),
-              last_active_top_card_(0),
-              last_active_bottom_card_(0),
-              connected_world_(0),
-              layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
-              info_hide_timer_(new QTimer(this)),
-              login_in_progress_(false),
-              classical_login_widget_(0)
+                                                   QPair<View::EtherMenu*, View::EtherMenu*> menus, QRectF card_size, int top_items, int bottom_items) :
+            QObject(parent),
+            data_manager_(data_manager),
+            scene_(scene),
+            active_menu_(0),
+            top_menu_(menus.first),
+            bottom_menu_(menus.second),
+            top_menu_visible_items_(top_items),
+            bottom_menu_visible_items_(bottom_items),
+            menu_cap_size_(10),
+            login_animations_(new QParallelAnimationGroup(this)),
+            card_size_(card_size),
+            last_active_top_card_(0),
+            last_active_bottom_card_(0),
+            connected_world_(0),
+            layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
+            info_hide_timer_(new QTimer(this)),
+            login_in_progress_(false),
+            classical_login_widget_(0),
+            avatar_info_widget_(0),
+            world_info_widget_(0),
+            control_widget_(0),
+            action_proxy_widget_(0),
+            status_widget_(0)
         {
             // Connect key press signals from scene
             connect(scene_, SIGNAL( UpPressed() ), SLOT( UpPressed() ));
@@ -76,29 +81,26 @@ namespace Ether
             // Connect login animations finished signal
             connect(login_animations_, SIGNAL( finished() ),
                     this, SLOT( LoginAnimationFinished() ));
-
-            // Init widget pointers to 0 for null cheching on startup
-            avatar_info_widget_ = 0;
-            world_info_widget_ = 0;
-            control_widget_ = 0;
-            action_proxy_widget_ = 0;
-            status_widget_ = 0;
         }
 
-        EtherSceneController::EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene)
-            : QObject(parent),
-              data_manager_(data_manager),
-              scene_(scene),
-              layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
-              info_hide_timer_(new QTimer(this)),
-              login_in_progress_(false),
-              last_active_top_card_(0),
-              last_active_bottom_card_(0),
-              connected_world_(0),
-              status_widget_(0),
-              top_menu_(0),
-              bottom_menu_(0),
-              login_animations_(0)
+        EtherSceneController::EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene) :
+            QObject(parent),
+            data_manager_(data_manager),
+            scene_(scene),
+            layout_manager_(new CoreUi::AnchorLayoutManager(this, scene)),
+            info_hide_timer_(new QTimer(this)),
+            login_in_progress_(false),
+            last_active_top_card_(0),
+            last_active_bottom_card_(0),
+            connected_world_(0),
+            top_menu_(0),
+            bottom_menu_(0),
+            login_animations_(0),
+            avatar_info_widget_(0),
+            world_info_widget_(0),
+            control_widget_(0),
+            action_proxy_widget_(0),
+            status_widget_(0)
         {
             // Hide timer for status widget
             info_hide_timer_->setSingleShot(true);
@@ -127,7 +129,8 @@ namespace Ether
             connect(classical_login_widget_, SIGNAL( AppExitRequested() ), SLOT( TryExitApplication() ));
         }
 
-        void EtherSceneController::LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items, QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items)
+        void EtherSceneController::LoadStartUpCardsToScene(QVector<View::InfoCard*> avatar_ordered_vector, int visible_top_items,
+            QVector<View::InfoCard*> world_ordered_vector, int visible_bottom_items)
         {
             top_menu_visible_items_ = visible_top_items;
             bottom_menu_visible_items_ = visible_bottom_items;
@@ -308,7 +311,8 @@ namespace Ether
 
             // Classical login widget control button
             QPushButton *classical_login_button = new QPushButton("Classic Mode");
-            classical_login_button->setStyleSheet("border: 1px solid rgba(255,255,255,100); color: white; background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(18, 18, 18, 255), stop:1 rgba(54, 54, 54, 255)); padding: 10px;");
+            classical_login_button->setStyleSheet("border: 1px solid rgba(255,255,255,100); color: white; background-color: qlineargradient("
+                "spread:pad, x1:0, y1:0, x2:0, y2:1, stop:0 rgba(18, 18, 18, 255), stop:1 rgba(54, 54, 54, 255)); padding: 10px;");
             classical_login_button->setFont(QFont("Narkisim", 12));
 
             QGraphicsProxyWidget *classic_login_button_proxy_ = new QGraphicsProxyWidget(0, Qt::Widget);
@@ -661,8 +665,9 @@ namespace Ether
 
         void EtherSceneController::SetConnected(bool connected)
         {
-            control_widget_->SetConnected(connected);
-            if (connected)
+            if (control_widget_)
+                control_widget_->SetConnected(connected);
+            if (connected && connected_world_)
                 connected_world_ = bottom_menu_->GetHighlighted();
             else
                 connected_world_ = 0;
