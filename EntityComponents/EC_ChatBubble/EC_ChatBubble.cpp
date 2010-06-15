@@ -190,7 +190,7 @@ void EC_ChatBubble::ShowNextMessage()
 
         // Update rendering with current_message_
         Refresh();
-        pop_timer_->start(count_popped * 20000);
+        pop_timer_->start(count_popped * 4000);
 
         // Remove popped ones from queue
         for (int index=0; index<count_popped; index++)
