@@ -184,6 +184,11 @@ namespace OgreRenderer
         //! Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
 
+        //! Hides world view
+        void HideCurrentWorldView(); 
+        //! Shows world view
+        void ShowCurrentWorldView();
+
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
