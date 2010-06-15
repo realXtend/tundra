@@ -34,6 +34,12 @@ namespace OgreRenderer
         Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
         Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
         Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
+        Q_PROPERTY(QVector3D LocalXAxis READ GetQLocalXAxis)
+        Q_PROPERTY(QVector3D LocalYAxis READ GetQLocalYAxis)
+        Q_PROPERTY(QVector3D LocalZAxis READ GetQLocalZAxis)
+        Q_PROPERTY(float Yaw READ GetYaw)
+        Q_PROPERTY(float Pitch READ GetPitch)
+        Q_PROPERTY(float Roll READ GetRoll)
 
     public:
         virtual ~EC_OgrePlaceable();
@@ -60,15 +66,19 @@ namespace OgreRenderer
         //! yaws the node
         /*! \param radians how many radians to yaw
          */
-        void Yaw(Real radians);
+        void SetYaw(Real radians);
         //! pitches the node
-        /*! \param radians how many radians to yaw
+        /*! \param radians how many radians to pitch
          */
-        void Pitch(Real radians);        
+        void SetPitch(Real radians);        
         //! rolls the node
-        /*! \param radians how many radians to yaw
+        /*! \param radians how many radians to roll
          */
-        void Roll(Real radians);           
+        void SetRoll(Real radians);           
+
+        float GetYaw() const;
+        float GetPitch() const;
+        float GetRoll() const;
         
         //! sets scale
         /*! \param scale new scale
@@ -89,6 +99,13 @@ namespace OgreRenderer
         Quaternion GetOrientation() const;
         //! returns scale
         Vector3df GetScale() const;
+
+        Vector3df GetLocalXAxis() const;
+        Vector3df GetLocalYAxis() const;
+        Vector3df GetLocalZAxis() const;
+        QVector3D GetQLocalXAxis() const;
+        QVector3D GetQLocalYAxis() const;
+        QVector3D GetQLocalZAxis() const;
         
         //! returns Ogre scenenode for attaching geometry.
         /*! Do not manipulate the pos/orientation/scale of this node directly
@@ -113,6 +130,12 @@ namespace OgreRenderer
 
         QVector3D GetQScale() const;
         void SetQScale(const QVector3D newscale);
+
+    public slots:
+        //! translate
+        /* 0 = x, 1 = y, 2 = z. returns new position */
+        QVector3D translate( int axis, float amount);
+
 
     private:
         //! constructor
