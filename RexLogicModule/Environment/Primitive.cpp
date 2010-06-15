@@ -1438,13 +1438,14 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
             uint idx = i->first;
             if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
             {
-                // Use a legacy material with the same name as the texture, created automatically by renderer
+                // Use a legacy material with the same name as the texture
+                OgreRenderer::GetOrCreateLegacyMaterial(res->GetId(), OgreRenderer::LEGACYMAT_NORMAL);
                 meshptr->SetMaterial(idx, res->GetId());
                 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);            
+                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
             ++i;
         }

@@ -84,7 +84,7 @@ namespace OgreRenderer
                 if (submesh)
                 {
                     original_materials_.push_back(submesh->getMaterialName());
-                    submesh->setMaterialName("UnlitTextured");
+                    submesh->setMaterialName("LitTextured");
                 }
             }
             
