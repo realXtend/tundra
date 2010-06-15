@@ -274,8 +274,8 @@ namespace OgreRenderer
         {
             resources_[source_tex->GetId()] = tex;
             
-            // Create legacy material(s) based on the texture
-            CreateLegacyMaterials(source_tex->GetId(), true);
+            // Update any legacy materials already created for the texture
+            UpdateLegacyMaterials(source_tex->GetId());
             
             const RequestTagVector& tags = request_tags_[source_tex->GetId()];
             for (uint i = 0; i < tags.size(); ++i)
