@@ -100,7 +100,7 @@ add_subdirectory (EnvironmentModule)
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
-add_subdirectory (WorldInputModule)
+#add_subdirectory (WorldInputModule)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
