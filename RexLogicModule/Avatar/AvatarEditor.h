@@ -48,6 +48,9 @@ namespace RexLogic
         //! Master appearance modifier scrollbar value handler
         void MasterModifierValueChanged(int value);
 
+    private slots:
+        void ChangeLanguage();
+        
     private:
         RexLogicModule *rexlogicmodule_;
         

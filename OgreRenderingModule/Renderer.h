@@ -15,6 +15,7 @@
 #include <QTime>
 #include <QRect>
 #include <QImage>
+#include <QWidget>
 
 namespace Foundation
 {
@@ -45,6 +46,23 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
+
+    //! Naali main window, which overrides the closeEvent
+    class OGRE_MODULE_API NaaliMainWindow : public QWidget
+    {
+    public:
+        NaaliMainWindow(Foundation::Framework* framework) :
+            QWidget(),
+            framework_(framework)
+        {
+        }
+        
+    protected:
+        void closeEvent(QCloseEvent* e);
+        
+    private:
+        Foundation::Framework* framework_;
+    };
 
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
