@@ -77,6 +77,9 @@ namespace ECEditor
         /// Deletes entity.
         void DeleteEntity();
 
+        void CopyEntity();
+        void PasteEntity();
+
         ///
         //void RefreshEntityComponents();
 

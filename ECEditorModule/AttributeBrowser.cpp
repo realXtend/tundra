@@ -214,7 +214,10 @@ namespace ECEditor
 
                 Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(comp_elem.attribute("type").toStdString(), Foundation::ComponentInterface::Local);
                 if(!component.get())
+                {
+                    entityIter++;
                     continue;
+                }
                 component->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Local);
                 component->ComponentChanged(Foundation::ComponentInterface::Local);
 

@@ -95,10 +95,10 @@ namespace ECEditor
         void DeleteComponent(const std::string &componentType);
 
         //! Copy components attribute values in clipboard.
-        void CopyComponent(Foundation::ComponentInterfacePtr component);
+        //void CopyComponent(Foundation::ComponentInterfacePtr component);
 
         //! If clipboard contain attribute valeus insert them into the selected components.
-        void PasteComponent(Foundation::ComponentInterfacePtr component);
+        //void PasteComponent(Foundation::ComponentInterfacePtr component);
 
     private slots:
         //! Listens when the entity has added a new component. Add new compoent to editor and update browser ui.
