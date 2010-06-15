@@ -17,7 +17,6 @@
 #include <QFont>
 #include <QColor>
 #include <QRect>
-#include <QTimer>
 
 namespace OgreRenderer
 {
@@ -31,6 +30,11 @@ namespace Ogre
     class Billboard;
 }
 
+QT_BEGIN_NAMESPACE
+class QTimer;
+QT_END_NAMESPACE
+
+/// Chat bubble component wich shows billboard with chat bubble and text on entity.
 class EC_ChatBubble : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -64,7 +68,9 @@ public:
     /// @param color Color.
     void SetBubbleColor(const QColor &color) { bubbleColor_ = color; }
 
-    bool IsVisible();
+    /// Returns if the chat bubble is visible or not.
+    /// @true If the chat bubble text is visible, false if it's hidden or not initialized properly.
+    bool IsVisible() const;
 
 public slots:
     /// Adds new message to be shown on the chat bubble.
@@ -82,7 +88,8 @@ private slots:
     /// Check if messages fit to our rect
     bool CheckMessageSize(QString message);
 
-    QString ConstructCombined();
+    /// Create one string containing all the message in the stack.
+    QString ConstructCombined() const;
 
     /// Redraws the chat bubble with current messages.
     void Refresh();

@@ -13,17 +13,15 @@
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Billboard");
 
 #include <OgreBillboardSet.h>
 #include <OgreTextureManager.h>
 #include <OgreResource.h>
 
 #include <QTimer>
-
-#include <Poco/Logger.h>
-
-#define LogError(msg) Poco::Logger::get("EC_Billboard").error("Error: " + std::string(msg));
-#define LogInfo(msg) Poco::Logger::get("EC_Billboard").information(msg);
 
 EC_Billboard::EC_Billboard(Foundation::ModuleInterface *module) :
     Foundation::ComponentInterface(module->GetFramework()),
@@ -140,9 +138,7 @@ bool EC_Billboard::CreateOgreTextureResource(const std::string &imageName)
     {
         ///\bug OGRE doesn't seem to add all texture to the resource group although the texture
         ///     exists in folder spesified in the resource.cfg
-        std::stringstream ss;
-        ss << "Ogre Texture \"" << imageName << "\" not found!";
-        LogError(ss.str());
+        LogWarning("Ogre Texture \"" +imageName + "\" not found from the default resource group");
 
         Ogre::ResourcePtr rp = manager.create(imageName, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
         if (!rp.isNull())
