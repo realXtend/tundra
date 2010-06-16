@@ -35,7 +35,7 @@ namespace Naali
 {
 
 InWorldChatModule::InWorldChatModule() :
-    ModuleInterfaceImpl(NameStatic()),
+    ModuleInterface(NameStatic()),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),

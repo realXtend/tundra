@@ -34,7 +34,7 @@ namespace Environment
     std::string EnvironmentModule::type_name_static_ = "Environment";
 
     EnvironmentModule::EnvironmentModule() :
-        ModuleInterfaceImpl(type_name_static_),
+        ModuleInterface(type_name_static_),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),

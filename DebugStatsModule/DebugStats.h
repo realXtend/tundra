@@ -38,7 +38,7 @@ namespace DebugStats
     class TimeProfilerWindow;
     class ParticipantWindow;
 
-    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

@@ -26,7 +26,7 @@ namespace OpenSimProtocol
     std::string ProtocolModuleOpenSim::type_name_static_ = "OpenSimProtocol";
 
     ProtocolModuleOpenSim::ProtocolModuleOpenSim() :
-        ModuleInterfaceImpl(type_name_static_),
+        ModuleInterface(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown)
     {

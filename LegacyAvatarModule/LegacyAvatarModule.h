@@ -15,7 +15,7 @@ namespace LegacyAvatar
     class Mesh;
 
     //! Interface for modules
-    class LegacyAvatarModule: public Foundation::ModuleInterfaceImpl
+    class LegacyAvatarModule: public Foundation::ModuleInterface
     {
     public:
         LegacyAvatarModule();

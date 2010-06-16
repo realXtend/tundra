@@ -35,7 +35,7 @@ namespace TaigaProtocol
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
     class TAIGAPROTO_MODULE_API ProtocolModuleTaiga 
-        : public Foundation::ModuleInterfaceImpl, 
+        : public Foundation::ModuleInterface, 
           public ProtocolUtilities::INetMessageListener, 
           public ProtocolUtilities::ProtocolModuleInterface
     {

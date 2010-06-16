@@ -224,7 +224,7 @@ namespace LegacyAvatar
     std::string LegacyAvatarModule::type_name_static_ = "LegacyAvatar";
 
     LegacyAvatarModule::LegacyAvatarModule() 
-    : ModuleInterfaceImpl(type_name_static_)
+    : ModuleInterface(type_name_static_)
     {
     }
     

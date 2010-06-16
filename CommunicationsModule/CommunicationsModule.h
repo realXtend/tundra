@@ -24,7 +24,7 @@ namespace CommunicationsService
      *  @todo Console commands: 'communications' .. Information about available services
      *  @todo Move Communications UI implementation here ???
      */
-    class CommunicationsModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class CommunicationsModule : public QObject, public Foundation::ModuleInterface
     {
     public:
         CommunicationsModule();

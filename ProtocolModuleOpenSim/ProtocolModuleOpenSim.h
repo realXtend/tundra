@@ -35,7 +35,7 @@ namespace OpenSimProtocol
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
     class OSPROTO_MODULE_API ProtocolModuleOpenSim  :
-        public Foundation::ModuleInterfaceImpl,
+        public Foundation::ModuleInterface,
         public ProtocolUtilities::INetMessageListener,
         public ProtocolUtilities::ProtocolModuleInterface
     {

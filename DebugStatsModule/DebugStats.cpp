@@ -40,7 +40,7 @@ namespace DebugStats
 {
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterfaceImpl(NameStatic()),
+    ModuleInterface(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkStateEventCategory_(0),

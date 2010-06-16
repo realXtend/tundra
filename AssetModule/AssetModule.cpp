@@ -19,7 +19,7 @@ namespace Asset
 {
     std::string AssetModule::type_name_static_ = "Asset";
 
-    AssetModule::AssetModule() : ModuleInterfaceImpl(type_name_static_), inboundcategory_id_(0)
+    AssetModule::AssetModule() : ModuleInterface(type_name_static_), inboundcategory_id_(0)
     {
     }
 

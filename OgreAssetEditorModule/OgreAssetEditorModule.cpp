@@ -36,7 +36,7 @@ namespace Naali
 std::string OgreAssetEditorModule::type_name_static_ = "OgreAssetEditor";
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
-    ModuleInterfaceImpl(type_name_static_),
+    ModuleInterface(type_name_static_),
     frameworkEventCategory_(0),
     inventoryEventCategory_(0),
     assetEventCategory_(0),

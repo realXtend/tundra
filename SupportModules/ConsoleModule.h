@@ -25,7 +25,7 @@ namespace Console
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
-    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
+    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterface
     {
     public:
         ConsoleModule();

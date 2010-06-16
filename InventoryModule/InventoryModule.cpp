@@ -47,7 +47,7 @@ namespace Inventory
 std::string InventoryModule::type_name_static_ = "Inventory";
 
 InventoryModule::InventoryModule() :
-    ModuleInterfaceImpl(type_name_static_),
+    ModuleInterface(type_name_static_),
     inventoryEventCategory_(0),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
@@ -134,8 +134,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 return false;
 
             // Create inventory and upload progress windows
-            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-            if (ui_module.get())
+            UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+            if (ui_module)
             {
                 SAFE_DELETE(inventoryWindow_);
                 inventoryWindow_ = new InventoryWindow(this);
@@ -247,7 +247,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+            UiServices::UiModule * ui_module = GetModule<UiServices::UiModule>();
             if (ui_module)
             {
                 if (inventoryWindow_)
@@ -541,8 +541,8 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
+    UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+    if (!ui_module)
         return;
 
     // Check that item properties window for this item doesn't already exists.
@@ -598,7 +598,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
     if (ui_module)
         ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
 

@@ -27,7 +27,7 @@ namespace Communication
     std::string TelepathyIMModule::type_name_static_ = "TelepathyIM";
 
     TelepathyIMModule::TelepathyIMModule()
-        : ModuleInterfaceImpl(type_name_static_),
+        : ModuleInterface(type_name_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
           communication_service_(0),

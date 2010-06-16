@@ -25,7 +25,7 @@ namespace ECEditor
     std::string ECEditorModule::name_static_ = "ECEditorModule";
     
     ECEditorModule::ECEditorModule() :
-        ModuleInterfaceImpl(name_static_),
+        ModuleInterface(name_static_),
         editor_window_(0),
         scene_event_category_(0),
         framework_event_category_(0),

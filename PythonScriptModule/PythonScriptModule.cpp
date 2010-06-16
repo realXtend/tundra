@@ -142,7 +142,7 @@ namespace PythonScript
 {
     std::string PythonScriptModule::type_name_static_ = "PythonScript";
 
-    PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_name_static_)
+    PythonScriptModule::PythonScriptModule() : ModuleInterface(type_name_static_)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;

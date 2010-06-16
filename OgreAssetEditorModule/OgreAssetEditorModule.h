@@ -34,7 +34,7 @@ namespace Naali
     class MaterialWizard;
     class EditorManager;
 
-    class OgreAssetEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class OgreAssetEditorModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

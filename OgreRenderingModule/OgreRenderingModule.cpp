@@ -30,7 +30,7 @@ namespace OgreRenderer
     std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
 
     OgreRenderingModule::OgreRenderingModule() :
-        ModuleInterfaceImpl(type_name_static_),
+        ModuleInterface(type_name_static_),
         asset_event_category_(0),
         resource_event_category_(0),
         input_event_category_(0),

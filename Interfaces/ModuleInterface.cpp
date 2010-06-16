@@ -1,8 +1,13 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ModuleInterface.cpp
+ *  @brief  Interface for Naali modules.
+ *          See @ref ModuleArchitecture for details.
+ */
 
 #include "Framework.h"
 #include "ModuleInterface.h"
-#include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
@@ -15,30 +20,30 @@ namespace Foundation
 
 static const int DEFAULT_EVENT_PRIORITY = 100;
 
-ModuleInterfaceImpl::ModuleInterfaceImpl(const std::string &name) :
+ModuleInterface::ModuleInterface(const std::string &name) :
     name_(name), state_(Module::MS_Unloaded), framework_(0)
 {
     try
     {
         Poco::Logger::create(Name(),Poco::Logger::root().getChannel(), Poco::Message::PRIO_TRACE);
     }
-    catch (std::exception)
+    catch (const std::exception &e)
     {
-        Foundation::RootLogError("Failed to create logger " + Name() + ".");
+        Foundation::RootLogError("Failed to create logger " + Name() + ":" + std::string(e.what()));
     }
 }
 
-ModuleInterfaceImpl::~ModuleInterfaceImpl()
+ModuleInterface::~ModuleInterface()
 {
     Poco::Logger::destroy(Name());
 }
 
-Framework *ModuleInterfaceImpl::GetFramework() const
+Framework *ModuleInterface::GetFramework() const
 {
     return framework_;
 }
 
-void ModuleInterfaceImpl::RegisterConsoleCommand(const Console::Command &command)
+void ModuleInterface::RegisterConsoleCommand(const Console::Command &command)
 {
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
     //assert(console.get());
@@ -51,7 +56,7 @@ void ModuleInterfaceImpl::RegisterConsoleCommand(const Console::Command &command
     console->RegisterCommand(command);
 }
 
-void ModuleInterfaceImpl::InitializeInternal()
+void ModuleInterface::InitializeInternal()
 {
     assert(framework_ != 0);
     assert(state_ == Module::MS_Loaded);
@@ -83,7 +88,7 @@ void ModuleInterfaceImpl::InitializeInternal()
     Initialize();
 }
 
-void ModuleInterfaceImpl::UninitializeInternal()
+void ModuleInterface::UninitializeInternal()
 {
     assert(framework_ != 0);
     assert(state_ == Module::MS_Initialized);
