@@ -197,8 +197,6 @@ void MyClass::Update()
                 Command CreateCommand(const std::string &name, const std::string &description, const CallbackPtr &callback, bool delayed)
                 Command CreateCommand(const std::string &name, const std::string &description, StaticCallback &static_callback, bool delayed)
 
-            When registering commands from a module, use Foundation::ModuleInterface::AutoRegisterConsoleCommand().
-
             \param command the command to register
         */
         virtual void RegisterCommand(const Command &command) = 0;

@@ -165,7 +165,7 @@ namespace UiManagers
         friend_list_widget_ = new CommunicationUI::FriendListWidget(im_connection_, session_helper_, framework_);
 
         // Add friend list to scene, no toolbar button
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
         {
             UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SceneWidget);

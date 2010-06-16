@@ -7,7 +7,7 @@
 // ==========================================
 // Acquire UiModule pointer to gain access to the services
 // boost::shared_ptr<UiServices::UiModule> ui_module = GetFramework()->GetModuleManager()->
-//     GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+//     GetModule<UiServices::UiModule>().lock();
 //
 // You can add any QWidget to the inworld scene from your module. First you need to define
 // some properties. You have two type options ModuleWidget or SceneWidget. The difference is that

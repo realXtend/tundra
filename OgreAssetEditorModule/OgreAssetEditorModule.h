@@ -55,10 +55,7 @@ namespace Naali
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        /// Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_OgreAssetEditor;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     public slots:
         /// Uploads new asset.
@@ -67,6 +64,9 @@ namespace Naali
 
     private:
         Q_DISABLE_COPY(OgreAssetEditorModule);
+
+        /// Type name of this module.
+        static std::string type_name_static_;
 
         /// UiModule pointer.
         boost::weak_ptr<UiServices::UiModule> uiModule_;

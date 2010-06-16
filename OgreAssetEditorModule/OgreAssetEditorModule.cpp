@@ -33,8 +33,10 @@
 namespace Naali
 {
 
+std::string OgreAssetEditorModule::type_name_static_ = "OgreAssetEditor";
+
 OgreAssetEditorModule::OgreAssetEditorModule() :
-    ModuleInterfaceImpl(Foundation::Module::MT_OgreAssetEditor),
+    ModuleInterfaceImpl(type_name_static_),
     frameworkEventCategory_(0),
     inventoryEventCategory_(0),
     assetEventCategory_(0),
@@ -62,7 +64,7 @@ void OgreAssetEditorModule::PostInitialize()
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
     
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
+    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
 
     materialWizard_ = new MaterialWizard;
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),

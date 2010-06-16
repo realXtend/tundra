@@ -12,8 +12,8 @@ namespace Foundation
 
 namespace LegacyAvatar
 {
-	class Mesh;
-	
+    class Mesh;
+
     //! Interface for modules
     class LegacyAvatarModule: public Foundation::ModuleInterfaceImpl
     {
@@ -36,24 +36,25 @@ namespace LegacyAvatar
         MODULE_LOGGING_FUNCTIONS;
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        static const std::string &NameStatic() { return type_name_static_; }
 
         //! callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
 
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_LegacyAvatar;
-
     private:
         void operator=(const LegacyAvatarModule &);
         LegacyAvatarModule(const LegacyAvatarModule &);
-               
-		static Mesh *mesh_eye;
-		static Mesh *mesh_eyelashes;
-		static Mesh *mesh_hair;
-		static Mesh *mesh_head;
-		static Mesh *mesh_lower_body;
-		static Mesh *mesh_skirt;
-		static Mesh *mesh_upper_body;
+
+        //! Type name of the module.
+        static std::string type_name_static_;
+
+        static Mesh *mesh_eye;
+        static Mesh *mesh_eyelashes;
+        static Mesh *mesh_hair;
+        static Mesh *mesh_head;
+        static Mesh *mesh_lower_body;
+        static Mesh *mesh_skirt;
+        static Mesh *mesh_upper_body;
     };
 }
 #endif

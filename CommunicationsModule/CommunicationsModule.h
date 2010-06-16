@@ -16,8 +16,8 @@ namespace Communications
 namespace CommunicationsService
 {
     /**
-	 *  Communications Module
-	 *
+     *  Communications Module
+     *
      *  - Implementes and register interfaces/CommunicationsServiceInterface.
      *  - You must not use this module directly. All functionality must be used throug service interface
      *
@@ -41,13 +41,12 @@ namespace CommunicationsService
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } 
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Communications;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     private:
         void InitializeConsoleCommands();
         Console::CommandResult OnConsoleCommandCommunications(const StringVector &params);
-
+        static std::string type_name_static_;
         Communications::CommunicationsServicePtr communications_service_;
     };
 

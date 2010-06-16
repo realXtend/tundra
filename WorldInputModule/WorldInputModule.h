@@ -28,36 +28,35 @@ namespace Input
     {
         MODULE_LOGGING_FUNCTIONS
 
-        public:
-            WorldInputModule();
-            virtual ~WorldInputModule();
+    public:
+        WorldInputModule();
+        virtual ~WorldInputModule();
 
-            virtual void Load();
-            virtual void Unload();
-            virtual void Initialize();
-            virtual void PostInitialize();
-            virtual void Uninitialize();
+        virtual void Load();
+        virtual void Unload();
+        virtual void Initialize();
+        virtual void PostInitialize();
+        virtual void Uninitialize();
 
-            virtual void Update(f64 frametime);
+        virtual void Update(f64 frametime);
 
-            //! returns name of this module. Needed for logging.
-            static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return type_name_static_; }
 
-            static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Input;
+        //! returns true if key with specified keycode is currently held down. Internal use only!
+        //WORLDINPUT_MODULE_API bool IsKeyDown(OIS::KeyCode keycode) const {}
 
-            //! returns true if key with specified keycode is currently held down. Internal use only!
-            //WORLDINPUT_MODULE_API bool IsKeyDown(OIS::KeyCode keycode) const {}
+        //! returns true if button with specified code is currently held down. Internal use only!
+        //WORLDINPUT_MODULE_API bool IsButtonDown(OIS::MouseButtonID code) const {}
 
-            //! returns true if button with specified code is currently held down. Internal use only!
-            //WORLDINPUT_MODULE_API bool IsButtonDown(OIS::MouseButtonID code) const {}
+        //! Polls the current mouse state for both absolute and relative movement
+        //WORLDINPUT_MODULE_API const Events::Movement &GetMouseMovement() const {}
 
-            //! Polls the current mouse state for both absolute and relative movement
-            //WORLDINPUT_MODULE_API const Events::Movement &GetMouseMovement() const {}
+    private:
+        static std::string type_name_static_;
 
-        private:
-
-            //! Input handling state machine
-            StateMachinePtr state_machine_;
+        //! Input handling state machine
+        StateMachinePtr state_machine_;
     };
 }
 #endif

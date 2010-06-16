@@ -40,8 +40,10 @@
 
 namespace UiServices
 {
+    std::string UiModule::type_name_static_ = "UI";
+
     UiModule::UiModule() 
-        : Foundation::ModuleInterfaceImpl(Foundation::Module::MT_UiServices),
+        : Foundation::ModuleInterfaceImpl(type_name_static_),
           event_query_categories_(QStringList()),
           ui_state_machine_(0),
           service_getter_(0),

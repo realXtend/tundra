@@ -55,7 +55,7 @@ namespace RexLogic
 
     void AvatarEditor::InitEditorWindow()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
         // If this occurs, we're most probably operating in headless mode.
         if (ui_module.get() == 0)

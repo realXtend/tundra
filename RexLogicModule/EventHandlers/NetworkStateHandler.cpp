@@ -66,7 +66,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             return false;
 
         UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+            ).lock();
         if (ui_module.get())
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 joined the world").arg(event_data->fullName.c_str())));
@@ -80,7 +80,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             return false;
 
         UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+            ).lock();
         if (ui_module.get())
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 logged out").arg(event_data->fullName.c_str())));
