@@ -171,6 +171,11 @@ namespace UiServices
                     PublishConnectionState(UiDefines::Disconnected);
                     break;
                 }
+                case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
+                {
+                    PublishConnectionState(UiDefines::Disconnected);
+                    break;
+                }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
                 {
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
