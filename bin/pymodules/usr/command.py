@@ -1269,15 +1269,16 @@ if 0: #create a new component, hilight
         print "not"
         
 if 0: #create a new component, touchable
-    avid = r.getUserAvatarId()
-    e = r.getEntity(avid)
+    #entid = r.getUserAvatarId()
+    entid = 2979274737
+    e = r.getEntity(entid)
     try:
-        e.touchable
+        t = e.touchable
     except AttributeError:
         print e.createComponent("EC_Touchable")
-        print "created a new Touchable component"
+        print "created a new Touchable component", e.id
+        t = e.touchable
 
-    t = e.touchable
     print type(t), t
     
     def onhover():
@@ -1286,7 +1287,7 @@ if 0: #create a new component, touchable
         
     def onclick():
         print "click on avatar"
-    t.connect('Click()', onclick)   
+    t.connect('Clicked()', onclick)   
         
     #h.Show()
     #h.Hide()
@@ -1300,33 +1301,35 @@ if 0: #create a new component, touchable
 
 if 0: #test adding a dynamiccomponent
     #entid = r.getUserAvatarId()
-    entid = 1509821589
-
+    entid = 2394749782
     ent = r.getEntity(entid)
-    try:
-        ent.dynamic
-        print "found dynamic comp"
-    except AttributeError:
-        ent.createComponent("EC_DynamicComponent")
-        print "created new dynamic comp"
-    print ent.dynamic
+
+    if 0:
+        try:
+            ent.dynamic
+            print "found dynamic comp"
+        except AttributeError:
+            ent.createComponent("EC_DynamicComponent")
+            print "created new dynamic comp", ent.id
+        print ent.dynamic
 
     d = ent.dynamic
     #print dir(d)
     #d.AddAttribute()
-    #print d.GetAttribute()
+    print d, d.GetAttribute()
 
     if 0: #door
         d.SetAttribute('{"locked": false, "opened": true}')
        
     if 0: #javascript source url .. and door data
         d.SetAttribute("""{
+        "animpos": 0.0,
         "js_src": "http://an.org/realxtend/door.js", 
         "locked": false, 
         "opened": true
         }""")
 
-    #print d.GetAttribute()
+
 
 if 0: #animation control
     avid = r.getUserAvatarId()
