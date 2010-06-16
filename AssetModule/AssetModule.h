@@ -46,10 +46,7 @@ namespace Asset
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(
-            event_category_id_t category_id,
-            event_id_t event_id, 
-            Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         void UnsubscribeNetworkEvents();
@@ -60,11 +57,12 @@ namespace Asset
         Console::CommandResult ConsoleRequestAsset(const StringVector &params);
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Asset;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     private:
+        //! Type name of the module.
+        static std::string type_name_static_;
+
         //! UDP asset provider
         Foundation::AssetProviderPtr udp_asset_provider_;
 

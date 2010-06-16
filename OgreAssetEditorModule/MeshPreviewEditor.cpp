@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "Framework.h"
 #include "DebugOperatorNew.h"
@@ -66,11 +68,10 @@ namespace Naali
         if(request_tag_ == res->tag_)
         {
             //Foundation::TextureInterface *tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
-         
 
             boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-        
+                framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
+
             if (!rendering_module)
                 return;
 
@@ -174,7 +175,7 @@ namespace Naali
                     }
               
             boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             
             if (!ui_module.get())
                 return;
@@ -199,7 +200,7 @@ namespace Naali
     void MeshPreviewEditor::RequestMeshAsset(const QString &asset_id)
     {
          boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
+            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
         
         OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
         
@@ -219,7 +220,7 @@ namespace Naali
     void MeshPreviewEditor::Closed()
     {
         boost::shared_ptr<UiServices::UiModule> ui_module =
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 
@@ -232,7 +233,7 @@ namespace Naali
     {
         // Get QtModule and create canvas
         boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 

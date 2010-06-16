@@ -31,7 +31,7 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
         // If this occurs, we're most probably operating in headless mode.
         if (ui_module.get() == 0)

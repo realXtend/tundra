@@ -98,7 +98,7 @@ namespace UiHelpers
         }
 
         // Add friend request manager widget to scene
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
         {
             UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SceneWidget);

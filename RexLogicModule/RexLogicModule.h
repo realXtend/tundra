@@ -78,10 +78,10 @@ namespace RexLogic
         CS_Follow,
         //! Camera moves around freely
         CS_Free,
-		//! Camera tripod
-		CS_Tripod,
-		//! Focus on object
-		CS_FocusOnObject
+        //! Camera tripod
+        CS_Tripod,
+        //! Focus on object
+        CS_FocusOnObject
     };
 
     class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl, public Foundation::WorldLogicInterface
@@ -102,7 +102,7 @@ namespace RexLogic
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        static const std::string &NameStatic() { return type_name_static_; }
         MODULE_LOGGING_FUNCTIONS;
 
         //=============== WorldLogicInterface API ===============/
@@ -118,14 +118,14 @@ namespace RexLogic
         //! switch current input controller, if using avatar controller, switch to camera controller and vice versa
         void SwitchCameraState();
 
-		//! camera tripod
-		void CameraTripod();
+        //! camera tripod
+        void CameraTripod();
 
-		//! focus on object, and rotate around it
-		void FocusOnObject();
+        //! focus on object, and rotate around it
+        void FocusOnObject();
 
-		//! return camera state
-		CameraState GetCameraState() { return camera_state_; }
+        //! return camera state
+        CameraState GetCameraState() { return camera_state_; }
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler() const;
@@ -287,8 +287,8 @@ namespace RexLogic
         //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
         Console::CommandResult ConsoleHighlightTest(const StringVector &params);
 
-        //! Type of the module.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_WorldLogic;
+        //! Type name of the module.
+        static std::string type_name_static_;
 
         //! Event handler for network events.
         NetworkEventHandler *network_handler_;
@@ -377,8 +377,8 @@ namespace RexLogic
         MainPanelHandler *main_panel_handler_;
 
         InWorldChatProviderPtr in_world_chat_provider_;
-	signals:
-		void sigFocusOnObject(float, float, float);
+    signals:
+        void sigFocusOnObject(float, float, float);
     };
 }
 

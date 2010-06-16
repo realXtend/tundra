@@ -1703,7 +1703,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
     case OpenSim:
     {
         netInterfaceTaiga_ = boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga>();
-        netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
+        netInterfaceOpenSim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
         boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> sp = netInterfaceOpenSim_.lock();
         if (!sp.get())
             LogError("Getting ProtocolModuleOpenSim network interface did not succeed");
@@ -1712,7 +1712,7 @@ void WorldStream::SetCurrentProtocolType(ProtocolType newType)
     case Taiga:
     {
         netInterfaceOpenSim_ = boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim>();
-        netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>(Foundation::Module::MT_TaigaProtocol);
+        netInterfaceTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>();
         boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> sp = netInterfaceTaiga_.lock();
         if (!sp.get())
             LogError("Getting ProtocolModuleTaiga network interface did not succeed");

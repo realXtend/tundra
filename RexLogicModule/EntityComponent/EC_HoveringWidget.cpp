@@ -76,7 +76,7 @@ namespace RexLogic
         connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+            ).lock();
         if (!ui_module.get())
             return;
 

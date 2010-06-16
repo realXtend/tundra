@@ -35,65 +35,6 @@ namespace Foundation
 
     namespace Module
     {
-        //! Core module types, provided for convenience of accessing modules.
-        /*! Core modules are developed by RealXtend core developers. For modules created by other developers,
-            use string names instead of the enum below. This way modules can be created without the need to
-            touch the Foundation.
-
-            \note if you add new core module type, don't forget to add its name to NameFromType()
-            \note   DO NOT ADD ANYMORE NEW ENUMS FOR MODULES. USE STRINGS INSTEAD.
-                    THIS ENUM WILL BE DEPRECATED AT SOME POINT IN THE FUTURE.
-
-            \ingroup Module_group
-        */
-
-        //! Module enumeration.
-        //! \note   DO NOT ADD ANYMORE NEW ENUMS FOR MODULES. USE STRINGS INSTEAD.
-        //!         THIS ENUM WILL BE DEPRECATED AT SOME POINT IN THE FUTURE.
-        enum Type 
-        {
-            MT_Renderer = 0,
-            MT_RendererWindow,
-            MT_Sound,
-            MT_Gui,
-            MT_WorldLogic,
-            MT_OpenSimProtocol,
-            MT_Test,
-            MT_NetTestLogic,
-            MT_PythonScript,
-            MT_QtScript,
-            MT_Console,
-            MT_Asset,
-            MT_TelepathyIM,
-            MT_Communications,
-            MT_Input,
-            MT_TextureDecoder,
-            MT_Inventory,
-            MT_TaigaProtocol,
-            MT_OgreAssetEditor,
-            MT_UiServices,
-            MT_Environment,
-            MT_LegacyAvatar,
-            MT_Unknown
-        };
-
-        //! Returns string from type enum.
-        /*!
-            \ingroup Module_group
-        */
-        static const std::string &NameFromType(Type type)
-        {
-            assert(type != MT_Unknown);
-
-            static const std::string type_strings[MT_Unknown] = {
-                 "OgreRenderingModule", "OgreGtkWindowModule", "OpenALAudioModule", "QtModule", "RexLogicModule", "OpenSimProtocolModule",
-                 "TestModule", "NetTestLogicModule", "PythonScriptModule", "QtScriptModule", "ConsoleModule", "AssetModule",
-                 "TelepathyIMModule", "CommunicationsModule", "WorldInput", "TextureDecoderModule", "InventoryModule",
-                 "TaigaProtocolModule", "OgreAssetEditorModule", "UiServices", "EnvironmentModule", "LegacyAvatarModule" };
-
-            return type_strings[type];
-        }
-
         //! Possible module states
         /*!
             \ingroup Module_group
@@ -173,22 +114,8 @@ namespace Foundation
          */
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) = 0;
 
-        //! Returns major version as string. Override only if module is not internal.
-        virtual std::string VersionMajor() const = 0;
-
-        //! Returns minor version as string. Override only if module is not internal.
-        virtual std::string VersionMinor() const = 0;
-
         //! Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
         virtual const std::string &Name() const = 0;
-
-        //! Returns internal type of the module or MT_Unknown if module is not internal
-        //! do not override
-        virtual Module::Type Type() const = 0;
-
-        //! Returns true if module is internal, false otherwise
-        //! do not override
-        virtual bool IsInternal() const = 0;
 
         //! Declare a component the module defines. For internal use.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) = 0;
@@ -196,11 +123,6 @@ namespace Foundation
         //! Returns the state of the module
         //! do not override
         virtual Module::State State() const = 0;
-
-        //! By using this function for console commands, the command gets automatically
-        //! registered / unregistered with the console when module is initialized / uninitialized
-        //! Do not override.
-        virtual void AutoRegisterConsoleCommand(const Console::Command &command) = 0;
 
         //! Returns parent framework
         //! do not override
@@ -246,19 +168,19 @@ namespace Foundation
         /// @param name Module name.
         explicit ModuleInterfaceImpl(const std::string &name);
 
-        /// Constructor.
-        /// @param name type Module type.
-        explicit ModuleInterfaceImpl(Module::Type type);
-
         /// Destructor.
         virtual ~ModuleInterfaceImpl();
 
+        /// ModuleInterface override.
         virtual void Load() {}
 
+        /// ModuleInterface override.
         virtual void Unload() {}
 
+        /// ModuleInterface override.
         virtual void Initialize() {}
 
+        /// ModuleInterface override.
         virtual void Uninitialize() {}
 
         /// ModuleInterface override.
@@ -271,13 +193,7 @@ namespace Foundation
         virtual void Update(f64 frametime) {}
 
         /// ModuleInterface override.
-        virtual const std::string &Name() const { return (type_ == Module::MT_Unknown ? name_ : Module::NameFromType(type_)); }
-
-        /// ModuleInterface override.
-        virtual Module::Type Type() const { return type_; }
-
-        /// ModuleInterface override.
-        virtual bool IsInternal() const { return type_ != Module::MT_Unknown; }
+        virtual const std::string &Name() const { return name_; }
 
         /// ModuleInterface override.
         virtual void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) { component_registrars_.push_back(registrar); }
@@ -289,16 +205,7 @@ namespace Foundation
         virtual Module::State State() const { return state_; }
 
         /// ModuleInterface override.
-        virtual void AutoRegisterConsoleCommand(const Console::Command &command);
-
-        /// ModuleInterface override.
         virtual Framework *GetFramework() const;
-
-        /// ModuleInterface override.
-        virtual std::string VersionMajor() const;
-
-        /// ModuleInterface override.
-        virtual std::string VersionMinor() const;
 
     protected:
         //! parent framework
@@ -337,9 +244,6 @@ namespace Foundation
 
         //! name of the module
         const std::string name_;
-
-        //! type of the module if inbuild, unknown otherwise
-        const Module::Type type_;
 
         //! Current state of the module
         Module::State state_;

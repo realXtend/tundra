@@ -3,7 +3,7 @@
 /// @file TaigaLoginThread.cpp
 /// @brief XML-RPC login worker.
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 #include "TaigaLoginThread.h"
 #include "ProtocolModuleTaiga.h"
 #include "XmlRpcEpi.h"

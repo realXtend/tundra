@@ -108,7 +108,7 @@ namespace ECEditor
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module)
             return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -131,7 +131,7 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!entity || !ui_module)
             return;
 
@@ -146,7 +146,7 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(Foundation::ComponentPtr component)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!component || !ui_module)
             return;
 

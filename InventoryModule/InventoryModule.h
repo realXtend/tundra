@@ -63,10 +63,7 @@ namespace Inventory
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        /// Type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Inventory;
+        static const std::string &NameStatic() { return type_name_static_; }
 
         /// Subscribes this module to listen network events.
         void SubscribeToNetworkEvents();
@@ -127,6 +124,9 @@ namespace Inventory
 
         /// Connects upload-related signals.
         void ConnectSignals();
+
+        /// Name of the module.
+        static std::string type_name_static_;
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;

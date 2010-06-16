@@ -10,8 +10,10 @@
 
 namespace Input
 {
+    std::string WorldInputModule::type_name_static_ = "WorldInput";
+
     WorldInputModule::WorldInputModule () 
-        : ModuleInterfaceImpl (type_static_)
+        : ModuleInterfaceImpl(type_name_static_)
     {
     }
 

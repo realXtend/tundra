@@ -61,7 +61,7 @@ void InWorldChatModule::PostInitialize()
 {
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
+    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
 
     RegisterConsoleCommand(Console::CreateCommand("bbtest",
         "Adds a billboard to each entity in the scene.",

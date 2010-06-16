@@ -402,8 +402,7 @@ namespace RexLogic
 
         if (useTerrainConstraint_)
         {
-            boost::shared_ptr<Environment::EnvironmentModule> env =
-                framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>(Foundation::Module::MT_Environment).lock();
+            boost::shared_ptr<Environment::EnvironmentModule> env = framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>().lock();
             if (env)
             {
                 Scene::EntityWeakPtr terrain = env->GetTerrainHandler()->GetTerrainEntity();
