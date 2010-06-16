@@ -5,6 +5,7 @@ import datetime #showing human readable time on render page
 import os
 
 import rexviewer as r
+import naali
 
 try:
     import circuits
@@ -64,6 +65,7 @@ relhtml = """\
 abshtml = open(OWNPATH + "webui.html").read()
 
 def save_screenshot():
+    naali.renderer.Render()
     imgname = "image-%s.png" % time.time()
     r.takeScreenshot(SHOTPATH, imgname)
     imgurl = imgname #base is added when the server has a separate http for serving the image
