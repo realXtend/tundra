@@ -6,6 +6,8 @@
 #include "ServiceInterface.h"
 #include "CoreTypes.h"
 
+#include <map>
+
 namespace Foundation
 {
     class Framework;
