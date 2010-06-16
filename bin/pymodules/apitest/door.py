@@ -56,6 +56,7 @@ class DoorHandler(DynamiccomponentHandler):
             else:
                 print "touchable pre-existed in door."
             t.connect('Clicked()', self.open)
+            t.connect('MouseHover()', self.hover)
             self.inworld_inited = True
 
         if self.proxywidget is None and self.widget is not None:
@@ -121,6 +122,18 @@ class DoorHandler(DynamiccomponentHandler):
         #\todo if has key
         self.door['locked'] = not self.door['locked']
         self.sync()
+
+    def hover(self):
+        import PythonQt
+        qapp = PythonQt.Qt.QApplication.instance()
+        import PythonQt.QtGui as gui
+        cursor = gui.QCursor()
+        #print cursor, cursor.shape()
+
+        ctype = 1 if self.door['opened'] else 2
+
+        cursor.setShape(ctype)    
+        qapp.setOverrideCursor(cursor)
 
     def sync(self):
         if self.comp is not None:
