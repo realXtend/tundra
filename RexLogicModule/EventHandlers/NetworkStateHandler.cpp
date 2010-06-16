@@ -90,6 +90,8 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
     {
         owner_->LogoutAndDeleteWorld();
         // Show dialog
+        /* now uimodule shows this using some non-blocking system
+           - this version blocks the Naali mainloop which not always nice (when running as a server)
         QWidget* mainwindow = 0;
         boost::shared_ptr<OgreRenderer::Renderer> renderer =
             owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -97,7 +99,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
             mainwindow = renderer->GetMainWindow();
         QMessageBox msgBox(QMessageBox::Warning, QApplication::translate("RexLogic", "Kicked Out"), 
             QApplication::translate("RexLogic", "You were kicked out from the server."), QMessageBox::Ok, mainwindow);
-        msgBox.exec();
+        msgBox.exec();*/
         break;
     }
     default:

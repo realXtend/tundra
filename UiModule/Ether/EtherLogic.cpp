@@ -519,6 +519,12 @@ namespace Ether
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
+                case UiDefines::Kicked:
+                    UpdateUiPixmaps();
+                    scene_controller_->SetConnected(false);
+                    scene_controller_->ShowStatusInformation("Kicked from server");
+                    scene_->SetConnectionStatus(false);
+                    break;
             }
             scene_->SupressKeyEvents(false);
         }
