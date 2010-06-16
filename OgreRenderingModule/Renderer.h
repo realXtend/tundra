@@ -72,6 +72,10 @@ namespace OgreRenderer
     {
         Q_OBJECT
 
+    public slots:
+        //! Renders the screen
+        virtual void Render();
+
     public:
         //! Constructor
         //! \param framework Framework pointer.
@@ -86,9 +90,6 @@ namespace OgreRenderer
 
         //! Destructor
         virtual ~Renderer();
-
-        //! Renders the screen
-        virtual void Render();
 
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
