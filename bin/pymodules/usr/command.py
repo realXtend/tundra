@@ -345,11 +345,20 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    #print dir(PythonQt.Qt)
+    print dir(PythonQt.Qt)
+    qapp = PythonQt.Qt.QApplication.instance()
+    print qapp.changeOverrideCursor
+
+    import PythonQt.QtGui as gui
+    print dir(gui)
+    cursor = gui.QCursor()
+    print cursor, cursor.shape()
+    cursor.setShape(1)
+    qapp.setOverrideCursor(cursor)
+
     #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
-    #import PythonQt.QtGui as gui
-    #print dir(gui)
+
     #import PythonQt.QtUiTools as uitools
     #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
@@ -1328,8 +1337,6 @@ if 0: #test adding a dynamiccomponent
         "locked": false, 
         "opened": true
         }""")
-
-
 
 if 0: #animation control
     avid = r.getUserAvatarId()
