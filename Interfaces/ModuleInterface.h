@@ -131,14 +131,15 @@ namespace Foundation
 
         /** Returns module by class T.
             @param T class type of the module.
-            @return The module, or null if the module doesn't exist and dynamic cast fails.
+            @return The module, or null if the module doesn't exist.
             @note The pointer may invalidate between frames, always reacquire at begin of frame update
          */
+/*
         template <class T> T *GetModule()
         {
             return framework_->GetModuleManager()->GetModule<T>().lock().get();
         }
-
+*/
     protected:
         /// Parent framework
         Framework *framework_;
@@ -158,7 +159,7 @@ namespace Foundation
         /// Called when module is unloaded. For internal use.
         void UnloadInternal() { assert(state_ == Module::MS_Loaded); Unload(); state_ = Module::MS_Unloaded; }
 
-        /// PreInitializes the module. /// Unused
+        /// PreInitializes the module. Unused
         void PreInitializeInternal() { PreInitialize(); }
 
         /// Initializes the module. Called when module is taken in use. For internal use.
