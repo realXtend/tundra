@@ -5,6 +5,7 @@
 
 #include "UiModule.h"
 #include "UiProxyStyle.h"
+#include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
 #include "Ether/EtherLogic.h"
@@ -31,6 +32,7 @@
 #include "InputEvents.h"
 
 #include <QApplication>
+#include <QFontDatabase>
 #include <QDir>
 
 #include "MemoryLeakCheck.h"
@@ -63,8 +65,13 @@ namespace UiServices
 
     void UiModule::Load()
     {
-        // Application take ownership of the new UiProxyStyle
-        QApplication::setStyle(new UiProxyStyle());
+        // Application take ownership of the new UiDarkBlueStyle
+        
+        //QApplication::setStyle(new UiProxyStyle());
+        QApplication::setStyle(new UiDarkBlueStyle());
+        QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
+        QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
+
         event_query_categories_ << "Framework" << "Scene"  << "Console" << "Input";
     }
 

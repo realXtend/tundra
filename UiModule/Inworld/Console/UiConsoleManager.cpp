@@ -106,12 +106,14 @@ namespace CoreUi
 
     void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     {
+
         if (visible_)
         {
             QRectF new_size = rect;
             new_size.setHeight(rect.height() * proxy_widget_->GetConsoleRelativeHeight());
             proxy_widget_->setGeometry(new_size);
         }
+        
     }
 
     void UiConsoleManager::ToggleConsole()

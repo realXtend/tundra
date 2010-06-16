@@ -24,34 +24,12 @@
 	background-color: transparent;
 }
 
-QFrame#contentFrame {
-	background-color: white;
-	border-bottom: 1px solid rgba(0,0,0,100);
-	border-top: 1px solid rgba(0,0,0,50);
-}
-
 QLabel#timestampLabel, QLabel#resultTitleLabel {
 	color: rgb(0, 0, 145);
 }
 
 QLabel#resultTitleLabel, QLabel#resultLabel {
 	padding-bottom: 5px;
-}
-
-QPushButton {
-	background-color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(233, 233, 233, 255), stop:1 rgba(247, 247, 247, 255));
-	border: 1px solid rgba(0,0,0,150);
-	border-radius: 3px;
-	color: black;
-}
-
-QPushButton::hover {
-	background-color: rgb(225, 225, 225);
-}
-
-QPushButton::pressed {
-	background-color: rgb(181, 181, 181);
-	color: white;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
