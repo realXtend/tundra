@@ -20,7 +20,7 @@ namespace OpenALAudio
     typedef boost::shared_ptr<SoundSettings> SoundSettingsPtr;
 
     //! interface for modules
-    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterfaceImpl
+    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterface
     {
     public:
         OpenALAudioModule();

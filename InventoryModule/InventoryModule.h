@@ -35,7 +35,7 @@ namespace Inventory
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
     class InventoryService;
 
-    class InventoryModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class InventoryModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

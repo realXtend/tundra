@@ -24,7 +24,7 @@ namespace Input
      *
      * See \ref Input_page "Handling input" for more information.  
      */
-    class WorldInputModule : public Foundation::ModuleInterfaceImpl
+    class WorldInputModule : public Foundation::ModuleInterface
     {
         MODULE_LOGGING_FUNCTIONS
 

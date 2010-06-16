@@ -30,7 +30,7 @@ namespace JavascriptScript
 {
     std::string JavascriptScriptModule::type_name_static_ = "JavascriptScript";
 
-    JavascriptScriptModule::JavascriptScriptModule() : ModuleInterfaceImpl(type_name_static_)
+    JavascriptScriptModule::JavascriptScriptModule() : ModuleInterface(type_name_static_)
     {
     }
 

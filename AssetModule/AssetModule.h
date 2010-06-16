@@ -34,7 +34,7 @@ namespace Asset
     */
 
     //! Asset module.
-    class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterfaceImpl
+    class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterface
     {
     public:
         AssetModule();

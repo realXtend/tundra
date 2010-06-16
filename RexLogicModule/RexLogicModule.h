@@ -84,7 +84,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterfaceImpl, public Foundation::WorldLogicInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterface, public Foundation::WorldLogicInterface
     {
         Q_OBJECT
 

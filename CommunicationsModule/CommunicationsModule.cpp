@@ -12,7 +12,7 @@ namespace CommunicationsService
     std::string CommunicationsModule::type_name_static_ = "Communications";
 
     CommunicationsModule::CommunicationsModule()
-        : ModuleInterfaceImpl(type_name_static_)
+        : ModuleInterface(type_name_static_)
     {
     }
 

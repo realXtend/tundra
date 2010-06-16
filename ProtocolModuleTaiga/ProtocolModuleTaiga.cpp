@@ -21,7 +21,7 @@ namespace TaigaProtocol
     std::string ProtocolModuleTaiga::type_name_static_ = "TaigaProtocol";
 
     ProtocolModuleTaiga::ProtocolModuleTaiga() :
-        ModuleInterfaceImpl(type_name_static_),
+        ModuleInterface(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown),
         identityUrl_(""),

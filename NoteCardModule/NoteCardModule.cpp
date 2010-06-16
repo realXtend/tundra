@@ -15,7 +15,7 @@ namespace NoteCard
     std::string NoteCardModule::name_static_ = "NoteCardModule";
     
     NoteCardModule::NoteCardModule() :
-        ModuleInterfaceImpl(name_static_),
+        ModuleInterface(name_static_),
         manager_(0),
         scene_event_category_(0),
         framework_event_category_(0),

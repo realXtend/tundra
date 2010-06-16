@@ -16,7 +16,7 @@ namespace JavascriptScript
      //hack to have a ref to framework so can get the module in api funcs
     static Foundation::Framework *staticframework;
 
-    class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterfaceImpl, public Foundation::ScriptServiceInterface
+    class MODULE_API JavascriptScriptModule : public Foundation::ModuleInterface, public Foundation::ScriptServiceInterface
     {
     public:
         JavascriptScriptModule();

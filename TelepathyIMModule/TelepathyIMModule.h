@@ -59,7 +59,7 @@ namespace Communication
      *  Enables IM GUI if jabber protocol is usable
      *
      */
-    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

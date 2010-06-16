@@ -84,7 +84,7 @@ namespace RexLogic
 std::string RexLogicModule::type_name_static_ = "RexLogic";
 
 RexLogicModule::RexLogicModule() :
-    ModuleInterfaceImpl(type_name_static_),
+    ModuleInterface(type_name_static_),
     send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),

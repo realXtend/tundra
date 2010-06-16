@@ -18,7 +18,7 @@ namespace TextureDecoder
     typedef boost::shared_ptr<TextureService> TextureServicePtr;
     
     //! Texture decoder module
-    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public Foundation::ModuleInterfaceImpl
+    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public Foundation::ModuleInterface
     {
     public:
         TextureDecoderModule();

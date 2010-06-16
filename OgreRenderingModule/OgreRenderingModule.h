@@ -29,7 +29,7 @@ namespace OgreRenderer
     */
 
     //! A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
+    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterface
     {
     public:
         OgreRenderingModule();

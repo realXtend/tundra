@@ -16,7 +16,7 @@ namespace ECEditor
      */
     class ECEditorWindow;
 
-    class ECEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class ECEditorModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

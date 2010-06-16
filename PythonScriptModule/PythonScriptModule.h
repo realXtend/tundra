@@ -55,7 +55,7 @@ namespace PythonScript
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
