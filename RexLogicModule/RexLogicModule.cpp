@@ -1289,6 +1289,11 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     return Console::ResultSuccess();
 }
 
+void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
+{
+    emit OnIncomingEstateOwnerMessage(params);
+}
+
 } // namespace RexLogic
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
