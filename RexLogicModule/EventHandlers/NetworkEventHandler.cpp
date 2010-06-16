@@ -168,6 +168,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
     case RexNetMsgKickUser:
         return HandleOSNE_KickUser(netdata);
 
+    case RexNetMsgEstateOwnerMessage:
+        return HandleOSNE_EstateOwnerMessage(netdata);
+
     default:
         break;
     }
@@ -683,5 +686,40 @@ bool NetworkEventHandler::HandleOSNE_KickUser(ProtocolUtilities::NetworkEventInb
 
     return false;
 }
+
+bool NetworkEventHandler::HandleOSNE_EstateOwnerMessage(ProtocolUtilities::NetworkEventInboundData *data)
+{
+    ProtocolUtilities::NetInMessage &msg = *data->message;
+
+    msg.ResetReading();
+
+    RexUUID agentid = msg.ReadUUID();
+    RexUUID sessionid = msg.ReadUUID();
+    RexUUID transactionid = msg.ReadUUID();
+    std::string method = msg.ReadString();
+    RexUUID invoice = msg.ReadUUID();
+
+    // read parameter list
+    QStringList ret;
+    // Variable block begins
+    size_t instance_count = msg.ReadCurrentBlockInstanceCount();
+    while (instance_count--)
+    {
+        ret.push_back(msg.ReadString().c_str());
+    }
+
+    QVariantList l;
+    l << agentid.ToQString();
+    l << sessionid.ToQString();
+    l << transactionid.ToQString();
+    l << QString(method.c_str());
+    l << invoice.ToQString();
+    l << ret;
+    owner_->EmitIncomingEstateOwnerMessageEvent(l);
+    
+    return false;
+}
+
+
 
 } //namespace RexLogic

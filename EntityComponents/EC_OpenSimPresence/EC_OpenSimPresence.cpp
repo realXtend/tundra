@@ -41,3 +41,14 @@ std::string EC_OpenSimPresence::GetFullName() const
 {
     return first_name_ + " " + last_name_;
 }
+
+QString EC_OpenSimPresence::QGetFullName() const
+{
+    std::string fullname = first_name_ + " " + last_name_;
+    return QString(fullname.c_str());
+}
+
+QString EC_OpenSimPresence::QGetUUIDString() const
+{
+    return agentId.ToQString();
+}
