@@ -12,7 +12,8 @@ namespace UiDefines
     { 
         Connected, 
         Disconnected, 
-        Failed 
+        Failed,
+        Kicked
     };
 
     enum ControlButtonType
