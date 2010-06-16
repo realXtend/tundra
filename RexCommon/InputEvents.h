@@ -26,9 +26,9 @@ namespace Input
         //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED - 1)
         //       Yhis is for simplicity, so one can get the 'end' event easily from the 'start' event.
         //! Sent as notification for buffered keyboard input, when any key is pressed. Uses BufferedKey event data class.
-        static const event_id_t BUFFERED_KEY_PRESSED = 1;  // only when input state is buffered
+//        static const event_id_t BUFFERED_KEY_PRESSED = 1;  // only when input state is buffered
         //! Sent as notification for buffered keyboard input, when any key is released. Uses BufferedKey event data class.
-        static const event_id_t BUFFERED_KEY_RELEASED = 2; // only when input state is buffered
+//        static const event_id_t BUFFERED_KEY_RELEASED = 2; // only when input state is buffered
         //! Generic scroll input event. Uses SingleAxisMovement event data class.
         static const event_id_t SCROLL = 3;
         //! Generic move forward event
@@ -62,23 +62,23 @@ namespace Input
         static const event_id_t ROTATE_DOWN_PRESSED = 22;
         static const event_id_t ROTATE_DOWN_RELEASED = 23;
         //! Generic roll left event
-        static const event_id_t ROLL_LEFT_PRESSED = 24;
+/*        static const event_id_t ROLL_LEFT_PRESSED = 24;
         static const event_id_t ROLL_LEFT_RELEASED = 25;
         //! Generic roll right event
         static const event_id_t ROLL_RIGHT_PRESSED = 26;
         static const event_id_t ROLL_RIGHT_RELEASED = 27;
-
+*/
         //! Input event for showing the debug console
         static const event_id_t SHOW_DEBUG_CONSOLE = 28;
-        static const event_id_t SHOW_DEBUG_CONSOLE_REL = 29;
+//        static const event_id_t SHOW_DEBUG_CONSOLE_REL = 29;
 
         //! Input event for switching camera states
         static const event_id_t SWITCH_CAMERA_STATE = 30;
-        static const event_id_t SWITCH_CAMERA_STATE_REL = 31;
+//        static const event_id_t SWITCH_CAMERA_STATE_REL = 31;
 
         //! Mouse dragged with right button input event.
         static const event_id_t MOUSELOOK = 32;
-        static const event_id_t MOUSELOOK_STOPPED = 33;
+//        static const event_id_t MOUSELOOK_STOPPED = 33;
 
         //! Input event for changing input state
         static const event_id_t INPUTSTATE_FIRSTPERSON = 34;
@@ -91,19 +91,19 @@ namespace Input
 
         //! Custom key released input event. Can be used to catch any key on the keyboard, contains optional modifier key.
         //! Uses Key event data class.
-        static const event_id_t KEY_PRESSED = 39;
-        static const event_id_t KEY_RELEASED = 40;
+//        static const event_id_t KEY_PRESSED = 39;
+//        static const event_id_t KEY_RELEASED = 40;
 
         //! user clicked mouse over the viewport, usable with f.ex. raycasting. Movement event data class is used.
         static const event_id_t INWORLD_CLICK = 41;
         static const event_id_t INWORLD_CLICK_REL = 42;
-
+/*
         //! The following mouse click events are only used by the Python API at the moment!
         static const event_id_t LEFT_MOUSECLICK_PRESSED = 43;
         static const event_id_t LEFT_MOUSECLICK_RELEASED = 44;
         static const event_id_t RIGHT_MOUSECLICK_PRESSED = 45;
         static const event_id_t RIGHT_MOUSECLICK_RELEASED = 46;
-
+*/
         //! Mouse dragged with left button input event.
         static const event_id_t MOUSEDRAG = 49;
         static const event_id_t MOUSEDRAG_STOPPED = 50;
@@ -116,7 +116,7 @@ namespace Input
 
         //! Mouse motion - uninterpreted, sent always when mouse moves
         static const event_id_t MOUSEMOVE = 60; //stop has no meaning for this?
-
+/*
         static const event_id_t PY_RESTART = 71;
         static const event_id_t PY_RUN_COMMAND = 73;
         static const event_id_t PY_DUPLICATE_DRAG = 80;
@@ -124,7 +124,7 @@ namespace Input
         static const event_id_t PY_OBJECTEDIT_TOGGLE_MOVE = 81;
         static const event_id_t PY_OBJECTEDIT_TOGGLE_SCALE = 83;
         //static const event_id_t PY_OBJECTEDIT_TOGGLE_ROTATE = 85;
-        
+*/        
         static const event_id_t NAALI_OBJECTLINK = 91;
         static const event_id_t NAALI_OBJECTUNLINK = 92;
 
@@ -147,14 +147,16 @@ namespace Input
 		//!Focus on object event
 		static const event_id_t FOCUS_ON_OBJECT = 107;
 		static const event_id_t INPUTSTATE_FOCUSONOBJECT = 108;
-		static const event_id_t CTRL_PRESSED = 109;
-		static const event_id_t CTRL_RELEASED = 110;
+//		static const event_id_t CTRL_PRESSED = 109;
+//		static const event_id_t CTRL_RELEASED = 110;
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.
 
             \ingroup Input_group
         */
+
+/*
         class BufferedKey : public Foundation::EventDataInterface
         {
             BufferedKey();
@@ -167,12 +169,13 @@ namespace Input
             //! The key that was pressed as a character
             const uint text_;
         };
-
+*/
         //! Raw keycode event for unbuffered input
         /*! Avoid using unless you are sure this is what you should be using.
 
             \ingroup Input_group
         */
+/*
         class Key : public Foundation::EventDataInterface
         {
             Key();
@@ -186,7 +189,7 @@ namespace Input
             //! OIS modifiers (OIS::Keyboard::Ctrl, OIS::Keyboard::Shift, OIS::Keyboard::Alt)
             const int modifiers_;
         };
-
+*/
         //! Holds the new bindings pointer for everyone to update their key sequences
         //! Used in NAALI_BINDINGS_CHANGED event
         class BindingsData : public Foundation::EventDataInterface

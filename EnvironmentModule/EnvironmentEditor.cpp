@@ -1794,7 +1794,7 @@ namespace Environment
 
     bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        //Paining is only enabled when window's is created and visible.
+        //Painting is only enabled when window's is created and visible.
         if(!editor_widget_)
             return false;
 
