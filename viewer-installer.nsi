@@ -29,11 +29,13 @@ Section ""
 
   ExecWait '"$INSTDIR\oalinst.exe"'
   ExecWait '"$INSTDIR\vcredist_x86.exe" /q'
+  ExecWait '"$INSTDIR\dxwebsetup.exe"'
 
   WriteUninstaller "$INSTDIR\uninstaller.exe"
 
   Delete "$INSTDIR\vcredist_x86.exe"
   Delete "$INSTDIR\oalinst.exe"
+  Delete "$INSTDIR\dxwebsetup.exe"
 SectionEnd
 
 Section "Start Menu Shortcuts"

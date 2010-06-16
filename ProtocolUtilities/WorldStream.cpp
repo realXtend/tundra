@@ -1656,6 +1656,46 @@ void WorldStream::SendGodKickUserPacket(const RexUUID &user_id, const std::strin
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendGodKickUserPacket(const QString &user_id, const QString &reason)
+{
+    RexUUID rex_uuid(user_id);
+    std::string std_reason = user_id.toStdString();
+    this->SendGodKickUserPacket(rex_uuid, std_reason);
+}
+
+void WorldStream::SendEstateOwnerMessage(const QString &method, const QStringList& paramlist)
+{
+    if (!connected_)
+        return;
+    
+    ProtocolUtilities::NetOutMessage *m = StartMessageBuilding(RexNetMsgEstateOwnerMessage);
+    assert(m);
+
+    m->AddUUID(clientParameters_.agentID);
+    m->AddUUID(clientParameters_.sessionID);
+
+    // Transaction ID
+    m->AddUUID(RexUUID::CreateRandom());
+    //m->AddUUID(RexUUID::FromString(transactionid));
+    //m->AddBuffer(method.size() + 1, (uint8_t*)method.c_str());
+    m->AddBuffer(method.size() + 1, (uint8_t*)method.toStdString().c_str());
+    
+    //m->AddUUID(RexUUID::FromString(invoice));
+    m->AddUUID(RexUUID::CreateRandom());
+    
+    m->SetVariableBlockCount(paramlist.length());
+    
+    QList<QString>::const_iterator i;
+    for (i = paramlist.begin(); i != paramlist.end(); ++i)
+    {
+        QString param = *i;
+        m->AddString(param.toStdString());
+        //m->AddString(*i);
+    }
+    
+    FinishMessageBuilding(m);
+}
+
 QString WorldStream::GetCapability(const QString &name) const
 {
     if (!GetCurrentProtocolModule())

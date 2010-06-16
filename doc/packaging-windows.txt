@@ -7,12 +7,14 @@ Prerequisites:
   http://www.microsoft.com/downloads/details.aspx?familyid=A5C84275-3B97-4AB7-A40D-3802B2AF5FC2&displaylang=en
 - Have OpenAL installer (oalinst.exe) from http://connect.creativelabs.com/openal/Downloads/Forms/AllItems.aspx
   (unzip oalinst.zip)
+- Have an up-to-date dxwebsetup.exe from 
+  http://www.microsoft.com/downloads/details.aspx?FamilyID=2da43d38-db71-4c1b-bc6a-9b6652cd92a3&displaylang=en
 - Have up-to-date Naali binary runtime dependencies from the dependency svn (the "runtime_deps" directory)
   copied to your viewer "bin" directory.
 
 Steps:
-1) Copy the VS2008 redistributable (vcredist_x86.exe) and OpenAL installer (oalinst.exe) to your viewer checkout 
-   root directory
+1) Check that the files vcredist_x86.exe, oalinst.exe and dxwebsetup.exe exist in your viewer checkout
+   root directory. They should be versioned there, if not, download from the addresses above
 2) Ensure that you do not have unnecessary files in your viewer "bin" directory. Own configuration files and
    compiled Python (.pyc) files are OK, they will be deleted by makebuild.bat
 3) Execute the makebuild.bat from the root of Naali source checkout. This creates a "build" directory for NSIS

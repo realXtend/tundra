@@ -20,6 +20,7 @@
 #include <boost/function.hpp>
 #include <QObject>
 #include <QMap>
+#include <QVariant>
 
 class QString;
 class RexUUID;
@@ -223,6 +224,9 @@ namespace RexLogic
         */
         bool CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result);
 
+        //! Launch estateownermessage event
+        void EmitIncomingEstateOwnerMessageEvent(QVariantList params);
+
     public slots:
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
@@ -236,6 +240,10 @@ namespace RexLogic
 
         /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;
+
+    signals:
+        //! Estate Info event
+        void OnIncomingEstateOwnerMessage(QVariantList params);
 
     private:
         Q_DISABLE_COPY(RexLogicModule);
