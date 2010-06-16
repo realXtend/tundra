@@ -134,7 +134,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 return false;
 
             // Create inventory and upload progress windows
-            UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             if (ui_module)
             {
                 SAFE_DELETE(inventoryWindow_);
@@ -247,7 +247,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            UiServices::UiModule * ui_module = GetModule<UiServices::UiModule>();
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             if (ui_module)
             {
                 if (inventoryWindow_)
@@ -541,7 +541,7 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module)
         return;
 
@@ -598,7 +598,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
 
