@@ -9,6 +9,7 @@
 #include "ComponentInterface.h"
 
 #include <QObject>
+#include <qvariant.h>
 
 namespace Scene
 {
@@ -46,6 +47,9 @@ namespace Scene
 
         //! Current global id for entities
         static uint gid_;
+
+    public slots:
+        QVariantList GetEntityIdsWithComponent(const QString &type_name);
 
     public:
         //! destructor

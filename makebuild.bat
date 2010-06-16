@@ -8,6 +8,7 @@ copy readme.txt build
 copy license.txt build
 copy vcredist_x86.exe build
 copy oalinst.exe build
+copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
 del build\fullmemoryleaklog.txt
 del build\openal32.dll

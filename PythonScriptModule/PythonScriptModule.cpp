@@ -1233,6 +1233,15 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+PyObject* GetApplicationDataDirectory(PyObject *self)
+{
+    PythonScriptModule* module = PythonScriptModule::GetInstance();
+    std::string cache_path = module->GetFramework()->GetPlatform()->GetApplicationDataDirectory();
+    //PyString_New
+    return PyString_FromString(cache_path.c_str());
+    //return QString(cache_path.c_str());
+}
+
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
 //experimental now, may replace the PyType in Entity.h used above
@@ -1578,6 +1587,17 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         map[UiDefines::IconNormal] = base_url + "edbutton_LSCENE_normal.png";
         map[UiDefines::IconHover] = base_url + "edbutton_LSCENE_hover.png";
         map[UiDefines::IconPressed] = base_url + "edbutton_LSCENE_click.png";
+        uiproperty.SetMenuNodeStyleMap(map);
+    }
+    if (uiproperty.GetWidgetName() == "Estate Management")
+    {
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::TextNormal] = base_url + "edbutton_ESMNGtxt_normal.png";
+        map[UiDefines::TextHover] = base_url + "edbutton_ESMNGtxt_hover.png";
+        map[UiDefines::TextPressed] = base_url + "edbutton_ESMNGtxt_click.png";
+        map[UiDefines::IconNormal] = base_url + "edbutton_ESMNG_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_ESMNG_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_ESMNG_click.png";
         uiproperty.SetMenuNodeStyleMap(map);
     }
 
@@ -2068,6 +2088,9 @@ static PyMethodDef EmbMethods[] = {
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
     
+    {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
+    "Get application data directory."},
+
     {NULL, NULL, 0, NULL}
 };
 

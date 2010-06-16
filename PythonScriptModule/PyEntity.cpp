@@ -16,6 +16,8 @@
 #include "EC_Touchable.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_DynamicComponent.h"
+#include "EC_OpenSimPresence.h"
+
 
 #include <PythonQt.h>
 
@@ -415,6 +417,17 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             PyErr_SetString(PyExc_AttributeError, "Entity does not have an AnimationController component.");
             return NULL;
         }
+    }
+
+    else if (s_name.compare("opensimpresence") == 0)
+    {  
+        EC_OpenSimPresence* presence_ptr = entity->GetComponent<EC_OpenSimPresence>().get();
+        if (!presence_ptr)
+        {
+             PyErr_SetString(PyExc_AttributeError, "Entity doesn't have a opensimpresence component.");
+             return NULL;
+        }
+        return PythonScriptModule::GetInstance()->WrapQObject(presence_ptr);
     }
 
     PyErr_SetString(PyExc_AttributeError, "Unknown component type.");

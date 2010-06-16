@@ -460,6 +460,16 @@ namespace ProtocolUtilities
         /// @param reason Reason of the kicking.
         void SendGodKickUserPacket(const RexUUID &user_id, const std::string &reason);
 
+        /// Send GodKickUser packet with params as QString's
+        /// @param user_id ID of the user we wan't to kick.
+        /// @param reason Reason of the kicking.
+        void SendGodKickUserPacket(const QString &user_id, const QString &reason);
+
+        /// Sends EstateInfoRequest packet to get current estate info.
+        /// @param method EstateInfoRequest method name
+        /// @param paramlist parameters
+        void SendEstateOwnerMessage(const QString &method, const QStringList& paramlist);
+
         //------------------- Utility functions ------------------- //
 
         /// Set the connection type.
