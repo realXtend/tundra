@@ -3,7 +3,7 @@
 /// @file OpenSimLoginThread.cpp
 /// @brief XML-RPC login worker.
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 #include "OpenSimLoginThread.h"
 #include "ProtocolModuleOpenSim.h"
 #include "XmlRpcEpi.h"

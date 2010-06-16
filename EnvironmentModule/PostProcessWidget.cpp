@@ -56,8 +56,7 @@ namespace Environment
 
     void PostProcessWidget::AddSelfToScene(EnvironmentModule *env_module)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 

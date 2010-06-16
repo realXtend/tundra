@@ -10,7 +10,9 @@
 
 namespace TextureDecoder
 {
-    TextureDecoderModule::TextureDecoderModule() : ModuleInterfaceImpl(type_static_)
+    std::string TextureDecoderModule::type_name_static_ = "TextureDecoder";
+
+    TextureDecoderModule::TextureDecoderModule() : ModuleInterfaceImpl(type_name_static_)
     {
     }
 

@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "ProtocolModuleOpenSim.h"
@@ -15,7 +15,6 @@
 #include "NetworkMessages/NetOutMessage.h"
 
 #include <Poco/Net/NetException.h>
-#include <Poco/ClassLibrary.h>
 
 #include <QUrl>
 #include <QStringList>
@@ -24,8 +23,10 @@
 
 namespace OpenSimProtocol
 {
+    std::string ProtocolModuleOpenSim::type_name_static_ = "OpenSimProtocol";
+
     ProtocolModuleOpenSim::ProtocolModuleOpenSim() :
-        ModuleInterfaceImpl(Foundation::Module::MT_OpenSimProtocol),
+        ModuleInterfaceImpl(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown)
     {
@@ -71,16 +72,14 @@ namespace OpenSimProtocol
         networkEventOutCategory_ = eventManager_->RegisterEventCategory("NetworkOut");
 
         // Send event that other modules can query above categories
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> modulePointerToThis = 
-            framework_->GetModuleManager()->GetModule<ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
-        if (modulePointerToThis.lock().get())
+        boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> thisModule = framework_->GetModuleManager()->GetModule<ProtocolModuleOpenSim>().lock();
+        if (thisModule)
         {
             event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
-            ProtocolUtilities::NetworkingRegisteredEvent event_data(modulePointerToThis);
+            ProtocolUtilities::NetworkingRegisteredEvent event_data(thisModule);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
-            LogInfo("Sending Networking Registered event");
+            LogDebug("Sending Networking Registered event");
         }
-        LogInfo("Network events [NetworkState, NetworkIn, NetworkOut] registered");
     }
 
     void ProtocolModuleOpenSim::UnregisterNetworkEvents()
@@ -228,9 +227,9 @@ namespace OpenSimProtocol
         networkManager_->FinishMessage(msg);
     }
 
-    std::string ProtocolModuleOpenSim::GetCapability(const std::string &name)
+    std::string ProtocolModuleOpenSim::GetCapability(const std::string &name) const
     {
-        caps_map_it_t it = capabilities_.find(name);
+        CapsMapConstIt_t it = capabilities_.find(name);
         if (it == capabilities_.end())
             return "";
         else
@@ -239,8 +238,8 @@ namespace OpenSimProtocol
 
     void ProtocolModuleOpenSim::SetCapability(const std::string &name, const std::string &url)
     {
-        std::pair<caps_map_it_t, bool> ret;
-        ret = capabilities_.insert(std::pair<std::string, std::string>(name, url)); 
+        std::pair<CapsMapIt_t, bool> ret;
+        ret = capabilities_.insert(std::make_pair(name, url));
         if (ret.second == false)
             LogInfo("Capability " + name + "already exists with an URL " + ret.first->second);
     }
