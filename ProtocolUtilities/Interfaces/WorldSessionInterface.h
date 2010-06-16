@@ -13,11 +13,9 @@ namespace ProtocolUtilities
 {
     class WorldSessionInterface : public QObject
     {
-
-    Q_OBJECT 
+        Q_OBJECT 
 
     public:
-
         //! Connection UrlType
         enum UrlType
         {
@@ -30,7 +28,7 @@ namespace ProtocolUtilities
         virtual bool StartSession(LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl) = 0;
 
         //! Make Url validation according to type
-        virtual QUrl ValidateUrl(const QString urlString, const UrlType urlType) = 0;
+        virtual QUrl ValidateUrl(const QString &urlString, const UrlType urlType) = 0;
 
         //! Get login credentials
         virtual LoginCredentialsInterface* GetCredentials() const = 0;
@@ -52,10 +50,8 @@ namespace ProtocolUtilities
 
     private:
         //! State of the connection procedure thread.
-		ProtocolUtilities::ConnectionThreadState threadState_;
-
+        ProtocolUtilities::ConnectionThreadState threadState_;
     };
-
 }
 
 #endif // incl_RexLogic_WorldSessionInterface_h

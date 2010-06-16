@@ -74,7 +74,7 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *owner) :
     if (!sp.get())
         RexLogicModule::LogInfo("NetworkEventHandler: Protocol module not set yet. Will fetch when networking occurs.");
     
-    Foundation::ModuleWeakPtr renderer = owner_->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_Renderer);
+    Foundation::ModuleWeakPtr renderer = owner_->GetFramework()->GetModuleManager()->GetModule("OgreRenderer");
     if (renderer.expired() == false)
     {
         DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
@@ -519,7 +519,7 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
     }
 
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
     return false;
@@ -540,7 +540,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
 
     // Ui module
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module)
         return false;
             

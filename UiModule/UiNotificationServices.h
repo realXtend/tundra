@@ -7,7 +7,7 @@
 // ==========================================
 // Acquire UiModule pointer to gain access to the services
 // boost::shared_ptr<UiServices::UiModule> ui_module = GetFramework()->GetModuleManager()->
-//     GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+//     GetModule<UiServices::UiModule>().lock();
 //
 // You can show different types of notifications through NotificationManager
 // Here is how you show and hook up the notifications

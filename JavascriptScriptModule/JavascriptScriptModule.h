@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_JavascriptScriptModule_h
 #define incl_JavascriptScriptModule_h
 
@@ -20,7 +22,7 @@ namespace JavascriptScript
         JavascriptScriptModule();
         virtual ~JavascriptScriptModule();
 
-        //the module interface	        
+        //the module interface
         virtual void Load();
         virtual void Unload();
         virtual void Initialize();
@@ -31,8 +33,7 @@ namespace JavascriptScript
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_QtScript;
+        static const std::string &NameStatic() { return type_name_static_; }
 
         /// Returns the currently initialized JavascriptScriptModule.
         static JavascriptScriptModule *GetInstance();
@@ -47,6 +48,8 @@ namespace JavascriptScript
         Console::CommandResult ConsoleRunFile(const StringVector &params);
 
     private:
+        //! Type name of the module.
+        static std::string type_name_static_;
         QScriptEngine engine;
     };
 

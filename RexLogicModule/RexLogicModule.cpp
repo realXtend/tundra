@@ -81,8 +81,10 @@
 namespace RexLogic
 {
 
+std::string RexLogicModule::type_name_static_ = "RexLogic";
+
 RexLogicModule::RexLogicModule() :
-    ModuleInterfaceImpl(type_static_),
+    ModuleInterfaceImpl(type_name_static_),
     send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
@@ -155,7 +157,7 @@ void RexLogicModule::Initialize()
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
 
     // Register ourselves as world logic service.
-    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldLogic, service);
 }
@@ -233,7 +235,7 @@ void RexLogicModule::PostInitialize()
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
 
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module.get())
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
@@ -341,7 +343,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
 
-    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->UnregisterService(service);
 }
@@ -482,36 +484,36 @@ void RexLogicModule::SwitchCameraState()
 
 void RexLogicModule::CameraTripod()
 {
-	if (camera_state_ == CS_Follow)
-	{
-		camera_state_ = CS_Tripod;
-		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
-	}
-	else
-	{
-		camera_state_ = CS_Follow;
+    if (camera_state_ == CS_Follow)
+    {
+        camera_state_ = CS_Tripod;
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+    }
+    else
+    {
+        camera_state_ = CS_Follow;
 
-		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-	}
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+    }
 }
 
 void RexLogicModule::FocusOnObject()
 {
-	if (camera_state_ == CS_Follow)
-	{
-		camera_state_ = CS_FocusOnObject;
-		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
-	}
-	else
-	{
-		camera_state_ = CS_Follow;
+    if (camera_state_ == CS_Follow)
+    {
+        camera_state_ = CS_FocusOnObject;
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
+    }
+    else
+    {
+        camera_state_ = CS_Follow;
 
-		event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-		GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-	}
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+    }
 }
 
 AvatarPtr RexLogicModule::GetAvatarHandler() const
@@ -955,7 +957,7 @@ void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
     UiModulePtr ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
     if (!avatar_ && !ui_module)
         return;
@@ -1068,11 +1070,11 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 /*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
-	
+    
     boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-	if (canvas_source){
+    if (canvas_source){
         canvas_source->Clicked();
-	}
+    }
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
