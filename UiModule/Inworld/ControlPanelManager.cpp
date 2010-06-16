@@ -17,6 +17,7 @@
 #include "Inworld/ControlPanel/PersonalWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
+#include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
 #include <QAction>
 #include "MemoryLeakCheck.h"
@@ -30,7 +31,8 @@ namespace CoreUi
         settings_widget_(0),
         binding_widget_(0),
         language_widget_(0),
-        teleport_widget_(0)
+        teleport_widget_(0),
+        changetheme_widget_(0)
 
     {
         // Controls panel
@@ -64,6 +66,10 @@ namespace CoreUi
         SetHandler(UiDefines::Teleport, teleport_action);
         connect(teleport_action, SIGNAL(toggled(bool)), SLOT(ToggleTeleportVisibility(bool)));
         connect(teleport_widget_, SIGNAL(Hidden()), SLOT(CheckTeleportButtonStyle()));
+
+        // Adding change theme tab
+        changetheme_widget_ = new ChangeThemeWidget(settings_widget_);
+        settings_widget_->AddWidget(changetheme_widget_, "Change theme");
 
 
     }

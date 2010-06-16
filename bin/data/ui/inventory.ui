@@ -22,19 +22,6 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true">
-   /* Containers */
-    QWidget#inventorymain {
-        background-color: none;
-    }
-
-    QFrame#MainFrame {
-        background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50),
-        stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 110), stop:1 rgba(222, 227, 236, 100));
-    }
-   </string>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
     <number>0</number>
@@ -55,7 +42,7 @@
        <number>0</number>
       </property>
       <item>
-       <layout class="QHBoxLayout" name="horizontalLayout_BottomContainer" stretch="">
+       <layout class="QHBoxLayout" name="horizontalLayout_BottomContainer">
         <property name="spacing">
          <number>0</number>
         </property>

@@ -26,36 +26,7 @@
    <string>UploadProgressBarWidget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#UploadProgress{
-	background-color: none;
-}
-
-QFrame#MainFrame {
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(222, 227, 236, 100), stop:0.295455 rgba(209, 215, 221, 110), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
-	padding-bottom: 5px;
-
-}
-
-QLabel {
-	font-size: 12px;
-	font: bold;
-}
-
-QProgressBar {
-	color: rgb(0, 0, 0);
-    border: 1px solid black;
-	border-radius: 8px;
-	text-align: center;
-}
-
- QProgressBar::chunk {
-/*
-	background-color: qlineargradient(spread:pad, x1:0.489, y1:0, x2:0.5, y2:1, stop:0 rgba(0, 169, 255, 200), stop:1 rgba(0, 0, 0, 255));
-*/
-	background-color: qlineargradient(spread:pad, x1:0.528, y1:0, x2:0.528818, y2:0.978, stop:0.295455 rgba(231, 231, 231, 255), stop:1 rgba(203, 203, 203, 255));
-	border-bottom-left-radius: 7px;
-	border-top-left-radius: 7px;
- }</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">

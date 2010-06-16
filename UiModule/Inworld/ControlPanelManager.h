@@ -24,6 +24,7 @@ namespace CoreUi
     class PersonalWidget;
     class LanguageWidget;
     class TeleportWidget;
+    class ChangeThemeWidget;
 
     class UI_MODULE_API ControlPanelManager : public QObject
     {
@@ -73,6 +74,7 @@ namespace CoreUi
         PersonalWidget *personal_widget_;
         LanguageWidget* language_widget_;
         TeleportWidget* teleport_widget_;
+        ChangeThemeWidget* changetheme_widget_;
     };
 }
 

@@ -1,17 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>RendererSettings</class>
- <widget class="QWidget" name="RendererSettings">
+ <class>SoundSettings</class>
+ <widget class="QWidget" name="SoundSettings">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>113</width>
-    <height>82</height>
+    <width>158</width>
+    <height>190</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Sound Settings</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">/* Containers */
+QFrame#MainFrame {
+	background-color: white;
+	padding: 9px;
+}
+
+/* QPUSHBUTTON 
+
+QPushButton {
+	color: rgb(0, 0, 0);
+	min-width: 60px;
+	font-size: 12px;
+	border: 1px solid;
+	border-color: rgb(48, 48, 48);
+	border-radius: 8px;
+	border-top-left-radius: 0px;
+	border-bottom-right-radius: 0px;
+	padding: 2px 5px;
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
+}
+
+QPushButton:hover {
+	border-color: rgba(0, 0, 0, 255);
+	color: rgb(0,0,0);
+	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
+}
+
+*/</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -33,7 +63,7 @@
        <number>0</number>
       </property>
       <item>
-       <widget class="QLabel" name="label_viewdistance">
+       <widget class="QLabel" name="label_changeTheme">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Preferred" vsizetype="Maximum">
           <horstretch>0</horstretch>
@@ -47,37 +77,12 @@
          </font>
         </property>
         <property name="text">
-         <string>View Distance</string>
+         <string>Change theme</string>
         </property>
        </widget>
       </item>
       <item>
-       <widget class="QDoubleSpinBox" name="spinbox_viewdistance">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>60</width>
-          <height>0</height>
-         </size>
-        </property>
-        <property name="minimum">
-         <double>20.000000000000000</double>
-        </property>
-        <property name="maximum">
-         <double>2000.000000000000000</double>
-        </property>
-        <property name="singleStep">
-         <double>20.000000000000000</double>
-        </property>
-        <property name="value">
-         <double>500.000000000000000</double>
-        </property>
-       </widget>
+       <widget class="QComboBox" name="comboBox_changeTheme"/>
       </item>
       <item>
        <spacer name="verticalSpacer">

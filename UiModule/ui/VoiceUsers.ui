@@ -26,28 +26,7 @@
    <string>Form</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">#VoiceUsersWidget
-{
-background-color: rgba(0,0,0,0);
-}
-#titleLabel
-{
-color: rgb(255,255,255);
-}
-#hideButton
-{
-color: rgb(255,255,255);
-background-color: rgba(0,0,0,0);
-border: 0 px;
-}
-/*#hideButton:hover {color: rgb(255,185,110);}*/
-#hideButton:pressed {color: rgb(100,100,100);}
-#frame
-{
-background-color: rgba(0,0,0,150);
-border: 1 px solid rgba(200,200,200,150);
-border-radius: 3px;
-}</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="margin">
@@ -68,8 +47,10 @@ border-radius: 3px;
          <widget class="QLabel" name="titleLabel">
           <property name="font">
            <font>
-            <family>Fixedsys</family>
+            <family>MS Shell Dlg 2</family>
             <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
            </font>
           </property>
           <property name="text">
@@ -122,7 +103,7 @@ border-radius: 3px;
            <x>0</x>
            <y>0</y>
            <width>298</width>
-           <height>273</height>
+           <height>268</height>
           </rect>
          </property>
          <property name="styleSheet">

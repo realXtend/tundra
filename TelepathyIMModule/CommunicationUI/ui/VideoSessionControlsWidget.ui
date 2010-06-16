@@ -13,29 +13,6 @@
   <property name="windowTitle">
    <string>VideoSessionControlsWidget</string>
   </property>
-  <property name="styleSheet">
-   <string>QWidget#VideoSessionControls {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0,0,0);
-}
-
-QCheckBox {
-	spacing: 3px;
-}
-
-QCheckBox::indicator {
-	width: 16px;
-	height: 16px;
-}
-
-QCheckBox::indicator:checked {
-	image: url(:images/iconGreen.png);
-}
-
-QCheckBox::indicator:unchecked {
-	image: url(:images/iconRed.png);
-}</string>
-  </property>
   <layout class="QHBoxLayout" name="horizontalLayout_2">
    <property name="margin">
     <number>0</number>

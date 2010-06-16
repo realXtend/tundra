@@ -72,11 +72,6 @@
               <bold>true</bold>
              </font>
             </property>
-            <property name="styleSheet">
-             <string>QLabel#messageLabel {
-	color: rgb(255, 255, 255);
-}</string>
-            </property>
             <property name="text">
              <string>Message</string>
             </property>
@@ -97,9 +92,6 @@
           </item>
           <item>
            <widget class="QLabel" name="autohideLabel">
-            <property name="styleSheet">
-             <string>color: rgb(230,230,230);</string>
-            </property>
             <property name="text">
              <string>Autohide in 5</string>
             </property>
@@ -107,24 +99,6 @@
           </item>
           <item>
            <widget class="QPushButton" name="hideButton">
-            <property name="styleSheet">
-             <string>/* QPUSHBUTTON */
-
-QPushButton {
-	color: rgb(255, 255, 255);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid black;
-	border-color: rgba(0, 0, 0, 100);
-	border-radius: 10px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 10), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(207, 207, 207, 150), stop:1 rgba(0, 0, 0, 35));
-}</string>
-            </property>
             <property name="text">
              <string>Hide</string>
             </property>
@@ -137,67 +111,6 @@ QPushButton:hover {
      </item>
      <item>
       <widget class="QTabWidget" name="tabWidget">
-       <property name="styleSheet">
-        <string notr="true"> QTabWidget::pane { /* The tab widget frame */
-    border: 0px; 
-	border-top: 1px solid #9B9B9B;
- }
-
- QTabWidget::tab-bar {
-     left: 2px;  /* move to the right by 5px */
- }
-
- /* Style the tab using the tab sub-control. Note that
-     it reads QTabBar _not_ QTabWidget */
- QTabBar::tab {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                 stop: 0 #E1E1E1, stop: 0.4 #DDDDDD,
-                                 stop: 0.5 #D8D8D8, stop: 1.0 #D3D3D3);
-     border: 1px solid #9B9B9B;
-     border-top-left-radius: 4px;
-     border-top-right-radius: 4px;
-     min-width: 12ex;
-     padding: 2px;
-     padding-right: 5px;
-     padding-left: 3px;
-	 font: 11px;
- }
-
- QTabBar::tab:selected, QTabBar::tab:hover {
-     background: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,
-                                 stop: 0 #fafafa, stop: 0.4 #f4f4f4,
-                                 stop: 0.5 #e7e7e7, stop: 1.0 #fafafa);
- }
-
- QTabBar::tab:selected {
-     border-color: #9B9B9B;
-     border-bottom-color: rgba(0,0,0,0); /* same as pane color */
-	 border-bottom: 0px;
- }
-
- QTabBar::tab:!selected {
-     margin-top: 3px; /* make non-selected tabs look smaller */
- }
-
- /* make use of negative margins for overlapping tabs */
- QTabBar::tab:selected {
-     /* expand/overlap to the left and right by 4px */
-     margin-left: -2px;
-     margin-right: -2px;
- }
-
- QTabBar::tab:first:selected {
-     margin-left: 0; /* the first selected tab has nothing to overlap with on the left */
- }
-
- QTabBar::tab:last:selected {
-     margin-right: 0; /* the last selected tab has nothing to overlap with on the right */
- }
-
- QTabBar::tab:only-one {
-     margin: 0; /* if there is only one tab, we don't want overlapping margins */
- }</string>
-       </property>
        <property name="currentIndex">
         <number>0</number>
        </property>
