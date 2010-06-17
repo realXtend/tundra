@@ -110,13 +110,12 @@ void EC_Touchable::UpdateMaterial()
 }
 
 EC_Touchable::EC_Touchable(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0),
     materialName(this, "material name", "Touchable"),
     visibilityTime(this, "visibility time", 0.5f)
 {
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateMaterial()));
 }
 

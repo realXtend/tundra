@@ -15,6 +15,9 @@
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -29,7 +32,6 @@
 #include "MemoryLeakCheck.h"
 
 EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
@@ -41,11 +43,13 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     default_z_pos_(1.9)
 {
     // Get renderer service
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 
     // Pop timer init
     pop_timer_->setSingleShot(true);
     connect(pop_timer_, SIGNAL(timeout()), SLOT(ShowNextMessage()));
+
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(Update()));
 }
 
 EC_ChatBubble::~EC_ChatBubble()
@@ -101,62 +105,13 @@ bool EC_ChatBubble::IsVisible() const
 
 void EC_ChatBubble::ShowMessage(const QString &msg)
 {
-    if (renderer_.expired())
-        return;
-
     if (msg.isNull() || msg.isEmpty())
         return;
 
-    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
-    assert(scene);
-    if (!scene)
-        return;
-
-    Scene::Entity *entity = GetParentEntity();
-    assert(entity);
-    if (!entity)
-        return;
-
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (!node)
-        return;
-
-    Ogre::SceneNode *sceneNode = node->GetSceneNode();
-    assert(sceneNode);
-    if (!sceneNode)
-        return;
-
-    // Create billboard if it doesn't exist.
     if (!billboardSet_ && !billboard_)
-    {
-        // Create billboardset and billboard
-        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
-        assert(billboardSet_);
-
-        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, default_z_pos_));
-        assert(billboard_);
-
-        billboardSet_->setDefaultDimensions(2, 1);
-        sceneNode->attachObject(billboardSet_);
-
-        // Create material
-        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
-        Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
-        billboardSet_->setMaterialName(materialName_);
-
-        // Create texture
-        texture_name_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
-        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
-            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
-            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
-            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
-
-        // Set texture to material
-        if (texture.isNull())
-            texture_name_ = "";
-        else
-            OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
-    }
+        Update();
+    if (!billboardSet_ && !billboard_)
+        return;
 
     // Push message to queue and update rendering
     messages_.push_back(msg);
@@ -217,7 +172,7 @@ void EC_ChatBubble::RemoveAllMessages()
     Refresh();
 }
 
-bool EC_ChatBubble::CheckMessageSize(QString message)
+bool EC_ChatBubble::CheckMessageSize(const QString &message)
 {
     // Get padding from font metrics
     QFontMetrics metric(font_);
@@ -288,6 +243,71 @@ void EC_ChatBubble::Refresh()
     Ogre::Box update_box(0,0, buffer.width(), buffer.height());
     Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer.bits());
     texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+}
+
+void EC_ChatBubble::Update()
+{
+    if (renderer_.expired())
+        return;
+
+    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
+    assert(scene);
+    if (!scene)
+        return;
+
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (!entity)
+        return;
+
+    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    if (!node)
+        return;
+
+    Ogre::SceneNode *sceneNode = node->GetSceneNode();
+    assert(sceneNode);
+    if (!sceneNode)
+        return;
+
+    // Create billboard if it doesn't exist.
+    if (!billboardSet_ && !billboard_)
+    {
+        // Create billboardset and billboard
+        billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
+        assert(billboardSet_);
+
+        billboard_ = billboardSet_->createBillboard(Ogre::Vector3(0, 0, default_z_pos_));
+        assert(billboard_);
+
+        billboardSet_->setDefaultDimensions(2, 1);
+        sceneNode->attachObject(billboardSet_);
+
+        // Create material
+        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
+        Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
+        billboardSet_->setMaterialName(materialName_);
+
+        // Create texture
+        texture_name_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
+        Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().createManual(
+            texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+            Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, 
+            Ogre::TU_DYNAMIC_WRITE_ONLY_DISCARDABLE);
+
+        // Set texture to material
+        if (texture.isNull())
+            texture_name_ = "";
+        else
+            OgreRenderer::SetTextureUnitOnMaterial(material, texture_name_);
+    }
+    else
+    {
+        // Billboard already exists, remove it from the old and attach it to a new scene node.
+        LogInfo("Trying to detach chat bubble billboard from its old node and attach to a new node. This feature is not tested.");
+        Ogre::SceneNode *oldNode = billboardSet_->getParentSceneNode();
+        oldNode->detachObject(billboardSet_);
+        sceneNode->attachObject(billboardSet_);
+    }
 }
 
 QPixmap EC_ChatBubble::GetChatBubblePixmap()
