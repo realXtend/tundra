@@ -11,6 +11,7 @@
 #endif
 #else
 #define COMMS_MODULE_API
+#define TELEPATHY_IM_MODULE_API
 #endif
 
 #endif // incl_TelepathyIMModuleApi_h
