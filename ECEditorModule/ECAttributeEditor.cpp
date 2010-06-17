@@ -21,9 +21,6 @@
 
 namespace ECEditor
 {
-    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
-    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
-
     ECAttributeEditorBase::ECAttributeEditorBase(const QString &attributeName,
             QtAbstractPropertyBrowser *owner,
             Foundation::ComponentPtr component,
@@ -38,6 +35,7 @@ namespace ECEditor
         useMultiEditor_(false),
         isInitialized_(false)
     {
+
         assert(component.get());
         Foundation::AttributeInterface *attribute = FindAttribute(component->GetAttributes());
         if(attribute)
@@ -216,45 +214,6 @@ namespace ECEditor
             factory_ = 0;
         }
         isInitialized_ = false;
-    }
-
-    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor()
-    {
-        ECAttributeEditorBase::PreInitializeEditor();
-        if(useMultiEditor_)
-        {
-            MultiEditPropertyManager *multiEditManager = new MultiEditPropertyManager(this);
-            MultiEditPropertyFact *multiEditFactory = new MultiEditPropertyFact(this);
-            propertyMgr_ = multiEditManager;
-            factory_ = multiEditFactory;
-
-            rootProperty_ = multiEditManager->addProperty(attributeName_);
-            owner_->setFactoryForManager(multiEditManager, multiEditFactory);
-            UpdateMultiEditorValue();
-            QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiEditValueSelected(const QtProperty *, const QString &)));
-        }
-    }
-
-    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue()
-    {
-        if(useMultiEditor_ && componentIsSerializable_)
-        {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
-            QStringList stringList;
-            MultiEditPropertyManager *testPropertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
-            while(iter != attributeMap_.end())
-            {
-                if(rootProperty_ && iter->second)
-                {
-                    Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
-                    QString newValue(attribute->ToString().c_str());
-                    if(!stringList.contains(newValue))
-                        stringList << newValue;
-                }
-                iter++;
-            }
-            testPropertyManager->SetAttributeValues(rootProperty_, stringList);
-        }
     }
 
     //-------------------------REAL ATTRIBUTE TYPE-------------------------
