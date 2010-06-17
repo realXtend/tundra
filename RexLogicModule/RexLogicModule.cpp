@@ -28,6 +28,7 @@
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "RexMovementInput.h"
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
@@ -74,6 +75,8 @@
 #include <OgreEntity.h>
 #include <OgreBillboard.h>
 #include <OgreBillboardSet.h>
+
+#include <boost/make_shared.hpp>
 
 #include "MemoryLeakCheck.h"
 
@@ -162,7 +165,6 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
-
     // Input events.
     event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
 
@@ -172,6 +174,9 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
+
+    // Create the input handler that reacts to avatar-related input events and moves the avatar and default camera accordingly.
+    avatarInput = boost::make_shared<RexMovementInput>(framework_);
 
     // Action events.
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
