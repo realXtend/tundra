@@ -79,6 +79,9 @@ public slots:
     void ShowMessage(const QString &msg);
 
 private slots:
+    /// Initializes/updates the position of the chat bubble when we have parent entity set.
+    void Update();
+
     /// Shows next message from the stack
     void ShowNextMessage();
 
@@ -86,7 +89,7 @@ private slots:
     void RemoveAllMessages();
 
     /// Check if messages fit to our rect
-    bool CheckMessageSize(QString message);
+    bool CheckMessageSize(const QString &message);
 
     /// Create one string containing all the message in the stack.
     QString ConstructCombined() const;

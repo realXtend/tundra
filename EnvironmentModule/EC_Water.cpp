@@ -2,36 +2,32 @@
 
 #include "StableHeaders.h"
 #include "EC_Water.h"
-
-#include <Ogre.h>
 #include "Renderer.h"
 #include "ModuleInterface.h"
 #include "ServiceManager.h"
 
+#include <Ogre.h>
+
 namespace Environment
 {
-    EC_Water::EC_Water(Foundation::ModuleInterface* module)
-    :Foundation::ComponentInterface(module->GetFramework()),
-    framework_(module->GetFramework()), scene_node_(0), entity_(0)
+    EC_Water::EC_Water(Foundation::ModuleInterface* module) :
+        framework_(module->GetFramework()),
+        scene_node_(0), entity_(0)
     {
-        assert(framework_);
-            
         CreateOgreWaterObject();
     }
 
     EC_Water::~EC_Water()
     {
-        assert(framework_);
-            
         boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
             <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
             return;
-            
+
         Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
         if (!sceneMgr) // Oops! Same as above.
             return;
-        
+
         //Sanity check
         if ( scene_node_ == 0 || entity_ == 0)
             return;
@@ -40,7 +36,7 @@ namespace Environment
         scene_node_->detachObject(entity_);
         sceneMgr->getRootSceneNode()->removeAndDestroyChild("WaterNode");
         sceneMgr->destroyEntity(entity_);
-        
+
         entity_ = 0;
         scene_node_ = 0;
         framework_ = 0;
@@ -48,18 +44,17 @@ namespace Environment
 
     void EC_Water::SetWaterHeight(float height)
     {
-        if (scene_node_ != 0)
+        if (scene_node_)
             scene_node_->setPosition(scene_node_->getPosition().x, scene_node_->getPosition().y, height);
     }
 
     float EC_Water::GetWaterHeight() const
     {
-        if ( scene_node_ != 0)
+        if (scene_node_)
             return scene_node_->getPosition().z;
         else
-            return 0.0;
+            return 0.f;
     }
-
 
     void EC_Water::CreateOgreWaterObject()
     {
@@ -85,8 +80,4 @@ namespace Environment
             }
         }
     }
-
-   
-
-    
 }

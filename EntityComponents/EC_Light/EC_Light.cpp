@@ -9,6 +9,9 @@
 #include "OgreConversionUtils.h"
 #include "XMLUtilities.h"
 #include "RexNetworkUtils.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
 
 #include <Ogre.h>
 
@@ -17,11 +20,7 @@
 using namespace RexTypes;
 using namespace OgreRenderer;
 
-#define LogError(msg) Poco::Logger::get("EC_Light").error(std::string("Error: ") + msg);
-#define LogInfo(msg) Poco::Logger::get("EC_Light").information(msg);
-
 EC_Light::EC_Light(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     light_(0),
     attached_(false),
     typeAttr_(this, "light type", LT_Point),
@@ -36,7 +35,7 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     innerAngleAttr_(this, "light inner angle", 30.0f),
     outerAngleAttr_(this, "light outer angle", 40.0f)
 {
-    boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService
+    boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;
@@ -49,7 +48,10 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
 
 EC_Light::~EC_Light()
 {
-    boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService
+    if (!GetFramework())
+        return;
+
+    boost::shared_ptr<Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;
@@ -141,6 +143,6 @@ void EC_Light::UpdateOgreLight()
     }
     catch (Ogre::Exception& e)
     {
-        LogError("Exception while setting EC_Light parameters to Ogre: " + e.what());
+        LogError("Exception while setting EC_Light parameters to Ogre: " + std::string(e.what()));
     }
 }
