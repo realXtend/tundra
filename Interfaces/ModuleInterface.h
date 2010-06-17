@@ -35,7 +35,6 @@ namespace Foundation
 {
     class Framework;
     class EventDataInterface;
-    class ModuleManager;
 
     namespace Module
     {
@@ -135,11 +134,12 @@ namespace Foundation
             @return The module, or null if the module doesn't exist.
             @note The pointer may invalidate between frames, always reacquire at begin of frame update
          */
+/*
         template <class T> T *GetModule()
         {
             return framework_->GetModuleManager()->GetModule<T>().lock().get();
         }
-
+*/
     protected:
         /// Parent framework
         Framework *framework_;
