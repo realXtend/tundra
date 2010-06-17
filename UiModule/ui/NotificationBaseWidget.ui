@@ -156,7 +156,7 @@ QWidget#balloonBottom {
               <property name="maximumSize">
                <size>
                 <width>16777215</width>
-                <height>2</height>
+                <height>4</height>
                </size>
               </property>
               <property name="value">

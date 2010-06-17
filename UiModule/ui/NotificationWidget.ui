@@ -22,14 +22,6 @@
   <property name="styleSheet">
    <string notr="true">QWidget#NotificationWidget {
 	background-color: transparent;
-}
-
-QLabel {
-	border: 0px;
-	padding: 2px;
-	background-color: rgba(179, 183, 196, 110);
-	font-size: 12px;
-	color: white;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">

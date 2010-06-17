@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>250</width>
+    <width>258</width>
     <height>150</height>
    </rect>
   </property>
@@ -14,7 +14,9 @@
    <string>Settings Widget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true"/>
+   <string notr="true">QWidget#TeleportWidget {
+	border: 1px solid rgb(139, 141, 143);
+}</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">

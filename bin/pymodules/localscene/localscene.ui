@@ -31,6 +31,12 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#Form
+{
+	background-color: rgb(39, 41, 44);
+}</string>
+  </property>
   <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>

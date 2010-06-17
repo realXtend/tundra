@@ -22,6 +22,12 @@
    </property>
    <item>
     <widget class="QFrame" name="MainFrame">
+     <property name="styleSheet">
+      <string notr="true">QFrame#MainFrame
+{
+	background-color: rgb(39, 41, 44);
+}</string>
+     </property>
      <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">

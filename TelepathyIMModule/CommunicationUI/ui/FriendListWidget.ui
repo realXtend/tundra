@@ -135,7 +135,6 @@ QPushButton::pressed {
         </property>
         <property name="styleSheet">
          <string notr="true">QComboBox {
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(240, 246, 255, 255), stop:0.295455 rgba(226, 233, 239, 255), stop:0.744318 rgba(204, 210, 225, 255), stop:1 rgba(222, 227, 236, 255));
 	border-radius: 0px;
 	min-height: 25px;
 	font: 10pt &quot;Estrangelo Edessa&quot;;
@@ -157,7 +156,6 @@ QComboBox QAbstractItemView {
 	padding-top: 5px;
 	padding-bottom: 5px;
 	selection-background-color: rgb(222, 227, 236);
-	selection-color: rgb(0,0,0);
 }
 </string>
         </property>

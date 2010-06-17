@@ -20,9 +20,9 @@ namespace CoreUi
         setupUi(this);
         connect(settings_widget, SIGNAL(SaveSettingsClicked()), this, SLOT(ChangeTheme()));
         connect(settings_widget, SIGNAL(CancelClicked()), settings_widget, SLOT(CancelClicked()));
-
-        comboBox_changeTheme->addItem(QString::fromStdString("Default style"));
-        comboBox_changeTheme->addItem(QString::fromStdString("Dark blue"));
+        
+        comboBox_changeTheme->addItem(QString::fromStdString("Naali dark blue"));
+        comboBox_changeTheme->addItems(QStyleFactory::keys());
        
     }
 
@@ -40,13 +40,15 @@ namespace CoreUi
         if (currentTheme.isEmpty())        
             currentTheme = theme;        
 
-        if (theme == "Dark blue") {
-            QApplication::setStyle(new UiServices::UiDarkBlueStyle());
+        if (theme == "Naali dark blue") {
+            QApplication::setStyle(new UiServices::UiDarkBlueStyle());            
             QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
             QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
-
-        } else {
-            QApplication::setStyle(new UiServices::UiProxyStyle());
+        } 
+        else
+        {
+            QApplication::setStyle(QStyleFactory::create(theme));
+            QApplication::setPalette(QApplication::style()->standardPalette());
         }
         
         QApplication::setPalette(QApplication::style()->standardPalette());

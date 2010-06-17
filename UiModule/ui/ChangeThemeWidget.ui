@@ -14,34 +14,7 @@
    <string>Sound Settings</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">/* Containers */
-QFrame#MainFrame {
-	background-color: white;
-	padding: 9px;
-}
-
-/* QPUSHBUTTON 
-
-QPushButton {
-	color: rgb(0, 0, 0);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid;
-	border-color: rgb(48, 48, 48);
-	border-radius: 8px;
-	border-top-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	border-color: rgba(0, 0, 0, 255);
-	color: rgb(0,0,0);
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
-}
-
-*/</string>
+   <string notr="true"/>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
