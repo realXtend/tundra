@@ -8,6 +8,7 @@
 #ifndef incl_InventoryModule_InventoryService_h
 #define incl_InventoryModule_InventoryService_h
 
+#include "InventoryModuleApi.h"
 #include "RexTypes.h"
 
 #include <QObject>
@@ -20,7 +21,7 @@ namespace Inventory
     class AbstractInventoryItem;
     class InventoryAsset;
 
-    class InventoryService : public QObject
+    class INVENTORY_MODULE_API InventoryService : public QObject
     {
         Q_OBJECT
 

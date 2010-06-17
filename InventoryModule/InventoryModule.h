@@ -10,6 +10,7 @@
 #ifndef incl_InventoryModule_h
 #define incl_InventoryModule_h
 
+#include "InventoryModuleApi.h"
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
@@ -35,7 +36,7 @@ namespace Inventory
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
     class InventoryService;
 
-    class InventoryModule : public QObject, public Foundation::ModuleInterface
+    class INVENTORY_MODULE_API InventoryModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
