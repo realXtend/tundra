@@ -11,6 +11,9 @@
 #include "CoreStringUtils.h"
 #include <map>
 
+#include "MultiEditPropertyManager.h"
+#include "MultiEditPropertyFactory.h"
+
 class QtDoublePropertyManager;
 class QtVariantPropertyManager;
 class QtProperty;
@@ -189,13 +192,6 @@ namespace ECEditor
         virtual void SendNewValueToAttribute(QtProperty *property);
         void InitializeEditor();
 
-        //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
-        void InitializeMultiEditor();
-
-        //! Get each components atttribute value and convert it to string and put it send the string vector to
-        //! multieditor manager.
-        void UpdateMultiEditorValue();
-
         //! Sends a new value to each component and emit a AttributeChanged signal.
         //! @param value_ new value that is sended into component's attribute.
         void SetValue(const T &value)
@@ -232,6 +228,49 @@ namespace ECEditor
                 iter++;
             }
             emit AttributeChanged(attributeName_.toStdString());
+        }
+
+        //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
+
+        void InitializeMultiEditor()
+        {
+            ECAttributeEditorBase::PreInitializeEditor();
+            if(useMultiEditor_)
+            {
+                MultiEditPropertyManager *multiEditManager = new MultiEditPropertyManager(this);
+                MultiEditPropertyFact *multiEditFactory = new MultiEditPropertyFact(this);
+                propertyMgr_ = multiEditManager;
+                factory_ = multiEditFactory;
+
+                rootProperty_ = multiEditManager->addProperty(attributeName_);
+                owner_->setFactoryForManager(multiEditManager, multiEditFactory);
+                UpdateMultiEditorValue();
+                QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiEditValueSelected(const QtProperty *, const QString &)));
+            }
+        }
+
+        //! Get each components atttribute value and convert it to string and put it send the string vector to
+        //! multieditor manager.
+        void UpdateMultiEditorValue()
+        {
+            if(useMultiEditor_ && componentIsSerializable_)
+            {
+                ECAttributeMap::iterator iter = attributeMap_.begin();
+                QStringList stringList;
+                MultiEditPropertyManager *testPropertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
+                while(iter != attributeMap_.end())
+                {
+                    if(rootProperty_ && iter->second)
+                    {
+                        Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
+                        QString newValue(attribute->ToString().c_str());
+                        if(!stringList.contains(newValue))
+                            stringList << newValue;
+                    }
+                    iter++;
+                }
+                testPropertyManager->SetAttributeValues(rootProperty_, stringList);
+            }
         }
     };
 

@@ -15,6 +15,7 @@ import Queue
 import PythonQt
 import threading
 import os
+import sys #for error reporting when calling naali to get folder fails
 
 import binascii
 
