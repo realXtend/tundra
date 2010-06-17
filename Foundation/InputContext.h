@@ -32,7 +32,9 @@ class InputContext : public QObject
     Q_OBJECT
 
 signals:
+    /// Emitted for each key code, for each event type.
     void OnKeyEvent(KeyEvent &key);
+    /// Emitted for each mouse event (move, scroll, button press/release).
     void OnMouseEvent(MouseEvent &mouse);
 
     /// This signal is emitted when any key is pressed in this context.
@@ -42,12 +44,17 @@ signals:
     /// This signal is emitted when any key is released in this context.
     void KeyReleased(KeyEvent &key);
 
+    /// Emitted when the mouse cursor is moved, independent of whether any buttons are down.
+    void MouseMove(MouseEvent &mouse);
+    /// Mouse wheel was scrolled.
+    void MouseScroll(MouseEvent &mouse);
+
+    // The following signals are emitted on the appropriate events. It is guaranteed that each press event
+    // will follow a corresponding release event (although if it gets lost from Qt, it might get delayed
+    // until we actually notice it).
     void MouseLeftPressed(MouseEvent &mouse);
     void MouseMiddlePressed(MouseEvent &mouse);
     void MouseRightPressed(MouseEvent &mouse);
-
-    void MouseMove(MouseEvent &mouse);
-    void MouseScroll(MouseEvent &mouse);
 
     void MouseLeftReleased(MouseEvent &mouse);
     void MouseMiddleReleased(MouseEvent &mouse);
@@ -108,6 +115,8 @@ public:
     /// without passing the event on to lower layers.
     void SetKeySuppressed(Qt::Key keyCode, bool isSuppressed);
 
+    /// Updates the buffered key presses. Called by the input service to
+    /// proceed on to the next input frame.
     void UpdateFrame();
 
     /// Forces all held down keys to be released, and the appropriate release events to be sent.
