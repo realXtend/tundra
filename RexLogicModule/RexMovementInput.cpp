@@ -80,24 +80,36 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
 {
     Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
 
+    // We pass this event struct forward to Naali event tree in most cases above,
+    // so fill it here already.
     Input::Events::Movement movement;
     movement.x_.abs_ = mouse.x;
     movement.y_.abs_ = mouse.y;
     movement.z_.abs_ = mouse.z;
     movement.x_.rel_ = mouse.relativeX;
-    movement.y_.abs_ = mouse.relativeY;
-    movement.z_.abs_ = mouse.relativeZ;
+    movement.y_.rel_ = mouse.relativeY;
+    movement.z_.rel_ = mouse.relativeZ;
 
     switch(mouse.eventType)
     {
     case MouseEvent::MousePressed:
+        // Left mouse button press produces click events on world objects (prims, mostly)
         if (mouse.button == MouseEvent::LeftButton)
             eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
+        // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
+        // mouse input.
+        if (mouse.button == MouseEvent::RightButton)
+            framework->Input().SetMouseCursorVisible(false);
+        break;
+    case MouseEvent::MouseReleased:
+        // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
+        if (mouse.button == MouseEvent::RightButton)
+            framework->Input().SetMouseCursorVisible(true);
         break;
     case MouseEvent::MouseMove:
-        if (mouse.IsRightButtonDown())
+        if (mouse.IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
             eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
-        else
+        else // Otherwise, no buttons or only LMB is down, post a more generic MOUSEMOVE message.
             eventMgr->SendEvent("Input", Input::Events::MOUSEMOVE, &movement);
         break;
     case MouseEvent::MouseScroll:
@@ -108,7 +120,12 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         singleAxis.z_.rel_ = mouse.relativeZ;
         eventMgr->SendEvent("Input", Input::Events::SCROLL, &singleAxis);
 
-        mouse.handled = true; // Mark this event as handled. Suppresses Qt from getting it.
+        // Mark this event as handled. Suppresses Qt from getting it. Otherwise mouse-scrolling over an 
+        // unactivated Qt widget will cause keyboard focus to go to it, which stops all other scene input.
+        ///\todo Due to this, if you have a 2D webview/media url window open, you have to first left-click on it
+        /// to give keyboard focus to it, after which the mouse wheel will start scrolling the webview window.
+        /// Would be nice to somehow detect which windows are interested in mouse scroll events, and give them priority.
+        mouse.handled = true; 
         break;
     }
     }

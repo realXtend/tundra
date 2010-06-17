@@ -91,8 +91,8 @@ namespace Input
 
         //! Custom key released input event. Can be used to catch any key on the keyboard, contains optional modifier key.
         //! Uses Key event data class.
-//        static const event_id_t KEY_PRESSED = 39;
-//        static const event_id_t KEY_RELEASED = 40;
+        static const event_id_t KEY_PRESSED = 39;
+        static const event_id_t KEY_RELEASED = 40;
 
         //! user clicked mouse over the viewport, usable with f.ex. raycasting. Movement event data class is used.
         static const event_id_t INWORLD_CLICK = 41;
