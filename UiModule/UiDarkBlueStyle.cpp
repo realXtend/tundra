@@ -17,6 +17,8 @@ namespace UiServices
         QColor paletteColor(39, 41, 44);
         QColor white(236, 236, 236);
         QColor slightlyOpaqueBlack(0, 0, 0, 60);
+        QColor baseColor(63, 72, 86);
+        QColor alternateBaseColor(49, 54, 62);
 
         QPixmap backgroundImage("./data/ui/images/styles/darkblue_bg.png");
         QPixmap buttonImage("./data/ui/images/styles/darkblue_button.png");
@@ -33,8 +35,8 @@ namespace UiServices
 
         palette.setBrush(QPalette::BrightText, Qt::white);
         palette.setBrush(QPalette::WindowText, white);
-        palette.setBrush(QPalette::Base, Qt::darkGray);
-        palette.setBrush(QPalette::AlternateBase, base);
+        palette.setBrush(QPalette::Base, baseColor);
+        palette.setBrush(QPalette::AlternateBase, alternateBaseColor);
         palette.setBrush(QPalette::Highlight, lightgray);
         palette.setBrush(QPalette::ButtonText, white);
         palette.setBrush(QPalette::HighlightedText, Qt::white);  
@@ -57,16 +59,13 @@ namespace UiServices
     }
 
     void UiDarkBlueStyle::polish(QWidget *widget)
-    {
+    {        
         if (qobject_cast<QPushButton *>(widget)
             || qobject_cast<QComboBox *>(widget))
             widget->setAttribute(Qt::WA_Hover, true); 
 
         if (qobject_cast<QScrollArea *>(widget))
-            widget->setBackgroundRole(QPalette::AlternateBase);
-
-        if (qobject_cast<QLayout *>(widget))
-            widget->setBackgroundRole(QPalette::AlternateBase);            
+            widget->setBackgroundRole(QPalette::Base);
 
     }
 
@@ -145,12 +144,12 @@ namespace UiServices
                     painter->setPen(QColor(232, 229, 228));                    
                     painter->drawText(textRect, myTitleBar->text, option);
 
-                   if ((myTitleBar->subControls & SC_TitleBarCloseButton) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+                    if ((myTitleBar->subControls & SC_TitleBarCloseButton) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
                         QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarCloseButton, widget);
                         if (closeButtonRect.isValid()) {
                             bool hover = (myTitleBar->activeSubControls & SC_TitleBarCloseButton) && (myTitleBar->state & State_MouseOver);
                             bool sunken = (myTitleBar->activeSubControls & SC_TitleBarCloseButton) && (myTitleBar->state & State_Sunken);
-                            
+
                             QRect closeIconRect = closeButtonRect.adjusted(buttonMargin, buttonMargin, -buttonMargin, -buttonMargin);
                             QPixmap buttonImage;
                             if (hover)
@@ -281,11 +280,11 @@ namespace UiServices
          break; 
      case PE_Frame:
          {
-            painter->save();
-            painter->setPen(QColor(209, 212, 214));
-            painter->setBrush(QColor(42, 45, 50));
-            painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-            painter->restore();
+             painter->save();
+             painter->setPen(QColor(209, 212, 214));
+             painter->setBrush(QColor(42, 45, 50));
+             painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+             painter->restore();
          }    
      default:
          QCleanlooksStyle::drawPrimitive(element, option, painter, widget);
@@ -373,7 +372,7 @@ namespace UiServices
                 return rect;      
             }
 #endif
-            
+
         }
         return QCleanlooksStyle::subControlRect(control, option, subControl, widget);
     }

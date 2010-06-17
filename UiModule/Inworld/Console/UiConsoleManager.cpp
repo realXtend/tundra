@@ -133,11 +133,13 @@ namespace CoreUi
             ui_view_->scene()->setActiveWindow(proxy_widget_);
             ui_view_->scene()->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
             console_ui_->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
+            proxy_widget_->show();
         }
         else
         {
             animation_.setStartValue(QRect(0, 0, ui_view_->width(), current_height));
             animation_.setEndValue(QRect(0, 0, ui_view_->width(), 0));
+            proxy_widget_->hide();
         }
         animation_.start();
     }

@@ -23,14 +23,7 @@
    <string notr="true">QWidget#NotificationLogWidget {
 	background-color: transparent;
 }
-
-QLabel#timestampLabel, QLabel#resultTitleLabel {
-	color: rgb(0, 0, 145);
-}
-
-QLabel#resultTitleLabel, QLabel#resultLabel {
-	padding-bottom: 5px;
-}</string>
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_2">
    <property name="spacing">
@@ -160,9 +153,6 @@ QLabel#resultTitleLabel, QLabel#resultLabel {
               <weight>75</weight>
               <bold>true</bold>
              </font>
-            </property>
-            <property name="styleSheet">
-             <string notr="true"/>
             </property>
             <property name="text">
              <string>Result</string>

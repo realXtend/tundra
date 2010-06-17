@@ -13,6 +13,11 @@
   <property name="windowTitle">
    <string>Settings Widget</string>
   </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#SettingsWidget {
+	border: 1px solid rgb(139, 141, 143);
+}</string>
+  </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
@@ -70,10 +75,10 @@
           <widget class="QFrame" name="ContentFrame">
            <layout class="QVBoxLayout" name="verticalLayout_2">
             <property name="spacing">
-             <number>0</number>
+             <number>6</number>
             </property>
             <property name="margin">
-             <number>0</number>
+             <number>9</number>
             </property>
             <item>
              <widget class="QTabWidget" name="settingsTabWidget">

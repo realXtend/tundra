@@ -32,16 +32,7 @@
    <string>NotificationBrowserWidget</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QWidget#NotificationBrowserWidget {
-	background-color: transparent;
-}
-
-QWidget#tabContainerWidget {
-	background-color: rgba(34,34,34,191);
-	border-bottom-left-radius: 7px;
-	border-bottom-right-radius: 7px;
-}
-</string>
+   <string notr="true"/>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
@@ -77,12 +68,7 @@ QWidget#tabContainerWidget {
       </font>
      </property>
      <property name="styleSheet">
-      <string notr="true">QLabel#titleLabel {
-	background-image: url('./data/ui/images/ether/title_bg.png');
-	background-position: top left;
-	background-repeat: repeat-x;
-	color: qlineargradient(spread:pad, x1:1, y1:0, x2:1, y2:1, stop:0 rgba(233, 233, 233, 255), stop:1 rgba(247, 247, 247, 255));
-}</string>
+      <string notr="true"/>
      </property>
      <property name="text">
       <string>Notifications</string>
@@ -101,7 +87,7 @@ QWidget#tabContainerWidget {
       <item>
        <widget class="QTabWidget" name="categoryTabWidget">
         <property name="currentIndex">
-         <number>0</number>
+         <number>1</number>
         </property>
         <widget class="QWidget" name="logTab">
          <attribute name="title">
@@ -130,8 +116,8 @@ QWidget#tabContainerWidget {
               <rect>
                <x>0</x>
                <y>0</y>
-               <width>226</width>
-               <height>226</height>
+               <width>100</width>
+               <height>30</height>
               </rect>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_6">
