@@ -6,9 +6,9 @@
 
 namespace RexLogic
 {
-    EC_OpenSimAvatar::EC_OpenSimAvatar(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), controlflags(0), yaw(0)
+    EC_OpenSimAvatar::EC_OpenSimAvatar(Foundation::ModuleInterface* module) :
+        controlflags(0), yaw(0), state_(Stand)
     {
-        state_ = Stand;
     }
 
     EC_OpenSimAvatar::~EC_OpenSimAvatar()

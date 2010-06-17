@@ -6,6 +6,8 @@
 #include "ServiceInterface.h"
 #include "CoreTypes.h"
 
+#include <map>
+
 namespace Foundation
 {
     class Framework;
@@ -84,14 +86,12 @@ namespace Foundation
         }
 
         //! Returns true if service type is already registered, false otherwise
-        bool IsRegistered(service_type_t type) const
-        {
-            return (services_.find(type) != services_.end());
-        }
+        bool IsRegistered(service_type_t type) const { return (services_.find(type) != services_.end()); }
+
     private:
         typedef std::map<service_type_t, ServiceWeakPtr> ServicesMap;
         typedef std::map<service_type_t, int> ServicesUsageMap;
-        
+
         //! parent framework
         Framework *framework_;
 

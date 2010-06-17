@@ -31,7 +31,6 @@ namespace Environment
         /// @return The currently active water plane height if water does not exist returns 0.0
         float GetWaterHeight() const;
 
-
     private:
         EC_Water(Foundation::ModuleInterface* module);
 

@@ -15,21 +15,20 @@ using namespace RexTypes;
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),
         link_scene_node_(0),
         attached_(false),
         select_priority_(0)
     {
-        RendererPtr renderer = renderer_.lock();      
+        RendererPtr renderer = renderer_.lock();
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         link_scene_node_ = scene_mgr->createSceneNode();
         scene_node_ = scene_mgr->createSceneNode();
         link_scene_node_->addChild(scene_node_);
         
         // In case the placeable is used for camera control, set fixed yaw axis
-        link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);            
+        link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()

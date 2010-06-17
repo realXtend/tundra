@@ -10,15 +10,14 @@
 namespace OgreRenderer
 {
     EC_OgreCamera::EC_OgreCamera(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         attached_(false),
         camera_(0)
-    {   
-        RendererPtr renderer = renderer_.lock();               
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager(); 
+    {
+        RendererPtr renderer = renderer_.lock();
+        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         Ogre::Viewport* viewport = renderer->GetViewport();
-        camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());  
+        camera_ = scene_mgr->createCamera(renderer->GetUniqueObjectName());
         
         // Set default values for the camera
         camera_->setNearClipDistance(0.1f);

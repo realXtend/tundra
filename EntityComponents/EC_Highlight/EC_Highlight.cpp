@@ -17,13 +17,11 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
+#include "LoggingFunctions.h"
 
-#include <Poco/Logger.h>
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Highlight")
 
 #include "MemoryLeakCheck.h"
-
-#define LogInfo(msg) Poco::Logger::get("EC_Highlight").error("Error: " + msg);
-#define LogError(msg) Poco::Logger::get("EC_Highlight").information(msg);
 
 EC_Highlight::~EC_Highlight()
 {
@@ -72,11 +70,10 @@ bool EC_Highlight::IsVisible() const
 }
 
 EC_Highlight::EC_Highlight(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)
 {
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 }
 
 void EC_Highlight::Create()
