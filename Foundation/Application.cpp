@@ -21,9 +21,9 @@ Application::~Application()
 std::string Application::Name()
 {
     assert (framework_);
-    static const std::string app_name("application_name");
+    static const std::string app_name(APPLICATION_NAME);
 
-    return framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), app_name);
+    return app_name;
 }
 
 std::string Application::Version()

@@ -3,6 +3,9 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
+// Application name is statically defined here
+#define APPLICATION_NAME "realXtend"
+
 #include <boost/smart_ptr.hpp>
 //#include <Poco/Formatter.h>
 #include <boost/program_options.hpp>
