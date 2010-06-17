@@ -134,7 +134,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 return false;
 
             // Create inventory and upload progress windows
-            UiServices::UiModule *ui_module = GetModule<UiServices::UiModule>();
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             if (ui_module)
             {
                 SAFE_DELETE(inventoryWindow_);
