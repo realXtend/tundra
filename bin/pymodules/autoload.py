@@ -14,6 +14,7 @@ from core.freshimport import freshimport
 #TODO: add reading these from a .ini file or something to ease custom modding
 modulenames = [
     #("usr.sleeper", "Sleeper"),
+    #("usr.camcontrol", "CameraController"),
     #("apitest.circuits_testmodule", "TestModule"),
     #("apitest.pythonqt_gui", "TestGui"),
     #("apitest.thread_test", "TestThread"),
