@@ -29,7 +29,7 @@ float SampleShadowMap1TapPCF(sampler2D shadowMap, float4 shadowUV)
     // point on shadowmap
 	shadowUV = shadowUV / shadowUV.w;
 
-	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+	float centerdepth = tex2Dlod(shadowMap, float4(shadowUV.xy),0.f,0.f).x;
 
 	// use depths from prev, calculate diff
 	float lightAmount = 0.2f * saturate((centerdepth - shadowUV.z + fixedDepthBias) * shadowFuzzyWidth);
@@ -39,4 +39,30 @@ float SampleShadowMap1TapPCF(sampler2D shadowMap, float4 shadowUV)
 	return lightAmount;//max(edges, lightAmount);
 }
 
+
+
+
+
+/////////////////
+//openGL
+//
+/////////////////
+
+arbfp1 float SampleShadowMap1TapPCF(sampler2D shadowMap, float4 shadowUV)
+{
+    const float shadowFuzzyWidth = shadowMapParams.x;
+    const float fixedDepthBias = shadowMapParams.y;
+
+    // point on shadowmap
+	shadowUV = shadowUV / shadowUV.w;
+
+	float centerdepth = tex2D(shadowMap, shadowUV.xy).x;
+
+	// use depths from prev, calculate diff
+	float lightAmount = 0.2f * saturate((centerdepth - shadowUV.z + fixedDepthBias) * shadowFuzzyWidth);
+
+//	float edges = (shadowUV.z >= 1.f || shadowUV.w <= 0.f || shadowUV.x <= 0.f || shadowUV.x >= 1.f || shadowUV.y <= 0.f || shadowUV.y >= 1.f) ? 1.f : 0.f;
+
+	return lightAmount;//max(edges, lightAmount);
+}
 #endif
