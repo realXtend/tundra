@@ -73,7 +73,7 @@ namespace Asset
         cache_dir_ = QDir(cache_path_.c_str());
 
         // Read initial values from config
-        QSettings cache_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "configuration/CacheSettings");
+        QSettings cache_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CacheSettings");
         disk_cache_max_size_ = cache_settings.value("AssetCache/MaxSize", QVariant(0)).toInt();
     }
 

@@ -30,13 +30,13 @@ namespace Ether
         
         int DataManager::GetAvatarCountInSettings()
         {
-            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
+            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, avatar_settings_name_);
             return avatar_settings.childGroups().count();
         }
 
         int DataManager::GetWorldCountInSettings()
         {
-            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
+            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, worldserver_settings_name_);
             return world_settings.childGroups().count();
         }
 
@@ -45,7 +45,7 @@ namespace Ether
         QMap<QUuid, Data::AvatarInfo *> DataManager::ReadAllAvatarsFromFile()
         {
             avatar_map_.clear();
-            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
+            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, avatar_settings_name_);
 
             foreach (QString avatar_id, avatar_settings.childGroups())
             {
@@ -102,7 +102,7 @@ namespace Ether
 
         void DataManager::StoreOrUpdateAvatar(Data::AvatarInfo *avatar_info)
         {
-            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
+            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, avatar_settings_name_);
             QString uuid_string = avatar_info->id();
             AvatarTypes::Avatar type = avatar_info->avatarType();
 
@@ -213,7 +213,7 @@ namespace Ether
 
         bool DataManager::RemoveAvatar(Data::AvatarInfo *avatar_info)
         {
-            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", avatar_settings_name_);
+            QSettings avatar_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, avatar_settings_name_);
             QString uuid_string = avatar_info->id();
             
             // If this is the last avatar card, lets not allow it to be removed
@@ -243,7 +243,7 @@ namespace Ether
         QMap<QUuid, Data::WorldInfo*> DataManager::ReadAllWorldsFromFile()
         {
             world_map_.clear();
-            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
+            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, worldserver_settings_name_);
 
             foreach (QString world_id, world_settings.childGroups())
             {
@@ -290,7 +290,7 @@ namespace Ether
 
         void DataManager::StoreOrUpdateWorld(Data::WorldInfo *world_info)
         {
-            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
+            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, worldserver_settings_name_);
             QString uuid_string = world_info->id();
             WorldTypes::World type = world_info->worldType();
 
@@ -374,7 +374,7 @@ namespace Ether
 
         bool DataManager::RemoveWorld(Data::WorldInfo *world_info)
         {
-            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", worldserver_settings_name_);
+            QSettings world_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, worldserver_settings_name_);
             QString uuid_string = world_info->id();
 
             // If this is the last world card, lets not allow it to be removed
@@ -401,7 +401,7 @@ namespace Ether
 
         void DataManager::StoreSelectedCards(QUuid avatar_id, QUuid world_id)
         {
-            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, config_settings_name_);
             if (avatar_map_.contains(avatar_id))
                 ether_config.setValue("selectedcards/avatar", avatar_map_[avatar_id]->id());
             if (world_map_.contains(world_id))
@@ -411,7 +411,7 @@ namespace Ether
         QPair<QUuid, QUuid> DataManager::GetLastSelectedCards()
         {
             QPair<QUuid, QUuid> selected_pair;
-            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, config_settings_name_);
             selected_pair.first = QUuid(ether_config.value("selectedcards/avatar", QString()).toString());
             selected_pair.second = QUuid(ether_config.value("selectedcards/world", QString()).toString());
             return selected_pair;
@@ -421,14 +421,14 @@ namespace Ether
         {
             if (default_view == "ether" || default_view == "classic")
             {
-                QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+                QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, config_settings_name_);
                 ether_config.setValue("defaultview/name", default_view);
             }
         }
 
         QString DataManager::GetDefaultView()
         {
-            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", config_settings_name_);
+            QSettings ether_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, config_settings_name_);
             QString default_view = ether_config.value("defaultview/name").toString();
             if (default_view == "ether" || default_view == "classic")
                 return default_view;
@@ -438,7 +438,7 @@ namespace Ether
 
         void DataManager::StoreClassicLoginInfo(QMap<QString, QString> classic_login_info)
         {
-            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", classic_settings_name_);
+            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, classic_settings_name_);
             classic_settings.setValue("avatar/type", classic_login_info["avatartype"]);
             classic_settings.setValue("avatar/account", classic_login_info["account"]);
             classic_settings.setValue("avatar/password", QByteArray(classic_login_info["password"].toStdString().c_str()).toBase64());
@@ -448,7 +448,7 @@ namespace Ether
 
         QMap<QString, QString> DataManager::GetClassicLoginInfo()
         {
-            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", classic_settings_name_);
+            QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, classic_settings_name_);
             QMap<QString, QString> data_map;
             data_map["avatartype"] = classic_settings.value("avatar/type").toString();
             data_map["account"] = classic_settings.value("avatar/account").toString();
