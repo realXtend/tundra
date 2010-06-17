@@ -173,6 +173,9 @@ namespace PythonScript
     void PythonScriptModule::PostInitialize()
     {
         em_ = framework_->GetEventManager();
+        
+        // Reprioritize to be able to override behaviour
+        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
@@ -1738,6 +1741,8 @@ PyObject* GetCameraId(PyObject* self)
     if (rexlogic_)
     {
         Scene::EntityPtr camentptr = rexlogic_->GetCameraEntity();
+        if (!camentptr)
+          Py_RETURN_NONE;
         entity_id_t id = camentptr->GetId();
         return Py_BuildValue("I", id);
     }
