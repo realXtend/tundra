@@ -38,7 +38,6 @@
 namespace RexLogic
 {
     EC_HoveringWidget::EC_HoveringWidget(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         namebillboardSet_(0),
         buttonsbillboardSet_(0),
         namebillboard_(0),
@@ -60,9 +59,9 @@ namespace RexLogic
     {
         hovering_timer_ = new QTimer(this);
         hovering_timer_->setSingleShot(true);
-        
-        renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-        
+
+        renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+
         visibility_animation_timeline_->setFrameRange(0,100);
         visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
         visibility_timer_->setSingleShot(true);
@@ -75,8 +74,7 @@ namespace RexLogic
         connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
         connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            ).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 

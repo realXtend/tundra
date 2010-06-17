@@ -24,7 +24,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Billboard");
 #include <QTimer>
 
 EC_Billboard::EC_Billboard(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     billboardSet_(0),
     billboard_(0),
     materialName_("")
@@ -49,7 +48,11 @@ void EC_Billboard::SetDimensions(float w, float h)
 
 void EC_Billboard::Show(const std::string &imageName, int timeToShow)
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
+    assert(GetFramework());
+    if (GetFramework())
+        return;
+
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
         <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
         return;

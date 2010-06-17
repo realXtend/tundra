@@ -1,12 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include <boost/smart_ptr.hpp>
+#include "ComponentInterface.h"
+#include "AttributeInterface.h"
 
 #include "Framework.h"
-#include "AttributeInterface.h"
-#include "ComponentInterface.h"
-#include "ServiceInterface.h"
-#include "ServiceManager.h"
 #include "Entity.h"
 #include "SceneManager.h"
 
@@ -15,11 +12,13 @@
 namespace Foundation
 {
 
-ComponentInterface::ComponentInterface(Foundation::Framework *framework) : framework_(framework), parent_entity_(0)
+ComponentInterface::ComponentInterface() :
+    parent_entity_(0), change_(None)
 {
 }
 
-ComponentInterface::ComponentInterface(const ComponentInterface &rhs) : QObject(), framework_(rhs.framework_), parent_entity_(rhs.parent_entity_)
+ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
+    parent_entity_(rhs.parent_entity_)
 {
 }
 
@@ -27,9 +26,18 @@ ComponentInterface::~ComponentInterface()
 {
 }
 
+Framework* ComponentInterface::GetFramework() const
+{
+    if (GetParentEntity())
+        GetParentEntity()->GetFramework();
+    else
+        return 0;
+}
+
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
 {
     parent_entity_ = entity;
+    emit ParentEntitySet();
 }
 
 Scene::Entity* ComponentInterface::GetParentEntity() const
@@ -37,13 +45,11 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
-AttributeInterface* ComponentInterface::GetAttributeByName(const std::string &name)
+AttributeInterface* ComponentInterface::GetAttributeByName(const std::string &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); i++)
-    {
         if(attributes_[i]->GetNameString() == name)
             return attributes_[i];
-    }
     return 0;
 }
 
@@ -124,23 +130,21 @@ void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_elemen
 {
     if (!IsSerializable())
         return;
-    
+
     QDomElement comp_element = BeginSerialization(doc, base_element);
-    
+
     for (uint i = 0; i < attributes_.size(); ++i)
-    {
         WriteAttribute(doc, comp_element, attributes_[i]->GetNameString(), attributes_[i]->ToString());
-    }
 }
 
 void ComponentInterface::DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change)
 {
     if (!IsSerializable())
         return;
-        
+
     if (!BeginDeserialization(element))
         return;
-    
+
     for (uint i = 0; i < attributes_.size(); ++i)
     {
         std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString());

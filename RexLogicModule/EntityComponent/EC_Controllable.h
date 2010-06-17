@@ -83,7 +83,7 @@ namespace RexLogic
         //! Type of this controllable
         RexTypes::ControllableType type_;
 
-        EC_Controllable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
+        EC_Controllable(Foundation::ModuleInterface* module) : current_action_(0), dirty_(false) {}
     };
 
     namespace Actions

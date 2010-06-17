@@ -22,6 +22,11 @@ namespace UiServices
     class UiProxyWidget;
 }
 
+namespace Foundation
+{
+    class Framework;
+}
+
 class QLineEdit;
 class QWidget;
 class QUrl;
@@ -83,7 +88,10 @@ private:
 
     //! Create the 2D UI widget, but do not show it yet
     void CreateWidget();
-    
+
+    //! Framework pointer.
+    Foundation::Framework *framework_;
+
     //! 2D UI widget
     QWidget* widget_;
     
