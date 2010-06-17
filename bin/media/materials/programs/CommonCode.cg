@@ -140,7 +140,7 @@ float3 SampleReflectionColor(float3 normal, float3 viewDir)
 	float3 refl = 2.f * dot(normal, viewDir) * normal - viewDir;
 	// This is a real cheap version of environment mapping - we're using only one 2D texture and not a cube map.
 	// This corresponds to using a cube map where each face is the same, so we can just use e.g. the .xy components to sample the texture.
-	return tex2D(reflectionMap, refl.xy); 
+	return tex2D(reflectionMap, refl.xy).xyz; 
 #else
 	return float3(0,0,0);
 #endif		
@@ -153,7 +153,7 @@ float3 SampleReflectionColor(float3 normal, float3 viewDir)
 // for distances in world space. Can't compute in local object space, since if the object world matrix contained scaling, the light attenuation wouldn't
 // be consistent across different objects.
 // @return xyz - light direction in world space, w - (linear) light strength/attenuation factor.
-float4 ComputePointLightDirAndAttenuation(float3 vertexPos, float4 lightPos, float4 lightAtt)
+float4  ComputePointLightDirAndAttenuation(float3 vertexPos, float4 lightPos, float4 lightAtt)
 {
 	float4 result;
 	

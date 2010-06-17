@@ -16,8 +16,9 @@
 #include "EC_OgrePlaceable.h"
 #include "OgreConversionUtils.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
+
 #include "CompositionHandler.h"
-//#include <OgreShadowCameraSetupPSSM.h>
+
 
 #include <QSettings>
 #include <QFile>
@@ -614,23 +615,41 @@ void EC_OgreEnvironment::InitShadows()
         return;
     RendererPtr renderer = renderer_.lock();
 
+    bool using_directx = false;
+
+    
+    if(renderer->GetRoot()->getRenderSystem()->getName() == "Direct3D9 Rendering Subsystem")
+    {
+        using_directx = true;
+    }
+
     QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend","configuration/OgreRenderer");
     QFile file(settings.fileName());
     if(!file.exists())
     {
         settings.beginGroup("shadow-options");
-        settings.setValue("depthmap_size", 1024);
         settings.setValue("soft_shadow", "false");
         settings.endGroup();
     }
     settings.beginGroup("shadow-options");
-
+    //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
     float shadowFarDist = 50;
-    unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  
+    unsigned short shadowTextureSize = 2048;
+    if(using_directx)
+    {
+        shadowTextureSize = 1024;
+    }
 
-    //this is also used to specify the number of frustrum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
-    //also.
-    size_t shadowTextureCount = 3;
+    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
+
+    
+
+
+    size_t shadowTextureCount = 1;
+    if(using_directx)
+    {
+        shadowTextureCount = 3;
+    }
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
 
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
@@ -638,25 +657,42 @@ void EC_OgreEnvironment::InitShadows()
     // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
+    
+    
 
-    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
     sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
     sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_RGB);
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
-#include "DisableMemoryLeakCheck.h"
-    OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-#include "EnableMemoryLeakCheck.h"
-    OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
-    splitpoints.push_back(cameraNearClip_);
-    splitpoints.push_back(4.5);
-    splitpoints.push_back(11);
-    splitpoints.push_back(shadowFarDist);
-    pssmSetup->setSplitPoints(splitpoints);
 
-    Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
+    Ogre::ShadowCameraSetupPtr shadowCameraSetup;
+    if(using_directx)
+    {
+#include "DisableMemoryLeakCheck.h"
+        OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
+#include "EnableMemoryLeakCheck.h"
+
+        OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
+        splitpoints.push_back(cameraNearClip_);
+        splitpoints.push_back(3.5);
+        splitpoints.push_back(11);
+        splitpoints.push_back(shadowFarDist);
+        pssmSetup->setSplitPoints(splitpoints);
+        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
+    }
+    else
+    {
+#include "DisableMemoryLeakCheck.h"
+        Ogre::FocusedShadowCameraSetup* focusedSetup = new Ogre::FocusedShadowCameraSetup();
+#include "EnableMemoryLeakCheck.h"
+        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
+    }
+    
+    
+
+    
     sceneManager->setShadowCameraSetup(shadowCameraSetup);
     sceneManager->setShadowFarDistance(shadowFarDist);
 
@@ -672,7 +708,7 @@ void EC_OgreEnvironment::InitShadows()
     Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
     if(!debugOverlay)
         debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
-    for(int i = 0; i<3;i++)
+    for(int i = 0; i<shadowTextureCount;i++)
     {
             shadowTex = mngr->getShadowTexture(i);
 
@@ -695,9 +731,9 @@ void EC_OgreEnvironment::InitShadows()
             debugOverlay->add2D(debugPanel);
     }
     debugOverlay->show();*/
-    if(settings.value("soft_shadow", "true") == "true")
+    if(settings.value("soft_shadow", "false") == "true")
     {
-        for(int i=0;i<3;i++)
+        for(int i=0;i<shadowTextureCount;i++)
         {
             OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
             Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
