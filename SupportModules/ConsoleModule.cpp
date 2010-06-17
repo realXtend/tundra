@@ -54,9 +54,7 @@ namespace Console
             assert (manager_);
             manager_->Update(frametime);
 
-            boost::shared_ptr<InputServiceInterface> input_logic = framework_->GetServiceManager()->
-                GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
-            if (input_logic.get() && input_logic->IsKeyPressed(Qt::Key_F1))
+            if (framework_->Input().IsKeyPressed(Qt::Key_F1))
                 manager_->ToggleConsole();
         }
         RESETPROFILER;

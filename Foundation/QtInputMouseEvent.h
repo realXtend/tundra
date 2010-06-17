@@ -139,6 +139,14 @@ public:
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
     QPoint MousePressedPos(int mouseButton) const;
 
+    /// Returns true if the given mouse button is held down in this event.
+    bool IsButtonDown(MouseButton button_) const;
+
+    // Conveniency functions for above. Note that these do not tell if this event was a mouse press event for the given button,
+    // only that the button was detected to be down during the time this event was generated.
+    bool IsLeftButtonDown() const { return IsButtonDown(LeftButton); }
+    bool IsMiddleButtonDown() const { return IsButtonDown(MiddleButton); }
+    bool IsRightButtonDown() const { return IsButtonDown(RightButton); }
 /*
     ///\todo Implement these.
 	bool HasShiftModifier() const { return (modifiers & Qt::ShiftModifier) != 0; }

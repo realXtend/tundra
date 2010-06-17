@@ -25,6 +25,7 @@ QtInputModule::~QtInputModule()
 void QtInputModule::Initialize()
 {
     inputService = boost::make_shared<QtInputService>(framework_);
+    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Input, inputService);
 }
 
 static const std::string moduleName("QtInputModule");
@@ -32,11 +33,6 @@ static const std::string moduleName("QtInputModule");
 const std::string &QtInputModule::NameStatic()
 {
     return moduleName;
-}
-
-bool QtInputModule::eventFilter(QObject *obj, QEvent *event)
-{
-    return inputService->OnMainWindowEvent(obj, event);
 }
 
 void QtInputModule::Update(f64 frametime)

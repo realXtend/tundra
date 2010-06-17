@@ -107,24 +107,30 @@ public:
     /// (by setting the .handled member of the event to true), but be very careful when doing so.
     InputContext &TopLevelInputContext() { return topLevelInputContext; }
 
-    /// Called whenever the Qt main window receives an event.
-    bool OnMainWindowEvent(QObject *obj, QEvent *event);
 private:
+    bool eventFilter(QObject *obj, QEvent *event);
+
     /// Sends key release messages for each currently tracked pressed key and clears the record of all pressed keys.
-    void ReleaseAllKeys();
+    void SceneReleaseAllKeys();
     /// Sends mouse button release messages for each mouse button that was held down.
-    void ReleaseMouseButtons();
+    void SceneReleaseMouseButtons();
     /// Moves the mouse to the center of the client area. Used in relative mouse movement mode to force the mouse cursor
     /// to stay at screen center at all times.
     void RecenterMouse();
     /// Goes through the list of input contexts and removes from the list all contexts that have been destroyed.
     void PruneDeadInputContexts();
 
+    typedef std::list<boost::weak_ptr<InputContext> > InputContextList;
+
+    /// Starting from the input context 'start', triggers key release events to that context and all lower ones.
+    void TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Key keyCode);
+
     // The coordinates in window client coordinate space denoting where the mouse left [0] /middle [1] /right [2] /XButton1 [3] /XButton2 [4] 
     // buttons were pressed down.
     MouseEvent::PressPositions mousePressPositions;
 
-    // The last known mouse coordinates in window client coordinate space.
+    // The last known mouse coordinates in window client coordinate space. These are not necessarily the coordinates from previous frame,
+    // but from the previous Qt mouse input event.
     int lastMouseX;
     int lastMouseY;
 
@@ -149,7 +155,6 @@ private:
 
     event_category_id_t inputCategory;
 
-    typedef std::list<boost::weak_ptr<InputContext> > InputContextList;
     /// Stores all the currently registered input contexts. The order these items are stored in the list corresponds to the
     /// priority at which each context will get the events.
     InputContextList registeredInputContexts;
@@ -159,7 +164,8 @@ private:
     InputContext topLevelInputContext;
 
     /// Stores the currently held down keyboard buttons.
-    std::vector<Qt::Key> heldKeys;
+
+    std::map<Qt::Key, KeyPressInformation> heldKeys;
 
     /// Lists the keycodes of buttons that are taken to have been pressed down during this Update() cycle.
     std::vector<Qt::Key> pressedKeys;
@@ -195,6 +201,10 @@ private:
     QWidget *mainWindow;
     
     Foundation::Framework *framework;
+
+    // QtInputService is noncopyable.
+    QtInputService(const QtInputService &);
+    void operator =(const QtInputService &);
 };
 
 #endif

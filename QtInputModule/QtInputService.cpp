@@ -56,6 +56,7 @@ framework(framework_)
     assert(mainView);
 //    mainView->setMouseTracking(true);
     mainView->installEventFilter(this);
+//    std::cout << "Installed tracking to " << (unsigned long)mainView << std::endl;
 
     assert(mainView->viewport());
     mainView->viewport()->installEventFilter(this);
@@ -63,11 +64,21 @@ framework(framework_)
     // Find the top-level widget that the QGraphicsView is contained in. We need 
     // to track mouse move events from that window.
     mainWindow = mainView;
+    /*
     while(mainWindow->parentWidget() && mainWindow->parentWidget()->parentWidget())
         mainWindow = mainWindow->parentWidget();
 
     mainWindow->setMouseTracking(true);
     mainWindow->installEventFilter(this);
+    */
+
+    while(mainWindow->parentWidget())
+    {
+        mainWindow = mainWindow->parentWidget();
+        mainWindow->setMouseTracking(true);
+        mainWindow->installEventFilter(this);
+        std::cout << "Installed tracking to " << (unsigned long)mainWindow << std::endl;
+    }
 }
 
 QGraphicsItem *QtInputService::GetVisibleItemAtCoords(int x, int y)
@@ -91,6 +102,8 @@ QGraphicsItem *QtInputService::GetVisibleItemAtCoords(int x, int y)
 		return 0;
 */
 	QGraphicsItem *itemUnderMouse = 0;
+    ///\bug Not sure if this function returns the items in the proper depth order! We might not get the topmost window
+    /// when this loop finishes.
     QList<QGraphicsItem *> items = framework->GetUIView()->items(x, y);
     for(int i = 0; i < items.size(); ++i)
         if (items[i]->isVisible())
@@ -101,6 +114,8 @@ QGraphicsItem *QtInputService::GetVisibleItemAtCoords(int x, int y)
 
 	if (!itemUnderMouse)
 		return 0;
+
+    return 0;
 /* ///\todo Enable.
 	// Do alpha keying: If we have clicked on a transparent part of a widget, act as if we didn't click on a widget at all.
     // This allows clicks to go through to the 3D scene from transparent parts of a widget.
@@ -140,7 +155,7 @@ bool QtInputService::IsMouseCursorVisible() const
 
 bool QtInputService::IsKeyDown(Qt::Key keyCode) const
 {
-    return std::find(heldKeys.begin(), heldKeys.end(), keyCode) != heldKeys.end();
+    return heldKeys.find(keyCode) != heldKeys.end();
 }
 
 bool QtInputService::IsKeyPressed(Qt::Key keyCode) const
@@ -189,16 +204,24 @@ boost::shared_ptr<InputContext> QtInputService::RegisterInputContext(const char 
     return inputContext;
 }
 
-void QtInputService::ReleaseAllKeys()
+void QtInputService::SceneReleaseAllKeys()
 {
-    for(std::vector<Qt::Key>::iterator iter = heldKeys.begin(); iter != heldKeys.end(); ++iter)
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
+    {
+        boost::shared_ptr<InputContext> inputContext = iter->lock();
+        if (inputContext)
+            inputContext->ReleaseAllKeys();
+    }
+
+/*
+    for(std::map<Qt::Key, KeyPressInformation>::iterator iter = heldKeys.begin(); iter != heldKeys.end(); ++iter)
     {
         // We send a very bare-bone release message here that might not reflect reality, i.e.
         // the modifiers might not match the current one, etc.
         // Therefore, you should rely on these information at the key press time, instead of the
         // release time.
 		KeyEvent keyEvent;
-		keyEvent.keyCode = *iter;
+		keyEvent.keyCode = iter->first;
 		keyEvent.keyPressCount = 0;
 		keyEvent.modifiers = 0;
 		keyEvent.text = "";
@@ -206,12 +229,12 @@ void QtInputService::ReleaseAllKeys()
 
         TriggerKeyEvent(keyEvent);
     }
-
+*/
     // Now all keys are released from the inworld scene.
-    heldKeys.clear();
+//    heldKeys.clear();
 }
 
-void QtInputService::ReleaseMouseButtons()
+void QtInputService::SceneReleaseMouseButtons()
 {
     for(int i = 1; i < MouseEvent::MaxButtonMask; i <<= 1)
         if ((heldMouseButtons & i) != 0)
@@ -235,7 +258,7 @@ void QtInputService::ReleaseMouseButtons()
         }
 
     // Now all the mouse buttons are released from the inworld scene.
-    heldMouseButtons = 0;
+//    heldMouseButtons = 0;
 }
 
 /// \bug Due to not being able to restrict the mouse cursor to the window client are in any cross-platform means,
@@ -273,6 +296,25 @@ void QtInputService::PruneDeadInputContexts()
     }
 }
 
+void QtInputService::TriggerSceneKeyReleaseEvent(InputContextList::iterator start, Qt::Key keyCode)
+{
+    for(; start != registeredInputContexts.end(); ++start)
+    {
+        boost::shared_ptr<InputContext> context = start->lock();
+        if (context.get())
+            context->TriggerKeyReleaseEvent(keyCode);
+    }
+
+    if (heldKeys.find(keyCode) != heldKeys.end())
+    {
+		KeyEvent keyEvent;
+		keyEvent.keyCode = keyCode;
+		keyEvent.eventType = KeyEvent::KeyReleased;
+
+        eventManager->SendEvent(inputCategory, QtInputEvents::KeyReleased, &keyEvent);
+    }
+}
+
 void QtInputService::TriggerKeyEvent(KeyEvent &key)
 {
     assert(key.eventType != KeyEvent::KeyEventInvalid);
@@ -281,11 +323,11 @@ void QtInputService::TriggerKeyEvent(KeyEvent &key)
     // First, we pass the key to the global top level input context, which operates above Qt widget input.
     topLevelInputContext.TriggerKeyEvent(key);
     if (key.handled)
-        return;
+        key.eventType = KeyEvent::KeyReleased;
 
     // If a widget in the QGraphicsScene has keyboard focus, don't send the keyboard message to the inworld scene (the lower contexts).
     if (mainView->scene()->focusItem())
-		return;
+        key.eventType = KeyEvent::KeyReleased;
 
     // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin();
@@ -295,10 +337,21 @@ void QtInputService::TriggerKeyEvent(KeyEvent &key)
         if (context.get())
             context->TriggerKeyEvent(key);
         if (key.handled)
-            break;
+        {
+//            ++iter;
+            key.eventType = KeyEvent::KeyReleased;
+//            TriggerSceneKeyReleaseEvent(iter, key.keyCode);
+//            break;
+        }
     }
 
+//    if (key.handled)
+//        return;
+
+    ///\todo Key releases might not get here if a context above it has suppressed it.
+
     // Finally, pass the key event to the system event tree.
+    ///\todo Track which presses and releases have been passed to the event tree, and filter redundant releases.
     switch(key.eventType)
     {
     case KeyEvent::KeyPressed: 
@@ -366,7 +419,7 @@ void QtInputService::TriggerMouseEvent(MouseEvent &mouse)
     }
 }
 
-bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
+bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 {
     switch(event->type())
     {
@@ -376,19 +429,31 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
 
 		KeyEvent keyEvent;
 		keyEvent.keyCode = (Qt::Key)e->key();
-		keyEvent.keyPressCount = e->isAutoRepeat() ? 2 : 1; ///\todo keyPressCount is not yet calculated.
+        keyEvent.keyPressCount = 1;
 		keyEvent.modifiers = e->modifiers();
 		keyEvent.text = e->text();
 		keyEvent.eventType = KeyEvent::KeyPressed;
-		keyEvent.otherHeldKeys = heldKeys;
+//		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
+
+        std::map<Qt::Key, KeyPressInformation>::iterator keyRecord = heldKeys.find(keyEvent.keyCode);
+        if (keyRecord != heldKeys.end())
+        {
+            if (e->isAutoRepeat()) // If this is a repeat, track the proper keyPressCount.
+                keyEvent.keyPressCount = ++keyRecord->second.keyPressCount;
+        }
+        else
+        {
+            KeyPressInformation info;
+            info.keyPressCount = 1;
+            info.keyState = KeyEvent::KeyPressed;
+//            info.firstPressTime = now; ///\todo
+            heldKeys[keyEvent.keyCode] = info;
+        }
 
         // Queue up the press event for the polling API, independent of whether any Qt widget has keyboard focus.
         if (keyEvent.keyPressCount == 1) /// \todo The polling API does not get key repeats at all. Should it?
             newKeysPressedQueue.push_back((Qt::Key)e->key());
-
-		if (std::find(heldKeys.begin(), heldKeys.end(), keyEvent.keyCode) == heldKeys.end())
-            heldKeys.push_back(keyEvent.keyCode);
 
         TriggerKeyEvent(keyEvent);
 
@@ -398,7 +463,7 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
     case QEvent::KeyRelease:
     {
         QKeyEvent *e = static_cast<QKeyEvent *>(event);
-
+/*
         // If a widget in the QGraphicsScene has keyboard focus, send release messages for each
         // previous press message we've sent to inworld scene (i.e. release all keys from scene).
         if (mainView->scene()->focusItem())
@@ -406,23 +471,31 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
             ReleaseAllKeys();
 			return false;
         }
+*/
+        // Our input system policy: Key releases on repeated keys are not transmitted. This means
+        // that the client gets always a sequences like "press (first), press(1st repeat), press(2nd repeat), release",
+        // instead of "press(first), release, press(1st repeat), release, press(2nd repeat), release".
+        if (e->isAutoRepeat())
+            return false;
 
-		std::vector<Qt::Key>::iterator existingKey = std::find(heldKeys.begin(), heldKeys.end(), e->key());
+        HeldKeysMap::iterator existingKey = heldKeys.find((Qt::Key)e->key());
+
 		// If we received a release on an unknown key we haven't received a press for, don't pass it to the scene,
         // since we didn't pass the press to the scene either (or we've already passed the release before, so don't 
         // pass duplicate releases).
 		if (existingKey == heldKeys.end())
 			return false;
-		heldKeys.erase(existingKey);
 
 		KeyEvent keyEvent;
 		keyEvent.keyCode = (Qt::Key)e->key();
-		keyEvent.keyPressCount = e->isAutoRepeat() ? 2 : 1; ///\todo. Actually count.
+		keyEvent.keyPressCount = existingKey->second.keyPressCount;
 		keyEvent.modifiers = e->modifiers();
 		keyEvent.text = e->text();
 		keyEvent.eventType = KeyEvent::KeyReleased;
-		keyEvent.otherHeldKeys = heldKeys;
+//		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
+
+		heldKeys.erase(existingKey);
 
         // Queue up the release event for the polling API, independent of whether any Qt widget has keyboard focus.
         if (keyEvent.keyPressCount == 1) /// \todo The polling API does not get key repeats at all. Should it?
@@ -492,7 +565,7 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
 
 		mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
 
-		mouseEvent.heldKeys = heldKeys;
+//		mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);
@@ -559,7 +632,7 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
 
 		mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
 
-		mouseEvent.heldKeys = heldKeys;
+//		mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);
@@ -587,7 +660,7 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
 		mouseEvent.otherButtons = e->buttons();
 		mouseEvent.x = e->x();
 		mouseEvent.y = e->y();
-		mouseEvent.z = 0;
+		mouseEvent.z = 0; // Mouse wheel does not have an absolute z position, only relative.
 		mouseEvent.relativeX = 0;
 		mouseEvent.relativeY = 0;
 		mouseEvent.relativeZ = e->delta();
@@ -596,7 +669,7 @@ bool QtInputService::OnMainWindowEvent(QObject *obj, QEvent *event)
 
 		mouseEvent.otherButtons = e->buttons(); ///\todo Can this be trusted?
 
-		mouseEvent.heldKeys = heldKeys;
+//		mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
         TriggerMouseEvent(mouseEvent);	
@@ -616,8 +689,8 @@ void QtInputService::Update(f64 frametime)
     // to another window instead and our app keeps thinking that the key is being held down.)
     if (!QApplication::activeWindow())
     {
-        ReleaseAllKeys();
-        ReleaseMouseButtons();
+        SceneReleaseAllKeys();
+        SceneReleaseMouseButtons();
     }
 
     // Move all the double-buffered input events to current events.
@@ -632,4 +705,15 @@ void QtInputService::Update(f64 frametime)
 
     releasedMouseButtons = newMouseButtonsReleasedQueue;
     newMouseButtonsReleasedQueue = 0;
+
+    // Update the new frame start to all input contexts.
+    topLevelInputContext.UpdateFrame();
+
+    for(InputContextList::iterator iter = registeredInputContexts.begin();
+        iter != registeredInputContexts.end(); ++iter)
+    {
+        boost::shared_ptr<InputContext> inputContext = (*iter).lock();
+        if (inputContext.get())
+            inputContext->UpdateFrame();
+    }
 }

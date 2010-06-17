@@ -66,8 +66,6 @@ public:
     static const std::string &NameStatic();
 
 private:
-    bool eventFilter(QObject *obj, QEvent *event);
-
     boost::shared_ptr<QtInputService> inputService;
 };
 

@@ -44,3 +44,8 @@ MouseEvent::PressOrigin MouseEvent::PressPositions::Origin(int mouseButton) cons
     int i = QtMouseButtonEnumToIndex(mouseButton);
     return origin[i];
 }
+
+bool MouseEvent::IsButtonDown(MouseButton button_) const
+{
+    return button == button_ || ((otherButtons & button_) != 0);
+}

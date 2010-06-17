@@ -11,6 +11,22 @@
 
 #include "KeyEventSignal.h"
 
+struct KeyPressInformation
+{
+    /// Identifies the press count for the key. 0 denotes the key is not being held down.
+    /// 1 means that the key is being held down, and no key repeat signals have yet occurred.
+    /// A value > 1 means that the key has been held down for a longer period, and this field
+    /// tells how many repeated presses have been received already for the key.
+    int keyPressCount;
+
+    /// Specifies in which state the key is in.
+    KeyEvent::EventType keyState;
+
+    /// The absolute timestamp (in seconds) telling when the key was first pressed down.
+    f64 firstPressTime;
+};
+typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
+
 class InputContext : public QObject
 {
     Q_OBJECT
@@ -53,6 +69,10 @@ public:
     /// keyboard events to this context manually.
     void TriggerKeyEvent(KeyEvent &key);
 
+    /// Constructs a key release event for the given key and calls TriggerKeyEvent for it.
+    /// Use to forcibly release a key that is being held down.
+    void TriggerKeyReleaseEvent(Qt::Key keyCode);
+
     /// Same as TriggerKeyEvent, but for mouse events.
     void TriggerMouseEvent(MouseEvent &mouse);
 
@@ -68,6 +88,9 @@ public:
     /// duration, and key repeat was triggered for it this frame. The value
     /// denotes the repeat count.
     int KeyPressedCount(Qt::Key keyCode) const;
+
+    /// A convenience method to test key presses ignoring repeats.
+    bool IsKeyPressed(Qt::Key keyCode) const { return KeyPressedCount(keyCode) == 1; }
 
     /// Returns true if the given key is being held down in this context.
     bool IsKeyDown(Qt::Key keyCode) const;
@@ -85,6 +108,11 @@ public:
     /// without passing the event on to lower layers.
     void SetKeySuppressed(Qt::Key keyCode, bool isSuppressed);
 
+    void UpdateFrame();
+
+    /// Forces all held down keys to be released, and the appropriate release events to be sent.
+    void ReleaseAllKeys();
+
 private:
     typedef std::map<Qt::Key, KeyEventSignal> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
@@ -95,25 +123,18 @@ private:
     /// i.e. this context "grabs" these keys and does not pass them forward 
     /// to anyone else.
     std::set<Qt::Key> suppressedKeys;
+    
+    /// Stores each new key event that is being held down.
+    HeldKeysMap newKeyEvents;
 
-    struct KeyPressInformation
-    {
-        /// Identifies the press count for the key. 0 denotes the key is not being held down.
-        /// 1 means that the key is being held down, and no key repeat signals have yet occurred.
-        /// A value > 1 means that the key has been held down for a longer period, and this field
-        /// tells how many repeated presses have been received already for the key.
-        int keyPressCount;
+    /// Stores a buffered version of all the key pressed. This is to avoid losing any press or
+    /// release events in the case of different module Update() orders, or when accessing the
+    /// context from Qt event handlers outside Update() cycle.
+    HeldKeysMap heldKeysBuffered;
 
-        /// Specifies in which state the key is in.
-        KeyEvent::EventType keyState;
-
-        /// The absolute timestamp (in seconds) telling when the key was first pressed down.
-        f64 firstPressTime;
-    };
-
-    typedef std::map<Qt::Key, KeyPressInformation> HeldKeysMap;
-    /// Stores each key that is being held down.
-    HeldKeysMap heldKeys;
+    /// Tests both newKeyEvents and heldKeysBuffered and looks if this context is aware of the
+    /// given key being pressed down.
+    bool IsKeyDownImmediate(Qt::Key keyCode) const;
 
     std::string name;
 
@@ -121,5 +142,7 @@ private:
     InputContext(const InputContext &);
     void operator=(const InputContext &);
 };
+
+typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 #endif
