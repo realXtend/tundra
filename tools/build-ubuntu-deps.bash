@@ -123,7 +123,7 @@ else
     cmake .
     make
     cp -a lib/libPropertyEditor.* $prefix/lib/
-    cp src/*.h src/Qt[A-Z]* $prefix/include/
+    cp lib/*.h $prefix/include/
     touch $tags/$what-done
 fi
 
