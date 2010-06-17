@@ -21,6 +21,9 @@
 
 namespace ECEditor
 {
+    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
+    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
+
     ECAttributeEditorBase::ECAttributeEditorBase(const QString &attributeName,
             QtAbstractPropertyBrowser *owner,
             Foundation::ComponentPtr component,

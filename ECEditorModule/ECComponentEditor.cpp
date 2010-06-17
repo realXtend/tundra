@@ -146,7 +146,8 @@ namespace ECEditor
                 {
                     if(iter->expired())
                     {
-                        iter = components_.erase(iter);
+                        // doesn't compile on gcc
+                        // iter = components_.erase(iter);
                         continue;
                     }
 

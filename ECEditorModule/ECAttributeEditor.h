@@ -235,9 +235,6 @@ namespace ECEditor
         }
     };
 
-    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
-    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
-
     template<> void ECAttributeEditor<Real>::UpdateEditorValue();
     template<> void ECAttributeEditor<Real>::InitializeEditor();
     template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property);
