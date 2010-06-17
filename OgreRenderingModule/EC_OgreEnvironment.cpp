@@ -670,7 +670,9 @@ void EC_OgreEnvironment::InitShadows()
     Ogre::ShadowCameraSetupPtr shadowCameraSetup;
     if(using_directx)
     {
+#include "DisableMemoryLeakCheck.h"
         OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
+#include "EnableMemoryLeakCheck.h"
 
         OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
         splitpoints.push_back(cameraNearClip_);
@@ -682,7 +684,9 @@ void EC_OgreEnvironment::InitShadows()
     }
     else
     {
+#include "DisableMemoryLeakCheck.h"
         Ogre::FocusedShadowCameraSetup* focusedSetup = new Ogre::FocusedShadowCameraSetup();
+#include "EnableMemoryLeakCheck.h"
         shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
     }
     
