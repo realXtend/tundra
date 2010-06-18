@@ -95,22 +95,9 @@ namespace Foundation
         */
         void DeclareStaticModule(ModuleInterface *module);
 
-        //! Specify a module by type that should not be loaded or initialized under any circumstances
-        /*! 
-            \note Only call during application preinit phase.
-
-            \param type Type of the module that should be excluded.
-        */
-/*
-        void ExcludeModule(Module::Type type)
-        {
-            ExcludeModule(Module::NameFromType(type));
-        }
-*/
         //! Specify a module by name that should not be loaded or initialized under any circumstances
         /*! 
             \note Only call during application preinit phase.
-
             \param module Name of the module that should be excluded.
         */
         void ExcludeModule(const std::string &module)
@@ -121,13 +108,6 @@ namespace Foundation
             Foundation::RootLogDebug("Added module " + module + " to exclude list");
         }
 
-        //! Returns true if the specified module type is exluded from being loaded
-/*
-        bool IsExcluded(Module::Type type) const
-        {
-            return IsExcluded(Module::NameFromType(type));
-        }
-*/
         //! Returns true if the specified module is excluded from being loaded
         bool IsExcluded(const std::string &module) const
         {
@@ -158,9 +138,7 @@ namespace Foundation
         void UpdateModules(f64 frametime);
 
         //! Returns module by name
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
-        */
+        //! \note The pointer may invalidate between frames, always reacquire at begin of frame update
         ModuleWeakPtr GetModule(const std::string &name)
         {
             for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
@@ -260,11 +238,17 @@ namespace Foundation
             StringVector moduleNames; ///< The names of the modules contained in this shared library.
             StringVector dependencies;
 
+            /// @return True if this module directly depends on the module rhs, i.e. if this module absolutely needs to be loaded before rhs.
             bool Precedes(const ModuleLoadDescription &rhs) const;
 
+            /// @return A readable string presentation of the given module description.
             std::string ToString() const;
         };
 
+        /** Parses the module xml file stored in the file pointed by the parameter path.
+            Adds a new module load description structure to the end of the vector out,
+            as well as adding into relativePathDependencyAdditions any path dependencies needed by that module.
+        */
         void ParseModuleXMLFile(const fs::path &path, std::vector<ModuleLoadDescription> &out, StringVector &relativePathDependencyAdditions);
 
         static void SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modules);
