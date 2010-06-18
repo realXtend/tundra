@@ -44,12 +44,13 @@ namespace Naali
         virtual ~MeshPreviewLabel();
     signals:
         void sendMouseEvent(QMouseEvent *event, bool both);
-    
+        void sendWheelEvent(QWheelEvent* ev);
     protected:
          void mouseMoveEvent(QMouseEvent *event);
          void mousePressEvent(QMouseEvent* ev);
          void mouseReleaseEvent(QMouseEvent* ev);
-        
+         void wheelEvent(QWheelEvent* ev);
+
     private:
          bool leftPressed_;
          bool rightPressed_;
@@ -80,6 +81,7 @@ namespace Naali
         void Closed();
         void Update();
         void MouseEvent(QMouseEvent* event, bool both);
+        void MouseWheelEvent(QWheelEvent* ev);
 
     signals:
         /// This signal is emitted when the editor is closed.
@@ -100,12 +102,11 @@ namespace Naali
         request_tag_t request_tag_;
         UiServices::UiProxyWidget *proxy_; 
         QPointF lastPos_;
-        double camAlphaAngle_;
-        double camPsiAngle_;
+        int camAlphaAngle_;
         QString mesh_id_;
-        double val;
-        double moveX_;
-        double moveY_;
+        // Mid button roll.
+        double mouseDelta_;
+      
     };
 }
 
