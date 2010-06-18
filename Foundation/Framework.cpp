@@ -112,7 +112,7 @@ namespace Foundation
             // create managers
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
-            service_manager_ = ServiceManagerPtr(new ServiceManager(this));
+            service_manager_ = ServiceManagerPtr(new ServiceManager());
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
@@ -128,8 +128,15 @@ namespace Foundation
 
     Framework::~Framework()
     {
-        module_manager_.reset();
+        engine_.reset();
         thread_task_manager_.reset();
+        event_manager_.reset();
+        service_manager_.reset();
+        component_manager_.reset();
+        module_manager_.reset();
+        config_manager_.reset();
+        platform_.reset();
+        application_.reset();
 
         Poco::Logger::shutdown();
 
@@ -162,7 +169,6 @@ namespace Foundation
         filechannel->setProperty("archive","number");
         filechannel->setProperty("compress","false");
 
-        //Poco::SplitterChannel *
         splitterchannel = new Poco::SplitterChannel();
         if (consolechannel)
             splitterchannel->addChannel(consolechannel);
@@ -178,7 +184,7 @@ namespace Foundation
             Poco::Logger::create("",formatchannel,Poco::Message::PRIO_TRACE);
             Poco::Logger::create("Foundation",Poco::Logger::root().getChannel() ,Poco::Message::PRIO_TRACE);
         }
-        catch (Poco::ExistsException)
+        catch (Poco::ExistsException &/*e*/)
         {
             assert (false && "Somewhere, a message is pushed to log before the logger is initialized.");
         }
@@ -187,7 +193,7 @@ namespace Foundation
         {
             RootLogInfo("Log file opened on " + GetLocalDateTimeString());
         }
-        catch(Poco::OpenFileException)
+        catch(Poco::OpenFileException &/*e*/)
         {
             // Do not create the log file.
             splitterchannel->removeChannel(filechannel);
@@ -233,8 +239,7 @@ namespace Foundation
             ("server", po::value<std::string>(), "world server and port")
             ("auth_server", po::value<std::string>(), "realXtend authentication server address and port")
             ("auth_login", po::value<std::string>(), "realXtend authentication server user name")
-            ("login", "automatically login to server using provided credentials")
-            ;
+            ("login", "automatically login to server using provided credentials");
 
         try
         {
@@ -354,10 +359,10 @@ namespace Foundation
     }
 
     void Framework::UnloadModules()
-    {        
+    {
         default_scene_.reset();
-        scenes_.clear();            
-            
+        scenes_.clear();
+
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
     }
@@ -420,9 +425,7 @@ namespace Foundation
 
         bool result = false;
         if (module_manager_->HasModule(params[0]))
-        {
             result = module_manager_->UnloadModuleByName(params[0]);
-        }
 
         if (!result)
             return Console::ResultFailure("Module not found.");
@@ -669,10 +672,5 @@ namespace Foundation
     const Framework::SceneMap &Framework::GetSceneMap() const
     {
         return scenes_;
-    }
-
-    ProgramOptionsEvent::ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) :
-        options(vars), argc(ac), argv(av)
-    {
     }
 }

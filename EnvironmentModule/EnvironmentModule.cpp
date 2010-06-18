@@ -26,6 +26,10 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
+#include "UiModule.h"
+#include "UiDefines.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -57,13 +61,31 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        //initialize postprocess dialog
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
+            // Initialize post-process dialog.
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
             postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
-            postprocess_dialog_->AddSelfToScene(this);
+
+            // Add to scene.
+            UiServices::UiModule *ui_module = GetFramework()->GetModule<UiServices::UiModule>();
+            if (!ui_module)
+                return;
+
+            UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
+
+            // Menu graphics
+            UiDefines::MenuNodeStyleMap image_path_map;
+            QString base_url = "./data/ui/images/menus/"; 
+            image_path_map[UiDefines::TextNormal] = base_url + "edbutton_POSTPRtxt_normal.png";
+            image_path_map[UiDefines::TextHover] = base_url + "edbutton_POSTPRtxt_hover.png";
+            image_path_map[UiDefines::TextPressed] = base_url + "edbutton_POSTPRtxt_click.png";
+            image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
+            image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
+            image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
+            ui_properties.SetMenuNodeStyleMap(image_path_map);
+            ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
         }
     }
 
@@ -236,8 +258,7 @@ namespace Environment
 
             if (methodname == "RexPostP")
             {
-                boost::shared_ptr<OgreRenderer::Renderer> renderer =
-                    framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
                 if (renderer)
                 {
                     StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);

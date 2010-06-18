@@ -453,13 +453,21 @@ namespace Environment
                 CreateOrUpdateTerrainPatchHeightData(patches[i], header.patchSize);
 
             // Now that we have updated all the height map data for each patch, see if
-            // we have enough of the patches loaded in to regenerate the GPU-side resources
-            // as well.
+            // we have enough of the patches loaded in to regenerate the GPU-side resources as well.
             RegenerateDirtyTerrainPatches();
             break;
         }
+        case TPLayerWater:
+            EnvironmentModule::LogDebug("Unhandled LayerData: Water");
+            break;
+        case TPLayerWind:
+            EnvironmentModule::LogDebug("Unhandled LayerData: Wind");
+            break;
+        case TPLayerCloud:
+            EnvironmentModule::LogDebug("Unhandled LayerData: Cloud");
+            break;
         default:
-            ///\todo Log out warning - unhandled packet type.
+            EnvironmentModule::LogDebug("Uknown LayerData: " + ToString(header.layerType));
             break;
         }
         return false;
