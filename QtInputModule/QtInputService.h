@@ -119,6 +119,8 @@ private:
     void RecenterMouse();
     /// Goes through the list of input contexts and removes from the list all contexts that have been destroyed.
     void PruneDeadInputContexts();
+    /// Takes the given point in the coordinate frame of source and maps it to the coordinate space of the main graphics view.
+    QPoint MapPointToMainGraphicsView(QObject *source, const QPoint &point);
 
     typedef std::list<boost::weak_ptr<InputContext> > InputContextList;
 

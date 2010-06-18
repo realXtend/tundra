@@ -14,6 +14,7 @@ class KeyEventSignal : public QObject
 
 signals:
     void KeyPressed(KeyEvent &key);
+    ///\todo Not yet implemented.
     void KeyDown(KeyEvent &key);
     void KeyReleased(KeyEvent &key);
 

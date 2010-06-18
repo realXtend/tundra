@@ -169,11 +169,10 @@ void InputContext::UpdateFrame()
 
 void InputContext::ReleaseAllKeys()
 {
-    // Force a update cycle to get all new events to the buffered list. That way, we only have
-    // to look through the buffered list for the keys to release.
-//    UpdateFrame();
-
     std::vector<Qt::Key> keysToRelease;
+
+    // We double buffer the to-be-released keys first to a temporary list, since invoking the trigger
+    // function will add new entries to newKeyEvents.
 
     for(HeldKeysMap::iterator iter = heldKeysBuffered.begin(); iter != heldKeysBuffered.end(); ++iter)
         keysToRelease.push_back(iter->first);
@@ -181,13 +180,8 @@ void InputContext::ReleaseAllKeys()
     for(HeldKeysMap::iterator iter = newKeyEvents.begin(); iter != newKeyEvents.end(); ++iter)
         keysToRelease.push_back(iter->first);
 
-    // We double buffer the to-be-released keys first to a temporary list, since invoking this trigger
-    // function will add new entries to newKeyEvents.
     for(std::vector<Qt::Key>::iterator iter = keysToRelease.begin(); iter != keysToRelease.end(); ++iter)
         TriggerKeyReleaseEvent(*iter);
-
-//    heldKeysBuffered.clear();
-//    newKeyEvents.clear();
 }
 
 bool InputContext::IsKeyDownImmediate(Qt::Key keyCode) const
