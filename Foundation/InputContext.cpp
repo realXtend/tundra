@@ -3,7 +3,7 @@
 #include "InputContext.h"
 
 InputContext::InputContext(const char *name_)
-:name(name_)
+:name(name_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
 {
 }
 

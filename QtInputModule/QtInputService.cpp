@@ -303,6 +303,16 @@ void QtInputService::TriggerKeyEvent(KeyEvent &key)
     if (key.handled)
         key.eventType = KeyEvent::KeyReleased;
 
+    // Pass the event to all input contexts that take their input over Qt.
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
+    {
+        boost::shared_ptr<InputContext> context = iter->lock();
+        if (context.get() && context->TakesKeyboardEventsOverQt())
+            context->TriggerKeyEvent(key);
+        if (key.handled)
+            key.eventType = KeyEvent::KeyReleased;
+    }
+
     // If a widget in the QGraphicsScene has keyboard focus, don't send the keyboard message to the inworld scene (the lower contexts).
     if (mainView->scene()->focusItem() && key.eventType == KeyEvent::KeyPressed)
     {
@@ -312,12 +322,11 @@ void QtInputService::TriggerKeyEvent(KeyEvent &key)
             key.eventType = KeyEvent::KeyReleased;
     }
 
-    // Pass the event to all input contexts in the priority order.
-    for(InputContextList::iterator iter = registeredInputContexts.begin();
-        iter != registeredInputContexts.end(); ++iter)
+    // Pass the event to all input contexts that don't take their input over Qt, in the priority order.
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get())
+        if (context.get() && !context->TakesKeyboardEventsOverQt())
             context->TriggerKeyEvent(key);
         if (key.handled)
             key.eventType = KeyEvent::KeyReleased;
@@ -359,13 +368,12 @@ void QtInputService::TriggerMouseEvent(MouseEvent &mouse)
         return;
 
     // Pass the event to all input contexts in the priority order.
-    for(InputContextList::iterator iter = registeredInputContexts.begin();
-        iter != registeredInputContexts.end(); ++iter)
+    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         if (mouse.handled)
             break;
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get())
+        if (context.get() && (!mouse.itemUnderMouse || context->TakesMouseEventsOverQt()))
             context->TriggerMouseEvent(mouse);
     }
 
@@ -512,7 +520,7 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
             return false;
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+//		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
 /*
         // Update the flag that tracks whether the inworld scene or QGraphicsScene is grabbing mouse movement.
         if (event->type() == QEvent::MouseButtonPress)
@@ -535,8 +543,8 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 
         // If there's a visible QGraphicsItem under the mouse and mouse is not in FPS mode, 
         // the click's supposed to go there - don't send it at all to inworld scene.
-		if (itemUnderMouse && mouseCursorVisible)
-			return false;
+//		if (itemUnderMouse && mouseCursorVisible)
+//			return false;
 
         // The mouse press is going to the inworld scene - clear keyboard focus from the QGraphicsScene widget, if any had it so key events also go to inworld scene.
         if (event->type() == QEvent::MouseButtonPress)
@@ -547,7 +555,8 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
 
 		MouseEvent mouseEvent;
-        mouseEvent.origin = itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
+        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 		mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
@@ -579,18 +588,22 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         // Duplicate events are not received, so no need to worry about filtering them here.
 
         QMouseEvent *e = static_cast<QMouseEvent *>(event);
-		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+
+		//QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         // If there is a graphicsItem under the mouse, don't pass the move message to the inworld scene, unless the inworld scene has captured it.
 //        if (mouseCursorVisible)
 //		    if ((itemUnderMouse && sceneMouseCapture != SceneMouseCapture) || sceneMouseCapture == QtMouseCapture)
 //			    return false;
 
-        if (mouseCursorVisible && itemUnderMouse)
-            return false;
+//        if (mouseCursorVisible && itemUnderMouse)
+//            return false;
 
         MouseEvent mouseEvent;
 		mouseEvent.eventType = MouseEvent::MouseMove;
 		mouseEvent.button = (MouseEvent::MouseButton)e->button();
+        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        ///\todo Set whether the previous press originated over a Qt widget or scene.
+        mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
 
         QWidget *sender = qobject_cast<QWidget*>(obj);
         assert(sender);
@@ -651,12 +664,14 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         QObject *mv = qobject_cast<QObject*>(mainView);
         QObject *mw = qobject_cast<QObject*>(mainWindow);
         QWheelEvent *e = static_cast<QWheelEvent *>(event);
-		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
-		if (itemUnderMouse)
-			return false;
+//		QGraphicsItem *itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+//		if (itemUnderMouse)
+//			return false;
 
 		MouseEvent mouseEvent;
 		mouseEvent.eventType = MouseEvent::MouseScroll;
+        mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
+        mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
         mouseEvent.button = MouseEvent::NoButton;
 		mouseEvent.otherButtons = e->buttons();
 		mouseEvent.x = e->x();
@@ -673,7 +688,7 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 //		mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
 
-        TriggerMouseEvent(mouseEvent);	
+        TriggerMouseEvent(mouseEvent);
 
         return mouseEvent.handled;
 	}

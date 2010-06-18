@@ -15,6 +15,10 @@ RexMovementInput::RexMovementInput(Foundation::Framework *framework_)
     // Create a new input context that this object will use to fetch the avatar and camera input from.
     input = framework->Input().RegisterInputContext("RexAvatarInput", 100);
 
+    // To be sure that Qt doesn't play tricks on us and miss a mouse release when we're in FPS mode,
+    // grab the mouse movement input over Qt.
+    input->SetTakeMouseEventsOverQt(true);
+
     // Listen on both key and mouse input signals.
     connect(input.get(), SIGNAL(OnKeyEvent(KeyEvent &)), this, SLOT(HandleKeyEvent(KeyEvent &)));
     connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseEvent(MouseEvent &)));
@@ -91,16 +95,21 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
     movement.y_.rel_ = mouse.relativeY;
     movement.z_.rel_ = mouse.relativeZ;
 
+//    framework->Input.SetMouseCursorVisible(!mouse.IsRightButtonDown());
+
     switch(mouse.eventType)
     {
     case MouseEvent::MousePressed:
-        // Left mouse button press produces click events on world objects (prims, mostly)
-        if (mouse.button == MouseEvent::LeftButton)
-            eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
-        // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
-        // mouse input.
-        if (mouse.button == MouseEvent::RightButton)
-            framework->Input().SetMouseCursorVisible(false);
+        if (!mouse.itemUnderMouse)
+        {
+            // Left mouse button press produces click events on world objects (prims, mostly)
+            if (mouse.button == MouseEvent::LeftButton)
+                eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
+            // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
+            // mouse input.
+            if (mouse.button == MouseEvent::RightButton)
+                framework->Input().SetMouseCursorVisible(false);
+        }
         break;
     case MouseEvent::MouseReleased:
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
@@ -109,7 +118,11 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         break;
     case MouseEvent::MouseMove:
         if (mouse.IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
-            eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
+        {
+           eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
+           if (!framework->Input().IsMouseCursorVisible())
+               mouse.handled = true; // Mouse is in RMB mouselook mode, suppress others from getting the move event.
+        }
         else // Otherwise, no buttons or only LMB is down, post a more generic MOUSEMOVE message.
             eventMgr->SendEvent("Input", Input::Events::MOUSEMOVE, &movement);
         break;
@@ -126,7 +139,8 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         ///\todo Due to this, if you have a 2D webview/media url window open, you have to first left-click on it
         /// to give keyboard focus to it, after which the mouse wheel will start scrolling the webview window.
         /// Would be nice to somehow detect which windows are interested in mouse scroll events, and give them priority.
-        mouse.handled = true; 
+        if (!mouse.itemUnderMouse)
+            mouse.handled = true; 
         break;
     }
     }
