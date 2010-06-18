@@ -129,11 +129,15 @@ namespace RexLogic
             if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_EQUILATERAL_TRIANGLE)
                 sides = 3;
             else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_CIRCLE)
-                sides = 24;
+                // Reduced prim lod!!!
+                sides = 12;
+                //sides = 24;
             else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_HALF_CIRCLE)
             {
                 // half circle, prim is a sphere
-                sides = 24;
+                // Reduced prim lod!!!
+                sides = 12;
+                //sides = 24;
 
                 profileBegin = 0.5f * profileBegin + 0.5f;
                 profileEnd = 0.5f * profileEnd + 0.5f;
@@ -141,7 +145,9 @@ namespace RexLogic
 
             int hollowSides = sides;
             if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_CIRCLE)
-                hollowSides = 24;
+                // Reduced prim lod!!!
+                hollowSides = 12;
+                //hollowSides = 24;
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_SQUARE)
                 hollowSides = 4;
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
