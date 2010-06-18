@@ -9,6 +9,7 @@
 #endif
 
 #include "boost/thread.hpp"
+
 #if defined(_WINDOWS) && defined(PROFILING)
 //! Profiles a block of code in current scope. Ends the profiling when it goes out of scope
 /*! Name of the profiling block must be unique in the scope, so do not use the name of the function
@@ -39,8 +40,6 @@
     typedef int LONGLONG;
 #endif
 
-
-
 namespace Foundation
 {
     class ProfilerNodeTree;
@@ -65,13 +64,14 @@ namespace Foundation
         {
             if (supported_)
             {
-                // yield time to other threads, to potentially reduce chance of another thread pre-empting our profiling effort. Commented out because can in itself skew pofiling data.
+                // yield time to other threads, to potentially reduce chance of another thread pre-empting our profiling effort.
+                // Commented out because can in itself skew pofiling data.
                 // boost::this_thread::yield();
 #ifdef _WINDOWS
                 QueryPerformanceCounter(&start_time_);
 #endif
             }
-	    }
+        }
 
         void Stop()
         {
@@ -89,14 +89,13 @@ namespace Foundation
 #ifdef _WINDOWS
             if (supported_)
             {
-                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;		
+                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;        
                 double elapsed_s = (double)time_elapsed_.QuadPart / (double)frequency_.QuadPart;
-         
                 return (elapsed_s < 0 ? 0 : elapsed_s);
             }
 #endif
             return 0.0;
-	    }
+        }
 
 #ifdef _WINDOWS
         static double ElapsedTimeSeconds(const LARGE_INTEGER &start, const LARGE_INTEGER &end)
@@ -104,7 +103,6 @@ namespace Foundation
             if (supported_)
             {
                 double elapsed_s = (double)(end.QuadPart - start.QuadPart) / (double)frequency_.QuadPart;
-         
                 return (elapsed_s < 0 ? 0 : elapsed_s);
             }
             return 0.0;
@@ -117,14 +115,13 @@ namespace Foundation
 #ifdef _WINDOWS
             if (supported_)
             {
-                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;		
+                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;        
                 LONGLONG elapsed_ms = static_cast<LONGLONG>(time_elapsed_.QuadPart * 1.e+6) / frequency_.QuadPart;
-
                 return (elapsed_ms < 0 ? 0 : (LONGLONG)0);
             }
 #endif
             return 0;
-	    }
+        }
 
     private:
         //! is high frequency perf counter supported in this platform
@@ -156,8 +153,7 @@ namespace Foundation
         typedef std::list<boost::shared_ptr<ProfilerNodeTree> > NodeList;
 
         //! constructor that takes a name for the node
-        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0)
-        { }
+        explicit ProfilerNodeTree(const std::string &name) : name_(name), parent_(0), recursion_(0), owner_(0) {}
 
         //! destructor
         virtual ~ProfilerNodeTree()
@@ -171,14 +167,10 @@ namespace Foundation
         //! Resets this node and all child nodes
         virtual void ResetValues()
         {
-            for (NodeList::iterator it = children_.begin() ; 
-                 it != children_.end() ;
-                 ++it)
-            {
+            for (NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
                 (*it)->ResetValues();
-            }
         }
-        
+
         //! Add a child for this node
         void AddChild(boost::shared_ptr<ProfilerNodeTree> node)
         {
@@ -190,14 +182,12 @@ namespace Foundation
         void RemoveChild(ProfilerNodeTree *node)
         {
             if (node)
-            {
                 for(NodeList::iterator iter = children_.begin(); iter != children_.end(); ++iter)
                     if ((*iter).get() == node)
                     {
                         children_.erase(iter);
                         return;
                     }
-            }
         }
 
         //! Returns a child node
@@ -208,17 +198,9 @@ namespace Foundation
         ProfilerNodeTree* GetChild(const std::string &name)
         {
             assert (name != name_);
-
-            for (NodeList::iterator it = children_.begin() ; 
-                 it != children_.end() ; 
-                 ++it)
-            {
+            for (NodeList::iterator it = children_.begin() ; it != children_.end() ; ++it)
                 if ((*it)->name_ == name)
-                {
                     return (*it).get();
-                }
-            }
-
             return 0;
         }
         //! Returns the name of this node
@@ -230,10 +212,7 @@ namespace Foundation
         //! Returns list of children for introspection
         const NodeList &GetChildren() const { return children_; }
 
-        void MarkAsRootBlock(Profiler *owner)
-        {
-            owner_ = owner;
-        }
+        void MarkAsRootBlock(Profiler *owner) { owner_ = owner; }
 
     private:
         //! list of all children for this node
@@ -330,7 +309,6 @@ namespace Foundation
         double elapsed_min_current_;
         double elapsed_max_current_;
 
-
         ProfilerBlock block_;
     };
 
@@ -343,7 +321,6 @@ namespace Foundation
             delete node;
         }*/
     }
-    
 
     //! Profiler can be used to measure execution time of a block of code.
     /*!
