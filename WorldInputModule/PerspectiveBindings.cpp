@@ -13,6 +13,9 @@ namespace Input
         map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Tab),
                     make_pair (Events::SWITCH_CAMERA_STATE, 0)));
 
+		map.insert (make_pair (QKeySequence (Qt::Key_T),
+                    make_pair (Events::CAMERA_TRIPOD, 0)));
+
         map.insert (make_pair (QKeySequence (Qt::ALT + Qt::Key_Period),
                     make_pair (Events::PY_RUN_COMMAND, 0)));
 
@@ -48,6 +51,9 @@ namespace Input
 
         map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_Space),
                 make_pair (Events::UNFOCUS_UI, 0)));
+		/* tofilovski focus on object */
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_R),
+			make_pair (Events::FOCUS_ON_OBJECT, 0)));
     }
 
     FirstPersonBindings::FirstPersonBindings ()
@@ -98,6 +104,9 @@ namespace Input
 
         map.insert (make_pair (QKeySequence (Qt::Key_Right),
                     make_pair (Events::MOVE_RIGHT_PRESSED, Events::MOVE_RIGHT_RELEASED)));
+		/* tofilovski focus on object */
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_R),
+                    make_pair (Events::FOCUS_ON_OBJECT, 0)));
     }
 
     ThirdPersonBindings::ThirdPersonBindings ()
@@ -148,6 +157,10 @@ namespace Input
 
         map.insert (make_pair (QKeySequence (Qt::Key_Right),
                     make_pair (Events::ROTATE_RIGHT_PRESSED, Events::ROTATE_RIGHT_RELEASED)));
+
+		/* tofilovski focus on object */
+		map.insert (make_pair (QKeySequence (Qt::CTRL + Qt::Key_R),
+                    make_pair (Events::FOCUS_ON_OBJECT, 0)));
     }
 
     FreeCameraBindings::FreeCameraBindings ()

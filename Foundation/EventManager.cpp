@@ -20,18 +20,21 @@
 
 namespace Foundation
 {
+    bool CompareSubscribers(const EventManager::EventSubscriber& lhs, const EventManager::EventSubscriber& rhs)
+    {
+        return lhs.priority_ > rhs.priority_;
+    }
+    
     EventManager::EventManager(Framework *framework) : 
         framework_(framework),
         next_category_id_(1),
         next_request_tag_(1),
-        event_subscriber_root_(EventSubscriberPtr(new EventSubscriber())),
         main_thread_id_(QThread::currentThreadId())
     {
     }
     
     EventManager::~EventManager()
     {
-        event_subscriber_root_.reset();
     }
     
     event_category_id_t EventManager::RegisterEventCategory(const std::string& name)
@@ -99,7 +102,7 @@ namespace Foundation
         event_map_[category_id][event_id] = name;
     }
     
-    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
+    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data)
     {
         if (QThread::currentThreadId() != main_thread_id_)
         {
@@ -114,9 +117,21 @@ namespace Foundation
         {
             Foundation::RootLogWarning("Attempted to send event with illegal category");
             return false;
-        }    
-            
-        return SendEvent(event_subscriber_root_.get(), category_id, event_id, data);
+        }
+        
+        // Send event in priority order, until someone returns true
+        for (unsigned i = 0; i < subscribers_.size(); ++i)
+        {
+            if (SendEvent(subscribers_[i], category_id, event_id, data))
+                return true;
+        }
+        
+        return false;
+    }
+    
+    bool EventManager::SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data)
+    {
+        return SendEvent(QueryEventCategory(category), event_id, data);
     }
     
     void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, EventDataPtr data, f64 delay)
@@ -142,229 +157,92 @@ namespace Foundation
         new_delayed_events_.push_back(new_delayed_event);
     }
     
-    bool EventManager::SendEvent(EventSubscriber* node, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
+    bool EventManager::SendEvent(const EventSubscriber& subscriber, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
-        if (ModuleSharedPtr module = node->module_.lock())
+        if (ModuleInterface* module = subscriber.module_.lock().get())
         {
-            if (module->HandleEvent(category_id, event_id, data))
-                return true;
+            try
+            {
+                return module->HandleEvent(category_id, event_id, data);
+            }
+            catch(const std::exception &e)
+            {
+                std::cout << "HandleEvent caught an exception inside module " << module->Name() << ": " << (e.what() ? e.what() : "(null)") << std::endl;
+                RootLogCritical(std::string("HandleEvent caught an exception inside module " + module->Name() + ": " + (e.what() ? e.what() : "(null)")));
+                throw;
+            }
+            catch(...)
+            {
+                std::cout << "HandleEvent caught an unknown exception inside module " << module->Name() << std::endl;
+                RootLogCritical(std::string("HandleEvent caught an unknown exception inside module " + module->Name()));
+                throw;
+            }
         }
         
-        EventSubscriberVector::const_iterator i = node->children_.begin();
-        while (i != node->children_.end())
-        {
-            if (SendEvent((*i).get(), category_id, event_id, data))
-                return true;
-                
-            ++i;
-        }
         return false;
     }
     
-    bool ComparePriority(EventManager::EventSubscriberPtr const& e1, EventManager::EventSubscriberPtr const& e2)
+    bool EventManager::RegisterEventSubscriber(ModuleWeakPtr module, int priority)
     {
-        return e1.get()->priority_ < e2.get()->priority_;
-    }
-    
-    bool EventManager::RegisterEventSubscriber(ModuleWeakPtr module_, int priority, ModuleWeakPtr parent_)
-    {
-        ModuleSharedPtr modulePtr = module_.lock();
-        ModuleSharedPtr parentPtr = parent_.lock();
-        ModuleInterface *module = modulePtr.get();
-        ModuleInterface *parent = parentPtr.get();
-        assert (module);
-        
-        if (FindNodeWithModule(event_subscriber_root_.get(), module))
+        ModuleSharedPtr module_ptr = module.lock();
+        ModuleInterface *module_rawptr = module_ptr.get();
+        if (!module_rawptr)
         {
-            Foundation::RootLogWarning(module->Name() + " is already added as event subscriber");
+            RootLogError("Tried to register null module as event subscriber");
             return false;
         }
         
-        EventSubscriber* node = FindNodeWithModule(event_subscriber_root_.get(), parent);
-        if (!node)
+        for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
-            if (parent)
-                Foundation::RootLogWarning("Could not add module " + module->Name() + " as event subscriber, parent module " + parent->Name() + " not found");
-            
-            return false;
+            // If module found, just readjust the priority
+            if (subscribers_[i].module_.lock().get() == module_rawptr)
+            {
+                subscribers_[i].priority_ = priority;
+                std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
+                return true;
+            }
         }
         
-        EventSubscriberPtr new_node = EventSubscriberPtr(new EventSubscriber());
-        new_node->module_ = module_;
-        new_node->module_name_ = module->Name();
-        new_node->priority_ = priority;
-        node->children_.push_back(new_node);
-        std::sort(node->children_.rbegin(), node->children_.rend(), ComparePriority);
+        EventSubscriber new_subscriber;
+        new_subscriber.module_ = module;
+        new_subscriber.module_name_ = module_rawptr->Name();
+        new_subscriber.priority_ = priority;
+        subscribers_.push_back(new_subscriber);
+        std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
         return true;
     }
     
     bool EventManager::UnregisterEventSubscriber(ModuleInterface* module)
     {
-        assert (module);
-        
-        EventSubscriber* node = FindNodeWithChild(event_subscriber_root_.get(), module);
-        if (!node)
-        {
-            Foundation::RootLogWarning("Could not remove event subscriber " + module->Name() + ", not found");
+        if (!module)
             return false;
-        }
         
-        EventSubscriberVector::iterator i = node->children_.begin();
-        while (i != node->children_.end())
+        for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
-            if ((*i)->module_.lock().get() == module)
+            if (subscribers_[i].module_.lock().get() == module)
             {
-                node->children_.erase(i);
+                subscribers_.erase(subscribers_.begin() + i);
                 return true;
             }
-            
-            ++i;
         }
         
-        return false; // should not happen
+        return false;
     }
     
     bool EventManager::HasEventSubscriber(ModuleInterface* module)
     {
-        assert (module);
+        if (!module)
+            return false;
         
-        return (FindNodeWithChild(event_subscriber_root_.get(), module) != 0);
-    }
-
-    void EventManager::ValidateEventSubscriberTree()
-    {
-        ValidateEventSubscriberTree(event_subscriber_root_.get());
-    }
-
-    void EventManager::ValidateEventSubscriberTree(EventSubscriber* node)
-    {
-        if (!node->module_name_.empty())
-            node->module_ = framework_->GetModuleManager()->GetModule(node->module_name_);
-        else
-            node->module_ = ModuleWeakPtr();
-            
-        EventSubscriberVector::const_iterator i = node->children_.begin();
-        while (i != node->children_.end())
+        for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
-            ValidateEventSubscriberTree((*i).get());
-            ++i;
-        }
-    }
-
-    EventManager::EventSubscriber* EventManager::FindNodeWithModule(EventSubscriber* node, ModuleInterface* module) const
-    {
-        if (node->module_.lock().get() == module)
-            return node;
-            
-        EventSubscriberVector::const_iterator i = node->children_.begin();
-        while (i != node->children_.end())
-        {
-            EventSubscriber* result = FindNodeWithModule((*i).get(), module);
-            if (result) 
-                return result;
-                
-            ++i;
+            if (subscribers_[i].module_.lock().get() == module)
+                return true;
         }
         
-        return 0;
-    }
-    
-    EventManager::EventSubscriber* EventManager::FindNodeWithChild(EventSubscriber* node, ModuleInterface* module) const
-    {
-        EventSubscriberVector::const_iterator i = node->children_.begin();
-        while (i != node->children_.end())
-        {
-            if ((*i)->module_.lock().get() == module)
-                return node;
-                
-            EventSubscriber* result = FindNodeWithChild((*i).get(), module);
-            if (result)
-                return result;
-                
-            ++i;
-        }
-        
-        return 0;
+        return false;
     }
 
-    void EventManager::LoadEventSubscriberTree(const std::string& filename)
-    {
-        PROFILE(EventManager_LoadEventSubscriberTree);
-
-        Foundation::RootLogDebug("Loading event subscriber tree with " + filename);
-
-        QFile file(filename.c_str());
-        if (!file.open(QIODevice::ReadOnly))
-        {
-            Foundation::RootLogError("Could not open subscriber tree file " + filename);
-            return;
-        }
-        QDomDocument doc("Subscribers");
-        if (!doc.setContent(&file))
-        {
-            file.close();
-            Foundation::RootLogError("Could not load subscriber tree file " + filename);
-            return;
-        }
-        file.close();
-
-        QDomElement elem = doc.firstChildElement();
-        if (!elem.isNull())
-            BuildTreeFromNode(elem, "");
-    }
-    
-    void EventManager::BuildTreeFromNode(QDomElement& elem, const std::string parent_name)
-    {
-        while (!elem.isNull())
-        {
-            std::string new_parent_name = parent_name;
-            
-            std::string module_name = elem.attribute("module").toStdString();
-            std::string priority_str = elem.attribute("priority").toStdString();
-            
-            if ((!module_name.empty()) && (!priority_str.empty()))
-            {
-                int priority = boost::lexical_cast<int>(priority_str);
-                
-                new_parent_name = module_name;
-                
-                ModuleWeakPtr module_weak(framework_->GetModuleManager()->GetModule(module_name));
-                ModuleSharedPtr module (module_weak.lock());
-                if (module)
-                {
-                    if (parent_name.empty())
-                    {
-                        RegisterEventSubscriber(module, priority, ModuleWeakPtr());
-                    }
-                    else
-                    {
-                        ModuleWeakPtr parent = framework_->GetModuleManager()->GetModule(parent_name);
-                        if (parent.lock().get())
-                        {
-                            RegisterEventSubscriber(module, priority, parent);
-                        }
-                        else
-                        {
-                            Foundation::RootLogWarning("Parent module " + parent_name + " not found for module " + module_name);
-                        }
-                    }
-                }
-                else
-                {
-                    Foundation::RootLogWarning("Module " + module_name + " not found");
-                }
-            }
-            
-            QDomElement childElem = elem.firstChildElement();
-            if (!childElem.isNull())
-            {
-                BuildTreeFromNode(childElem, new_parent_name);
-            }
-            
-            elem = elem.nextSiblingElement();
-        }
-    }
-    
     request_tag_t EventManager::GetNextRequestTag()
     {
         if (next_request_tag_ == 0) 

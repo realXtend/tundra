@@ -25,7 +25,7 @@ namespace Console
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
-    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterfaceImpl
+    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterface
     {
     public:
         ConsoleModule();
@@ -50,11 +50,11 @@ namespace Console
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Console;
-
+        static const std::string &NameStatic() { return type_name_static_; }
     private:
+        //! Type name of the module.
+        static std::string type_name_static_;
+
         //! debug console manager
         ConsolePtr manager_;
 

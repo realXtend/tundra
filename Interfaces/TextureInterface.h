@@ -39,6 +39,12 @@ namespace Foundation
         /*! each pixel of each component should be encoded as a u8, so data size should be width * height * components
          */
         virtual u8* GetData() = 0;
+
+        //! Get data size
+        virtual uint GetDataSize() = 0;
+
+        //! Get ogre image pixel format
+        virtual int GetFormat() = 0;
     };
 }
 

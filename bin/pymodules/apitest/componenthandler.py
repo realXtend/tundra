@@ -7,12 +7,7 @@ class DynamiccomponentHandler(circuits.Component):
 
     def __init__(self):
         circuits.Component.__init__(self)
-        obid = None 
         self.comp = None
-        if obid is not None:
-            ent = r.getEntity(obid)
-            self.add_component(ent)
-
         self.widget = None
         self.proxywidget = None
         self.initgui()
@@ -53,21 +48,6 @@ class DynamiccomponentHandler(circuits.Component):
         if self.comp is not None:
             self.comp.disconnect("OnChanged()", self.onChanged)
             self.comp = None
-
-    def add_component(self, ent):
-        try:
-            ent.dynamic
-        except AttributeError:
-            ent.createComponent("EC_DynamicComponent")
-        #print ent.dynamic
-            
-        comp = ent.dynamic
-        #print dir(d)
-        #d.AddAttribute()
-        #print d.GetAttribute()
-
-        d.connect("OnChanged()", self.onChanged)
-        self.comp = comp
 
     def on_exit(self):
         if self.proxywidget is not None:

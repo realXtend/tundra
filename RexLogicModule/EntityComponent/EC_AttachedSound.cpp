@@ -8,37 +8,37 @@
 
 namespace RexLogic
 {
-    EC_AttachedSound::EC_AttachedSound(Foundation::ModuleInterface *module) : Foundation::ComponentInterface(module->GetFramework())
-	{
-        framework_ = module->GetFramework(); 
-        
-        InitSoundVector();  
-	}
+    EC_AttachedSound::EC_AttachedSound(Foundation::ModuleInterface *module) :
+        framework_(module->GetFramework())
+    {
+        InitSoundVector();
+    }
 
     EC_AttachedSound::~EC_AttachedSound()
-	{
-	    RemoveAllSounds();        
-	}
-	
-	void EC_AttachedSound::Update(f64 frametime)
-	{
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    {
+        RemoveAllSounds();
+    }
+    
+    void EC_AttachedSound::Update(f64 frametime)
+    {
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
+            framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
-            	
-	    // Check if any of the sounds have stopped, remove from list in that case
-	    for (uint i = 0; i < sounds_.size(); ++i)
-	    {
-	        if (sounds_[i])
-	        {
-	            if (soundsystem->GetSoundState(sounds_[i]) == Foundation::SoundServiceInterface::Stopped)
-	                sounds_[i] = 0;
-	        }
-	    }
-	}
-	
-	void EC_AttachedSound::SetPosition(Vector3df position)
-	{
+
+        // Check if any of the sounds have stopped, remove from list in that case
+        for (uint i = 0; i < sounds_.size(); ++i)
+        {
+            if (sounds_[i])
+            {
+                if (soundsystem->GetSoundState(sounds_[i]) == Foundation::SoundServiceInterface::Stopped)
+                    sounds_[i] = 0;
+            }
+        }
+    }
+    
+    void EC_AttachedSound::SetPosition(Vector3df position)
+    {
         boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
@@ -48,9 +48,9 @@ namespace RexLogic
             if (sounds_[i])
                 soundsystem->SetPosition(sounds_[i], position);
         }
-	}
-	
-	void EC_AttachedSound::RemoveSound(sound_id_t sound)
+    }
+    
+    void EC_AttachedSound::RemoveSound(sound_id_t sound)
     {
         if (sound == 0)
             return;

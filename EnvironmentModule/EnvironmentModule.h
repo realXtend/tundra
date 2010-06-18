@@ -1,6 +1,5 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.h
  *  @brief  Environment module. Environment module is be responsible for visual environment features like terrain, sky & water.
  */
@@ -39,7 +38,7 @@ namespace Environment
         Also module will handle all environment editing via EnvironmentEditor. Module receives network
         messages and send them forward to other components that will need them.
     */
-    class ENVIRONMENT_MODULE_API EnvironmentModule : public Foundation::ModuleInterfaceImpl
+    class ENVIRONMENT_MODULE_API EnvironmentModule : public Foundation::ModuleInterface
     {
     public:
         //! Constructor.
@@ -125,16 +124,14 @@ namespace Environment
         MODULE_LOGGING_FUNCTIONS
 
         //! @return Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        //! @return Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Environment;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     private:
-        //! No copying is allowed.
         EnvironmentModule(const EnvironmentModule &);
-        //! No copying is allowed.
         void operator=(const EnvironmentModule &);
+
+        //! @return Returns type of this module. Needed for logging.
+        static std::string type_name_static_;
 
         //! Create the terrain.
         void CreateTerrain();

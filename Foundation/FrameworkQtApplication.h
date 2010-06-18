@@ -32,15 +32,21 @@ namespace Foundation
         QGraphicsView *GetUIView() const;
         void SetUIView (std::auto_ptr <QGraphicsView> view);
 
+        virtual bool notify(QObject* receiver, QEvent* e);
+
         void Go();
 
     public slots:
         void UpdateFrame();
         void ChangeLanguage(const QString& file);
+        void AboutToExit();
 
     signals:
         /// Signal is sent when QApplication language is changed, provided for convience.
         void LanguageChanged();
+        
+        /// Signal is sent when window close / framework exit has been requested
+        void ExitRequested();
 
     protected:
         bool eventFilter (QObject *obj, QEvent *event);

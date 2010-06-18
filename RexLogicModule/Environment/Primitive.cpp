@@ -244,7 +244,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
             Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_MEDIAURL_SET, &event_data);
+            event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_MEDIAURL_SET, &event_data);
         }
 
         msg->SkipToNextVariable(); // PSBlock
@@ -760,7 +760,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
         DeserializeECsFromFreeData(entity, temp_doc);
         Scene::Events::SceneEventData event_data(entity->GetId());
         Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
+        event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_ECS_RECEIVED, &event_data);
     }
 }
 
@@ -953,7 +953,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
             Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-            event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+            event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
         }
     }
 
@@ -1370,7 +1370,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     Scene::Events::EntityEventData event_data;
     event_data.entity = entity;
     Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-    event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+    event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
 }
 
 void Primitive::HandleSkeletonReady(entity_id_t entityid, Foundation::ResourcePtr res)
@@ -1438,13 +1438,14 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
             uint idx = i->first;
             if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
             {
-                // Use a legacy material with the same name as the texture, created automatically by renderer
+                // Use a legacy material with the same name as the texture
+                OgreRenderer::GetOrCreateLegacyMaterial(res->GetId(), OgreRenderer::LEGACYMAT_NORMAL);
                 meshptr->SetMaterial(idx, res->GetId());
                 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-                event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);            
+                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
             ++i;
         }
@@ -1479,7 +1480,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-                event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
         }
     }
@@ -1516,7 +1517,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
                         Scene::Events::EntityEventData event_data;
                         event_data.entity = entity;
                         Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-                        event_manager->SendEvent(event_manager->QueryEventCategory("Scene"), Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
+                        event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                                     
                         //std::stringstream ss;
                         //ss << std::string("Set submesh ") << idx << " to use material \"" << mat->getName() << "\"";

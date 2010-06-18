@@ -271,8 +271,10 @@ namespace RexTypes
                 }
             }
             assert(names[0].size() >= 2);
-            map["FirstName"] = names[0].toStdString();
-            map["LastName"] = names[1].toStdString();
+            if (names.length() >= 1)
+                map["FirstName"] = names[0].toStdString();
+            if (names.length() >= 2)
+                map["LastName"] = names[1].toStdString();
         }
         // Web auth has: <url> <url>
         else if (fullname.count('@') == 2)

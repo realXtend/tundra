@@ -1,17 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EC_3DCanvas.h"
+#include "DebugOperatorNew.h"
+
 #include "EC_3DCanvasSource.h"
+
+#include "EC_3DCanvas.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "ModuleInterface.h"
 #include "ModuleManager.h"
 #include "Entity.h"
-
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include <Ogre.h>
 
@@ -22,15 +27,14 @@
 #include <QUiLoader>
 #include <QVBoxLayout>
 
-#define LogError(msg) Poco::Logger::get("EC_3DCanvasSource").error(std::string("Error: ") + msg);
-#define LogInfo(msg) Poco::Logger::get("EC_3DCanvasSource").information(msg);
+#include "MemoryLeakCheck.h"
 
 EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     source_(this, "source"),
     position_(this, "position", 0),
     submesh_(this, "submesh", 0),
     show2d_(this, "show 2D", true),
+    framework_(module->GetFramework()),
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),
@@ -38,7 +42,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
     source_edit_(0),
     manipulate_ec_3dcanvas(true)
 {
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
     CreateWidget();
 }
 
@@ -54,14 +58,11 @@ EC_3DCanvasSource::~EC_3DCanvasSource()
             canvas->SetWidget(0);
         }
     }
-    
-    if (content_widget_)
-    {
-        content_widget_->deleteLater();
-        content_widget_ = 0;
-    }
+
     if (widget_)
     {
+        // Note: content widget is inside widget_s layout,
+        // no need to do a separate deleteLater for it. This would cause problems on rundown.
         widget_->deleteLater();
         widget_ = 0;
     }
@@ -195,9 +196,7 @@ void EC_3DCanvasSource::UpdateWidget()
 
                 webwidget->setUrl(QUrl(QString::fromStdString(source)));
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
-                
                 content_widget_ = webwidget;
-                content_widget_->show();
                 
                 QObject::connect(webwidget, SIGNAL(loadFinished( bool )), this, SLOT(RepaintCanvas()));
                 QObject::connect(webwidget, SIGNAL(loadProgress( int )), this, SLOT(RepaintCanvas()));
@@ -297,8 +296,7 @@ void EC_3DCanvasSource::ChangeLanguage()
 
 void EC_3DCanvasSource::CreateWidget()
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
     {
         LogError("Failed to acquire UiModule pointer");

@@ -46,7 +46,7 @@ namespace MumbleVoip
      *  command line argument '--use_native_mumble_client' disabled mumbleclient library and will use native mumble
      *  client application with link plugin.
      */
-    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

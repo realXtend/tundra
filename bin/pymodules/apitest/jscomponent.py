@@ -21,18 +21,29 @@ class JavascriptHandler(DynamiccomponentHandler):
         data = json.loads(datastr)
         js_src = data.get('js_src', None)
         if not self.jsloaded and js_src is not None:
-            self.loadjs(js_src)
+            jscode = self.loadjs(js_src)
+            
+            print jscode
+
+            ctx = {
+                #'entity'/'this': self.entity
+                'component': self.comp
+                }
+
+            try:
+                ent.touchable
+            except AttributeError:
+                pass
+            else:
+                ctx['touchable'] = ent.touchable                
+            
+            naali.runjs(jscode, ctx)
+            print "-- done with js"
+
+            self.jsloaded = True
 
     def loadjs(self, srcurl):
         print "js source url:", srcurl
         f = urllib2.urlopen(srcurl)
-        code = f.read()
-        print code
-        ctx = {
-            'component': self.comp
-            }
-        naali.runjs(code, ctx)
-        print "-- done with js"
-
-        self.jsloaded = True
+        return f.read()
 

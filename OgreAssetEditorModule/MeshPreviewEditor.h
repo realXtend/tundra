@@ -1,9 +1,15 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_OgreAssetEditorModule_MeshPreviewEditor_h
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
 #include <RexTypes.h>
 #include <QWidget>
 #include <QLabel>
+#include <QImage>
+#include <UiModule.h>
+#include <QOgreWorldView.h>
+#include "QOgreUIView.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -17,6 +23,15 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
+
+namespace Resource
+{
+    namespace Events
+    {
+        class ResourceReady;
+    }
+}
+
 
 namespace Naali
 {
@@ -38,11 +53,16 @@ namespace Naali
         MeshPreviewEditor(Foundation::Framework *framework,
                            const QString &inventory_id,
                            const asset_type_t &asset_type,
-                           const QString &name,
+                           const QString &name, 
+                           const QString &assetID,
                            QWidget *parent = 0);
         virtual ~MeshPreviewEditor();
 
-        void HandleAssetReady(Foundation::AssetPtr asset);
+        //void HandleAssetReady(Foundation::AssetPtr asset);
+
+        void HandleResouceReady(Resource::Events::ResourceReady *res);
+        void RequestMeshAsset(const QString &asset_id);
+        QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
 
     public slots:
         /// Close the window.
@@ -53,6 +73,7 @@ namespace Naali
         void Closed(const QString &inventory_id, asset_type_t asset_type);
 
     private:
+       
         void InitializeEditorWidget();
 
         Foundation::Framework *framework_;
@@ -61,6 +82,9 @@ namespace Naali
 
         QWidget     *mainWidget_;
         QPushButton *okButton_;
+        QString assetId_;
+        request_tag_t request_tag_;
+        UiServices::UiProxyWidget *proxy_; 
     };
 }
 

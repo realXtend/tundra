@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 
 #include "ProtocolModuleOpenSim.h"
 #include "RealXtendWorldSession.h"
@@ -12,7 +12,7 @@ namespace OpenSimProtocol
     RealXtendWorldSession::RealXtendWorldSession(Foundation::Framework *framework) :
         framework_(framework), credentials_(0), serverEntryPointUrl_(0)
     {
-        networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
+        networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
     }
 
     RealXtendWorldSession::~RealXtendWorldSession()
@@ -81,7 +81,7 @@ namespace OpenSimProtocol
         return true;
     }
 
-    QUrl RealXtendWorldSession::ValidateUrl(const QString urlString, const UrlType urlType)
+    QUrl RealXtendWorldSession::ValidateUrl(const QString &urlString, const UrlType urlType)
     {
         QUrl returnUrl(urlString);
         switch(urlType)

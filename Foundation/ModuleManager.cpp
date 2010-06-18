@@ -343,7 +343,24 @@ namespace Foundation
     void ModuleManager::UpdateModules(f64 frametime)
     {
         for(size_t i = 0; i < modules_.size(); ++i)
-            modules_[i].module_->Update(frametime);
+        {
+            try
+            {
+                modules_[i].module_->Update(frametime);
+            }
+            catch(const std::exception &e)
+            {
+                std::cout << "UpdateModules caught an exception while updating module " << modules_[i].module_->Name() << ": " << (e.what() ? e.what() : "(null)") << std::endl;
+                RootLogCritical(std::string("UpdateModules caught an exception while updating module " + modules_[i].module_->Name() + ": " + (e.what() ? e.what() : "(null)")));
+                throw;
+            }
+            catch(...)
+            {
+                std::cout << "UpdateModules caught an unknown exception while updating module " << modules_[i].module_->Name() << std::endl;
+                RootLogCritical(std::string("UpdateModules caught an unknown exception while updating module " + modules_[i].module_->Name()));
+                throw;
+            }
+        }
     }
 
     bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)

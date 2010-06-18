@@ -14,6 +14,10 @@ class EC_OpenSimPresence : public Foundation::ComponentInterface
 
     DECLARE_EC(EC_OpenSimPresence);
 
+public slots:
+    QString QGetFullName() const;
+    QString QGetUUIDString() const;
+
 public:
     virtual ~EC_OpenSimPresence();
 

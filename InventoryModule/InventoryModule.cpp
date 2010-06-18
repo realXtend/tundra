@@ -44,8 +44,10 @@
 namespace Inventory
 {
 
+std::string InventoryModule::type_name_static_ = "Inventory";
+
 InventoryModule::InventoryModule() :
-    ModuleInterfaceImpl(Foundation::Module::MT_Inventory),
+    ModuleInterface(type_name_static_),
     inventoryEventCategory_(0),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
@@ -132,8 +134,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 return false;
 
             // Create inventory and upload progress windows
-            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>("UiServices").lock();
-            if (ui_module.get())
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+            if (ui_module)
             {
                 SAFE_DELETE(inventoryWindow_);
                 inventoryWindow_ = new InventoryWindow(this);
@@ -156,61 +158,63 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             case ProtocolUtilities::AT_Taiga:
             {
                 // Check if python module is loaded and has taken care of PythonQt::init()
-                if (!framework_->GetModuleManager()->HasModule(Foundation::Module::MT_PythonScript))
+                if (!framework_->GetModuleManager()->HasModule("PythonScript"))
                 {
                     LogError("PythonScriptModule not present. WebDAV based inventory cannot be fetched and avatar export is disabled!");
                     inventoryType_ = IDMT_Unknown;
+                    return false;
                 }
-                else
+
+                if (auth->webdav_host.empty())
                 {
-                    if (!auth->webdav_host.empty())
+                    LogError("Login response did not contain a valid webdav inventory url! Disabling inventory.");
+                    return false;
+                }
+
+                bool credentials_ok = true;
+                if (auth->webdav_identity.empty())
+                {
+                    QString inv_identity = QInputDialog::getText(0, "Inventory Identity", "Please provide your inventory identity",
+                        QLineEdit::Normal, "", &credentials_ok);
+                    if (credentials_ok && !inv_identity.isEmpty())
                     {
-                        bool credentials_ok = true;
-                        if (auth->webdav_identity.empty())
-                        {
-                            QString inv_identity = QInputDialog::getText(0, "Inventory Identity", "Please provide your inventory identity", QLineEdit::Normal, "", &credentials_ok);
-                            if (credentials_ok && !inv_identity.isEmpty())
-                            {
-                                if (inv_identity.contains("@") && inv_identity.count(" ") == 0)
-                                    auth->webdav_identity = inv_identity.toStdString() + " " + inv_identity.toStdString();
-                                else
-                                    auth->webdav_identity = inv_identity.toStdString();
-                            }
-                            else
-                            {
-                                credentials_ok = false;
-                                LogError("Cannot get webdav inventory without identity.");
-                            }
-                        }
-
-                        if (credentials_ok && auth->webdav_password.empty())
-                        {
-                            QString inv_password = QInputDialog::getText(0, "Inventory password", "Please provide your inventory password", QLineEdit::Password, "", &credentials_ok);
-                            if (credentials_ok && !inv_password.isEmpty())
-                                auth->webdav_password = inv_password.toStdString();
-                            else
-                            {
-                                credentials_ok = false;
-                                LogError("Cannot get webdav inventory without password.");
-                            }
-                        }
-
-                        if (credentials_ok)
-                        {
-                            // Create WebDAV inventory model.
-                            inventoryType_ = IDMT_WebDav;
-                            inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
-                            inventoryWindow_->InitInventoryTreeModel(inventory_);
-                            SAFE_DELETE(service_);
-                            service_ = new InventoryService(inventory_.get());
-                        }
+                        if (inv_identity.contains("@") && inv_identity.count(" ") == 0)
+                            auth->webdav_identity = inv_identity.toStdString() + " " + inv_identity.toStdString();
                         else
-                            LogError("Could not get valid credentials to access webdav inventory! Disabling inventory.");
+                            auth->webdav_identity = inv_identity.toStdString();
                     }
                     else
                     {
-                        LogError("Login response did not contain a valid webdav inventory url! Disabling inventory.");
+                        credentials_ok = false;
+                        LogError("Cannot get webdav inventory without identity.");
                     }
+                }
+
+                if (credentials_ok && auth->webdav_password.empty())
+                {
+                    QString inv_password = QInputDialog::getText(0, "Inventory password", "Please provide your inventory password",
+                        QLineEdit::Password, "", &credentials_ok);
+                    if (credentials_ok && !inv_password.isEmpty())
+                        auth->webdav_password = inv_password.toStdString();
+                    else
+                    {
+                        credentials_ok = false;
+                        LogError("Cannot get webdav inventory without password.");
+                    }
+                }
+
+                if (credentials_ok)
+                {
+                    // Create WebDAV inventory model.
+                    inventoryType_ = IDMT_WebDav;
+                    inventory_ = InventoryPtr(new WebDavInventoryDataModel(auth->webdav_identity.c_str(), auth->webdav_host.c_str(), auth->webdav_password.c_str()));
+                    inventoryWindow_->InitInventoryTreeModel(inventory_);
+                    SAFE_DELETE(service_);
+                    service_ = new InventoryService(inventory_.get());
+                }
+                else
+                {
+                    LogError("Could not get valid credentials to access webdav inventory! Disabling inventory.");
                 }
                 break;
             }
@@ -243,7 +247,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
         if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
         {
-            UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>("UiServices").lock();
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             if (ui_module)
             {
                 if (inventoryWindow_)
@@ -537,8 +541,8 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>("UiServices").lock();
-    if (!ui_module.get())
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    if (!ui_module)
         return;
 
     // Check that item properties window for this item doesn't already exists.
@@ -594,7 +598,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>("UiServices").lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module)
         ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
 

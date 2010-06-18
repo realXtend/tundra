@@ -175,8 +175,8 @@ namespace RexLogic
                     }
                 }
                 
-                RexTypes::RexAssetID texture_id; 
-                RexTypes::RexAssetID prev_texture_id;
+                std::string mat_name;
+                std::string prev_mat_name;
                 
                 uint indices = 0;
                 bool first_face = true;
@@ -195,7 +195,7 @@ namespace RexLogic
                         continue;
                     
                     if (!mat_override.empty())
-                        texture_id = mat_override;
+                        mat_name = mat_override;
                     else
                     {
                         unsigned variation = OgreRenderer::LEGACYMAT_VERTEXCOL;
@@ -215,15 +215,17 @@ namespace RexLogic
                         std::string suffix = OgreRenderer::GetMaterialSuffix(variation);
                         
                         // Try to find face's texture in texturemap, use default if not found
-                        texture_id = primitive.PrimDefaultTextureID + suffix;
+                        std::string texture_name = primitive.PrimDefaultTextureID;
                         TextureMap::const_iterator t = primitive.PrimTextures.find(facenum);
                         if (t != primitive.PrimTextures.end())
-                            texture_id = t->second + suffix;
-                        // Actually create the material here if texture yet missing, the material will be
-                        // updated later
-                        OgreRenderer::CreateLegacyMaterials(texture_id);
+                            texture_name = t->second;
+                        
+                        mat_name = texture_name + suffix;
+                        
+                        // Create the material here if texture yet missing, the material will be updated later
+                        OgreRenderer::GetOrCreateLegacyMaterial(texture_name, variation);
                     }
-     
+                    
                     // Get texture mapping parameters
                     float repeat_u = primitive.PrimDefaultRepeatU;
                     float repeat_v = primitive.PrimDefaultRepeatV;
@@ -233,25 +235,25 @@ namespace RexLogic
                     if (primitive.PrimRepeatU.find(facenum) != primitive.PrimRepeatU.end())
                         repeat_u = primitive.PrimRepeatU[facenum];
                     if (primitive.PrimRepeatV.find(facenum) != primitive.PrimRepeatV.end())
-                        repeat_v = primitive.PrimRepeatV[facenum];                    
+                        repeat_v = primitive.PrimRepeatV[facenum];
                     if (primitive.PrimOffsetU.find(facenum) != primitive.PrimOffsetU.end())
                         offset_u = primitive.PrimOffsetU[facenum];
                     if (primitive.PrimOffsetV.find(facenum) != primitive.PrimOffsetV.end())
-                        offset_v = primitive.PrimOffsetV[facenum];  
+                        offset_v = primitive.PrimOffsetV[facenum];
                     if (primitive.PrimUVRotation.find(facenum) != primitive.PrimUVRotation.end())
-                        rot = primitive.PrimUVRotation[facenum];     
+                        rot = primitive.PrimUVRotation[facenum];
                     float rot_sin = sin(-rot);
-                    float rot_cos = cos(-rot);     
+                    float rot_cos = cos(-rot);
 
                     if (optimisations_enabled || primitive.DrawType == RexTypes::DRAWTYPE_MESH)
                     {
-                        if ((first_face) || (texture_id != prev_texture_id))
+                        if ((first_face) || (mat_name != prev_mat_name))
                         {
                             if (indices)
                                 object->end();
                             indices = 0;
-                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-                            prev_texture_id = texture_id;
+                            object->begin(mat_name, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                            prev_mat_name = mat_name;
                             first_face = false;
                         }
                     }
@@ -262,7 +264,7 @@ namespace RexLogic
                             if (indices)
                                 object->end();
                             indices = 0;
-                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                            object->begin(mat_name, Ogre::RenderOperation::OT_TRIANGLE_LIST);
                         }
                     }
                     

@@ -43,8 +43,7 @@ UploadProgressWindow::UploadProgressWindow(InventoryModule *owner, QWidget *pare
     labelFileNumber_ = mainWidget_->findChild<QLabel *>("labelFileNumber");
 
     // Add widget to UI via ui services module
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return;
 
@@ -63,7 +62,7 @@ UploadProgressWindow::~UploadProgressWindow()
 void UploadProgressWindow::OpenUploadProgress(size_t file_count)
 {
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return;
 

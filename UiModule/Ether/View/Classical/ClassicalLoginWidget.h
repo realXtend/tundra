@@ -5,6 +5,7 @@
 
 #include <QWidget>
 #include <QMap>
+#include <QHideEvent>
 
 #include "Ether/EtherLoginNotifier.h"
 #include "ui_ClassicalLoginWidget.h"
@@ -30,6 +31,9 @@ namespace CoreUi
             void AppExitRequest();
             void StatusUpdate(bool connecting, QString message);
 
+        protected:
+            void hideEvent(QHideEvent *hide_event);
+
         private:
             Ether::Logic::EtherLoginNotifier *login_notifier_;
             TraditionalLoginWidget *traditional_widget_;
@@ -38,6 +42,7 @@ namespace CoreUi
         signals:
             void AppExitRequested();
             void StatusUpdateToUi(QString);
+            void ClassicLoginHidden();
         };
     }
 }

@@ -15,21 +15,20 @@ using namespace RexTypes;
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),
         link_scene_node_(0),
         attached_(false),
         select_priority_(0)
     {
-        RendererPtr renderer = renderer_.lock();      
+        RendererPtr renderer = renderer_.lock();
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         link_scene_node_ = scene_mgr->createSceneNode();
         scene_node_ = scene_mgr->createSceneNode();
         link_scene_node_->addChild(scene_node_);
         
         // In case the placeable is used for camera control, set fixed yaw axis
-        link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);            
+        link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -88,7 +87,43 @@ namespace OgreRenderer
         const Ogre::Vector3& scale = scene_node_->getScale();
         return Vector3df(scale.x, scale.y, scale.z);
     }
+
+    Vector3df EC_OgrePlaceable::GetLocalXAxis() const
+    {
+        const Ogre::Vector3& xaxis = link_scene_node_->getOrientation().xAxis();
+        return Vector3df(xaxis.x, xaxis.y, xaxis.z);
+    }
+
+    QVector3D EC_OgrePlaceable::GetQLocalXAxis() const
+    {
+        Vector3df xaxis= GetLocalXAxis();
+        return QVector3D(xaxis.x, xaxis.y, xaxis.z);
+    }
     
+    Vector3df EC_OgrePlaceable::GetLocalYAxis() const
+    {
+        const Ogre::Vector3& yaxis = link_scene_node_->getOrientation().yAxis();
+        return Vector3df(yaxis.x, yaxis.y, yaxis.z);
+    }
+
+    QVector3D EC_OgrePlaceable::GetQLocalYAxis() const
+    {
+        Vector3df yaxis= GetLocalYAxis();
+        return QVector3D(yaxis.x, yaxis.y, yaxis.z);
+    }
+
+    Vector3df EC_OgrePlaceable::GetLocalZAxis() const
+    {
+        const Ogre::Vector3& zaxis = link_scene_node_->getOrientation().zAxis();
+        return Vector3df(zaxis.x, zaxis.y, zaxis.z);
+    }
+
+    QVector3D EC_OgrePlaceable::GetQLocalZAxis() const
+    {
+        Vector3df zaxis= GetLocalZAxis();
+        return QVector3D(zaxis.x, zaxis.y, zaxis.z);
+    }
+
     void EC_OgrePlaceable::SetPosition(const Vector3df& position)
     {
         link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
@@ -108,20 +143,36 @@ namespace OgreRenderer
         link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);        
     }
     
-    void EC_OgrePlaceable::Yaw(Real radians)
+    void EC_OgrePlaceable::SetYaw(Real radians)
     {
         link_scene_node_->yaw(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
     }
 
-    void EC_OgrePlaceable::Pitch(Real radians)
+    void EC_OgrePlaceable::SetPitch(Real radians)
     {
         link_scene_node_->pitch(Ogre::Radian(radians));
     }
  
-   void EC_OgrePlaceable::Roll(Real radians)
+   void EC_OgrePlaceable::SetRoll(Real radians)
     {
         link_scene_node_->roll(Ogre::Radian(radians));
     } 
+
+   float EC_OgrePlaceable::GetYaw() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+        return orientation.getYaw().valueRadians();
+   }
+   float EC_OgrePlaceable::GetPitch() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+        return orientation.getPitch().valueRadians();
+   }
+   float EC_OgrePlaceable::GetRoll() const
+   {
+        const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
+        return orientation.getRoll().valueRadians();
+   }
     
     void EC_OgrePlaceable::SetScale(const Vector3df& scale)
     {
@@ -216,5 +267,34 @@ namespace OgreRenderer
     void EC_OgrePlaceable::SetQScale(const QVector3D newscale)
     {
         SetScale(Vector3df(newscale.x(), newscale.y(), newscale.z()));
+    }
+
+    QVector3D EC_OgrePlaceable::translate(int axis, float amount)
+    {
+        Ogre::Matrix3 m;
+        Ogre::Vector3 v;
+        Real x, y, z;
+        x = y = z = 0.0;
+        m.SetColumn(0,  link_scene_node_->getOrientation().xAxis());
+        m.SetColumn(1,  link_scene_node_->getOrientation().yAxis());
+        m.SetColumn(2,  link_scene_node_->getOrientation().zAxis());
+        switch(axis) {
+            case 0:
+                x = amount;
+                break;
+            case 1:
+                y = amount;
+                break;
+            case 2:
+                z = amount;
+                break;
+            default:
+                // nothing, don't translate
+                break;
+
+        }
+        link_scene_node_->translate(m, Ogre::Vector3(x, y, z), Ogre::Node::TS_LOCAL);
+        const Ogre::Vector3 newpos = link_scene_node_->getPosition();
+        return QVector3D(newpos.x, newpos.y, newpos.z);
     }
 }

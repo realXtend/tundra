@@ -336,7 +336,7 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     downloadDialogs_[asset_id] = msgBox;
 
     boost::shared_ptr<UiServices::UiModule> ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module.get())
     {
         QPointF pos = mainWidget_->mapToGlobal(QPoint(0, 0));

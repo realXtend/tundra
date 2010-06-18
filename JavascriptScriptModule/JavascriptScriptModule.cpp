@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "JavascriptScriptModule.h"
 #include "ModuleManager.h"
@@ -26,7 +28,9 @@ namespace
 
 namespace JavascriptScript
 {
-    JavascriptScriptModule::JavascriptScriptModule() : ModuleInterfaceImpl(type_static_)
+    std::string JavascriptScriptModule::type_name_static_ = "JavascriptScript";
+
+    JavascriptScriptModule::JavascriptScriptModule() : ModuleInterface(type_name_static_)
     {
     }
 
@@ -47,12 +51,12 @@ namespace JavascriptScript
     void JavascriptScriptModule::Initialize()
     {
         LogInfo("Module " + Name() + " initializing...");
-		
+
         assert(!javascriptScriptModuleInstance_);
         javascriptScriptModuleInstance_ = this;
 
         // Register ourselves as javascript scripting service.
-        boost::shared_ptr<JavascriptScriptModule> jsmodule = framework_->GetModuleManager()->GetModule<JavascriptScriptModule>(Foundation::Module::MT_QtScript).lock();
+        boost::shared_ptr<JavascriptScriptModule> jsmodule = framework_->GetModuleManager()->GetModule<JavascriptScriptModule>().lock();
         boost::weak_ptr<ScriptServiceInterface> service = boost::dynamic_pointer_cast<ScriptServiceInterface>(jsmodule);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_JavascriptScripting, service);
 
@@ -63,7 +67,7 @@ namespace JavascriptScript
         //engine.globalObject().setProperty("loadUI", engine.newFunction(JavascriptScript::LoadUI));
 
         QScriptValue objectbutton= engine.scriptValueFromQMetaObject<QPushButton>();
-	engine.globalObject().setProperty("QPushButton", objectbutton);
+        engine.globalObject().setProperty("QPushButton", objectbutton);
 
         JavascriptScriptModule::RunScript("jsmodules/lib/json2.js");
 
@@ -77,7 +81,7 @@ namespace JavascriptScript
                    "ui = loadUI('dialog.ui');"
                    "print(ui);"
                    "function changed(v) {"
-                   "	print('val changed to: ' + v);"
+                   "    print('val changed to: ' + v);"
                    "}"
                    "print(ui.doubleSpinBox.valueChanged);"
                    "ui.doubleSpinBox['valueChanged(double)'].connect(changed);"
@@ -200,11 +204,11 @@ POCO_END_MANIFEST
 /*
 QScriptValue JavascriptScript::LoadUI(QScriptContext *context, QScriptEngine *engine)
 {
-	QWidget *widget;
-	QScriptValue qswidget;
+    QWidget *widget;
+    QScriptValue qswidget;
     
-	boost::shared_ptr<QtUI::QtModule> qt_module = JavascriptScript::staticframework->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
-	boost::shared_ptr<QtUI::UICanvas> canvas_;
+    boost::shared_ptr<QtUI::QtModule> qt_module = JavascriptScript::staticframework->GetModuleManager()->GetModule<QtUI::QtModule>(Foundation::Module::MT_Gui).lock();
+    boost::shared_ptr<QtUI::UICanvas> canvas_;
     
     //if ( qt_module.get() == 0)
     //    return NULL;
@@ -219,11 +223,11 @@ QScriptValue JavascriptScript::LoadUI(QScriptContext *context, QScriptEngine *en
 
     // Set canvas size. 
     canvas_->resize(widget->size());
-	canvas_->Show();
+    canvas_->Show();
 
-	qswidget = engine->newQObject(widget);
+    qswidget = engine->newQObject(widget);
 
-	return qswidget;
+    return qswidget;
         }
 */
 

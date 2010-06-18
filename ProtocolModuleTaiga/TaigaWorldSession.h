@@ -12,55 +12,56 @@
 
 namespace TaigaProtocol
 {
-	class TAIGAPROTO_MODULE_API TaigaWorldSession : public ProtocolUtilities::WorldSessionInterface
-	{
+    class ProtocolModuleTaiga;
 
-	public:
-		//! RealXtendWorldSession constructor
-		TaigaWorldSession(Foundation::Framework *framework);
+    class TAIGAPROTO_MODULE_API TaigaWorldSession : public ProtocolUtilities::WorldSessionInterface
+    {
+    public:
+        //! Constuctor.
+        explicit TaigaWorldSession(Foundation::Framework *framework);
 
-		//! RealXtendWorldSession deconstructor
-		virtual ~TaigaWorldSession(void);
+        //! Destructor
+        virtual ~TaigaWorldSession(void);
 
-		/* INHERITED FUNCTIONS FROM WorldSessionInterface */
+        //! WorldSessionInterface override
+        bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
 
-		//! Login function
-		bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
-
-        //! Cable Beach style login, setting authentication done unlike normal LoginToServer
+        //! WorldSessionInterface override
         bool LoginToServer(const QString& address,
-						   const QString& port,
+                           const QString& port,
                            const QString& identityUrl,
-						   ProtocolUtilities::ConnectionThreadState *thread_state);
+                           ProtocolUtilities::ConnectionThreadState *thread_state);
 
-		//! Make Url validation according to type
-		QUrl ValidateUrl(const QString urlString, const UrlType urlType);
+        //! WorldSessionInterface override
+        QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
-		//! Get login credentials
-		ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;
+        //! WorldSessionInterface override
+        ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;
 
-		//! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
-		QUrl GetServerEntryPointUrl() const;
-		
-		//! Get created WorldStream: void -> WorldStreamInterface when implemented
-		void GetWorldStream() const;
+        //! WorldSessionInterface override
+        QUrl GetServerEntryPointUrl() const;
 
-		//! Set login credentials
-		void SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials);
+        //! WorldSessionInterface override
+        void GetWorldStream() const;
 
-		//! Set server entry point url
-		void SetServerEntryPointUrl(const QUrl &newUrl);
+        //! WorldSessionInterface override
+        void SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials);
 
-	private:
-		ProtocolUtilities::TaigaCredentials *credentials_;
-		QUrl serverEntryPointUrl_;
+        //! WorldSessionInterface override
+        void SetServerEntryPointUrl(const QUrl &newUrl);
 
-		//! Pointer to framework
-		Foundation::Framework *framework_;
+    private:
+        Q_DISABLE_COPY(TaigaWorldSession)
 
-		//! Pointer to the opensim network interface.
-		boost::weak_ptr<TaigaProtocol::ProtocolModuleTaiga> networkTaiga_;
-	};
+        ProtocolUtilities::TaigaCredentials *credentials_;
+        QUrl serverEntryPointUrl_;
+
+        //! Pointer to framework
+        Foundation::Framework *framework_;
+
+        //! Pointer to the opensim network interface.
+        boost::weak_ptr<ProtocolModuleTaiga> networkTaiga_;
+    };
 }
 
 #endif // incl_ProtocolUtilities_TaigaWorldSession_h

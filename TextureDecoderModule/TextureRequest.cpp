@@ -27,7 +27,7 @@ namespace TextureDecoder
         height_(0),
         levels_(-1),
         decoded_level_(-1),
-        next_level_(5)       
+        next_level_(5)
     {
     }
     

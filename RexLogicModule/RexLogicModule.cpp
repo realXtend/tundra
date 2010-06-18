@@ -66,6 +66,8 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
 #include "EC_3DCanvas.h"
+#include "EC_3DCanvasSource.h"
+#include "EC_ChatBubble.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -79,8 +81,10 @@
 namespace RexLogic
 {
 
+std::string RexLogicModule::type_name_static_ = "RexLogic";
+
 RexLogicModule::RexLogicModule() :
-    ModuleInterfaceImpl(type_static_),
+    ModuleInterface(type_name_static_),
     send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
@@ -120,6 +124,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_OpenSimPrim);
     DECLARE_MODULE_EC(EC_Touchable);
     DECLARE_MODULE_EC(EC_3DCanvas);
+    DECLARE_MODULE_EC(EC_3DCanvasSource);
 }
 
 // virtual
@@ -152,7 +157,7 @@ void RexLogicModule::Initialize()
         "RexLogicModule", "default_camera_state", static_cast<int>(CS_Follow)));
 
     // Register ourselves as world logic service.
-    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldLogic, service);
 }
@@ -230,7 +235,7 @@ void RexLogicModule::PostInitialize()
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
 
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module.get())
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
@@ -338,7 +343,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
 
-    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>(Foundation::Module::MT_WorldLogic).lock();
+    boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->UnregisterService(service);
 }
@@ -375,6 +380,7 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 void RexLogicModule::Update(f64 frametime)
 {
     {
+
         PROFILE(RexLogicModule_Update);
 
         // interpolate & animate objects
@@ -410,8 +416,6 @@ void RexLogicModule::Update(f64 frametime)
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
             // Update overlays last, after camera update
-            //UpdateAvatarOverlays();
-            UpdateAvatarNameTags(avatar_->GetUserAvatar());
             input_handler_->Update(frametime);
 
             UpdateAvatarOverlays();
@@ -468,6 +472,40 @@ void RexLogicModule::SwitchCameraState()
 
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+    }
+    else
+    {
+        camera_state_ = CS_Follow;
+
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+    }
+}
+
+void RexLogicModule::CameraTripod()
+{
+    if (camera_state_ == CS_Follow)
+    {
+        camera_state_ = CS_Tripod;
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+    }
+    else
+    {
+        camera_state_ = CS_Follow;
+
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+    }
+}
+
+void RexLogicModule::FocusOnObject()
+{
+    if (camera_state_ == CS_Follow)
+    {
+        camera_state_ = CS_FocusOnObject;
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
     }
     else
     {
@@ -919,7 +957,7 @@ void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
     UiModulePtr ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
     if (!avatar_ && !ui_module)
         return;
@@ -988,20 +1026,38 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 
     // Get users position
     boost::shared_ptr<EC_HoveringWidget> widget;
+    boost::shared_ptr<EC_ChatBubble> chat_bubble;
     boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placeable)
         return;
 
-    Vector3Df camera_position = this->GetCameraPosition();
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
+        // Update avatar name tag/hovering widget
         placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
         widget = avatar->GetComponent<EC_HoveringWidget>();
         if (!placeable || !widget)
             continue;
 
+        // We need to update the positions so that the distance is right, otherwise were always one frame behind.
+        GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
+        placeable->GetSceneNode()->_update(false, true);
+
+        Vector3Df camera_position = this->GetCameraPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
+
+        // Update chat bubble
+        chat_bubble = avatar->GetComponent<EC_ChatBubble>();
+        if (!chat_bubble)
+            continue;
+        if (!chat_bubble->IsVisible())
+        {
+            widget->Show();
+            continue;
+        }
+        chat_bubble->SetScale(distance/10);
+        widget->Hide();
     }
 }
 
@@ -1009,11 +1065,16 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 {
     /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
-        name_tag->Clicked();*/
+        name_tag->Clicked();
 
-    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
+/*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
-        info_icon->EntityClicked();
+        info_icon->EntityClicked();*/
+    
+    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
+    if (canvas_source){
+        canvas_source->Clicked();
+    }
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1048,7 +1109,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     {
         Scene::EntityPtr entity = (*iter);
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        OgreRenderer::EC_OgreCamera* c  = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        OgreRenderer::EC_OgreCamera* c = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
         if (c)
             camera = c;
 
@@ -1102,6 +1163,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     if (result->entity_)
     {
         Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
+        camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
@@ -1227,7 +1289,12 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     return Console::ResultSuccess();
 }
 
+void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
+{
+    emit OnIncomingEstateOwnerMessage(params);
 }
+
+} // namespace RexLogic
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)

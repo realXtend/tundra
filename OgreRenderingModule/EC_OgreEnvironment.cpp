@@ -1,18 +1,29 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   EC_OgreEnvironment.cpp
+ *  @brief  Ogre environment component. Gives an access to various scene-related
+ *          environment settings, such as sunlight, ambient light and fog.
+ *  @note   The CAELUM and HYDRAX defines are set in the root CMakeLists.txt.
+ */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
+#include "EC_OgreEnvironment.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "OgreConversionUtils.h"
-#include "EC_OgreEnvironment.h"
-//#include <OgreShadowCameraSetupPSSM.h>
 #include "OgreShadowCameraSetupFocusedPSSM.h"
+
 #include "CompositionHandler.h"
 
-#include <Ogre.h>
 
-///\note The CAELUM and HYDRAX defines are set in the root CMakeLists.txt.
+#include <QSettings>
+#include <QFile>
+
+#include <Ogre.h>
 
 #ifdef CAELUM
 #include <Caelum.h>
@@ -24,22 +35,24 @@
 #include <Modules/ProjectedGrid/ProjectedGrid.h>
 #endif
 
+#include "MemoryLeakCheck.h"
+
 const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
 
 namespace OgreRenderer
 {
-    void ClampFog(Real& start, Real& end, Real farclip)
-    {
-        if (farclip < 10.0) 
-            farclip = 10.0;
-        if (end > farclip - 10.0)
-            end = farclip - 10.0;
-        if (start > farclip/3.0)
-            start = farclip/3.0;            
-    }
+/// Utility tool for clamping fog distance
+void ClampFog(Real& start, Real& end, Real farclip)
+{
+    if (farclip < 10.0) 
+        farclip = 10.0;
+    if (end > farclip - 10.0)
+        end = farclip - 10.0;
+    if (start > farclip/3.0)
+        start = farclip/3.0;
+}
 
 EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(0),
 //#ifdef CAELUM
@@ -96,7 +109,6 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
         sceneManager->destroyLight(sunlight_);
         sunlight_ = 0;
     }
-
 #ifdef CAELUM
         ShutdownCaelum();
 #endif
@@ -104,6 +116,9 @@ EC_OgreEnvironment::~EC_OgreEnvironment()
 #ifdef HYDRAX
         ShutdownHydrax();
 #endif
+    ///\todo Is compositorInstance->removeLister(listener) needed here?
+    foreach(OgreRenderer::GaussianListener* listener, gaussianListeners_)
+        SAFE_DELETE(listener);
 }
 
 void EC_OgreEnvironment::SetBackgoundColor(const Color &color)
@@ -191,8 +206,7 @@ Color EC_OgreEnvironment::GetSunColor() const
             color = caelumSystem_->getSunLightColour(caelumSystem_->getUniversalClock()->getJulianSecond(), ToOgreVector3(sunDirection));
         }
         return Color(color.r, color.g, color.b, color.a);
-    }   
-    
+    }
 #else
     if ( sunlight_ != 0)
     {
@@ -225,13 +239,11 @@ void EC_OgreEnvironment::SetSunDirection(const Vector3df &direction)
     if (sunlight_)
         sunlight_->setDirection(ToOgreVector3(direction));
 #endif
-
 }
 
 Vector3df EC_OgreEnvironment::GetSunDirection() const
 {
 #ifdef CAELUM
-
     if ( caelumSystem_ != 0)
     {
         float julDay = caelumSystem_->getUniversalClock()->getJulianDay();
@@ -247,7 +259,6 @@ Vector3df EC_OgreEnvironment::GetSunDirection() const
     }
 #endif
     return Vector3df();
-
 }
 
 void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
@@ -332,10 +343,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     sunPos = camera->getPosition();
     sunPos -= caelumSystem_->getSun()->getLightDirection() * 80000;
     hydraxSystem_->setSunPosition(sunPos);
-
-
 #endif
-
     Ogre::Entity* water = 0;
     
     cameraFarClip_ = renderer->GetViewDistance();
@@ -418,10 +426,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         if ( sun != 0 )
             sun->setDiffuseColour(userSunColor_);
     }
-#endif 
-
+#endif
 }
- 
+
 void EC_OgreEnvironment::SetOverride(VisualEffectOverride effect)
 {
     // Note: None override is a god-mode override, then caelum is used. 
@@ -602,19 +609,46 @@ void EC_OgreEnvironment::ShutdownHydrax()
 #endif
 
 void EC_OgreEnvironment::InitShadows()
-{    
+{
     if (renderer_.expired())
         return;
-    RendererPtr renderer = renderer_.lock();   
+    RendererPtr renderer = renderer_.lock();
 
+    bool using_directx = false;
 
-    //If you change this value, you have to change the splitpoints int shaders too, because they are hardcoded.
+    
+    if(renderer->GetRoot()->getRenderSystem()->getName() == "Direct3D9 Rendering Subsystem")
+    {
+        using_directx = true;
+    }
+
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/OgreRenderer");
+    QFile file(settings.fileName());
+    if(!file.exists())
+    {
+        settings.beginGroup("shadow-options");
+        settings.setValue("soft_shadow", "false");
+        settings.endGroup();
+    }
+    settings.beginGroup("shadow-options");
+    //unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  */
     float shadowFarDist = 50;
-    unsigned short shadowTextureSize = 1024;
+    unsigned short shadowTextureSize = 2048;
+    if(using_directx)
+    {
+        shadowTextureSize = 1024;
+    }
 
-    //this is also used to specify the number of frustrum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
-    //also.
-    size_t shadowTextureCount = 3;
+    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
+
+    
+
+
+    size_t shadowTextureCount = 1;
+    if(using_directx)
+    {
+        shadowTextureCount = 3;
+    }
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
 
     // This is the default material to use for shadow buffer rendering pass, overridable in script.
@@ -622,29 +656,42 @@ void EC_OgreEnvironment::InitShadows()
     // that we use Ogre software skinning. Hardware skinning would require us to do different vertex programs
     // for skinned/nonskinned geometry.
     std::string ogreShadowCasterMaterial = "rex/ShadowCaster";
+    
+    
 
-    Ogre::SceneManager* sceneManager = renderer->GetSceneManager();
     sceneManager->setShadowColour(shadowColor);
-
     sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
     sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_RGB);
-    
-
-    
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
 
-    OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
-    pssmSetup->calculateSplitPoints(shadowTextureCount, cameraNearClip_, shadowFarDist);
+    Ogre::ShadowCameraSetupPtr shadowCameraSetup;
+    if(using_directx)
+    {
+#include "DisableMemoryLeakCheck.h"
+        OgreShadowCameraSetupFocusedPSSM* pssmSetup = new OgreShadowCameraSetupFocusedPSSM();
+#include "EnableMemoryLeakCheck.h"
 
+        OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
+        splitpoints.push_back(cameraNearClip_);
+        splitpoints.push_back(3.5);
+        splitpoints.push_back(11);
+        splitpoints.push_back(shadowFarDist);
+        pssmSetup->setSplitPoints(splitpoints);
+        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
+    }
+    else
+    {
+#include "DisableMemoryLeakCheck.h"
+        Ogre::FocusedShadowCameraSetup* focusedSetup = new Ogre::FocusedShadowCameraSetup();
+#include "EnableMemoryLeakCheck.h"
+        shadowCameraSetup = Ogre::ShadowCameraSetupPtr(focusedSetup);
+    }
+    
+    
 
-
-    Ogre::PSSMShadowCameraSetup::SplitPointList splitpoints = pssmSetup->getSplitPoints();
- 
-
-
-    Ogre::ShadowCameraSetupPtr shadowCameraSetup = Ogre::ShadowCameraSetupPtr(pssmSetup);
+    
     sceneManager->setShadowCameraSetup(shadowCameraSetup);
     sceneManager->setShadowFarDistance(shadowFarDist);
 
@@ -660,42 +707,45 @@ void EC_OgreEnvironment::InitShadows()
     Ogre::Overlay* debugOverlay = Ogre::OverlayManager::getSingleton().getByName(str);
     if(!debugOverlay)
         debugOverlay= Ogre::OverlayManager::getSingleton().create(str);
-    for(int i = 0; i<3;i++)
+    for(int i = 0; i<shadowTextureCount;i++)
     {
             shadowTex = mngr->getShadowTexture(i);
 
-		    // Set up a debug panel to display the shadow
-		    Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
+            // Set up a debug panel to display the shadow
+            Ogre::MaterialPtr debugMat = Ogre::MaterialManager::getSingleton().create(
                 "Ogre/DebugTexture" + Ogre::StringConverter::toString(i), 
                 Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-		    debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
-		    Ogre::TextureUnitState *t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState(shadowTex->getName());
+            debugMat->getTechnique(0)->getPass(0)->setLightingEnabled(false);
+            Ogre::TextureUnitState *t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState(shadowTex->getName());
             t->setTextureAddressingMode(Ogre::TextureUnitState::TAM_CLAMP);
-		    //t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState("spot_shadow_fade.png");
-		    //t->setTextureAddressingMode(TextureUnitState::TAM_CLAMP);
-		    //t->setColourOperation(LBO_ADD);
+            //t = debugMat->getTechnique(0)->getPass(0)->createTextureUnitState("spot_shadow_fade.png");
+            //t->setTextureAddressingMode(TextureUnitState::TAM_CLAMP);
+            //t->setColourOperation(LBO_ADD);
 
-		    Ogre::OverlayContainer* debugPanel = (Ogre::OverlayContainer*)
+            Ogre::OverlayContainer* debugPanel = (Ogre::OverlayContainer*)
                 (Ogre::OverlayManager::getSingleton().createOverlayElement("Panel", "Ogre/DebugTexPanel" + Ogre::StringConverter::toString(i)));
-		    debugPanel->_setPosition(0.8, i*0.25+ 0.05);
-		    debugPanel->_setDimensions(0.2, 0.24);
-		    debugPanel->setMaterialName(debugMat->getName());
-		    debugOverlay->add2D(debugPanel);
+            debugPanel->_setPosition(0.8, i*0.25+ 0.05);
+            debugPanel->_setDimensions(0.2, 0.24);
+            debugPanel->setMaterialName(debugMat->getName());
+            debugOverlay->add2D(debugPanel);
     }
     debugOverlay->show();*/
-    for(int i=0;i<3;i++)
+    if(settings.value("soft_shadow", "false") == "true")
     {
-        OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
-        Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
-        Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
-        Ogre::Viewport* vp = shadowRtt->getViewport(0);
-	    Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
-        Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
-		instance->addListener(gaussianListener);
-		gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+        for(int i=0;i<shadowTextureCount;i++)
+        {
+            OgreRenderer::GaussianListener* gaussianListener = new OgreRenderer::GaussianListener(); 
+            Ogre::TexturePtr shadowTex = sceneManager->getShadowTexture(0);
+            Ogre::RenderTarget* shadowRtt = shadowTex->getBuffer()->getRenderTarget();
+            Ogre::Viewport* vp = shadowRtt->getViewport(0);
+            Ogre::CompositorInstance *instance = Ogre::CompositorManager::getSingleton().addCompositor(vp, "Gaussian Blur");
+            Ogre::CompositorManager::getSingleton().setCompositorEnabled(vp, "Gaussian Blur", true);
+            instance->addListener(gaussianListener);
+            gaussianListener->notifyViewportSize(vp->getActualWidth(), vp->getActualHeight());
+            gaussianListeners_.push_back(gaussianListener);
+        }
     }
-
-  
+    settings.endGroup();
 }
 
 } // namespace OgreRenderer

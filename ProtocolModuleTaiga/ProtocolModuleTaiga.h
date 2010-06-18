@@ -35,7 +35,7 @@ namespace TaigaProtocol
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
     class TAIGAPROTO_MODULE_API ProtocolModuleTaiga 
-        : public Foundation::ModuleInterfaceImpl, 
+        : public Foundation::ModuleInterface, 
           public ProtocolUtilities::INetMessageListener, 
           public ProtocolUtilities::ProtocolModuleInterface
     {
@@ -50,10 +50,7 @@ namespace TaigaProtocol
         MODULE_LOGGING_FUNCTIONS
 
         //! Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        //! Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_TaigaProtocol;
+        static const std::string &NameStatic() { return type_name_static_; }
 
         /// Passes inbound network events to listeners.
         virtual void OnNetworkMessageReceived(ProtocolUtilities::NetMsgID msgID, ProtocolUtilities::NetInMessage *msg);
@@ -101,7 +98,7 @@ namespace TaigaProtocol
         /// Returns URL of the requested capability, or null string if the capability doens't exist.
         /// @param name Name of the capability.
         /// @return Capability URL.
-        virtual std::string GetCapability(const std::string &name);
+        virtual std::string GetCapability(const std::string &name) const;
         
         /// Sets Authentication type
         /// @params authentivation type ProtocolUtilities::AuthenticationType
@@ -130,7 +127,7 @@ namespace TaigaProtocol
         /// this class.
         virtual void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
-        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() { return networkManager_.get(); }
+        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() const { return networkManager_.get(); }
 
     private:
         /// Requests capabilities from the server.
@@ -140,6 +137,9 @@ namespace TaigaProtocol
         /// Extracts capabilities from XML string
         /// @param xml XML string from the server.
         void ExtractCapabilitiesFromXml(std::string xml);
+
+        //! Returns type of this module. Needed for logging.
+        static std::string type_name_static_;
 
         /// Thread for the login process.
         Thread thread_;
@@ -177,12 +177,8 @@ namespace TaigaProtocol
         /// Current connection client-spesific parameters.
         ProtocolUtilities::ClientParameters clientParameters_;
 
-        ///Typedefs for capability map.
-        typedef std::map<std::string, std::string> caps_map_t;
-        typedef std::map<std::string, std::string>::iterator caps_map_it_t;
-
         /// Server-spesific capabilities.
-        caps_map_t capabilities_;
+        CapsMap_t capabilities_;
     };
 
     /// @}

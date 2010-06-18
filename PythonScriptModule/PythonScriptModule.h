@@ -55,7 +55,7 @@ namespace PythonScript
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -93,8 +93,7 @@ namespace PythonScript
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_PythonScript;
+        static const std::string &NameStatic() { return type_name_static_; }
 
         static void Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, QList<uint> submeshes, int refresh_rate);
 
@@ -124,6 +123,8 @@ namespace PythonScript
 
     private:
         //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
+        //! Type name of the module.
+        static std::string type_name_static_;
 
         PythonEnginePtr engine_;
         bool pythonqt_inited;

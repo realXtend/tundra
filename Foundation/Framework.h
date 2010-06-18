@@ -3,6 +3,9 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
+// Application name is statically defined here
+#define APPLICATION_NAME "realXtend"
+
 #include <boost/smart_ptr.hpp>
 //#include <Poco/Formatter.h>
 #include <boost/program_options.hpp>
@@ -90,9 +93,15 @@ namespace Foundation
         ConfigurationManagerPtr GetConfigManager();
         ThreadTaskManagerPtr GetThreadTaskManager();
 
-        //! Signal the framework to exit at first possible opportunity
+        //! Signal the framework to exit
         void Exit();
-
+        
+        //! Cancel a pending exit
+        void CancelExit();
+        
+        //! Force immediate exit, with no possibility to cancel it
+        void ForceExit();
+        
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
         bool IsExiting() { return exit_signal_; }
 

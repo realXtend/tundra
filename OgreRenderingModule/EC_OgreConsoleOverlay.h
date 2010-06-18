@@ -18,13 +18,13 @@ namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;    
+    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     //! Interface for the console overlay, so in SupportModules we don't need to link against OgreRenderingModule.
     class EC_OgreConsoleOverlayInterface : public Foundation::ComponentInterface
     {
     public:
-        EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) : Foundation::ComponentInterface(framework) {}
+        EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) {}
         virtual ~EC_OgreConsoleOverlayInterface() {}
 
         virtual void Display(const std::string &text) = 0;

@@ -114,7 +114,7 @@ namespace Naali
     void AudioPreviewEditor::Closed()
     {
         boost::shared_ptr<UiServices::UiModule> ui_module =
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 
@@ -206,7 +206,7 @@ namespace Naali
     {
         // Get QtModule and create canvas
         boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 

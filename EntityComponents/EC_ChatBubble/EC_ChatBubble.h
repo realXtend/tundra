@@ -16,6 +16,7 @@
 #include <QStringList>
 #include <QFont>
 #include <QColor>
+#include <QRect>
 
 namespace OgreRenderer
 {
@@ -29,6 +30,11 @@ namespace Ogre
     class Billboard;
 }
 
+QT_BEGIN_NAMESPACE
+class QTimer;
+QT_END_NAMESPACE
+
+/// Chat bubble component wich shows billboard with chat bubble and text on entity.
 class EC_ChatBubble : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -48,6 +54,8 @@ public:
     /// @note The position is relative to the entity to which the chat bubble is attached.
     void SetPosition(const Vector3df &position);
 
+    void SetScale(float scale);
+
     /// Sets the font used for the chat bubble text.
     /// @param font Font.
     void SetFont(const QFont &font) { font_ = font; }
@@ -60,6 +68,10 @@ public:
     /// @param color Color.
     void SetBubbleColor(const QColor &color) { bubbleColor_ = color; }
 
+    /// Returns if the chat bubble is visible or not.
+    /// @true If the chat bubble text is visible, false if it's hidden or not initialized properly.
+    bool IsVisible() const;
+
 public slots:
     /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.
@@ -67,11 +79,20 @@ public slots:
     void ShowMessage(const QString &msg);
 
 private slots:
-    /// Removes the last message.
-    void RemoveLastMessage();
+    /// Initializes/updates the position of the chat bubble when we have parent entity set.
+    void Update();
+
+    /// Shows next message from the stack
+    void ShowNextMessage();
 
     /// Removes all the messages.
     void RemoveAllMessages();
+
+    /// Check if messages fit to our rect
+    bool CheckMessageSize(const QString &message);
+
+    /// Create one string containing all the message in the stack.
+    QString ConstructCombined() const;
 
     /// Redraws the chat bubble with current messages.
     void Refresh();
@@ -92,6 +113,9 @@ private:
     /// Name of the material used for the billboard set.
     std::string materialName_;
 
+    /// Name of the texture
+    std::string texture_name_;
+
     /// For used for the chat bubble text.
     QFont font_;
 
@@ -103,6 +127,19 @@ private:
 
     /// List of visible chat messages.
     QStringList messages_;
+
+    /// Pop timer
+    QTimer *pop_timer_;
+
+    /// Max rext for the rendered image
+    QRect bubble_max_rect_;
+
+    /// Currently showed message
+    QString current_message_;
+
+    /// Current scale of the billboard
+    float current_scale_;
+    float default_z_pos_;
 };
 
 #endif

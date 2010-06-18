@@ -221,8 +221,10 @@ namespace LegacyAvatar
 		return true;
 	}
 
-	LegacyAvatarModule::LegacyAvatarModule() 
-    : ModuleInterfaceImpl("LegacyAvatarModule")
+    std::string LegacyAvatarModule::type_name_static_ = "LegacyAvatar";
+
+    LegacyAvatarModule::LegacyAvatarModule() 
+    : ModuleInterface(type_name_static_)
     {
     }
     

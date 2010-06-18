@@ -10,7 +10,6 @@
 #include "WorldLogicInterface.h" // for avatar position
 #include "Entity.h" // for avatar position
 #include "SceneManager.h"
-#include "WorldStream.h"
 #include "User.h"
 #include "Channel.h"
 #include "Connection.h"

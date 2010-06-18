@@ -9,6 +9,7 @@
 
 #include <QWidget>
 #include <QTimer>
+#include <Ogre.h>
 
 class QTreeWidget;
 class QComboBox;
@@ -72,6 +73,7 @@ namespace DebugStats
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
         void DumpOgreResourceStatsToFile();
+        void Arrange();
 
     protected:
         void resizeEvent(QResizeEvent *event);
@@ -115,8 +117,16 @@ namespace DebugStats
         void RefreshProfilingDataTree();
         void RefreshProfilingDataList();
         void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+        void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
+        void RefressAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
 
-        QTreeWidget *tree_texture_assets_;
+        QTreeWidget* tree_texture_assets_;
+        QTreeWidget* tree_mesh_assets_; 
+        QTreeWidget* tree_material_assets_;
+        QTreeWidget* tree_skeleton_assets_;
+        QTreeWidget* tree_compositor_assets_;
+        QTreeWidget* tree_gpu_assets_;
+        QTreeWidget* tree_font_assets_;
     };
 }
 

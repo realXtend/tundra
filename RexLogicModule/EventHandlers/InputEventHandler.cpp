@@ -42,6 +42,18 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
             owner_->SwitchCameraState();
         break;
     }
+    case Events::CAMERA_TRIPOD:
+    {
+        if (owner_->GetServerConnection()->IsConnected())
+            owner_->CameraTripod();
+        break;
+    }
+    case Events::FOCUS_ON_OBJECT:
+    {
+        if (owner_->GetServerConnection()->IsConnected())
+            owner_->FocusOnObject();
+        break;
+    }
     case Events::MOUSEMOVE:
     {
         if (owner_->GetServerConnection()->IsConnected())
