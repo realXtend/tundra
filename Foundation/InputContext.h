@@ -115,6 +115,16 @@ public:
     /// without passing the event on to lower layers.
     void SetKeySuppressed(Qt::Key keyCode, bool isSuppressed);
 
+    /// Set to true to receive mouse input events even when the mouse cursor is over a Qt widget.
+    /// By default, this is disabled.
+    void SetTakeMouseEventsOverQt(bool take) { takeMouseEventsOverQt = take; }
+    bool TakesMouseEventsOverQt() const { return takeMouseEventsOverQt; }
+
+    /// Set to true to receive keyboard input events even when a Qt widget has keyboard focus.
+    /// By default, this is disabled.
+    void SetTakeKeyboardEventsOverQt(bool take) { takeKeyboardEventsOverQt = take; }
+    bool TakesKeyboardEventsOverQt() const { return takeKeyboardEventsOverQt; }
+
     /// Updates the buffered key presses. Called by the input service to
     /// proceed on to the next input frame.
     void UpdateFrame();
@@ -144,6 +154,12 @@ private:
     /// Tests both newKeyEvents and heldKeysBuffered and looks if this context is aware of the
     /// given key being pressed down.
     bool IsKeyDownImmediate(Qt::Key keyCode) const;
+
+    /// If true, this context receives mouse events even when the mouse cursor is over a Qt widget. Default: false.
+    bool takeMouseEventsOverQt;
+
+    /// If true, this context receives keyboard events even when a QGraphicsItem in the scene has keyboard focus. Default: false.
+    bool takeKeyboardEventsOverQt;
 
     std::string name;
 

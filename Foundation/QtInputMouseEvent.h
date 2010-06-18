@@ -9,6 +9,8 @@
 #include <QNamespace.h>
 #include <QPoint>
 
+class QGraphicsItem;
+
 namespace QtInputEvents
 {
     // These are the mouse-related input events provided by the QtInputModule.
@@ -129,6 +131,10 @@ public:
     /// leave this as false even after you handle this event, in case you don't care whether Qt gets this event as well or not.
     /// By default, this field is set to false when the event is fired to the event queue.
     bool handled;
+
+    /// If null, the mouse cursor is over scene client area. Otherwise, the mouse cursor is over one or more scene items. The
+    /// topmost of them is returned here.
+    QGraphicsItem *itemUnderMouse;
 
 	///\todo Add a time stamp of the event.
 
