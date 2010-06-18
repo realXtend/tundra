@@ -43,7 +43,7 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     default_z_pos_(1.9)
 {
     // Get renderer service
-    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     // Pop timer init
     pop_timer_->setSingleShot(true);
