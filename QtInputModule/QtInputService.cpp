@@ -63,11 +63,13 @@ framework(framework_)
     // 1. If we set setMouseTracking(true) to either the main QGraphicsView or its viewport,
     //    we do not still receive mouse move events if we install an event filter to those widgets.
     //    So, we set mouse tracking enabled to the application main window.
-    // 2. Mouse wheel events, as well as key press and release events are taken from the application main window.
-    // 3. Mouse press and release events do not work if taken from the main window. Presses come through fine,
+    // 2. Mouse wheel events are taken from the application main window.
+    // 3. Key press and release events are taken from the main window, except for the TAB key press, which
+    //    is taken from the main QGraphicsView (main window does not receive tab key press, but does receive tab key release).
+    // 4. Mouse press and release events do not work if taken from the main window. Presses come through fine,
     //    but the releases are never received. Therefore, we take all our mouse presses and releases from
     //    the QGraphicsView viewport.
-    // 4. Mouse moves are passed to the main window, but if a mouse button is down, the viewport will start receiving
+    // 5. Mouse moves are passed to the main window, but if a mouse button is down, the viewport will start receiving
     //    the mouse moves instead of the main window. (This is due to Qt's mouse grabbing feature).
     // In the event filter, we take care that we only take each event from the widget we intended to take it from,
     // avoiding duplicates.
@@ -76,6 +78,9 @@ framework(framework_)
     assert(mainView);
     assert(mainView->viewport());
 
+    // For the TAB key.
+    mainView->installEventFilter(this);
+    // For mouse presses and releases, as well as mouse moves when a button is being held down.
     mainView->viewport()->installEventFilter(this);
     
     // Find the top-level widget that the QGraphicsView is contained in. We need 
@@ -86,6 +91,7 @@ framework(framework_)
         mainWindow = mainWindow->parentWidget();
 
     mainWindow->setMouseTracking(true);
+    // For Mouse wheel events, key presses (except TAB) and releases, and mouse moves (no button down).
     mainWindow->installEventFilter(this);
 }
 
@@ -427,10 +433,6 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
     {
     case QEvent::KeyPress:
 	{
-        // We only take key events from the main window.
-        if (obj != qobject_cast<QObject*>(mainWindow))
-            return false;
-
         QKeyEvent *e = static_cast<QKeyEvent*>(event);
 
 		KeyEvent keyEvent;
@@ -442,6 +444,10 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 		keyEvent.eventType = KeyEvent::KeyPressed;
 //		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
+
+        // We only take key events from the main window, but take the Tab key from the main view.
+        if (obj != qobject_cast<QObject*>(mainWindow) && !(obj == qobject_cast<QObject*>(mainView) && keyEvent.keyCode == Qt::Key_Tab))
+            return false;
 
         std::map<Qt::Key, KeyPressInformation>::iterator keyRecord = heldKeys.find(keyEvent.keyCode);
         if (keyRecord != heldKeys.end())
