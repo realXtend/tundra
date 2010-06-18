@@ -93,42 +93,43 @@ namespace Asset
         //! Unregisters an asset provider
         /*! \param asset_provider Provider to unregister
             \return true if successfully unregistered
-         */       
+         */
         virtual bool UnregisterAssetProvider(Foundation::AssetProviderPtr asset_provider);
-                
-        //! Stores an asset to the asset cache    
+        
+        //! Stores an asset to the asset cache
         /*! \param asset Asset to store
          */
         virtual void StoreAsset(Foundation::AssetPtr asset);
-                
+        
         //! Performs time-based update
         /*! Calls update function of all registered asset providers, and of cache
             \param frametime Seconds since last frame
          */
-        void Update(f64 frametime);            
+        void Update(f64 frametime);
         
-    private:      
+    private:
         //! Gets new request tag
         request_tag_t GetNextTag();
         
         //! Gets asset from cache
         /*! \param asset_id Asset ID
+            \param asset_type Optional asset type (empty to match any)
          */
-        Foundation::AssetPtr GetFromCache(const std::string& asset_id);
-          
+        Foundation::AssetPtr GetFromCache(const std::string& asset_id, const std::string& asset_type = std::string());
+        
         //! Framework we belong to
         Foundation::Framework* framework_;
-                                
+        
         //! Asset event category
         event_category_id_t event_category_;
-                
+        
         //! Asset cache
         typedef boost::shared_ptr<AssetCache> AssetCachePtr;
         AssetCachePtr cache_;
         
         //! Asset providers
         typedef std::vector<Foundation::AssetProviderPtr> AssetProviderVector;
-        AssetProviderVector providers_;           
+        AssetProviderVector providers_;
     };
 }
 
