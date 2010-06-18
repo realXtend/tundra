@@ -1,6 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-/// @file OgreMaterialUtils.cpp
-/// Contains some common methods for 
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreMaterialUtils.cpp
+ *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
+ */
 
 #include "StableHeaders.h"
 #include "OgreMaterialUtils.h"
@@ -74,10 +77,8 @@ namespace OgreRenderer
     uint GetMaterialVariation(const std::string& suffix)
     {
         for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
-        {
             if (suffix == MaterialSuffix[i])
                 return i;
-        }
         return 0;
     }
 
@@ -188,11 +189,9 @@ namespace OgreRenderer
         Ogre::TexturePtr tex = tm.getByName(texture_name);
         bool has_alpha = false;
         if (!tex.isNull())
-        {
             if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
                 has_alpha = true;
-        }
-        
+
         for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
             std::string material_name = texture_name + MaterialSuffix[i];
@@ -355,5 +354,20 @@ namespace OgreRenderer
                 OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
+    }
+
+    void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)
+    {
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mm.getByName(materialName);
+        if (material.get()) // The given material already exists, so no need to create it again.
+            return;
+
+        material = mm.getByName("SolidAmbient");
+        if (!material.get())
+            return;
+
+        Ogre::MaterialPtr newMaterial = material->clone(materialName);
+        newMaterial->setAmbient(r, g, b);
     }
 }

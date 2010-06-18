@@ -330,7 +330,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
             if (inventoryType_ == IDMT_WebDav)
             {
-                boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                Foundation::AssetServiceInterface *asset_service = framework_->GetService<Foundation::AssetServiceInterface>();
                 AbstractInventoryItem *avatar_item = inventory_->GetChildFolderById("Avatar"); 
 
                 // If Avatar folder does not exist, create it.
@@ -578,16 +578,13 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
         // If it is, show file size to item properties UI. SLUDP protocol doesn't support querying asset size
         // and we don't want download asset only just to know its size.
         ///\todo If WebDAV supports querying asset size without full download, utilize it.
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-        if (!service_manager->IsRegistered(Foundation::Service::ST_Asset))
-            return;
-
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-            service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-
-        Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset->GetAssetReference().toStdString(), GetTypeNameFromAssetType(asset->GetAssetType()));
-        if (assetPtr && assetPtr->GetSize() > 0)
-            wnd->SetFileSize(assetPtr->GetSize());
+        Foundation::AssetServiceInterface *asset_service = framework_->GetService<Foundation::AssetServiceInterface>();
+        if (asset_service)
+        {
+            Foundation::AssetPtr assetPtr = asset_service->GetAsset(asset->GetAssetReference().toStdString(), GetTypeNameFromAssetType(asset->GetAssetType()));
+            if (assetPtr && assetPtr->GetSize() > 0)
+                wnd->SetFileSize(assetPtr->GetSize());
+        }
     }
 }
 
