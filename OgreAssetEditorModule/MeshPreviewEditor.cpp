@@ -16,6 +16,7 @@
 #include "ModuleManager.h"
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
+#include "CoreMath.h"
 
 
 #include <QUiLoader>
@@ -54,6 +55,11 @@ namespace Naali
             rightPressed_  = false;
     }
 
+    void MeshPreviewLabel::wheelEvent(QWheelEvent* ev)
+    {
+        sendWheelEvent(ev);
+    }
+
     void MeshPreviewLabel::mouseMoveEvent(QMouseEvent *event)
     {
         if ( leftPressed_ && ( rightPressed_ || event->buttons() == Qt::RightButton) )
@@ -69,6 +75,8 @@ namespace Naali
             sendMouseEvent(&ev, false);      
             return;
         }
+
+       
     }
 
 
@@ -86,12 +94,10 @@ namespace Naali
         assetId_(assetID),
         request_tag_(0),
         lastPos_(QPointF()),
-        camAlphaAngle_(0.0),
-        camPsiAngle_(1.57079633),
+        camAlphaAngle_(0),
         mesh_id_(""),
-        val(0), 
-        moveX_(0),
-        moveY_(0)
+        mouseDelta_(0)
+      
     {
         setObjectName(name);
         InitializeEditorWidget();
@@ -100,9 +106,7 @@ namespace Naali
     }
 
     MeshPreviewEditor::~MeshPreviewEditor()
-    {
-    
-    }
+    {}
 
    
     void MeshPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res)
@@ -125,11 +129,8 @@ namespace Naali
             if (renderer != 0)
             {
                 request_tag_ = renderer->RequestResource(asset_id.toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-
-            
             }
         
-
     }
 
     void MeshPreviewEditor::Update()
@@ -152,6 +153,7 @@ namespace Naali
         
              int iWidth = 400;
              int iHeight = 400;
+             
              OgreRenderer::OgreRootPtr root = renderer->GetRoot();
              Ogre::SceneManager* manager = root->createSceneManager(Ogre::ST_GENERIC,"MeshShotManager");
              
@@ -161,24 +163,26 @@ namespace Naali
              entity->setMaterialName("BaseWhite");
              
              Ogre::AxisAlignedBox box = entity->getBoundingBox();
-             
              Ogre::Vector3 boxCenterPos = box.getHalfSize();
-             Ogre::Vector3 scenePos(0.0,-boxCenterPos.y,0.0);
+            
+             
              Ogre::Vector3 volume= box.getSize();
              
              // Get biggest side :
-             double biggest = volume.x;
-             if ( biggest < volume.y )
-                 biggest = volume.y;
-             if ( biggest < volume.z )
-                 biggest = volume.z;
+            
+             double biggest = boxCenterPos.x;
+             if ( biggest < boxCenterPos.y )
+                 biggest = boxCenterPos.y;
+             if ( biggest < boxCenterPos.z )
+                 biggest = boxCenterPos.z;
 
 
              Ogre::SceneNode* scene = manager->createSceneNode("MeshShotNode");
              scene->attachObject(entity);
             
              scene->showBoundingBox(true);
-             //scene->setPosition(Ogre::Vector3(moveX_,moveY_,0));
+             scene->rotate(Ogre::Vector3(0,1,0),Ogre::Radian(camAlphaAngle_ * PI/180.0));            
+       
 
              Ogre::SceneNode* root_scene = manager->getRootSceneNode();
              root_scene->addChild(scene);
@@ -186,26 +190,22 @@ namespace Naali
              camera->setNearClipDistance(0.1f);
              camera->setFarClipDistance(2000.f);
              
-             // Position vector
-             
-             double r = biggest * 2;
-             double x = r * sin(camAlphaAngle_); // * sin(camPsiAngle_);
-             //double y = r * cos (camPsiAngle_);
-             double y = 0.0;
-             double z = r * cos(camAlphaAngle_);// * sin(camPsiAngle_);
-             
-             //qDebug()<<" Angles alpha : "<<camAlphaAngle_<<" psi : "<<camPsiAngle_<<" val : "<<val;
-             //Ogre::Vector3 pos(0,0,biggest * 2);
-           
+             // Camera position vector
+             double r = sqrt(2.0) * 2*biggest * tan(camera->getFOVy().valueRadians() * camera->getAspectRatio());
+            
+             // Adjust r by using mouse roll
+
+             int numDegrees = mouseDelta_ / 8;
+             int numSteps = numDegrees / 15;
+             r = r + numSteps;
+
+             double x = 0;
+             double y = boxCenterPos.y;
+             double z = r;
+
              Ogre::Vector3 pos(x,y,z);
              camera->setPosition(pos);
-
-             //qDebug()<<" CamAngle : "<<camAngle_;
-             //camera->rotate(Ogre::Vector3(0,1,0), Ogre::Radian(camAngle_));
-             //camera->lookAt(Ogre::Vector3(moveX_,moveY_,0));
-             
-             camera->lookAt(Ogre::Vector3(0,0,0));
-             
+             camera->lookAt(boxCenterPos);
           
              Ogre::Light* newLight = manager->createLight("light");
        
@@ -214,7 +214,6 @@ namespace Naali
              newLight->setDiffuseColour(Ogre::ColourValue::White);
              manager->setAmbientLight(Ogre::ColourValue::Black);
             
-
              // Render camera view to texture 
           
             Ogre::TexturePtr tex = Ogre::TextureManager::getSingleton().createManual(
@@ -232,7 +231,8 @@ namespace Naali
             
             render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
 
-            // Create image
+            // Create image of texture, and show it into label.
+
             u8* p = static_cast<u8 *>(pixels.data);
             int width = pixels.getWidth();
             int height = pixels.getHeight();
@@ -308,8 +308,10 @@ namespace Naali
         label->setObjectName("meshImageLabel");
         
         label->setMinimumSize(300,300);
-
+    
+        // Kind of hack, in this way we assure that we will get mouseMove-event with left and right button pressed.
         QObject::connect(label, SIGNAL(sendMouseEvent(QMouseEvent*,bool)), this, SLOT(MouseEvent(QMouseEvent*,bool)));
+        QObject::connect(label, SIGNAL(sendWheelEvent(QWheelEvent*)), this, SLOT(MouseWheelEvent(QWheelEvent*)));
         vLayout->addWidget(label);
 
         QVBoxLayout *layout = new QVBoxLayout;
@@ -321,8 +323,15 @@ namespace Naali
         // Add widget to UI via ui services module
         proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Mesh: ") + objectName(), UiServices::SceneWidget));
         QObject::connect(proxy_, SIGNAL(Closed()), this, SLOT(Closed()));
-        //proxy->show();
-        //ui_module->GetInworldSceneController()->BringProxyToFront(proxy_);
+       
+    }
+
+    void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)
+    {
+        int delta = ev->delta();
+        mouseDelta_ += delta;
+        Update();
+        
     }
 
 
@@ -331,53 +340,36 @@ namespace Naali
       
         QPointF pos = event->posF();
 
-        if ( ( event->buttons() == Qt::LeftButton && event->buttons() == Qt::RightButton )|| both)
-        {
-            if ( pos.y() > lastPos_.y() )
-            {
-                //camPsiAngle_ = camPsiAngle_ - 0.087;
-                moveY_ = moveY_ + 0.1;
-                Update();
-            }
-            else if ( pos.y() < lastPos_.y() )
-            {
-                //camPsiAngle_ = camPsiAngle_ +  0.087;
-                moveY_ = moveY_ -0.1;
-                Update();
-            }
-
-            if ( pos.x() > lastPos_.x() )
-            {
-                   moveX_ = moveX_ + 0.1;
-                   Update();
-            }
-            else if ( pos.x() < lastPos_.x() )
-            {
-                moveX_ = moveX_ - 0.1;
-                Update();
-            }
-            lastPos_ = pos;    
-        
-            return;
-        }
-       
         if ( event->buttons() == Qt::RightButton )
         {
             
             if ( pos.x() > lastPos_.x() )
             {
                 
-                camAlphaAngle_ = camAlphaAngle_ + 2*0.087;
+                camAlphaAngle_ = camAlphaAngle_ + 5;
+                
+                if ( camAlphaAngle_ < 0 )
+                    camAlphaAngle_ = - abs(camAlphaAngle_) % 360; 
+                else
+                    camAlphaAngle_ = camAlphaAngle_ % 360;
+                
+                
                 Update();
             }
             else if ( pos.x() < lastPos_.x())
             {
             
-                camAlphaAngle_ = camAlphaAngle_ - 2*0.087;
+                camAlphaAngle_ = camAlphaAngle_ - 5; 
+                if ( camAlphaAngle_ < 0 )
+                    camAlphaAngle_ = - abs(camAlphaAngle_) % 360; 
+                else
+                    camAlphaAngle_ = camAlphaAngle_ % 360;
+                
                 Update();
             }
         
         }
+        
 
        lastPos_ = pos;    
     }
