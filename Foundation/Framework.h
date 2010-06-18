@@ -3,19 +3,16 @@
 #ifndef incl_Foundation_Framework_h
 #define incl_Foundation_Framework_h
 
-#include <boost/smart_ptr.hpp>
-//#include <Poco/Formatter.h>
-#include <boost/program_options.hpp>
-#include <boost/timer.hpp>
-
-#include "EventDataInterface.h"
-#include "Profiler.h"
-
-#include "ServiceManager.h"
-//#include "ConsoleCommandServiceInterface.h"
-
 #include "CoreTypes.h"
 #include "ForwardDefines.h"
+#include "EventDataInterface.h"
+#include "Profiler.h"
+#include "ModuleManager.h"
+#include "ServiceManager.h"
+
+#include <boost/smart_ptr.hpp>
+#include <boost/program_options.hpp>
+#include <boost/timer.hpp>
 
 class QApplication;
 class QGraphicsView;
@@ -82,25 +79,38 @@ namespace Foundation
         //! Runs through a single frame of logic update and rendering.
         void ProcessOneFrame();
 
+        //! Returns component manager.
         ComponentManagerPtr GetComponentManager() const;
+
+        //! Returns module manager.
         ModuleManagerPtr GetModuleManager() const;
+
+        //! Returns service manager.
         ServiceManagerPtr GetServiceManager() const;
+
+        //! Returns event manager.
         EventManagerPtr GetEventManager() const;
+
+        //! Returns platform abstraction object.
         PlatformPtr GetPlatform() const;
+
+        //! Returns config manager.
         ConfigurationManagerPtr GetConfigManager();
+
+        //! Returns thread task manager.
         ThreadTaskManagerPtr GetThreadTaskManager();
 
         //! Signal the framework to exit
         void Exit();
-        
+
         //! Cancel a pending exit
         void CancelExit();
-        
+
         //! Force immediate exit, with no possibility to cancel it
         void ForceExit();
-        
+
         //! Returns true if framework is in the process of exiting (will exit at next possible opportunity)
-        bool IsExiting() { return exit_signal_; }
+        bool IsExiting() const { return exit_signal_; }
 
         //! Returns true if framework is properly initialized and Go() can be called.
         bool Initialized() const { return initialized_; }
@@ -217,6 +227,16 @@ namespace Foundation
         //! Set main UI View
         void SetUIView(std::auto_ptr <QGraphicsView> view);
 
+        /** Returns module by class T.
+            @param T class type of the module.
+            @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
+            @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
+         */
+        template <class T> T *GetModule()
+        {
+            return GetModuleManager()->GetModule<T>().lock().get();
+        }
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized
@@ -224,15 +244,26 @@ namespace Foundation
 
         //! default event subscriber tree XML file path
         static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
-        
+
         //! Create logging system
         void CreateLoggingSystem();
 
+        //! Module manager.
         ModuleManagerPtr module_manager_;
+
+        //! Component manager.
         ComponentManagerPtr component_manager_;
+
+        //! Service manager.
         ServiceManagerPtr service_manager_;
+
+        //! Event manager.
         EventManagerPtr event_manager_;
+
+        //! Platform
         PlatformPtr platform_;
+
+        //! Thread task manager.
         ThreadTaskManagerPtr thread_task_manager_;
 
         //! default configuration
@@ -243,9 +274,10 @@ namespace Foundation
 
         //! if true, exit application
         bool exit_signal_;
-        
+
         //! Logger channels
         std::vector<Poco::Channel*> log_channels_;
+
         //! Logger default formatter
         Poco::Formatter *log_formatter_;
 
@@ -255,6 +287,7 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
+        //! Bridges QtApplication and Framework bridge object.
         std::auto_ptr <FrameworkQtApplication> engine_;
 
         //! profiler
@@ -270,11 +303,13 @@ namespace Foundation
         int argc_;
         char **argv_;
 
+        //! Frame timer.
         boost::timer timer;
 
         //! true if framework is properly initialized, false otherwise.
         bool initialized_;
 
+        //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;
     };
 
@@ -293,8 +328,8 @@ namespace Foundation
     {
         ProgramOptionsEvent();
     public:
-        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av);
-
+        ProgramOptionsEvent(const boost::program_options::variables_map &vars, int ac, char **av) :
+            options(vars), argc(ac), argv(av) { }
         //! parsed program options
         const boost::program_options::variables_map &options;
         //! command line arguments as supplied by the operating system
