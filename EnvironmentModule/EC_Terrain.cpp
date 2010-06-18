@@ -27,8 +27,7 @@ void EC_Terrain::Destroy()
     if (!GetFramework())
         return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
     if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
         return;
 
