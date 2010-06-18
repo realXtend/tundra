@@ -125,10 +125,6 @@ namespace RexLogic
         //! \param data Network event data.
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);
 
-        //! Protocol module.
-        //! \todo Why is this here. It's not used for anything but some (random?) check in the ctor.
-        boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> protocolModule_;
-
         //! Owner module.
         RexLogicModule *owner_;
 

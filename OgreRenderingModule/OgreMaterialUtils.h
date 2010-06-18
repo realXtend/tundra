@@ -1,7 +1,12 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreMaterialUtils.h
+ *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
+ */
 
-#ifndef incl_OgreMaterialUtils_h
-#define incl_OgreMaterialUtils_h
+#ifndef incl_OgreRenderingModule_OgreMaterialUtils_h
+#define incl_OgreRenderingModule_OgreMaterialUtils_h
 
 #include <OgreMaterial.h>
 
@@ -82,9 +87,13 @@ namespace OgreRenderer
     
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
-    
+
     //! Deletes a material. Note: the material pointer passed in will be set to null
     void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
+
+    /// Clones a new Ogre material that renders using the given ambient color. 
+    /// This function will be removed or refactored later on, once proper material system is present. -jj.
+    void OGRE_MODULE_API DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b);
 }
 
 #endif

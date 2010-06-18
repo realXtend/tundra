@@ -326,11 +326,6 @@ namespace Environment
             }
             else if (methodname == "RexFog")
             {
-                /**
-                 * Currently we interprent that this message information is for water fog ! Not for ground fog.
-                 * @todo Someone needs to add more parameters to this package so that we can make ground fog also,
-                 */
-
                 StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
                 if ( parameters.size() < 5)
                     return false;
