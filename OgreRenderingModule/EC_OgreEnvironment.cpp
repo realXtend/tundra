@@ -665,8 +665,9 @@ void EC_OgreEnvironment::InitShadows()
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
-
+    
     Ogre::ShadowCameraSetupPtr shadowCameraSetup;
+    
     if(using_directx)
     {
 #include "DisableMemoryLeakCheck.h"
