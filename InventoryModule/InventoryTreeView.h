@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryTreeView.h
  *  @brief  Inventory tree view UI widget.
  */
@@ -17,8 +17,7 @@ namespace Inventory
 {
     class InventoryWindow;
 
-    // This is helper class for translations. 
-
+    /// This is helper class for translations.
     class InventoryAction : public QAction 
     {
         Q_OBJECT 
@@ -26,14 +25,12 @@ namespace Inventory
      public:
         InventoryAction(QWidget *parent = 0) : QAction(parent) {}
         InventoryAction(const QString& text, QWidget *parent = 0) : QAction(text, parent), orginal_text(text) {}
-
         QString GetText() const { return orginal_text; }
-
      private:
-        QString orginal_text;       
-
+        QString orginal_text;
     };
 
+    /// Inventory tree view UI widget.
     class InventoryTreeView : public QTreeView
     {
         Q_OBJECT

@@ -38,7 +38,7 @@ namespace DebugStats
     class TimeProfilerWindow;
     class ParticipantWindow;
 
-    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -79,7 +79,10 @@ namespace DebugStats
 
         /// Sends packet requesting kicking user out from the server.
         Console::CommandResult KickUser(const StringVector &params);
-
+        
+        /// Dumps J2K decoded textures to PNG images in the viewer working directory.
+        Console::CommandResult DumpTextures(const StringVector &params);
+        
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
 

@@ -20,35 +20,36 @@ namespace OpenALAudio
     typedef boost::shared_ptr<SoundSettings> SoundSettingsPtr;
 
     //! interface for modules
-    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterfaceImpl
-	{
+    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterface
+    {
     public:
-		OpenALAudioModule();
-		virtual ~OpenALAudioModule();
+        OpenALAudioModule();
+        virtual ~OpenALAudioModule();
 
-		virtual void Load();
-		virtual void Unload();
-		virtual void PreInitialize();
-		virtual void Initialize();
-		virtual void Uninitialize();
-		virtual void PostInitialize();
-		virtual void Update(f64 frametime);
+        virtual void Load();
+        virtual void Unload();
+        virtual void PreInitialize();
+        virtual void Initialize();
+        virtual void Uninitialize();
+        virtual void PostInitialize();
+        virtual void Update(f64 frametime);
 
-		MODULE_LOGGING_FUNCTIONS;
+        MODULE_LOGGING_FUNCTIONS;
 
-		//! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        //! returns name of this module. Needed for logging.
+        static const std::string &NameStatic() { return type_name_static_; }
 
-		static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Sound;
-      
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-                
+
     private:
-		SoundSystemPtr soundsystem_;
-		SoundSettingsPtr soundsettings_;
-				
-		event_category_id_t task_event_category_;
-		event_category_id_t asset_event_category_;
+        //! Type name of the module.
+        static std::string type_name_static_;
+
+        SoundSystemPtr soundsystem_;
+        SoundSettingsPtr soundsettings_;
+
+        event_category_id_t task_event_category_;
+        event_category_id_t asset_event_category_;
     };
 }
 

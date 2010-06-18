@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_OgreRenderingModule_PostProcessWidget_h
 #define incl_OgreRenderingModule_PostProcessWidget_h
 
@@ -27,13 +28,10 @@ namespace Environment
     public:
         //! Constructor.
         //! \param effects List of effect names
-        PostProcessWidget(QVector<QString> &effects);
+        explicit PostProcessWidget(QVector<QString> &effects);
 
         //! Destructor.
         virtual ~PostProcessWidget();
-
-        //! Widget adds itself to the scene
-        void AddSelfToScene(EnvironmentModule *env_module);
 
         //! Sets handler to handle the postprocess requests. Note that this class doesn't own the handler and is not responsible for deleting it
         void SetHandler(OgreRenderer::CompositionHandler *handler);

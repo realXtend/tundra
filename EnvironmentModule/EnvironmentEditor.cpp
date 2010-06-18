@@ -241,7 +241,7 @@ namespace Environment
         }
         editor_widget_ = loader.load(&file);
 
-        boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
             return;
 

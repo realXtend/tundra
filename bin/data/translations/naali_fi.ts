@@ -5,31 +5,31 @@
     <name>AvatarEditor</name>
     <message>
         <source>Avatar Editor</source>
-        <translation type="unfinished"></translation>
+        <translation>Hahmon muokkaus</translation>
     </message>
     <message>
         <source>Textures</source>
-        <translation type="unfinished">Tekstuurit</translation>
+        <translation>Tekstuurit</translation>
     </message>
     <message>
         <source>Attachments</source>
-        <translation type="unfinished"></translation>
+        <translation>Asusteet</translation>
     </message>
     <message>
         <source>New Avatar</source>
-        <translation type="unfinished"></translation>
+        <translation>Uusi hahmo</translation>
     </message>
     <message>
         <source>New Attach</source>
-        <translation type="unfinished"></translation>
+        <translation>Uusi asuste</translation>
     </message>
     <message>
         <source>Revert</source>
-        <translation type="unfinished">Kääntää</translation>
+        <translation>Peru</translation>
     </message>
     <message>
         <source>Save</source>
-        <translation type="unfinished">Tallenna</translation>
+        <translation>Tallenna</translation>
     </message>
 </context>
 <context>
@@ -193,6 +193,49 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Duplicate Drag</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CacheSettingsWidget</name>
+    <message>
+        <source>CacheSettingsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Asset Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Maximum size</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>mb</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Asset Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Asset cache will store all other resources but textures. Minimum size: 10 mb Maximum size: 9000 mb.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clear Texture Cache</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Cache only jpeg2000 textures</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture cache will store decoded textures to disc. This will speed up world loading. Default is to cache only j2p textures as they take the most time decoding. If above checkbox is unchecked youll cache also the more common fomats like jpg/png/bmp. Might be woth trying with slow PC. Minimum size: 20 mb Maximum size: 9000 mb.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -420,6 +463,29 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
+    <name>ECEditor::AttributeBrowser</name>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Edit XML...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add new component</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Delete component</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>ECEditor::ECEditorWindow</name>
     <message>
         <source>Create Component</source>
@@ -427,14 +493,6 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Component:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties &gt;</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Properties &lt;</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -450,20 +508,16 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cut</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Copy</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Paste</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>ECEditor</source>
         <comment>Entity-component Editor</comment>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hide entities</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1948,10 +2002,6 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Unfocused Window Ppacity</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>100 %</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1977,6 +2027,10 @@ QLabel {
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Unfocused Window Opacity</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

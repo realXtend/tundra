@@ -40,9 +40,29 @@ not here anymore to not mess the currently shared data with other comps"""
 
 class DoorHandler(DynamiccomponentHandler):
     GUINAME = "Door Handler"
+    inworld_inited = False #a cheap hackish substitute for some initing system
 
     def onChanged(self):
         ent = r.getEntity(self.comp.GetParentEntityId())
+
+        if not self.inworld_inited:
+            #if hasattr(self.comp, 'touchable')
+            try:
+                t = ent.touchable
+            except AttributeError:
+                print "no touchable in door? it doesn't persist yet? adding..", ent.id
+                print ent.createComponent("EC_Touchable")
+                t = ent.touchable
+            else:
+                print "touchable pre-existed in door."
+            t.connect('Clicked()', self.open)
+            t.connect('MouseHover()', self.hover)
+            self.inworld_inited = True
+
+        if self.proxywidget is None and self.widget is not None:
+            print "Door DynamicComponent handler registering to GUI"
+            self.registergui()
+
         data = self.comp.GetAttribute()
         print "GetAttr got:", data
         try:
@@ -70,6 +90,7 @@ class DoorHandler(DynamiccomponentHandler):
         self.forcepos = ent.placeable.Position
         
     def initgui(self):
+        #qt widget ui
         group = QGroupBox()
         box = QVBoxLayout(group)
 
@@ -85,6 +106,7 @@ class DoorHandler(DynamiccomponentHandler):
         self.forcepos = None
 
     def open(self):
+        print "open"
         #was when abusing float as a bool:
         #oldval = self.door.opened #comp.GetAttribute()
         #newval = 0 if oldval else 1
@@ -100,6 +122,18 @@ class DoorHandler(DynamiccomponentHandler):
         #\todo if has key
         self.door['locked'] = not self.door['locked']
         self.sync()
+
+    def hover(self):
+        import PythonQt
+        qapp = PythonQt.Qt.QApplication.instance()
+        import PythonQt.QtGui as gui
+        cursor = gui.QCursor()
+        #print cursor, cursor.shape()
+
+        ctype = 1 if self.door['opened'] else 2
+
+        cursor.setShape(ctype)    
+        qapp.setOverrideCursor(cursor)
 
     def sync(self):
         if self.comp is not None:

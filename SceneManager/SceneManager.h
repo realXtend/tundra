@@ -9,6 +9,7 @@
 #include "ComponentInterface.h"
 
 #include <QObject>
+#include <qvariant.h>
 
 namespace Scene
 {
@@ -47,6 +48,9 @@ namespace Scene
         //! Current global id for entities
         static uint gid_;
 
+    public slots:
+        QVariantList GetEntityIdsWithComponent(const QString &type_name);
+
     public:
         //! destructor
         ~SceneManager();
@@ -81,7 +85,8 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(), Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(),
+             Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
 
         //! Returns entity with the specified id
         /*!
@@ -103,9 +108,16 @@ namespace Scene
         //! Get the next free entity id. Can be used with CreateEntity().
         entity_id_t GetNextFreeId();
 
+        //! Returns iterator to the beginning of the entities.
         iterator begin() { return iterator(entities_.begin()); }
+
+        //! Returns iterator to the end of the entities.
         iterator end() { return iterator(entities_.end()); }
+
+        //! Returns constant iterator to the beginning of the entities.
         const_iterator begin() const { return const_iterator(entities_.begin()); }
+
+        //! Returns constant iterator to the end of the entities.
         const_iterator end() const { return const_iterator(entities_.end()); }
 
         //! Returns entity map for introspection purposes
@@ -134,6 +146,7 @@ namespace Scene
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
+            \note This is emitted before just before the component is removed.
          */
         void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
         //! Emit a notification of an entity having been created
@@ -150,10 +163,10 @@ namespace Scene
             \param change Type of change (local, from network...)
          */
         void EmitEntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
-        
+
     private:
         SceneManager &operator =(const SceneManager &other);
-        
+
         //! Entities in a map
         EntityMap entities_;
 
@@ -162,16 +175,18 @@ namespace Scene
 
         //! Name of the scene
         const std::string name_;
-        
+
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
         void ComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
         void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+
         //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
@@ -186,6 +201,7 @@ namespace Scene
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
         void EntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
+
         //! Signal when an entity deleted
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */

@@ -27,10 +27,15 @@
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
+#include "Renderer.h"
+#include "ResourceHandler.h"
+#include "OgreTextureResource.h"
 
 #include "EC_OpenSimPresence.h"
 
 #include <utility>
+
+#include <QCryptographicHash>
 
 #include "MemoryLeakCheck.h"
 
@@ -40,7 +45,7 @@ namespace DebugStats
 {
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterfaceImpl(NameStatic()),
+    ModuleInterface(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkStateEventCategory_(0),
@@ -86,12 +91,16 @@ void DebugStatsModule::PostInitialize()
         "Kicks user out from the server. Usage: \"kick(fullname)\"",
         Console::Bind(this, &DebugStatsModule::KickUser)));
 
+    RegisterConsoleCommand(Console::CreateCommand("dumptextures",
+        "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
+        Console::Bind(this, &DebugStatsModule::DumpTextures)));
+
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -120,7 +129,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -364,6 +373,70 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
 
     current_world_stream_->SendGodKickUserPacket(user_presence->agentId, "God doesn't want you here.");
 
+    return Console::ResultSuccess();
+}
+
+
+Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService
+        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (!renderer)
+        return Console::ResultFailure("No renderer");
+    
+    OgreRenderer::ResourceHandlerPtr res_handler = renderer->GetResourceHandler();
+    std::vector<Foundation::ResourcePtr> textures = res_handler->GetResources(OgreRenderer::OgreTextureResource::GetTypeStatic());
+    for (uint i = 0; i < textures.size(); ++i)
+    {
+        try
+        {
+            OgreRenderer::OgreTextureResource* tex_res = dynamic_cast<OgreRenderer::OgreTextureResource*>(textures[i].get());
+            if (tex_res)
+            {
+                Ogre::Texture* ogre_tex = tex_res->GetTexture().get();
+                if (ogre_tex)
+                {
+                    Ogre::Image new_image;
+                    
+                    // From Ogre 1.7 Texture::convertToImage()
+                    size_t numMips = 1;
+                    size_t dataSize = Ogre::Image::calculateSize(numMips,
+                        ogre_tex->getNumFaces(), ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat());
+                    void* pixData = OGRE_MALLOC(dataSize, Ogre::MEMCATEGORY_GENERAL);
+                    // if there are multiple faces and mipmaps we must pack them into the data
+                    // faces, then mips
+                    void* currentPixData = pixData;
+                    for (size_t face = 0; face < ogre_tex->getNumFaces(); ++face)
+                    {
+                        for (size_t mip = 0; mip < numMips; ++mip)
+                        {
+                            size_t mipDataSize = Ogre::PixelUtil::getMemorySize(ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat());
+                            Ogre::PixelBox pixBox(ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat(), currentPixData);
+                            ogre_tex->getBuffer(face, mip)->blitToMemory(pixBox);
+                            currentPixData = (void*)((char*)currentPixData + mipDataSize);
+                        }
+                    }
+                    // load, and tell Image to delete the memory when it's done.
+                    new_image.loadDynamicImage((Ogre::uchar*)pixData, ogre_tex->getWidth(), ogre_tex->getHeight(), ogre_tex->getDepth(), ogre_tex->getFormat(), true, 
+                        ogre_tex->getNumFaces(), numMips - 1);
+                    
+                    // Hash the asset ID to generate filename, like assetcache does
+                    const std::string& id = tex_res->GetId();
+                    QCryptographicHash md5_engine_(QCryptographicHash::Md5);
+                    md5_engine_.addData(id.c_str(), id.size());
+                    QString md5_hash(md5_engine_.result().toHex());
+                    md5_engine_.reset();
+                    std::string hashed_name = md5_hash.toStdString();
+                    
+                    new_image.save(hashed_name + ".png");
+                }
+            }
+        }
+        catch (...)
+        {
+        }
+    }
+    
     return Console::ResultSuccess();
 }
 

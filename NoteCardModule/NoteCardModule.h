@@ -13,7 +13,7 @@ namespace NoteCard
     //! Notecard module
     /*! Displays a manager window which can be used to create/delete
      */
-    class NoteCardModule : public Foundation::ModuleInterfaceImpl
+    class NoteCardModule : public Foundation::ModuleInterface
     {
     public:
         //! Constructor.

@@ -1,6 +1,6 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 
 #include "ProtocolModuleOpenSim.h"
 #include "OpenSimWorldSession.h"
@@ -12,7 +12,7 @@ namespace OpenSimProtocol
     OpenSimWorldSession::OpenSimWorldSession(Foundation::Framework *framework)
         : framework_(framework), credentials_(0), serverEntryPointUrl_(0)
     {
-        networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>(Foundation::Module::MT_OpenSimProtocol);
+        networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
     }
 
     OpenSimWorldSession::~OpenSimWorldSession()
@@ -78,7 +78,7 @@ namespace OpenSimProtocol
     }
 
 
-    QUrl OpenSimWorldSession::ValidateUrl(const QString urlString, const UrlType urlType)
+    QUrl OpenSimWorldSession::ValidateUrl(const QString &urlString, const UrlType urlType)
     {
         QUrl returnUrl(urlString);
         switch (urlType)

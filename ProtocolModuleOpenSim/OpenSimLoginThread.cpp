@@ -3,7 +3,7 @@
 /// @file OpenSimLoginThread.cpp
 /// @brief XML-RPC login worker.
 
-//#include "StableHeaders.h"
+#include "StableHeaders.h"
 #include "OpenSimLoginThread.h"
 #include "ProtocolModuleOpenSim.h"
 #include "XmlRpcEpi.h"
@@ -211,7 +211,7 @@ namespace OpenSimProtocol
             }            
 
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
-            call.AddMember("channel", QString("realXtend").toStdString());
+            call.AddMember("channel", QString(APPLICATION_NAME).toStdString());
             call.AddMember("platform", GetPlatform());
             call.AddMember("mac", mac_hash);
             call.AddMember("id0", id0_hash);

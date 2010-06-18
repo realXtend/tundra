@@ -29,7 +29,7 @@ namespace OgreRenderer
     */
 
     //! A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterfaceImpl
+    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterface
     {
     public:
         OgreRenderingModule();
@@ -49,14 +49,15 @@ namespace OgreRenderer
         MODULE_LOGGING_FUNCTIONS;
 
         //! returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
+        static const std::string &NameStatic() { return type_name_static_; }
 
         //! callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
 
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_Renderer;
-
     private:
+        //! Type name of the module.
+        static std::string type_name_static_;
+
         //! renderer
         RendererPtr renderer_;
 

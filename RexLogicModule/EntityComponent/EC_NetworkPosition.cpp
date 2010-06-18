@@ -6,11 +6,11 @@
 
 namespace RexLogic
 {
-    EC_NetworkPosition::EC_NetworkPosition(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()),
+    EC_NetworkPosition::EC_NetworkPosition(Foundation::ModuleInterface* module) :
         time_since_update_(0.0),
         time_since_prev_update_(0.001),
         first_update(true)
-    {        
+    {
     }
 
     EC_NetworkPosition::~EC_NetworkPosition()
@@ -18,7 +18,7 @@ namespace RexLogic
     }
 
     void EC_NetworkPosition::Updated()
-    {                   
+    {
         // See if updated many times on the same frame, don't "update" in that case
         if (time_since_update_ != 0.0)
         {     

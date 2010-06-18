@@ -133,19 +133,17 @@ namespace Foundation
         for(size_t i = 0; i < modules.size(); ++i)
             for(size_t j = i+1; j < modules.size(); ++j)
                 if (modules[j].Precedes(modules[i]))
-                {
                     Foundation::RootLogCritical(std::string("A cyclic dependency found in module dependencies! Could not satisfy dependency ") + 
                         modules[j].ToString() + " < " + modules[i].ToString() + ". Continuing nevertheless.");
-                }
     }
 
-    const ModuleManager::ModuleLoadDescription *ModuleManager::FindModuleLoadDescriptionWithEntry(const std::vector<ModuleLoadDescription> &modules, const std::string &entryName)
+    const ModuleManager::ModuleLoadDescription *ModuleManager::FindModuleLoadDescriptionWithEntry(
+        const std::vector<ModuleLoadDescription> &modules, const std::string &entryName)
     {
         for(size_t i = 0; i < modules.size(); ++i)
             for(size_t j = 0; j < modules[i].moduleNames.size(); ++j)
                 if (modules[i].moduleNames[j] == entryName)
                     return &modules[i];
-
         return 0;
     }
 
@@ -156,10 +154,8 @@ namespace Foundation
             {
                 const ModuleLoadDescription *dependee = FindModuleLoadDescriptionWithEntry(modules, modules[i].dependencies[j]);
                 if (!dependee)
-                {
                     Foundation::RootLogCritical(std::string("Could not satisfy dependency ") + 
                         modules[i].ToString() + " -> " + modules[i].dependencies[j] + ". Trying to load without.");
-                }
             }
     }
 
@@ -197,29 +193,25 @@ namespace Foundation
         // Finally, load up all modules. The module description list is now sorted in a topological order, so that the dependencies
         // are satisfied when traversing begin()->end().
         for(std::vector<ModuleLoadDescription>::iterator iter = moduleDescriptions.begin(); iter != moduleDescriptions.end(); ++iter)
-        {
             try
             {
                 LoadModule(iter->moduleDescFilename.native_directory_string(), iter->moduleNames);
-            } catch (std::exception &e) // may not be fatal, depending on which module failed
+            }
+            catch (std::exception &e) // may not be fatal, depending on which module failed
             {
                 Foundation::RootLogError(std::string("Trying to load module ") + iter->ToString() + " threw an exception: " + e.what());
             }
-        }
     }
 
-    /// @return True if this module directly depends on the module rhs, i.e. if this module absolutely needs to be loaded before rhs.
     bool ModuleManager::ModuleLoadDescription::Precedes(const ModuleLoadDescription &rhs) const
     {
         for(size_t i = 0; i < rhs.dependencies.size(); ++i)
             for(size_t j = 0; j < moduleNames.size(); ++j)
                 if (rhs.dependencies[i] == moduleNames[j])
                     return true;
-
         return false;
     }
 
-    /// @return A readable string presentation of the given module description.
     std::string ModuleManager::ModuleLoadDescription::ToString() const
     {
         std::stringstream ss;
@@ -236,8 +228,6 @@ namespace Foundation
         return ss.str();
     }
 
-    /// Parses the module xml file stored in the file pointed by the parameter path. Adds a new module load description structure to the end of the vector out,
-    /// as well as adding into relativePathDependencyAdditions any path dependencies needed by that module.
     void ModuleManager::ParseModuleXMLFile(const fs::path &path, std::vector<ModuleLoadDescription> &out, StringVector &relativePathDependencyAdditions)
     {
         assert(path.has_filename());
@@ -266,14 +256,12 @@ namespace Foundation
             config->keys(keys);
 
             for(Poco::Util::AbstractConfiguration::Keys::const_iterator it = keys.begin(); it != keys.end(); ++it)
-            {
                 if (it->find("dependency_dir") != std::string::npos)
                     relativePathDependencyAdditions.push_back(config->getString(*it));
                 else if (it->find("dependency") != std::string::npos)
                     dependencies.push_back(config->getString(*it));
                 else if (it->find("entry") != std::string::npos)
                     entries.push_back(config->getString(*it));
-            }
         }
         catch(const std::exception &e)
         {
@@ -294,7 +282,8 @@ namespace Foundation
         // In this case, try to guess the module name from the name of the XML file.
         if (entries.empty())
         {
-            Foundation::RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries! Guessing the shared library contains a module with the same name as the module filename.");
+            Foundation::RootLogWarning(std::string("Shared library XML file ") + path.string() + " did not contain any module entries!"
+                "Guessing the shared library contains a module with the same name as the module filename.");
             entries.push_back(modulePath.filename());
         }
 
@@ -343,7 +332,26 @@ namespace Foundation
     void ModuleManager::UpdateModules(f64 frametime)
     {
         for(size_t i = 0; i < modules_.size(); ++i)
-            modules_[i].module_->Update(frametime);
+        {
+            try
+            {
+                modules_[i].module_->Update(frametime);
+            }
+            catch(const std::exception &e)
+            {
+                std::cout << "UpdateModules caught an exception while updating module " << modules_[i].module_->Name()
+                    << ": " << (e.what() ? e.what() : "(null)") << std::endl;
+                RootLogCritical(std::string("UpdateModules caught an exception while updating module " + modules_[i].module_->Name()
+                    + ": " + (e.what() ? e.what() : "(null)")));
+                throw;
+            }
+            catch(...)
+            {
+                std::cout << "UpdateModules caught an unknown exception while updating module " << modules_[i].module_->Name() << std::endl;
+                RootLogCritical(std::string("UpdateModules caught an unknown exception while updating module " + modules_[i].module_->Name()));
+                throw;
+            }
+        }
     }
 
     bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
@@ -388,50 +396,43 @@ namespace Foundation
         //!       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
         // first initialize dependencies
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
                 current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->PreInitializeInternal();
             }
-        }
+
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].entry_ == module)
                 modules_[i].module_->PreInitializeInternal();
-        }
+
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
                 current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->InitializeInternal();
             }
-        }
+
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].entry_ == module)
                 modules_[i].module_->InitializeInternal();
-        }
+
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
                 current_modules.begin(),current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
                 modules_[i].module_->PostInitializeInternal();
             }
-        }
+
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-        {
             if (modules_[i].entry_ == module)
             {
                 modules_[i].module_->PostInitializeInternal();
                 return true;
             }
-        }
 
         return false;
         
@@ -439,8 +440,7 @@ namespace Foundation
 
     bool ModuleManager::UnloadModuleByName(const std::string &module)
     {
-        for ( ModuleVector::iterator it = modules_.begin(); it != modules_.end(); ++it)
-        {
+        for(ModuleVector::iterator it = modules_.begin(); it != modules_.end(); ++it)
             if (it->module_->Name() == module)
             {
                 UninitializeModule(it->module_.get());
@@ -448,7 +448,6 @@ namespace Foundation
                 modules_.erase(it);
                 return true;
             }
-        }
 
         return false;
     }
@@ -472,7 +471,6 @@ namespace Foundation
 
         // If we haven't loaded this library yet, load it up.
         if (!library)
-        {
             try
             {
                 library = Module::SharedLibraryPtr(new Module::SharedLibrary(path));
@@ -483,14 +481,13 @@ namespace Foundation
                 ///\todo This could be made optional, but no real hurry since profiling is included in release versions as well.
                 SetProfilerFunc setProfiler = (SetProfilerFunc) library->sl_.getSymbol("SetProfiler");
                 setProfiler(&framework_->GetProfiler());
-            } 
+            }
             catch (Poco::Exception &e)
             {
                 Foundation::RootLogError(e.displayText());
                 Foundation::RootLogError("Failed to load dynamic library: " + path);
                 return;
             }
-        }
 
         /// Load each module in this shared library.
         for(StringVector::const_iterator it = entries.begin(); it != entries.end(); ++it)
@@ -620,7 +617,6 @@ namespace Foundation
         for(ModuleVector::const_iterator it = modules_.begin(); it != modules_.end(); ++it)
             if (it->module_->Name() == module->Name())
                 return true;
-
         return false;
     }
 
@@ -638,8 +634,7 @@ namespace Foundation
 
         fs::recursive_directory_iterator iter( rel_path );
         fs::recursive_directory_iterator end_iter;
-        for (; iter != end_iter; ++iter )
-        {
+        for(; iter != end_iter; ++iter )
             if (fs::is_regular_file(iter->status()))
             {
                 std::string ext = iter->path().extension();
@@ -647,7 +642,6 @@ namespace Foundation
                 if (ext == ".xml")
                     files->push_back(iter->path().string());
             }
-        }
 
         return files;
     }
@@ -657,10 +651,9 @@ namespace Foundation
         if (all_additions.size() == 0)
             return;
 
-        // Do this in windows only for now,
-        // untill linux crash caused by this is resolved
+        ///\todo    Do this in windows only for now,
+        ///         until linux crash caused by this is resolved
 #if defined(WIN32)
-
         std::string path = Poco::Environment::get("path", "");
         std::string cwd = Poco::Path::current();
         char separator = Poco::Path::pathSeparator();

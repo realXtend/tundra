@@ -165,8 +165,7 @@ void EC_NoteCard::UpdateWidget()
 {
     if (!widget_)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
         {
             LogError("Failed to acquire UiModule pointer");

@@ -140,7 +140,9 @@ namespace
 
 namespace PythonScript
 {
-    PythonScriptModule::PythonScriptModule() : ModuleInterfaceImpl(type_static_)
+    std::string PythonScriptModule::type_name_static_ = "PythonScript";
+
+    PythonScriptModule::PythonScriptModule() : ModuleInterface(type_name_static_)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
@@ -172,6 +174,9 @@ namespace PythonScript
     void PythonScriptModule::PostInitialize()
     {
         em_ = framework_->GetEventManager();
+        
+        // Reprioritize to be able to override behaviour
+        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
@@ -474,7 +479,7 @@ namespace PythonScript
     //    v2 = Vector3df();
     //    
     //    RexLogic::RexLogicModule *rexlogic_;
-    //    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    //    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
 
     //    rexlogic_->GetServerConnection()->SendChatFromViewerPacket("x");
 
@@ -662,7 +667,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     //move decl to .h and getting to Initialize (see NetTEstLogicModule::Initialize)
     //if this kind of usage, i.e. getting the logic module for the api, is to remain.
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
 
     rexlogic_->GetServerConnection()->SendChatFromViewerPacket(msg);
     //rexlogic_->GetServerConnection()->IsConnected();
@@ -677,7 +682,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
     float x, y, z, w;
 
     if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
@@ -770,7 +775,7 @@ static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 static PyObject* SwitchCameraState(PyObject *self)
 {
     Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
     rexlogic_->SwitchCameraState();
     Py_RETURN_NONE;
 }
@@ -861,7 +866,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         //PythonScript::self()->LogInfo("Getting prim with UUID:" + ruuid.ToString());
@@ -908,7 +913,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     
     // Get RexLogic and Scene
     RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
 
     if (!scene) 
@@ -951,10 +956,10 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
                 if (!custom_object_ptr)
                     continue;
-                if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())
+                if (!custom_object_ptr->GetEntity())
                     continue;
-                RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
-                custom_object_ptr->CommitChanges();
+                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1007,7 +1012,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
         return NULL;
 
     // Get entity pointer
-    RexLogic::RexLogicModule *rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    RexLogic::RexLogicModule *rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity((entity_id_t)ent_id_int);
     
     if (!primentity) 
@@ -1165,7 +1170,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     texture_uuid.FromString(std::string(uuidstr));
 
     RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
 
     Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
     if (!primentity) 
@@ -1195,10 +1200,10 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
             custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
             if (!custom_object_ptr)
                 Py_RETURN_NONE;
-            if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())                
+            if (!custom_object_ptr->GetEntity())
                 Py_RETURN_NONE;
-            RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
-            custom_object_ptr->CommitChanges();
+            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+            custom_object_ptr->CommitChanges(manual);
         }
         else
             Py_RETURN_NONE;
@@ -1256,6 +1261,15 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     }
 
     Py_RETURN_NONE;
+}
+
+PyObject* GetApplicationDataDirectory(PyObject *self)
+{
+    PythonScriptModule* module = PythonScriptModule::GetInstance();
+    std::string cache_path = module->GetFramework()->GetPlatform()->GetApplicationDataDirectory();
+    //PyString_New
+    return PyString_FromString(cache_path.c_str());
+    //return QString(cache_path.c_str());
 }
 
 //returns the internal Entity that's now a QObject, 
@@ -1391,7 +1405,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
@@ -1421,7 +1435,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
     Real yaw, pitch;
 
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
@@ -1470,7 +1484,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
     newyaw = (Real) y;
 
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         rexlogic_->GetServerConnection()->IsConnected();
@@ -1543,9 +1557,10 @@ PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
     UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("", type);
     return PythonScriptModule::GetInstance()->WrapQObject(prop);;
 }
+
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     
     PyObject* pywidget;
     PyObject* pyuiprops;
@@ -1604,6 +1619,17 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         map[UiDefines::IconPressed] = base_url + "edbutton_LSCENE_click.png";
         uiproperty.SetMenuNodeStyleMap(map);
     }
+    if (uiproperty.GetWidgetName() == "Estate Management")
+    {
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::TextNormal] = base_url + "edbutton_ESMNGtxt_normal.png";
+        map[UiDefines::TextHover] = base_url + "edbutton_ESMNGtxt_hover.png";
+        map[UiDefines::TextPressed] = base_url + "edbutton_ESMNGtxt_click.png";
+        map[UiDefines::IconNormal] = base_url + "edbutton_ESMNG_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_ESMNG_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_ESMNG_click.png";
+        uiproperty.SetMenuNodeStyleMap(map);
+    }
 
     UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
     return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);
@@ -1623,7 +1649,7 @@ PyObject* GetPropertyEditor(PyObject *self)
 
 PyObject* GetUiSceneManager(PyObject *self)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
     // If this occurs, we're most probably operating in headless mode.
     if (ui_module.get() == 0)
@@ -1643,7 +1669,7 @@ PyObject* GetUIView(PyObject *self)
 PyObject* GetRexLogic(PyObject *self)
 {
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
         return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_);
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
@@ -1655,7 +1681,7 @@ PyObject* GetServerConnection(PyObject *self)
 {
     ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
         return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_->GetServerConnection().get());
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
@@ -1666,7 +1692,7 @@ PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
 {
     ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         float start_x, start_y, start_z;
@@ -1705,7 +1731,7 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 
     ent_id = (entity_id_t) ent_id_int;
 
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         rexlogic_->SendRexPrimData(ent_id); //py_ent->ent_id);
@@ -1725,7 +1751,7 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
 PyObject* GetUserAvatarId(PyObject* self)
 {
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         entity_id_t id = rexlogic_->GetUserAvatarId();
@@ -1738,10 +1764,12 @@ PyObject* GetUserAvatarId(PyObject* self)
 PyObject* GetCameraId(PyObject* self)
 {
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         Scene::EntityPtr camentptr = rexlogic_->GetCameraEntity();
+        if (!camentptr)
+          Py_RETURN_NONE;
         entity_id_t id = camentptr->GetId();
         return Py_BuildValue("I", id);
     }
@@ -1753,7 +1781,7 @@ PyObject* GetCameraUp(PyObject *self)
 {
     Vector3df up;
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         up = rexlogic_->GetCameraUp();
@@ -1766,7 +1794,7 @@ PyObject* GetCameraRight(PyObject *self)
 {
     Vector3df right;
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         right = rexlogic_->GetCameraRight();
@@ -1778,7 +1806,7 @@ PyObject* GetCameraRight(PyObject *self)
 PyObject* GetCameraFOV(PyObject *self) 
 {
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         float fovy = rexlogic_->GetCameraFOV();
@@ -1791,7 +1819,7 @@ PyObject* GetCameraPosition(PyObject *self)
 {
     Vector3df pos;
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         pos = rexlogic_->GetCameraPosition();
@@ -1803,7 +1831,7 @@ PyObject* GetCameraPosition(PyObject *self)
 PyObject* GetScreenSize(PyObject *self) 
 {
     RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
     if (rexlogic_)
     {
         float width = rexlogic_->GetCameraViewportWidth();
@@ -1872,7 +1900,7 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
     qserverAddressWithPort = QString(serverAddressWithPort);
 
     framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
     rexlogic_->StartLoginOpensim(qfirstAndLast, qpassword, qserverAddressWithPort);
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     //if (renderer){
@@ -1892,7 +1920,7 @@ PyObject* Logout(PyObject *self)
     RexLogic::RexLogicModule *rexlogic_;
 
     framework_ = PythonScript::self()->GetFramework();
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
     rexlogic_->LogoutAndDeleteWorld();
 
     Py_RETURN_NONE;
@@ -2092,6 +2120,9 @@ static PyMethodDef EmbMethods[] = {
     {"getSubmeshesWithTexture", (PyCFunction)GetSubmeshesWithTexture, METH_VARARGS, 
     "Find the submeshes in this entity that use the given texture, if any. Parameters: entity id, texture uuid"},
     
+    {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
+    "Get application data directory."},
+
     {NULL, NULL, 0, NULL}
 };
 

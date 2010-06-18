@@ -1,19 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ConsoleManager.h"
+#include "ConsoleModule.h"
 #include "ConsoleEvents.h"
 #include "ModuleInterface.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
+#include "RenderServiceInterface.h"
 
-#include <RenderServiceInterface.h>
+#include "MemoryLeakCheck.h"
 
 namespace Console
 {
     ConsoleManager::ConsoleManager(Foundation::ModuleInterface *parent) :
-        ui_initialized_(0),
+        ui_initialized_(false),
         console_channel_(new ConsoleChannel(this)),
         log_listener_(new LogListener(this))
     {
@@ -23,18 +27,20 @@ namespace Console
         framework_->AddLogChannel(console_channel_.get());
         console_category_id_ = framework_->GetEventManager()->RegisterEventCategory("Console");
 
-        boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->SubscribeLogListener(log_listener_);
+        else
+            ConsoleModule::LogWarning("ConsoleManager couldn't acquite renderer service: can't subscribe to renderer log listener.");
     }
 
     ConsoleManager::~ConsoleManager()
     {
-        boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-            framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->UnsubscribeLogListener(log_listener_);
+        else
+            ConsoleModule::LogWarning("ConsoleManager couldn't acquite renderer service: can't unsubscribe renderer log listener.");
 
         framework_->RemoveLogChannel(console_channel_.get());
     }

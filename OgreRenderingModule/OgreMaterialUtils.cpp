@@ -1,6 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-/// @file OgreMaterialUtils.cpp
-/// Contains some common methods for 
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreMaterialUtils.cpp
+ *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
+ */
 
 #include "StableHeaders.h"
 #include "OgreMaterialUtils.h"
@@ -70,6 +73,14 @@ namespace OgreRenderer
         
         return MaterialSuffix[variation];
     }
+    
+    uint GetMaterialVariation(const std::string& suffix)
+    {
+        for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
+            if (suffix == MaterialSuffix[i])
+                return i;
+        return 0;
+    }
 
     Ogre::MaterialPtr CloneMaterial(const std::string& sourceMaterialName, const std::string &newName)
     {
@@ -116,7 +127,64 @@ namespace OgreRenderer
         return material;
     }
 
-    void CreateLegacyMaterials(const std::string& texture_name, bool update)
+    Ogre::MaterialPtr GetOrCreateLegacyMaterial(const std::string& texture_name, const std::string& suffix)
+    {
+        uint variation = GetMaterialVariation(suffix);
+        return GetOrCreateLegacyMaterial(texture_name, variation);
+    }
+    
+    Ogre::MaterialPtr GetOrCreateLegacyMaterial(const std::string& texture_name, uint variation)
+    {
+        if (variation >= MAX_MATERIAL_VARIATIONS)
+        {
+            OgreRenderingModule::LogWarning("Requested suffix for non-existing material variation " + ToString<uint>(variation));
+            variation = 0;
+        }
+        const std::string& suffix = MaterialSuffix[variation];
+        
+        Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        
+        std::string material_name = texture_name + suffix;
+        Ogre::MaterialPtr material = mm.getByName(material_name);
+        
+        if (!material.get())
+        {
+            material = mm.create(material_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            assert(material.get());
+        }
+        else
+            return material;
+        
+        Ogre::TexturePtr tex = tm.getByName(texture_name);
+        bool has_alpha = false;
+        if (!tex.isNull())
+        {
+            // As far as the legacy materials are concerned, DXT1 is not alpha
+            if (tex->getFormat() == Ogre::PF_DXT1)
+                has_alpha = false;
+            else if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
+                has_alpha = true;
+        }
+        
+        Ogre::MaterialPtr base_material;
+        if (!has_alpha)
+            base_material = mm.getByName(BaseMaterials[variation]);
+        else
+            base_material = mm.getByName(AlphaBaseMaterials[variation]);
+        if (!base_material.get())
+        {
+            OgreRenderingModule::LogError("Could not find " + MaterialSuffix[variation] + " base material for " + texture_name);
+            return Ogre::MaterialPtr();
+        }
+        
+        base_material->copyDetailsTo(material);
+        SetTextureUnitOnMaterial(material, texture_name, 0);
+        
+        return material;
+    }
+    
+    void UpdateLegacyMaterials(const std::string& texture_name)
     {
         Ogre::TextureManager &tm = Ogre::TextureManager::getSingleton();
         Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
@@ -124,40 +192,28 @@ namespace OgreRenderer
         Ogre::TexturePtr tex = tm.getByName(texture_name);
         bool has_alpha = false;
         if (!tex.isNull())
-        {
             if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
                 has_alpha = true;
-        }
-        
-        // Early out: if texture does not yet exist and materials have already been created once
-        if (((tex.isNull()) || (!update)) && (!mm.getByName(texture_name).isNull()))
-            return;
-        
+
         for (uint i = 0; i < MAX_MATERIAL_VARIATIONS; ++i)
         {
-            const std::string& base_material_name = BaseMaterials[i];
-            const std::string& alpha_base_material_name = AlphaBaseMaterials[i];
-            
             std::string material_name = texture_name + MaterialSuffix[i];
             Ogre::MaterialPtr material = mm.getByName(material_name);
-
+            
             if (!material.get())
-            {
-                material = mm.create(material_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
-                assert(material.get());
-            }
+                continue;
             
             Ogre::MaterialPtr base_material;
             if (!has_alpha)
-                base_material = mm.getByName(base_material_name);
+                base_material = mm.getByName(BaseMaterials[i]);
             else
-                base_material = mm.getByName(alpha_base_material_name);
+                base_material = mm.getByName(AlphaBaseMaterials[i]);
             if (!base_material.get())
             {
                 OgreRenderingModule::LogError("Could not find " + MaterialSuffix[i] + " base material for " + texture_name);
-                return;
+                continue;
             }
-
+            
             base_material->copyDetailsTo(material);
             SetTextureUnitOnMaterial(material, texture_name, 0);
         }
@@ -301,5 +357,20 @@ namespace OgreRenderer
                 OgreRenderingModule::LogDebug("Failed to remove Ogre material:" + std::string(e.what()));
             }
         }
+    }
+
+    void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)
+    {
+        Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
+        Ogre::MaterialPtr material = mm.getByName(materialName);
+        if (material.get()) // The given material already exists, so no need to create it again.
+            return;
+
+        material = mm.getByName("SolidAmbient");
+        if (!material.get())
+            return;
+
+        Ogre::MaterialPtr newMaterial = material->clone(materialName);
+        newMaterial->setAmbient(r, g, b);
     }
 }

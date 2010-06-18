@@ -3,19 +3,17 @@
 #include "StableHeaders.h"
 #include "EC_Terrain.h"
 
-#include <Ogre.h>
 #include "Renderer.h"
 #include "ModuleInterface.h"
 #include "ServiceManager.h"
 
+#include <Ogre.h>
+
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
-    framework_(module->GetFramework())
+EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module)
 {
-    assert(framework_);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -25,10 +23,11 @@ EC_Terrain::~EC_Terrain()
 
 void EC_Terrain::Destroy()
 {
-    assert(framework_);
+    assert(GetFramework());
+    if (!GetFramework())
+        return;
 
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>().lock();
     if (!renderer) // Oops! Inconvenient dtor order - can't delete our own stuff since we can't get an instance to the owner.
         return;
 

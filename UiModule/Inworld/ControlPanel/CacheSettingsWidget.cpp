@@ -37,7 +37,7 @@ namespace CoreUi
         int default_assets_max_size = 300*1024*1024;
 
         // Init config file if file/segments doesent exist
-        QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", "configuration/CacheSettings");
+        QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CacheSettings");
         QString segment = "AssetCache";
         QFile config_file(cache_config.fileName());
         if (!config_file.exists())
@@ -122,7 +122,7 @@ namespace CoreUi
         if (new_asset_cache_limit != current_assets_max_size_)
         {
             current_assets_max_size_ = new_asset_cache_limit;
-            QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", "configuration/CacheSettings");
+            QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CacheSettings");
             cache_config.beginGroup("AssetCache");
             cache_config.setValue("MaxSize", current_assets_max_size_);
             cache_config.endGroup();
@@ -140,7 +140,7 @@ namespace CoreUi
             current_textures_cache_everything_ = new_cache_evertything;
             current_textures_max_size_ = new_texture_cache_limit;
 
-            QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", "configuration/CacheSettings");
+            QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CacheSettings");
             cache_config.beginGroup("TextureCache");
             cache_config.setValue("CacheEverything", current_textures_cache_everything_);
             cache_config.setValue("MaxSize", current_textures_max_size_);

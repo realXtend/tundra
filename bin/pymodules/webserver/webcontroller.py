@@ -5,6 +5,7 @@ import datetime #showing human readable time on render page
 import os
 
 import rexviewer as r
+import naali
 
 try:
     import circuits
@@ -64,6 +65,7 @@ relhtml = """\
 abshtml = open(OWNPATH + "webui.html").read()
 
 def save_screenshot():
+    naali.renderer.Render()
     imgname = "image-%s.png" % time.time()
     r.takeScreenshot(SHOTPATH, imgname)
     imgurl = imgname #base is added when the server has a separate http for serving the image
@@ -134,6 +136,23 @@ class WebController(Controller):
                           pos.x(), pos.y(), pos.z()
                           #ort.scalar(), ort.x(), ort.y(), ort.z(),
                           )
+
+    def renderimg(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
+        camid = r.getCameraId()
+        cament = r.getEntity(camid)
+        p = cament.placeable
+
+        if camposx is not None:
+            pos = Vec(*(float(v) for v in [camposx, camposy, camposz]))
+            p.Position = pos
+
+        if camortx is not None:
+            ort = Quat(*(float(v) for v in [camortw, camortx, camorty, camortz]))
+            p.Orientation = ort
+
+        imgurl = save_screenshot()
+        #return imgurl
+        return self.serve_file(SHOTPATH + imgurl)
         
     def render1(self, campos=None, camort=None):
         timestr = datetime.datetime.today().isoformat()

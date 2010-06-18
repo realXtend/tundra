@@ -11,17 +11,12 @@
 namespace OgreRenderer
 {
     EC_OgreCustomObject::EC_OgreCustomObject(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
-        object_(0),
         entity_(0),
         attached_(false),
         cast_shadows_(false),
         draw_distance_(0.0f)
     {
-        RendererPtr renderer = renderer_.lock();
-        Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();      
-        object_ = scene_mgr->createManualObject(renderer->GetUniqueObjectName());
     }
     
     EC_OgreCustomObject::~EC_OgreCustomObject()
@@ -31,12 +26,6 @@ namespace OgreRenderer
             
         Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
         DestroyEntity();
-
-        if (object_)
-        {
-            scene_mgr->destroyManualObject(object_);
-            object_ = 0;
-        }
     }
     
     void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable)
@@ -52,22 +41,25 @@ namespace OgreRenderer
         AttachEntity();
     }
     
-    bool EC_OgreCustomObject::CommitChanges()
+    bool EC_OgreCustomObject::CommitChanges(Ogre::ManualObject* object)
     {
+        if (!object)
+            return false;
+        
         if (renderer_.expired())
             return false;
         RendererPtr renderer = renderer_.lock();
                 
         DestroyEntity();
         
-        if (!object_->getNumSections())
+        if (!object->getNumSections())
             return true;
             
         try
         {
             std::string mesh_name = renderer->GetUniqueObjectName();
-            object_->convertToMesh(mesh_name);
-            object_->clear();
+            object->convertToMesh(mesh_name);
+            object->clear();
         
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
 

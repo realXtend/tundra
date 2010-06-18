@@ -39,7 +39,7 @@ namespace RexLogic
 
     void ScriptDialogHandler::ShowDialog(ScriptDialogRequest& request)
     {
-        UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
         {
             RexLogicModule::LogError("Cannot show ScriptDialogWidget, ui_module pointer not valid.");

@@ -4,78 +4,73 @@
 #define incl_Asset_RexAssetMetadata_h
 
 #include "AssetInterface.h"
-#include "RexUUID.h"
 
 namespace Asset
 {
-	//! Implementation of asset metadata 
-	//! 
-	//!
-	class RexAssetMetadata : public Foundation::AssetMetadataInterface
-	{
-	public:
-		RexAssetMetadata();
+    //! Asset metadata for reX assets.
+    class RexAssetMetadata : public Foundation::AssetMetadataInterface
+    {
+    public:
+        RexAssetMetadata();
 
-		//! Returns asset id
-		virtual const std::string& GetId() const;
+        //! AssetMetadataInterface override
+        virtual const std::string& GetId() const;
 
-		//! Returns asset name
-		virtual const std::string& GetName() const;
+        //! AssetMetadataInterface override
+        virtual const std::string& GetName() const;
 
-		//! Returns description of asset
-		virtual const std::string& GetDescription() const;
+        //! AssetMetadataInterface override
+        virtual const std::string& GetDescription() const;
 
-		//! Returns creation date of asset
-		//!   format: unix time stamp is now used
-		//!   \todo better date/time type should be used
-		virtual const int GetCreationDate() const;
+        //! AssetMetadataInterface override
+        virtual const time_t  GetCreationDate() const;
 
-		//! Returns content type
-		virtual const std::string& GetContentType() const;
+        //! AssetMetadataInterface override
+        virtual std::string GetCreationDateString() const;
 
-		//! Return SHA1 hash of asset data
-		//! Format: Hexadecimal (40 char length string)
-		//! /note NOT IMPLEMENTED 
-		virtual std::string GetHashSHA1() const; 
+        //! AssetMetadataInterface override
+        virtual const std::string& GetContentType() const;
 
-		//! Return true id asset is temporary
-		virtual bool IsTemporary() const;
+        //! AssetMetadataInterface override
+        virtual std::string GetHashSHA1() const; 
 
-		//! Return methods as <method, url> map 
-		virtual const Foundation::MethodMap& GetMethods() const;
+        //! AssetMetadataInterface override
+        virtual bool IsTemporary() const;
 
-		//! Parse json encoded metadata 
-		virtual void DesesrializeFromJSON(std::string data);
+        //! AssetMetadataInterface override
+        virtual const Foundation::MethodMap& GetMethods() const;
 
-	private:
-		//! Asset id eg. uuid
-		std::string id_;
+        //! AssetMetadataInterface override
+        virtual void DesesrializeFromJSON(std::string data);
 
-		//! human readable asset name
-		std::string name_;
+    private:
+        //! Asset id eg. uuid
+        std::string id_;
 
-		//! human readable description
-		std::string description_;
+        //! human readable asset name
+        std::string name_;
 
-		//! unix time stamp
-		int creation_date_;
+        //! human readable description
+        std::string description_;
 
-		//! content type 
-		std::string content_type_;
+        //! unix time stamp
+        time_t creation_date_;
 
-		//! sha1 hash
-		u8 hash_sha1_[20];
+        //! content type 
+        std::string content_type_;
 
-		//! true if asset is temporary
-		bool temporary_;
+        //! sha1 hash
+        u8 hash_sha1_[20];
 
-		//! methods as <method, url> map 
-		Foundation::MethodMap methods_;
+        //! true if asset is temporary
+        bool temporary_;
 
-		//! asset type
-		std::string asset_type_;
-	};
+        //! methods as <method, url> map 
+        Foundation::MethodMap methods_;
 
-} // end of namespace: Asset
+        //! asset type
+        std::string asset_type_;
+    };
+}
 
-#endif // incl_Asset_RexAssetMetadata_h
+#endif

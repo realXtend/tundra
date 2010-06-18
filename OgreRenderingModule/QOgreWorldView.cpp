@@ -107,12 +107,12 @@ namespace OgreRenderer
     void QOgreWorldView::ShowUiOverlay()
     {
         ui_overlay_->show();
-        RenderOneFrame();
+        //RenderOneFrame();
     }
 
     void QOgreWorldView::HideUiOverlay()
     {
         ui_overlay_->hide();
-        RenderOneFrame();
+        //RenderOneFrame();
     }
 }
