@@ -46,7 +46,8 @@ namespace CoreUi
             QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
         } 
         else
-        {
+        {            
+            QFontDatabase::removeAllApplicationFonts();
             QApplication::setStyle(QStyleFactory::create(theme));
             QApplication::setPalette(QApplication::style()->standardPalette());
         }

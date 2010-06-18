@@ -18,6 +18,12 @@ namespace CoreUi
         setupUi(internal_widget_);
         setWidget(internal_widget_);
 
+        QFont titleFont("facetblack", 10, QFont::Normal, false);
+        titleFont.setCapitalization(QFont::AllUppercase);
+        titleFont.setStyleStrategy(QFont::PreferAntialias);
+        titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
+        titleLabel->setFont(titleFont);
+
         visibility_animation_ = new QPropertyAnimation(this, "opacity", this);
         visibility_animation_->setDuration(500);
         visibility_animation_->setEasingCurve(QEasingCurve::InOutSine);
