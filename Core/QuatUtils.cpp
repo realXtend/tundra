@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "CoreStableHeaders.h"
 
 #ifndef unix
@@ -18,7 +20,7 @@ Quaternion UnpackQuaternionFromFloat3(float x, float y, float z)
     // or then server sent us values that are bad to begin with. Anything is incorrect in this case, but to preserve at least
     // some sensibility in computations, renormalize the components and set w=0.
     if (sq >= 1.f) 
-    {              
+    {
         float invNorm = 1.f / sqrt(sq);
         return Quaternion(x * invNorm, y * invNorm, z * invNorm, 0.f);
     }
@@ -30,13 +32,12 @@ Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w)
 {
     // A quaternion is sent over the stream in a slightly compressed form - the w component is omitted.
     // The other end can reconstruct the w component because the quat is normed.
-    
     float norm = (float)sqrt(x * x + y * y + z * z + w * w);
     const float epsilon = 1e-6f;
     if (norm  < epsilon)
     {
         return Vector3D<float>();
-        ///\todo Log error - singular quaternion! App logic is in bad state here.
+        std::cerr << "PackQuaternionToFloat3: Singular quaternion! App logic is in bad state here." << std::endl;
     }
     else
     {
@@ -57,8 +58,8 @@ Vector3D<float> PackQuaternionToFloat3(float x, float y, float z, float w)
 Quaternion UnpackQuaternionFromU16_4(u16 x,u16 y,u16 z,u16 w)
 {
     if(x == 32768 && y == 32768 && z == 32768 && w == 32768)
-        w = 65535;               
-    
+        w = 65535;
+
     Quaternion rotation;
     rotation.x = (x / 32768.0f) - 1.0f;
     rotation.y = (y / 32768.0f) - 1.0f;
