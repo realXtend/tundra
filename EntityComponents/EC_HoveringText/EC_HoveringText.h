@@ -6,8 +6,8 @@
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
 */
 
-#ifndef incl_EC_HoveringText_h
-#define incl_EC_HoveringText_h
+#ifndef incl_EC_HoveringText_EC_HoveringText_h
+#define incl_EC_HoveringText_EC_HoveringText_h
 
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
@@ -27,13 +27,13 @@ namespace Ogre
     class SceneNode;
     class BillboardSet;
     class Billboard;
-    class MaterialPtr;
 }
 
 QT_BEGIN_NAMESPACE
 class QTimeLine;
 QT_END_NAMESPACE
 
+/// Shows a hovering text attached to an entity.
 class EC_HoveringText : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -79,6 +79,9 @@ public slots:
 
     /// Shows the hovering text with animation.
     void AnimatedShow();
+
+    /// Hovering text is clicked. Toggles the visibility.
+    /// @param msec_to_show Time to show in milliseconds.
     void Clicked(int msec_to_show = 5000);
 
     /// Hides the hovering text
@@ -97,7 +100,7 @@ public slots:
 
 private slots:
     /// Updates the animation
-    /// @param step
+    /// @param step Alpha animation step.
     void UpdateAnimationStep(int step);
 
     /// Finishes the animation.
@@ -121,6 +124,9 @@ private:
 
     /// Name of the material used for the billboard set.
     std::string materialName_;
+
+    /// Name of the texture used for the billboard set.
+    std::string textureName_;
 
     /// For used for the hovering text.
     QFont font_;

@@ -35,7 +35,7 @@ namespace Naali
 {
 
 InWorldChatModule::InWorldChatModule() :
-    ModuleInterfaceImpl(NameStatic()),
+    ModuleInterface(NameStatic()),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),
@@ -61,7 +61,7 @@ void InWorldChatModule::PostInitialize()
 {
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices);
+    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
 
     RegisterConsoleCommand(Console::CreateCommand("bbtest",
         "Adds a billboard to each entity in the scene.",
@@ -355,7 +355,7 @@ bool InWorldChatModule::CreateLogFile()
 {
     // Create filename. Format: "<server_name>_yyyy_dd_MM_<counter>.log"
     // Use QSettings for getting the application settings home dir
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "chatlogs/");
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "chatlogs/");
     QString path = settings.fileName();
     path.replace(".ini", "");
     QDir dir(path);

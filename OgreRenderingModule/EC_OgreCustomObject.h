@@ -54,16 +54,11 @@ namespace OgreRenderer
         //! Sets if the object casts shadows or not.
         void SetCastShadows(bool enabled);
 
-        //! returns the custom object
-        /*! use the Ogre::ManualObject interface to actually create geometry.
-         */
-        Ogre::ManualObject* GetObject() const { return object_; }
-
-        //! Commit changes
+        //! Commit changes from a manual object
         /*! converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
             \return true if successful
          */
-        bool CommitChanges();
+        bool CommitChanges(Ogre::ManualObject* object);
 
         //! Sets material on already committed geometry, similar to EC_OgreMesh
         /*! \param index submesh index
@@ -109,9 +104,6 @@ namespace OgreRenderer
         
         //! renderer
         RendererWeakPtr renderer_;
-        
-        //! Ogre manual object
-        Ogre::ManualObject* object_;
         
         //! Ogre mesh entity (converted from the manual object on commit)
         Ogre::Entity* entity_;

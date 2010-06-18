@@ -10,7 +10,9 @@
 
 namespace OpenALAudio
 {
-    OpenALAudioModule::OpenALAudioModule() : ModuleInterfaceImpl(type_static_)
+    std::string OpenALAudioModule::type_name_static_ = "OpenALAudio";
+
+    OpenALAudioModule::OpenALAudioModule() : ModuleInterface(type_name_static_)
     {
     }
 

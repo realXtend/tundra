@@ -5,6 +5,7 @@
 
 #include "FrameworkQtApplication.h"
 #include "Framework.h"
+#include "ConfigurationManager.h"
 
 #include <QDir>
 #include <QGraphicsView>
@@ -39,6 +40,9 @@ namespace Foundation
             native_translator_->load(lst[0]);
 
         this->installTranslator(native_translator_);
+        
+        std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(), "language", std::string("data/translations/naali_en"));
+        ChangeLanguage(QString::fromStdString(default_language));
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
@@ -77,36 +81,66 @@ namespace Foundation
         frame_update_timer_.setSingleShot (true);
         frame_update_timer_.start (0); 
 
-        exec ();
+        try
+        {
+            exec ();
+        }
+        catch(const std::exception &e)
+        {
+            RootLogCritical(std::string("FrameworkQtApplication::Go caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        }
+        catch(...)
+        {
+            RootLogCritical(std::string("FrameworkQtApplication::Go caught an unknown exception!"));
+            throw;
+        }
     }
     
     bool FrameworkQtApplication::eventFilter(QObject *obj,  QEvent *event)
     {
-        if (obj == this)
+        try
         {
-            if (event->type() == QEvent::ApplicationActivate)
-                app_activated_ = true;
-            if (event->type() == QEvent::ApplicationDeactivate)
-                app_activated_ = false;
-            /*
-            if (event->type() == QEvent::LanguageChange)
+            if (obj == this)
             {
-                // Now if exist remove our default translation engine.
-                if (translator_ != 0)
-                    this->removeTranslator(translator_);
+                if (event->type() == QEvent::ApplicationActivate)
+                    app_activated_ = true;
+                if (event->type() == QEvent::ApplicationDeactivate)
+                    app_activated_ = false;
+                /*
+                if (event->type() == QEvent::LanguageChange)
+                {
+                    // Now if exist remove our default translation engine.
+                    if (translator_ != 0)
+                        this->removeTranslator(translator_);
+                }
+                */
             }
-            */
+            return QObject::eventFilter(obj, event);
+        } 
+        catch(const std::exception &e)
+        {
+            std::cout << std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("QApp::eventFilter caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        } catch(...)
+        {
+            std::cout << std::string("QApp::eventFilter caught an unknown exception!") << std::endl;
+            RootLogCritical(std::string("QApp::eventFilter caught an unknown exception!"));
+            throw;
         }
-        return QObject::eventFilter(obj, event);
+        return true;
     }
 
     void FrameworkQtApplication::ChangeLanguage(const QString& file)
     {
-        // Check that does there exist a given native translator
-        QString tmp = file;
+        QString filename = file;
+        if (!filename.endsWith(".qm", Qt::CaseInsensitive))
+            filename.append(".qm");
+        QString tmp = filename;
         tmp.chop(3);
         QString str = tmp.right(2);
-
+        
         QString name = "data/translations/qt_native_translations/qt_" + str + ".qm";
 
         // Remove old translators then change them to new. 
@@ -136,25 +170,69 @@ namespace Foundation
 
         // Remove old translators then change them to new. 
         removeTranslator(app_translator_);
-        if (app_translator_->load(file))
-            installTranslator(app_translator_); 
-
+        if (app_translator_->load(filename))
+        {
+            installTranslator(app_translator_);
+            framework_->GetConfigManager()->SetSetting(Framework::ConfigurationGroup(), "language", file.toStdString());
+        }
+        
         emit LanguageChanged();
     }
 
+    bool FrameworkQtApplication::notify(QObject *receiver, QEvent *event)
+    {
+        try
+        {
+            return QApplication::notify(receiver, event);
+        } catch(const std::exception &e)
+        {
+            std::cout << std::string("QApp::notify caught an exception: ") << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("QApp::notify caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        } catch(...)
+        {
+            std::cout << std::string("QApp::notify caught an unknown exception!") << std::endl;
+            RootLogCritical(std::string("QApp::notify caught an unknown exception!"));
+            throw;
+        }
+        return true;
+    }
+    
     void FrameworkQtApplication::UpdateFrame()
     {
-        PROFILE(FrameworkQtApplication_UpdateFrame);
+        try
+        {
+            QApplication::processEvents (QEventLoop::AllEvents, 1);
+            QApplication::sendPostedEvents ();
 
-        QApplication::processEvents (QEventLoop::AllEvents, 1);
-        QApplication::sendPostedEvents ();
+            framework_-> ProcessOneFrame();
 
-        framework_-> ProcessOneFrame();
-
-        // Reduce framerate when unfocused
-        if (app_activated_)
-            frame_update_timer_.start (0);
-        else
-            frame_update_timer_.start (5);
+            // Reduce framerate when unfocused
+            if (app_activated_)
+                frame_update_timer_.start(0); 
+            else 
+                frame_update_timer_.start(5);
+        }
+        catch(const std::exception &e)
+        {
+            std::cout << "QApp::UpdateFrame caught an exception: " << (e.what() ? e.what() : "(null)") << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an exception: ") + (e.what() ? e.what() : "(null)"));
+            throw;
+        }
+        catch(...)
+        {
+            std::cout << "QApp::UpdateFrame caught an unknown exception!" << std::endl;
+            RootLogCritical(std::string("QApp::UpdateFrame caught an unknown exception!"));
+            throw;
+        }
+    }
+    
+    void FrameworkQtApplication::AboutToExit()
+    {
+        emit ExitRequested();
+        
+        // If no-one canceled the exit as a response to the signal, exit
+        if (framework_->IsExiting())
+            quit();
     }
 }

@@ -11,11 +11,12 @@
 namespace ECEditor
 {
     //! EC Editor module
-    /*! EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
+    /*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
+     *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
      */
     class ECEditorWindow;
 
-    class ECEditorModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class ECEditorModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

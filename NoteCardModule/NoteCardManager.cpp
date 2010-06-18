@@ -68,8 +68,7 @@ namespace NoteCard
         layout->setContentsMargins(0,0,0,0);
         setLayout(layout);
 
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module)
         {
             UiServices::UiWidgetProperties widget_properties(contents_->windowTitle(), UiServices::SceneWidget);
@@ -103,7 +102,7 @@ namespace NoteCard
     void NoteCardManager::BringToFront()
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(
-            Foundation::Module::MT_UiServices).lock();
+            ).lock();
         if (ui_module)
         {
             ui_module->GetInworldSceneController()->BringProxyToFront(this);

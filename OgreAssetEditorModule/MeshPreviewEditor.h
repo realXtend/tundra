@@ -1,9 +1,15 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_OgreAssetEditorModule_MeshPreviewEditor_h
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
 #include <RexTypes.h>
 #include <QWidget>
 #include <QLabel>
+#include <QImage>
+#include <UiModule.h>
+#include <QOgreWorldView.h>
+#include "QOgreUIView.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -18,6 +24,15 @@ namespace Foundation
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
 
+namespace Resource
+{
+    namespace Events
+    {
+        class ResourceReady;
+    }
+}
+
+
 namespace Naali
 {
     //! Label is used to display the mesh in image format.
@@ -27,6 +42,18 @@ namespace Naali
     public:
         MeshPreviewLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0);
         virtual ~MeshPreviewLabel();
+    signals:
+        void sendMouseEvent(QMouseEvent *event, bool both);
+        void sendWheelEvent(QWheelEvent* ev);
+    protected:
+         void mouseMoveEvent(QMouseEvent *event);
+         void mousePressEvent(QMouseEvent* ev);
+         void mouseReleaseEvent(QMouseEvent* ev);
+         void wheelEvent(QWheelEvent* ev);
+
+    private:
+         bool leftPressed_;
+         bool rightPressed_;
     };
 
     //! AudioPreviewEditor is used to play different audioclips from the inventory and show audio info.
@@ -38,22 +65,32 @@ namespace Naali
         MeshPreviewEditor(Foundation::Framework *framework,
                            const QString &inventory_id,
                            const asset_type_t &asset_type,
-                           const QString &name,
+                           const QString &name, 
+                           const QString &assetID,
                            QWidget *parent = 0);
         virtual ~MeshPreviewEditor();
 
-        void HandleAssetReady(Foundation::AssetPtr asset);
+        //void HandleAssetReady(Foundation::AssetPtr asset);
+
+        void HandleResouceReady(Resource::Events::ResourceReady *res);
+        void RequestMeshAsset(const QString &asset_id);
+        QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
 
     public slots:
         /// Close the window.
         void Closed();
+        void Update();
+        void MouseEvent(QMouseEvent* event, bool both);
+        void MouseWheelEvent(QWheelEvent* ev);
 
     signals:
         /// This signal is emitted when the editor is closed.
         void Closed(const QString &inventory_id, asset_type_t asset_type);
 
     private:
+       
         void InitializeEditorWidget();
+       
 
         Foundation::Framework *framework_;
         asset_type_t assetType_;
@@ -61,6 +98,15 @@ namespace Naali
 
         QWidget     *mainWidget_;
         QPushButton *okButton_;
+        QString assetId_;
+        request_tag_t request_tag_;
+        UiServices::UiProxyWidget *proxy_; 
+        QPointF lastPos_;
+        int camAlphaAngle_;
+        QString mesh_id_;
+        // Mid button roll.
+        double mouseDelta_;
+      
     };
 }
 

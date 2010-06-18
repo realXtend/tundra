@@ -35,7 +35,7 @@ namespace UiServices
     /// For details about Notification Services read UiNotificationServices.h
     /// Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
 
-    class UI_MODULE_API UiModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class UI_MODULE_API UiModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -69,10 +69,7 @@ namespace UiServices
 
         MODULE_LOGGING_FUNCTIONS;
         //! Returns name of this module. Needed for logging.
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); }
-
-        //! Returns type of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_UiServices;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -80,6 +77,9 @@ namespace UiServices
 
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
+
+        //! Type name of this module.
+        static std::string type_name_static_;
 
         //! Current query categories
         QStringList event_query_categories_;

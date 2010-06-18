@@ -5,7 +5,6 @@
 #include "ModuleInterface.h"
 
 EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     regionHandle(0),
     localId(0),
     parentId(0),
@@ -40,4 +39,15 @@ std::string EC_OpenSimPresence::GetLastName() const
 std::string EC_OpenSimPresence::GetFullName() const
 {
     return first_name_ + " " + last_name_;
+}
+
+QString EC_OpenSimPresence::QGetFullName() const
+{
+    std::string fullname = first_name_ + " " + last_name_;
+    return QString(fullname.c_str());
+}
+
+QString EC_OpenSimPresence::QGetUUIDString() const
+{
+    return agentId.ToQString();
 }

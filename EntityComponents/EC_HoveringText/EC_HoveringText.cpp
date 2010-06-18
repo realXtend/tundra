@@ -8,12 +8,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "EC_HoveringText.h"
 #include "ModuleInterface.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include <Ogre.h>
 #include <OgreBillboardSet.h>
@@ -28,7 +32,6 @@
 #include "MemoryLeakCheck.h"
 
 EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
@@ -39,20 +42,20 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
     visibility_timer_(new QTimer(this)),
     using_gradient_(false)
 {
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 
     visibility_animation_timeline_->setFrameRange(0,100);
     visibility_animation_timeline_->setEasingCurve(QEasingCurve::InOutSine);
     visibility_timer_->setSingleShot(true);
 
-    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)),
-            SLOT(UpdateAnimationStep(int)));
-    connect(visibility_animation_timeline_, SIGNAL(finished()),
-            SLOT(AnimationFinished()));
+    connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
+    connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 }
 
 EC_HoveringText::~EC_HoveringText()
 {
+    if (!renderer_.expired())
+        Ogre::TextureManager::getSingleton().remove(textureName_);
 }
 
 void EC_HoveringText::SetPosition(const Vector3df& position)
@@ -222,19 +225,51 @@ void EC_HoveringText::Redraw()
     QPixmap pixmap = GetTextPixmap();
     if (pixmap.isNull())
         return;
-
-    // Create texture
     QImage img = pixmap.toImage();
-#include "DisableMemoryLeakCheck.h"
-    Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)img.bits(), img.byteCount()));
-#include "EnableMemoryLeakCheck.h"
-    std::string tex_name("HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName());
-    Ogre::TextureManager &manager = Ogre::TextureManager::getSingleton();
-    Ogre::Texture *tex = checked_static_cast<Ogre::Texture *>(manager.create(
-        tex_name, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME).get());
-    assert(tex);
 
-    tex->loadRawData(stream, img.width(), img.height(), Ogre::PF_A8R8G8B8);
+    // Create Ogre texture
+    Ogre::TexturePtr texPtr;
+    try
+    {
+        if (textureName_.empty())
+        {
+            textureName_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
+
+            texPtr = Ogre::TextureManager::getSingleton().createManual(
+                textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
+                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+
+            assert(!texPtr.isNull());
+            if (texPtr.isNull())
+            {
+                LogError("Failed to create texture " + textureName_);
+                return;
+            }
+        }
+        else
+        {
+            texPtr = Ogre::TextureManager::getSingleton().getByName(textureName_);
+            assert(!texPtr.isNull());
+            // See if size/format changed, have to delete/recreate internal resources
+            if (img.width() != texPtr->getWidth() || img.height() != texPtr->getHeight())
+            {
+                texPtr->freeInternalResources();
+                texPtr->setWidth(img.width());
+                texPtr->setHeight(img.height());
+                texPtr->setFormat(Ogre::PF_A8R8G8B8);
+                texPtr->createInternalResources();
+            }
+        }
+
+        Ogre::Box dimensions(0,0, img.width(), img.height());
+        Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
+        texPtr->getBuffer()->blitFromMemory(pixel_box);
+    }
+    catch (Ogre::Exception &e)
+    {
+        LogError("Failed to create texture " + textureName_  + ": " + std::string(e.what()));
+        return;
+    }
 
     // Set new texture for the material
     assert(!materialName_.empty());
@@ -243,7 +278,7 @@ void EC_HoveringText::Redraw()
         Ogre::MaterialManager &mgr = Ogre::MaterialManager::getSingleton();
         Ogre::MaterialPtr material = mgr.getByName(materialName_);
         assert(material.get());
-        OgreRenderer::SetTextureUnitOnMaterial(material, tex_name);
+        OgreRenderer::SetTextureUnitOnMaterial(material, textureName_);
     }
 }
 

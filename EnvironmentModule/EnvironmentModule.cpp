@@ -1,35 +1,44 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.cpp
  *  @brief  Environment module. Environment module is be responsible of visual environment features like terrain, sky & water.
  */
 
 #include "StableHeaders.h"
-#include "EnvironmentModule.h"
-#include "RealXtend/RexProtocolMsgIDs.h"
-#include "OgreTextureResource.h"
-#include "SceneManager.h"
-#include "NetworkEvents.h"
-#include "InputEvents.h"
+#include "DebugOperatorNew.h"
 
+#include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "Water.h"
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
-#include <GenericMessageUtils.h>
-#include <OgreRenderingModule.h>
 #include "PostProcessWidget.h"
+
+#include "Renderer.h"
+#include "RealXtend/RexProtocolMsgIDs.h"
+#include "OgreTextureResource.h"
+#include "SceneManager.h"
+#include "NetworkEvents.h"
+#include "InputEvents.h"
+#include "GenericMessageUtils.h"
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
+#include "UiModule.h"
+#include "UiDefines.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiWidgetProperties.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace Environment
 {
+    std::string EnvironmentModule::type_name_static_ = "Environment";
+
     EnvironmentModule::EnvironmentModule() :
-        ModuleInterfaceImpl(Foundation::Module::MT_Environment),
+        ModuleInterface(type_name_static_),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -52,17 +61,32 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        //initialize postprocess dialog
-        boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
-            framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-        if (!rendering_module)
-            return;
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+        if (renderer)
+        {
+            // Initialize post-process dialog.
+            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
+            postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
 
-        OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
+            // Add to scene.
+            UiServices::UiModule *ui_module = GetFramework()->GetModule<UiServices::UiModule>();
+            if (!ui_module)
+                return;
 
-        postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
-        postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
-        postprocess_dialog_->AddSelfToScene(this);
+            UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
+
+            // Menu graphics
+            UiDefines::MenuNodeStyleMap image_path_map;
+            QString base_url = "./data/ui/images/menus/"; 
+            image_path_map[UiDefines::TextNormal] = base_url + "edbutton_POSTPRtxt_normal.png";
+            image_path_map[UiDefines::TextHover] = base_url + "edbutton_POSTPRtxt_hover.png";
+            image_path_map[UiDefines::TextPressed] = base_url + "edbutton_POSTPRtxt_click.png";
+            image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
+            image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
+            image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
+            ui_properties.SetMenuNodeStyleMap(image_path_map);
+            ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
+        }
     }
 
     void EnvironmentModule::PostInitialize()
@@ -234,19 +258,16 @@ namespace Environment
 
             if (methodname == "RexPostP")
             {
-                boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module =
-                    framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>(Foundation::Module::MT_Renderer).lock();
-                if (rendering_module.get())
+                OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+                if (renderer)
                 {
-                    OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-                    OgreRenderer::CompositionHandler &c_handler = renderer->GetCompositionHandler();
                     StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);
                     //Since postprocessing effect was enabled/disabled elsewhere, we have to notify the dialog about the event.
                     //Also, no need to put effect on from the CompositionHandler since the dialog will notify CompositionHandler when 
                     //button is checked
                     if (postprocess_dialog_)
                     {
-                        QString effect_name = c_handler.MapNumberToEffectName(vec.at(0)).c_str();
+                        QString effect_name = renderer->GetCompositionHandler().MapNumberToEffectName(vec.at(0)).c_str();
                         bool enabled = true;
                         if (vec.at(1) == "False")
                             enabled = false;
@@ -305,11 +326,6 @@ namespace Environment
             }
             else if (methodname == "RexFog")
             {
-                /**
-                 * Currently we interprent that this message information is for water fog ! Not for ground fog.
-                 * @todo Someone needs to add more parameters to this package so that we can make ground fog also,
-                 */
-
                 StringVector parameters = ProtocolUtilities::ParseGenericMessageParameters(msg); 
                 if ( parameters.size() < 5)
                     return false;

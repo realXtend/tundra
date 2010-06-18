@@ -14,7 +14,6 @@ namespace fs = boost::filesystem;
 
 namespace Foundation
 {
-    class ModuleInterface;
     class Framework;
 
     /*! \defgroup Module_group Module Architecture Client Interface
@@ -96,21 +95,9 @@ namespace Foundation
         */
         void DeclareStaticModule(ModuleInterface *module);
 
-        //! Specify a module by type that should not be loaded or initialized under any circumstances
-        /*! 
-            \note Only call during application preinit phase.
-
-            \param type Type of the module that should be excluded.
-        */
-        void ExcludeModule(Module::Type type)
-        {
-            ExcludeModule(Module::NameFromType(type));
-        }
-
         //! Specify a module by name that should not be loaded or initialized under any circumstances
         /*! 
             \note Only call during application preinit phase.
-
             \param module Name of the module that should be excluded.
         */
         void ExcludeModule(const std::string &module)
@@ -119,12 +106,6 @@ namespace Foundation
             exclude_list_.insert(module);
 
             Foundation::RootLogDebug("Added module " + module + " to exclude list");
-        }
-
-        //! Returns true if the specified module type is exluded from being loaded
-        bool IsExcluded(Module::Type type) const
-        {
-            return IsExcluded(Module::NameFromType(type));
         }
 
         //! Returns true if the specified module is excluded from being loaded
@@ -157,9 +138,7 @@ namespace Foundation
         void UpdateModules(f64 frametime);
 
         //! Returns module by name
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
-        */
+        //! \note The pointer may invalidate between frames, always reacquire at begin of frame update
         ModuleWeakPtr GetModule(const std::string &name)
         {
             for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
@@ -176,61 +155,27 @@ namespace Foundation
                     return ModuleWeakPtr(it->module_);
             return ModuleWeakPtr();
         }
-        
-        //! Returns module by type
-        /*!
-            \note The pointer may invalidate between frames, always reacquire at begin of frame update
-        */
-        ModuleWeakPtr GetModule(Foundation::Module::Type type)
-        {
-            return GetModule(Module::NameFromType(type));
-        }
 
-        /** Returns module by type
-         *
+        /** Returns module by class T.
+         *  \param T class type of the module.
+         *  \return The module, or null if the module doesn't exist and dynamic cast fails.
          *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
-         *
-         *  \param type type of the module
-         *  \return The module, or null if the module of type 'type' was not found, or if dynamic cast fails
          */
-        template <class T>
-        boost::weak_ptr<T> GetModule(Foundation::Module::Type type)
+        template <class T> boost::weak_ptr<T> GetModule()
         {
-            assert (type != Module::MT_Unknown);
             for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
-                if (it->module_->Type() == type)
-                    return boost::dynamic_pointer_cast<T>(it->module_);
-//                    return boost::weak_ptr<T>(boost::shared_ptr<T>());//dynamic_cast<T*>(it->module_));
-//                    return boost::weak_ptr<T>(dynamic_cast<T*>(it->module_));
-            return boost::weak_ptr<T>();
-        }
+            {
+                boost::weak_ptr<T> module = boost::dynamic_pointer_cast<T>(it->module_);
+                if (module.lock())
+                    return module;
+            }
 
-        /** Returns module by name
-         *
-         *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
-         *
-         *  \param name Name of the module.
-         *  \return The module, or null if the module of name 'name' was not found, or if dynamic cast fails
-         */
-        template <class T>
-        boost::weak_ptr<T> GetModule(const std::string &name)
-        {
-            assert (!name.empty());
-            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
-                if (it->module_->Name() == name)
-                    return boost::dynamic_pointer_cast<T>(it->module_);
             return boost::weak_ptr<T>();
         }
 
         //! @return A list of all modules in the system, for reflection purposes. If you need non-const access to
         //!         a module, call GetModule with the proper name or type.
         const ModuleVector &GetModuleList() const { return modules_; }
-
-        //! Returns true if module is loaded, false otherwise
-        bool HasModule(Module::Type type)
-        {
-            return HasModule(Module::NameFromType(type));
-        }
 
         //! Returns true if module is loaded, false otherwise
         bool HasModule(const std::string &name) const
@@ -293,11 +238,17 @@ namespace Foundation
             StringVector moduleNames; ///< The names of the modules contained in this shared library.
             StringVector dependencies;
 
+            /// @return True if this module directly depends on the module rhs, i.e. if this module absolutely needs to be loaded before rhs.
             bool Precedes(const ModuleLoadDescription &rhs) const;
 
+            /// @return A readable string presentation of the given module description.
             std::string ToString() const;
         };
 
+        /** Parses the module xml file stored in the file pointed by the parameter path.
+            Adds a new module load description structure to the end of the vector out,
+            as well as adding into relativePathDependencyAdditions any path dependencies needed by that module.
+        */
         void ParseModuleXMLFile(const fs::path &path, std::vector<ModuleLoadDescription> &out, StringVector &relativePathDependencyAdditions);
 
         static void SortModuleLoadOrder(std::vector<ModuleLoadDescription> &modules);
@@ -334,7 +285,8 @@ namespace Foundation
 
         //! List of modules that should be excluded
         ModuleTypeSet exclude_list_;
-        
+
+        //! Framework pointer.
         Framework *framework_;
     };
 }

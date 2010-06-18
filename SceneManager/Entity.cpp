@@ -25,9 +25,10 @@ namespace Scene
 
     Entity::~Entity()
     {
+        components_.clear();
         // If components still alive, they become free-floating
-        for (size_t i=0 ; i<components_.size() ; ++i)
-            components_[i]->SetParentEntity(0);
+        //for (size_t i=0 ; i<components_.size() ; ++i)
+        //    components_[i]->SetParentEntity(0);
     }
 
     void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ComponentInterface::ChangeType change)
@@ -40,8 +41,6 @@ namespace Scene
         
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
-            
-            ///\todo Ali: send event
         }
     }
 
@@ -52,14 +51,11 @@ namespace Scene
             ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
             if (iter != components_.end())
             {
-                (*iter)->SetParentEntity(0);
-                
+                //(*iter)->SetParentEntity(0);
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
-                    
+
                 components_.erase(iter);
-                
-                ///\todo Ali: send event
             }
             else
             {

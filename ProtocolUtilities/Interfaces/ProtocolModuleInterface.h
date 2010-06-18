@@ -7,6 +7,11 @@
 #include "NetworkEvents.h"
 #include "CoreModuleApi.h"
 
+/// Typedefs for capability map.
+typedef std::map<std::string, std::string> CapsMap_t;
+typedef std::map<std::string, std::string>::iterator CapsMapIt_t;
+typedef std::map<std::string, std::string>::const_iterator CapsMapConstIt_t;
+
 namespace ProtocolUtilities
 {
     class NetMessageManager;
@@ -46,7 +51,7 @@ namespace ProtocolUtilities
         /// Returns URL of the requested capability, or null string if the capability doens't exist.
         /// @param name Name of the capability.
         /// @return Capability URL.
-        virtual std::string GetCapability(const std::string &name) = 0;
+        virtual std::string GetCapability(const std::string &name) const = 0;
 
         /// Sets Authentication type
         /// @params authentivation type ProtocolUtilities::AuthenticationType
@@ -67,8 +72,7 @@ namespace ProtocolUtilities
         /// this class.
         virtual void FinishMessageBuilding(NetOutMessage *msg) = 0;
 
-        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() = 0;
-
+        virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() const = 0;
     };
 }
 

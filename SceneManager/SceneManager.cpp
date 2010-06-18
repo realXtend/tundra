@@ -145,5 +145,22 @@ namespace Scene
     {
         emit EntityRemoved(entity, change);
     }
+
+    QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name)
+    {
+        EntityList list = GetEntitiesWithComponent(type_name.toStdString());
+        QVariantList ids;
+        EntityList::iterator iter;
+
+        for(iter = list.begin(); iter != list.end(); iter++)
+        {
+            EntityPtr ent = *iter;
+            Entity* e = ent.get();
+            entity_id_t id = e->GetId();
+            QVariant qv(id);
+            ids.append(qv);
+        }
+        return ids;
+    }
 }
 

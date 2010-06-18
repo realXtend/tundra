@@ -18,7 +18,6 @@
 #include <QDebug>
 
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
     update_internals_(false),
     refresh_timer_(0),
@@ -26,9 +25,8 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
     material_name_(""),
     texture_name_("")
 {
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = module->GetFramework()->GetServiceManager()->
         GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-
     if (renderer)
     {
         // Create material

@@ -78,7 +78,7 @@ namespace RexLogic
         void Provider::SendChatMessgeToServer(const QString& text)
         {
             RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(
-                framework_->GetModuleManager()->GetModule(Foundation::Module::MT_WorldLogic).lock().get());
+                framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
             if (!rexlogic_)
                 throw Exception("Cannot send text message, RexLogicModule is not found");
 

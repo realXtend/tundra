@@ -53,6 +53,8 @@
 
 namespace RexLogic
 {
+    static Ogre::ManualObject* prim_manual_object = 0;
+    
     void TransformUV(Ogre::Vector2& uv, float repeat_u, float repeat_v, float offset_u, float offset_v, float rot_sin, float rot_cos)
     {
         const static Ogre::Vector2 half(0.5f, 0.5f);
@@ -81,13 +83,27 @@ namespace RexLogic
         return true;
     }
 
-    void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive, bool optimisations_enabled)
+    Ogre::ManualObject* CreatePrimGeometry(Foundation::Framework* framework, EC_OpenSimPrim& primitive, bool optimisations_enabled)
     {
         PROFILE(Primitive_CreateGeometry)
         
         if (!primitive.HasPrimShapeData)
-            return;
-            
+            return 0;
+        
+        // Create only a single manual object for prim geometry and reuse it over and over, to avoid Ogre generating
+        // a huge load of unnecessary D3D resources, that are never used for anything visible (the manual object will
+        // be converted to a mesh anyway)
+        if (!prim_manual_object)
+        {
+            OgreRenderer::RendererPtr renderer = framework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+            if (!renderer)
+                return 0;
+            Ogre::SceneManager *sceneMgr = renderer->GetSceneManager();
+            prim_manual_object = sceneMgr->createManualObject(renderer->GetUniqueObjectName());
+            if (!prim_manual_object)
+                return 0;
+        }
+        
         std::string mat_override;
         if ((primitive.Materials[0].Type == RexTypes::RexAT_MaterialScript) && (!RexTypes::IsNull(primitive.Materials[0].asset_id)))
         {
@@ -113,11 +129,15 @@ namespace RexLogic
             if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_EQUILATERAL_TRIANGLE)
                 sides = 3;
             else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_CIRCLE)
-                sides = 24;
+                // Reduced prim lod!!!
+                sides = 12;
+                //sides = 24;
             else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_HALF_CIRCLE)
             {
                 // half circle, prim is a sphere
-                sides = 24;
+                // Reduced prim lod!!!
+                sides = 12;
+                //sides = 24;
 
                 profileBegin = 0.5f * profileBegin + 0.5f;
                 profileEnd = 0.5f * profileEnd + 0.5f;
@@ -125,7 +145,9 @@ namespace RexLogic
 
             int hollowSides = sides;
             if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_CIRCLE)
-                hollowSides = 24;
+                // Reduced prim lod!!!
+                hollowSides = 12;
+                //hollowSides = 24;
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_SQUARE)
                 hollowSides = 4;
             else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
@@ -159,161 +181,159 @@ namespace RexLogic
                 primMesh.ExtrudeCircular();
             }
             
-            if (object)
+            PROFILE(Primitive_CreateManualObject)
+            prim_manual_object->clear();
+            prim_manual_object->setBoundingBox(Ogre::AxisAlignedBox());
+            
+            // Check for highly illegal coordinates in any of the faces
+            for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
             {
-                PROFILE(Primitive_CreateManualObject)
-                object->clear();
-                object->setBoundingBox(Ogre::AxisAlignedBox());
-                
-                // Check for highly illegal coordinates in any of the faces
-                for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
+                if (!(CheckCoord(primMesh.viewerFaces[i].v1) && CheckCoord(primMesh.viewerFaces[i].v2) && CheckCoord(primMesh.viewerFaces[i].v3)))
                 {
-                    if (!(CheckCoord(primMesh.viewerFaces[i].v1) && CheckCoord(primMesh.viewerFaces[i].v2) && CheckCoord(primMesh.viewerFaces[i].v3)))
+                    RexLogicModule::LogError("NaN or infinite number encountered in prim face coordinates. Skipping geometry creation.");
+                    return 0;
+                }
+            }
+            
+            std::string mat_name;
+            std::string prev_mat_name;
+            
+            uint indices = 0;
+            bool first_face = true;
+            
+            for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
+            {
+                int facenum = primMesh.viewerFaces[i].primFaceNumber;
+                
+                Color color = primitive.PrimDefaultColor;
+                ColorMap::const_iterator c = primitive.PrimColors.find(facenum);
+                if (c != primitive.PrimColors.end())
+                    color = c->second;
+                
+                // Skip face if very transparent
+                if (color.a <= 0.11f)
+                    continue;
+                
+                if (!mat_override.empty())
+                    mat_name = mat_override;
+                else
+                {
+                    unsigned variation = OgreRenderer::LEGACYMAT_VERTEXCOL;
+                    
+                    // Check for transparency
+                    if (color.a < 1.0f)
+                        variation = OgreRenderer::LEGACYMAT_VERTEXCOLALPHA;
+                    
+                    // Check for fullbright
+                    bool fullbright = (primitive.PrimDefaultMaterialType & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
+                    MaterialTypeMap::const_iterator mt = primitive.PrimMaterialTypes.find(facenum);
+                    if (mt != primitive.PrimMaterialTypes.end())
+                        fullbright = (mt->second & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
+                    if (fullbright)
+                        variation |= OgreRenderer::LEGACYMAT_FULLBRIGHT;
+                    
+                    std::string suffix = OgreRenderer::GetMaterialSuffix(variation);
+                    
+                    // Try to find face's texture in texturemap, use default if not found
+                    std::string texture_name = primitive.PrimDefaultTextureID;
+                    TextureMap::const_iterator t = primitive.PrimTextures.find(facenum);
+                    if (t != primitive.PrimTextures.end())
+                        texture_name = t->second;
+                    
+                    mat_name = texture_name + suffix;
+                    
+                    // Create the material here if texture yet missing, the material will be updated later
+                    OgreRenderer::GetOrCreateLegacyMaterial(texture_name, variation);
+                }
+                
+                // Get texture mapping parameters
+                float repeat_u = primitive.PrimDefaultRepeatU;
+                float repeat_v = primitive.PrimDefaultRepeatV;
+                float offset_u = primitive.PrimDefaultOffsetU;
+                float offset_v = primitive.PrimDefaultOffsetV;
+                float rot = primitive.PrimDefaultUVRotation;
+                if (primitive.PrimRepeatU.find(facenum) != primitive.PrimRepeatU.end())
+                    repeat_u = primitive.PrimRepeatU[facenum];
+                if (primitive.PrimRepeatV.find(facenum) != primitive.PrimRepeatV.end())
+                    repeat_v = primitive.PrimRepeatV[facenum];
+                if (primitive.PrimOffsetU.find(facenum) != primitive.PrimOffsetU.end())
+                    offset_u = primitive.PrimOffsetU[facenum];
+                if (primitive.PrimOffsetV.find(facenum) != primitive.PrimOffsetV.end())
+                    offset_v = primitive.PrimOffsetV[facenum];
+                if (primitive.PrimUVRotation.find(facenum) != primitive.PrimUVRotation.end())
+                    rot = primitive.PrimUVRotation[facenum];
+                float rot_sin = sin(-rot);
+                float rot_cos = cos(-rot);
+
+                if (optimisations_enabled || primitive.DrawType == RexTypes::DRAWTYPE_MESH)
+                {
+                    if ((first_face) || (mat_name != prev_mat_name))
                     {
-                        RexLogicModule::LogError("NaN or infinite number encountered in prim face coordinates. Skipping geometry creation.");
-                        return;
+                        if (indices)
+                            prim_manual_object->end();
+                        indices = 0;
+                        prim_manual_object->begin(mat_name, Ogre::RenderOperation::OT_TRIANGLE_LIST);
+                        prev_mat_name = mat_name;
+                        first_face = false;
+                    }
+                }
+                else
+                {
+                    if (facenum != 0 && i % 2 == 0)
+                    {
+                        if (indices)
+                            prim_manual_object->end();
+                        indices = 0;
+                        prim_manual_object->begin(mat_name, Ogre::RenderOperation::OT_TRIANGLE_LIST);
                     }
                 }
                 
-                RexTypes::RexAssetID texture_id; 
-                RexTypes::RexAssetID prev_texture_id;
+                Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
+                Ogre::Vector3 pos2(primMesh.viewerFaces[i].v2.X, primMesh.viewerFaces[i].v2.Y, primMesh.viewerFaces[i].v2.Z);
+                Ogre::Vector3 pos3(primMesh.viewerFaces[i].v3.X, primMesh.viewerFaces[i].v3.Y, primMesh.viewerFaces[i].v3.Z);
+
+                Ogre::Vector3 n1(primMesh.viewerFaces[i].n1.X, primMesh.viewerFaces[i].n1.Y, primMesh.viewerFaces[i].n1.Z);
+                Ogre::Vector3 n2(primMesh.viewerFaces[i].n2.X, primMesh.viewerFaces[i].n2.Y, primMesh.viewerFaces[i].n2.Z);
+                Ogre::Vector3 n3(primMesh.viewerFaces[i].n3.X, primMesh.viewerFaces[i].n3.Y, primMesh.viewerFaces[i].n3.Z);
                 
-                uint indices = 0;
-                bool first_face = true;
+                Ogre::Vector2 uv1(primMesh.viewerFaces[i].uv1.U, primMesh.viewerFaces[i].uv1.V);
+                Ogre::Vector2 uv2(primMesh.viewerFaces[i].uv2.U, primMesh.viewerFaces[i].uv2.V);
+                Ogre::Vector2 uv3(primMesh.viewerFaces[i].uv3.U, primMesh.viewerFaces[i].uv3.V);
+
+                TransformUV(uv1, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
+                TransformUV(uv2, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
+                TransformUV(uv3, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
+
+                prim_manual_object->position(pos1);
+                prim_manual_object->normal(n1);
+                prim_manual_object->textureCoord(uv1);
+                prim_manual_object->colour(color.r, color.g, color.b, color.a);
                 
-                for (int i = 0; i < primMesh.viewerFaces.size(); ++i)
-                {
-                    int facenum = primMesh.viewerFaces[i].primFaceNumber;
-                    
-                    Color color = primitive.PrimDefaultColor;
-                    ColorMap::const_iterator c = primitive.PrimColors.find(facenum);
-                    if (c != primitive.PrimColors.end())
-                        color = c->second;
-                    
-                    // Skip face if very transparent
-                    if (color.a <= 0.11f)
-                        continue;
-                    
-                    if (!mat_override.empty())
-                        texture_id = mat_override;
-                    else
-                    {
-                        unsigned variation = OgreRenderer::LEGACYMAT_VERTEXCOL;
-                        
-                        // Check for transparency
-                        if (color.a < 1.0f)
-                            variation = OgreRenderer::LEGACYMAT_VERTEXCOLALPHA;
-                        
-                        // Check for fullbright
-                        bool fullbright = (primitive.PrimDefaultMaterialType & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
-                        MaterialTypeMap::const_iterator mt = primitive.PrimMaterialTypes.find(facenum);
-                        if (mt != primitive.PrimMaterialTypes.end())
-                            fullbright = (mt->second & RexTypes::MATERIALTYPE_FULLBRIGHT) != 0;
-                        if (fullbright)
-                            variation |= OgreRenderer::LEGACYMAT_FULLBRIGHT;
-                        
-                        std::string suffix = OgreRenderer::GetMaterialSuffix(variation);
-                        
-                        // Try to find face's texture in texturemap, use default if not found
-                        texture_id = primitive.PrimDefaultTextureID + suffix;
-                        TextureMap::const_iterator t = primitive.PrimTextures.find(facenum);
-                        if (t != primitive.PrimTextures.end())
-                            texture_id = t->second + suffix;
-                        // Actually create the material here if texture yet missing, the material will be
-                        // updated later
-                        OgreRenderer::CreateLegacyMaterials(texture_id);
-                    }
-     
-                    // Get texture mapping parameters
-                    float repeat_u = primitive.PrimDefaultRepeatU;
-                    float repeat_v = primitive.PrimDefaultRepeatV;
-                    float offset_u = primitive.PrimDefaultOffsetU;
-                    float offset_v = primitive.PrimDefaultOffsetV;
-                    float rot = primitive.PrimDefaultUVRotation;
-                    if (primitive.PrimRepeatU.find(facenum) != primitive.PrimRepeatU.end())
-                        repeat_u = primitive.PrimRepeatU[facenum];
-                    if (primitive.PrimRepeatV.find(facenum) != primitive.PrimRepeatV.end())
-                        repeat_v = primitive.PrimRepeatV[facenum];                    
-                    if (primitive.PrimOffsetU.find(facenum) != primitive.PrimOffsetU.end())
-                        offset_u = primitive.PrimOffsetU[facenum];
-                    if (primitive.PrimOffsetV.find(facenum) != primitive.PrimOffsetV.end())
-                        offset_v = primitive.PrimOffsetV[facenum];  
-                    if (primitive.PrimUVRotation.find(facenum) != primitive.PrimUVRotation.end())
-                        rot = primitive.PrimUVRotation[facenum];     
-                    float rot_sin = sin(-rot);
-                    float rot_cos = cos(-rot);     
-
-                    if (optimisations_enabled || primitive.DrawType == RexTypes::DRAWTYPE_MESH)
-                    {
-                        if ((first_face) || (texture_id != prev_texture_id))
-                        {
-                            if (indices)
-                                object->end();
-                            indices = 0;
-                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-                            prev_texture_id = texture_id;
-                            first_face = false;
-                        }
-                    }
-                    else
-                    {
-                        if (facenum != 0 && i % 2 == 0)
-                        {
-                            if (indices)
-                                object->end();
-                            indices = 0;
-                            object->begin(texture_id, Ogre::RenderOperation::OT_TRIANGLE_LIST);
-                        }
-                    }
-                    
-                    Ogre::Vector3 pos1(primMesh.viewerFaces[i].v1.X, primMesh.viewerFaces[i].v1.Y, primMesh.viewerFaces[i].v1.Z);
-                    Ogre::Vector3 pos2(primMesh.viewerFaces[i].v2.X, primMesh.viewerFaces[i].v2.Y, primMesh.viewerFaces[i].v2.Z);
-                    Ogre::Vector3 pos3(primMesh.viewerFaces[i].v3.X, primMesh.viewerFaces[i].v3.Y, primMesh.viewerFaces[i].v3.Z);
-
-                    Ogre::Vector3 n1(primMesh.viewerFaces[i].n1.X, primMesh.viewerFaces[i].n1.Y, primMesh.viewerFaces[i].n1.Z);
-                    Ogre::Vector3 n2(primMesh.viewerFaces[i].n2.X, primMesh.viewerFaces[i].n2.Y, primMesh.viewerFaces[i].n2.Z);
-                    Ogre::Vector3 n3(primMesh.viewerFaces[i].n3.X, primMesh.viewerFaces[i].n3.Y, primMesh.viewerFaces[i].n3.Z);
-                    
-                    Ogre::Vector2 uv1(primMesh.viewerFaces[i].uv1.U, primMesh.viewerFaces[i].uv1.V);
-                    Ogre::Vector2 uv2(primMesh.viewerFaces[i].uv2.U, primMesh.viewerFaces[i].uv2.V);
-                    Ogre::Vector2 uv3(primMesh.viewerFaces[i].uv3.U, primMesh.viewerFaces[i].uv3.V);
-
-                    TransformUV(uv1, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
-                    TransformUV(uv2, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
-                    TransformUV(uv3, repeat_u, repeat_v, offset_u, offset_v, rot_sin, rot_cos);
-
-                    object->position(pos1);
-                    object->normal(n1);
-                    object->textureCoord(uv1);
-                    object->colour(color.r, color.g, color.b, color.a);
-                    
-                    object->position(pos2);
-                    object->normal(n2);
-                    object->textureCoord(uv2);
-                    object->colour(color.r, color.g, color.b, color.a);
-                    
-                    object->position(pos3);
-                    object->normal(n3);
-                    object->textureCoord(uv3);
-                    object->colour(color.r, color.g, color.b, color.a);
-                    
-                    object->index(indices++);
-                    object->index(indices++);
-                    object->index(indices++);
-                }
+                prim_manual_object->position(pos2);
+                prim_manual_object->normal(n2);
+                prim_manual_object->textureCoord(uv2);
+                prim_manual_object->colour(color.r, color.g, color.b, color.a);
                 
-                // End last subsection
-                if (indices)
-                    object->end();
+                prim_manual_object->position(pos3);
+                prim_manual_object->normal(n3);
+                prim_manual_object->textureCoord(uv3);
+                prim_manual_object->colour(color.r, color.g, color.b, color.a);
+                
+                prim_manual_object->index(indices++);
+                prim_manual_object->index(indices++);
+                prim_manual_object->index(indices++);
             }
-            else
-            {
-                RexLogicModule::LogError(std::string("Null manualobject passed to CreatePrimGeometry"));
-            }
+            
+            // End last subsection
+            if (indices)
+                prim_manual_object->end();
         }
         catch (Exception& e)
         {
             RexLogicModule::LogError(std::string("Exception while creating primitive geometry: ") + e.what());
+            return 0;
         }
+        
+        return prim_manual_object;
     }
 }

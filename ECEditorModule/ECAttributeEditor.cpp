@@ -32,8 +32,10 @@ namespace ECEditor
         factory_(0),
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
-        useMultiEditor_(false)
+        useMultiEditor_(false),
+        isInitialized_(false)
     {
+
         assert(component.get());
         Foundation::AttributeInterface *attribute = FindAttribute(component->GetAttributes());
         if(attribute)
@@ -55,7 +57,8 @@ namespace ECEditor
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
         useMultiEditor_(false),
-        componentIsSerializable_(false)
+        componentIsSerializable_(false),
+        isInitialized_(false)
     {
         for(uint i = 0; i < components.size(); i++)
         {
@@ -102,10 +105,26 @@ namespace ECEditor
         {
             if(!AttributesValueCheck())
             {
-                useMultiEditor_ = true;
-                InitializeEditor();
-                emit AttributeChanged(attributeName_.toStdString());
+                if(!useMultiEditor_)
+                {
+                    useMultiEditor_ = true;
+                    UninitializeEditor();
+                }
             }
+            else
+            {
+                if(useMultiEditor_)
+                {
+                    useMultiEditor_ = false;
+                    UninitializeEditor();
+                }
+            }
+
+            if(!isInitialized_)
+                InitializeEditor();
+            else
+                UpdateEditorValue();
+            emit AttributeChanged(attributeName_.toStdString());
         }
     }
 
@@ -119,7 +138,7 @@ namespace ECEditor
             attributeMap_[Foundation::ComponentWeakPtr(component)] = attribute;
             listenEditorChangedSignal_ = true;
             QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
-            UpdateEditorUI();
+            //UpdateEditorUI();
         }
     }
 
@@ -194,45 +213,7 @@ namespace ECEditor
             factory_->deleteLater();
             factory_ = 0;
         }
-    }
-
-    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor()
-    {
-        ECAttributeEditorBase::PreInitializeEditor();
-        if(useMultiEditor_)
-        {
-            MultiEditPropertyManager *multiEditManager = new MultiEditPropertyManager(this);
-            MultiEditPropertyFact *multiEditFactory = new MultiEditPropertyFact(this);
-            propertyMgr_ = multiEditManager;
-            factory_ = multiEditFactory;
-
-            rootProperty_ = multiEditManager->addProperty(attributeName_);
-            owner_->setFactoryForManager(multiEditManager, multiEditFactory);
-            UpdateMultiEditorValue();
-            QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiEditValueSelected(const QtProperty *, const QString &)));
-        }
-    }
-
-    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue()
-    {
-        if(useMultiEditor_ && componentIsSerializable_)
-        {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
-            QStringList stringList;
-            MultiEditPropertyManager *testPropertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
-            while(iter != attributeMap_.end())
-            {
-                if(rootProperty_ && iter->second)
-                {
-                    Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
-                    QString newValue(attribute->ToString().c_str());
-                    if(!stringList.contains(newValue))
-                        stringList << newValue;
-                }
-                iter++;
-            }
-            testPropertyManager->SetAttributeValues(rootProperty_, stringList);
-        }
+        isInitialized_ = false;
     }
 
     //-------------------------REAL ATTRIBUTE TYPE-------------------------
@@ -259,6 +240,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -282,6 +264,8 @@ namespace ECEditor
                 }
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<Real>::SendNewValueToAttribute(QtProperty *property)
@@ -338,6 +322,8 @@ namespace ECEditor
                 }
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<int>::InitializeEditor()
@@ -361,6 +347,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -420,6 +407,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -453,6 +441,8 @@ namespace ECEditor
                 }
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<bool>::ValueSelected(const QtProperty *property, const QString &value)
@@ -506,6 +496,8 @@ namespace ECEditor
                 }
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<Vector3df>::InitializeEditor()
@@ -539,6 +531,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -630,6 +623,8 @@ namespace ECEditor
                 }
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<Color>::InitializeEditor()
@@ -675,6 +670,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -764,6 +760,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        isInitialized_ = true;
         emit AttributeEditorCreated(rootProperty_);
     }
 
@@ -793,6 +790,8 @@ namespace ECEditor
                 iter++;
             }
         }
+        else
+            UpdateMultiEditorValue();
     }
 
     template<> void ECAttributeEditor<std::string>::ValueSelected(const QtProperty *property, const QString &value)

@@ -14,7 +14,11 @@ namespace Ogre
 
 namespace RexLogic
 {
-    REXLOGIC_MODULE_API void CreatePrimGeometry(Foundation::Framework* framework, Ogre::ManualObject* object, EC_OpenSimPrim& primitive, bool optimisations_enabled = true);
+    //! Generates prim geometry into an Ogre manual object from prim parameters and returns it or 0 if something went wrong
+    /*! Note that the same manual object is returned for each call, so you should immediately CommitChanges() into an
+        EC_OgreCustomObject before calling CreatePrimGeometry again.
+     */
+    REXLOGIC_MODULE_API Ogre::ManualObject* CreatePrimGeometry(Foundation::Framework* framework, EC_OpenSimPrim& primitive, bool optimisations_enabled = true);
 }
 
 #endif

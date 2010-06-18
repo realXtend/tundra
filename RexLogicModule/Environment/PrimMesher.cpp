@@ -965,7 +965,9 @@ namespace PrimMesher
         taperY = 0.0f;
         radius = 0.0f;
         revolutions = 1.0f;
-        stepsPerRevolution = 24;
+        // Reduced prim lod
+        stepsPerRevolution = 12;
+        //stepsPerRevolution = 24;
 
         hasProfileCut = false;
         hasHollow = false;
@@ -1005,7 +1007,9 @@ namespace PrimMesher
         taperY = 0.0f;
         radius = 0.0f;
         revolutions = 1.0f;
-        stepsPerRevolution = 24;
+        // Reduced prim lod
+        stepsPerRevolution = 12;
+        //stepsPerRevolution = 24;
 
         hasProfileCut = false;
         hasHollow = false;
@@ -1067,6 +1071,9 @@ namespace PrimMesher
         if (twistTotalAbs > 0.01f)
             steps += (int)(twistTotalAbs * 3.66); //  dahlia's magic number
 
+        // Reduced prim lod: cap maximum steps
+        if (steps > 24) steps = 24;
+
         float start = -0.5f;
         float stepSize = length / (float)steps;
         float percentOfPathMultiplier = stepSize;
@@ -1101,7 +1108,8 @@ namespace PrimMesher
             if (hollowSides != 4)
                 hollow *= 0.707f;
         }
-        else if (sides == 24 && hollowSides == 4)
+        // Support also 12 side reduced lod
+        else if ((sides == 24 && hollowSides == 4) || (sides == 12 && hollowSides == 4))
             hollow *= 1.414f;
 
         Profile profile(sides, profileStart, profileEnd, hollow, hollowSides, true);
@@ -1388,7 +1396,9 @@ namespace PrimMesher
         normals.clear();
 
         int step = 0;
-        int steps = 24;
+        // Reduced prim lod
+        int steps = 12;
+        //int steps = 24;
 
         normalsProcessed = false;
 

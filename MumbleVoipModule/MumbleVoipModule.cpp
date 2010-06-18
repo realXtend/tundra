@@ -23,7 +23,7 @@ namespace MumbleVoip
     std::string MumbleVoipModule::module_name_ = "MumbleVoipModule";
 
     MumbleVoipModule::MumbleVoipModule()
-        : ModuleInterfaceImpl(module_name_),
+        : ModuleInterface(module_name_),
           link_plugin_(0),
           server_info_provider_(0),
           in_world_voice_provider_(0),

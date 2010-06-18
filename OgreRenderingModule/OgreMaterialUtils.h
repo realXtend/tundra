@@ -1,7 +1,12 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   OgreMaterialUtils.h
+ *  @brief  Contains some often needed utlitity functions when dealing with OGRE material scripts.
+ */
 
-#ifndef incl_OgreMaterialUtils_h
-#define incl_OgreMaterialUtils_h
+#ifndef incl_OgreRenderingModule_OgreMaterialUtils_h
+#define incl_OgreRenderingModule_OgreMaterialUtils_h
 
 #include <OgreMaterial.h>
 
@@ -34,6 +39,9 @@ namespace OgreRenderer
     //! Gets material suffix by variation type
     std::string OGRE_MODULE_API GetMaterialSuffix(uint variation);
     
+    //! Gets variation type by material suffix
+    uint GetMaterialVariation(const std::string& suffix);
+    
     //! Returns if material suffix valid
     bool OGRE_MODULE_API IsMaterialSuffixValid(const std::string& suffix);
     
@@ -47,12 +55,22 @@ namespace OgreRenderer
 
     Ogre::MaterialPtr OGRE_MODULE_API CloneMaterial(const std::string& sourceMaterialName, const std::string &newName);
 
-    //! Creates legacy material variations from texture
+    //! Create a legacy material variation, if it does not yet exist
     /*! @param texture_name texture to use
-        @param update if true, will recreate the materials even if they already exist (used when updating the texture, and
-        texture alpha settings possibly change)
+        @param variation Legacy variation type
      */
-    void OGRE_MODULE_API CreateLegacyMaterials(const std::string& texture_name, bool update = false);
+    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLegacyMaterial(const std::string& textureName, uint variation);
+    
+    //! Create a legacy material variation, if it does not yet exist
+    /*! @param texture_name texture to use
+        @param suffix Legacy variation type as a string suffix
+     */
+    Ogre::MaterialPtr OGRE_MODULE_API GetOrCreateLegacyMaterial(const std::string& textureName, const std::string& suffix);
+    
+    //! Update existing legacy material variations from texture
+    /*! @param texture_name texture to use
+     */
+    void OGRE_MODULE_API UpdateLegacyMaterials(const std::string& texture_name);
 
     //! Sets texture unit on a material to a given texture name.
     /*! If texture cannot actually be found, uses the missing texture texture
@@ -69,9 +87,13 @@ namespace OgreRenderer
     
     //! Creates a material resource from an Ogre material pointer
     Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
-    
+
     //! Deletes a material. Note: the material pointer passed in will be set to null
     void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
+
+    /// Clones a new Ogre material that renders using the given ambient color. 
+    /// This function will be removed or refactored later on, once proper material system is present. -jj.
+    void OGRE_MODULE_API DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b);
 }
 
 #endif

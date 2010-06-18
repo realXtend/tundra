@@ -116,7 +116,6 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     // Note: we assume prim entity is created because of a message from network
     Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
 
-    //DebugCreateOgreBoundingBox(rexlogicmodule_, entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()),"AmbientRed");
     return entity;
 }
 
@@ -947,8 +946,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         // Create/update geometry
         if (prim.HasPrimShapeData)
         {
-            CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
-            custom.CommitChanges();
+            Ogre::ManualObject* manual = CreatePrimGeometry(rexlogicmodule_->GetFramework(), prim);
+            custom.CommitChanges(manual);
             
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
@@ -1416,12 +1415,12 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
     assert(res.get());
-    if (!res) 
+    if (!res)
         return;
     assert(res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic());
     if (res->GetType() != OgreRenderer::OgreTextureResource::GetTypeStatic()) 
         return;
-           
+    
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
@@ -1438,13 +1437,14 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
             uint idx = i->first;
             if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
             {
-                // Use a legacy material with the same name as the texture, created automatically by renderer
+                // Use a legacy material with the same name as the texture
+                OgreRenderer::GetOrCreateLegacyMaterial(res->GetId(), OgreRenderer::LEGACYMAT_NORMAL);
                 meshptr->SetMaterial(idx, res->GetId());
                 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
-                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);            
+                event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
             }
             ++i;
         }
@@ -1459,11 +1459,11 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     assert(res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic());
     if (res->GetType() != OgreRenderer::OgreMaterialResource::GetTypeStatic()) 
         return;
-           
+    
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();         
-       
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    
     // Handle material ready for prim
     if (prim->DrawType == RexTypes::DRAWTYPE_PRIM)
     {
@@ -1473,8 +1473,8 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
             // Update geometry now that the material exists
             if (prim->HasPrimShapeData)
             {
-                CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom->GetObject(), *prim);
-                custom->CommitChanges();
+                Ogre::ManualObject* manual = CreatePrimGeometry(rexlogicmodule_->GetFramework(), *prim);
+                custom->CommitChanges(manual);
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;

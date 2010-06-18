@@ -30,6 +30,7 @@
 #include <QIcon>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QCloseEvent>
 
 #include "MemoryLeakCheck.h"
 
@@ -71,6 +72,12 @@ namespace OgreRenderer
         //! list of subscribed listeners
         ListenerList listeners_;
     };
+
+    void NaaliMainWindow::closeEvent(QCloseEvent* e)
+    {
+        framework_->Exit();
+        e->ignore();
+    }
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
@@ -166,7 +173,7 @@ namespace OgreRenderer
     void Renderer::InitializeQt()
     {
         ///\todo Memory leak below, see very end of ~Renderer() for comments.
-        main_window_ = new QWidget;
+        main_window_ = new NaaliMainWindow(framework_);
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
@@ -913,6 +920,7 @@ namespace OgreRenderer
 
         // Hide ui
         q_ogre_world_view_->HideUiOverlay();
+        q_ogre_world_view_->RenderOneFrame();
 
         /*** World image ***/
         int window_width = renderwindow_->getWidth();
@@ -964,7 +972,7 @@ namespace OgreRenderer
         Ogre::Viewport *vp = render_texture->addViewport(screenshot_cam);
         render_texture->update();
 
-        SAFE_DELETE(pixelData);
+        SAFE_DELETE_ARRAY(pixelData);
         pixelData = new Ogre::uchar[window_width * window_height * 4];
         pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, pixelData);
         render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
@@ -976,10 +984,11 @@ namespace OgreRenderer
         Ogre::TextureManager::getSingleton().remove("ScreenshotTexture");
         GetSceneManager()->destroySceneNode(cam_node);
         GetSceneManager()->destroyCamera(screenshot_cam);
-        SAFE_DELETE(pixelData);
+        SAFE_DELETE_ARRAY(pixelData);
 
         // Show ui
         q_ogre_world_view_->ShowUiOverlay();
+        q_ogre_world_view_->RenderOneFrame();
     }
 
     void Renderer::AddResourceDirectory(const std::string& directory)
@@ -1036,5 +1045,16 @@ namespace OgreRenderer
     { 
         if (q_ogre_ui_view_) 
             q_ogre_ui_view_->UpdateKeyBindings(bindings); 
+    }
+
+    void Renderer::HideCurrentWorldView()
+    {
+        q_ogre_world_view_->HideUiOverlay();
+    }
+    
+    void Renderer::ShowCurrentWorldView()
+    {
+          q_ogre_world_view_->ShowUiOverlay();
+
     }
 }

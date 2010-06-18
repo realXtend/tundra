@@ -9,8 +9,10 @@
 
 namespace CommunicationsService
 {
+    std::string CommunicationsModule::type_name_static_ = "Communications";
+
     CommunicationsModule::CommunicationsModule()
-        : ModuleInterfaceImpl(type_static_)
+        : ModuleInterface(type_name_static_)
     {
     }
 
@@ -45,7 +47,7 @@ namespace CommunicationsService
     {
 //        CommunicationsWidget = new CommunicationsWidget();
         // Create Communication widgets
-        //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         //if (ui_module.get())
         {
             //UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);

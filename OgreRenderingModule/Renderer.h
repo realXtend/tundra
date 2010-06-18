@@ -15,6 +15,7 @@
 #include <QTime>
 #include <QRect>
 #include <QImage>
+#include <QWidget>
 
 namespace Foundation
 {
@@ -46,6 +47,23 @@ namespace OgreRenderer
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
 
+    //! Naali main window, which overrides the closeEvent
+    class OGRE_MODULE_API NaaliMainWindow : public QWidget
+    {
+    public:
+        NaaliMainWindow(Foundation::Framework* framework) :
+            QWidget(),
+            framework_(framework)
+        {
+        }
+        
+    protected:
+        void closeEvent(QCloseEvent* e);
+        
+    private:
+        Foundation::Framework* framework_;
+    };
+
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
         \ingroup OgreRenderingModuleClient
@@ -53,6 +71,10 @@ namespace OgreRenderer
     class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
     {
         Q_OBJECT
+
+    public slots:
+        //! Renders the screen
+        virtual void Render();
 
     public:
         //! Constructor
@@ -68,9 +90,6 @@ namespace OgreRenderer
 
         //! Destructor
         virtual ~Renderer();
-
-        //! Renders the screen
-        virtual void Render();
 
         //! Do raycast into the world from viewport coordinates.
         /*! The coordinates are a position in the render window, not scaled to [0,1].
@@ -165,6 +184,11 @@ namespace OgreRenderer
 
         //! Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
+
+        //! Hides world view
+        void HideCurrentWorldView(); 
+        //! Shows world view
+        void ShowCurrentWorldView();
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.

@@ -11,6 +11,9 @@
 #include "CoreStringUtils.h"
 #include <map>
 
+#include "MultiEditPropertyManager.h"
+#include "MultiEditPropertyFactory.h"
+
 class QtDoublePropertyManager;
 class QtVariantPropertyManager;
 class QtProperty;
@@ -38,6 +41,7 @@ namespace ECEditor
      * to see how other attribute types have been included into the editor.
      * Todo! Make this class struture more simple and rename those methods in a way so that they give a user a better picture what they are ment to do.
      * Todo! Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory need to be registered to PropertyBrowser elsewhere.
+     * \ingroup ECEditorModuleClient.
      */
     class ECAttributeEditorBase: public QObject
     {
@@ -75,18 +79,22 @@ namespace ECEditor
         //! Reintialize the editor's ui elements.
         void UpdateEditorUI();
 
-        //! Get new attribute values and update them in browser window.
+        //! Get new attribute values and update them in browser window. 
         virtual void UpdateEditorValue() = 0;
 
     public slots:
         //! update edtior ui when attribute value is changed.
         void AttributeValueChanged() 
         {
-            UpdateEditorValue();
+            UpdateEditorUI();
+            //UpdateEditorValue();
         }
         
         //! Listens if any of editor's values has been changed and then for it's attributes need to be updated.
-        void SendNewAttributeValue(QtProperty *property) { SendNewValueToAttribute(property); }
+        void SendNewAttributeValue(QtProperty *property) 
+        { 
+            SendNewValueToAttribute(property); 
+        }
 
         //! Add new entity component into the map. Note! editor wont update the editor's ui until the user
         //! has called updateEditor() method, this way editor wont redraw it's elements until the user has inserted
@@ -144,6 +152,7 @@ namespace ECEditor
         typedef std::map<Foundation::ComponentWeakPtr, Foundation::AttributeInterface *> ECAttributeMap;
         ECAttributeMap attributeMap_;
         bool useMultiEditor_;
+        bool isInitialized_;
     };
 
     //! ECAttributeEditor template class that initializes each attribute type that we want to support in QtPropertyBrowser.
@@ -183,13 +192,6 @@ namespace ECEditor
         virtual void SendNewValueToAttribute(QtProperty *property);
         void InitializeEditor();
 
-        //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
-        void InitializeMultiEditor();
-
-        //! Get each components atttribute value and convert it to string and put it send the string vector to
-        //! multieditor manager.
-        void UpdateMultiEditorValue();
-
         //! Sends a new value to each component and emit a AttributeChanged signal.
         //! @param value_ new value that is sended into component's attribute.
         void SetValue(const T &value)
@@ -227,10 +229,50 @@ namespace ECEditor
             }
             emit AttributeChanged(attributeName_.toStdString());
         }
-    };
 
-    template<typename T> void ECAttributeEditor<T>::InitializeMultiEditor();
-    template<typename T> void ECAttributeEditor<T>::UpdateMultiEditorValue();
+        //! Create multiedit property manager and factory if listenEditorChangedSignal_ flag is rised.
+
+        void InitializeMultiEditor()
+        {
+            ECAttributeEditorBase::PreInitializeEditor();
+            if(useMultiEditor_)
+            {
+                MultiEditPropertyManager *multiEditManager = new MultiEditPropertyManager(this);
+                MultiEditPropertyFact *multiEditFactory = new MultiEditPropertyFact(this);
+                propertyMgr_ = multiEditManager;
+                factory_ = multiEditFactory;
+
+                rootProperty_ = multiEditManager->addProperty(attributeName_);
+                owner_->setFactoryForManager(multiEditManager, multiEditFactory);
+                UpdateMultiEditorValue();
+                QObject::connect(multiEditManager, SIGNAL(ValueChanged(const QtProperty *, const QString &)), this, SLOT(MultiEditValueSelected(const QtProperty *, const QString &)));
+            }
+        }
+
+        //! Get each components atttribute value and convert it to string and put it send the string vector to
+        //! multieditor manager.
+        void UpdateMultiEditorValue()
+        {
+            if(useMultiEditor_ && componentIsSerializable_)
+            {
+                ECAttributeMap::iterator iter = attributeMap_.begin();
+                QStringList stringList;
+                MultiEditPropertyManager *testPropertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
+                while(iter != attributeMap_.end())
+                {
+                    if(rootProperty_ && iter->second)
+                    {
+                        Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
+                        QString newValue(attribute->ToString().c_str());
+                        if(!stringList.contains(newValue))
+                            stringList << newValue;
+                    }
+                    iter++;
+                }
+                testPropertyManager->SetAttributeValues(rootProperty_, stringList);
+            }
+        }
+    };
 
     template<> void ECAttributeEditor<Real>::UpdateEditorValue();
     template<> void ECAttributeEditor<Real>::InitializeEditor();

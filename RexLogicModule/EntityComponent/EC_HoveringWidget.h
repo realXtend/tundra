@@ -2,9 +2,9 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_HoveringWidget.h
- *  @brief  EC_HoveringWidget shows a hovering Widget attached to an entity.
+ *  @brief  EC_HoveringWidget shows a hovering widget attached to an entity.
  *  @note   The entity must have EC_OgrePlaceable component available in advance.
-*/
+ */
 
 #ifndef incl_EC_HoveringWidget_h
 #define incl_EC_HoveringWidget_h
@@ -14,23 +14,14 @@
 #include "Vector3D.h"
 #include "RexLogicModuleApi.h"
 
-
-
-#include <QFont>
-#include <QColor>
-#include <QLinearGradient>
 #include <QSizeF>
-#include <QTimer>
+#include <QPixmap>
 
-class QGraphicsProxyWidget;
-
-//Needs refactor
 namespace Ogre
 {
     class SceneNode;
     class BillboardSet;
     class Billboard;
-    class MaterialPtr;
 }
 
 namespace OgreRenderer
@@ -38,20 +29,21 @@ namespace OgreRenderer
     class Renderer;
 }
 
-class QPushButton;
-
 QT_BEGIN_NAMESPACE
+class QPushButton;
 class QTimeLine;
-QT_END_NAMESPACE
 class QWidget;
+class QGraphicsProxyWidget;
+class QTimer;
+QT_END_NAMESPACE
+
 namespace RexLogic
 {
     class HoveringButtonsController;
     class HoveringNameController;
     class DetachedWidgetController;
 
-
-    //this class is component used to display text and buttons with an entity
+    /// Shows a hovering widget attached to an entity.
     class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
     {
         Q_OBJECT
@@ -66,25 +58,25 @@ namespace RexLogic
         /// Destructor.
         ~EC_HoveringWidget();
 
-        
         //! @return billboard that shows buttons
-        Ogre::Billboard* const GetButtonsBillboard(){return buttonsbillboard_;}
+        Ogre::Billboard* const GetButtonsBillboard() const { return buttonsbillboard_; }
+
         //! @return billboardset that owns the buttons billboard
-        Ogre::BillboardSet* const GetButtonsBillboardSet(){return buttonsbillboardSet_;}
+        Ogre::BillboardSet* const GetButtonsBillboardSet()const { return buttonsbillboardSet_; }
+
         //! @return get size of the button billboard in screenspace
-        QSizeF GetButtonsBillboardScreenSpaceSize(){ return bb_buttons_size_view; }
-
-
+        QSizeF GetButtonsBillboardScreenSpaceSize() const { return bb_buttons_size_view; }
 
     public slots:
-
         //!called when widget is hovered
         void HoveredOver();
+
         //!Initializes billboards, must be called before use
         void InitializeBillboards();
-        
+
         //Disables/enables widget
         void SetDisabled(bool val);
+
         //! @ return true if widget is disabled
         bool IsDisabled(){return disabled_;}
 
@@ -93,14 +85,16 @@ namespace RexLogic
 
         //! @return true if buttons ase disabled
         bool IsButtonsDisabled(){return buttons_disabled_;}
-        
+
         //! show/hide buttons
         void ShowButtons(bool val);
+
         /// Shows the widget
         void Show();
 
         /// Shows the widget with animation (not currently working properly)
         void AnimatedShow();
+
         //! notifies that entity was clicked
         void EntityClicked(int msec_to_show = 5000);
 
@@ -157,16 +151,19 @@ namespace RexLogic
         /// Redraws the hovering text with the current text, font and color.
         void Redraw();
 
-    private:
+        /// Check for name width
+        int CheckNameTagWidth() const;
 
+    private:
         /// Returns pixmap with widget rendered to it
-        QPixmap GetPixmap(QWidget& w, QRect dimensions);
+        QPixmap GetPixmap(QWidget &w, const QRect &dimensions);
 
         /// Renderer pointer.
         boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
         /// Ogre billboard set.
         Ogre::BillboardSet *namebillboardSet_;
+
         /// Ogre billboard set.
         Ogre::BillboardSet *buttonsbillboardSet_;
 
@@ -178,9 +175,15 @@ namespace RexLogic
 
         /// Name of the material used for the name billboard set.
         std::string namematerialName_;
+
         /// Name of the material used for the buttons billboard set.
         std::string buttonsmaterialName_;
 
+        /// Name of the 1. texture used for hovering widget.
+        std::string hoveringTexture1Name_;
+
+        /// Name of the 2. texture used for hovering widget.
+        std::string hoveringTexture2Name_;
 
         // Visibility animation timeline.
         QTimeLine *visibility_animation_timeline_;
