@@ -36,6 +36,40 @@ namespace OgreRenderer
         }
     }
     
+    bool OgreTextureResource::SetDataFromImage(Foundation::AssetPtr source)
+    {
+        if (!source)
+        {
+            OgreRenderingModule::LogError("Null source image data pointer");
+            return false;
+        }
+        if (!source->GetSize())
+        {
+            OgreRenderingModule::LogError("Zero sized image asset");
+            return false;
+        }
+        try
+        {
+            RemoveTexture();
+
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
+            Ogre::Image image;
+            image.load(stream);
+            ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
+            
+        }
+        catch (Ogre::Exception &e)
+        {
+            OgreRenderingModule::LogError("Failed to create texture " + id_ + ": " + std::string(e.what()));
+            RemoveTexture();
+            return false;
+        }
+
+        OgreRenderingModule::LogDebug("Ogre texture " + id_ + " created");
+        level_ = 0;
+        return true;
+    }
+    
     bool OgreTextureResource::SetData(Foundation::TexturePtr source)
     {
         if (!source)
@@ -128,6 +162,9 @@ namespace OgreRenderer
     {
         if (ogre_texture_.get())
         {
+            // As far as the legacy materials are concerned, DXT1 is not alpha
+            if (ogre_texture_->getFormat() == Ogre::PF_DXT1)
+                return false;
             if (Ogre::PixelUtil::hasAlpha(ogre_texture_->getFormat()))
                 return true;
         }
@@ -150,5 +187,20 @@ namespace OgreRenderer
     bool OgreTextureResource::IsValid() const
     {
         return (!ogre_texture_.isNull());
+    }
+    
+    void OgreTextureResource::RemoveTexture()
+    {
+        if (!ogre_texture_.isNull())
+        {
+            std::string tex_name = ogre_texture_->getName();
+            ogre_texture_.setNull(); 
+            
+            try
+            {
+                Ogre::TextureManager::getSingleton().remove(tex_name);
+            }
+            catch (...) {}
+        }
     }
 }
