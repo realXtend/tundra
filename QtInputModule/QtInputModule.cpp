@@ -14,7 +14,7 @@
 #include <boost/make_shared.hpp>
 
 QtInputModule::QtInputModule() 
-:ModuleInterfaceImpl("QtInputModule")
+:ModuleInterface("QtInputModule")
 {
 }
 
