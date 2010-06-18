@@ -212,6 +212,10 @@ namespace OgreRenderer
         //! Returns the main window.
         QWidget *GetMainWindow() const { return main_window_; }
 
+        /// Returns the backbuffer image that contains the UI layer of the application screen.
+        /// Used to perform alpha-keying based input.
+        QImage &GetBackBuffer() { return backBuffer; }
+
     public slots:
         //! Do a frustum query to the world from viewport coordinates.
         virtual QVariantList FrustumQuery(QRect &viewrect);
@@ -302,6 +306,9 @@ namespace OgreRenderer
 
         //! handler for post-processing effects
         CompositionHandler c_handler_;
+
+        // Compositing back buffer
+        QImage backBuffer;
 
         //! last width/height
         int last_height_;

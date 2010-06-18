@@ -7,7 +7,7 @@
  *
  *  Usage:
  *  // In the begging of cpp file.
- *  #include "LoggingFunctions."
+ *  #include "LoggingFunctions.h"
  *  DEFINE_POCO_LOGGING_FUNCTIONS("MyClass")
  *  // Later on...
  *  LogInfo("Hello!");

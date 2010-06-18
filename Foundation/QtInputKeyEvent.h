@@ -49,7 +49,7 @@ public:
 	{
         KeyEventInvalid, ///< An invalid event. Used to check for improperly filled structure.
 		KeyPressed, ///< The key was pressed, or repeated by key repeat. Read the keyPressCount field to distinguish between these.
-        KeyDown, ///< The key is being held down. This event is generated once per frame.
+        KeyDown, ///< The key is being held down. This event is generated once per frame. \todo Not yet implemented.
 		KeyReleased, ///< The key was released.
 	};
 
@@ -75,6 +75,9 @@ public:
 
 	///\todo Add a time stamp of the event.
 	///\todo Add hold duration if this is a release/repeated press.
+
+    /// Returns true if this event represents a repeated keypress.
+    bool IsRepeat() const { return eventType == KeyPressed && keyPressCount > 1; }
 
     /// A conveniency accessor to otherHeldKeys field.
 	/// @return True if the key with the given keycode was held down when this event occurred.

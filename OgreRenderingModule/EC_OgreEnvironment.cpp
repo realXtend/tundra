@@ -628,7 +628,7 @@ void EC_OgreEnvironment::InitShadows()
     float shadowFarDist = 50;
     unsigned short shadowTextureSize = settings.value("depthmap_size", "1024").toInt();  
 
-    //this is also used to specify the number of frustrum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
+    //this is also used to specify the number of frustum splits. Note that if this value is changed, most materials and shadowing shaders need to be changed
     //also.
     size_t shadowTextureCount = 3;
     Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);

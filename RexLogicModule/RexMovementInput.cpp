@@ -33,6 +33,10 @@ void SendPressOrRelease(Foundation::EventManagerPtr eventMgr, const KeyEvent &ke
 
 void RexMovementInput::HandleKeyEvent(KeyEvent &key)
 {
+    // We ignore all key presses that are repeats.
+    if (key.eventType == KeyEvent::KeyPressed && key.keyPressCount > 1)
+        return;
+
     ///\todo Read these through input mappings configuration list.
 
     const Qt::Key walkForward = Qt::Key_W;
@@ -61,10 +65,7 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     case rotateRight: SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); break;
     case up:   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); break;
     case down: SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); break;
-    case flyModeToggle: 
-        if (key.eventType == KeyEvent::KeyPressed)
-            SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); 
-        break;
+    case flyModeToggle: SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); break;
     case cameraModeToggle:
         if (key.eventType == KeyEvent::KeyPressed)
         {
