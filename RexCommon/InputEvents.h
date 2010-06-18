@@ -91,8 +91,8 @@ namespace Input
 
         //! Custom key released input event. Can be used to catch any key on the keyboard, contains optional modifier key.
         //! Uses Key event data class.
-        static const event_id_t KEY_PRESSED = 39;
-        static const event_id_t KEY_RELEASED = 40;
+//        static const event_id_t KEY_PRESSED = 39;
+//        static const event_id_t KEY_RELEASED = 40;
 
         //! user clicked mouse over the viewport, usable with f.ex. raycasting. Movement event data class is used.
         static const event_id_t INWORLD_CLICK = 41;
@@ -106,7 +106,7 @@ namespace Input
 */
         //! Mouse dragged with left button input event.
         static const event_id_t MOUSEDRAG = 49;
-        static const event_id_t MOUSEDRAG_STOPPED = 50;
+//        static const event_id_t MOUSEDRAG_STOPPED = 50;
 
         //! Keyboard zoom in and out
         static const event_id_t ZOOM_IN_PRESSED = 51;
@@ -137,7 +137,7 @@ namespace Input
         static const event_id_t NAALI_BINDINGS_CHANGED = 102;
 
         //! UI unfocused, set focus on in-world scene
-        static const event_id_t UNFOCUS_UI = 103;
+//        static const event_id_t UNFOCUS_UI = 103;
 
 		//! Input event for switching to camera tripod
 		static const event_id_t CAMERA_TRIPOD = 104;

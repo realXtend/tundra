@@ -31,6 +31,15 @@ class InputContext : public QObject
 {
     Q_OBJECT
 
+public:
+    explicit InputContext(const char *name);
+
+    ~InputContext();
+
+    /// Updates the buffered key presses. Called by the input service to
+    /// proceed on to the next input frame.
+    void UpdateFrame();
+
 signals:
     /// Emitted for each key code, for each event type.
     void OnKeyEvent(KeyEvent &key);
@@ -60,9 +69,7 @@ signals:
     void MouseMiddleReleased(MouseEvent &mouse);
     void MouseRightReleased(MouseEvent &mouse);
 
-public:
-    explicit InputContext(const char *name);
-
+public slots:
     /// By registering to InputContext::KeyPressed, you can receive a signal
     /// directly for a given keyCode, without having to register to OnKeyEvent
     /// for all keys, and then if()'ing if you had the correct one you were
@@ -85,7 +92,7 @@ public:
 
     /// Returns the user-defined name of this InputContext. The name is
     /// read-only, and associated with the context at creation time.
-    std::string Name() const { return name; }
+    QString Name() const { return name; }
 
     /// Tests whether the given key was pressed down in this context.
     /// @return The keypress count for the given keycode. If 0, means that
@@ -125,15 +132,11 @@ public:
     void SetTakeKeyboardEventsOverQt(bool take) { takeKeyboardEventsOverQt = take; }
     bool TakesKeyboardEventsOverQt() const { return takeKeyboardEventsOverQt; }
 
-    /// Updates the buffered key presses. Called by the input service to
-    /// proceed on to the next input frame.
-    void UpdateFrame();
-
     /// Forces all held down keys to be released, and the appropriate release events to be sent.
     void ReleaseAllKeys();
 
 private:
-    typedef std::map<Qt::Key, KeyEventSignal> KeyEventSignalMap;
+    typedef std::map<Qt::Key, KeyEventSignal*> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
     /// has registered a signal-slot connection for.
     KeyEventSignalMap registeredKeyEventSignals;
@@ -161,7 +164,7 @@ private:
     /// If true, this context receives keyboard events even when a QGraphicsItem in the scene has keyboard focus. Default: false.
     bool takeKeyboardEventsOverQt;
 
-    std::string name;
+    QString name;
 
     // InputContexts are noncopyable.
     InputContext(const InputContext &);

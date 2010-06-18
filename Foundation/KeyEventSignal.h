@@ -19,9 +19,11 @@ signals:
     void KeyReleased(KeyEvent &key);
 
 public:
+    KeyEventSignal() {}
     /// The Qt keycode that this signal object corresponds to.
     Qt::Key keyCode;
 
+public slots:
     void OnKeyPressed(KeyEvent &key) { emit KeyPressed(key); }
     void OnKeyDown(KeyEvent &key) { emit KeyDown(key); }
     void OnKeyReleased(KeyEvent &key) { emit KeyReleased(key); }
