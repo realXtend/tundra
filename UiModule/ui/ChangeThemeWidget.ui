@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>SoundSettings</class>
- <widget class="QWidget" name="SoundSettings">
+ <class>ChangeTheme</class>
+ <widget class="QWidget" name="ChangeTheme">
   <property name="geometry">
    <rect>
     <x>0</x>
