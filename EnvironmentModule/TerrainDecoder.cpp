@@ -1,7 +1,10 @@
-/// @file TerrainDecoder.cpp
-/// @brief Performs IDCT decompression on terrain height map data.
-///        Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
-/// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   TerrainDecoder.cpp
+ *  @brief  Performs IDCT decompression on terrain height map data.
+ *          Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
+ */
 
 #include "StableHeaders.h"
 
@@ -224,7 +227,7 @@ void DecompressTerrainPatch(std::vector<float> &output, int *patchData, const Te
 
     if (groupHeader.patchSize != 16)
     {
-        ///\todo Output log warning - unsupported patch size present!
+        EnvironmentModule::LogWarning("TerrainDecoder:DecompressTerrainPatch: Unsupported patch size present!");
         return;
     }
 
@@ -260,8 +263,7 @@ void DecompressLand(std::vector<DecodedTerrainPatch> &patches, ProtocolUtilities
         // The MSB of header.x and header.y are unused, or used for some other purpose?
         if (patch.header.x >= cPatchesPerEdge || patch.header.y >= cPatchesPerEdge)
         {
-            ///\todo Log out warning - invalid packet?
-            EnvironmentModule::LogInfo("Invalid patch data!");
+            EnvironmentModule::LogWarning("TerrainDecoder:DecompressLand: Invalid patch data!");
             return;
         }
 

@@ -29,7 +29,7 @@ ComponentInterface::~ComponentInterface()
 Framework* ComponentInterface::GetFramework() const
 {
     if (GetParentEntity())
-        GetParentEntity()->GetFramework();
+        return GetParentEntity()->GetFramework();
     else
         return 0;
 }
