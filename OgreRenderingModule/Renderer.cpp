@@ -902,6 +902,7 @@ namespace OgreRenderer
 
         // Hide ui
         q_ogre_world_view_->HideUiOverlay();
+        q_ogre_world_view_->RenderOneFrame();
 
         /*** World image ***/
         int window_width = renderwindow_->getWidth();
@@ -969,6 +970,7 @@ namespace OgreRenderer
 
         // Show ui
         q_ogre_world_view_->ShowUiOverlay();
+        q_ogre_world_view_->RenderOneFrame();
     }
 
     void Renderer::AddResourceDirectory(const std::string& directory)
