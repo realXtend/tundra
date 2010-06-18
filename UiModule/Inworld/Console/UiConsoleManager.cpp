@@ -113,6 +113,10 @@ namespace CoreUi
             new_size.setHeight(rect.height() * proxy_widget_->GetConsoleRelativeHeight());
             proxy_widget_->setGeometry(new_size);
         }
+        else
+        {
+            proxy_widget_->hide();
+        }
         
     }
 
