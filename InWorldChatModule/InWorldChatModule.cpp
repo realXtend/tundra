@@ -355,7 +355,7 @@ bool InWorldChatModule::CreateLogFile()
 {
     // Create filename. Format: "<server_name>_yyyy_dd_MM_<counter>.log"
     // Use QSettings for getting the application settings home dir
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "chatlogs/");
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "chatlogs/");
     QString path = settings.fileName();
     path.replace(".ini", "");
     QDir dir(path);

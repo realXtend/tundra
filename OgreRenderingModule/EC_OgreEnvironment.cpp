@@ -622,7 +622,7 @@ void EC_OgreEnvironment::InitShadows()
         using_directx = true;
     }
 
-    QSettings settings(QSettings::IniFormat, QSettings::UserScope, "realXtend","configuration/OgreRenderer");
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/OgreRenderer");
     QFile file(settings.fileName());
     if(!file.exists())
     {
