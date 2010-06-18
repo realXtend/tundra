@@ -37,6 +37,10 @@ void SendPressOrRelease(Foundation::EventManagerPtr eventMgr, const KeyEvent &ke
 
 void RexMovementInput::HandleKeyEvent(KeyEvent &key)
 {
+    // This function handles received input events and translates them to the "traditional"-style
+    // Naali input events. New modules should really prefer using an InputContext of their
+    // own to read input data, or use the QtInputService API directly.
+
     // We ignore all key presses that are repeats.
     if (key.eventType == KeyEvent::KeyPressed && key.keyPressCount > 1)
         return;
@@ -78,12 +82,18 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
             eventMgr->SendEvent("Input", Input::Events::SWITCH_CAMERA_STATE, 0); 
         }
         break;
+    default:
+        break;
     }
 }
 
 void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
 {
     Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
+
+    // This function handles received input events and translates them to the "traditional"-style
+    // Naali input events. New modules should really prefer using an InputContext of their
+    // own to read input data, or use the QtInputService API directly.
 
     // We pass this event struct forward to Naali event tree in most cases above,
     // so fill it here already.
@@ -95,8 +105,6 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
     movement.y_.rel_ = mouse.relativeY;
     movement.z_.rel_ = mouse.relativeZ;
 
-//    framework->Input.SetMouseCursorVisible(!mouse.IsRightButtonDown());
-
     switch(mouse.eventType)
     {
     case MouseEvent::MousePressed:
@@ -105,6 +113,7 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
             // Left mouse button press produces click events on world objects (prims, mostly)
             if (mouse.button == MouseEvent::LeftButton)
                 eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
+
             // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
             // mouse input.
             if (mouse.button == MouseEvent::RightButton)
@@ -123,7 +132,9 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
            if (!framework->Input().IsMouseCursorVisible())
                mouse.handled = true; // Mouse is in RMB mouselook mode, suppress others from getting the move event.
         }
-        else // Otherwise, no buttons or only LMB is down, post a more generic MOUSEMOVE message.
+        else if (mouse.IsLeftButtonDown())
+            eventMgr->SendEvent("Input", Input::Events::MOUSEDRAG, &movement);
+        else // Neither LMB or RMB down == MOUSEMOVE.
             eventMgr->SendEvent("Input", Input::Events::MOUSEMOVE, &movement);
         break;
     case MouseEvent::MouseScroll:

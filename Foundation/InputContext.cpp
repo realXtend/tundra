@@ -7,6 +7,34 @@ InputContext::InputContext(const char *name_)
 {
 }
 
+InputContext::~InputContext()
+{
+    for(KeyEventSignalMap::iterator iter = registeredKeyEventSignals.begin();
+        iter != registeredKeyEventSignals.end(); ++iter)
+        delete iter->second;
+}
+
+KeyEventSignal &InputContext::RegisterKeyEvent(Qt::Key keyCode)
+{
+    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keyCode);
+    if (iter != registeredKeyEventSignals.end())
+        return *iter->second;
+    KeyEventSignal *signal = new KeyEventSignal();
+    signal->keyCode = keyCode;
+    registeredKeyEventSignals[keyCode] = signal;
+    return *signal;
+}
+
+void InputContext::UnregisterKeyEvent(Qt::Key keyCode)
+{
+    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keyCode);
+    if (iter != registeredKeyEventSignals.end())
+    {
+        delete iter->second;
+        registeredKeyEventSignals.erase(iter);
+    }
+}
+
 void InputContext::TriggerKeyEvent(KeyEvent &key)
 {
     KeyEventSignalMap::iterator keySignal = registeredKeyEventSignals.find(key.keyCode);
@@ -19,7 +47,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit KeyPressed(key);
         // 3. Emit the key code -specific signal for specific event.
         if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second.OnKeyPressed(key);
+            keySignal->second->OnKeyPressed(key);
         break;
     case KeyEvent::KeyDown:
         if (!IsKeyDownImmediate(key.keyCode))
@@ -28,7 +56,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit OnKeyEvent(key); // 1.
         emit KeyDown(key); // 2.
         if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second.OnKeyDown(key); // 3.
+            keySignal->second->OnKeyDown(key); // 3.
         break;
     case KeyEvent::KeyReleased:
         if (!IsKeyDownImmediate(key.keyCode))
@@ -37,7 +65,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit OnKeyEvent(key); // 1.
         emit KeyReleased(key); // 2.
         if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second.OnKeyReleased(key); // 3.
+            keySignal->second->OnKeyReleased(key); // 3.
         break;
     default:
         assert(false);

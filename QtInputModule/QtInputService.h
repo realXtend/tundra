@@ -38,9 +38,17 @@ public:
     /// Initializes the service and hooks it into the main application window.
     explicit QtInputService(Foundation::Framework *owner);
 
+    /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
+    /// Called by QtInputModule. Not for client use.
     void Update(f64 frametime);
 
-    /// Returns the topmost visible QGraphicsItem in the given client coordinates.
+    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
+    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
+    /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
+    boost::shared_ptr<InputContext> RegisterInputContext(const char *name, int priority);
+
+public slots:
+    /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
 	QGraphicsItem *GetVisibleItemAtCoords(int x, int y);
 
     /// Sets the mouse cursor in absolute (the usual default) or relative movement (FPS-like) mode.
@@ -89,10 +97,6 @@ public:
     /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
     QPoint MousePressedPos(int mouseButton) const;
-
-    /// Creates a new input context with the given name. The name is not an ID, i.e. it does not have to be unique with 
-    /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
-    boost::shared_ptr<InputContext> RegisterInputContext(const char *name, int priority);
 
     /// Called by QtInputService internally for each generate KeyEvent. This function passes the event forward to all registered
     /// input contexts. You may generate KeyEvent objects yourself and call this function directly to inject a custom KeyEvent

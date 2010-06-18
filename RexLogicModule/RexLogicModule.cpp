@@ -432,6 +432,8 @@ void RexLogicModule::Update(f64 frametime)
 // virtual
 bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    // RexLogicModule does not directly handle any of its own events. Instead, there is a list of delegate objects
+    // which handle events of each category. Pass the received event to the proper handler of the category of the event.
     PROFILE(RexLogicModule_HandleEvent);
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
     if (i != event_handlers_.end())
