@@ -946,8 +946,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         // Create/update geometry
         if (prim.HasPrimShapeData)
         {
-            CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom.GetObject(), prim);
-            custom.CommitChanges();
+            Ogre::ManualObject* manual = CreatePrimGeometry(rexlogicmodule_->GetFramework(), prim);
+            custom.CommitChanges(manual);
             
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity;
@@ -1415,12 +1415,12 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
 void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr res)
 {
     assert(res.get());
-    if (!res) 
+    if (!res)
         return;
     assert(res->GetType() == OgreRenderer::OgreTextureResource::GetTypeStatic());
     if (res->GetType() != OgreRenderer::OgreTextureResource::GetTypeStatic()) 
         return;
-           
+    
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
@@ -1459,11 +1459,11 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     assert(res->GetType() == OgreRenderer::OgreMaterialResource::GetTypeStatic());
     if (res->GetType() != OgreRenderer::OgreMaterialResource::GetTypeStatic()) 
         return;
-           
+    
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
-    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();         
-       
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    
     // Handle material ready for prim
     if (prim->DrawType == RexTypes::DRAWTYPE_PRIM)
     {
@@ -1473,8 +1473,8 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
             // Update geometry now that the material exists
             if (prim->HasPrimShapeData)
             {
-                CreatePrimGeometry(rexlogicmodule_->GetFramework(), custom->GetObject(), *prim);
-                custom->CommitChanges();
+                Ogre::ManualObject* manual = CreatePrimGeometry(rexlogicmodule_->GetFramework(), *prim);
+                custom->CommitChanges(manual);
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
