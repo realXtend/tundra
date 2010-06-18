@@ -34,7 +34,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name");
+            return std::string(cpath) + "\\" + std::string(APPLICATION_NAME);
         }
         throw Exception("Failed to access application data directory.");
     }
@@ -49,7 +49,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
+            return std::wstring(cpath) + L"\\" + ToWString(std::string(APPLICATION_NAME));
         }
         throw Exception("Failed to access application data directory.");
     }
@@ -64,7 +64,7 @@ namespace Foundation
             SHGetPathFromIDListA( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::string(cpath) + "\\" + framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name");
+            return std::string(cpath) + "\\" + std::string(APPLICATION_NAME);
         }
         throw Exception("Failed to access user documents directory.");
     }
@@ -80,7 +80,7 @@ namespace Foundation
             SHGetPathFromIDListW( pidl, cpath );
             CoTaskMemFree(pidl);
 
-            return std::wstring(cpath) + L"\\" + ToWString(framework_->GetDefaultConfig().GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name"));
+            return std::wstring(cpath) + L"\\" + ToWString(std::string(APPLICATION_NAME));
         }
         throw Exception("Failed to access user documents directory.");
     }

@@ -18,22 +18,19 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
+#include "LoggingFunctions.h"
 
-#include <Poco/Logger.h>
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Clone")
 
 #include <Ogre.h>
 
 #include "MemoryLeakCheck.h"
 
-#define LogError(msg) Poco::Logger::get("EC_Clone").error("Error: " + std::string(msg));
-#define LogInfo(msg) Poco::Logger::get("EC_Clone").information(msg);
-
 EC_Clone::EC_Clone(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)
 {
-    renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 }
 
 EC_Clone::~EC_Clone()

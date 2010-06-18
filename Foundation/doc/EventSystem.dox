@@ -20,9 +20,6 @@
 	identify the event to the receiver, while the data structure, if necessary, contains data specific
 	to the event.
 
-	In the current system, events are not actually queued in any way, an event does not exist 
-	'outside' the time when it is sent and handled.
-
 
 	\subsection categoryregistering_ES Event category ID's, registering
 
@@ -110,28 +107,12 @@ framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::E
 	false if the module wants the event to propagate to other receivers, or true if the module 'handled'
 	the event and does not wish for it to propagate further.
 
-        To actually receive events, modules need to be registered as event subscribers. They are organized into a tree-
-        structure which is read from the xml data file /data/event_tree.xml. In the data file, modules are referred to
-        by their names. Additionally, modules need an integer priority number (higher number = higher priority), which
-        decides the order in which HandleEvent() is called for siblings in the tree.
-        
-        An example subscriber tree data file, does not necessarily make sense:
-        
-\verbatim
-<subscribers>
-    <subscriber module="Renderer" priority="75" />
-    <subscriber module="World Logic" priority="100">
-    	<subscriber module="Gui" priority="100" />
-    </subscriber>
-</subscribers>
-\endverbatim
-        
-        Here, the tree root has two children: Renderer and World Logic. The Renderer will have lower priority than World 
-        Logic, so World Logic (and its child Gui) get the first opportunity to handle events.
-        
-        Modules can also be manually registered/unregistered into the subscriber tree by calling Foundation::EventManager::RegisterEventSubscriber()
-        and Foundation::EventManager::UnregisterEventSubscriber(). Note that during handling of an event (ie. when HandleEvent() for any module is 
-        being executed) the subscriber tree should not be attempted to be modified.
+        To actually receive events, modules need to be registered as event subscribers by calling 			Foundation::EventManager::RegisterEventSubscriber(). By default, the ModuleInterface base class registers the module as 
+	a subscriber with the default priority 100. You can modify the priority by calling the function again with a different priority, 
+	or if you do not wish your module to receive events (perhaps for performance reasons) you can use the 
+	function Foundation::EventManager::UnregisterEventSubscriber(). Note that for re-registering (changing priority), you need a shared 	pointer to your module, which you can acquire through Foundation::ModuleManager. See PythonScript::PythonScriptModule::PostInitialize() 	for an example.
+
+	Events are passed to subscribers starting from the highest priority and proceeding to lower, until a subscriber returns true from HandleEvent.
 
 	An example event handler from the OgreRenderingModule, which watches for two distinct event categories and passes event handling to its member object:
 

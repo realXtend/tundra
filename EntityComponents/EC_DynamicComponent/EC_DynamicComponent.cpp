@@ -13,7 +13,6 @@
 #define LogInfo(msg) Poco::Logger::get("EC_DynamicComponent").information(msg);
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module) :
-  Foundation::ComponentInterface(module->GetFramework()),
     json_(this, "json", "{}")
 {
   //QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));

@@ -17,6 +17,7 @@
 #include <QLabel>
 #include <QScrollBar>
 #include <QTabWidget>
+#include <QApplication>
 
 #include "Inworld/InworldSceneController.h"
 #include "UiModule.h"
@@ -54,13 +55,14 @@ namespace RexLogic
 
     void AvatarEditor::InitEditorWindow()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
 
         // If this occurs, we're most probably operating in headless mode.
         if (ui_module.get() == 0)
             return;
 
         QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/avatareditor.ui");
 
         if (!file.exists())
@@ -75,6 +77,9 @@ namespace RexLogic
 
         avatar_editor_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor", UiServices::ModuleWidget));
 
+        QString translation = QApplication::translate("AvatarEditor", "Avatar Editor");
+        avatar_editor_proxy_widget_->setWindowTitle(translation);
+        
         // Connect signals.
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
@@ -91,6 +96,8 @@ namespace RexLogic
         button = avatar_widget_->findChild<QPushButton *>("but_attachment");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
+            
+        QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
     }
 
     void AvatarEditor::RebuildEditView()
@@ -474,5 +481,14 @@ namespace RexLogic
             last_directory_ = dirname;
         }
         return filename; 
+    }
+    
+    void AvatarEditor::ChangeLanguage()
+    {
+        if (!avatar_editor_proxy_widget_)
+            return;
+        
+        QString translation = QApplication::translate("AvatarEditor", "Avatar Editor");
+        avatar_editor_proxy_widget_->setWindowTitle(translation);
     }
 }

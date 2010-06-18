@@ -5,7 +5,6 @@
 #include "AssetManager.h"
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
-#include "HttpAssetProvider.h"
 #include "QtHttpAssetProvider.h"
 #include "NetworkEvents.h"
 #include "Framework.h"
@@ -18,7 +17,9 @@
 
 namespace Asset
 {
-    AssetModule::AssetModule() : ModuleInterfaceImpl(type_static_), inboundcategory_id_(0)
+    std::string AssetModule::type_name_static_ = "Asset";
+
+    AssetModule::AssetModule() : ModuleInterface(type_name_static_), inboundcategory_id_(0)
     {
     }
 

@@ -11,6 +11,7 @@
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
 #include "AttributeBrowser.h"
+#include "AttributeInterface.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -20,6 +21,8 @@
 #include "EventManager.h"
 
 #include <QUiLoader>
+#include <QDomDocument>
+#include <QtTreePropertyBrowser>
 
 #include "MemoryLeakCheck.h"
 
@@ -154,6 +157,21 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::DeleteComponent(const std::string &componentType)
+    {
+        if(componentType.empty())
+            return;
+
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        for(uint i = 0; i < entities.size(); i++)
+        {
+            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType);
+            if(component)
+                entities[i]->RemoveComponent(component, Foundation::ComponentInterface::Local);
+        }
+        //RefreshPropertyBrowser();
+    }
+
     /*void ECEditorWindow::DeleteComponent()
     {
         if (!component_list_)
@@ -194,8 +212,6 @@ namespace ECEditor
                 comp->ComponentChanged(Foundation::ComponentInterface::Local);
             }
         }
-
-        //RefreshEntityComponents();
     }
 
     void ECEditorWindow::DeleteEntity()
@@ -207,6 +223,88 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); ++i)
             scene->RemoveEntity(entities[i]->GetId(), Foundation::ComponentInterface::Local);
+    }
+
+    void ECEditorWindow::CopyEntity()
+    {
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        QClipboard *clipboard = QApplication::clipboard();
+        QDomDocument temp_doc;
+        for(uint i = 0; i < entities.size(); i++)
+        {
+            Scene::Entity *entity = entities[i].get();
+            if(entity)
+            {
+                QDomElement entity_elem = temp_doc.createElement("entity");
+                
+                QString id_str;
+                id_str.setNum((int)entity->GetId());
+                entity_elem.setAttribute("id", id_str);
+
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                for(uint i = 0; i < components.size(); ++i)
+                    if (components[i]->IsSerializable())
+                        components[i]->SerializeTo(temp_doc, entity_elem);
+
+                temp_doc.appendChild(entity_elem);
+            }
+        }
+        clipboard->setText(temp_doc.toString());
+    }
+
+    void ECEditorWindow::PasteEntity()
+    {
+        //! \todo unsecure way to get scene pointer replace this with better option.
+        Scene::ScenePtr scene = framework_->GetScene("World");
+        assert(scene.get());
+        if(!scene.get())
+            return;
+        
+        QDomDocument temp_doc;
+        QClipboard *clipboard = QApplication::clipboard();
+        if (temp_doc.setContent(clipboard->text()))
+        {
+            //Check if clipboard contain infomation about entity's id,
+            //switch is used to find a right type of entity from the scene.
+            QDomElement ent_elem = temp_doc.firstChildElement("entity");
+            if(ent_elem.isNull())
+                return;
+            QString id = ent_elem.attribute("id");
+            Scene::EntityPtr originalEntity = scene->GetEntity(ParseString<entity_id_t>(id.toStdString()));
+            if(!originalEntity.get())
+            {
+                ECEditorModule::LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
+                return;
+            }
+            Scene::EntityPtr newEntity = scene->CreateEntity();
+            assert(newEntity.get());
+            if(!newEntity.get())
+                return;
+
+            Scene::Entity::ComponentVector components = originalEntity->GetComponentVector();
+            for(uint i = 0; i < components.size(); i++)
+            {
+                Foundation::ComponentInterfacePtr component = newEntity->GetOrCreateComponent(components[i]->TypeName(), components[i]->GetChange());
+                if(component->IsSerializable())
+                {
+                    Foundation::AttributeVector attributes = components[i]->GetAttributes();
+                    for(uint j = 0; j < attributes.size(); j++)
+                    {
+                        Foundation::AttributeInterface *attriubte = component->GetAttributeByName(attributes[i]->GetNameString());
+                        if(attriubte)
+                            attriubte->FromString(attributes[i]->ToString(), Foundation::ComponentInterface::Local);
+                    }
+                }
+                component->ComponentChanged(Foundation::ComponentInterface::Local);
+            }
+
+            /*QDomElement comp_elem = temp_doc.firstChildElement("component");
+            while(!comp_elem.isNull())
+            {
+                comp_elem.attri
+                comp_elem = temp_doc.nextSiblingElement("component");
+            }*/
+        }
     }
 
     /*void ECEditorWindow::RefreshEntityComponents()
@@ -238,18 +336,44 @@ namespace ECEditor
 
     void ECEditorWindow::RefreshPropertyBrowser()
     {
+        PROFILE(AttributeBrowser_ui_updated);
         if(!attribute_browser_)
             return;
 
-        attribute_browser_->ClearBrowser();
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+        if (!scene)
+            return;
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        // No entities selected we can clear the attribute broser.
+        /*if(!entities.size())
+        {
+            attribute_browser_->clear();
+            return;
+        }*/
+
+        EntityIdSet noneSelectedEntities = selectedEntities_;
+        selectedEntities_.clear();
+        /*for(uint i = 0; i < entities.size(); i++)
+        {
+            selectedEntities_.insert(entities[i]->GetId());
+        }*/
         for(uint i = 0; i < entities.size(); i++)
         {
-            const Scene::Entity::ComponentVector& components = entities[i]->GetComponentVector();
-            attribute_browser_->AddEntityComponents(components);
+            attribute_browser_->AddNewEntity(entities[i]);
+            selectedEntities_.insert(entities[i]->GetId());
+            noneSelectedEntities.erase(entities[i]->GetId());
         }
-        //tell the attribute browser that all components have been sended and it's time to create the ui elements.
-        attribute_browser_->RedrawBrowserUi();
+
+        while(!noneSelectedEntities.empty())
+        {
+            Scene::EntityPtr entity = scene->GetEntity(*(noneSelectedEntities.begin()));
+            if (entity)
+            {
+                attribute_browser_->RemoveEntity(entity.get());
+            }
+            noneSelectedEntities.erase(noneSelectedEntities.begin());
+        }
     }
 
     void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -267,22 +391,28 @@ namespace ECEditor
         QAction *editXml = new QAction(tr("Edit XML..."), menu);
         QAction *deleteEntity= new QAction(tr("Delete"), menu);
         QAction *addComponent = new QAction(tr("Add new component..."), menu);
+        QAction *copyEntity = new QAction(tr("Copy"), menu);
+        QAction *pasteEntity = new QAction(tr("Paste"), menu);
 
         connect(editXml, SIGNAL(triggered()), this, SLOT(ShowXmlEditorForEntity()));
         connect(deleteEntity, SIGNAL(triggered()), this, SLOT(DeleteEntity()));
         connect(addComponent, SIGNAL(triggered()), this, SLOT(CreateComponent()));
+        connect(copyEntity, SIGNAL(triggered()), this, SLOT(CopyEntity()));
+        connect(pasteEntity, SIGNAL(triggered()), this, SLOT(PasteEntity()));
 
         menu->addAction(editXml);
         menu->addAction(deleteEntity);
         menu->addAction(addComponent);
+        menu->addAction(copyEntity);
+        menu->addAction(pasteEntity);
 
         menu->popup(entity_list_->mapToGlobal(pos));
     }
 
-    /*void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
+    void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
     {
-        assert(component_list_);
-        if (!component_list_)
+        /*assert(attribute_browser_);
+        if (!attribute_browser_)
             return;
 
         QTreeWidgetItem *item = component_list_->itemAt(pos);
@@ -311,8 +441,8 @@ namespace ECEditor
         menu->addAction(copyEntity);
         menu->addAction(pasteEntity);
 
-        menu->popup(component_list_->mapToGlobal(pos));
-    }*/
+        menu->popup(component_list_->mapToGlobal(pos));*/
+    }
 
     void ECEditorWindow::ShowXmlEditorForEntity()
     {
@@ -331,6 +461,29 @@ namespace ECEditor
 
         foreach(EntityComponentSelection ecs, selection)
             emit EditEntityXml(ecs.entity);
+    }
+
+    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components)
+    {
+        if(!components.size())
+            return;
+
+        foreach(Foundation::ComponentInterfacePtr component, components)
+            emit EditComponentXml(component);
+    }
+
+    void ECEditorWindow::ShowXmlEditorForComponent(const std::string &componentType)
+    {
+        if(componentType.empty())
+            return;
+
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        for(uint i = 0; i < entities.size(); i++)
+        {
+            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType);
+            if(component)
+                emit EditComponentXml(component);
+        }
     }
 
     /*void ECEditorWindow::ShowXmlEditorForComponent()
@@ -370,7 +523,7 @@ namespace ECEditor
     {
         ClearEntities();
         if(attribute_browser_)
-            attribute_browser_->ClearBrowser();
+            attribute_browser_->clear();
         QWidget::hideEvent(hide_event);
     }
 
@@ -416,10 +569,18 @@ namespace ECEditor
         QWidget *browserWidget = findChild<QWidget*>("browser_widget");
         if(browserWidget)
         {
-            attribute_browser_ = new AttributeBrowser(browserWidget);
+            attribute_browser_ = new AttributeBrowser(framework_, browserWidget);
             QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
             if (property_layout)
                 property_layout->addWidget(attribute_browser_);
+        }
+
+        if(attribute_browser_)
+        {
+            // signals from attribute browser to editor window.
+            QObject::connect(attribute_browser_, SIGNAL(DeleteComponent(const std::string &)), this, SLOT(DeleteComponent(const std::string &)));
+            QObject::connect(attribute_browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
+            QObject::connect(attribute_browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
         }
 /*
         if (component_list_ && attribute_browser_)
@@ -429,7 +590,11 @@ namespace ECEditor
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
+            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), entity_list_);
+            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), entity_list_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
+            connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyEntity()));
+            connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));
             //connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshEntityComponents()));
             connect(entity_list_, SIGNAL(itemSelectionChanged()), this, SLOT(RefreshPropertyBrowser()));
             connect(entity_list_, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowEntityContextMenu(const QPoint &)));

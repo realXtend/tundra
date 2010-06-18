@@ -40,7 +40,7 @@ namespace DebugStats
 {
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterfaceImpl(NameStatic()),
+    ModuleInterface(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkStateEventCategory_(0),
@@ -91,7 +91,7 @@ void DebugStatsModule::PostInitialize()
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
@@ -120,7 +120,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (!ui_module.get())
         return Console::ResultFailure("Failed to acquire UiModule pointer!");
 

@@ -11,12 +11,11 @@
 namespace OgreRenderer
 {
     EC_OgreLight::EC_OgreLight(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         light_(0),
         attached_(false)
     {
-        RendererPtr renderer = renderer_.lock();               
+        RendererPtr renderer = renderer_.lock();
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
     }

@@ -59,7 +59,7 @@ namespace Communication
      *  Enables IM GUI if jabber protocol is usable
      *
      */
-    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public Foundation::ModuleInterfaceImpl
+    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -78,13 +78,11 @@ namespace Communication
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS
-        static const std::string &NameStatic() { return Foundation::Module::NameFromType(type_static_); } //! returns name of this module. Needed for logging.
-        static const Foundation::Module::Type type_static_ = Foundation::Module::MT_TelepathyIM;
+        static const std::string &NameStatic() { return type_name_static_; }
 
     protected:
-        // Run given test
+        //! Run given test
         Console::CommandResult Test(const StringVector &params);
-
         //! Ui related widgets/controllers
         CommunicationUI::MasterWidget* im_ui_;
         UiServices::UiProxyWidget *im_ui_proxy_widget_;
@@ -102,6 +100,8 @@ namespace Communication
     private:
         void AddWidgetToUi(const QString &name);
         void RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget);
+        //! Type name of the module.
+        static std::string type_name_static_;
 
     private slots:
         void OnNewProtocol(QString &protocol);

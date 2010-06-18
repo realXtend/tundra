@@ -21,7 +21,7 @@ MainPanelHandler::MainPanelHandler(RexLogicModule *rex_logic_module) :
     QObject(), rex_logic_module_(rex_logic_module)
 {
     UiModulePtr ui_module = rex_logic_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-        Foundation::Module::MT_UiServices).lock();
+        ).lock();
     if (ui_module.get())
     {
         UiServices::UiAction *quit_action = new UiServices::UiAction(this);

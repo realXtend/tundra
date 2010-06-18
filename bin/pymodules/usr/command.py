@@ -154,21 +154,79 @@ if 0: #print test
     
 if 0: #camera pitch
     dy = 0.1
-    dp = 0
+    dp = 0.5
     #dp = -0.1
     #dp = 0.1
     r.setCameraYawPitch(dy, dp)
     print r.getCameraYawPitch()
+
+if 0: #camera entity - it is an entity nowadays, and there is EC cam even
+    camid = r.getCameraId()
+    print "CAM:", camid
+    cament = r.getEntity(camid)
+    p = cament.placeable
+    print p.Position, p.Orientation
+
+    import PythonQt.QtGui
+    from PythonQt.QtGui import QQuaternion as Quat
+    from PythonQt.QtGui import QVector3D as Vec
+    ort = p.Orientation
+    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
+    #ort *= Quat(0, -.707, 0, .707)
+    ort *= rot
+    p.Orientation = ort
+
+if 0: #calcing the camera angle around up axis for web ui
+    import PythonQt.QtGui
+    from PythonQt.QtGui import QQuaternion as Quat
+    from PythonQt.QtGui import QVector3D as Vec
+
+    from objectedit.conversions import quat_to_euler#, euler_to_quat
+
+    def toAngleAxis(quat): 
+        #no worky, so resorted to euler conversion
+        import PythonQt
+        import math
+
+        lensq = quat.lengthSquared()
+        ang = 2.0 * math.acos(quat.scalar())
+
+        invlen = lensq ** 0.5
+        vec = PythonQt.QtGui.QVector3D(quat.x() * invlen, 
+                                       quat.y() * invlen,
+                                       quat.z() * invlen)
+
+        return vec, ang
+
+    camid = r.getCameraId()
+    cament = r.getEntity(camid)
+    p = cament.placeable
+
+    #print toAngleAxis(p.Orientation)
+
+    ort = p.Orientation
+    euler = quat_to_euler([ort.scalar(), ort.x(), ort.y(), ort.z()])
+    print euler
+    start = Quat(0, 0, -0.707, -0.707)
+    #print start
+    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), -10) #euler[0])
+    new = start * rot
+    #print euler_to_quat(euler)
+    print ort
+    print new
+    #p.Orientation = new
+    #print euler_to_quat(euler), ort
         
 if 0: #avatar set yaw (turn)
-    a = -1.0
+    #a = -1.0
+    a = 0
     print "setting avatar yaw with %f" % a
     r.setAvatarYaw(a)
 
 if 0: #avatar rotation #XXX crashes when the avatar is not there! XXX
     x = 0
     y = 0 
-    z = -1 #this is the actual rotation thingie
+    z = 0.1 #this is the actual rotation thingie
     w = 0
     print "rotating the avatar to", (x, y, z, w)    
     r.setAvatarRotation(x, y, z, w)
@@ -287,11 +345,20 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    #print dir(PythonQt.Qt)
+    print dir(PythonQt.Qt)
+    qapp = PythonQt.Qt.QApplication.instance()
+    print qapp.changeOverrideCursor
+
+    import PythonQt.QtGui as gui
+    print dir(gui)
+    cursor = gui.QCursor()
+    print cursor, cursor.shape()
+    cursor.setShape(1)
+    qapp.setOverrideCursor(cursor)
+
     #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
-    #import PythonQt.QtGui as gui
-    #print dir(gui)
+
     #import PythonQt.QtUiTools as uitools
     #print dir(uitools.QUiLoader)
     #print dir(gui.QTreeWidgetItem)
@@ -1209,36 +1276,67 @@ if 0: #create a new component, hilight
         print "vis"
     else:
         print "not"
+        
+if 0: #create a new component, touchable
+    #entid = r.getUserAvatarId()
+    entid = 2979274737
+    e = r.getEntity(entid)
+    try:
+        t = e.touchable
+    except AttributeError:
+        print e.createComponent("EC_Touchable")
+        print "created a new Touchable component", e.id
+        t = e.touchable
+
+    print type(t), t
+    
+    def onhover():
+        print "hover on avatar"
+    t.connect('MouseHover()', onhover)
+        
+    def onclick():
+        print "click on avatar"
+    t.connect('Clicked()', onclick)   
+        
+    #h.Show()
+    #h.Hide()
+    
+    #vis = h.IsVisible()
+    #if vis:
+    #    print "vis"
+    #else:
+     #   print "not"
+
 
 if 0: #test adding a dynamiccomponent
     #entid = r.getUserAvatarId()
-    entid = 1509821589
-
+    entid = 2394749782
     ent = r.getEntity(entid)
-    try:
-        ent.dynamic
-        print "found dynamic comp"
-    except AttributeError:
-        ent.createComponent("EC_DynamicComponent")
-        print "created new dynamic comp"
-    print ent.dynamic
+
+    if 0:
+        try:
+            ent.dynamic
+            print "found dynamic comp"
+        except AttributeError:
+            ent.createComponent("EC_DynamicComponent")
+            print "created new dynamic comp", ent.id
+        print ent.dynamic
 
     d = ent.dynamic
     #print dir(d)
     #d.AddAttribute()
-    #print d.GetAttribute()
+    print d, d.GetAttribute()
 
     if 0: #door
         d.SetAttribute('{"locked": false, "opened": true}')
        
-    if 1: #javascript source url .. and door data
+    if 0: #javascript source url .. and door data
         d.SetAttribute("""{
-        "js_src": "http://an.org/realxtend/door.js",
+        "animpos": 0.0,
+        "js_src": "http://an.org/realxtend/door.js", 
         "locked": false, 
         "opened": true
         }""")
-
-    #print d.GetAttribute()
 
 if 0: #animation control
     avid = r.getUserAvatarId()

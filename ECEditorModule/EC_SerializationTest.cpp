@@ -7,7 +7,6 @@
 namespace ECEditor
 {
     EC_SerializationTest::EC_SerializationTest(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
         attr1_(this, "attr1"),
         attr2_(this, "attr2"),
         attr3_(this, "attr3"),

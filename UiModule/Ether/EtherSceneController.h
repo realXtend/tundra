@@ -34,12 +34,14 @@ namespace Ether
 
         class EtherSceneController : public QObject
         {
-
-        Q_OBJECT
+            Q_OBJECT
 
         public:
+            /// Constructor used when DYNAMIC_LOGIN_SCENE 1
             EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene, QPair<View::EtherMenu*, View::EtherMenu*> menus,
                                  QRectF card_size, int top_items, int bottom_items);
+
+            /// Constructor used when DYNAMIC_LOGIN_SCENE 0
             EtherSceneController(QObject *parent, Data::DataManager *data_manager, View::EtherScene *scene);
             virtual ~EtherSceneController();
 

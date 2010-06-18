@@ -1,4 +1,11 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   EC_OgreEnvironment.h
+ *  @brief  Ogre environment component. Gives an access to various scene-related
+ *          environment settings, such as sunlight, ambient light and fog.
+ *  @note   The CAELUM and HYDRAX defines are set in the root CMakeLists.txt.
+ */
 
 #ifndef incl_OgreRenderer_EC_OgreEnvironment_h
 #define incl_OgreRenderer_EC_OgreEnvironment_h
@@ -42,6 +49,7 @@ namespace Hydrax
 namespace OgreRenderer
 {
     class Renderer;
+    class GaussianListener;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
@@ -57,14 +65,14 @@ namespace OgreRenderer
     public:
         virtual ~EC_OgreEnvironment();
 
-        enum VisualEffectOverride { 
+        enum VisualEffectOverride
+        {
             None = 1 << 1,
             AmbientLight = 1 << 3,
             SunColor = 1 << 4,
             SunDirection = 1 << 5
         };
-  
-    
+
         void SetOverride(VisualEffectOverride effect);
         void DisableOverride(VisualEffectOverride effect);
 
@@ -119,16 +127,16 @@ namespace OgreRenderer
 #endif
         /// @return Is the Caelum system used or not.
         bool IsCaelumUsed() const { return useCaelum_; }
-        
+
         /// @return Is the Hydrax system used or not.
         bool IsHydraxUsed() const { return useHydrax_; }
 
         void SetGroundFogStart(float fogStart) { fogStart_ = fogStart; }
         float GetGroundFogStart() const { return fogStart_; }
-        
+
         void SetGroundFogEnd(float fogEnd) { fogEnd_ = fogEnd; }
         float GetGroundFogEnd() const { return fogEnd_; }
-        
+
         void SetGroundFogColor(const Ogre::ColourValue& color) { fogColor_ = color; }
         Ogre::ColourValue GetGroundFogColor() const { return fogColor_; }
 
@@ -143,7 +151,6 @@ namespace OgreRenderer
 
         void SetFogColorOverride(bool on) { fog_color_override_ = on; }
         bool GetFogColorOverride() const { return fog_color_override_; }
-        
 
     private:
         /// Constructor.
@@ -160,15 +167,14 @@ namespace OgreRenderer
         /// Shuts down the Caelum system.
         void ShutdownCaelum();
 #endif
-      
+
 #ifdef HYDRAX
         /// Initializes the Hydrax system. 
         void InitHydrax();
-        
+
         /// Shuts down the Hydrax system.
         void ShutdownHydrax();
 #endif
-
         /// Initializes shadows.
         void InitShadows();
 
@@ -231,10 +237,9 @@ namespace OgreRenderer
         Hydrax::Hydrax *hydraxSystem_;
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
-   
-    };
 
-    
+        std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
+    };
 }
 
 #endif

@@ -47,7 +47,7 @@ QT_END_NAMESPACE
 
 namespace Naali
 {
-    class INWORLDCHAT_MODULE_API InWorldChatModule :  public QObject, public Foundation::ModuleInterfaceImpl
+    class INWORLDCHAT_MODULE_API InWorldChatModule :  public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
 

@@ -12,7 +12,6 @@ namespace Environment
 {
 
 EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     framework_(module->GetFramework())
 {
     assert(framework_);

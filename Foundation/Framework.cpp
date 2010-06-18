@@ -59,8 +59,6 @@ namespace Task
 
 namespace Foundation
 {
-    const char *Framework::DEFAULT_EVENT_SUBSCRIBER_TREE_PATH = "./data/event_tree.xml";
-
     Framework::Framework(int argc, char** argv) : 
         exit_signal_(false),
         argc_(argc),
@@ -86,7 +84,6 @@ namespace Foundation
             // Create config manager
             config_manager_ = ConfigurationManagerPtr(new ConfigurationManager(this));
 
-            config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("application_name"), std::string("realXtend"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("window_title"), std::string("realXtend Naali"));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_console"), bool(true));
             config_manager_->DeclareSetting(Framework::ConfigurationGroup(), std::string("log_level"), std::string("information"));
@@ -108,7 +105,7 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("2.2"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("2.3"));
 
             CreateLoggingSystem(); // depends on config and platform
 
@@ -156,7 +153,7 @@ namespace Foundation
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
         std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
-        logfilepath_w += L"/" + ToWString(config_manager_->GetSetting<std::string>(Framework::ConfigurationGroup(), "application_name")) + L".log";
+        logfilepath_w += L"/" + ToWString(APPLICATION_NAME) + L".log";
         std::string logfilepath;
         Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
 
@@ -262,9 +259,6 @@ namespace Foundation
         // commands must be registered after modules are loaded and initialized
         RegisterConsoleCommands();
 
-        // add event subscribers now, that all modules are loaded/initialized
-        event_manager_->LoadEventSubscriberTree(DEFAULT_EVENT_SUBSCRIBER_TREE_PATH);
-
         ProgramOptionsEvent *data = new ProgramOptionsEvent(cm_options_, argc_, argv_);
         event_manager_->SendEvent(framework_events, PROGRAM_OPTIONS, data);
         delete data;
@@ -330,7 +324,19 @@ namespace Foundation
     {
         exit_signal_ = true;
         if (engine_.get())
+            engine_->AboutToExit();
+    }
+    
+    void Framework::ForceExit()
+    {
+        exit_signal_ = true;
+        if (engine_.get())
             engine_->quit();
+    }
+    
+    void Framework::CancelExit()
+    {
+        exit_signal_ = false;
     }
 
     void Framework::LoadModules()
@@ -400,7 +406,6 @@ namespace Foundation
             entry = params[1];
 
         bool result = module_manager_->LoadModuleByName(lib, entry);
-        event_manager_->ValidateEventSubscriberTree();
 
         if (!result)
             return Console::ResultFailure("Library or module not found.");
@@ -417,7 +422,6 @@ namespace Foundation
         if (module_manager_->HasModule(params[0]))
         {
             result = module_manager_->UnloadModuleByName(params[0]);
-            event_manager_->ValidateEventSubscriberTree();
         }
 
         if (!result)

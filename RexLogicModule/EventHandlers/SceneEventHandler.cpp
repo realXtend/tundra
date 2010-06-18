@@ -90,7 +90,12 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
         Events::EntityClickedData *entity_clicked_data = checked_static_cast<Events::EntityClickedData *>(data);
         assert(entity_clicked_data);
         owner_->EntityClicked(entity_clicked_data->entity);
-        break;
+        if (entity_clicked_data->entity->HasComponent(EC_Touchable::TypeNameStatic()))
+        {
+            boost::shared_ptr<EC_Touchable> touchable =  entity_clicked_data->entity->GetComponent<EC_Touchable>();
+            touchable->OnClick();
+        }
+    break;
     }
     case Events::EVENT_ENTITY_MOUSE_HOVER:
     {
@@ -103,8 +108,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
             if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
             {
                 boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
-                if (!touchable->IsVisible())
-                    touchable->Show();
+                touchable->OnHover();
             }
         }
         break;

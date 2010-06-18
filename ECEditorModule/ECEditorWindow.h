@@ -10,6 +10,7 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
+#include <set>
 
 #include <QWidget>
 
@@ -35,7 +36,11 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class AttributeBrowser;
-
+    
+    //! ECEditorWindow
+    /*! /todo add description.
+     *  \ingroup ECEditorModuleClient.
+     */
     class ECEditorWindow : public QWidget
     {
         Q_OBJECT
@@ -61,6 +66,8 @@ namespace ECEditor
         /// Deletes selected entity entries from the list (does not delete the entity itself).
         void DeleteEntitiesFromList();
 
+        //! Remove coponent from entity and refresh property browser.
+        void DeleteComponent(const std::string &componentType);
         /// Deletes currently selected components.
         //void DeleteComponent();
 
@@ -69,6 +76,9 @@ namespace ECEditor
 
         /// Deletes entity.
         void DeleteEntity();
+
+        void CopyEntity();
+        void PasteEntity();
 
         ///
         //void RefreshEntityComponents();
@@ -82,13 +92,17 @@ namespace ECEditor
 
         /// Shows context menu for components.
         /// @param pos Mouse position of right-click event.
-        //void ShowComponentContextMenu(const QPoint &pos);
+        void ShowComponentContextMenu(const QPoint &pos);
 
         /// Shows EC XML editor.for entity's all components.
         void ShowXmlEditorForEntity();
 
+        /// Shows EC XML editor.for each components.
+        void ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components);
+
         /// Shows EC XML editor.for a single component.
         //void ShowXmlEditorForComponent();
+        void ShowXmlEditorForComponent(const std::string &componentType);
 
         /// Show/Hide entity list.
         void ToggleEntityList();
@@ -98,7 +112,7 @@ namespace ECEditor
         void EditEntityXml(Scene::EntityPtr entity);
 
         /// Emitted user wants to edit EC attributes in XML editor.
-        //void EditComponentXml(Foundation::ComponentPtr component);
+        void EditComponentXml(Foundation::ComponentPtr component);
 
     protected:
         /// QWidget override.
@@ -127,6 +141,8 @@ namespace ECEditor
         QListWidget* entity_list_;
         //QTreeWidget* component_list_;
         AttributeBrowser* attribute_browser_;
+        typedef std::set<entity_id_t> EntityIdSet;
+        EntityIdSet selectedEntities_;
     };
 }
 

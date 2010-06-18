@@ -431,7 +431,7 @@ namespace CoreUi
             voice_users_widget_ = new CommUI::VoiceUsersWidget(0);
             voice_users_widget_->SetSession(in_world_voice_session_);
 
-            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+            boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
             if (ui_module.get())
             {
                 voice_users_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_users_widget_);

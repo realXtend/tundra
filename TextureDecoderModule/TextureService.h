@@ -5,6 +5,7 @@
 
 #include "TextureRequest.h"
 #include "TextureServiceInterface.h"
+#include "TextureCache.h"
 
 namespace Foundation
 {
@@ -14,6 +15,8 @@ namespace Foundation
 
 namespace TextureDecoder
 {
+    class TextureResource;
+
     //! Texture decoder. Implements TextureServiceInterface.
     class TextureService : public Foundation::TextureServiceInterface
     {
@@ -46,6 +49,8 @@ namespace TextureDecoder
         void UpdateRequest(TextureRequest& request, Foundation::AssetServiceInterface* asset_service);
 
         typedef std::map<std::string, TextureRequest> TextureRequestMap;
+
+        typedef std::map<std::string, CacheReply> CacheReplys;
         
         //! Framework we belong to
         Foundation::Framework* framework_;
@@ -55,6 +60,11 @@ namespace TextureDecoder
 
         //! Ongoing texture requests
         TextureRequestMap requests_;
+
+        //! Decoded texture cache
+        TextureCache *cache_;
+
+        CacheReplys cache_replys_;
 
         //! Max decodes per frame
         int max_decodes_per_frame_;

@@ -24,8 +24,10 @@
 
 namespace Communication
 {
+    std::string TelepathyIMModule::type_name_static_ = "TelepathyIM";
+
     TelepathyIMModule::TelepathyIMModule()
-        : ModuleInterfaceImpl(type_static_),
+        : ModuleInterface(type_name_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
           communication_service_(0),
@@ -118,7 +120,9 @@ namespace Communication
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
-                boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module = framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>(Foundation::Module::MT_WorldLogic).lock().get()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
+                //! Remove RexLogicModule dependency. Get WorldStream from WORLD_STREAM_READY event.
+                boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module =
+                    framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>().lock()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
                 if (current_protocol_module.lock().get())
                 {
                     ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
@@ -165,7 +169,7 @@ namespace Communication
     void TelepathyIMModule::AddWidgetToUi(const QString &name)
     {
         //! @todo Define UIServiceInterface...
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
         {
             if (name == "IM")
@@ -180,7 +184,7 @@ namespace Communication
 
     void TelepathyIMModule::RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
             ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy_widget);
     }

@@ -64,8 +64,6 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-#link_package (CURL)   # NEEDED BY RexLogicModule or ProtocolUtilities
-#link_package (XMLRPC) # NEEDED BY RexLogicModule or ProtocolUtilities
 link_modules (Core Foundation Interfaces RexCommon )
 
 # Copy XML files from source directory to target directory

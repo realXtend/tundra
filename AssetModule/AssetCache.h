@@ -5,14 +5,23 @@
 
 class QCryptographicHash;
 
+#include "Foundation.h"
+#include "AssetInterface.h"
+
+#include <QObject>
+#include <QDir>
+
 namespace Asset
 {
     //! Stores assets to memory and/or disk based cache. Created and used by AssetManager.
-    class AssetCache
+    class AssetCache : public QObject
     {
+
+    Q_OBJECT
+
     public:
         typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
-            
+
         //! Constructor
         /*! \param framework Framework
          */ 
@@ -43,7 +52,16 @@ namespace Asset
         //! Update. Adds age to assets, removes oldest if cache size too big
         void Update(f64 frametime);
 
+    private slots:
+        void InitDiskCaching();
+        void ClearDiskCache();
+        void CacheConfigChanged(int new_disk_max_size);
+        void CheckDiskCacheSize(bool make_extra_space = true);
+
     private:
+        //! Read config and init QDir to working directory
+        void ReadConfig();
+
         //! Check contents of a disk cache path
         /*! \param path Disk cache path
          */
@@ -74,6 +92,10 @@ namespace Asset
 
         //! MD5 Engine
         QCryptographicHash *md5_engine_;
+
+        QDir cache_dir_;
+        int disk_cache_max_size_;
+        bool disk_changes_after_last_check_;
     };
 }
 

@@ -132,6 +132,9 @@ namespace OgreRenderer
                                             
                                         references_.push_back(Foundation::ResourceReference(mat_name, OgreTextureResource::GetTypeStatic()));
                                         line = "material " + mat_name + variation;
+                                        
+                                        // Create the legacy material we expect in advance
+                                        GetOrCreateLegacyMaterial(mat_name, variation);
                                     }
                                 }
                             }

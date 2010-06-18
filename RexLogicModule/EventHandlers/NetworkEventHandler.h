@@ -117,6 +117,10 @@ namespace RexLogic
         //! \param data Network event data.
         bool HandleOSNE_KickUser(ProtocolUtilities::NetworkEventInboundData *data);
 
+        //! Handles EstateOwnerMessage network message.
+        //! \param data Network event data.
+        bool HandleOSNE_EstateOwnerMessage(ProtocolUtilities::NetworkEventInboundData *data);
+
         //! Handles GenericMessage network message.
         //! \param data Network event data.
         bool HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData *data);

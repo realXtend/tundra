@@ -19,6 +19,10 @@ class Manipulator:
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
+    # some handy shortcut rotations for quats
+    ninty_around_x = Quat(math.sqrt(0.5), math.sqrt(0.5), 0, 0)
+    ninty_around_y = Quat(math.sqrt(0.5), 0, math.sqrt(0.5), 0)
+    ninty_around_z = Quat(math.sqrt(0.5), 0, 0, math.sqrt(0.5))
     
     def __init__(self, creator):
         self.controller = creator
@@ -65,8 +69,12 @@ class Manipulator:
         #print "Showing arrows!"
         if self.usesManipulator:
             self.moveTo(ents)
-            self.manipulator.placeable.Scale = self.MANIPULATORSCALE#0.2, 0.2, 0.2
-            self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
+            self.manipulator.placeable.Scale = self.MANIPULATORSCALE
+            if self.controller.useLocalTransform:
+                # first according object, then manipulator orientation - otherwise they go wrong order
+                self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
+            else:
+                self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
             
     def getPivotPos(self, ents):        
         xs = [e.placeable.Position.x() for e in ents]
@@ -196,7 +204,7 @@ class MoveManipulator(Manipulator):
     
     MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
     # multiply the two orientations, so we get the proper end orientation for the widget
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
+    MANIPULATORORIENTATION = Manipulator.ninty_around_x * Manipulator.ninty_around_y
     
     BLUEARROW = [1,2]
     REDARROW = [5,6]
@@ -222,22 +230,31 @@ class MoveManipulator(Manipulator):
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             qpos = ent.placeable.Position
-            if self.grabbed_axis == self.AXIS_BLUE:
-                mov = lengthy
-                qpos.setZ(qpos.z()-mov)
-            else:
-                mov = lengthx 
-                div = abs(rightvec[self.grabbed_axis])
-                if div == 0:
-                    div = 0.00001 #not the best of ideas but...
-                mov *= rightvec[self.grabbed_axis]/div
-                if self.grabbed_axis == self.AXIS_GREEN:
-                    qpos.setY(qpos.y()-mov)
-                else:
-                    qpos.setX(qpos.x()-mov)
 
-            ent.placeable.Position = qpos
-            ent.network.Position = qpos
+            mov = lengthx 
+            div = abs(rightvec[self.grabbed_axis])
+            if div == 0:
+                div = 0.00001 #not the best of ideas but...
+            mov *= rightvec[self.grabbed_axis]/div
+
+            if self.controller.useLocalTransform:
+                if self.grabbed_axis == self.AXIS_RED:
+                    ent.network.Position = ent.placeable.translate(0, -mov)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    ent.network.Position = ent.placeable.translate(1, -mov)
+                elif self.grabbed_axis == self.AXIS_BLUE:
+                    ent.network.Position = ent.placeable.translate(2, -lengthy)
+            else:
+                if self.grabbed_axis == self.AXIS_BLUE:
+                    mov = lengthy
+                    qpos.setZ(qpos.z()-mov)
+                else:
+                    if self.grabbed_axis == self.AXIS_GREEN:
+                        qpos.setY(qpos.y()-mov)
+                    else:
+                        qpos.setX(qpos.x()-mov)
+                ent.placeable.Position = qpos
+                ent.network.Position = qpos
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -302,10 +319,10 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = Quat(1, 1, 0, 0) * Quat(1, 0, 1, 0)
+    MANIPULATORORIENTATION = Manipulator.ninty_around_x
     
     MATERIALNAMES = {
-        0: "asd",  #shodows?
+        0: "asd",  #shadows?
         1: "resed", 
         2: "resed2", 
         3: "resed3"
@@ -322,58 +339,40 @@ class RotationManipulator(Manipulator):
             upvec = Vector3(r.getCameraUp())
             
             ort = ent.placeable.Orientation
-            euler = list((0, 0, 0))
+            euler = [0, 0, 0]
             
-            if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #print "green axis", self.grabbed_axis
-                mov = amountx * 30 
-                euler[2] += mov
-            elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #print "blue axis", self.grabbed_axis
-                mov = amountx * 30
-                euler[1] += mov
-            elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #print "red axis", self.grabbed_axis
-                mov = amounty * 30
-                euler[0] -= mov 
-                
-            rotationQuat = list(euler_to_quat(euler))
+            if self.controller.useLocalTransform:
+                if self.grabbed_axis == self.AXIS_RED:
+                    mov = amounty * 30
+                    axis = Vec(1, 0, 0)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    mov = amountx * 30 
+                    axis = Vec(0, 1, 0)
+                elif self.grabbed_axis == self.AXIS_BLUE:
+                    mov = amountx * 30
+                    axis = Vec(0, 0, 1)
+                dir = 1
+                math.copysign(dir, mov)
 
-            ort *= Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2])
+                delta = Quat.fromAxisAndAngle(axis, dir)
+                ort *= delta
+            else:
+                if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
+                    # print "green axis", self.grabbed_axis,
+                    mov = amountx * 30 
+                    euler[1] += mov
+                elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
+                    # print "blue axis", self.grabbed_axis,
+                    mov = amountx * 30
+                    euler[2] += mov
+                elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                    # print "red axis", self.grabbed_axis,
+                    mov = amounty * 30
+                    euler[0] -= mov
+                rotationQuat = euler_to_quat(euler)
+                # TODO: figure out the shifted members
+                ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
             
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
 
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ if self.grabbed and self.grabbed_axis is not None:
-            #~ #print "rotating...", self.grabbed_axis
-            #~ #print "amounts: ", amountx, amounty
-            #~ #print "lengths: ", lengthx, lengthy
-            
-            #~ rightvec = Vector3(r.getCameraRight())
-            #~ upvec = Vector3(r.getCameraUp())
-            #~ x, y, z, w = ent.orientation
-            
-            #~ ort = Quat(w, x, y, z)
-            #~ euler = list((0, 0, 0))
-            
-            #~ if self.grabbed_axis == self.AXIS_GREEN: #rotate z-axis
-                #~ #print "green axis", self.grabbed_axis
-                #~ mov = amountx * 30 
-                #~ euler[2] += mov
-            #~ elif self.grabbed_axis == self.AXIS_BLUE: #rotate x-axis
-                #~ #print "blue axis", self.grabbed_axis
-                #~ mov = amountx * 30
-                #~ euler[1] += mov
-            #~ elif self.grabbed_axis == self.AXIS_RED: #rotate y-axis
-                #~ #print "red axis", self.grabbed_axis
-                #~ mov = amounty * 30
-                #~ euler[0] -= mov 
-                
-            #~ rotationQuat = list(euler_to_quat(euler))
-
-            #~ ort.__imul__(Quat(rotationQuat[3], rotationQuat[0], rotationQuat[1], rotationQuat[2]))
-            
-            #~ ent.orientation = ort.x(), ort.y(), ort.z(), ort.scalar()
-
-                        

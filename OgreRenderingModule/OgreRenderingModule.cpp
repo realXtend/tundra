@@ -27,8 +27,10 @@
 
 namespace OgreRenderer
 {
+    std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
+
     OgreRenderingModule::OgreRenderingModule() :
-        ModuleInterfaceImpl(type_static_),
+        ModuleInterface(type_name_static_),
         asset_event_category_(0),
         resource_event_category_(0),
         input_event_category_(0),
@@ -69,11 +71,15 @@ namespace OgreRenderer
         std::string plugins_filename = "plugins-mac.cfg";
 #else
         std::string plugins_filename = "plugins-unix.cfg";
-#endif 
-        // create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
-        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(
-            Foundation::Framework::ConfigurationGroup(), "window_title") + " " + VersionMajor() + "." + VersionMinor();
+#endif
 
+        // Create window title
+        std::string group = Foundation::Framework::ConfigurationGroup();
+        std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
+        std::string version_minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
+        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
+
+        // Create renderer here, so it can be accessed in uninitialized state by other module's PreInitialize()
         renderer_ = OgreRenderer::RendererPtr(new OgreRenderer::Renderer(framework_, ogre_config_filename, plugins_filename, window_title));
     }
 

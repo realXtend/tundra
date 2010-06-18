@@ -16,7 +16,7 @@ namespace OpenSimProtocol
     {
     public:
         //! RealXtendWorldSession constructor
-        OpenSimWorldSession(Foundation::Framework *framework);
+        explicit OpenSimWorldSession(Foundation::Framework *framework);
 
         //! RealXtendWorldSession deconstructor
         virtual ~OpenSimWorldSession(void);
@@ -46,7 +46,7 @@ namespace OpenSimProtocol
             ProtocolUtilities::ConnectionThreadState *thread_state);
 
         //! Make Url validation according to type
-        QUrl ValidateUrl(const QString urlString, const UrlType urlType);
+        QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
         //! Get login credentials
         ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;

@@ -40,6 +40,12 @@ namespace CoreUi
             SAFE_DELETE(web_login_);
         }
 
+        void ClassicalLoginWidget::hideEvent(QHideEvent *hide_event)
+        {
+            QWidget::hideEvent(hide_event);
+            emit ClassicLoginHidden();
+        }
+
         void ClassicalLoginWidget::RemoveEtherButton()
         {
             traditional_widget_->RemoveEtherButton();
