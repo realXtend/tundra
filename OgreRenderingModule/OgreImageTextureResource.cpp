@@ -61,6 +61,9 @@ namespace OgreRenderer
     {
         if (ogre_texture_.get())
         {
+            // As far as the legacy materials are concerned, DXT1 is not alpha
+            if (ogre_texture_->getFormat() == Ogre::PF_DXT1)
+                return false;
             if (Ogre::PixelUtil::hasAlpha(ogre_texture_->getFormat()))
                 return true;
         }

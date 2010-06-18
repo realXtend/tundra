@@ -159,7 +159,10 @@ namespace OgreRenderer
         bool has_alpha = false;
         if (!tex.isNull())
         {
-            if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
+            // As far as the legacy materials are concerned, DXT1 is not alpha
+            if (tex->getFormat() == Ogre::PF_DXT1)
+                has_alpha = false;
+            else if (Ogre::PixelUtil::hasAlpha(tex->getFormat()))
                 has_alpha = true;
         }
         

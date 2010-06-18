@@ -5,11 +5,12 @@
 
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
+#include "OgreModuleApi.h"
 
 namespace OgreRenderer
 {
     //! Manages Ogre resources & requests for their data from the asset system. Used internally by Renderer.
-    class ResourceHandler
+    class OGRE_MODULE_API ResourceHandler
     {
     public:
         //! Constructor
@@ -29,6 +30,9 @@ namespace OgreRenderer
         
         //! Remove a renderer-specific resource. Called by Renderer
         void RemoveResource(const std::string& id, const std::string& type);
+        
+        //! Get all loaded resources of certain type
+        std::vector<Foundation::ResourcePtr> GetResources(const std::string& type);
         
         //! Handles an asset system event. Called by OgreRenderingModule
         bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
