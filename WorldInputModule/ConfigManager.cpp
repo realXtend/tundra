@@ -31,10 +31,10 @@ namespace Input
     {
         QSettings *settings;
         if (group == "Bindings.Custom")
-            settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
+            settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, custom_config_);
         else if (group == "Bindings.Default")
         {
-            settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, "realXtend", "bindings/default_bindings");
+            settings = new QSettings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "bindings/default_bindings");
             if (settings->childGroups().count() == 0)
             {
                 // Copy default_bindings.ini once to users scopes data folder
@@ -77,7 +77,7 @@ namespace Input
 
     void ConfigManager::WriteCustomConfig(Foundation::KeyBindings *bindings)
     {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
+        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, custom_config_);
         if (!custom_settings.isWritable())
             return;
 
@@ -115,7 +115,7 @@ namespace Input
 
     void ConfigManager::ClearUserConfig()
     {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
+        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, custom_config_);
         if (custom_settings.isWritable())
         {
             custom_settings.clear();
@@ -128,7 +128,7 @@ namespace Input
 
     bool ConfigManager::CustomConfigDefined()
     {
-        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, "realXtend", custom_config_);
+        QSettings custom_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, custom_config_);
         if (custom_settings.childGroups().count() == 0)
             return false;
         return true;

@@ -163,7 +163,7 @@ namespace TextureDecoder
 
     void TextureCache::ReadConfig()
     {
-        QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, "realXtend", "configuration/CacheSettings");
+        QSettings cache_config(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/CacheSettings");
         cache_everything_ = cache_config.value("TextureCache/CacheEverything", QVariant(false)).toBool();
         cache_max_size_ = cache_config.value("TextureCache/MaxSize", QVariant(0)).toInt();
     }
