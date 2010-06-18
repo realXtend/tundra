@@ -50,7 +50,7 @@ class QWidget;
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
     has access to QtInputModule, and the event tree -based API can be used by all modules.
 */
-class QTINPUT_MODULE_API QtInputModule : public QObject, public Foundation::ModuleInterfaceImpl
+class QTINPUT_MODULE_API QtInputModule : public QObject, public Foundation::ModuleInterface
 {
     Q_OBJECT
 
