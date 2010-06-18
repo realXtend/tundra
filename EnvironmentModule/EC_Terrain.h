@@ -6,7 +6,7 @@
 #include "EnvironmentModuleApi.h"
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
-#include "Vector3d.h"
+#include "Vector3D.h"
 
 namespace Ogre
 {
