@@ -4,13 +4,7 @@
 #include "PostProcessWidget.h"
 #include "EnvironmentModule.h"
 
-#include "ModuleManager.h"
-#include "Framework.h"
 #include "CompositionHandler.h"
-#include "UiModule.h"
-#include "UiDefines.h"
-#include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiWidgetProperties.h"
 
 #include <QApplication>
 
@@ -54,27 +48,6 @@ namespace Environment
            QWidget::changeEvent(e);
     }
 
-    void PostProcessWidget::AddSelfToScene(EnvironmentModule *env_module)
-    {
-        boost::shared_ptr<UiServices::UiModule> ui_module = env_module->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module.get())
-            return;
-
-        UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
-        
-        // Menu graphics
-        UiDefines::MenuNodeStyleMap image_path_map;
-        QString base_url = "./data/ui/images/menus/"; 
-        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_POSTPRtxt_normal.png";
-        image_path_map[UiDefines::TextHover] = base_url + "edbutton_POSTPRtxt_hover.png";
-        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_POSTPRtxt_click.png";
-        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
-        image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
-        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
-        ui_properties.SetMenuNodeStyleMap(image_path_map);
-        ui_module->GetInworldSceneController()->AddWidgetToScene(this, ui_properties);
-    }
-
     void PostProcessWidget::SetHandler(OgreRenderer::CompositionHandler *handler)
     {
         handler_ = handler;
@@ -111,14 +84,14 @@ namespace Environment
             NamedCheckBox* c_box = new NamedCheckBox(effect_name, this);
             c_box->setObjectName(effect_name);
 
-            QObject::connect(c_box, SIGNAL(Toggled(bool, const QString &)), this, SLOT(HandleSelection(bool, const QString &)));
+            connect(c_box, SIGNAL(Toggled(bool, const QString &)), this, SLOT(HandleSelection(bool, const QString &)));
             widget_.checkboxlayout->addWidget(c_box);
         }
     }
 
     NamedCheckBox::NamedCheckBox(const QString &text, QWidget *parent) : QCheckBox(text, parent)
     {
-        QObject::connect(this, SIGNAL(toggled(bool)), this, SLOT(ButtonToggled(bool)));
+        connect(this, SIGNAL(toggled(bool)), this, SLOT(ButtonToggled(bool)));
     }
 
     NamedCheckBox::~NamedCheckBox()

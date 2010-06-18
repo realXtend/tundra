@@ -5,8 +5,8 @@
 
 #include "EnvironmentModuleApi.h"
 #include "ComponentInterface.h"
-#include "RexUUID.h"
 #include "Declare_EC.h"
+#include "Vector3d.h"
 
 namespace Ogre
 {
@@ -111,10 +111,6 @@ namespace Environment
 
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];
-
-        /// Just need to have this here to be able to destroy the terrain nodes.
-        ///\todo This can be removed. The parent class contains this.
-        Foundation::Framework* framework_; 
     };
 }
 
