@@ -61,7 +61,7 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
             // Initialize post-process dialog.
@@ -258,8 +258,7 @@ namespace Environment
 
             if (methodname == "RexPostP")
             {
-                boost::shared_ptr<OgreRenderer::Renderer> renderer =
-                    framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+                OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
                 if (renderer)
                 {
                     StringVector vec = ProtocolUtilities::ParseGenericMessageParameters(msg);

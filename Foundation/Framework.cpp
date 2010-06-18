@@ -112,7 +112,7 @@ namespace Foundation
             // create managers
             module_manager_ = ModuleManagerPtr(new ModuleManager(this));
             component_manager_ = ComponentManagerPtr(new ComponentManager(this));
-            service_manager_ = ServiceManagerPtr(new ServiceManager(this));
+            service_manager_ = ServiceManagerPtr(new ServiceManager());
             event_manager_ = EventManagerPtr(new EventManager(this));
             thread_task_manager_ = ThreadTaskManagerPtr(new ThreadTaskManager(this));
 
