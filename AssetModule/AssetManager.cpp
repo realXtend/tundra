@@ -34,7 +34,7 @@ namespace Asset
     
     Foundation::AssetPtr AssetManager::GetAsset(const std::string& asset_id, const std::string& asset_type)
     {
-        return GetFromCache(asset_id);
+        return GetFromCache(asset_id, asset_type);
     }
   
     bool AssetManager::IsValidId(const std::string& asset_id, const std::string& asset_type)
@@ -56,7 +56,7 @@ namespace Asset
     {
         request_tag_t tag = framework_->GetEventManager()->GetNextRequestTag();
         
-        Foundation::AssetPtr asset = GetFromCache(asset_id);
+        Foundation::AssetPtr asset = GetFromCache(asset_id, asset_type);
         if (asset)
         {
             Events::AssetReady* event_data = new Events::AssetReady(asset->GetId(), asset->GetType(), asset, tag);
@@ -193,10 +193,10 @@ namespace Asset
         cache_->Update(frametime); 
     }
     
-    Foundation::AssetPtr AssetManager::GetFromCache(const std::string& asset_id)
+    Foundation::AssetPtr AssetManager::GetFromCache(const std::string& asset_id, const std::string& asset_type)
     {
         // First check memory cache
-        Foundation::AssetPtr asset = cache_->GetAsset(asset_id, true, false);
+        Foundation::AssetPtr asset = cache_->GetAsset(asset_id, true, false, asset_type);
         if (asset)
             return asset;
 
