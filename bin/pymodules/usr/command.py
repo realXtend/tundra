@@ -342,19 +342,30 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
         
     drawline()
 
+if 0: #pydoc can hopefully serve / give us api docs of pythonqt somehow
+    import sys
+    import PythonQt
+    sys.argv = ['PythonQt']
+    import pydoc
+    pydoc.gui()
+
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    print dir(PythonQt.Qt)
-    qapp = PythonQt.Qt.QApplication.instance()
-    print qapp.changeOverrideCursor
+    import PythonQt.QtCore
 
-    import PythonQt.QtGui as gui
-    print dir(gui)
-    cursor = gui.QCursor()
-    print cursor, cursor.shape()
-    cursor.setShape(1)
-    qapp.setOverrideCursor(cursor)
+    #k = PythonQt.QtCore.Qt.AltModifier
+    #print k, type(k), dir(k)
+    #print dir(PythonQt.Qt)
+    #qapp = PythonQt.Qt.QApplication.instance()
+    #print qapp.changeOverrideCursor
+
+    #import PythonQt.QtGui as gui
+    #print dir(gui)
+    #cursor = gui.QCursor()
+    #print cursor, cursor.shape()
+    #cursor.setShape(1)
+    #qapp.setOverrideCursor(cursor)
 
     #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
