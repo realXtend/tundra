@@ -45,45 +45,40 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     if (key.eventType == KeyEvent::KeyPressed && key.keyPressCount > 1)
         return;
 
+    InputServiceInterface &inputService = framework->Input();
     ///\todo Read these through input mappings configuration list.
 
-    const Qt::Key walkForward = Qt::Key_W;
-    const Qt::Key walkBackward = Qt::Key_S;
-    const Qt::Key walkForward2 = Qt::Key_Up;
-    const Qt::Key walkBackward2 = Qt::Key_Down;
-    const Qt::Key strafeLeft = Qt::Key_A;
-    const Qt::Key strafeRight = Qt::Key_D;
-    const Qt::Key rotateLeft = Qt::Key_Left;
-    const Qt::Key rotateRight = Qt::Key_Right;
-    const Qt::Key up = Qt::Key_Space; // Jump or fly up, depending on whether in fly mode or walk mode.
-    const Qt::Key down = Qt::Key_Control; // Crouch or fly down, depending on whether in fly mode or walk mode.
-    const Qt::Key flyModeToggle = Qt::Key_F;
-    const Qt::Key cameraModeToggle = Qt::Key_Tab;
+    const QKeySequence walkForward =   inputService.KeyBinding("Avatar.WalkForward", Qt::Key_W);
+    const QKeySequence walkBackward =  inputService.KeyBinding("Avatar.WalkBack", Qt::Key_S);
+    const QKeySequence walkForward2 =  inputService.KeyBinding("Avatar.WalkForward2", Qt::Key_Up);
+    const QKeySequence walkBackward2 = inputService.KeyBinding("Avatar.WalkBack2", Qt::Key_Down);
+    const QKeySequence strafeLeft =  inputService.KeyBinding("Avatar.StrafeLeft", Qt::Key_A);
+    const QKeySequence strafeRight = inputService.KeyBinding("Avatar.StrafeRight", Qt::Key_D);
+    const QKeySequence rotateLeft =  inputService.KeyBinding("Avatar.RotateLeft", Qt::Key_Left);
+    const QKeySequence rotateRight = inputService.KeyBinding("Avatar.RotateRight", Qt::Key_Right);
+    const QKeySequence up =   inputService.KeyBinding("Avatar.Up", Qt::Key_Space); // Jump or fly up, depending on whether in fly mode or walk mode.
+    const QKeySequence down = inputService.KeyBinding("Avatar.Down", /*Qt::Key_Control*/Qt::Key_C); // Crouch or fly down, depending on whether in fly mode or walk mode.
+    const QKeySequence flyModeToggle =    inputService.KeyBinding("Avatar.ToggleFly", Qt::Key_F);
+    const QKeySequence cameraModeToggle = inputService.KeyBinding("Avatar.ToggleCameraMode", Qt::Key_Tab);
 
     Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
 
     // The following code defines the keyboard actions that are available for the avatar/freelookcamera system.
-    switch(key.keyCode)
+    if (key.keyCode == walkForward || key.keyCode == walkForward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_FORWARD_PRESSED);
+    if (key.keyCode == walkBackward || key.keyCode == walkBackward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_BACK_PRESSED);
+    if (key.keyCode == strafeLeft) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_LEFT_PRESSED);
+    if (key.keyCode == strafeRight) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_RIGHT_PRESSED); 
+    if (key.keyCode == rotateLeft)  SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_LEFT_PRESSED); 
+    if (key.keyCode == rotateRight) SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); 
+    if (key.keyCode == up)   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); 
+    if (key.keyCode == down) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); 
+    if (key.keyCode == flyModeToggle) SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); 
+    if (key.keyCode == cameraModeToggle && key.eventType == KeyEvent::KeyPressed)
     {
-    case walkForward: case walkForward2:   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_FORWARD_PRESSED); break;
-    case walkBackward: case walkBackward2: SendPressOrRelease(eventMgr, key, Input::Events::MOVE_BACK_PRESSED); break;
-    case strafeLeft:  SendPressOrRelease(eventMgr, key, Input::Events::MOVE_LEFT_PRESSED); break;
-    case strafeRight: SendPressOrRelease(eventMgr, key, Input::Events::MOVE_RIGHT_PRESSED); break;
-    case rotateLeft:  SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_LEFT_PRESSED); break;
-    case rotateRight: SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); break;
-    case up:   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); break;
-    case down: SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); break;
-    case flyModeToggle: SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); break;
-    case cameraModeToggle:
-        if (key.eventType == KeyEvent::KeyPressed)
-        {
-            key.handled = true; // Suppress Qt from getting a tab next item.
-            input->ReleaseAllKeys();
-            eventMgr->SendEvent("Input", Input::Events::SWITCH_CAMERA_STATE, 0); 
-        }
-        break;
-    default:
-        break;
+        if (key.keyCode == Qt::Key_Tab)
+            key.handled = true; // Suppress Qt from moving the focus to a widget.
+        input->ReleaseAllKeys();
+        eventMgr->SendEvent("Input", Input::Events::SWITCH_CAMERA_STATE, 0); 
     }
 }
 

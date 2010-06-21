@@ -38,6 +38,9 @@ public:
     /// Initializes the service and hooks it into the main application window.
     explicit QtInputService(Foundation::Framework *owner);
 
+    /// The dtor saves the settings to QSettings.
+    ~QtInputService();
+
     /// Proceeds the input system one application frame forward (Ages all double-buffered input data).
     /// Called by QtInputModule. Not for client use.
     void Update(f64 frametime);
@@ -46,6 +49,8 @@ public:
     /// existing contexts (although it is encouraged). When you no longer need the context, free all refcounts to it.
     /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
     boost::shared_ptr<InputContext> RegisterInputContext(const char *name, int priority);
+
+    typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:
     /// Returns the topmost visible QGraphicsItem in the given application main window coordinates.
@@ -111,6 +116,27 @@ public slots:
     /// (by setting the .handled member of the event to true), but be very careful when doing so.
     InputContext &TopLevelInputContext() { return topLevelInputContext; }
 
+    /// Associates the given custom action with the given key.
+    void SetKeyBinding(const QString &actionName, QKeySequence key);
+
+    /// Returns the key associated with the given action.
+    /// @param actionName The custom action name to query. The convention is to use two-part names, separated with a period, i.e.
+    ///        "category.name". For example, RexLogicModule has an action "Avatar.WalkForward" to control avatar movement.
+    /// If the action does not exist, null sequence is returned.
+    QKeySequence KeyBinding(const QString &actionName) const;
+
+    /// Returns the key associated with the given action. This is the same function as KeyBinding(const QString &actionName),
+    /// but in this form, if the action does not exist, the default key sequence is registered for it and returned.
+    QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey);
+
+    void LoadKeyBindingsFromFile();
+
+    void SaveKeyBindingsToFile();
+
+    const KeyActionsMap &GetKeyBindings() const { return keyboardMappings; }
+
+    void SetKeyBindings(const KeyActionsMap &actionMap) { keyboardMappings = actionMap; }
+
 private:
     bool eventFilter(QObject *obj, QEvent *event);
 
@@ -169,8 +195,10 @@ private:
     /// input event should be passed to Qt.
     InputContext topLevelInputContext;
 
-    /// Stores the currently held down keyboard buttons.
+    /// Stores all the keyboard mappings we have gathered.
+    KeyActionsMap keyboardMappings;
 
+    /// Stores the currently held down keyboard buttons.
     std::map<Qt::Key, KeyPressInformation> heldKeys;
 
     /// Lists the keycodes of buttons that are taken to have been pressed down during this Update() cycle.

@@ -11,6 +11,7 @@
 #include <QGraphicsView>
 #include <QKeyEvent>
 #include <QApplication>
+#include <QSettings>
 
 #include <boost/make_shared.hpp>
 
@@ -92,6 +93,13 @@ framework(framework_)
     mainWindow->setMouseTracking(true);
     // For Mouse wheel events, key releases, and mouse moves (no button down).
     mainWindow->installEventFilter(this);
+
+    LoadKeyBindingsFromFile();
+}
+
+QtInputService::~QtInputService()
+{
+    SaveKeyBindingsToFile();
 }
 
 QGraphicsItem *QtInputService::GetVisibleItemAtCoords(int x, int y)
@@ -403,6 +411,62 @@ void QtInputService::TriggerMouseEvent(MouseEvent &mouse)
             break;
         }
     }
+}
+
+/// Associates the given custom action with the given key.
+void QtInputService::SetKeyBinding(const QString &actionName, QKeySequence key)
+{
+    keyboardMappings[actionName.toStdString()] = QKeySequence(key);
+}
+
+/// Returns the key associated with the given action.
+QKeySequence QtInputService::KeyBinding(const QString &actionName) const
+{
+    std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
+    return iter != keyboardMappings.end() ? iter->second : QKeySequence();
+}
+
+/// Returns the key associated with the given action.
+QKeySequence QtInputService::KeyBinding(const QString &actionName, QKeySequence defaultKey)
+{
+    std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.find(actionName.toStdString());
+    if (iter == keyboardMappings.end())
+    {
+        SetKeyBinding(actionName, defaultKey);
+        return defaultKey;
+    }
+    return iter->second;
+}
+
+void QtInputService::LoadKeyBindingsFromFile()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
+
+    int size = settings.beginReadArray("numActions");
+    for(int i = 0; i < size; ++i)
+    {
+        settings.setArrayIndex(i);
+        QString actionName = settings.value("actionName").toString();
+        QKeySequence keySequence = QKeySequence(settings.value("keySequence").toString());
+        SetKeyBinding(actionName, keySequence);
+    }
+    settings.endArray();
+}
+
+void QtInputService::SaveKeyBindingsToFile()
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/KeyBindings");
+
+    settings.beginWriteArray("numActions");
+    int index = 0;
+    for(std::map<std::string, QKeySequence>::const_iterator iter = keyboardMappings.begin();
+        iter != keyboardMappings.end(); ++iter)
+    {
+        settings.setArrayIndex(index++);
+        settings.setValue("actionName", QString(iter->first.c_str()));
+        settings.setValue("keySequence", iter->second);
+    }
+    settings.endArray();
 }
 
 Qt::Key StripModifiersFromKey(int qtKeyWithModifiers)

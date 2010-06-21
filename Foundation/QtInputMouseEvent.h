@@ -8,6 +8,7 @@
 
 #include <qnamespace.h>
 #include <QPoint>
+#include <QObject>
 
 class QGraphicsItem;
 
@@ -25,8 +26,10 @@ namespace QtInputEvents
 }
 
 /// MouseEvent is the event data structure passed as the parameter in all Naali mouse-related events.
-class MouseEvent : public Foundation::EventDataInterface
+class MouseEvent : public QObject, public Foundation::EventDataInterface
 {
+    Q_OBJECT
+
 public:
 	MouseEvent()
     :eventType(MouseEventInvalid),
@@ -138,8 +141,13 @@ public:
 
 	///\todo Add a time stamp of the event.
 
+public slots:
+    /// Marks this event as having been handled already, which will suppress this event from
+    /// going on to lower input context levels.
+    void Suppress() { handled = true; }
+
 	/// @return True if the key with the given keycode was held down when this event occurred.
-	bool HadKeyDown(int keyCode) const { return std::find(heldKeys.begin(), heldKeys.end(), keyCode) != heldKeys.end(); }
+    bool HadKeyDown(Qt::Key keyCode) const { return std::find(heldKeys.begin(), heldKeys.end(), keyCode) != heldKeys.end(); }
 
     /// Returns the mouse coordinates in local client coordinate frame denoting where the given mouse button was last pressed
     /// down. Note that this does not tell whether the mouse button is currently held down or not.
@@ -161,6 +169,34 @@ public:
 	/// On windows, this is associated to the Win key.
 	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; }
 */
+
+public:
+
+    // Meta-information wrappers for dynamic languages.
+    Q_PROPERTY(int x READ X)
+    Q_PROPERTY(int y READ Y)
+    Q_PROPERTY(int z READ Z)
+    Q_PROPERTY(int relativeX READ RelativeX)
+    Q_PROPERTY(int relativeY READ RelativeY)
+    Q_PROPERTY(int relativeZ READ RelativeZ)
+    Q_PROPERTY(int globalX READ GlobalX)
+    Q_PROPERTY(int globalY READ GlobalY)
+    Q_PROPERTY(unsigned long otherButtons READ OtherButtons)
+
+    int X() const { return x; }
+    int Y() const { return y; }
+    int Z() const { return z; }
+
+    int RelativeX() const { return relativeX; }
+    int RelativeY() const { return relativeY; }
+    int RelativeZ() const { return relativeZ; }
+
+    int GlobalX() const { return globalX; }
+    int GlobalY() const { return globalY; }
+
+    unsigned long OtherButtons() const { return otherButtons; }
+
+    QGraphicsItem *ItemUnderMouse() const { return itemUnderMouse; }
 };
 
 #endif
