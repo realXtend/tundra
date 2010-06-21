@@ -170,8 +170,28 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
 
     frame_time_update_x_pos_ = 0;
+    logThreshold_ = 120.0;
+
+    QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
+    if ( box != 0)
+    {
+        box->setRange(0.0, 1000.0);
+        box->setValue(logThreshold_);
+    }
+    
+    QPushButton* apply = findChild<QPushButton*>("loggerApply");
+    if ( apply != 0)
+        QObject::connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
+
 }
 
+void TimeProfilerWindow::ChangeLoggerThreshold()
+{
+     QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
+     if ( box != 0)
+        logThreshold_ = box->value();
+
+}
 
 struct ResNameAndSize
 {
@@ -510,9 +530,59 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
         denom += smoothFactor;
         smoothFactor *= smoothCoeff;
     }
-    sprintf(str, "%.2f msecs/frame.", (float)(avg * 1000.0 / denom));
+    float timePerFrame = static_cast<float>(avg * 1000.0/denom); 
+    sprintf(str, "%.2f msecs/frame.", timePerFrame);
     label_time_per_frame_->setText(str);
+
+    if ( timePerFrame >= logThreshold_ )
+         DumpNodeData();
+    
+    
+
 }
+
+void TimeProfilerWindow::DumpNodeData()
+{
+   
+    QFile file("performancelogger.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+         return;
+
+    if ( tree_profiling_data_ == 0)
+        return;
+
+    QTextStream out(&file);
+    
+    // Refresh tree data. 
+    RefreshProfilingDataTree();
+
+    // Now write data from tree to file
+    QTreeWidgetItemIterator it(tree_profiling_data_);
+    int cols = tree_profiling_data_->columnCount();
+
+    out<<endl;
+    out<<"#---------------- FRAME -----------------------------";
+    out<<endl;
+    out<<endl;
+
+    while (*it) 
+     {
+         QString name = (*it)->text(0);
+         if ( name.contains("thread", Qt::CaseInsensitive) && !name.contains("ThreadTask") )
+             out<<endl;
+
+         for ( int i = 0; i < cols; ++i)
+            out<<(*it)->text(i)<<" ";
+         
+         out<<endl;
+         ++it;
+     }
+           
+    file.close();
+}
+
+
+
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
 {
