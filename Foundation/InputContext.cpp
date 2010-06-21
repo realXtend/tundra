@@ -183,7 +183,12 @@ void InputContext::UpdateFrame()
             ++iter;
         }
         else if (iter->second.keyState == KeyEvent::KeyReleased)
-            iter = heldKeysBuffered.erase(iter);
+          {
+            HeldKeysMap::iterator next = iter;
+            ++next;
+            heldKeysBuffered.erase(iter);
+            iter = next;
+          }
         else 
             ++iter;
     }

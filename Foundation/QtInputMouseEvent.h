@@ -6,7 +6,7 @@
 #include "CoreTypes.h"
 #include "EventDataInterface.h"
 
-#include <QNamespace.h>
+#include <qnamespace.h>
 #include <QPoint>
 
 class QGraphicsItem;
