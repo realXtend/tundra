@@ -46,7 +46,7 @@
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="tab">
+        <widget class="QWidget" name="timing">
          <attribute name="title">
           <string>Timing</string>
          </attribute>
@@ -168,7 +168,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tab_6">
+        <widget class="QWidget" name="frametimes">
          <attribute name="title">
           <string>Frame</string>
          </attribute>
@@ -231,7 +231,7 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="tab_3">
+        <widget class="QWidget" name="ogre">
          <attribute name="title">
           <string>Ogre</string>
          </attribute>
@@ -769,7 +769,7 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="tab_4">
+        <widget class="QWidget" name="network">
          <attribute name="title">
           <string>Network</string>
          </attribute>
@@ -1216,7 +1216,7 @@
           </property>
          </widget>
         </widget>
-        <widget class="QWidget" name="tab_7">
+        <widget class="QWidget" name="simstats">
          <attribute name="title">
           <string>SimStats</string>
          </attribute>
@@ -1279,7 +1279,7 @@
           </item>
          </layout>
         </widget>
-        <widget class="QWidget" name="tab_2">
+        <widget class="QWidget" name="assets">
          <attribute name="title">
           <string>Assets</string>
          </attribute>
@@ -1348,6 +1348,100 @@
             <column>
              <property name="text">
               <string>Received</string>
+             </property>
+            </column>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+        <widget class="QWidget" name="rendertargets">
+         <attribute name="title">
+          <string>Rendertargets</string>
+         </attribute>
+         <layout class="QVBoxLayout" name="rendertargets_verticalLayout">
+          <item>
+           <widget class="QLabel" name="labelAssetCache">
+            <property name="text">
+             <string>Rendertargets</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTreeWidget" name="treeRenderTargets">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <column>
+             <property name="text">
+              <string>Name</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Width</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Height</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Depth</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Viewports</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Batches</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Triangles</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>FPS last</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>FPS avg</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>FPS best</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>FPS worst</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Best frametime</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>Worst frametime</string>
+             </property>
+            </column>
+            <column>
+             <property name="text">
+              <string>More info</string>
              </property>
             </column>
            </widget>

@@ -129,6 +129,23 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_asset_transfers_->header()->resizeSection(1, 90);
     tree_asset_transfers_->header()->resizeSection(2, 90);
     
+    tree_rendertargets_ = findChild<QTreeWidget*>("treeRenderTargets");
+    assert(tree_rendertargets_);
+    tree_rendertargets_->header()->resizeSection(0, 220);
+    tree_rendertargets_->header()->resizeSection(1, 50);
+    tree_rendertargets_->header()->resizeSection(2, 50);
+    tree_rendertargets_->header()->resizeSection(3, 50);
+    tree_rendertargets_->header()->resizeSection(4, 60);
+    tree_rendertargets_->header()->resizeSection(5, 55);
+    tree_rendertargets_->header()->resizeSection(6, 60);
+    tree_rendertargets_->header()->resizeSection(7, 60);
+    tree_rendertargets_->header()->resizeSection(8, 60);
+    tree_rendertargets_->header()->resizeSection(9, 60);
+    tree_rendertargets_->header()->resizeSection(10, 60);
+    tree_rendertargets_->header()->resizeSection(11, 90);
+    tree_rendertargets_->header()->resizeSection(12, 90);
+    tree_rendertargets_->header()->resizeSection(13, 800);
+    
     tree_texture_assets_ = findChild<QTreeWidget* >("textureDataTree"); 
     tree_mesh_assets_ = findChild<QTreeWidget* >("meshDataTree");
     tree_material_assets_ = findChild<QTreeWidget*>("materialDataTree");
@@ -185,25 +202,25 @@ void TimeProfilerWindow::Arrange()
     QTreeWidget* widget = 0;
     switch (index)
     {
-        case 6:  // Texture
+        case 7:  // Texture
             widget =  tree_texture_assets_;
             break;
-        case 7: // Mesh
+        case 8: // Mesh
             widget =  tree_mesh_assets_;
             break;
-        case 8: // Material
+        case 9: // Material
             widget =  tree_material_assets_;
             break;
-        case 9:
+        case 10:
             widget =  tree_skeleton_assets_;
             break;
-        case 10:
+        case 11:
             widget = tree_compositor_assets_ ;
             break;
-        case 11:
+        case 12:
             widget = tree_gpu_assets_;
             break;
-        case 12:
+        case 13:
             widget = tree_font_assets_;
             break;
     }
@@ -305,25 +322,28 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 5:
         RefreshAssetProfilingData();
         break;
-    case 6: // Textures
+    case 6:
+        RefreshRenderTargetProfilingData();
+        break;
+    case 7: // Textures
         RefressAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
-    case 7: // Meshes
+    case 8: // Meshes
         RefressAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
-    case 8: // Material
+    case 9: // Material
         RefressAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
-    case 9: // Skeleton
+    case 10: // Skeleton
         RefressAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
-    case 10: // Composition
+    case 11: // Composition
         RefressAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
-    case 11: // Gpu assets
+    case 12: // Gpu assets
         RefressAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
-    case 12: // Font assets
+    case 13: // Font assets
         RefressAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
 
@@ -1093,9 +1113,61 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
 
+void TimeProfilerWindow::RefreshRenderTargetProfilingData()
+{
+    if (!tree_rendertargets_)
+        return;
+    
+    tree_rendertargets_->clear();
+    
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+    if (!root)
+        return;
+    Ogre::RenderSystem* rendersys = root->getRenderSystem();
+    assert(rendersys);
+    if (!rendersys)
+        return;
+    Ogre::RenderSystem::RenderTargetIterator iter = rendersys->getRenderTargetIterator();
+    while (iter.hasMoreElements())
+    {
+        Ogre::RenderTarget* target = iter.getNext();
+        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList());
+        tree_rendertargets_->addTopLevelItem(item);
+        
+        item->setText(0, QString(target->getName().c_str()));
+        item->setText(1, QString("%1").arg(target->getWidth()));
+        item->setText(2, QString("%1").arg(target->getHeight()));
+        item->setText(3, QString("%1").arg(target->getColourDepth()));
+        item->setText(4, QString("%1").arg(target->getNumViewports()));
+        item->setText(5, QString("%1").arg(target->getBatchCount()));
+        item->setText(6, QString("%1").arg(target->getTriangleCount()));
+        item->setText(7, QString("%1").arg(target->getLastFPS(), 0, 'f', 2));
+        item->setText(8, QString("%1").arg(target->getAverageFPS(), 0, 'f', 2));
+        item->setText(9, QString("%1").arg(target->getBestFPS(), 0, 'f', 2));
+        item->setText(10, QString("%1").arg(target->getWorstFPS(), 0, 'f', 2));
+        item->setText(11, QString("%1ms").arg(target->getBestFrameTime(), 0, 'f', 2));
+        item->setText(12, QString("%1ms").arg(target->getWorstFrameTime(), 0, 'f', 2));
+        
+        std::ostringstream details;
+        details << "Priority " << (int)target->getPriority()
+                << " - Active " << (target->isActive() ? "true" : "false")
+                << " - AutoUpdated " << (target->isAutoUpdated() ? "true" : "false")
+                << " - Primary " << (target->isPrimary() ? "true" : "false")
+                << " - HWGamma " << (target->isHardwareGammaEnabled() ? "true" : "false")
+                << " - TextureFlip " << (target->requiresTextureFlipping() ? "true" : "false")
+                << " - FSAALevel " << target->getFSAA()
+                << " - SuggestedPixelFormat " << Ogre::PixelUtil::getFormatName(target->suggestPixelFormat());
+        item->setText(13, QString(details.str().c_str()));
+    }
+    
+    QTimer::singleShot(500, this, SLOT(RefreshRenderTargetProfilingData()));
+}
+
+
  void TimeProfilerWindow::RefressTextureProfilingData()
  {
-     if (!tab_widget_ || tab_widget_->currentIndex() != 6)
+     if (!tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
 
      Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();

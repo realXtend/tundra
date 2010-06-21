@@ -72,6 +72,7 @@ namespace DebugStats
         void ExpandAllButtonPressed();
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
+        void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
         void Arrange();
 
@@ -99,6 +100,7 @@ namespace DebugStats
         QPushButton *push_button_show_unused_;
         QTreeWidget *tree_asset_cache_;
         QTreeWidget *tree_asset_transfers_;
+        QTreeWidget *tree_rendertargets_;
 
         int frame_time_update_x_pos_;
 
