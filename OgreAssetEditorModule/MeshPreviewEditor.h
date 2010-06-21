@@ -42,6 +42,18 @@ namespace Naali
     public:
         MeshPreviewLabel(QWidget *parent = 0, Qt::WindowFlags flags = 0);
         virtual ~MeshPreviewLabel();
+    signals:
+        void sendMouseEvent(QMouseEvent *event, bool both);
+        void sendWheelEvent(QWheelEvent* ev);
+    protected:
+         void mouseMoveEvent(QMouseEvent *event);
+         void mousePressEvent(QMouseEvent* ev);
+         void mouseReleaseEvent(QMouseEvent* ev);
+         void wheelEvent(QWheelEvent* ev);
+
+    private:
+         bool leftPressed_;
+         bool rightPressed_;
     };
 
     //! AudioPreviewEditor is used to play different audioclips from the inventory and show audio info.
@@ -67,6 +79,9 @@ namespace Naali
     public slots:
         /// Close the window.
         void Closed();
+        void Update();
+        void MouseEvent(QMouseEvent* event, bool both);
+        void MouseWheelEvent(QWheelEvent* ev);
 
     signals:
         /// This signal is emitted when the editor is closed.
@@ -75,6 +90,7 @@ namespace Naali
     private:
        
         void InitializeEditorWidget();
+       
 
         Foundation::Framework *framework_;
         asset_type_t assetType_;
@@ -85,6 +101,12 @@ namespace Naali
         QString assetId_;
         request_tag_t request_tag_;
         UiServices::UiProxyWidget *proxy_; 
+        QPointF lastPos_;
+        int camAlphaAngle_;
+        QString mesh_id_;
+        // Mid button roll.
+        double mouseDelta_;
+      
     };
 }
 

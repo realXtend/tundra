@@ -122,6 +122,22 @@ namespace OgreRenderer
         }
     }
     
+    std::vector<Foundation::ResourcePtr> ResourceHandler::GetResources(const std::string& type)
+    {
+        std::vector<Foundation::ResourcePtr> resources;
+        Foundation::ResourceMap::iterator i = resources_.begin();
+        while (i != resources_.end())
+        {
+            Foundation::ResourcePtr res = i->second;
+            if (i->second->GetType() == type)
+                resources.push_back(i->second);
+            ++i;
+        }
+        
+        return resources;
+    }
+    
+    
     bool ResourceHandler::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
         switch (event_id)
@@ -224,9 +240,35 @@ namespace OgreRenderer
                 return tag;
             }
         }
-
-        // Request from texture decoder
-        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager(); 
+        
+        // See if already have in the cache with a superior (non-J2K) format
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
+        {
+            Foundation::AssetPtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+            if (imageasset)
+            {
+                // If not found, prepare new
+                Foundation::ResourcePtr tex = GetResourceInternal(imageasset->GetId(), OgreTextureResource::GetTypeStatic());
+                if (!tex)
+                {
+                    tex = Foundation::ResourcePtr(new OgreTextureResource(imageasset->GetId()));
+                }
+                OgreTextureResource* tex_res = dynamic_cast<OgreTextureResource*>(tex.get());
+                if ((tex_res) && (tex_res->SetDataFromImage(imageasset)))
+                {
+                    // Create legacy material(s) based on the texture
+                    UpdateLegacyMaterials(tex->GetId());
+                    resources_[tex->GetId()] = tex;
+                    Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
+                    framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                    return tag;
+                }
+            }
+        }
+        
+        // Otherwise, request from texture decoder
         boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
         if (texture_service)
         {

@@ -7,10 +7,6 @@
 
 namespace Foundation
 {
-    ServiceManager::ServiceManager(Framework *framework) : framework_(framework)
-    {
-    }
-
     ServiceWeakPtr ServiceManager::GetService(service_type_t type)
     {
         ServicesMap::iterator it = services_.find(type);

@@ -987,10 +987,10 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
                 if (!custom_object_ptr)
                     continue;
-                if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())
+                if (!custom_object_ptr->GetEntity())
                     continue;
-                RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
-                custom_object_ptr->CommitChanges();
+                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1173,10 +1173,10 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
             custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
             if (!custom_object_ptr)
                 Py_RETURN_NONE;
-            if (!custom_object_ptr->GetEntity() || !custom_object_ptr->GetObject())                
+            if (!custom_object_ptr->GetEntity())
                 Py_RETURN_NONE;
-            RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), custom_object_ptr->GetObject(), prim, false);
-            custom_object_ptr->CommitChanges();
+            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+            custom_object_ptr->CommitChanges(manual);
         }
         else
             Py_RETURN_NONE;

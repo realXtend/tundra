@@ -37,29 +37,6 @@
 #include "AssetServiceInterface.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
-#include <OgreMaterialManager.h>
-
-namespace
-{
-/// Clones a new Ogre material that renders using the given ambient color. 
-/// This function will be removed or refactored later on, once proper material system is present. -jj.
-void DebugCreateAmbientColorMaterial(const std::string &materialName, float r, float g, float b)
-{
-    Ogre::MaterialManager &mm = Ogre::MaterialManager::getSingleton();
-    Ogre::MaterialPtr material = mm.getByName(materialName);
-    if (material.get()) // The given material already exists, so no need to create it again.
-        return;
-
-    material = mm.getByName("SolidAmbient");
-    if (!material.get())
-        return;
-
-    Ogre::MaterialPtr newMaterial = material->clone(materialName);
-    newMaterial->setAmbient(r, g, b);
-}
-
-}
-
 namespace RexLogic
 {
 
@@ -68,19 +45,9 @@ NetworkEventHandler::NetworkEventHandler(RexLogicModule *owner) :
     ongoing_script_teleport_(false)
 {
     // Get the pointe to the current protocol module
-    protocolModule_ = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
-    
-    boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = protocolModule_.lock();
-    if (!sp.get())
+    ProtocolUtilities::ProtocolModuleInterface *protocol = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock().get();
+    if (protocol)
         RexLogicModule::LogInfo("NetworkEventHandler: Protocol module not set yet. Will fetch when networking occurs.");
-    
-    Foundation::ModuleWeakPtr renderer = owner_->GetFramework()->GetModuleManager()->GetModule("OgreRenderer");
-    if (renderer.expired() == false)
-    {
-        DebugCreateAmbientColorMaterial("AmbientWhite", 1.f, 1.f, 1.f);
-        DebugCreateAmbientColorMaterial("AmbientGreen", 0.f, 1.f, 0.f);
-        DebugCreateAmbientColorMaterial("AmbientRed", 1.f, 0.f, 0.f);
-    }
 
     script_dialog_handler_ = ScriptDialogHandlerPtr(new ScriptDialogHandler(owner_));
 }

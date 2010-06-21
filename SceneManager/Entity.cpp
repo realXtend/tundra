@@ -41,8 +41,6 @@ namespace Scene
         
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
-            
-            ///\todo Ali: send event
         }
     }
 
@@ -54,13 +52,10 @@ namespace Scene
             if (iter != components_.end())
             {
                 //(*iter)->SetParentEntity(0);
-
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
                 components_.erase(iter);
-                
-                ///\todo Ali: send event
             }
             else
             {
