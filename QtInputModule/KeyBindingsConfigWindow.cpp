@@ -19,6 +19,9 @@ void KeyBindingsConfigWindow::ShowWindow()
     assert(contents_widget_);
     file.close();
 
+    if (!contents_widget_)
+        return;
+
     QVBoxLayout *layout = new QVBoxLayout;
     assert(layout);
     layout->addWidget(contents_widget_);
@@ -72,6 +75,10 @@ void KeyBindingsConfigWindow::ExtractBindingsList()
 
 void KeyBindingsConfigWindow::PopulateBindingsList()
 {
+    assert(configList);
+    if (!configList)
+        return;
+
     configList->clear();
 
     const QtInputService::KeyActionsMap &keyActions = dynamic_cast<QtInputService&>(framework->Input()).GetKeyBindings();

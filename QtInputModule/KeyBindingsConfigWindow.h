@@ -22,7 +22,8 @@ class KeyBindingsConfigWindow : public QWidget
 
 public:
     explicit KeyBindingsConfigWindow(Foundation::Framework *framework_)
-    :framework(framework_)
+    :framework(framework_),
+    configList(0)
     {
         ShowWindow();
     }
