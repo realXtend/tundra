@@ -19,9 +19,11 @@ namespace Foundation
     */
     class ServiceManager
     {
-        
     public:
-        ServiceManager(Framework *framework);
+        //! Default constuctor.
+        ServiceManager() {}
+
+        //! Destructor.
         ~ServiceManager() {}
 
         //! register specified service
@@ -64,7 +66,6 @@ namespace Foundation
 
         //! Returns service from service type.
         /*! 
-
             \note The pointer may (in theory) invalidate between frames, always reacquire at begin of frame update
             \param type type of the service to return
             \return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
@@ -83,6 +84,22 @@ namespace Foundation
             }
 
             return boost::dynamic_pointer_cast<T>(it->second.lock());
+        }
+
+        /** Returns service by class T.
+            @param T class type of the service.
+            @return the service, or empty weak pointer if the template parameters doesn't match the service or if the service was not registered
+         */
+        template <class T> boost::weak_ptr<T> GetService()
+        {
+            for(ServicesMap::iterator it = services_.begin(); it != services_.end() ; ++it)
+            {
+                boost::weak_ptr<T> service = boost::dynamic_pointer_cast<T>(it->second.lock());
+                if (service.lock())
+                    return service;
+            }
+
+            return boost::weak_ptr<T>();
         }
 
         //! Returns true if service type is already registered, false otherwise

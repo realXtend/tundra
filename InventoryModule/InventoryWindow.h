@@ -54,8 +54,8 @@ namespace Inventory
     class InventoryItemModel;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
-    class InventoryAction;
 
+    /// Inventory window
     class InventoryWindow : public QWidget
     {
         Q_OBJECT
@@ -87,10 +87,11 @@ namespace Inventory
         void Notification(CoreUi::NotificationBaseWidget *widget);
 
     protected:
+        /// QWidget override.
         void changeEvent(QEvent* e);
 
     private slots:
-
+        ///
         void IndexIsDirty(const QModelIndex &index_model);
 
         /// Opens inventory item (folder or asset) when user double-clicks it.
@@ -185,45 +186,6 @@ namespace Inventory
 
         // Inventory search field
         QLineEdit *lineEditSearch_;
-
-        /// Proxy widget for ui
-        UiServices::UiProxyWidget *proxyWidget_;
-
-        /// Action menu.
-        QMenu *actionMenu_;
-
-        /// Delete action.
-        InventoryAction *actionDelete_;
-
-        /// Rename action.
-        InventoryAction *actionRename_;
-
-        /// Cut action.
-        InventoryAction *actionCut_;
-
-        /// Paste action.
-        InventoryAction *actionPaste_;
-
-        /// New Folder action.
-        InventoryAction *actionNewFolder_;
-
-        /// Open action.
-        InventoryAction *actionOpen_;
-
-        /// Properties action.
-        InventoryAction *actionProperties_;
-
-        /// Copy asset reference action.
-        InventoryAction *actionCopyAssetReference_;
-
-        /// Upload action.
-        InventoryAction *actionUpload_;
-
-        /// Download action.
-        InventoryAction *actionDownload_;
-
-        /// Separator (action) for the context menu.
-        InventoryAction *actionSeparator_;
 
         /// Map of active download progress dialogs.
 //        QMap<QString, QMessageBox *> downloadDialogs_;

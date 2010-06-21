@@ -238,6 +238,16 @@ namespace Foundation
             return GetModuleManager()->GetModule<T>().lock().get();
         }
 
+        /** Returns service by class T.
+            @param T class type of the service.
+            @return The service, or null if the service doesn't exist. Always remember to check for null pointer.
+            @note Do not store the returned raw module pointer anywhere or make a boost::weak_ptr/shared_ptr out of it.
+         */
+        template <class T> T *GetService()
+        {
+            return GetServiceManager()->GetService<T>().lock().get();
+        }
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized

@@ -34,9 +34,10 @@ namespace Asset
         /*! \param asset_id Asset ID
             \param check_memory Whether to check memory cache
             \param check_disk Whether to check disk cache
+            \param type Optional type (empty to match any)
             \return Pointer to asset if found, or null if not
          */
-        Foundation::AssetPtr GetAsset(const std::string& asset_id, bool check_memory = true, bool check_disk = true);
+        Foundation::AssetPtr GetAsset(const std::string& asset_id, bool check_memory = true, bool check_disk = true, const std::string& asset_type = std::string());
 
         //! Stores asset to cache. Posts ASSET_READY event when done.
         /*! \param asset Asset

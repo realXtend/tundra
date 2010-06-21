@@ -4,6 +4,7 @@
 #define incl_OgreRenderer_OgreTextureResource_h
 
 #include "TextureInterface.h"
+#include "AssetInterface.h"
 #include "OgreModuleApi.h"
  
 #include <OgreTexture.h>
@@ -50,6 +51,12 @@ namespace OgreRenderer
         //! returns whether has alpha channel
         bool HasAlpha() const;
         
+        //! sets contents from an image file
+        /*! \param source source image asset
+            \return true if successful
+         */
+        bool SetDataFromImage(Foundation::AssetPtr source);
+        
         //! sets contents from raw source texture
         /*! \param source source raw texture data
             \return true if successful
@@ -60,6 +67,9 @@ namespace OgreRenderer
         static const std::string& GetTypeStatic();
 
     private:
+        //! Remove texture
+        void RemoveTexture();
+        
         //! Ogre texture
         Ogre::TexturePtr ogre_texture_;
 

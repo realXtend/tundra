@@ -1,25 +1,24 @@
-/// @file Environment.h
-/// @brief Manages environment-related reX-logic, e.g. world time and lighting.
-/// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   Environment.cpp
+ *  @brief  Manages environment-related reX-logic, e.g. world time and lighting.
+ */
 
-#ifndef incl_RexLogicModule_Environment_h
-#define incl_RexLogicModule_Environment_h
+#ifndef incl_EnvironmentModule_Environment_h
+#define incl_EnvironmentModule_Environment_h
 
-#include <boost/smart_ptr.hpp>
-
-#include "RexTypes.h"
 #include "EnvironmentModuleApi.h"
 #include "ForwardDefines.h"
+#include "RexTypes.h"
 
 #include <QVector>
 #include <QObject>
-#include <iostream>
 
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
 }
-
 
 namespace OgreRenderer
 {
@@ -37,7 +36,6 @@ namespace Environment
         Q_OBJECT
 
     public:
-        
         /** 
          * Overloaded constructor.
          * @param owner The owner module.
@@ -191,7 +189,7 @@ namespace Environment
         //! @param vector new ambient light color value.
         void SetAmbientLight(const QVector<float>& vector);
 
-        
+        /// Converts string vector to QVector.
         template<typename T> QVector<T> ConvertToQVector(const StringVector& vector) 
         {
             int elements = vector.size();
@@ -199,7 +197,7 @@ namespace Environment
             try
             {
                 for ( int i = 0; i < elements; ++i)
-                {   
+                {
                     std::istringstream stream(vector[i]);
                     stream >> vec[i];
                 }
@@ -211,13 +209,15 @@ namespace Environment
 
             return vec;
         }
-     
+
     signals:
+        //! Emitted when water fog is adjusted.
         void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
+
+        //! Emitted when ground fog is adjusted.
         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
     private:
-       
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
@@ -230,19 +230,19 @@ namespace Environment
         /// Time override, default false
         bool time_override_;
 
-        /// Server's perception of time (UNIX EPOCH).
+        /// Server's perception of time (UNIX EPOCH). Not used currently.
         time_t usecSinceStart_;
 
-        /// Unknown/not needed. \todo delete?
+        /// Unknown. Not used currently.
         uint32_t secPerDay_;
 
-        /// Unknown/not needed. \todo delete?
+        /// Unknown. Not used currently.
         uint32_t secPerYear_;
 
         /// Direction of the sunlight.
         RexTypes::Vector3 sunDirection_;
 
-        /// Unknown/not needed. \todo delete?
+        /// Sun phase.
         float sunPhase_;
 
         /// Sun's angle velocity.
