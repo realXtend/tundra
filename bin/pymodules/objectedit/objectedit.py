@@ -76,21 +76,21 @@ class ObjectEdit(Component):
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMousePressed,
-            r.InWorldClick: self.LeftMousePressed,
-            r.LeftMouseClickReleased: self.LeftMouseReleased,  
-            r.RightMouseClickPressed: self.RightMousePressed,
-            r.RightMouseClickReleased: self.RightMouseReleased
+            #r.InWorldClick: self.LeftMousePressed,
+            #r.LeftMouseClickReleased: self.LeftMouseReleased,  
+            #r.RightMouseClickPressed: self.RightMousePressed,
+            #r.RightMouseClickReleased: self.RightMouseReleased
         }
 
         self.shortcuts = {
             #r.PyObjectEditDeselect: self.deselect,
-            r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
-            r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
-            r.Delete: self.deleteObject,
-            r.Undo: self.undo, 
-            r.PyDuplicateDrag: self.duplicateStart, 
-            r.ObjectLink: self.linkObjects,
-            r.ObjectUnlink: self.unlinkObjects,
+            #r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
+            #r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
+            #r.Delete: self.deleteObject,
+            #r.Undo: self.undo, 
+            #r.PyDuplicateDrag: self.duplicateStart, 
+            #r.ObjectLink: self.linkObjects,
+            #r.ObjectUnlink: self.unlinkObjects,
         }
         
         self.resetManipulators()
