@@ -34,6 +34,7 @@ class EC_OpenSimPrim;
 namespace Foundation
 {
     class Framework;
+    class InputContext;
 }
 
 namespace RexLogic
@@ -64,6 +65,7 @@ namespace PythonScript
         OgreRenderer::Renderer* GetRenderer();
         Scene::SceneManager* GetScene(QString name);
         void RunJavascriptString(QString codestr, QVariantMap context = QVariantMap());
+        InputContext* GetInputContext() { return input.get(); }
 
     public:
         PythonScriptModule();
