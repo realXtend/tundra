@@ -13,20 +13,22 @@ class KeyEventSignal : public QObject
     Q_OBJECT
 
 signals:
-    void KeyPressed(KeyEvent &key);
-    ///\todo Not yet implemented.
-    void KeyDown(KeyEvent &key);
-    void KeyReleased(KeyEvent &key);
+    void SequencePressed(KeyEvent &key);
+
+    void SequenceReleased(KeyEvent &key);
 
 public:
-    KeyEventSignal() {}
-    /// The Qt keycode that this signal object corresponds to.
-    Qt::Key keyCode;
+    explicit KeyEventSignal(QKeySequence keySequence_)
+    :keySequence(keySequence_)
+    {}
+
+    /// This is the key sequence that this key signal is triggered for.
+    const QKeySequence keySequence;
 
 public slots:
-    void OnKeyPressed(KeyEvent &key) { emit KeyPressed(key); }
-    void OnKeyDown(KeyEvent &key) { emit KeyDown(key); }
-    void OnKeyReleased(KeyEvent &key) { emit KeyReleased(key); }
+    void OnKeyPressed(KeyEvent &key) { emit SequencePressed(key); }
+//    void OnKeyDown(KeyEvent &key) { emit KeyDown(key); }
+    void OnKeyReleased(KeyEvent &key) { emit SequenceReleased(key); }
 
 private:
     // KeyEventSignal is noncopyable.

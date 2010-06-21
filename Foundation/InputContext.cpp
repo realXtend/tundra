@@ -14,20 +14,19 @@ InputContext::~InputContext()
         delete iter->second;
 }
 
-KeyEventSignal &InputContext::RegisterKeyEvent(Qt::Key keyCode)
+KeyEventSignal &InputContext::RegisterKeyEvent(QKeySequence keySequence)
 {
-    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keyCode);
+    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keySequence);
     if (iter != registeredKeyEventSignals.end())
         return *iter->second;
-    KeyEventSignal *signal = new KeyEventSignal();
-    signal->keyCode = keyCode;
-    registeredKeyEventSignals[keyCode] = signal;
+    KeyEventSignal *signal = new KeyEventSignal(keySequence);
+    registeredKeyEventSignals[keySequence] = signal;
     return *signal;
 }
 
-void InputContext::UnregisterKeyEvent(Qt::Key keyCode)
+void InputContext::UnregisterKeyEvent(QKeySequence keySequence)
 {
-    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keyCode);
+    KeyEventSignalMap::iterator iter = registeredKeyEventSignals.find(keySequence);
     if (iter != registeredKeyEventSignals.end())
     {
         delete iter->second;
@@ -55,8 +54,8 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
 
         emit OnKeyEvent(key); // 1.
         emit KeyDown(key); // 2.
-        if (keySignal != registeredKeyEventSignals.end())
-            keySignal->second->OnKeyDown(key); // 3.
+//        if (keySignal != registeredKeyEventSignals.end())
+ //           keySignal->second->OnKeyDown(key); // 3.
         break;
     case KeyEvent::KeyReleased:
         if (!IsKeyDownImmediate(key.keyCode))
