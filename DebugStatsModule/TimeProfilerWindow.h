@@ -75,6 +75,8 @@ namespace DebugStats
         void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
         void Arrange();
+        void DumpNodeData();
+        void ChangeLoggerThreshold();
 
     protected:
         void resizeEvent(QResizeEvent *event);
@@ -129,6 +131,7 @@ namespace DebugStats
         QTreeWidget* tree_compositor_assets_;
         QTreeWidget* tree_gpu_assets_;
         QTreeWidget* tree_font_assets_;
+        float logThreshold_;
     };
 }
 
