@@ -371,9 +371,8 @@ namespace UiServices
                 rect.setTop(6);
                 return rect;      
             }
-#endif
-
         }
+#endif
         return QCleanlooksStyle::subControlRect(control, option, subControl, widget);
     }
 
