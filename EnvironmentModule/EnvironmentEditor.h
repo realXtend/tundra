@@ -7,6 +7,8 @@
 
 #include "Color.h"
 
+#include "InputServiceInterface.h"
+
 #include <QObject>
 #include <QPair>
 #include <QTimer>
@@ -18,6 +20,8 @@ class QImage;
 class QColor;
 class QMouseEvent;
 class QColorDialog;
+
+class MouseEvent;
 
 namespace Ogre
 {
@@ -115,7 +119,7 @@ namespace Environment
 
         //! How many textures terrain is using
         static const int cNumberOfTerrainTextures = 4;
-
+ 
     public slots:
         //! Toggle between Paint2D and Paint3D mode.
         void ToggleTerrainPaintMode();
@@ -168,9 +172,13 @@ namespace Environment
         //! Change state of sky enable check box.
         void ToggleSkyCheckButton(bool enabled);
 
+        void HandleKeyInputEvent(KeyEvent &key);
+
+        void HandleMouseInputEvent(MouseEvent &mouse);
+
         //! Called when QMouseEvent event is generated inside the TerrainLabel.
         //! ev mouse event pointer.
-        void HandleMouseEvent(QMouseEvent *ev);
+//        void HandleMouseEvent(QMouseEvent *ev);
 
         //! When called modify land message is sended into the server. This method is connected with mouse click event and is active,
         //! when MouseLeftPress event is active (Take a look at HandleMouseEvent-method).
@@ -247,6 +255,8 @@ namespace Environment
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 
+       void CreateInputContext();
+
         //! Convert Degoded texture into QImage format. Note! This method is planned to be removed when QImage can directly created using raw data pointer.
         //! @Param tex Reference to texture resource.
         //! @Return converted QImage.
@@ -263,6 +273,17 @@ namespace Environment
         //! @param color Paint area color.
         //! @param gradient_size how much larger or smaller gradient will be. Gradient range can be [0 - 1].
         void CreatePaintAreaMesh(int x_pos, int y_pos, const Color &color = Color(1.0f, 0.0f, 0.0f), float gradient_size = 0.75f);
+
+        //! Finds the position on the terrain that the given screen-space x,y coordinates correspond to.
+        //! The clientX and clientY parameters are in the main window coordinate frame. This function will do a raycast
+        //! to the scene to find the proper position in the 2D scene to show the notification mesh at.
+        void RaycastScreenPosToTerrainPos(int clientX, int clientY, int &mapX, int &mapY);
+
+        void Update3DPaintNotificationMeshPosition(int mapX, int mapY);
+
+        //! Called when the user moves his mouse outside the terrain when painting the terrain.
+        void HidePaintMeshOnScene();
+
         //! If paint area has been created, this method will release it from the scene.
         void ReleasePaintMeshOnScene();
 
@@ -334,6 +355,7 @@ namespace Environment
         //! sky type in use.
         OgreRenderer::SkyType sky_type_;
 
+        InputContextPtr terrainPaintInputContext;
         //! Timer for terrain painting so that terrain is painted certain time.
         QTimer terrain_paint_timer_;
 

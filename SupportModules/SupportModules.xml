@@ -1,3 +1,4 @@
 <config>
 	<entry>ConsoleModule</entry>
+  <dependency>QtInputModule</dependency>
 </config>

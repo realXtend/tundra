@@ -139,6 +139,7 @@ namespace Foundation
         QString name;
         switch (event_id)
         {
+/*
             // Fly
             case Input::Events::TOGGLE_FLYMODE:
                 name = "toggle.fly";
@@ -238,7 +239,7 @@ namespace Foundation
             case Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE:
                 name = "python.object.toggle.scale";
                 break;
-
+*/
             // Unknown
             default:
                 name = "";
@@ -250,7 +251,7 @@ namespace Foundation
     std::pair<int,int> KeyBindings::EventPairForName(QString name)
     {
         std::pair<int,int> id_pair;
-
+/*
         if (name == "toggle.fly")
         {
             id_pair.first = Input::Events::TOGGLE_FLYMODE;
@@ -391,7 +392,7 @@ namespace Foundation
             id_pair.first = 0;
             id_pair.second = 0;
         }
-
+*/
         return id_pair;
     }
 }

@@ -502,16 +502,16 @@ namespace OgreRenderer
             QRect viewrect(QPoint(0, 0), viewsize);
 
             // Compositing back buffer
-            QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
-            buffer.fill(Qt::transparent);
+            backBuffer = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);            
+            backBuffer.fill(Qt::transparent);
 
             // Paint ui view into buffer
-            QPainter painter(&buffer);
+            QPainter painter(&backBuffer);
             q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
 
             // Blit ogre view into buffer
             Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
-            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
+            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)backBuffer.bits());
 
             q_ogre_world_view_->OverlayUI(bufbox);
             if (resized_dirty_ > 0)
@@ -887,6 +887,24 @@ namespace OgreRenderer
     //qt wrapper / upcoming replacement for the one above
     QVariantList Renderer::FrustumQuery(QRect &viewrect)
     {
+/*
+        Ogre::PlaneBoundedVolumeList volumes;
+        Ogre::PlaneBoundedVolume p;
+        Ogre::Plane plane;
+        p.planes.push_back(plane);
+        volumes.push_back(p);
+        Ogre::PlaneBoundedVolumeListSceneQuery *query = scenemanager_->createPlaneBoundedVolumeQuery(volumes);
+        assert(query);
+
+        Ogre::SceneQueryResult results = query->execute();
+        for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
+        {
+            MovableObject *m = *iter;
+            std::cout << "Hit MovableObject:" << m << std::endl;
+        }
+
+        scenemanager_->destroyQuery(query);
+*/
         QVariantList l;
         l << 1;
         l << 2;

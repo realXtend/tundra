@@ -36,6 +36,7 @@ namespace Foundation
     class ComponentInterface;
     class ThreadTaskManager;
     class Profiler;
+    class Framework;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
