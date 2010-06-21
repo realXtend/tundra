@@ -49,7 +49,7 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
 EC_3DCanvas::~EC_3DCanvas()
 {
     submeshes_.clear();
-    UpdateSubmeshes();
+    //UpdateSubmeshes();
 
     widget_ = 0;
 
