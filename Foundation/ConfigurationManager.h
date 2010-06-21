@@ -123,7 +123,7 @@ namespace Foundation
         std::string GetPath() const { return path_.string(); }
 
         /**
-         * Sets a file name encoding. Default encoding is "Rex", so created configuration files starts with letters "Rex". This setting also
+         * Sets a file name encoding. Default encoding is empty. This setting also
          * affects of how @p Load and @p Export searches configuration files from given file path (default case).   
          * @param encoding is encoding which defines what files are valid xml configuration files. 
          *

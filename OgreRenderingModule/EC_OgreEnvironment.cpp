@@ -661,7 +661,8 @@ void EC_OgreEnvironment::InitShadows()
 
     sceneManager->setShadowColour(shadowColor);
     sceneManager->setShadowTextureCountPerLightType(Ogre::Light::LT_DIRECTIONAL, shadowTextureCount);
-    sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_RGB);
+    //sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_RGB);
+    sceneManager->setShadowTextureSettings(shadowTextureSize, shadowTextureCount, Ogre::PF_FLOAT32_R);
     sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_ADDITIVE_INTEGRATED);
     sceneManager->setShadowTextureCasterMaterial(ogreShadowCasterMaterial.c_str());
     sceneManager->setShadowTextureSelfShadow(true);
