@@ -378,6 +378,13 @@ if 0: #pythonqt introspec
     #print type(UiWidgetProperties), dir(UiWidgetProperties)
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
+if 0:
+    import naali
+    def keypressed(e):
+        print e
+    #print dir(naali.inputcontext)
+    naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
+
 if 0: #QVector3D
     import PythonQt.QtGui
     #print dir(PythonQt.QtGui)
@@ -1289,8 +1296,8 @@ if 0: #create a new component, hilight
         print "not"
         
 if 0: #create a new component, touchable
-    #entid = r.getUserAvatarId()
-    entid = 2979274737
+    entid = r.getUserAvatarId()
+    #entid = 2979274737
     e = r.getEntity(entid)
     try:
         t = e.touchable
