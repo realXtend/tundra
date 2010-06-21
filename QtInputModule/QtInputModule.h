@@ -24,6 +24,8 @@ class QGraphicsItem;
 class QGraphicsView;
 class QWidget;
 
+class KeyBindingsConfigWindow;
+
 /// QtInputModule provides other modules with different methods of acquiring keyboard and mouse input.
 /** The input module works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
@@ -55,18 +57,27 @@ class QTINPUT_MODULE_API QtInputModule : public QObject, public Foundation::Modu
     Q_OBJECT
 
     MODULE_LOGGING_FUNCTIONS
+    static const std::string &NameStatic();
 
 public:
     QtInputModule();
     ~QtInputModule();
 
     void Initialize();
+    void PostInitialize();
     void Update(f64 frametime);
 
-    static const std::string &NameStatic();
+    void ShowBindingsWindow();
+
+    Console::CommandResult ShowBindingsWindowConsole(const StringVector &params);
+
+public slots:
+    void BindingsWindowClosed();
 
 private:
     boost::shared_ptr<QtInputService> inputService;
+
+    KeyBindingsConfigWindow *configWindow;
 };
 
 #endif

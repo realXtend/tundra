@@ -33,6 +33,9 @@ public:
     virtual void TriggerKeyEvent(KeyEvent &key) = 0;
     virtual void TriggerMouseEvent(MouseEvent &mouse) = 0;
     virtual InputContext &TopLevelInputContext() = 0;
+    virtual void SetKeyBinding(const QString &actionName, QKeySequence key) = 0;
+    virtual QKeySequence KeyBinding(const QString &actionName) const = 0;
+    virtual QKeySequence KeyBinding(const QString &actionName, QKeySequence defaultKey) = 0;
 };
 
 #endif

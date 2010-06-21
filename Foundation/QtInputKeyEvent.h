@@ -6,6 +6,7 @@
 #include "CoreTypes.h"
 #include "EventDataInterface.h"
 
+#include <QObject>
 #include <QString>
 #include <QKeySequence>
 
@@ -16,8 +17,10 @@ namespace QtInputEvents
 }
 
 /// KeyEvent is the event data structure passed as the parameter in all Naali in-scene KeyPressed and KeyReleased events.
-class KeyEvent : public Foundation::EventDataInterface
+class KeyEvent : public QObject, public Foundation::EventDataInterface
 {
+    Q_OBJECT
+
 public:
     KeyEvent()
     :keyCode((Qt::Key)0),
@@ -76,6 +79,11 @@ public:
 	///\todo Add a time stamp of the event.
 	///\todo Add hold duration if this is a release/repeated press.
 
+public slots:
+    /// Marks this event as having been handled already, which will suppress this event from
+    /// going on to lower input context levels.
+    void Suppress() { handled = true; }
+
     /// Returns true if this event represents a repeated keypress.
     bool IsRepeat() const { return eventType == KeyPressed && keyPressCount > 1; }
 
@@ -89,6 +97,21 @@ public:
 	bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
 	/// On windows, this is associated with the Win key.
 	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; }
+
+public:
+    // Meta-information wrappers for dynamic languages.
+    Q_PROPERTY(QKeySequence sequence READ Sequence)
+    Q_PROPERTY(QString text READ Text)
+    Q_PROPERTY(unsigned long modifiers READ Modifiers)
+    Q_PROPERTY(int keyPressCount READ KeyPressCount)
+    Q_PROPERTY(Qt::Key keyCode READ KeyCode)
+
+    QKeySequence Sequence() const { return sequence; }
+    QString Text() const { return text; }
+    unsigned long Modifiers() const { return modifiers; }
+    int KeyPressCount() const { return keyPressCount; }
+    Qt::Key KeyCode() const { return keyCode; }
+
 };
 
 #endif

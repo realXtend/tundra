@@ -45,6 +45,11 @@ MouseEvent::PressOrigin MouseEvent::PressPositions::Origin(int mouseButton) cons
     return origin[i];
 }
 
+QPoint MouseEvent::MousePressedPos(int mouseButton) const
+{
+    return mousePressPositions.Pos(mouseButton);
+}
+
 bool MouseEvent::IsButtonDown(MouseButton button_) const
 {
     return button == button_ || ((otherButtons & button_) != 0);
