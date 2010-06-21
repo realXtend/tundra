@@ -11,6 +11,7 @@
 #include "Quaternion.h"
 
 #include <QVariant>
+#include <set>
 
 class QRect;
 
@@ -90,6 +91,9 @@ namespace Foundation
         //! force UI repaint
         virtual void RepaintUi() = 0;
 
+        //! get visible entities last frame
+        virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;
+        
         //! take sceenshot to a location
         //! \param filePath File path.
         //! \param fileName File name.

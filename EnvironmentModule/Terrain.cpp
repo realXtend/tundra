@@ -259,6 +259,9 @@ namespace Environment
         Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
         ogre_entity->setUserAny(Ogre::Any(&entity));
         ogre_entity->setCastShadows(false);
+        // Set UserAny also on subentities
+        for (uint i = 0; i < ogre_entity->getNumSubEntities(); ++i)
+            ogre_entity->getSubEntity(i)->setUserAny(ogre_entity->getUserAny());
 
         // Explicitly destroy all attached MovableObjects previously bound to this terrain node.
         Ogre::SceneNode::ObjectIterator iter = node->getAttachedObjectIterator();

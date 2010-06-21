@@ -40,13 +40,15 @@ namespace OgreRenderer
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
+    class RenderableListener;
     class QOgreUIView;
     class QOgreWorldView;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
-
+    typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
+    
     //! Naali main window, which overrides the closeEvent
     class OGRE_MODULE_API NaaliMainWindow : public QWidget
     {
@@ -70,6 +72,8 @@ namespace OgreRenderer
     */
     class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
     {
+        friend class RenderableListener;
+        
         Q_OBJECT
 
     public slots:
@@ -122,6 +126,9 @@ namespace OgreRenderer
         //! force UI repaint
         virtual void RepaintUi();
 
+        //! get visible entities last frame
+        virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
+        
         //! Takes a screenshot and saves it to a file.
         //! \param filePath File path.
         //! \param fileName File name.
@@ -288,6 +295,9 @@ namespace OgreRenderer
         //! Ogre log listener
         OgreLogListenerPtr log_listener_;
 
+        //! Ogre renderable listener
+        RenderableListenerPtr renderable_listener_;
+
         //! Resource handler
         ResourceHandlerPtr resource_handler_;
 
@@ -338,6 +348,9 @@ namespace OgreRenderer
         QImage ui_buffer_;
         QRect last_view_rect_;
         QTime ui_update_timer_;
+        
+        //! Visible entities
+        std::set<entity_id_t> visible_entities_;
     };
 }
 
