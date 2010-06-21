@@ -342,19 +342,30 @@ if 0: #python-ogre test - using the extension lib in the embedded context :o
         
     drawline()
 
+if 0: #pydoc can hopefully serve / give us api docs of pythonqt somehow
+    import sys
+    import PythonQt
+    sys.argv = ['PythonQt']
+    import pydoc
+    pydoc.gui()
+
 if 0: #pythonqt introspec
     #print "Importing PythonQt..."
     import PythonQt
-    print dir(PythonQt.Qt)
-    qapp = PythonQt.Qt.QApplication.instance()
-    print qapp.changeOverrideCursor
+    import PythonQt.QtCore
 
-    import PythonQt.QtGui as gui
-    print dir(gui)
-    cursor = gui.QCursor()
-    print cursor, cursor.shape()
-    cursor.setShape(1)
-    qapp.setOverrideCursor(cursor)
+    #k = PythonQt.QtCore.Qt.AltModifier
+    #print k, type(k), dir(k)
+    #print dir(PythonQt.Qt)
+    #qapp = PythonQt.Qt.QApplication.instance()
+    #print qapp.changeOverrideCursor
+
+    #import PythonQt.QtGui as gui
+    #print dir(gui)
+    #cursor = gui.QCursor()
+    #print cursor, cursor.shape()
+    #cursor.setShape(1)
+    #qapp.setOverrideCursor(cursor)
 
     #print PythonQt.QtCore.Qt.Vertical
     #print "Importing PythonQt.QtGui..."
@@ -366,6 +377,13 @@ if 0: #pythonqt introspec
     #UiWidgetProperties = PythonQt.__dict__['UiServices::UiWidgetProperties']
     #print type(UiWidgetProperties), dir(UiWidgetProperties)
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
+
+if 0:
+    import naali
+    def keypressed(e):
+        print e
+    #print dir(naali.inputcontext)
+    naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
 
 if 0: #QVector3D
     import PythonQt.QtGui
@@ -1278,8 +1296,8 @@ if 0: #create a new component, hilight
         print "not"
         
 if 0: #create a new component, touchable
-    #entid = r.getUserAvatarId()
-    entid = 2979274737
+    entid = r.getUserAvatarId()
+    #entid = 2979274737
     e = r.getEntity(entid)
     try:
         t = e.touchable

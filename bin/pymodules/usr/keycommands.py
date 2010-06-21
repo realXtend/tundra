@@ -7,12 +7,7 @@ except ImportError: #not running under rex
     import mockviewer as r
 from circuits import Component
 
-OIS_KEY_C = 46 #it might be possible to use pyois from pyogre to get these
-OIS_KEY_UP = 200
-OIS_KEY_PERIOD = 52
-OIS_KEY_BACKSPACE = 14
-OIS_KEY_ALT = 256
-OIS_KEY_M = 50
+from PythonQt.QtCore import Qt
 
 class KeyCommander(Component):
     EVENTHANDLED = True
@@ -22,45 +17,26 @@ class KeyCommander(Component):
         """
         This dictionary has the keyboard commands, well the
         event ids for different keys that are currently enabled
-        on the python side.
+        on the python side. Now using qt input constants.
         
         (KEY_ID, MOD_ID): methodToCall()
         """
-        #Gone with OIS
-        #self.keymap = {
-        #    (OIS_KEY_PERIOD, OIS_KEY_ALT): self.run_commandpy,
-            #(OIS_KEY_M, OIS_KEY_ALT): self.toggle_editgui,
-        #    (OIS_KEY_BACKSPACE, OIS_KEY_ALT): self.restart_modulemanager
-        #}
-        
-        """
-        These are the input events as they have already been translated within Naali internals.
-        For example both 'w' and 'uparrow' keypresses cause a MoveForwardPressed input event.
-        """
+
         self.inputmap = {
-            r.PyRestart: self.restart_modulemanager,
-            r.PyRunCommand: self.run_commandpy
+            (Qt.Key_Period, Qt.AltModifier): self.run_commandpy,
+            (Qt.Key_F11, Qt.NoModifier): self.restart_modulemanager
+            }
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
-        }
 
         #XXX a temp hack to have restart work in login screen / ether too
         uiview = r.getUiView()
         uiview.connect("PythonRestartRequest()", self.restart_modulemanager)
         
-    #def on_keydown(self, key, mods):
-        #print "on_keydown call -> ", key, mods, (key, mods), self.keymap.has_key((key, mods))
-    #    if (key, mods) in self.keymap:
-    #        return self.keymap[(key, mods)]()
-    #    else:
-    #        return False
-
-    #def on_keyup(self, key, mods):
-    #    pass
-        
-    def on_input(self, evid):
-        #print "Commander got input", evid
-        if evid in self.inputmap:
-            return self.inputmap[evid]()
+    def on_keydown(self, keycode, keymod):
+        #print "Commander got input", keycode, keymod
+        keyb = (keycode, keymod)
+        if keyb in self.inputmap:
+            return self.inputmap[keyb]()
         else:
             return False
     
