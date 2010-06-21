@@ -70,12 +70,16 @@ signals:
     void MouseRightReleased(MouseEvent &mouse);
 
 public slots:
-    /// By registering to InputContext::KeyPressed, you can receive a signal
-    /// directly for a given keyCode, without having to register to OnKeyEvent
-    /// for all keys, and then if()'ing if you had the correct one you were
-    /// interested about.
-    KeyEventSignal &RegisterKeyEvent(Qt::Key keyCode);
-    void UnregisterKeyEvent(Qt::Key keyCode);
+    /// Creates a new signal object that will be triggered when the given
+    /// key sequence occurs in this context. To actually receive the events,
+    /// connect to one of the member signals of the returned object.
+    /// You do not need to hold on to the received signal
+    /// object, it will be remembered and freed along with the context.
+    KeyEventSignal &RegisterKeyEvent(QKeySequence keySequence);
+
+    /// Stops signals from being triggered for the given key sequence in this context.
+    /// This is optional. KeyEventSignals are freed properly when the context is destroyed.
+    void UnregisterKeyEvent(QKeySequence keySequence);
 
     /// This function is called by the QtInputService whenever there is a new
     /// key event for this context to handle. The event is emitted through
@@ -136,7 +140,7 @@ public slots:
     void ReleaseAllKeys();
 
 private:
-    typedef std::map<Qt::Key, KeyEventSignal*> KeyEventSignalMap;
+    typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
     /// has registered a signal-slot connection for.
     KeyEventSignalMap registeredKeyEventSignals;

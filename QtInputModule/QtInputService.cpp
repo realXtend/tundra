@@ -64,8 +64,7 @@ framework(framework_)
     //    we do not still receive mouse move events if we install an event filter to those widgets.
     //    So, we set mouse tracking enabled to the application main window.
     // 2. Mouse wheel events are taken from the application main window.
-    // 3. Key press and release events are taken from the main window, except for the TAB key press, which
-    //    is taken from the main QGraphicsView (main window does not receive tab key press, but does receive tab key release).
+    // 3. Key presses are taken from the main QGraphicsView and release events are taken from the main window.
     // 4. Mouse press and release events do not work if taken from the main window. Presses come through fine,
     //    but the releases are never received. Therefore, we take all our mouse presses and releases from
     //    the QGraphicsView viewport.
@@ -78,7 +77,7 @@ framework(framework_)
     assert(mainView);
     assert(mainView->viewport());
 
-    // For the TAB key.
+    // For key press events.
     mainView->installEventFilter(this);
     // For mouse presses and releases, as well as mouse moves when a button is being held down.
     mainView->viewport()->installEventFilter(this);
@@ -91,7 +90,7 @@ framework(framework_)
         mainWindow = mainWindow->parentWidget();
 
     mainWindow->setMouseTracking(true);
-    // For Mouse wheel events, key presses (except TAB) and releases, and mouse moves (no button down).
+    // For Mouse wheel events, key releases, and mouse moves (no button down).
     mainWindow->installEventFilter(this);
 }
 
@@ -445,8 +444,8 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 //		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
-        // We only take key events from the main window, but take the Tab key from the main view.
-        if (obj != qobject_cast<QObject*>(mainWindow) && !(obj == qobject_cast<QObject*>(mainView) && keyEvent.keyCode == Qt::Key_Tab))
+        // We only take key events from the main QGraphicsView.
+        if (obj != qobject_cast<QObject*>(mainView))
             return false;
 
         std::map<Qt::Key, KeyPressInformation>::iterator keyRecord = heldKeys.find(keyEvent.keyCode);
