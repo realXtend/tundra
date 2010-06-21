@@ -4,7 +4,7 @@
    early on it was the thing that implemented much of the functionality,
    and it also owns the scene which is the key for basic funcs like creating & getting scene entities.
 
-   the idea of rexlogic, however, is to be a replaceable thing that things in core don't generally depend on.
+   the idea of rexlogic, however, is to be a replaceable module that things in core don't generally depend on.
    the framework has developed so that most things can already be gotten without referring to it, like
    the default scene can now be gotten from Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene(); etc.
    if we could use the ECs without depending on the module itself, the dependency might be removed,
@@ -36,7 +36,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
                 which doesn't know EC_OpenSimPrim
 
 
-2010/04/21 Removed the RexLogicModule::GetInventory() dependecy. -Stinkifst
+2010/04/21 Removed the RexLogicModule::GetInventory() dependency. -Stinkfist
 
 */
 
@@ -168,6 +168,7 @@ namespace PythonScript
     void PythonScriptModule::Unload()
     {
         pythonScriptModuleInstance_ = 0;
+        input.reset();
     }
 
     void PythonScriptModule::PostInitialize()
@@ -186,6 +187,11 @@ namespace PythonScript
         // Scene (SceneManager)
         scene_event_category_ = em_->QueryEventCategory("Scene");
         
+        // Create a new input context with a default priority of 100.
+        input = framework_->Input().RegisterInputContext("PythonInput", 100);
+        QObject::connect(input.get(), SIGNAL(OnKeyEvent(KeyEvent &)), this, SLOT(HandleKeyEvent(KeyEvent &)));
+        QObject::connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseEvent(MouseEvent &)));
+
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
         /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
@@ -272,52 +278,15 @@ namespace PythonScript
         Foundation::EventDataInterface* data)
     {    
         PyObject* value = NULL;
+
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        if (category_id == inputeventcategoryid)
-        {
-            //key inputs, send the event id and key info (code+mod) for the python side
-            if (event_id == Input::Events::KEY_PRESSED || event_id == Input::Events::KEY_RELEASED)
-            {
-                //InputEvents::Key *key = static_cast<InputEvents::Key *> (data);
-                Input::Events::Key* key = checked_static_cast<Input::Events::Key *>(data);
-                
-                const int keycode = key->code_;
-                const int mods = key->modifiers_;
-                //OIS::KeyCode* keycode = key->code_;
-                
-                value = PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", event_id, keycode, mods);
-            }
-            
-            //port to however uimodule does it, as it replaces OIS now
-        else if(event_id == Input::Events::MOUSEMOVE ||
-            event_id == Input::Events::INWORLD_CLICK || 
-            event_id == Input::Events::LEFT_MOUSECLICK_PRESSED || 
-            event_id == Input::Events::LEFT_MOUSECLICK_RELEASED ||
-            event_id == Input::Events::RIGHT_MOUSECLICK_PRESSED || 
-            event_id == Input::Events::RIGHT_MOUSECLICK_RELEASED)
+        if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
         {
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
-        }
-        
-            else if(event_id == Input::Events::MOUSEDRAG) 
-            {
-                Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-                value = PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);   
-            }
-            /*
-            else if(event_id == Input::Events::MOUSEDRAG_STOPPED)
-            {
-                PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", event_id, 0, 0, 0, 0);   
-            }
-            */
-            else //XXX change to if-else...
-            {
-                value = PyObject_CallMethod(pmmInstance, "INPUT_EVENT", "i", event_id);
-            }
         }
         else if (category_id == scene_event_category_)
         {
@@ -1126,6 +1095,64 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
             ec_canvas_source->ComponentChanged(Foundation::ComponentInterface::LocalOnly);
         }
     }
+}
+
+void PythonScriptModule::HandleKeyEvent(KeyEvent &key)
+{
+    static const event_id_t KEY_PRESSED = 39;
+    static const event_id_t KEY_RELEASED = 40;
+
+    if (key.eventType == KeyEvent::KeyPressed)
+        PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", KEY_PRESSED, key.keyCode, key.modifiers);
+//        if (!PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", KEY_PRESSED, key.keyCode, key.modifiers))
+//            LogWarning("PyObject_CallMethod(KEY_INPUT_EVENT, KEY_PRESSED) failed!");
+
+    else if (key.eventType == KeyEvent::KeyReleased)
+        PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", KEY_RELEASED, key.keyCode, key.modifiers);
+//        if (!PyObject_CallMethod(pmmInstance, "KEY_INPUT_EVENT", "iii", KEY_RELEASED, key.keyCode, key.modifiers))
+//            LogWarning("PyObject_CallMethod(KEY_INPUT_EVENT, KEY_RELEASED) failed!");
+}
+
+void PythonScriptModule::HandleMouseEvent(MouseEvent &mouse)
+{
+    int eventID = 0;
+
+    static const event_id_t LEFT_MOUSECLICK_PRESSED = 43;
+    static const event_id_t LEFT_MOUSECLICK_RELEASED = 44;
+    static const event_id_t RIGHT_MOUSECLICK_PRESSED = 45;
+    static const event_id_t RIGHT_MOUSECLICK_RELEASED = 46;
+
+    switch(mouse.eventType)
+    {
+    case MouseEvent::MouseMove:
+        if (mouse.IsLeftButtonDown())
+        {
+            PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", Input::Events::MOUSEDRAG, mouse.x, mouse.y, mouse.relativeX, mouse.relativeY);
+//            if (!PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", Input::Events::MOUSEDRAG, mouse.x, mouse.y, mouse.relativeX, mouse.relativeY))
+//                LogWarning("PyObject_CallMethod(MOUSE_DRAG_INPUT_EVENT) failed!");
+            return;
+        }
+        else
+            eventID = Input::Events::MOUSEMOVE;
+        break;
+    case MouseEvent::MouseScroll:
+        break;
+    case MouseEvent::MousePressed:
+        if (mouse.button == MouseEvent::LeftButton) eventID = LEFT_MOUSECLICK_PRESSED;
+        if (mouse.button == MouseEvent::RightButton) eventID = RIGHT_MOUSECLICK_PRESSED;
+        break;
+    case MouseEvent::MouseReleased:
+        if (mouse.button == MouseEvent::LeftButton) eventID = LEFT_MOUSECLICK_RELEASED;
+        if (mouse.button == MouseEvent::RightButton) eventID = RIGHT_MOUSECLICK_RELEASED;
+        break;
+    }
+
+    if (eventID != 0)
+        PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", eventID, mouse.x, mouse.y, mouse.relativeX, mouse.relativeY);
+//        if (!PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", eventID, mouse.x, mouse.y, mouse.relativeX, mouse.relativeY))
+//            LogWarning("PyObject_CallMethod(MOUSE_INPUT_EVENT) failed!");
+
+    ///\todo Don't know when to call the INPUT_EVENT function.
 }
 
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
@@ -2139,6 +2166,7 @@ namespace PythonScript
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&Foundation::ComponentInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&InputContext::staticMetaObject);
 
             pythonqt_inited = true;
             

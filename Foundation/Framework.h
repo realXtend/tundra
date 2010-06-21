@@ -19,6 +19,7 @@ class QApplication;
 class QGraphicsView;
 class QWidget;
 class QObject;
+class InputServiceInterface;
 
 namespace Poco
 {
@@ -129,6 +130,9 @@ namespace Foundation
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
+
+        /// Returns the framework Input object.
+        InputServiceInterface &Input();
 
         //! Creates new empty scene.
         /*! 

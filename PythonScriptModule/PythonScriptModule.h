@@ -22,6 +22,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "ComponentRegistrarInterface.h"
 #include "ServiceManager.h"
+#include "InputServiceInterface.h"
 #include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
 #include "SceneManager.h"
 
@@ -33,6 +34,7 @@ class EC_OpenSimPrim;
 namespace Foundation
 {
     class Framework;
+    class InputContext;
 }
 
 namespace RexLogic
@@ -63,6 +65,7 @@ namespace PythonScript
         OgreRenderer::Renderer* GetRenderer();
         Scene::SceneManager* GetScene(QString name);
         void RunJavascriptString(QString codestr, QVariantMap context = QVariantMap());
+        InputContext* GetInputContext() { return input.get(); }
 
     public:
         PythonScriptModule();
@@ -121,6 +124,10 @@ namespace PythonScript
         // Inventory skeleton retrieved during login process
         InventoryPtr inventory;
 
+    private slots:
+        void HandleKeyEvent(KeyEvent &key);
+        void HandleMouseEvent(MouseEvent &mouse);
+
     private:
         //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
         //! Type name of the module.
@@ -157,6 +164,10 @@ namespace PythonScript
 
         // EventManager to member variable to be accessed from SubscribeNetworkEvents()
         Foundation::EventManagerPtr em_;
+
+        /// The default input context for python code to access. This context operates below
+        /// the Qt windowing priority.
+        InputContextPtr input;
     };
 
     static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }

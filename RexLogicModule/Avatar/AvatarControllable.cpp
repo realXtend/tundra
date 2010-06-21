@@ -149,6 +149,8 @@ namespace RexLogic
             }            
         }
 
+        // The INPUTSTATE_FREECAMERA event moves the view mode to free camera mode. This is controlled by the CameraControllable
+        // object, and in this case we set the AvatarControllable as InActive.
         if (event_id == Input::Events::INPUTSTATE_FREECAMERA && current_state_ != InActive)
         {
             current_state_ = InActive;

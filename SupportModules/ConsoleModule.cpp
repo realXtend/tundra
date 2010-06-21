@@ -11,6 +11,7 @@
 #include "Profiler.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
+#include "ModuleManager.h"
 
 namespace Console
 {
@@ -42,6 +43,10 @@ namespace Console
     {
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
+
+//        KeyEventSignal &keySignal = inputModule->TopLevelInputContext().RegisterKeyEvent(Qt::Key_F1);
+
+
     }
 
     void ConsoleModule::Update(f64 frametime)
@@ -50,6 +55,10 @@ namespace Console
             PROFILE(ConsoleModule_Update);
             assert (manager_);
             manager_->Update(frametime);
+
+            // Read from the global top-level input context for console dropdown event.
+            if (framework_->Input().IsKeyPressed(Qt::Key_F1))
+                manager_->ToggleConsole();
         }
         RESETPROFILER;
     }
@@ -78,15 +87,20 @@ namespace Console
 
             return true;
         }
+/*
         else if (inputEventCategory_ == category_id)
         {
-            if (event_id == Input::Events::SHOW_DEBUG_CONSOLE)
+            if (event_id == QtInputEvents::KeyPressed)
             {
-                manager_->ToggleConsole();
-                return true;
+                KeyEvent &key = dynamic_cast<KeyEvent&>(*data);
+                if (key.keyCode == Qt::Key_F1 && key.eventType == KeyEvent::KeyPressed)
+                {
+                    manager_->ToggleConsole();
+                    return true;
+                }
             }
         }
-
+*/
         return false;
     }
 

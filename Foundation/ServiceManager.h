@@ -6,7 +6,9 @@
 #include "ServiceInterface.h"
 #include "CoreTypes.h"
 
+#include <utility>
 #include <map>
+#include <boost/weak_ptr.hpp>
 
 namespace Foundation
 {
