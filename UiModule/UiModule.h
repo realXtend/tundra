@@ -15,6 +15,9 @@
 #include <QPair>
 #include <QStringList>
 
+class KeyEvent;
+class InputContext;
+
 namespace OgreRenderer
 {
     class QOgreUIView;
@@ -71,6 +74,9 @@ namespace UiServices
         //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
+    private slots:
+        void OnKeyPressed(KeyEvent &key);
+
     private:
         //! Notify all ui module components of connected/disconnected state
         void PublishConnectionState(UiDefines::ConnectionState connection_state);
@@ -114,6 +120,7 @@ namespace UiServices
         //! Ui settings service 
         UiSettingsPtr ui_settings_service_;
 
+        boost::shared_ptr<InputContext> input;
     };
 }
 

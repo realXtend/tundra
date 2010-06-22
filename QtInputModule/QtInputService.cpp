@@ -1,5 +1,7 @@
 #include "QtInputService.h"
 
+#include <sstream>
+
 #include "ServiceManager.h"
 #include "InputEvents.h"
 #include "Framework.h"
@@ -26,7 +28,7 @@ mouseCursorVisible(true),
 //sceneMouseCapture(NoMouseCapture),
 mouseFPSModeEnterX(0),
 mouseFPSModeEnterY(0),
-topLevelInputContext("TopLevel"),
+topLevelInputContext("TopLevel", 100000), // The priority value for the top level context does not really matter, just put an arbitrary big value for display.
 inputCategory(0),
 heldMouseButtons(0),
 pressedMouseButtons(0),
@@ -208,14 +210,48 @@ QPoint QtInputService::MousePressedPos(int mouseButton) const
     return mousePressPositions.Pos(mouseButton);
 }
 
+void QtInputService::DumpInputContexts()
+{
+    int idx = 0;
+
+    InputContextList::iterator iter = registeredInputContexts.begin();
+    for(; iter != registeredInputContexts.end(); ++iter)
+    {
+        boost::shared_ptr<InputContext> inputContext = iter->lock();
+        if (!inputContext)
+        {
+            std::stringstream ss;
+            ss << "Context " << (idx++) << ": expired weak_ptr.";
+            LogInfo(ss.str());
+            continue;
+        }
+        std::stringstream ss;
+        ss << "Context " << (idx++) << ": \"" << inputContext->Name().toStdString() << "\", priority " << inputContext->Priority();
+        LogInfo(ss.str());
+    }
+}
+
 boost::shared_ptr<InputContext> QtInputService::RegisterInputContext(const char *name, int priority)
 {
-    boost::shared_ptr<InputContext> inputContext = boost::make_shared<InputContext>(name);
+    boost::shared_ptr<InputContext> newInputContext = boost::make_shared<InputContext>(name, priority);
 
-    ///\todo Store sorted by priority.
-    registeredInputContexts.push_back(boost::weak_ptr<InputContext>(inputContext));
+    // Do a sorted insert: Iterate and skip through all the input contexts that have a higher
+    // priority than the desired new priority.
+    InputContextList::iterator iter = registeredInputContexts.begin();
+    for(; iter != registeredInputContexts.end(); ++iter)
+    {
+        boost::shared_ptr<InputContext> inputContext = iter->lock();
+        if (!inputContext)
+            continue;
 
-    return inputContext;
+        if (inputContext->Priority() <= priority)
+            break;
+    }
+
+    // iter now points to the proper spot w.r.t the priority order. Insert there.
+    registeredInputContexts.insert(iter, boost::weak_ptr<InputContext>(newInputContext));
+
+    return newInputContext;
 }
 
 void QtInputService::SceneReleaseAllKeys()
@@ -313,37 +349,24 @@ void QtInputService::TriggerKeyEvent(KeyEvent &key)
 
     // First, we pass the key to the global top level input context, which operates above Qt widget input.
     topLevelInputContext.TriggerKeyEvent(key);
-    if (key.handled)
+    if (key.handled) // Convert a Pressed event to a Released event if it was suppressed, so that lower contexts properly let go of the key.
         key.eventType = KeyEvent::KeyReleased;
 
-    // Pass the event to all input contexts that take their input over Qt.
-    for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
-    {
-        boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && context->TakesKeyboardEventsOverQt())
-            context->TriggerKeyEvent(key);
-        if (key.handled)
-            key.eventType = KeyEvent::KeyReleased;
-    }
-
     // If a widget in the QGraphicsScene has keyboard focus, don't send the keyboard message to the inworld scene (the lower contexts).
-    if (mainView->scene()->focusItem() && key.eventType == KeyEvent::KeyPressed)
-    {
-        if (key.IsRepeat())
-            return;
-        else
-            key.eventType = KeyEvent::KeyReleased;
-    }
+    const bool qtWidgetHasKeyboardFocus = (mainView->scene()->focusItem() && key.eventType == KeyEvent::KeyPressed);
 
-    // Pass the event to all input contexts that don't take their input over Qt, in the priority order.
+    // Pass the event to all input contexts in the priority order.
     for(InputContextList::iterator iter = registeredInputContexts.begin(); iter != registeredInputContexts.end(); ++iter)
     {
         boost::shared_ptr<InputContext> context = iter->lock();
-        if (context.get() && !context->TakesKeyboardEventsOverQt())
+        if (context.get() && (!qtWidgetHasKeyboardFocus || context->TakesKeyboardEventsOverQt()))
             context->TriggerKeyEvent(key);
         if (key.handled)
             key.eventType = KeyEvent::KeyReleased;
     }
+
+    if (qtWidgetHasKeyboardFocus)
+        return;
 
     // Finally, pass the key event to the system event tree.
     ///\todo Track which presses and releases have been passed to the event tree, and filter redundant releases.

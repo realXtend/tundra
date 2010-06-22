@@ -149,29 +149,6 @@ namespace OgreRenderer
             }
         }
 
-/*
-        if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK_BUILD)
-        {
-            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
-            assert(movement);
-            Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
-
-            Scene::Entity *entity = result.entity_;
-            if (entity)
-            {
-                Scene::Events::CreateEntityEventData event_data(result.pos_);
-                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CREATE, &event_data);
-            }
-        }
-*/
-
-        if (category_id == input_event_category_ && event_id == Input::Events::NAALI_BINDINGS_CHANGED)
-        {
-            Input::Events::BindingsData *bindings_data = dynamic_cast<Input::Events::BindingsData *>(data);
-            if (bindings_data)
-                renderer_->UpdateKeyBindings(bindings_data->bindings);
-        }
-
         return false;
     }
 
