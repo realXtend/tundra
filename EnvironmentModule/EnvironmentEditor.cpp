@@ -31,6 +31,7 @@
 #include <OgreMesh.h>
 #include <OgreEntity.h>
 #include "OgreMaterialUtils.h"
+#include "LoggingFunctions.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -50,6 +51,8 @@
 #include <QScrollArea>
 #include <QApplication>
 #include "MemoryLeakCheck.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("EnvironmentEditor")
 
 namespace Environment 
 {
@@ -1770,7 +1773,9 @@ namespace Environment
     {
         assert(environment_module_);
 
-        terrainPaintInputContext = environment_module_->GetFramework()->Input().RegisterInputContext("TerrainPaint", 100);
+        // Priority 110: Must be over EtherInput priority (100, see UiModule.cpp) to get the ESC edit cancel message.
+        terrainPaintInputContext = environment_module_->GetFramework()->Input().RegisterInputContext("TerrainPaint", 110);
+        terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
         connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseInputEvent(MouseEvent &)));
@@ -1848,6 +1853,8 @@ namespace Environment
         // The 'ESC' key cancels terrain height painting, if it is active.
         if (key.eventType == KeyEvent::KeyPressed && key.keyCode == Qt::Key_Escape && GetTerrainPaintMode() == Paint3D)
         {
+            key.Suppress();
+
             CreateHeightmapImage();
             terrain_paint_timer_.stop();
             edit_terrain_active_ = false;
@@ -1912,8 +1919,11 @@ namespace Environment
 
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
             EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
-            if(!terrain_component)
+            if(!terrain_component || !terrain_component->AllPatchesLoaded())
+            {
+                LogWarning("Terrain not yet loaded. Cannot edit terrain!");
                 return;
+            }
 
             environment_module_->SendModifyLandMessage(mouse_position_[0], mouse_position_[1], brush_size_, action_, 0.25, terrain_component->GetPoint(mouse_position_[0], mouse_position_[1])); 
         }
