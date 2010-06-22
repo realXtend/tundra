@@ -1,24 +1,23 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OgreScriptEditor.cpp
  *  @brief  Editing tool for OGRE material and particle scripts.
  *          Provides raw text edit for particles and QProperty editing for materials.
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "OgreScriptEditor.h"
 #include "OgreAssetEditorModule.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialProperties.h"
 #include "PropertyTableWidget.h"
-#include "ModuleManager.h"
-#include "EventManager.h"
-#include "Inworld/InworldSceneController.h"
 
 #include "Framework.h"
-#include "Inventory/InventoryEvents.h"
 #include "AssetEvents.h"
+#include "Inventory/InventoryEvents.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -31,16 +30,16 @@
 #include <QColor>
 #include <QVBoxLayout>
 
+#include "MemoryLeakCheck.h"
+
 namespace Naali
 {
 
 OgreScriptEditor::OgreScriptEditor(
-    Foundation::Framework *framework,
     const QString &inventory_id,
     const asset_type_t &asset_type,
     const QString &name,
     QWidget *parent) :
-    framework_(framework),
     QWidget(parent),
     mainWidget_(0),
     lineEditName_(0),
@@ -53,7 +52,33 @@ OgreScriptEditor::OgreScriptEditor(
     name_(name),
     materialProperties_(0)
 {
-    InitEditorWindow();
+    // Create widget from ui file
+    QUiLoader loader;
+    QFile file("./data/ui/ogrescripteditor.ui");
+    if (!file.exists())
+    {
+        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
+        return;
+    }
+
+    mainWidget_ = loader.load(&file);
+    file.close();
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(mainWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
+
+    // Get controls
+    lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
+    buttonSaveAs_ = mainWidget_->findChild<QPushButton *>("buttonSaveAs");
+    buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
+
+    // Connect signals
+    QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
+    QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
+    QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+
     lineEditName_->setText(name_);
     buttonSaveAs_->setEnabled(false);
 }
@@ -64,7 +89,6 @@ OgreScriptEditor::~OgreScriptEditor()
     SAFE_DELETE(textEdit_);
     SAFE_DELETE(propertyTable_);
     SAFE_DELETE(materialProperties_);
-    SAFE_DELETE(layout_);
     SAFE_DELETE(mainWidget_);
 }
 
@@ -109,9 +133,6 @@ void OgreScriptEditor::Close()
 
 void OgreScriptEditor::SaveAs()
 {
-    Foundation::EventManagerPtr event_mgr = framework_->GetEventManager();
-    event_category_id_t event_cat = event_mgr->QueryEventCategory("Inventory");
-
     // Get the script.
     QString script;
     if (assetType_ == RexTypes::RexAT_ParticleScript)
@@ -148,9 +169,7 @@ void OgreScriptEditor::SaveAs()
     event_data.filenames.push_back(filename);
     event_data.buffers.push_back(data_buffer);
 
-    event_mgr->SendEvent(event_cat, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, &event_data);
-    ///\todo emit signal instead of using event manager
-    //emit UploadNewScript(&event_data);
+    emit UploadNewScript(&event_data);
 }
 
 void OgreScriptEditor::ValidateScriptName(const QString &name)
@@ -173,9 +192,18 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     newValueString.trimmed();
     bool valid = true;
 
-    ///\todo Validity check for texture names.
     QString type = typeItem->text();
-    if (type != "TEX_1D" && type != "TEX_2D" && type != "TEX_3D" && type != "TEX_CUBEMAP")
+    if (type == "TEX_1D" || type == "TEX_2D" || type == "TEX_3D" && type == "TEX_CUBEMAP")
+    {
+        // If the texture name is not valid UUID or URL it can't be used.
+        if (RexUUID::IsValid(newValueString))
+            valid = true;
+        else if(newValueString.indexOf("http://") != -1)
+            valid = true;
+        else
+            valid = false;
+    }
+    else
     {
         int i = 0, j = 0;
         while(j != -1 && valid)
@@ -203,36 +231,6 @@ void OgreScriptEditor::PropertyChanged(int row, int column)
     }
 
     propertyTable_->setCurrentItem(valueItem, QItemSelectionModel::Deselect);
-}
-
-void OgreScriptEditor::InitEditorWindow()
-{
-    // Create widget from ui file
-    QUiLoader loader;
-    QFile file("./data/ui/ogrescripteditor.ui");
-    if (!file.exists())
-    {
-        OgreAssetEditorModule::LogError("Cannot find OGRE Script Editor .ui file.");
-        return;
-    }
-
-    mainWidget_ = loader.load(&file);
-    file.close();
-
-    layout_ = new QVBoxLayout;
-    layout_->addWidget(mainWidget_);
-    layout_->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout_);
-
-    // Get controls
-    lineEditName_ = mainWidget_->findChild<QLineEdit *>("lineEditName");
-    buttonSaveAs_ = mainWidget_->findChild<QPushButton *>("buttonSaveAs");
-    buttonCancel_ = mainWidget_->findChild<QPushButton *>("buttonCancel");
-
-    // Connect signals
-    QObject::connect(buttonSaveAs_, SIGNAL(clicked()), this, SLOT(SaveAs()));
-    QObject::connect(buttonCancel_, SIGNAL(clicked(bool)), this, SLOT(Close()));
-    QObject::connect(lineEditName_, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
 }
 
 void OgreScriptEditor::CreateTextEdit()

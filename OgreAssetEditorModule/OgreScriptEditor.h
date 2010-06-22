@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   OgreScriptEditor.h
  *  @brief  Editing tool for OGRE material and particle scripts.
  *          Provides raw text edit for particles and QProperty editing for materials.
@@ -9,7 +9,7 @@
 #ifndef incl_OgreAssetEditorModule_OgreScriptEditor_h
 #define incl_OgreAssetEditorModule_OgreScriptEditor_h
 
-#include <RexTypes.h>
+#include "RexTypes.h"
 
 #include <boost/shared_ptr.hpp>
 
@@ -22,14 +22,8 @@ class QLineEdit;
 class QTextEdit;
 QT_END_NAMESPACE
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
-
 namespace Foundation
 {
-    class Framework;
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 }
@@ -49,11 +43,13 @@ namespace Naali
         Q_OBJECT
 
     public:
-        /// Constructor.
-        /// @param framework Framework.pointer.
-        /// @param asset_type Asset type.
-        /// @param name Name.
-        OgreScriptEditor(Foundation::Framework *framework,
+        /** Constructor.
+            @param inventory_id Inventory ID unique for this item.
+            @param asset_type Asset type.
+            @param name Name.
+            @param parent Parent widget.
+        */
+        OgreScriptEditor(
             const QString &inventory_id,
             const asset_type_t &asset_type,
             const QString &name,
@@ -61,9 +57,6 @@ namespace Naali
 
         /// Destructor.
         virtual ~OgreScriptEditor();
-
-        /// @return ProxyWidget pointer.
-        UiServices::UiProxyWidget *GetProxyWidget() const { return proxyWidget_; }
 
     public slots:
         /// Handles the asset data for script.
@@ -95,26 +88,14 @@ namespace Naali
     private:
         Q_DISABLE_COPY(OgreScriptEditor);
 
-        /// Initializes the inventory UI.
-        void InitEditorWindow();
-
         /// Creates the text edit field for raw editing.
         void CreateTextEdit();
 
         /// Creates the property table for material property editing.
         void CreatePropertyEditor();
 
-        /// Framework pointer.
-        Foundation::Framework *framework_;
-
-        /// Layout 
-        QVBoxLayout *layout_;
-
         /// Main widget loaded from .ui file.
         QWidget *mainWidget_;
-
-        /// Proxy widget for the ui
-        UiServices::UiProxyWidget *proxyWidget_;
 
         /// Save As button.
         QLineEdit *lineEditName_;
