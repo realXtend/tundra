@@ -73,7 +73,7 @@ void XmlRpcCall::AddStringToArray(const std::string& name, const char *sstr)
     
     if ( iter != mapArrays_.end())
     {
-        //There exist allready given array. Add string there. 
+        //There exist already given array. Add string there. 
         XMLRPC_VectorAppendString(iter->second, 0, sstr, 0);
     }
     else

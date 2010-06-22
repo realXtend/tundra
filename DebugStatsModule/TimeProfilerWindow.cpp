@@ -348,25 +348,25 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         RefreshRenderTargetProfilingData();
         break;
     case 7: // Textures
-        RefressAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
+        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
     case 8: // Meshes
-        RefressAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
+        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
     case 9: // Material
-        RefressAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
+        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
     case 10: // Skeleton
-        RefressAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
+        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
     case 11: // Composition
-        RefressAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
+        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
     case 12: // Gpu assets
-        RefressAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
+        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
     case 13: // Font assets
-        RefressAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
+        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
 
     }
@@ -1431,84 +1431,91 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 }
 
 
- void TimeProfilerWindow::RefressTextureProfilingData()
- {
-     if (!tab_widget_ || tab_widget_->currentIndex() != 7)
+void TimeProfilerWindow::RefreshTextureProfilingData()
+{
+    if (!tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
 
-     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
-    
-     while ( iter.hasMoreElements() )
-     {
-       
-       Ogre::ResourcePtr resource = iter.getNext();
+    Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
 
-       // Is there allready this kind element? 
-       QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
-       
-       if ( item == 0) 
-        item = new QTreeWidgetItem(tree_texture_assets_);
-       
-       FillItem(item, resource);
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        // Is there already this kind of element? 
+        QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
+        if (item == 0) 
+            item = new QTreeWidgetItem(tree_texture_assets_);
 
-     }
+        FillItem(item, resource);
+    }
+}
 
+/// Derive the tree widget item to implement a custom sort predicate that sorts certain columns by numbers. 
+class OgreAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
 
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 10: // 'Loading State'
+        case 11: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
 
- }
+void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
+{
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        // Is there already this kind of element? 
+        QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
+        if (item == 0) 
+            item = new OgreAssetTreeWidgetItem(widget);
 
- void TimeProfilerWindow::RefressAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
- {
-   
-     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
-     
-     while ( iter.hasMoreElements() )
-     {
-       
-       Ogre::ResourcePtr resource = iter.getNext();
+        FillItem(item, resource);
+    }
+    for(int i = 0; i < widget->columnCount(); ++i)
+        widget->resizeColumnToContents(i);
+}
 
-       // Is there allready this kind element? 
-       QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
-       
-       if ( item == 0) 
-        item = new QTreeWidgetItem(widget);
-       
-       FillItem(item, resource);
+void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
+{
+    if (item == 0)
+        return;
 
-     }
+    item->setText(0,resource->getName().c_str());
+    QString size;
+    size.setNum(resource->getSize());
+    item->setText(1,size);
 
- }
+    item->setText(2, resource->isManuallyLoaded() ? "Yes" : "No");
+    item->setText(3, resource->isReloadable() ? "Yes" : "No");
+    item->setText(4, resource->getGroup().c_str());
+    item->setText(5, resource->getOrigin().c_str());
+    item->setText(6, resource->isLoaded()  ? "Yes" : "No");
+    item->setText(7, resource->isLoading()  ? "Yes" : "No");
+    item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "No");
+    item->setText(9, resource->isPrepared()  ? "Yes" : "No");
 
- 
- void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
- {
-       if ( item == 0)
-           return;
+    QString tmp;
+    tmp.setNum(resource->getLoadingState());
+    item->setText(10,tmp);
 
-       item->setText(0,resource->getName().c_str());
-       QString size;
-       size.setNum(resource->getSize());
-       item->setText(1,size);
-
-        
-       item->setText(2, resource->isReloadable() ? "Yes" : "False" );
-       item->setText(3, resource->isManuallyLoaded() ? "Yes" : "False");
-       item->setText(4, resource->isPrepared()  ? "Yes" : "False");
-       item->setText(5, resource->isLoaded()  ? "Yes" : "False");
-       item->setText(6, resource->isLoading()  ? "Yes" : "False");
-       
-       QString tmp;
-       tmp.setNum(resource->getLoadingState());
-       item->setText(7,tmp);
-
-       item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "False");
-       item->setText(9, resource->getGroup().c_str());
-       item->setText(10, resource->getOrigin().c_str());
-       tmp.clear();
-       tmp.setNum(resource->getStateCount());
-       item->setText(11,tmp);
-
-
- }
+    tmp.clear();
+    tmp.setNum(resource->getStateCount());
+    item->setText(11,tmp);
+}
 
 }
