@@ -111,7 +111,6 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(EC_OpenSimPrim::TypeNameStatic());
     defaultcomponents.push_back(EC_NetworkPosition::TypeNameStatic());
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
     Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
@@ -380,10 +379,16 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         return false;
     
     // Entity should have animationcontroller
-    OgreRenderer::EC_OgreAnimationController* anim = 
-        entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+        entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
     if (!anim)
         return false;
+    // Attach the mesh entity to animationcontroller, if not yet attached
+    Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    if (!mesh)
+        return false;
+    if (anim->GetMeshEntity() != mesh)
+        anim->SetMeshEntity(mesh);
     
     try
     {
@@ -861,11 +866,6 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             return;
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
         
-        // Attach to animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
-        if (anim)
-            anim->SetMeshEntity(meshptr);
-        
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
             mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
@@ -1143,10 +1143,17 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
     if ((!RexTypes::IsNull(prim->AnimationPackageID)) && (!prim->AnimationName.empty()))
     {
         // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = 
-            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
-        if (anim)        
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+        if (anim)
         {
+            // Attach the mesh entity to animationcontroller, if not yet attached
+            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            if (!mesh)
+                return;
+            if (anim->GetMeshEntity() != mesh)
+                anim->SetMeshEntity(mesh);
+            
             // Check if any other animations than the supposed one is running, and stop them
             const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();
             OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
