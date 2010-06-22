@@ -290,7 +290,7 @@ namespace ECEditor
                     Foundation::AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        Foundation::AttributeInterface *attriubte = component->GetAttributeByName(attributes[i]->GetNameString());
+                        Foundation::AttributeInterface *attriubte = component->GetAttribute(attributes[i]->GetNameString());
                         if(attriubte)
                             attriubte->FromString(attributes[i]->ToString(), Foundation::ComponentInterface::Local);
                     }
