@@ -2146,13 +2146,13 @@ static PyMethodDef EmbMethods[] = {
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
 
-    {"phononIsMimeTypeSupported", (PyCFunction)IsMimeTypeSupportedForVideoWidget, METH_VARARGS, 
+    {"isMimeTypeSupportedForVideoWidget", (PyCFunction)IsMimeTypeSupportedForVideoWidget, METH_VARARGS, 
     "Return true if given mimetype is supported by Phon library.  Parameters: media_url"},
 
-    {"phononCreateVideoWidget", (PyCFunction)CreateVideoWidget, METH_VARARGS, 
+    {"createVideoWidget", (PyCFunction)CreateVideoWidget, METH_VARARGS, 
     "Create Phonon::VideoWidget object with MediaObject according given media url.  Parameters: media_url"},
 
-    {"phononDeleteVideoWidget", (PyCFunction)DeleteVideoWidget, METH_VARARGS, 
+    {"deleteVideoWidget", (PyCFunction)DeleteVideoWidget, METH_VARARGS, 
     "Delete Phonon::VideoWidget object. Parameters: widget"},
 
     {NULL, NULL, 0, NULL}

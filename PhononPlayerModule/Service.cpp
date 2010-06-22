@@ -33,7 +33,8 @@ namespace PlayerService
     {
         if (video_players_.contains(url))
             return dynamic_cast<QWidget*>(video_players_[url]);
-        Phonon::VideoPlayer* player = new Phonon::VideoPlayer(Phonon::VideoCategory, 0);
+        
+        Phonon::VideoPlayer* player = new Phonon::VideoPlayer(Phonon::VideoCategory, 0); /// this can block for a long time !!!
         /// @todo return 0 if cannot create the player
         video_players_[url] = player;
         QObject::connect(player, SIGNAL(finished()), this, SLOT(UpdatePlayers()));
