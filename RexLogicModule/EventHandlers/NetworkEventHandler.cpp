@@ -223,6 +223,13 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
 
     const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
     owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
+
+    // Tell teleportWidget current region name
+    boost::shared_ptr<UiServices::UiModule> ui_module =
+        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    if (ui_module)
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(QString(owner_->GetServerConnection()->GetSimName().c_str()));
+
     return false;
 }
 
