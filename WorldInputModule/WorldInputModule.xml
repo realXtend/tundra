@@ -1,4 +1,0 @@
-<config>
-    <entry>WorldInputModule</entry>
-	<dependency>UiModule</dependency>
-</config>

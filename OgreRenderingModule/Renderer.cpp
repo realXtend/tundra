@@ -13,17 +13,15 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
-
 #include "SceneEvents.h"
-
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
 
-
 #include <Ogre.h>
+//#include <OgreRenderQueue.h>
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -41,6 +39,43 @@ using namespace Foundation;
 
 namespace OgreRenderer
 {
+    //! Ogre renderable listener to find out visible objects for each frame
+    class RenderableListener : public Ogre::RenderQueue::RenderableListener
+    {
+    public:
+        RenderableListener(Renderer* renderer) :
+            renderer_(renderer)
+        {
+        }
+        
+        ~RenderableListener()
+        {
+        }
+        
+        virtual bool renderableQueued(Ogre::Renderable* rend, Ogre::uint8 groupID,
+            Ogre::ushort priority, Ogre::Technique** ppTech, Ogre::RenderQueue* pQueue)
+        {
+            Ogre::Any any = rend->getUserAny();
+            if (any.isEmpty())
+                return true;
+            
+            Scene::Entity *entity = 0;
+            try
+            {
+                entity = Ogre::any_cast<Scene::Entity*>(any);
+                if (entity)
+                    renderer_->visible_entities_.insert(entity->GetId());
+            }
+            catch (Ogre::InvalidParametersException)
+            {
+            }
+            return true;
+        }
+        
+    private:
+        Renderer* renderer_;
+    };
+
     //! Ogre log listener, for passing ogre log messages
     class LogListener : public Ogre::LogListener
     {
@@ -108,6 +143,9 @@ namespace OgreRenderer
     Renderer::~Renderer()
     {
         RemoveLogListener();
+
+        if ((scenemanager_) && (scenemanager_->getRenderQueue()))
+            scenemanager_->getRenderQueue()->setRenderableListener(0);
 
         if (ray_query_)
             if (scenemanager_)
@@ -392,6 +430,9 @@ namespace OgreRenderer
 
         ray_query_ = scenemanager_->createRayQuery(Ogre::Ray());
         ray_query_->setSortByDistance(true); 
+        
+        renderable_listener_ = RenderableListenerPtr(new RenderableListener(this));
+        scenemanager_->getRenderQueue()->setRenderableListener(renderable_listener_.get());
 
         c_handler_.Initialize(framework_ ,viewport_);
     }
@@ -461,22 +502,24 @@ namespace OgreRenderer
             QRect viewrect(QPoint(0, 0), viewsize);
 
             // Compositing back buffer
-            QImage buffer(viewsize, QImage::Format_ARGB32_Premultiplied);
-            buffer.fill(Qt::transparent);
+            backBuffer = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);            
+            backBuffer.fill(Qt::transparent);
 
             // Paint ui view into buffer
-            QPainter painter(&buffer);
+            QPainter painter(&backBuffer);
             q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
 
             // Blit ogre view into buffer
             Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
-            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)buffer.bits());
+            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)backBuffer.bits());
 
             q_ogre_world_view_->OverlayUI(bufbox);
             if (resized_dirty_ > 0)
                 resized_dirty_--;
         }
         
+        // The RenderableListener will fill in visible entities for this frame
+        visible_entities_.clear();
         q_ogre_world_view_->RenderOneFrame();
         q_ogre_ui_view_->setDirty(false);
     }
@@ -844,6 +887,24 @@ namespace OgreRenderer
     //qt wrapper / upcoming replacement for the one above
     QVariantList Renderer::FrustumQuery(QRect &viewrect)
     {
+/*
+        Ogre::PlaneBoundedVolumeList volumes;
+        Ogre::PlaneBoundedVolume p;
+        Ogre::Plane plane;
+        p.planes.push_back(plane);
+        volumes.push_back(p);
+        Ogre::PlaneBoundedVolumeListSceneQuery *query = scenemanager_->createPlaneBoundedVolumeQuery(volumes);
+        assert(query);
+
+        Ogre::SceneQueryResult results = query->execute();
+        for(Ogre::SceneQueryResultMovableList::iterator iter = results.movables.begin(); iter != results.movables.end(); ++iter)
+        {
+            MovableObject *m = *iter;
+            std::cout << "Hit MovableObject:" << m << std::endl;
+        }
+
+        scenemanager_->destroyQuery(query);
+*/
         QVariantList l;
         l << 1;
         l << 2;

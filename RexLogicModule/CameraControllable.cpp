@@ -400,6 +400,7 @@ namespace RexLogic
     {
         float min_z;
 
+        // The 'terrain constraint' option enforces that the camera position is always kept above the terrain ground plane.
         if (useTerrainConstraint_)
         {
             boost::shared_ptr<Environment::EnvironmentModule> env = framework_->GetModuleManager()->GetModule<Environment::EnvironmentModule>().lock();
@@ -420,6 +421,7 @@ namespace RexLogic
             }
         }
 
+        // The 'boundary box constraint' option enforces that the camera position is always kept inside the scene bounding box.
         if (useBoundaryBoxConstraint_)
         {
             position.x = clamp(position.x, boundaryBoxMin_.x, boundaryBoxMax_.x);

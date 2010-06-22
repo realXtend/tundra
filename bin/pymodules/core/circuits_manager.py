@@ -115,10 +115,11 @@ class ComponentRunner(Component):
         instead, works similarly but still not the way it should
         """
         
-        #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")",
-        if evid == r.KeyPressed:
+        #print "CircuitManager received KEY_INPUT (event:", evid, "key:", keycode, "mods:", keymod, ")"
+        #print r.KeyPressed, r.KeyReleased
+        if evid == 39: #r.KeyPressed:
             return self.send_event(Key(keycode, keymod), "on_keydown")
-        elif evid == r.KeyReleased:
+        elif evid == 40: #r.KeyReleased:
             return self.send_event(Key(keycode, keymod), "on_keyup")
             
     def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):

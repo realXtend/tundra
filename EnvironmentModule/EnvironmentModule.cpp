@@ -414,9 +414,6 @@ namespace Environment
 
     bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if(event_id == Input::Events::MOUSEDRAG || event_id == Input::Events::MOUSEDRAG_STOPPED)
-            if(environment_editor_ && environment_editor_->GetTerrainPaintMode() == EnvironmentEditor::Paint3D)
-                environment_editor_->HandleMouseDragEvent(event_id, data);
         return false;
     }
 

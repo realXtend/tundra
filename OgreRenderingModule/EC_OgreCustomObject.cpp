@@ -70,6 +70,9 @@ namespace OgreRenderer
                 entity_->setRenderingDistance(draw_distance_);
                 entity_->setCastShadows(cast_shadows_);
                 entity_->setUserAny(Ogre::Any(GetParentEntity()));
+                // Set UserAny also on subentities
+                for (uint i = 0; i < entity_->getNumSubEntities(); ++i)
+                    entity_->getSubEntity(i)->setUserAny(entity_->getUserAny());
             }
             else
             {

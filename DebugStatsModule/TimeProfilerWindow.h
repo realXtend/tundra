@@ -72,8 +72,11 @@ namespace DebugStats
         void ExpandAllButtonPressed();
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
+        void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
         void Arrange();
+        void DumpNodeData();
+        void ChangeLoggerThreshold();
 
     protected:
         void resizeEvent(QResizeEvent *event);
@@ -99,6 +102,7 @@ namespace DebugStats
         QPushButton *push_button_show_unused_;
         QTreeWidget *tree_asset_cache_;
         QTreeWidget *tree_asset_transfers_;
+        QTreeWidget *tree_rendertargets_;
 
         int frame_time_update_x_pos_;
 
@@ -127,6 +131,7 @@ namespace DebugStats
         QTreeWidget* tree_compositor_assets_;
         QTreeWidget* tree_gpu_assets_;
         QTreeWidget* tree_font_assets_;
+        float logThreshold_;
     };
 }
 

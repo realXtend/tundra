@@ -61,8 +61,8 @@ namespace CoreUi
     void UiConsoleManager::ConnectSignals()
     {
         // Proxy show/hide toggle
-        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), 
-                this, SLOT( ToggleConsole() ));
+//        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), 
+//                this, SLOT( ToggleConsole() ));
 
         // Input field
         connect(console_ui_->ConsoleInputArea, SIGNAL( returnPressed() ), 

@@ -18,6 +18,7 @@
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
 #include "InputEvents.h"
+#include "InputServiceInterface.h"
 #include "OgreRenderingModule.h"
 
 #include <UiModule.h>
@@ -77,7 +78,6 @@ namespace Environment
         mouse_position_[1] = 0;
     
         QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
-      
     }
 
     EnvironmentEditor::~EnvironmentEditor()
@@ -291,7 +291,7 @@ namespace Environment
         {
             TerrainLabel *label = new TerrainLabel(map_widget);
             label->setObjectName("map_label");
-            QObject::connect(label, SIGNAL(SendMouseEvent(QMouseEvent*)), this, SLOT(HandleMouseEvent(QMouseEvent*)));
+//            QObject::connect(label, SIGNAL(SendMouseEvent(QMouseEvent*)), this, SLOT(HandleMouseEvent(QMouseEvent*)));
 
             // Create a QImage object and set it in label.
             QImage heightmap(cHeightmapImageWidth, cHeightmapImageHeight, QImage::Format_RGB32);
@@ -1766,6 +1766,17 @@ namespace Environment
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
+    void EnvironmentEditor::CreateInputContext()
+    {
+        assert(environment_module_);
+
+        terrainPaintInputContext = environment_module_->GetFramework()->Input().RegisterInputContext("TerrainPaint", 100);
+        terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
+
+        connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseInputEvent(MouseEvent &)));
+        connect(terrainPaintInputContext.get(), SIGNAL(OnKeyEvent(KeyEvent &)), this, SLOT(HandleKeyInputEvent(KeyEvent &)));
+    }
+
     void EnvironmentEditor::ToggleTerrainPaintMode()
     {
         if(!editor_widget_)
@@ -1779,11 +1790,17 @@ namespace Environment
         {
             terrainPaintMode_ = Paint3D;
             textLabel->setText("Active");
+
+            // Create an input context 
+            CreateInputContext();
         }
         else if(terrainPaintMode_ == Paint3D)
         {
             terrainPaintMode_ = Paint2D;
             textLabel->setText("Inactive");
+
+            // Release the terrain painting input context.
+            terrainPaintInputContext.reset();
         }
     }
 
@@ -1794,47 +1811,13 @@ namespace Environment
 
     bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        //Paining is only enabled when window's is created and visible.
+        //Painting is only enabled when window's is created and visible.
         if(!editor_widget_)
             return false;
 
         if(!editor_widget_->isVisible())
             return false;
 
-        if(event_id == Input::Events::MOUSEDRAG)
-        {
-            Input::Events::Movement *event_data = dynamic_cast<Input::Events::Movement *>(data);
-            if(event_data)
-            {
-                // do raycast into the world when user is draging the mouse while hes holding left button down.
-                boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-                if (!renderer)
-                    return false;
-                Foundation::RaycastResult result = renderer->Raycast(event_data->x_.abs_, event_data->y_.abs_);
-
-                Scene::Entity *entity = result.entity_;
-
-                if (entity)
-                {
-                    mouse_position_[0] = result.pos_.x;
-                    mouse_position_[1] = result.pos_.y;
-                    UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
-                    CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
-                    if(edit_terrain_active_ == false)
-                    {
-                        edit_terrain_active_ = true;
-                        terrain_paint_timer_.start(250);
-                    }
-                }
-            }
-        }
-        else if(event_id == Input::Events::MOUSEDRAG_STOPPED)
-        {
-            CreateHeightmapImage();
-            terrain_paint_timer_.stop();
-            edit_terrain_active_ = false;
-            ReleasePaintMeshOnScene();
-        }
         return false;
     }
 
@@ -1860,29 +1843,61 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::HandleMouseEvent(QMouseEvent *ev)
+    void EnvironmentEditor::HandleKeyInputEvent(KeyEvent &key)
     {
-        //! @todo In some cases this could fail if mouse release wont be handed into this function.
-        //! Make some time limit how long this terrain_pain_timet will run until it will set it self to halt state.
-        if(ev->type() == QEvent::MouseButtonPress || ev->type() == QEvent::MouseMove)
+        // The 'ESC' key cancels terrain height painting, if it is active.
+        if (key.eventType == KeyEvent::KeyPressed && key.keyCode == Qt::Key_Escape && GetTerrainPaintMode() == Paint3D)
         {
-            mouse_position_[0] = ev->pos().x();
-            mouse_position_[1] = ev->pos().y();
-            UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
-            CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
-            if(ev->button() == Qt::LeftButton)
-            {
-                edit_terrain_active_ = true;
-                terrain_paint_timer_.start(250);
-            }
+            CreateHeightmapImage();
+            terrain_paint_timer_.stop();
+            edit_terrain_active_ = false;
+            ReleasePaintMeshOnScene();
+
+            // Disable terrain paint mode.
+            if (GetTerrainPaintMode() == Paint3D)
+                ToggleTerrainPaintMode();
         }
-        else if(ev->type() == QEvent::MouseButtonRelease)
+    }
+
+    void EnvironmentEditor::HandleMouseInputEvent(MouseEvent &mouse)
+    {
+        if (mouse.IsLeftButtonDown() && !mouse.IsRightButtonDown() && !edit_terrain_active_)
         {
-            if(ev->button() == Qt::LeftButton)
+            edit_terrain_active_ = true;
+            terrain_paint_timer_.start(250);
+        }
+
+        if ((!mouse.IsLeftButtonDown() || mouse.IsRightButtonDown()) && edit_terrain_active_)
+        {
+            CreateHeightmapImage();
+            terrain_paint_timer_.stop();
+            edit_terrain_active_ = false;
+            ReleasePaintMeshOnScene();
+        }
+
+        if (mouse.eventType == MouseEvent::MouseMove)
+        {
+            int mapX;
+            int mapY;
+
+            // Translate the mouse coordinates from main window coordinate frame to the 2D editor label coordinate frame.
+            QLabel *label = editor_widget_->findChild<QLabel *>("map_label");
+            assert(label);
+
+            // If we are pointing the mouse over the 2D map image, no need to raycast.
+//            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse.globalX, mouse.globalY));
+            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse.x, mouse.y));
+            if (posOnLabel.x() >= 0 && posOnLabel.y() >= 0 && posOnLabel.x() < label->size().width() && posOnLabel.y() < label->size().height())
             {
-                terrain_paint_timer_.stop();
-                edit_terrain_active_ = false;
+                mapX = posOnLabel.x();
+                mapY = posOnLabel.y();
             }
+            else
+                RaycastScreenPosToTerrainPos(mouse.x, mouse.y, mapX, mapY);
+
+            // Calling this function also stores the updated terrain edit coordinates as the current coordinates.
+            // In Update() loop, if editing is active, the editor position will be updated.
+            Update3DPaintNotificationMeshPosition(mapX, mapY);
         }
     }
 
@@ -2185,6 +2200,7 @@ namespace Environment
             }
         }
         manual_paint_object_->end();
+        manual_paint_object_->setVisible(true);
 
         std::string meshName = renderer->GetUniqueObjectName();
         Ogre::MeshPtr terrainMesh = manual_paint_object_->convertToMesh(meshName);
@@ -2200,6 +2216,43 @@ namespace Environment
         {
             manual_paint_node_->setPosition(Ogre::Vector3(x_pos, y_pos, 0));
         }
+    }
+
+    void EnvironmentEditor::RaycastScreenPosToTerrainPos(int clientX, int clientY, int &mapX, int &mapY)
+    {
+        // do raycast into the world when user is dragging the mouse while hes holding left button down.
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = environment_module_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;
+
+        ///\todo Here, perform a raycast that only takes into account the terrain geometry, and not other objects. 
+        Foundation::RaycastResult result = renderer->Raycast(clientX, clientY);
+
+        Scene::Entity *entity = result.entity_;
+        if (!entity) // The user did not click on terrain.
+        {
+            HidePaintMeshOnScene();
+            return;
+        }
+
+        /// The raycast result point 3D coordinates projected to the (x,y)-plane directly correspond to the 2D map.
+        ///\todo The above is not quite true. Fix to get better precision.
+        mapX = (int)(result.pos_.x + 0.5f);
+        mapY = (int)(result.pos_.y + 0.5f);
+    }
+
+    void EnvironmentEditor::Update3DPaintNotificationMeshPosition(int mapX, int mapY)
+    {
+        mouse_position_[0] = mapX;
+        mouse_position_[1] = mapY;
+        UpdateHeightmapImagePaintArea(mouse_position_[0], mouse_position_[1]);
+        CreatePaintAreaMesh(mouse_position_[0], mouse_position_[1]);
+    }
+
+    void EnvironmentEditor::HidePaintMeshOnScene()
+    {
+        if (manual_paint_object_)
+            manual_paint_object_->setVisible(false);
     }
 
     void EnvironmentEditor::ReleasePaintMeshOnScene()
