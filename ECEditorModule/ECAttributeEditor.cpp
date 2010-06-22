@@ -6,9 +6,6 @@
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
 
-#include "AttributeInterface.h"
-#include "ComponentInterface.h"
-
 // QtPropertyBrowser headers.
 #include "qtvariantproperty.h"
 #include "qtpropertymanager.h"
