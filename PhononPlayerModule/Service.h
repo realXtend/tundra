@@ -27,6 +27,7 @@ namespace PlayerService
 
 //        static boost::shared_ptr<Service> IntancePtr();
 
+        virtual bool IsMimeTypeSupported(const QString mime_type);
         virtual QWidget* GetPlayer(const QString &url);
         virtual void DeletePlayer(const QString &url);
 

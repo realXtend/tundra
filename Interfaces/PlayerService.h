@@ -18,10 +18,10 @@ namespace Player
         Q_OBJECT
     public:
         virtual ~PlayerServiceInterface() {};
+        virtual bool IsMimeTypeSupported(const QString mime_type) = 0;
         virtual QWidget* GetPlayer(const QString &url) = 0;
         virtual void DeletePlayer(const QString &url) = 0;
     };
-
 } // Player
 
 #endif // incl_Interfaces_PlayerService_h
