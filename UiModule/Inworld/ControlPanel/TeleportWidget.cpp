@@ -15,8 +15,8 @@ namespace CoreUi
 {
     TeleportWidget::TeleportWidget(QGraphicsScene *scene, ControlPanelManager *control_panel_manager) : 
         QGraphicsProxyWidget(0, Qt::Widget),
-        internal_widget_(new QWidget()),
-        panel_(control_panel_manager)
+        internal_widget_(new QWidget()),        
+        panel_(control_panel_manager)        
     {
         setupUi(internal_widget_);
         setWidget(internal_widget_);
@@ -49,11 +49,17 @@ namespace CoreUi
     void TeleportWidget::SetMapBlocks(const QList<ProtocolUtilities::MapBlock> &map_blocks)
     {
         regionComboBox->clear();
-        if (map_blocks.size() > 0)
+        if (map_blocks.size() > 0)            
             foreach (ProtocolUtilities::MapBlock block, map_blocks)
                 regionComboBox->addItem(QString::fromStdString(block.regionName));
         else
             regionComboBox->setDisabled(true);
+    }
+
+    void TeleportWidget::SetCurrentRegion(const QString &region_name)
+    {
+        current_region_ = region_name;
+        currentRegionLabel->setText(current_region_);        
     }
 
     void TeleportWidget::AnimatedHide()

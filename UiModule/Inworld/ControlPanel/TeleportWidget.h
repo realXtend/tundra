@@ -27,6 +27,7 @@ namespace CoreUi
 
     public slots:
         UI_MODULE_API void SetMapBlocks(const QList<ProtocolUtilities::MapBlock> &map_blocks);
+        UI_MODULE_API void SetCurrentRegion(const QString &region_name);
         void AnimatedHide();
 
     protected:
@@ -44,6 +45,8 @@ namespace CoreUi
         std::vector<std::string> *region_names_;
 
         QPropertyAnimation *visibility_animation_;
+
+        QString current_region_;
 
     signals:
         void CancelClicked();
