@@ -1,5 +1,7 @@
 #include "QtInputService.h"
 
+#include <sstream>
+
 #include "ServiceManager.h"
 #include "InputEvents.h"
 #include "Framework.h"
@@ -218,10 +220,14 @@ void QtInputService::DumpInputContexts()
         boost::shared_ptr<InputContext> inputContext = iter->lock();
         if (!inputContext)
         {
-            std::cout << "Context " << idx++ << ": expired weak_ptr." << std::endl;
+            std::stringstream ss;
+            ss << "Context " << (idx++) << ": expired weak_ptr.";
+            LogInfo(ss.str());
             continue;
         }
-        std::cout << " Context " << idx++ << ": \"" << inputContext->Name().toStdString() << "\", priority " << inputContext->Priority() << std::endl;
+        std::stringstream ss;
+        ss << "Context " << (idx++) << ": \"" << inputContext->Name().toStdString() << "\", priority " << inputContext->Priority();
+        LogInfo(ss.str());
     }
 }
 
