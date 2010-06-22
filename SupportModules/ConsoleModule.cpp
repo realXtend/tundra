@@ -87,20 +87,6 @@ namespace Console
 
             return true;
         }
-/*
-        else if (inputEventCategory_ == category_id)
-        {
-            if (event_id == QtInputEvents::KeyPressed)
-            {
-                KeyEvent &key = dynamic_cast<KeyEvent&>(*data);
-                if (key.keyCode == Qt::Key_F1 && key.eventType == KeyEvent::KeyPressed)
-                {
-                    manager_->ToggleConsole();
-                    return true;
-                }
-            }
-        }
-*/
         return false;
     }
 
