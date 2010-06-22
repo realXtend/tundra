@@ -113,7 +113,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,AttributeChange::Network); 
 
     return entity;
 }
@@ -1940,28 +1940,28 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
 }
 
-void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
+void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == Foundation::ComponentInterface::Local)
+    if (change == AttributeChange::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::ComponentInterface::Network)
+    if (change == AttributeChange::Network)
         network_dirty_entities_.insert(entityid);
 }
 
-void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
+void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     if (!entity)
         return;
@@ -1970,9 +1970,9 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == Foundation::ComponentInterface::Local)
+    if (change == AttributeChange::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::ComponentInterface::Network)
+    if (change == AttributeChange::Network)
         network_dirty_entities_.insert(entityid);
 }
 
@@ -2092,8 +2092,8 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
             {
-                new_comp->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Network);
-                new_comp->ComponentChanged(Foundation::ComponentInterface::Network);
+                new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
+                new_comp->ComponentChanged(AttributeChange::Network);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);

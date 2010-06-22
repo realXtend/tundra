@@ -1,19 +1,34 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   AttributeInterface.cpp
+ *  @brief  Abstract base class and template class for entity-component attributes.
+ */
 
 #include "AttributeInterface.h"
+#include "ComponentInterface.h"
 #include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
-#include "Framework.h"
 
 // Implementation code for some common attributes
 
 namespace Foundation
 {
 
+AttributeInterface::AttributeInterface(ComponentInterface* owner, const char* name) :
+    owner_(owner),
+    name_(name),
+    change_(AttributeChange::None),
+    null_(false)
+{
+    if (owner)
+        owner->AddAttribute(this);
+}
+
 template<> std::string Attribute<std::string>::ToString() const
 {
-    // Todo decode/encode XML-risky characters
+    ///\todo decode/encode XML-risky characters
     return Get();
 }
 
@@ -76,13 +91,13 @@ template<> std::string Attribute<AssetReference>::ToString() const
     return value.type_ + ":" + value.id_;
 }
 
-template<> void Attribute<std::string>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<std::string>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    // Todo decode/encode XML-risky characters
+    ///\todo decode/encode XML-risky characters
     Set(str, change);
 }
 
-template<> void Attribute<bool>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<bool>::FromString(const std::string& str, AttributeChange::Type change)
 {
     std::string str_lower = str;
     boost::algorithm::to_lower(str_lower);
@@ -91,7 +106,7 @@ template<> void Attribute<bool>::FromString(const std::string& str, Foundation::
     Set(value, change);
 }
 
-template<> void Attribute<int>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<int>::FromString(const std::string& str, AttributeChange::Type change)
 {
     try
     {
@@ -101,7 +116,7 @@ template<> void Attribute<int>::FromString(const std::string& str, Foundation::C
     catch (...) {}
 }
 
-template<> void Attribute<uint>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<uint>::FromString(const std::string& str, AttributeChange::Type change)
 {
     try
     {
@@ -111,7 +126,7 @@ template<> void Attribute<uint>::FromString(const std::string& str, Foundation::
     catch (...) {}
 }
 
-template<> void Attribute<Real>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<Real>::FromString(const std::string& str, AttributeChange::Type change)
 {
     try
     {
@@ -121,7 +136,7 @@ template<> void Attribute<Real>::FromString(const std::string& str, Foundation::
     catch (...) {}
 }
 
-template<> void Attribute<Vector3df>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<Vector3df>::FromString(const std::string& str, AttributeChange::Type change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 3)
@@ -138,7 +153,7 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, Foundat
     }
 }
 
-template<> void Attribute<Color>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<Color>::FromString(const std::string& str, AttributeChange::Type change)
 {
     Color value;
     StringVector components = SplitString(str, ' ');
@@ -167,7 +182,7 @@ template<> void Attribute<Color>::FromString(const std::string& str, Foundation:
     }
 }
 
-template<> void Attribute<Quaternion>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<Quaternion>::FromString(const std::string& str, AttributeChange::Type change)
 {
     StringVector components = SplitString(str, ' ');
     if (components.size() == 4)
@@ -185,7 +200,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Founda
     }
 }
 
-template<> void Attribute<AssetReference>::FromString(const std::string& str, Foundation::ComponentInterface::ChangeType change)
+template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
 {
     // We store type first, then ":", then asset id
     std::string::size_type pos = str.find(':');

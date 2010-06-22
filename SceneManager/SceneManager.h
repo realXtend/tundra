@@ -86,7 +86,7 @@ namespace Scene
             \param change Origin of change regards to network replication
         */
         EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(),
-             Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+             AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns entity with the specified id
         /*!
@@ -103,7 +103,7 @@ namespace Scene
             \param id Id of the entity to remove
             \param change Origin of change regards to network replication
         */
-        void RemoveEntity(entity_id_t id, Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+        void RemoveEntity(entity_id_t id, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Get the next free entity id. Can be used with CreateEntity().
         entity_id_t GetNextFreeId();
@@ -131,16 +131,16 @@ namespace Scene
         /*! \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void EmitComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
 
-        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, Foundation::ComponentInterface::ChangeType change);
+        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, AttributeChange::Type change);
         
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
@@ -148,21 +148,21 @@ namespace Scene
             \param change Type of change (local, from network...)
             \note This is emitted before just before the component is removed.
          */
-        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
         //! Emit a notification of an entity having been created
         /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
             should not usually decide the entityID itself.
             \param entity Entity pointer
             \param change Type of change (local, from network...)
          */
-        void EmitEntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
+        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
         
         //! Emit a notification of an entity being removed. 
         /*! Note: the entity pointer will be invalid shortly after!
             \param entity Entity pointer
             \param change Type of change (local, from network...)
          */
-        void EmitEntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
+        void EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
     private:
         SceneManager &operator =(const SceneManager &other);
@@ -180,17 +180,17 @@ namespace Scene
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void ComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
 
         //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change);
+        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
 
         //! Signal when a component is initialized.
         /*! Python and Javascript handlers use this instead of subclassing and overriding the component constructor
@@ -200,12 +200,12 @@ namespace Scene
         //! Signal when an entity created
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
-        void EntityCreated(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
+        void EntityCreated(Scene::Entity* entity, AttributeChange::Type change);
 
         //! Signal when an entity deleted
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
-        void EntityRemoved(Scene::Entity* entity, Foundation::ComponentInterface::ChangeType change);
+        void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
     };
 }
 
