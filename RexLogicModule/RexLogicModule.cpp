@@ -813,6 +813,8 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 
 void RexLogicModule::UpdateObjects(f64 frametime)
 {
+    PROFILE(RexLogicModule_UpdateObjects);
+    
     using namespace OgreRenderer;
 
     //! \todo probably should not be directly in RexLogicModule
