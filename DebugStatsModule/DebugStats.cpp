@@ -168,7 +168,11 @@ void DebugStatsModule::Update(f64 frametime)
         frameTimes.erase(frameTimes.begin());
 
     if (profilerWindow_)
+    {
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
+        profilerWindow_->DoThresholdLogging();
+    }
+
 #endif
 }
 

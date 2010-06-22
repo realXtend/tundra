@@ -10,6 +10,8 @@
 #include <QWidget>
 #include <QTimer>
 #include <Ogre.h>
+#include <QTextStream>
+
 
 class QTreeWidget;
 class QComboBox;
@@ -18,6 +20,7 @@ class QLabel;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QPushButton;
+
 
 namespace ProtocolUtilities
 {
@@ -60,6 +63,7 @@ namespace DebugStats
         void RedrawFrameTimeHistoryGraphDelta(const std::vector<std::pair<boost::uint64_t, double> > &frameTimes);
         void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
         void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
+        void DoThresholdLogging();
 
     public slots:
         void RefreshProfilingData();
@@ -75,13 +79,15 @@ namespace DebugStats
         void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
         void Arrange();
-        void DumpNodeData();
+        //void DumpNodeData();
         void ChangeLoggerThreshold();
 
     protected:
         void resizeEvent(QResizeEvent *event);
 
     private:
+       
+        void FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode);
         Foundation::Framework *framework_;
         DebugStats::DebugStatsModule *owner_;
 

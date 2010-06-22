@@ -170,7 +170,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
 
     frame_time_update_x_pos_ = 0;
-    logThreshold_ = 120.0;
+    logThreshold_ = 100.0;
 
     QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
     if ( box != 0)
@@ -181,8 +181,10 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     
     QPushButton* apply = findChild<QPushButton*>("loggerApply");
     if ( apply != 0)
+    {
+        apply->setCheckable(true);
         QObject::connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
-
+    }
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
@@ -534,13 +536,13 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     sprintf(str, "%.2f msecs/frame.", timePerFrame);
     label_time_per_frame_->setText(str);
 
-    if ( timePerFrame >= logThreshold_ )
-         DumpNodeData();
+    //if ( timePerFrame >= logThreshold_ )
+    //     DumpNodeData();
     
     
 
 }
-
+/*
 void TimeProfilerWindow::DumpNodeData()
 {
    
@@ -580,8 +582,202 @@ void TimeProfilerWindow::DumpNodeData()
            
     file.close();
 }
+*/
 
+void TimeProfilerWindow::DoThresholdLogging()
+{
+     QPushButton* button = findChild<QPushButton* >("loggerApply");
+     
+     if ( button == 0)
+         return;
 
+     if ( tab_widget_->currentIndex() != 1 && button->isChecked() )
+     {
+        button->setChecked(false);
+        return;
+     }
+    
+     if ( tab_widget_->currentIndex() == 1 && !button->isChecked())
+        return;
+    
+
+    using namespace Foundation;
+
+    QFile file("performancelogger.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+         return;
+
+ 
+    QTextStream out(&file);
+    
+
+//   Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
+
+    Profiler &profiler = framework_->GetProfiler();
+    profiler.Lock();
+//    ProfilerNodeTree *node = profiler.Lock().get();
+    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
+
+    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
+
+    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        node = iter->get();
+
+        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        if (timings_node && timings_node->num_called_ == 0 )
+            continue;
+
+        /*
+        QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
+        if (!item)
+        {
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+            tree_profiling_data_->addTopLevelItem(item);
+        }
+        */
+
+        if (timings_node)
+        {
+            char str[256] = "-";
+            QString line;
+            line = QTime::currentTime().toString();
+            QString name(timings_node->Name().c_str());
+            line = line + " " + name;
+            bool saveData = false;
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                
+            line = line + QString(" ")+ QString(str);
+            //item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if ( timings_node->total_custom_*1000.f >= logThreshold_)
+                    saveData = true;
+            }    
+            line = line + QString(" ") + QString(str);
+            
+            //Avg
+            //item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            //max
+            line = line + QString(" ") + QString(str);
+            //item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            line = line + QString(" ") + QString(str);
+            if ( saveData)
+               out<<line<<endl;
+            //count
+            //item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+        }
+
+        FillThresholdLogger(out, node);
+    }
+    profiler.Release();
+    
+
+}
+
+void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
+{
+    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+
+    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        Foundation::ProfilerNodeTree *node = iter->get();
+
+        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        if (timings_node && timings_node->num_called_ == 0 )
+           continue;
+
+//        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+/*
+        QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
+        if (!item)
+        {
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+            qtNode->addChild(item);
+        }
+*/
+        if (timings_node)
+        {
+            char str[256] = "-";
+            QString line;
+            line = QTime::currentTime().toString();
+            QString name(timings_node->Name().c_str());
+            line = line + " " + name;
+            bool saveData = false;
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                
+            line = line + QString(" ")+ QString(str);
+            //item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                 //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if ( timings_node->total_custom_*1000.f >= logThreshold_ )     
+                    saveData = true;
+               
+            }    
+            line = line + QString(" ") + QString(str);
+            
+            //Avg
+            //item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            //max
+            line = line + QString(" ") + QString(str);
+            //item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            line = line + QString(" ") + QString(str);
+            if ( saveData)
+               out<<line<<endl;
+            //count
+            //item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+            /*
+            char str[256] = "-";
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+            item->setText(2, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+            item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            
+            item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+            */
+        }
+
+        FillThresholdLogger(out, node);
+    }
+
+}
 
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
