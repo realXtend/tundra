@@ -45,7 +45,7 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
-AttributeInterface* ComponentInterface::GetAttributeByName(const std::string &name) const
+AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); i++)
         if(attributes_[i]->GetNameString() == name)

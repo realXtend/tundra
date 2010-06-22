@@ -89,7 +89,7 @@ namespace Foundation
         /*! If attribute with same name is found return attriubte interface pointer, else return null.
          *  @param name Attribute name.
          */
-        AttributeInterface* GetAttributeByName(const std::string &name) const;
+        AttributeInterface* GetAttribute(const std::string &name) const;
 
         //! Component has changed. Send notification & queue network replication as necessary
         /*! Note: call this when you're satisfied & done with your current modifications
