@@ -76,8 +76,8 @@ macro (configure_qt4)
             ${QT_QTNETWORK_INCLUDE_DIR}
             ${QT_QTXML_INCLUDE_DIR}
             ${QT_QTSCRIPT_INCLUDE_DIR}
-            ${QT_QTWEBKIT_INCLUDE_DIR})
-            #${QT_PHONON_INCLUDE_DIR})
+            ${QT_QTWEBKIT_INCLUDE_DIR}
+            ${QT_PHONON_INCLUDE_DIR})
 
 	if (APPLE) # they forgot qtdbus from mac qt 4.6.0
 	    # nothing
