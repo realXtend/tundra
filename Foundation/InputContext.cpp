@@ -2,8 +2,8 @@
 #include "StableHeaders.h"
 #include "InputContext.h"
 
-InputContext::InputContext(const char *name_)
-:name(name_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
+InputContext::InputContext(const char *name_, int priority_)
+:name(name_), priority(priority_), takeMouseEventsOverQt(false), takeKeyboardEventsOverQt(false)
 {
 }
 
@@ -39,7 +39,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
     KeyEventSignalMap::iterator keySignal = registeredKeyEventSignals.find(key.keyCode);
     switch(key.eventType)
     {
-    case KeyEvent::KeyPressed: 
+    case KeyEvent::KeyPressed:
         // 1. First emit the generic OnKeyEvent signal that receives all event types for all key codes.
         emit OnKeyEvent(key);
         // 2. Emit the event type -specific signal for all key codes.

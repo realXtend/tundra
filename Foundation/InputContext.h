@@ -32,7 +32,7 @@ class InputContext : public QObject
     Q_OBJECT
 
 public:
-    explicit InputContext(const char *name);
+    InputContext(const char *name, int priority);
 
     ~InputContext();
 
@@ -139,6 +139,14 @@ public slots:
     /// Forces all held down keys to be released, and the appropriate release events to be sent.
     void ReleaseAllKeys();
 
+    /// Returnts the priority value this context has with respect to the other input contexts. 
+    /// Higher = more urgent. Used to determine the order in which input is received by the input contexts.
+    /// The priority is assigned when the context is created and may not be changed afterwards.
+    /// \note A lower priority context may still receive an event "over" a higher priority context,
+    /// if that event is going to go to Qt and the higher priority context does not
+    /// capture mouse/key events over Qt, but the lover priority context does.
+    int Priority() const { return priority; }
+
 private:
     typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;
     /// Stores a signal object for each keyboard key code that the user
@@ -169,6 +177,10 @@ private:
     bool takeKeyboardEventsOverQt;
 
     QString name;
+
+    /// The priority value this context has with respect to the other input contexts. Higher = more urgent. Used
+    /// to determine the order in which input is received by the input contexts.
+    int priority;
 
     // InputContexts are noncopyable.
     InputContext(const InputContext &);
