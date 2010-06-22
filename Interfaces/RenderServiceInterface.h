@@ -11,6 +11,7 @@
 #include "Quaternion.h"
 
 #include <QVariant>
+#include <set>
 
 class QRect;
 
@@ -62,12 +63,16 @@ namespace Foundation
         */
         virtual RaycastResult Raycast(int x, int y) = 0;
 
-        //! Do a frustrum query to the world from viewport coordinates.
+        //! Do a frustum query to the world from viewport coordinates.
         /*! Returns the found entities as a QVariantList so that
             Python and Javascript can get the result directly from here.
             \param viewrect The query rectangle in 2d window coords.
         */
         virtual QVariantList FrustumQuery(QRect &viewrect) = 0;
+
+        /// Returns the backbuffer image that contains the UI layer of the application screen.
+        /// Used to perform alpha-keying based input.
+        virtual QImage &GetBackBuffer() = 0;
 
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
@@ -90,6 +95,9 @@ namespace Foundation
         //! force UI repaint
         virtual void RepaintUi() = 0;
 
+        //! get visible entities last frame
+        virtual const std::set<entity_id_t>& GetVisibleEntities() = 0;
+        
         //! take sceenshot to a location
         //! \param filePath File path.
         //! \param fileName File name.

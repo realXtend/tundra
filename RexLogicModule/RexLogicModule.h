@@ -46,6 +46,7 @@ typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
 
 namespace RexLogic
 {
+    class RexMovementInput;
     class NetworkEventHandler;
     class InputEventHandler;
     class SceneEventHandler;
@@ -371,6 +372,9 @@ namespace RexLogic
 
         //! Avatar entities found this frame. Needed so that we can update name overlays last, after all other updates
         std::vector<Scene::EntityWeakPtr> found_avatars_;
+
+        //! The input context that responds to avatar-related input and moves the avatar accordingly.
+        boost::shared_ptr<RexMovementInput> avatarInput;
 
         //! current camera state
         CameraState camera_state_;

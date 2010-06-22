@@ -48,7 +48,7 @@ namespace OgreRenderer
 
         setAttribute (Qt::WA_OpaquePaintEvent, false);
 
-        #ifdef Q_WS_WIN
+#ifdef Q_WS_WIN
         // Determine if we are running under windows 7 that has certain paint issues with Qt 4.6 in a QGraphicsView
         // If we are under win 7 we do some dirty hacks to go around this as a temp solution
         OSVERSIONINFOEX os_version_info;
@@ -57,12 +57,12 @@ namespace OgreRenderer
         if (GetVersionEx((OSVERSIONINFO *)&os_version_info))
             if (os_version_info.dwMajorVersion == 6 && os_version_info.dwMinorVersion == 1)
                 setAttribute(Qt::WA_DontShowOnScreen, true);
-        #endif
+#endif
 
-	    #ifdef Q_WS_MAC
+#ifdef Q_WS_MAC
         setAttribute(Qt::WA_PaintOnScreen);
 	    setAttribute(Qt::WA_NoSystemBackground);
-        #endif
+#endif
     }
 
     void QOgreUIView::SetWorldView(QOgreWorldView *view) 
@@ -93,7 +93,7 @@ namespace OgreRenderer
         Ogre::NameValuePairList params;
         Ogre::String winhandle;
 
-    #ifdef Q_WS_WIN
+#ifdef Q_WS_WIN
         // According to Ogre Docs
         // positive integer for W32 (HWND handle)
         winhandle = Ogre::StringConverter::toString 
@@ -103,28 +103,28 @@ namespace OgreRenderer
         //Add the external window handle parameters to the existing params set.
         params["externalWindowHandle"] = winhandle;
 
-    #endif
+#endif
 
-    #ifdef Q_WS_MAC
+#ifdef Q_WS_MAC
 	// qt docs say it's a HIViewRef on carbon,
  	// carbon docs say HIViewGetWindow gets a WindowRef out of it
 
-    #if 0
+#if 0
 	HIViewRef vref = (HIViewRef) nativewin-> winId ();
 	WindowRef wref = HIViewGetWindow(vref);
         winhandle = Ogre::StringConverter::toString(
            (unsigned long) (HIViewGetRoot(wref)));
-    #else
+#else
         // according to
         // http://www.ogre3d.org/forums/viewtopic.php?f=2&t=27027 does
         winhandle = Ogre::StringConverter::toString(
                      (unsigned long) nativewin->winId());
-    #endif
+#endif
         //Add the external window handle parameters to the existing params set.
         params["externalWindowHandle"] = winhandle;
-    #endif
+#endif
 
-    #ifdef Q_WS_X11
+#ifdef Q_WS_X11
         // GLX - According to Ogre Docs:
         // poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*)
         QX11Info info =  x11Info ();
@@ -145,7 +145,7 @@ namespace OgreRenderer
 
         //Add the external window handle parameters to the existing params set.
         params["parentWindowHandle"] = winhandle;
-    #endif
+#endif
 
         // Window position to params
         if (left != -1)
@@ -193,12 +193,13 @@ namespace OgreRenderer
 
     void QOgreUIView::keyPressEvent (QKeyEvent *e)
     {
+/*
         QKeySequence seq(e->key() + e->modifiers());
         if (console_toggle_keys_.contains(seq) && scene()->focusItem())
             emit ConsoleToggleRequest();
         if (python_run_keys_.contains(seq) && scene()->focusItem())
             emit PythonRestartRequest();
-
+*/
         emit ViewKeyPressed(e);
         QGraphicsView::keyPressEvent(e);
     }

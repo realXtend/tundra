@@ -1,0 +1,5 @@
+<config>
+    <entry>QtInputModule</entry>
+	<dependency>UiModule</dependency>
+  <dependency>OgreRenderingModule</dependency>
+</config>

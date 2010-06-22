@@ -10,16 +10,16 @@ namespace Foundation
     const char* ConfigurationManager::DEFAULT_CONFIG_PATH = "./data/configuration/";
 
     ConfigurationManager::ConfigurationManager(Framework* framework, const std::string& path) : path_(boost::filesystem::path(path)), 
-        framework_(framework), file_name_encoding_(std::string("Rex"))
+        framework_(framework)
     {
     }
 
     ConfigurationManager::~ConfigurationManager()
     {
-	    Export();
+        Export();
         
         // Does not own.
-	    framework_ = 0;
+        framework_ = 0;
     }
 
     void ConfigurationManager::SetPath(const std::string& path)

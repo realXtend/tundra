@@ -100,7 +100,7 @@ add_subdirectory (EnvironmentModule)
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
-add_subdirectory (WorldInputModule)
+add_subdirectory (QtInputModule)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
@@ -143,6 +143,11 @@ file (GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
 file (GLOB ui_src bin/data/ui/*.ui)
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${ui_src})
-update_translation_files(TRANSLATIONS_FILES)
+
+if ( UPDATE_LANGUAGE_TRANSLATIONS )
+   MESSAGE("Update .ts files with new translation data.")
+   update_translation_files(TRANSLATIONS_FILES)
+endif()
+
 update_qm_files(TRANSLATIONS_FILES)
 MESSAGE("Language translations generated")

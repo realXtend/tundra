@@ -49,10 +49,10 @@ EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
 EC_3DCanvasSource::~EC_3DCanvasSource()
 {
     Scene::Entity* entity = GetParentEntity();
-    if (entity)
+    if (entity && manipulate_ec_3dcanvas)
     {
         Foundation::ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
-        if (comp && manipulate_ec_3dcanvas)
+        if (comp)
         {
             EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
             canvas->SetWidget(0);

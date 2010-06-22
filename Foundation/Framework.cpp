@@ -20,6 +20,8 @@
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "FrameworkQtApplication.h"
+#include "CoreException.h"
+#include "InputServiceInterface.h"
 
 #include <Poco/Logger.h>
 #include <Poco/LoggingFactory.h>
@@ -651,6 +653,15 @@ namespace Foundation
         return config_manager_.get();
     }
 
+    InputServiceInterface &Framework::Input()
+    {
+        boost::shared_ptr<InputServiceInterface> input_logic = GetServiceManager()->
+                GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
+        if (!input_logic.get())
+            throw Exception("Fatal: Input service not present!");
+
+        return *input_logic;
+    }
     bool Framework::HasScene(const std::string &name) const
     {
         return scenes_.find(name) != scenes_.end();
