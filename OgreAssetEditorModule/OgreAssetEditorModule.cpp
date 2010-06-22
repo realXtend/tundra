@@ -63,30 +63,30 @@ void OgreAssetEditorModule::PostInitialize()
     inventoryEventCategory_ = eventManager_->QueryEventCategory("Inventory");
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
-    
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
 
     materialWizard_ = new MaterialWizard;
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
-        this, SLOT(Upload(Inventory::InventoryUploadEventData *)));
+        this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-    assert(!uiModule_.expired());
+    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
+    if (!uiModule_.expired())
+    {
+        UiServices::UiWidgetProperties wizard_properties("Material Wizard", UiServices::ModuleWidget);
 
-    UiServices::UiWidgetProperties wizard_properties("Material Wizard", UiServices::ModuleWidget);
+        // Menu graphics
+        UiDefines::MenuNodeStyleMap image_path_map;
+        QString base_url = "./data/ui/images/menus/"; 
+        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_MATWIZtxt_normal.png";
+        image_path_map[UiDefines::TextHover] = base_url + "edbutton_MATWIZtxt_hover.png";
+        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_MATWIZtxt_click.png";
+        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
+        image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
+        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
+        wizard_properties.SetMenuNodeStyleMap(image_path_map);
 
-    // Menu graphics
-    UiDefines::MenuNodeStyleMap image_path_map;
-    QString base_url = "./data/ui/images/menus/"; 
-    image_path_map[UiDefines::TextNormal] = base_url + "edbutton_MATWIZtxt_normal.png";
-    image_path_map[UiDefines::TextHover] = base_url + "edbutton_MATWIZtxt_hover.png";
-    image_path_map[UiDefines::TextPressed] = base_url + "edbutton_MATWIZtxt_click.png";
-    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
-    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
-    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
-    wizard_properties.SetMenuNodeStyleMap(image_path_map);
-
-    UiServices::UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, wizard_properties);
-    connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
+        UiServices::UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, wizard_properties);
+        connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
+    }
 
     editorManager_ = new EditorManager;
 }
@@ -155,7 +155,9 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 if (!editorManager_->Exists(id, at))
                 {
                     // Editor not created, create it now.
-                    OgreScriptEditor *editor = new OgreScriptEditor(framework_, id, at, name);
+                    OgreScriptEditor *editor = new OgreScriptEditor(id, at, name);
+                    connect(editor, SIGNAL(UploadNewScript(Inventory::InventoryUploadBufferEventData *)),
+                        this, SLOT(UploadBuffer(Inventory::InventoryUploadBufferEventData *)));
                     connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
                         editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                     editorManager_->Add(id, at, editor);
@@ -308,23 +310,20 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                 if(editorWidget != 0)
                     editorWidget->HandleResouceReady(res);
             }
-
         }
     }
 
-  
     return false;
 }
 
-void OgreAssetEditorModule::Upload(Inventory::InventoryUploadEventData *data)
+void OgreAssetEditorModule::UploadFile(Inventory::InventoryUploadEventData *data)
 {
-    if (inventoryEventCategory_ == 0)
-    {
-        LogError("Inventory event category unknown. Can't upload new asset.");
-        return;
-    }
-
     framework_->GetEventManager()->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_FILE, data);
+}
+
+void OgreAssetEditorModule::UploadBuffer(Inventory::InventoryUploadBufferEventData *data)
+{
+    framework_->GetEventManager()->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, data);
 }
 
 }

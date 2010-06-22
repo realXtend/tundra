@@ -1239,7 +1239,11 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, const Color &color
     if (placeable)
         light->SetPlaceable(placeable);
 
-    ///\todo Test if the color values have to be in range [0, 1].
+    clamp<float>(color.r, 0.f, 1.f);
+    clamp<float>(color.g, 0.f, 1.f);
+    clamp<float>(color.b, 0.f, 1.f);
+    clamp<float>(color.a, 0.f, 1.f);
+
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
 }
