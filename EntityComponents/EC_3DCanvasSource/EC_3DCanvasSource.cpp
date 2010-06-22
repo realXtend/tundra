@@ -86,8 +86,8 @@ void EC_3DCanvasSource::SourceEdited()
     {
         // Replicate changed source to network
         // std::cout << "Changed source to " << new_source << std::endl;
-        source_.Set(new_source, Foundation::ComponentInterface::Local);
-        ComponentChanged(Foundation::ComponentInterface::Local);
+        source_.Set(new_source, AttributeChange::Local);
+        ComponentChanged(AttributeChange::Local);
     }
 }
 
@@ -133,8 +133,8 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         last_source_ = url_str;
         
         // std::cout << "Changed source by click to " << url_str << std::endl;
-        source_.Set(url_str, Foundation::ComponentInterface::Local);
-        ComponentChanged(Foundation::ComponentInterface::Local);
+        source_.Set(url_str, AttributeChange::Local);
+        ComponentChanged(AttributeChange::Local);
     }
 }
 
@@ -278,8 +278,8 @@ void EC_3DCanvasSource::FetchWebViewUrl()
     QString url = canvas_webview->url().toString();
     if (!url.isEmpty())
     {
-        source_.Set(url.toStdString(), Foundation::ComponentInterface::LocalOnly);
-        ComponentChanged(Foundation::ComponentInterface::LocalOnly);
+        source_.Set(url.toStdString(), AttributeChange::LocalOnly);
+        ComponentChanged(AttributeChange::LocalOnly);
     }
     else
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));

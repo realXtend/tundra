@@ -1,8 +1,13 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "ECComponentEditor.h"
+
 #include "AttributeInterface.h"
 #include "ECAttributeEditor.h"
+#include "ComponentInterface.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>

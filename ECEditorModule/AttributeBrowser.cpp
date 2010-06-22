@@ -194,7 +194,8 @@ namespace ECEditor
         Scene::ScenePtr sceneMgr = framework_->GetScene("World");
         if(!sceneMgr)
         {
-            ECEditorModule::LogError("Cannot use component paste in AttributeEditor, cause framework didn't contain scene named \"World\". Make sure that world scene have been created properly.");
+            ECEditorModule::LogError("Cannot use component paste in AttributeEditor, because framework didn't contain scene named \"World\"."
+                "Make sure that world scene have been created properly.");
             return;
         }
 
@@ -213,14 +214,14 @@ namespace ECEditor
                 if(!entity)
                     continue;
 
-                Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(comp_elem.attribute("type").toStdString(), Foundation::ComponentInterface::Local);
+                Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(comp_elem.attribute("type").toStdString(), AttributeChange::Local);
                 if(!component.get())
                 {
                     entityIter++;
                     continue;
                 }
-                component->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Local);
-                component->ComponentChanged(Foundation::ComponentInterface::Local);
+                component->DeserializeFrom(comp_elem, AttributeChange::Local);
+                component->ComponentChanged(AttributeChange::Local);
 
                 entityIter++;
             }
@@ -274,12 +275,12 @@ namespace ECEditor
         // Get scene signals to keep the editor in sync when components are added or removed from the ouside.
         assert(entity->GetScene());
         QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType)),
+                         SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
                          this,
                          SLOT(NewEntityComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
 
         QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType)),
+                         SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
                          this,
                          SLOT(EntityComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
     }

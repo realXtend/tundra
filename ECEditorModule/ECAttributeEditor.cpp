@@ -2,10 +2,12 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "ECEditorModule.h"
 
+#include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
+
 #include "AttributeInterface.h"
+#include "ComponentInterface.h"
 
 // QtPropertyBrowser headers.
 #include "qtvariantproperty.h"
@@ -35,7 +37,6 @@ namespace ECEditor
         useMultiEditor_(false),
         isInitialized_(false)
     {
-
         assert(component.get());
         Foundation::AttributeInterface *attribute = FindAttribute(component->GetAttributes());
         if(attribute)
