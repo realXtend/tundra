@@ -7,6 +7,7 @@
 #include <QObject>
 
 #include "AttributeInterface.h"
+#include "ComponentInterface.h"
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
 #include <map>
