@@ -77,8 +77,25 @@ namespace OgreRenderer
         Q_OBJECT
 
     public slots:
-        //! Renders the screen
+        //! Renders the screen. 
+        //as a slot for webserver plugin to render when needed
         virtual void Render();
+
+        //! Do a frustum query to the world from viewport coordinates.
+        virtual QVariantList FrustumQuery(QRect &viewrect);
+
+        //! Hides world view
+        //also added for the webserver plugin
+        void HideCurrentWorldView(); 
+
+        //! Shows world view
+        void ShowCurrentWorldView();
+
+        //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
+        /*! \param directory Directory path to add
+         */
+        //for local dotscene loading to be able to load from the dir where the export is
+        void AddResourceDirectory(const QString directory);
 
     public:
         //! Constructor
@@ -192,11 +209,6 @@ namespace OgreRenderer
         //! Returns current render window
         Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
 
-        //! Hides world view
-        void HideCurrentWorldView(); 
-        //! Shows world view
-        void ShowCurrentWorldView();
-
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
         /// Perhaps would be nicer to just have a GetUniqueName(string prefix)?
@@ -229,11 +241,6 @@ namespace OgreRenderer
          */
         void SetCurrentCamera(Ogre::Camera* camera);
 
-        //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
-        /*! \param directory Directory path to add
-         */
-        void AddResourceDirectory(const std::string& directory);
-
         //! returns the composition handler responsible of the post-processing effects
         CompositionHandler &GetCompositionHandler() { return c_handler_; }
 
@@ -248,8 +255,7 @@ namespace OgreRenderer
         QImage &GetBackBuffer() { return backBuffer; }
 
     public slots:
-        //! Do a frustum query to the world from viewport coordinates.
-        virtual QVariantList FrustumQuery(QRect &viewrect);
+
 
     private:
         //! Initialises Qt
