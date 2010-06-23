@@ -50,6 +50,9 @@ public:
     /// Remember to hold on to a shared_ptr of the input context as long as you are using the context.
     boost::shared_ptr<InputContext> RegisterInputContext(const char *name, int priority);
 
+    /// Prints the list of input contexts to std::cout, for debugging purposes.
+    void DumpInputContexts();
+
     typedef std::map<std::string, QKeySequence> KeyActionsMap;
 
 public slots:

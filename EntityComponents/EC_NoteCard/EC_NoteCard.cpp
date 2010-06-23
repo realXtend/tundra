@@ -37,7 +37,6 @@ static int notecard_pos_increment = 50;
 static int text_safe_size = 500;
 
 EC_NoteCard::EC_NoteCard(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
     title_edit_(0),
     text_edit_(0),
@@ -76,7 +75,7 @@ void EC_NoteCard::SerializeTo(QDomDocument& doc, QDomElement& base_element) cons
     WriteAttribute(doc, comp_element, "text", safe_text);
 }
 
-void EC_NoteCard::DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change)
+void EC_NoteCard::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
     // Check that type is right, otherwise do nothing
     if (!BeginDeserialization(element))
@@ -133,7 +132,7 @@ void EC_NoteCard::OnTextChanged()
 
 void EC_NoteCard::SyncToNetwork()
 {
-    ComponentChanged(Foundation::ComponentInterface::Local);
+    ComponentChanged(AttributeChange::Local);
     text_dirty_ = false;
     title_dirty_ = false;
 }
@@ -165,7 +164,7 @@ void EC_NoteCard::UpdateWidget()
 {
     if (!widget_)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+        boost::shared_ptr<UiServices::UiModule> ui_module = GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
         {
             LogError("Failed to acquire UiModule pointer");

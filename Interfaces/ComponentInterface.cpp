@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ComponentInterface.cpp
+ *  @brief  Base class for all components. Inherit from this class when creating new components.
+ */
 
 #include "ComponentInterface.h"
 #include "AttributeInterface.h"
@@ -13,7 +18,7 @@ namespace Foundation
 {
 
 ComponentInterface::ComponentInterface() :
-    parent_entity_(0), change_(None)
+    parent_entity_(0), change_(AttributeChange::None)
 {
 }
 
@@ -45,9 +50,9 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
-AttributeInterface* ComponentInterface::GetAttributeByName(const std::string &name) const
+AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) const
 {
-    for(unsigned int i = 0; i < attributes_.size(); i++)
+    for(unsigned int i = 0; i < attributes_.size(); ++i)
         if(attributes_[i]->GetNameString() == name)
             return attributes_[i];
     return 0;
@@ -103,7 +108,7 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     return std::string();
 }
 
-void ComponentInterface::ComponentChanged(Foundation::ComponentInterface::ChangeType change)
+void ComponentInterface::ComponentChanged(AttributeChange::Type change)
 {
     change_ = change;
     
@@ -123,7 +128,7 @@ void ComponentInterface::ResetChange()
     for (uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->ResetChange();
     
-    change_ = Foundation::ComponentInterface::None;
+    change_ = AttributeChange::None;
 }
 
 void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
@@ -137,7 +142,7 @@ void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_elemen
         WriteAttribute(doc, comp_element, attributes_[i]->GetNameString(), attributes_[i]->ToString());
 }
 
-void ComponentInterface::DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change)
+void ComponentInterface::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
 {
     if (!IsSerializable())
         return;

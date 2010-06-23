@@ -111,10 +111,9 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     defaultcomponents.push_back(EC_OpenSimPrim::TypeNameStatic());
     defaultcomponents.push_back(EC_NetworkPosition::TypeNameStatic());
     defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,Foundation::ComponentInterface::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,AttributeChange::Network); 
 
     return entity;
 }
@@ -380,10 +379,16 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         return false;
     
     // Entity should have animationcontroller
-    OgreRenderer::EC_OgreAnimationController* anim = 
-        entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+        entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
     if (!anim)
         return false;
+    // Attach the mesh entity to animationcontroller, if not yet attached
+    Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    if (!mesh)
+        return false;
+    if (anim->GetMeshEntity() != mesh)
+        anim->SetMeshEntity(mesh);
     
     try
     {
@@ -861,11 +866,6 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             return;
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
         
-        // Attach to animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
-        if (anim)
-            anim->SetMeshEntity(meshptr);
-        
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
             mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
@@ -1143,10 +1143,17 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
     if ((!RexTypes::IsNull(prim->AnimationPackageID)) && (!prim->AnimationName.empty()))
     {
         // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = 
-            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
-        if (anim)        
+        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
+            entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+        if (anim)
         {
+            // Attach the mesh entity to animationcontroller, if not yet attached
+            Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            if (!mesh)
+                return;
+            if (anim->GetMeshEntity() != mesh)
+                anim->SetMeshEntity(mesh);
+            
             // Check if any other animations than the supposed one is running, and stop them
             const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();
             OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
@@ -1232,7 +1239,11 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, const Color &color
     if (placeable)
         light->SetPlaceable(placeable);
 
-    ///\todo Test if the color values have to be in range [0, 1].
+    clamp<float>(color.r, 0.f, 1.f);
+    clamp<float>(color.g, 0.f, 1.f);
+    clamp<float>(color.b, 0.f, 1.f);
+    clamp<float>(color.a, 0.f, 1.f);
+
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);
 }
@@ -1929,28 +1940,28 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ),
-        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
+        this, SLOT( OnEntityChanged(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
 }
 
-void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
+void Primitive::OnComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == Foundation::ComponentInterface::Local)
+    if (change == AttributeChange::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::ComponentInterface::Network)
+    if (change == AttributeChange::Network)
         network_dirty_entities_.insert(entityid);
 }
 
-void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, Foundation::ComponentInterface::ChangeType change)
+void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     if (!entity)
         return;
@@ -1959,9 +1970,9 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInte
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == Foundation::ComponentInterface::Local)
+    if (change == AttributeChange::Local)
         local_dirty_entities_.insert(entityid);
-    if (change == Foundation::ComponentInterface::Network)
+    if (change == AttributeChange::Network)
         network_dirty_entities_.insert(entityid);
 }
 
@@ -2081,8 +2092,8 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
             if (new_comp)
             {
-                new_comp->DeserializeFrom(comp_elem, Foundation::ComponentInterface::Network);
-                new_comp->ComponentChanged(Foundation::ComponentInterface::Network);
+                new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
+                new_comp->ComponentChanged(AttributeChange::Network);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);

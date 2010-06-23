@@ -167,7 +167,7 @@ namespace ECEditor
         {
             Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType);
             if(component)
-                entities[i]->RemoveComponent(component, Foundation::ComponentInterface::Local);
+                entities[i]->RemoveComponent(component, AttributeChange::Local);
         }
         //RefreshPropertyBrowser();
     }
@@ -188,7 +188,7 @@ namespace ECEditor
 
         for(uint i = 0; i < entities.size(); ++i)
             for(uint j = 0; j < components.size(); ++j)
-                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), Foundation::ComponentInterface::Local);
+                entities[i]->RemoveComponent(entities[i]->GetComponent(components[j]), AttributeChange::Local);
 
         RefreshEntityComponents();
     }*/
@@ -205,11 +205,11 @@ namespace ECEditor
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), Foundation::ComponentInterface::Local);
+            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), AttributeChange::Local);
             if (comp)
             {
                 // Trigger change notification in the component so that it updates its initial internal state, if necessary
-                comp->ComponentChanged(Foundation::ComponentInterface::Local);
+                comp->ComponentChanged(AttributeChange::Local);
             }
         }
     }
@@ -222,7 +222,7 @@ namespace ECEditor
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); ++i)
-            scene->RemoveEntity(entities[i]->GetId(), Foundation::ComponentInterface::Local);
+            scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Local);
     }
 
     void ECEditorWindow::CopyEntity()
@@ -290,12 +290,12 @@ namespace ECEditor
                     Foundation::AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        Foundation::AttributeInterface *attriubte = component->GetAttributeByName(attributes[i]->GetNameString());
+                        Foundation::AttributeInterface *attriubte = component->GetAttribute(attributes[i]->GetNameString());
                         if(attriubte)
-                            attriubte->FromString(attributes[i]->ToString(), Foundation::ComponentInterface::Local);
+                            attriubte->FromString(attributes[i]->ToString(), AttributeChange::Local);
                     }
                 }
-                component->ComponentChanged(Foundation::ComponentInterface::Local);
+                component->ComponentChanged(AttributeChange::Local);
             }
 
             /*QDomElement comp_elem = temp_doc.firstChildElement("component");

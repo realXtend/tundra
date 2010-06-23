@@ -31,7 +31,7 @@ namespace Scene
         //    components_[i]->SetParentEntity(0);
     }
 
-    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ComponentInterface::ChangeType change)
+    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
     {
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
@@ -44,7 +44,7 @@ namespace Scene
         }
     }
 
-    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ComponentInterface::ChangeType change)
+    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
     {
         if (component)
         {
@@ -64,7 +64,7 @@ namespace Scene
         }
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name, Foundation::ComponentInterface::ChangeType change)
+    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)

@@ -6,8 +6,8 @@
  *          OGRE assets such as meshes and material scripts.
  */
 
-#ifndef incl_OgreAssetEditorModule_h
-#define incl_OgreAssetEditorModule_h
+#ifndef incl_OgreAssetEditorModule_OgreAssetEditorModule_h
+#define incl_OgreAssetEditorModule_OgreAssetEditorModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
@@ -27,6 +27,7 @@ namespace UiServices
 namespace Inventory
 {
     class InventoryUploadEventData;
+    class InventoryUploadBufferEventData;
 }
 
 namespace Naali
@@ -58,9 +59,13 @@ namespace Naali
         static const std::string &NameStatic() { return type_name_static_; }
 
     public slots:
-        /// Uploads new asset.
+        /// Uploads new asset from file.
         /// @param data Inventory upload event data.
-        void Upload(Inventory::InventoryUploadEventData *data);
+        void UploadFile(Inventory::InventoryUploadEventData *data);
+
+        /// Uploads new asset from buffer.
+        /// @param data Inventory buffer upload event data.
+        void UploadBuffer(Inventory::InventoryUploadBufferEventData *data);
 
     private:
         Q_DISABLE_COPY(OgreAssetEditorModule);

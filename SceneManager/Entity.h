@@ -1,11 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneEntity_h
-#define incl_SceneEntity_h
+#ifndef incl_SceneManager_Entity_h
+#define incl_SceneManager_Entity_h
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
 #include "ComponentInterface.h"
+#include "AttributeInterface.h"
 
 #include <QObject>
 
@@ -16,16 +17,15 @@ namespace Foundation
 
 namespace Scene
 {
-    class Entity;
-    typedef boost::weak_ptr<Entity> EntityWeakPtr;
-    typedef boost::shared_ptr<Entity> EntityPtr;
-    
     class SceneManager;
-    
+
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
         the entity is and what it does.
         Entities should not be directly created, instead use SceneManager::CreateEntity().
+
+        \note   Entity can have multiple components with same component type name as long as
+                the component names are unique.
 
         \ingroup Scene_group
     */
@@ -41,7 +41,7 @@ namespace Scene
             \param framework Framework
             \param scene Scene this entity belongs to
         */
-        explicit Entity(Foundation::Framework* framework, SceneManager* scene);
+        Entity(Foundation::Framework* framework, SceneManager* scene);
 
         //! constructor that takes an id for the entity
         /*!
@@ -49,13 +49,14 @@ namespace Scene
             \param id unique id for the entity.
             \param scene Scene this entity belongs to
         */
-        Entity(Foundation::Framework* framework, uint id, SceneManager* scene);
+        Entity(Foundation::Framework* framework, entity_id_t id, SceneManager* scene);
 
         //! Set new id
         void SetNewId(entity_id_t id) { id_ = id; }
+
         //! Set new scene
         void SetScene(SceneManager* scene) { scene_ = scene; }
-        
+
     public:
         //! component container
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
@@ -65,11 +66,13 @@ namespace Scene
 
         //! Returns true if the two entities have the same id, false otherwise
         virtual bool operator == (const Entity &other) const { return GetId() == other.GetId(); }
+
         //! Returns true if the two entities have differend id, false otherwise
         virtual bool operator != (const Entity &other) const { return !(*this == other); }
+
         //! comparison by id
         virtual bool operator < (const Entity &other) const { return GetId() < other.GetId(); }
-        
+
         //! Add a new component to this entity.
         /*! Entities can contain any number of components of any type.
             It is also possible to have several components of the same type,
@@ -78,13 +81,13 @@ namespace Scene
             \param component An entity component
             \param change Origin of change for network replication
         */
-        void AddComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+        void AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const Foundation::ComponentInterfacePtr &component, Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+        void RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with type 'type_name' or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -92,6 +95,17 @@ namespace Scene
             \param type_name type of the component
         */
         Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name) const;
+
+        //! Returns list of components with type 'type_name' or empty list if no components were found.
+        //! \param type_name type of the component
+        ComponentVector GetComponents(const std::string &type_name) const
+        {
+            ComponentVector ret;
+            for(size_t i = 0; i < components_.size() ; ++i)
+                if (components_[i]->TypeName() == type_name)
+                    ret.push_back(components_[i]);
+            return ret;
+        }
 
         //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
@@ -105,7 +119,7 @@ namespace Scene
             \param type_name type of the component
             \param change Change type for network replication, in case component has to be created
         */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, Foundation::ComponentInterface::ChangeType change = Foundation::ComponentInterface::LocalOnly);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -113,6 +127,19 @@ namespace Scene
         template <class T> boost::shared_ptr<T> GetComponent() const
         {
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
+        }
+
+        //! Returns list of components with certain class type, already cast to correct type, or empty list if no components was found.
+        template <class T> std::vector<T> GetComponents() const
+        {
+            std::vector<T> ret;
+            for(size_t i = 0; i < components_.size() ; ++i)
+            {
+                T* t = boost::dynamic_pointer_cast<T>(components_[i]);
+                if (t)
+                    ret.push_back(t);
+            }
+            return ret;
         }
 
         //! Returns a component with certain type and name, already cast to correct type, or empty pointer if component was not found
@@ -144,7 +171,7 @@ namespace Scene
 
         //! Returns scene
         SceneManager* GetScene() const { return scene_; }
-        
+
     private:
         //! a list of all components
         ComponentVector components_;
@@ -154,7 +181,7 @@ namespace Scene
 
         //! Pointer to framework
         Foundation::Framework* framework_;
-        
+
         //! Pointer to scene
         SceneManager* scene_;
    };

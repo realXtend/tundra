@@ -46,7 +46,6 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
         return;
 
     InputServiceInterface &inputService = framework->Input();
-    ///\todo Read these through input mappings configuration list.
 
     const QKeySequence walkForward =   inputService.KeyBinding("Avatar.WalkForward", Qt::Key_W);
     const QKeySequence walkBackward =  inputService.KeyBinding("Avatar.WalkBack", Qt::Key_S);

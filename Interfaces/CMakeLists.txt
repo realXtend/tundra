@@ -1,11 +1,20 @@
+# Qt4 Moc files to subgroup "CMake Moc"
+macro (MocFolder)
+    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
+    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
+endmacro (MocFolder)
+
 # Define target name
 init_target (Interfaces)
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB MOC_FILES ComponentInterface.h CommunicationsService.h UiSettingsServiceInterface.h)
+file (GLOB MOC_FILES ComponentInterface.h CommunicationsService.h UiSettingsServiceInterface.h
+    AttributeChangeType.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
+
+MocFolder ()
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 

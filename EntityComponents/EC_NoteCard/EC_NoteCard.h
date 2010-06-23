@@ -23,7 +23,7 @@ public:
     
     virtual bool IsSerializable() const { return true; }
     virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
-    virtual void DeserializeFrom(QDomElement& element, Foundation::ComponentInterface::ChangeType change);
+    virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
     
     void Show();
     void Hide();

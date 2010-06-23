@@ -170,7 +170,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
 
     frame_time_update_x_pos_ = 0;
-    logThreshold_ = 120.0;
+    logThreshold_ = 100.0;
 
     QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
     if ( box != 0)
@@ -181,8 +181,10 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     
     QPushButton* apply = findChild<QPushButton*>("loggerApply");
     if ( apply != 0)
+    {
+        apply->setCheckable(true);
         QObject::connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
-
+    }
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
@@ -346,25 +348,25 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         RefreshRenderTargetProfilingData();
         break;
     case 7: // Textures
-        RefressAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
+        RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
     case 8: // Meshes
-        RefressAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
+        RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
     case 9: // Material
-        RefressAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
+        RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
     case 10: // Skeleton
-        RefressAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
+        RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
     case 11: // Composition
-        RefressAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
+        RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
     case 12: // Gpu assets
-        RefressAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
+        RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
     case 13: // Font assets
-        RefressAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
+        RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
 
     }
@@ -534,13 +536,13 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     sprintf(str, "%.2f msecs/frame.", timePerFrame);
     label_time_per_frame_->setText(str);
 
-    if ( timePerFrame >= logThreshold_ )
-         DumpNodeData();
+    //if ( timePerFrame >= logThreshold_ )
+    //     DumpNodeData();
     
     
 
 }
-
+/*
 void TimeProfilerWindow::DumpNodeData()
 {
    
@@ -580,8 +582,202 @@ void TimeProfilerWindow::DumpNodeData()
            
     file.close();
 }
+*/
 
+void TimeProfilerWindow::DoThresholdLogging()
+{
+     QPushButton* button = findChild<QPushButton* >("loggerApply");
+     
+     if ( button == 0)
+         return;
 
+     if ( tab_widget_->currentIndex() != 1 && button->isChecked() )
+     {
+        button->setChecked(false);
+        return;
+     }
+    
+     if ( tab_widget_->currentIndex() == 1 && !button->isChecked())
+        return;
+    
+
+    using namespace Foundation;
+
+    QFile file("performancelogger.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+         return;
+
+ 
+    QTextStream out(&file);
+    
+
+//   Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
+
+    Profiler &profiler = framework_->GetProfiler();
+    profiler.Lock();
+//    ProfilerNodeTree *node = profiler.Lock().get();
+    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
+
+    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
+
+    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        node = iter->get();
+
+        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        if (timings_node && timings_node->num_called_ == 0 )
+            continue;
+
+        /*
+        QTreeWidgetItem *item = FindItemByName(tree_profiling_data_, node->Name().c_str());
+        if (!item)
+        {
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+            tree_profiling_data_->addTopLevelItem(item);
+        }
+        */
+
+        if (timings_node)
+        {
+            char str[256] = "-";
+            QString line;
+            line = QTime::currentTime().toString();
+            QString name(timings_node->Name().c_str());
+            line = line + " " + name;
+            bool saveData = false;
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                
+            line = line + QString(" ")+ QString(str);
+            //item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if ( timings_node->total_custom_*1000.f >= logThreshold_)
+                    saveData = true;
+            }    
+            line = line + QString(" ") + QString(str);
+            
+            //Avg
+            //item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            //max
+            line = line + QString(" ") + QString(str);
+            //item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            line = line + QString(" ") + QString(str);
+            if ( saveData)
+               out<<line<<endl;
+            //count
+            //item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+        }
+
+        FillThresholdLogger(out, node);
+    }
+    profiler.Release();
+    
+
+}
+
+void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
+{
+    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+
+    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    {
+        Foundation::ProfilerNodeTree *node = iter->get();
+
+        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        if (timings_node && timings_node->num_called_ == 0 )
+           continue;
+
+//        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+/*
+        QTreeWidgetItem *item = FindItemByName(qtNode, node->Name().c_str());
+        if (!item)
+        {
+            item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
+            qtNode->addChild(item);
+        }
+*/
+        if (timings_node)
+        {
+            char str[256] = "-";
+            QString line;
+            line = QTime::currentTime().toString();
+            QString name(timings_node->Name().c_str());
+            line = line + " " + name;
+            bool saveData = false;
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+                
+            line = line + QString(" ")+ QString(str);
+            //item->setText(2, str);
+            if (timings_node->num_called_custom_ > 0)
+            {
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+                 //if ( ((timings_node->total_custom_*1000.f/ timings_node->num_called_custom_) * timings_node->num_called_) > logThreshold_)
+                if ( timings_node->total_custom_*1000.f >= logThreshold_ )     
+                    saveData = true;
+               
+            }    
+            line = line + QString(" ") + QString(str);
+            
+            //Avg
+            //item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            //max
+            line = line + QString(" ") + QString(str);
+            //item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            line = line + QString(" ") + QString(str);
+            if ( saveData)
+               out<<line<<endl;
+            //count
+            //item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+            /*
+            char str[256] = "-";
+            if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
+            item->setText(2, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->total_custom_*1000.f / timings_node->num_called_custom_);
+            item->setText(3, str);
+            
+            if (timings_node->num_called_custom_ > 0)
+                sprintf(str, "%.2fms", timings_node->custom_elapsed_max_*1000.f);
+            
+            item->setText(4, str);
+            sprintf(str, "%d", (int)timings_node->num_called_custom_);
+            item->setText(1, str);
+
+            timings_node->num_called_custom_ = 0;
+            timings_node->total_custom_ = 0;
+            timings_node->custom_elapsed_min_ = 1e9;
+            timings_node->custom_elapsed_max_ = 0;
+            */
+        }
+
+        FillThresholdLogger(out, node);
+    }
+
+}
 
 
 void TimeProfilerWindow::resizeEvent(QResizeEvent *event)
@@ -1235,84 +1431,91 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 }
 
 
- void TimeProfilerWindow::RefressTextureProfilingData()
- {
-     if (!tab_widget_ || tab_widget_->currentIndex() != 7)
+void TimeProfilerWindow::RefreshTextureProfilingData()
+{
+    if (!tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
 
-     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
-    
-     while ( iter.hasMoreElements() )
-     {
-       
-       Ogre::ResourcePtr resource = iter.getNext();
+    Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
 
-       // Is there allready this kind element? 
-       QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
-       
-       if ( item == 0) 
-        item = new QTreeWidgetItem(tree_texture_assets_);
-       
-       FillItem(item, resource);
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        // Is there already this kind of element? 
+        QTreeWidgetItem *item = FindItemByName(tree_texture_assets_, resource->getName().c_str());
+        if (item == 0) 
+            item = new QTreeWidgetItem(tree_texture_assets_);
 
-     }
+        FillItem(item, resource);
+    }
+}
 
+/// Derive the tree widget item to implement a custom sort predicate that sorts certain columns by numbers. 
+class OgreAssetTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    OgreAssetTreeWidgetItem(QTreeWidget *parent)
+    :QTreeWidgetItem(parent)
+    {
+    }
 
+    bool operator<(const QTreeWidgetItem &rhs) const
+    {
+        switch(treeWidget()->sortColumn())
+        {
+        case 1: // Sort the number columns as numbers. 'Size'
+        case 10: // 'Loading State'
+        case 11: // 'State Count'
+            return this->text(treeWidget()->sortColumn()).toInt() > rhs.text(treeWidget()->sortColumn()).toInt();
+        default: // Others as text.
+            return this->text(treeWidget()->sortColumn()) < rhs.text(treeWidget()->sortColumn());
+        }
+    }
+};
 
- }
+void TimeProfilerWindow::RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
+{
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        // Is there already this kind of element? 
+        QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
+        if (item == 0) 
+            item = new OgreAssetTreeWidgetItem(widget);
 
- void TimeProfilerWindow::RefressAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget)
- {
-   
-     Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
-     
-     while ( iter.hasMoreElements() )
-     {
-       
-       Ogre::ResourcePtr resource = iter.getNext();
+        FillItem(item, resource);
+    }
+    for(int i = 0; i < widget->columnCount(); ++i)
+        widget->resizeColumnToContents(i);
+}
 
-       // Is there allready this kind element? 
-       QTreeWidgetItem *item = FindItemByName(widget, resource->getName().c_str());
-       
-       if ( item == 0) 
-        item = new QTreeWidgetItem(widget);
-       
-       FillItem(item, resource);
+void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
+{
+    if (item == 0)
+        return;
 
-     }
+    item->setText(0,resource->getName().c_str());
+    QString size;
+    size.setNum(resource->getSize());
+    item->setText(1,size);
 
- }
+    item->setText(2, resource->isManuallyLoaded() ? "Yes" : "No");
+    item->setText(3, resource->isReloadable() ? "Yes" : "No");
+    item->setText(4, resource->getGroup().c_str());
+    item->setText(5, resource->getOrigin().c_str());
+    item->setText(6, resource->isLoaded()  ? "Yes" : "No");
+    item->setText(7, resource->isLoading()  ? "Yes" : "No");
+    item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "No");
+    item->setText(9, resource->isPrepared()  ? "Yes" : "No");
 
- 
- void TimeProfilerWindow::FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource)
- {
-       if ( item == 0)
-           return;
+    QString tmp;
+    tmp.setNum(resource->getLoadingState());
+    item->setText(10,tmp);
 
-       item->setText(0,resource->getName().c_str());
-       QString size;
-       size.setNum(resource->getSize());
-       item->setText(1,size);
-
-        
-       item->setText(2, resource->isReloadable() ? "Yes" : "False" );
-       item->setText(3, resource->isManuallyLoaded() ? "Yes" : "False");
-       item->setText(4, resource->isPrepared()  ? "Yes" : "False");
-       item->setText(5, resource->isLoaded()  ? "Yes" : "False");
-       item->setText(6, resource->isLoading()  ? "Yes" : "False");
-       
-       QString tmp;
-       tmp.setNum(resource->getLoadingState());
-       item->setText(7,tmp);
-
-       item->setText(8, resource->isBackgroundLoaded() ? "Yes" : "False");
-       item->setText(9, resource->getGroup().c_str());
-       item->setText(10, resource->getOrigin().c_str());
-       tmp.clear();
-       tmp.setNum(resource->getStateCount());
-       item->setText(11,tmp);
-
-
- }
+    tmp.clear();
+    tmp.setNum(resource->getStateCount());
+    item->setText(11,tmp);
+}
 
 }

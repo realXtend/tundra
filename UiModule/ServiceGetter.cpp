@@ -1,4 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\file ServiceGetter.cpp
+///\todo This file was used for a keyboard bindings configuration widget. It is no longer used,
+///      and will be removed in the future.
 
 #include "StableHeaders.h"
 #include "ServiceGetter.h"

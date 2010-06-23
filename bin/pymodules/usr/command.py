@@ -1413,6 +1413,24 @@ if 0: #loadurl handler import test
     l = loadurlhandler.LoadURLHandler()
     print l
 
+if 0: #webview as external qt windows, to test how web map javascripts work
+    import PythonQt
+
+    try:
+        webview = r.webview
+    except:
+        webview = PythonQt.QtWebKit.QWebView()
+        r.webview = webview #is GCd otherwise immediately
+
+    #urlstring = 'http://an.org/'
+    urlstring = 'http://www.osgrid.org/elgg/pg/utilities/map'
+    #urlstring = 'http://beta.simstad.nl:8010/client/default_map.html'
+    url = PythonQt.QtCore.QUrl(urlstring)
+    webview.load(url)
+    webview.show()
+
+    print r.webview
+
 if 0: #webview as 3dcanvas
     import PythonQt
 
@@ -1429,7 +1447,7 @@ if 0: #webview as 3dcanvas
     refreshrate = 10
     #webview.show()
 
-    avid = r.getUserAvatarId()
-    r.applyUICanvasToSubmeshes(avid, [0], webview, refreshrate)
+    #avid = r.getUserAvatarId()
+    #r.applyUICanvasToSubmeshes(avid, [0], webview, refreshrate)
 
     print webview

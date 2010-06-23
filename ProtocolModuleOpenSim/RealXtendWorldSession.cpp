@@ -90,7 +90,7 @@ namespace OpenSimProtocol
             if (returnUrl.port() == -1)
             {
                 returnUrl.setPort(9000);
-                ProtocolModuleOpenSim::LogInfo("OpenSimServer url had no port, using defalt 9000");
+                ProtocolModuleOpenSim::LogInfo("OpenSimServer url had no port, using default 9000");
             }
             break;
 
@@ -98,7 +98,7 @@ namespace OpenSimProtocol
             if (returnUrl.port() == -1)
             {
                 returnUrl.setPort(8002);
-                ProtocolModuleOpenSim::LogInfo("OpenSimGridServer url had no port, using defalt 8002");
+                ProtocolModuleOpenSim::LogInfo("OpenSimGridServer url had no port, using default 8002");
             }
             break;
 
@@ -106,7 +106,7 @@ namespace OpenSimProtocol
             if (returnUrl.port() == -1)
             {
                 returnUrl.setPort(10001);
-                ProtocolModuleOpenSim::LogInfo("RealXtendAuthenticationServer url had no port, using defalt 10001");
+                ProtocolModuleOpenSim::LogInfo("RealXtendAuthenticationServer url had no port, using default 10001");
             }
             break;
         default:
