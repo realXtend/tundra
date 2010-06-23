@@ -116,10 +116,7 @@ class ObjectEdit(Component):
         r.c = self #this is for using objectedit from command.py
         
         # Get world building modules python handler
-        self.cpp_building_python_handler = r.getQWorldBuildingHandler()
-        # Do some tests
-        #self.cpp_building_python_handler.HelloPython()
-        #self.cpp_building_python_handler.HelloFromPython()
+        # self.cpp_building_python_handler = r.getQWorldBuildingHandler()
         
     def resetValues(self):
         self.left_button_down = False
@@ -190,8 +187,6 @@ class ObjectEdit(Component):
         self.sels.append(ent)
         self.window.selected(ent, False) 
         self.canmove = True
-        
-        #self.cpp_building_python_handler.Selected(ent)
         
         self.highlightChildren(children)
 
