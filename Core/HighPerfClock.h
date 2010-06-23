@@ -8,6 +8,8 @@
 #include <time.h>
 #endif
 
+#include <boost/cstdint.hpp>
+
 namespace Core
 {
 
