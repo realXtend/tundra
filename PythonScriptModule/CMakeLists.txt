@@ -31,14 +31,14 @@ use_package (OGRE)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (PROPERTYEDITOR)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule WorldBuildingModule
     ProtocolUtilities UiModule ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule WorldBuildingModule EC_Highlight
     ProtocolUtilities UiModule EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent) # OgreRenderingModule)
 link_package (BOOST)
 link_package (POCO)

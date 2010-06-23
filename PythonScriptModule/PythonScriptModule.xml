@@ -3,4 +3,5 @@
     <dependency>ConsoleModule</dependency>
     <dependency>RexLogicModule</dependency>
     <dependency>UiModule</dependency>
+    <dependency>WorldBuildingModule</dependency>
 </config>

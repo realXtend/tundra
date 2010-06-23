@@ -1,0 +1,4 @@
+<config>
+	<entry>WorldBuildingModule</entry>
+    <dependency>UiModule</dependency>
+</config>

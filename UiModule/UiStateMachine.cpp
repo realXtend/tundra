@@ -105,15 +105,12 @@ namespace CoreUi
 
     void UiStateMachine::AnimationsFinished()
     {
-        if (animations_map_[current_scene_]->direction() != QAbstractAnimation::Forward)
-            return;
+        if (animations_map_.contains(current_scene_))
+            if (animations_map_[current_scene_]->direction() != QAbstractAnimation::Forward)
+                return;
 
-        QString scene_name;
-        if (current_scene_ == scene_map_["Ether"])
-            scene_name = "Inworld";
-        else if (current_scene_ == scene_map_["Inworld"])
-            scene_name = "Ether";
-        SwitchToScene(scene_name);
+        if (scene_map_.contains(next_scene_name_))
+            SwitchToScene(next_scene_name_);
     }
 
     void UiStateMachine::CheckAnimationTargets(QParallelAnimationGroup *animations)
@@ -133,13 +130,19 @@ namespace CoreUi
     void UiStateMachine::SwitchToInworldScene()
     {
         if (current_scene_ == scene_map_["Ether"])
+        {
+            next_scene_name_ = "Inworld";
             AnimationsStart();
+        }
     }
 
     void UiStateMachine::SwitchToEtherScene()
     {
         if (current_scene_ == scene_map_["Inworld"])
+        {
+            next_scene_name_ = "Ether";
             AnimationsStart();
+        }
     }
 
     void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
@@ -157,21 +160,29 @@ namespace CoreUi
         if (!scene_map_.contains(name))
             return;
 
-        disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-        
-        current_scene_ = scene_map_[name];
-        current_scene_->setSceneRect(view_->viewport()->rect());
-        if (view_->scene() != current_scene_)
-            view_->setScene(current_scene_);
-                
-        connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-
-        if (animations_map_.contains(current_scene_))
+        if (next_scene_name_ != name)
         {
-            QParallelAnimationGroup *animations = animations_map_[current_scene_];
-            CheckAnimationTargets(animations);
-            animations->setDirection(QAbstractAnimation::Backward);
-            animations->start();
+            next_scene_name_ = name;
+            AnimationsStart();
+        }
+        else
+        {
+            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            
+            current_scene_ = scene_map_[name];
+            current_scene_->setSceneRect(view_->viewport()->rect());
+            if (view_->scene() != current_scene_)
+                view_->setScene(current_scene_);
+                    
+            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+
+            if (animations_map_.contains(current_scene_))
+            {
+                QParallelAnimationGroup *animations = animations_map_[current_scene_];
+                CheckAnimationTargets(animations);
+                animations->setDirection(QAbstractAnimation::Backward);
+                animations->start();
+            }
         }
     }
 

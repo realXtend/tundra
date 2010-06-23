@@ -107,6 +107,9 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <Inworld/View/UiProxyWidget.h>
 #include <Inworld/View/UiWidgetProperties.h>
 
+// World building module
+#include <WorldBuildingModule.h>
+
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
 
@@ -728,6 +731,17 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     else 
         Py_RETURN_NONE;
     */
+}
+
+static PyObject* GetQWorldBuildingHandler(PyObject *self)
+{
+    WorldBuilding::WorldBuildingModule *wb_module;
+    wb_module = PythonScript::self()->GetFramework()->GetModule<WorldBuilding::WorldBuildingModule>();
+    if (wb_module)
+        return PythonScriptModule::GetInstance()->WrapQObject(wb_module->GetPythonHandler());
+
+    PyErr_SetString(PyExc_RuntimeError, "WorldBuildingModule is missing.");
+    return NULL;
 }
 
 static PyObject* GetQRenderer(PyObject *self)
@@ -1989,7 +2003,10 @@ static PyMethodDef EmbMethods[] = {
     "Random test function."},
 
     {"getQRenderer", (PyCFunction)GetQRenderer, METH_NOARGS,
-     "Gets the Renderer module as a QObject"},
+    "Gets the Renderer module as a QObject"},
+
+    {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
+    "Get the World Building Modules python handler as a QObject"},
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},

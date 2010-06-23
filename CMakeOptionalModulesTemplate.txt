@@ -33,3 +33,5 @@ add_subdirectory (EntityComponents/EC_DynamicComponent)      # declared by Pytho
 #add_subdirectory (LegacyAvatarModule)
 
 add_subdirectory (MumbleVoipModule)
+
+#add_subdirectory (WorldBuildingModule)
