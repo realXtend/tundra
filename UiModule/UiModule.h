@@ -64,6 +64,8 @@ namespace UiServices
 
         NotificationManager *GetNotificationManager() const { return inworld_notification_manager_; }
 
+        CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
+
         QObject *GetEtherLoginNotifier() const;
 
         QPair<QString, QString> GetScreenshotPaths();

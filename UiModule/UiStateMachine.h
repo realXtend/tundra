@@ -62,6 +62,8 @@ namespace CoreUi
 
         QList<QKeySequence> ether_toggle_seq_list_;
 
+        QString next_scene_name_;
+
     signals:
         void EtherTogglePressed();
         void SceneOutAnimationFinised();

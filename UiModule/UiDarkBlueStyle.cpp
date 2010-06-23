@@ -249,8 +249,13 @@ namespace UiServices
                  }
              }
 
-
              QFont font("facet", 9, 0, false);
+             if (widget)
+             {
+                qreal w_psize = widget->font().pointSize();
+                if (w_psize > 8)
+                    font.setPointSize(w_psize);
+             }
              font.setCapitalization(QFont::AllUppercase);
              font.setStyleStrategy(QFont::PreferAntialias);             
              painter->setRenderHint(QPainter::Antialiasing, true);
