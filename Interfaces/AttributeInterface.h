@@ -95,20 +95,20 @@ namespace Foundation
             \param name Name.
             \param value Value.
         */
-        Attribute(ComponentInterface* owner, const char* name, T value) :
+        Attribute(ComponentInterface* owner, const char* name, const T &value) :
             AttributeInterface(owner, name),
             value_(value)
         {
         }
 
         //! Returns attribute's value.
-        T Get() const { return value_; }
+        const T &Get() const { return value_; }
 
         /*! Sets attribute's value.
             \param new value Value.
             \param change Change type.
         */
-        void Set(T new_value, AttributeChange::Type change)
+        void Set(const T &new_value, AttributeChange::Type change)
         {
             value_ = new_value;
             change_ = change;

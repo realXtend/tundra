@@ -638,10 +638,6 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 //		if (itemUnderMouse && mouseCursorVisible)
 //			return false;
 
-        // The mouse press is going to the inworld scene - clear keyboard focus from the QGraphicsScene widget, if any had it so key events also go to inworld scene.
-        if (event->type() == QEvent::MouseButtonPress)
-            mainView->scene()->clearFocus();
-
         // The mouse coordinates we receive can come from different widgets, and we are interested only in the coordinates
         // in the QGraphicsView client area, so we need to remap them.
         QPoint mousePos = MapPointToMainGraphicsView(obj, e->pos());
@@ -667,6 +663,10 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 
 //		mouseEvent.heldKeys = heldKeys; ///\todo
         mouseEvent.handled = false;
+
+        // The mouse press is going to the inworld scene - clear keyboard focus from the QGraphicsScene widget, if any had it so key events also go to inworld scene.
+        if (event->type() == QEvent::MouseButtonPress && !mouseEvent.itemUnderMouse && mouseCursorVisible)
+            mainView->scene()->clearFocus();
 
         TriggerMouseEvent(mouseEvent);
 
