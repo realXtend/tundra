@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ComponentInterface.h
+ *  @brief  Base class for all components. Inherit from this class when creating new components.
+ */
 
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
@@ -7,6 +12,9 @@
 //#include "ComponentFactoryInterface.h"
 //#include "ComponentRegistrarInterface.h"
 //#include "CoreModuleApi.h"
+
+#include "AttributeChangeType.h"
+#include "AttributeInterface.h"
 
 #include <QObject>
 
@@ -35,22 +43,8 @@ namespace Foundation
         friend class AttributeInterface;
 
         Q_OBJECT
-        Q_ENUMS(ChangeType)
 
     public:
-        //! Enumeration of attribute/component change types for replication
-        enum ChangeType
-        {
-            //! No change: attribute/component is up to date
-            None = 0,
-            //! Local change that should be replicated to server
-            Local,
-            //! Local change that should not be replicated to server
-            LocalOnly,
-            //! Change that came from network
-            Network
-        };
-
         //! Default constuctor.
         ComponentInterface();
 
@@ -86,18 +80,31 @@ namespace Foundation
         const AttributeVector& GetAttributes() const { return attributes_; }
 
         //! Iterate throught the attribute vector and try to find the match for name string.
-        /*! If attribute with same name is found return attriubte interface pointer, else return null.
+        /*! If attribute with same name is found return attribute interface pointer, else return null.
          *  @param name Attribute name.
          */
-        AttributeInterface* GetAttributeByName(const std::string &name) const;
+        AttributeInterface* GetAttribute(const std::string &name) const;
+
+        /*! Return pointer to atribute with spesific name and typename/class or null if the attribute not found.
+            \param T Typename/class of the attribute.
+            \param name Attribute name.
+            \note Always remember to check for null pointer after retrieving the attribute.
+         */
+        template<typename T> Attribute<T> *GetAttribute(const std::string &name) const
+        {
+            for(size_t i = 0; i < attributes_.size(); ++i)
+                if (attributes_[i]->GetNameString() == name)
+                    return dynamic_cast<Attribute<T> *>(&attributes_[i]);
+            return 0;
+        }
 
         //! Component has changed. Send notification & queue network replication as necessary
         /*! Note: call this when you're satisfied & done with your current modifications
          */
-        void ComponentChanged(ComponentInterface::ChangeType change);
+        void ComponentChanged(AttributeChange::Type change);
 
         //! Read change status of the component
-        ComponentInterface::ChangeType GetChange() const { return change_; }
+        AttributeChange::Type GetChange() const { return change_; }
 
         //! Reset change status of component and all attributes
         /*! Called by serialization managers when they have managed syncing the component
@@ -108,7 +115,7 @@ namespace Foundation
         virtual void SerializeTo(QDomDocument& doc, QDomElement& base_element) const;
 
         //! Deserialize from XML
-        virtual void DeserializeFrom(QDomElement& element, ComponentInterface::ChangeType change);
+        virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
@@ -143,7 +150,7 @@ namespace Foundation
         AttributeVector attributes_;
 
         //! Change status for the component itself
-        ComponentInterface::ChangeType change_;
+        AttributeChange::Type change_;
 
     private:
         //! Called by AttributeInterface on initialization of each attribute

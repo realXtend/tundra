@@ -366,40 +366,35 @@ namespace RexLogic
     {
         //keys left/right set to -1/1 .. but this can use fractions too, right?
         //and is seeminly not overridden by anything at least in AddTime.
-        //XXX ! \todo for simplicity, we just go over all entities in the scene. For performance, some other solution may be prudent
-        Scene::ScenePtr scene = framework_->GetScene("World");
-        Scene::SceneManager::iterator it = scene->begin();
-        Foundation::ComponentPtr component;
-        for ( ; it != scene->end() ; ++it)
+        
+        Scene::EntityPtr avatarentity = entity_.lock();
+        if(!avatarentity)
+            return;
+        
+        Foundation::ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
+        if (IsAvatar(component))
         {
-            component = (*it)->GetComponent(EC_Controllable::TypeNameStatic());
-            if (IsAvatar(component))
-            {
-                EC_OpenSimAvatar *avatar = (*it)->GetComponent<EC_OpenSimAvatar>().get();
-                avatar->yaw = newyaw;
-            }
+            EC_OpenSimAvatar *avatar = avatarentity->GetComponent<EC_OpenSimAvatar>().get();
+            avatar->yaw = newyaw;
+            net_dirty_ = true;
         }
-        net_dirty_ = true;
     }
 
     void AvatarControllable::SetRotation(const Quaternion &newrot)
     {
         RexLogicModule::LogDebug("AvatarControllable::SetRotation");
-        Scene::ScenePtr scene = framework_->GetScene("World");
-        Scene::SceneManager::iterator it = scene->begin();
-        Foundation::ComponentPtr component;
-        for ( ; it != scene->end() ; ++it)
+        Scene::EntityPtr avatarentity = entity_.lock();
+        if(!avatarentity)
+            return;
+        
+        Foundation::ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
+        if (IsAvatar(component))
         {
-            component = (*it)->GetComponent(EC_Controllable::TypeNameStatic());
-            if (IsAvatar(component))
-            {
-                EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>((*it)->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-                netpos->orientation_ = newrot * netpos->orientation_;
-                netpos->Updated();
-            }
+            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
+            netpos->orientation_ = newrot * netpos->orientation_;
+            netpos->Updated();
+            net_dirty_ = true;
         }
-
-        net_dirty_ = true;
     }
 }
 

@@ -28,7 +28,7 @@ class DynamiccomponentHandler(circuits.Component):
         s = naali.getScene(name)
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
-        s.connect("ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, Foundation::ComponentInterface::ChangeType)", self.onComponentAdded)
+        s.connect("ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)", self.onComponentAdded)
 
     #def onComponentInitialized(self, comp):
     #    print "Comp inited:", comp

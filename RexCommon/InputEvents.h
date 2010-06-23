@@ -1,4 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+///\file InputEvents.h
+///\todo The functionality in this file is problematic, since it is not extensible.
+///      The contents in this file will be removed altogether in the future. For input events
+///      and named actions, you should manage your own states using input contexts, which offer
+///      more flexibility.
 
 #ifndef incl_Input_InputEvents_h
 #define incl_Input_InputEvents_h
@@ -131,10 +136,8 @@ namespace Input
         static const event_id_t NAALI_DELETE = 87;
         static const event_id_t NAALI_UNDO = 89;
 
-        static const event_id_t NAALI_TOGGLE_ETHER = 100;
-        static const event_id_t NAALI_TOGGLE_WORLDCHAT = 101;
-
-        static const event_id_t NAALI_BINDINGS_CHANGED = 102;
+//        static const event_id_t NAALI_TOGGLE_ETHER = 100;
+//        static const event_id_t NAALI_TOGGLE_WORLDCHAT = 101;
 
         //! UI unfocused, set focus on in-world scene
 //        static const event_id_t UNFOCUS_UI = 103;
@@ -155,52 +158,6 @@ namespace Input
 
             \ingroup Input_group
         */
-
-/*
-        class BufferedKey : public Foundation::EventDataInterface
-        {
-            BufferedKey();
-        public:
-            BufferedKey(int code, uint text) : code_(code), text_(text)  {}
-            virtual ~BufferedKey() {}
-        
-            //! OIS::KeyCode, include OISKeyboard.h for the codes
-            const int code_;
-            //! The key that was pressed as a character
-            const uint text_;
-        };
-*/
-        //! Raw keycode event for unbuffered input
-        /*! Avoid using unless you are sure this is what you should be using.
-
-            \ingroup Input_group
-        */
-/*
-        class Key : public Foundation::EventDataInterface
-        {
-            Key();
-        public:
-            Key(int code, int modifiers) : code_(code), modifiers_(modifiers)  {}
-            virtual ~Key() {}
-        
-            //! OIS::KeyCode, include OISKeyboard.h for the codes
-            const int code_;
-            
-            //! OIS modifiers (OIS::Keyboard::Ctrl, OIS::Keyboard::Shift, OIS::Keyboard::Alt)
-            const int modifiers_;
-        };
-*/
-        //! Holds the new bindings pointer for everyone to update their key sequences
-        //! Used in NAALI_BINDINGS_CHANGED event
-        class BindingsData : public Foundation::EventDataInterface
-        {
-            BindingsData();
-        public:
-            BindingsData(Foundation::KeyBindings *b) : bindings(b) {}
-            virtual ~BindingsData() {}
-
-            Foundation::KeyBindings *bindings;
-        };
 
         //! Movement along axis. \ingroup Input_group
         struct Axis

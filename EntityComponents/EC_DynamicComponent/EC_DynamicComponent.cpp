@@ -56,9 +56,9 @@ QVariant EC_DynamicComponent::GetAttribute()
 void EC_DynamicComponent::SetAttribute(QString new_json)
 {
     //LogInfo("SetAttribute");
-    //x_.Set(new_x, Foundation::ComponentInterface::Local);
-    json_.Set(new_json.toStdString(), Foundation::ComponentInterface::Local);
-    ComponentChanged(Foundation::ComponentInterface::Local);
+    //x_.Set(new_x, AttributeChange::Local);
+    json_.Set(new_json.toStdString(), AttributeChange::Local);
+    ComponentChanged(AttributeChange::Local);
 }
 
 uint EC_DynamicComponent::GetParentEntityId()

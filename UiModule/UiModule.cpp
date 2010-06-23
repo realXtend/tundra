@@ -9,6 +9,7 @@
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
+#include "InputServiceInterface.h"
 
 #include "Ether/EtherLogic.h"
 #include "Ether/View/EtherScene.h"
@@ -127,6 +128,10 @@ namespace UiServices
         ether_logic_->Start();
         ui_state_machine_->SwitchToEtherScene();
         LogDebug("Ether Logic STARTED");
+
+        input = framework_->Input().RegisterInputContext("EtherInput", 90);
+        input->SetTakeKeyboardEventsOverQt(true);
+        connect(input.get(), SIGNAL(KeyPressed(KeyEvent &)), this, SLOT(OnKeyPressed(KeyEvent &)));
     }
 
     void UiModule::Uninitialize()
@@ -225,31 +230,26 @@ namespace UiServices
                     break;
             }
         }
-        else if (category == "Input")
-        {
-            switch (event_id)
-            {
-                case Input::Events::NAALI_BINDINGS_CHANGED:
-                {
-                    Input::Events::BindingsData *bindings_data = dynamic_cast<Input::Events::BindingsData*>(data);
-                    if (bindings_data)
-                        service_getter_->PublishChangedBindings(bindings_data->bindings);
-                    break;
-                }
-                case Input::Events::NAALI_TOGGLE_ETHER:
-                {
-                    ui_state_machine_->ToggleEther();
-                    break;
-                }
-                case Input::Events::NAALI_TOGGLE_WORLDCHAT:
-                {
-                    inworld_scene_controller_->SetFocusToChat();
-                    break;
-                }
-            }
-        }
 
         return false;
+    }
+
+    void UiModule::OnKeyPressed(KeyEvent &key)
+    {
+        // We only act on key presses that are not repeats.
+        if (key.eventType != KeyEvent::KeyPressed || key.keyPressCount > 1)
+            return;
+
+        InputServiceInterface &inputService = framework_->Input();
+
+        const QKeySequence toggleEther =   inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+        const QKeySequence toggleWorldChat =  inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+
+        if (key.keyCode == toggleEther)
+            ui_state_machine_->ToggleEther();
+
+        if (key.keyCode == toggleWorldChat)
+            inworld_scene_controller_->SetFocusToChat();
     }
 
     void UiModule::PublishConnectionState(UiDefines::ConnectionState connection_state)
