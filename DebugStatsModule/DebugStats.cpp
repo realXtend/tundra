@@ -160,7 +160,7 @@ void DebugStatsModule::Update(f64 frametime)
 #ifdef _WINDOWS
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
-    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime, now);
+    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
     frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));

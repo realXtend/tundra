@@ -44,7 +44,7 @@
          </size>
         </property>
         <property name="currentIndex">
-         <number>13</number>
+         <number>0</number>
         </property>
         <widget class="QWidget" name="timing">
          <attribute name="title">
@@ -1516,9 +1516,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1612,9 +1609,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -1714,9 +1708,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -1810,9 +1801,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
@@ -1912,9 +1900,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -2011,9 +1996,6 @@
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <column>
              <property name="text">
               <string>Name</string>
@@ -2107,9 +2089,6 @@
             <property name="sortingEnabled">
              <bool>true</bool>
             </property>
-            <attribute name="headerShowSortIndicator" stdset="0">
-             <bool>true</bool>
-            </attribute>
             <attribute name="headerShowSortIndicator" stdset="0">
              <bool>true</bool>
             </attribute>
