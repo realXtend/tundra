@@ -14,8 +14,13 @@ namespace Foundation
 
     bool ProfilerBlock::QueryCapability()
     {
+        if (supported_)
+            return true;
+        
 #if defined(_WINDOWS)
-        BOOL result = QueryPerformanceFrequency(&frequency_);
+        LARGE_INTEGER frequency;
+        BOOL result = QueryPerformanceFrequency(&frequency);
+        frequency_ = frequency.QuadPart;
         supported_ = (result != 0);
 #elif defined(_POSIX_C_SOURCE)
         supported_ = true;
@@ -124,6 +129,8 @@ namespace Foundation
 
     ProfilerNodeTree *Profiler::CreateThreadRootBlock()
     {
+        ProfilerBlock::QueryCapability();
+        
         std::string rootObjectName = GetThisThreadRootBlockName();
 
         ProfilerNodeTree *root = new ProfilerNodeTree(rootObjectName);
