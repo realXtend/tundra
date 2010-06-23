@@ -920,6 +920,12 @@ if 0: #QRenderer
     import naali
     print naali.renderer
 
+    r = naali.renderer
+    r.HideCurrentWorldView()
+    r.Render()
+    import time; time.sleep(1)
+    r.ShowCurrentWorldView()
+
 if 0: #worldstream
     worldstream = r.getServerConnection()
     print "send drop bomb:", worldstream.SendGenericMessage("DropBomb", ["here", "soon", "BIG"])

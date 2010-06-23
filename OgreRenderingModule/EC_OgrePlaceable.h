@@ -136,6 +136,8 @@ namespace OgreRenderer
         /* 0 = x, 1 = y, 2 = z. returns new position */
         QVector3D translate( int axis, float amount);
 
+        //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
+        void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
     private:
         //! constructor
