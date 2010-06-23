@@ -25,6 +25,10 @@ namespace WorldBuilding
         {
             setWidget(internal_widget_);
             min_width_ = internal_widget_->minimumWidth();
+            
+            internal_widget_->setMinimumWidth(min_width_);
+            if (tool_position_ == Right && scene())
+                setPos(scene()->sceneRect().width() - min_width_, 0);
         }
 
         void BuildingWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *mouse_hover_enter_event)

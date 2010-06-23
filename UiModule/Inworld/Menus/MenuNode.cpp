@@ -7,10 +7,11 @@
 #include <QPainter>
 #include <QGraphicsDropShadowEffect>
 #include <QGraphicsSceneMouseEvent>
-#include <QPropertyAnimation>
-#include <QDebug> 
 #include <QLabel>
+
 #include "MemoryLeakCheck.h"
+
+#include <QDebug> 
 
 namespace CoreUi
 {
@@ -72,7 +73,6 @@ namespace CoreUi
     
     MenuNode::~MenuNode()
     {
-        //SAFE_DELETE(widget_);
     }
 
     QUuid MenuNode::GetID() const
@@ -88,6 +88,7 @@ namespace CoreUi
         resize_animation_->setStartValue(0);
         resize_animation_->setEndValue(center_image_width_);
         connect(resize_animation_, SIGNAL(finished()), SLOT(ResizeFinished()));
+        connect(resize_animation_, SIGNAL(stateChanged(QAbstractAnimation::State, QAbstractAnimation::State)), SLOT(ResizeStateChanged(QAbstractAnimation::State, QAbstractAnimation::State)));
         return resize_animation_;
     }
 
@@ -111,13 +112,33 @@ namespace CoreUi
         }
     }
 
+    void MenuNode::ResizeStateChanged(QAbstractAnimation::State new_state, QAbstractAnimation::State old_state)
+    {
+        if (old_state == QAbstractAnimation::Stopped && new_state == QAbstractAnimation::Running)
+        {
+            if (resize_animation_->direction() == QAbstractAnimation::Forward)
+            {
+                leftContainer->setStyleSheet("QWidget#leftContainer { background-image: url('./data/ui/images/menus/icon_bground.png'); background-position: top right;"	
+                                             "background-repeat: no-repeat; background-color: transparent; }");
+            }
+        }
+    }
+
     void MenuNode::ResizeFinished()
     {
+        if (tree_depth_ == 0)
+            return;
+
         if (resize_animation_->direction() == QAbstractAnimation::Backward)
         {
             leftContainer->setStyleSheet("QWidget#leftContainer { background-color: transparent; }");
-            if (tree_depth_ != 0)
-                rightContainer->hide();
+            rightContainer->hide();
+            widget()->resize(1, widget()->size().height());
+        }
+        else if (resize_animation_->direction() == QAbstractAnimation::Forward)
+        {
+            rightContainer->show();
+            widget()->resize(1, widget()->size().height());
         }
     }
 

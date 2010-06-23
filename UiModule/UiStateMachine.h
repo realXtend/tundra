@@ -40,6 +40,7 @@ namespace CoreUi
         void ViewKeyEvent(QKeyEvent *key_event);
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
+        void StateSwitch();
         void AnimationsStart();
         void AnimationsFinished();
 

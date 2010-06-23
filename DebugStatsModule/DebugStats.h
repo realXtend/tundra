@@ -65,8 +65,12 @@ namespace DebugStats
         /// Creates and shows the participant window.
         Console::CommandResult ShowParticipantWindow(const StringVector &params);
 
+    private slots:
+        void AddProfilerWidgetToUi();
+        void StartProfiling(bool profile);
+    
     private:
-         Q_DISABLE_COPY(DebugStatsModule);
+        Q_DISABLE_COPY(DebugStatsModule);
 
         /// Sends random NetInMessage packet
         Console::CommandResult SendRandomNetworkInPacket(const StringVector &params);

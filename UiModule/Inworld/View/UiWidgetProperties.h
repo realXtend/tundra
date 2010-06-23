@@ -47,8 +47,7 @@ namespace UiServices
         // READ & WRITE
         Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
         Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
-        Q_ENUMS(WidgetType)
-        
+        Q_ENUMS(WidgetType)      
 
     public:
         //! Creates new properties according to the widget_type. For types check the enum documentation in the header.
@@ -60,7 +59,8 @@ namespace UiServices
               widget_name_(widget_name),
               widget_type_(widget_type),
               position_(QPointF(10.0, 200.0)),
-              widgets_icon_(icon)
+              widgets_icon_(icon),
+              menu_group_(UiDefines::NoGroup)
         {
             switch (widget_type_)
             {
@@ -71,6 +71,7 @@ namespace UiServices
                 case ModuleWidget:
                     window_type_ = Qt::Dialog;
                     show_in_toolbar_ = true;
+                    menu_group_ = UiDefines::RootGroup;
                     break;
                 case SceneWidget:
                     window_type_ = Qt::Dialog;
@@ -86,13 +87,15 @@ namespace UiServices
               window_type_(in_widget_properties.GetWindowStyle()),
               show_in_toolbar_(in_widget_properties.IsShownInToolbar()),
               position_(in_widget_properties.GetPosition()),
-              menu_image_map_(in_widget_properties.GetMenuNodeStyleMap())
+              menu_image_map_(in_widget_properties.GetMenuNodeStyleMap()),
+              menu_group_(in_widget_properties.GetMenuGroup())
         {
         }
 
         //! Deconstructor
         ~UiWidgetProperties() {}
 
+    public slots:
         //! Getters for properties
         WidgetType GetWidgetType() const { return widget_type_; }
         const QString GetWidgetName() const { return widget_name_; }
@@ -100,13 +103,21 @@ namespace UiServices
         const QPointF GetPosition() const { return position_; }
         bool IsShownInToolbar() const { return show_in_toolbar_; }
         QIcon GetWidgetIcon() const { return widgets_icon_; }
+        UiDefines::MenuGroup GetMenuGroup() const { return menu_group_; }
         UiDefines::MenuNodeStyleMap GetMenuNodeStyleMap() const { return menu_image_map_; }
 
         //! Setters for properties
-        void SetPosition(const QPointF &position) {position_ = position; }
+        void SetPosition(const QPointF &position) { position_ = position; }
         void SetWidgetName(const QString &newname) { widget_name_ = newname; }
+        void SetMenuGroup(UiDefines::MenuGroup menu_group) { menu_group_ = menu_group; }
+        void SetMenuGroup(int menu_group) { menu_group_ = (UiDefines::MenuGroup)menu_group; }
         void SetMenuNodeStyleMap(UiDefines::MenuNodeStyleMap menu_style_to_image_path) { menu_image_map_ = menu_style_to_image_path; }
 
+        // For python, cant call with the whole enum map, individual setters
+        void SetMenuNodeIconNormal(QString path) { menu_image_map_[UiDefines::IconNormal] = path; }
+        void SetMenuNodeIconHover(QString path) { menu_image_map_[UiDefines::IconHover] = path; }
+        void SetMenuNodeIconPressed(QString path) { menu_image_map_[UiDefines::IconPressed] = path; }
+   
     private:
         WidgetType widget_type_;
         Qt::WindowFlags window_type_;
@@ -115,6 +126,7 @@ namespace UiServices
         bool show_in_toolbar_;
         QIcon widgets_icon_;
 
+        UiDefines::MenuGroup menu_group_; 
         UiDefines::MenuNodeStyleMap menu_image_map_;
     };
 }

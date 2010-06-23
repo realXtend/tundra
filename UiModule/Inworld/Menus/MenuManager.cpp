@@ -32,7 +32,7 @@ namespace CoreUi
     MenuManager::~MenuManager()
     {
         SAFE_DELETE(root_menu_);
-        //qDeleteAll(category_map_);
+        
     }
 
     void MenuManager::InitInternals()
@@ -43,11 +43,26 @@ namespace CoreUi
         layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+
+        // Subgroups
+        UiDefines::MenuNodeStyleMap map;
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::IconNormal] = base_url + "edbutton_SRVRTOOLS_icon.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_SRVRTOOLS_icon.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_SRVRTOOLS_icon.png";
+
+        AddMenuGroup("Server Tools", 5, 5, map);
+
+        map[UiDefines::IconNormal] = base_url + "edbutton_WRLDTOOLS_icon.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_WRLDTOOLS_icon.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_WRLDTOOLS_icon.png";
+
+        AddMenuGroup("World Tools", 5, 5, map);
     }
 
-    void MenuManager::AddMenuGroup(QString name, qreal hgap, qreal vgap)
+    void MenuManager::AddMenuGroup(QString name, qreal hgap, qreal vgap, UiDefines::MenuNodeStyleMap style_map)
     {
-        GroupNode *group_node = new GroupNode(false, name, hgap, vgap);
+        GroupNode *group_node = new GroupNode(false, name, hgap, vgap, style_map);
         root_menu_->AddChildNode(group_node);
         category_map_[name] = group_node;
         layout_manager_->AddItemToScene(group_node);
@@ -56,23 +71,22 @@ namespace CoreUi
                 SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
     }
 
-    void MenuManager::AddMenuItem(Category category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties)
+    void MenuManager::AddMenuItem(UiDefines::MenuGroup category, QGraphicsProxyWidget *controlled_widget, UiServices::UiWidgetProperties &properties)
     {
         ActionNode *child_node = new ActionNode(properties.GetWidgetName(), properties.GetWidgetIcon(), properties.GetMenuNodeStyleMap());
         switch (category)
         {
-            case Root:
+            case UiDefines::RootGroup:
                 category_map_["Root"]->AddChildNode(child_node);
                 break;
-            case Personal:
-                // Personal no longer exists at this point in time, use Root
-                SAFE_DELETE(child_node); 
-                return;
-            case Building:
-                // Building no longer exists at this point in time, use Root
-                SAFE_DELETE(child_node);
-                return;
+            case UiDefines::ServerToolsGroup:
+                category_map_["Server Tools"]->AddChildNode(child_node);
+                break;
+            case UiDefines::WorldToolsGroup:
+                category_map_["World Tools"]->AddChildNode(child_node);
+                break;
             default:
+                SAFE_DELETE(child_node);
                 return;
         }
         controller_map_[child_node->GetID()] = controlled_widget;
@@ -80,7 +94,7 @@ namespace CoreUi
         layout_manager_->AddItemToScene(child_node);
     }
 
-    void MenuManager::RemoveMenuItem(Category category, QGraphicsProxyWidget *controlled_widget)
+    void MenuManager::RemoveMenuItem(UiDefines::MenuGroup category, QGraphicsProxyWidget *controlled_widget)
     {
         QUuid remove_id = controller_map_.key(controlled_widget);
         if (remove_id.isNull())
@@ -89,13 +103,15 @@ namespace CoreUi
         MenuNode *recovered_node = 0;
         switch (category)
         {
-            case Root: // should not happen, can be removed, wont hurt either, item will not be found
+            case UiDefines::RootGroup:
                recovered_node = category_map_["Root"]->RemoveChildNode(remove_id);
                break;
-            case Personal:
-               return;
-            case Building:
-               return;
+            case UiDefines::ServerToolsGroup:
+               recovered_node = category_map_["Server Tools"]->RemoveChildNode(remove_id);
+               break;
+            case UiDefines::WorldToolsGroup:
+                recovered_node = category_map_["World Tools"]->RemoveChildNode(remove_id);
+                break;
             default:
                return;
         }
