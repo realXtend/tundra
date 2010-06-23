@@ -107,9 +107,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <Inworld/View/UiProxyWidget.h>
 #include <Inworld/View/UiWidgetProperties.h>
 
-// World building module
-#include <WorldBuildingModule.h>
-
 #include "Vector3Wrapper.h"
 #include "QuaternionWrapper.h"
 
@@ -735,11 +732,14 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQWorldBuildingHandler(PyObject *self)
 {
+    // Get as service so no linking is needed for the optional (for now) build module
+
+    /*
     WorldBuilding::WorldBuildingModule *wb_module;
     wb_module = PythonScript::self()->GetFramework()->GetModule<WorldBuilding::WorldBuildingModule>();
     if (wb_module)
         return PythonScriptModule::GetInstance()->WrapQObject(wb_module->GetPythonHandler());
-
+    */
     PyErr_SetString(PyExc_RuntimeError, "WorldBuildingModule is missing.");
     return NULL;
 }
