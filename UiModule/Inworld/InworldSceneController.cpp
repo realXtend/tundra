@@ -129,7 +129,7 @@ namespace UiServices
             else if (widget_name == "Avatar Editor")
                 control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(proxy_widget);
             else
-                menu_manager_->AddMenuItem(CoreUi::MenuManager::Root, proxy_widget, properties);
+                menu_manager_->AddMenuItem(properties.GetMenuGroup(), proxy_widget, properties);
 
             connect(proxy_widget, SIGNAL( BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT( BringProxyToFront(UiProxyWidget*) ));
 			connect(proxy_widget, SIGNAL(ProxyMoved(UiProxyWidget*, QPointF)), this, SLOT(ProxyWidgetMoved(UiProxyWidget*, QPointF)));
@@ -147,7 +147,7 @@ namespace UiServices
         
         QString widget_name = proxy_widget->GetWidgetProperties().GetWidgetName();
         if (widget_name != "Inventory" && widget_name != "Avatar Editor")
-            menu_manager_->RemoveMenuItem(CoreUi::MenuManager::Root, proxy_widget);
+            menu_manager_->RemoveMenuItem(proxy_widget->GetWidgetProperties().GetMenuGroup(), proxy_widget);
         inworld_scene_->removeItem(proxy_widget);
         all_proxy_widgets_in_scene_.removeOne(proxy_widget);
     }

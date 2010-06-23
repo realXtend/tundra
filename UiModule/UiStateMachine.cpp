@@ -36,8 +36,8 @@ namespace CoreUi
         state_ether_->addTransition(this, SIGNAL( EtherTogglePressed()), state_inworld_);
         state_inworld_->addTransition(this, SIGNAL( EtherTogglePressed()), state_ether_);
 
-        connect(state_ether_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
-        connect(state_inworld_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
+        connect(state_ether_, SIGNAL( exited() ), SLOT( StateSwitch() ));
+        connect(state_inworld_, SIGNAL( exited() ), SLOT( StateSwitch() ));
         connect(view_, SIGNAL( ViewKeyPressed(QKeyEvent *) ), SLOT( ViewKeyEvent(QKeyEvent *) ));
     }
 
@@ -64,6 +64,22 @@ namespace CoreUi
             ether_toggle_seq_list_.append((*iter).sequence);
             iter++;
         }
+    }
+
+    void UiStateMachine::StateSwitch()
+    {
+        if (current_scene_ == scene_map_["Ether"])
+            next_scene_name_ = "Inworld";
+        else if (current_scene_ == scene_map_["Inworld"])
+            next_scene_name_ = "Ether";
+        else
+        {
+            if (connection_state_ == UiDefines::Connected)
+                next_scene_name_ = "Inworld";
+            else
+                next_scene_name_ = "Ether";
+        }
+        AnimationsStart();
     }
 
     void UiStateMachine::AnimationsStart()
@@ -129,20 +145,12 @@ namespace CoreUi
 
     void UiStateMachine::SwitchToInworldScene()
     {
-        if (current_scene_ == scene_map_["Ether"])
-        {
-            next_scene_name_ = "Inworld";
-            AnimationsStart();
-        }
+        SwitchToScene("Inworld");
     }
 
     void UiStateMachine::SwitchToEtherScene()
     {
-        if (current_scene_ == scene_map_["Inworld"])
-        {
-            next_scene_name_ = "Ether";
-            AnimationsStart();
-        }
+        SwitchToScene("Ether");
     }
 
     void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
@@ -188,7 +196,7 @@ namespace CoreUi
 
     void UiStateMachine::ToggleEther()
     {
-        if (connection_state_ == UiDefines::Connected)
+        if (connection_state_ == UiDefines::Connected)      
             emit EtherTogglePressed();
     }
 

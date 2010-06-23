@@ -43,20 +43,20 @@ namespace WorldBuilding
         Ui_ObjectInfoWidget object_info_ui;
         object_info_widget_ = new Ui::BuildingWidget(Ui::BuildingWidget::Right);
         object_info_ui.setupUi(object_info_widget_->GetInternal());
-        object_info_widget_->PrepWidget();
-
+        
         layout_->AddCornerAnchor(object_info_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
-        layout_->AddCornerAnchor(object_info_widget_, Qt::BottomRightCorner, Qt::BottomRightCorner);   
+        layout_->AddCornerAnchor(object_info_widget_, Qt::BottomRightCorner, Qt::BottomRightCorner);
+        object_info_widget_->PrepWidget();
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_info_widget_, SLOT(SceneRectChanged(const QRectF&)));
         
         // Init manipulations widgets
         Ui_ObjectManipulationsWidget object_manip_ui;
         object_manipulations_widget_ = new Ui::BuildingWidget(Ui::BuildingWidget::Left);
         object_manip_ui.setupUi(object_manipulations_widget_->GetInternal());
-        object_manipulations_widget_->PrepWidget();
 
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
+        object_manipulations_widget_->PrepWidget();
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_manipulations_widget_, SLOT(SceneRectChanged(const QRectF&)));
 
         // Init python handler
