@@ -20,7 +20,7 @@ namespace UiServices
         Q_OBJECT
 
     public:
-        UiDarkBlueStyle() {}
+        UiDarkBlueStyle();
 
         void polish(QPalette &palette);
         void polish(QWidget *widget);
@@ -30,12 +30,14 @@ namespace UiServices
         void drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
         void drawControl(ControlElement control, const QStyleOption *option, QPainter *painter, const QWidget *widget) const;
         QRect subControlRect(ComplexControl control, const QStyleOptionComplex *option, SubControl subControl, const QWidget *widget = 0) const;
-        void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;
+        void drawComplexControl(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const;        
 
     private:
 
         static void setTexture(QPalette &palette, QPalette::ColorRole role, const QPixmap &pixmap);
         static QPainterPath roundRectPath(const QRect &rect);
+
+        QPalette default_palette_;
 
     };
 

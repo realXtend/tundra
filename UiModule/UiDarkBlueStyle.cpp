@@ -4,12 +4,20 @@
 #include "DebugOperatorNew.h"
 #include "UiDarkBlueStyle.h"
 
+#include <QWebView>
+
 #include "MemoryLeakCheck.h"
 
 #define CL_MIN(a,b) (a)<(b) ? (a):(b) // remove this when it is working
 
 namespace UiServices
 {
+
+    UiDarkBlueStyle::UiDarkBlueStyle ()
+    {
+        default_palette_ = QApplication::palette();
+    }
+
     void UiDarkBlueStyle::polish(QPalette &palette)
     {     
         QColor lightgray(209, 212, 214);
@@ -66,6 +74,22 @@ namespace UiServices
 
         if (qobject_cast<QScrollArea *>(widget))
             widget->setBackgroundRole(QPalette::Base);
+
+        if (qobject_cast<QWebView *>(widget))
+        {
+            widget->setPalette(default_palette_);
+            
+            //QPalette palette;
+            //QApplication::
+            //palette.setBrush(QPalette::BrightText, Qt::white);
+            //palette.setBrush(QPalette::WindowText,  Qt::white);
+            //palette.setBrush(QPalette::Base, Qt::red);
+            //palette.setBrush(QPalette::AlternateBase,  Qt::white);
+            //palette.setBrush(QPalette::Highlight,  Qt::white);
+            //palette.setBrush(QPalette::ButtonText, Qt::white);
+            //palette.setBrush(QPalette::HighlightedText, Qt::white);  
+            //widget->setPalette(palette);
+        }
 
     }
 
