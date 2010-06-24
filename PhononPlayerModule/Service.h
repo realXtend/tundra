@@ -22,10 +22,8 @@ namespace PlayerService
         /// Default constructor
         Service();
 
-        // Default deconstructor
+        /// Default deconstructor
         virtual ~Service();
-
-//        static boost::shared_ptr<Service> IntancePtr();
 
         virtual bool IsMimeTypeSupported(const QString mime_type);
         virtual QWidget* GetPlayer(const QString &url);
