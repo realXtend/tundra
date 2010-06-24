@@ -11,6 +11,8 @@
 #include "Core.h"
 #include "CoreStdIncludes.h"
 
+#include <QVariant>
+
 // Implementation code for some common attributes
 
 namespace Foundation
@@ -95,6 +97,13 @@ template<> std::string Attribute<AssetReference>::ToString() const
     AssetReference value = Get();
     
     return value.type_ + ":" + value.id_;
+}
+
+template<> std::string Attribute<QVariant>::ToString() const
+{
+    QVariant value = Get();
+    
+    return value.toString().toStdString();
 }
 
 template<> void Attribute<std::string>::FromString(const std::string& str, AttributeChange::Type change)
@@ -216,6 +225,12 @@ template<> void Attribute<AssetReference>::FromString(const std::string& str, At
     std::string id = str.substr(pos + 1);
     
     Foundation::AssetReference value(id, type);
+    Set(value, change);
+}
+
+template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    QVariant value(QString(str.c_str()));
     Set(value, change);
 }
 
