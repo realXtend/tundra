@@ -103,6 +103,11 @@ namespace Foundation
          */
         void ComponentChanged(AttributeChange::Type change);
 
+        //! Attribute has changed. Send component & scenemanager change notifications
+        /*! Called by AttributeInterface::Changed.
+         */
+        void AttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+
         //! Read change status of the component
         AttributeChange::Type GetChange() const { return change_; }
 
@@ -120,6 +125,11 @@ namespace Foundation
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
         void OnChanged();
+
+        //! Signal when a single attribute has changed.
+        /*! Note: also a scenemanager change signal will be sent, but this is a way to hook to a specific component
+         */
+        void OnAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
 
         //! Emitted when the parent entity is set.
         void ParentEntitySet();

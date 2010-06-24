@@ -26,6 +26,12 @@ AttributeInterface::AttributeInterface(ComponentInterface* owner, const char* na
         owner->AddAttribute(this);
 }
 
+void AttributeInterface::Changed(AttributeChange::Type change)
+{
+    if (owner_)
+        owner_->AttributeChanged(this, change);
+}
+
 template<> std::string Attribute<std::string>::ToString() const
 {
     ///\todo decode/encode XML-risky characters

@@ -123,6 +123,20 @@ void ComponentInterface::ComponentChanged(AttributeChange::Type change)
     emit OnChanged();
 }
 
+void ComponentInterface::AttributeChanged(Foundation::AttributeInterface* attribute, AttributeChange::Type change)
+{
+    // Trigger scenemanager signal
+    if (parent_entity_)
+    {
+        Scene::SceneManager* scene = parent_entity_->GetScene();
+        if (scene)
+            scene->EmitAttributeChanged(this, attribute, change);
+    }
+    
+    // Trigger internal signal
+    emit OnAttributeChanged(attribute, change);
+}
+
 void ComponentInterface::ResetChange()
 {
     for (uint i = 0; i < attributes_.size(); ++i)
