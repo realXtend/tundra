@@ -63,8 +63,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "InputServiceInterface.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
-
-#include "RexLogicModule.h" //much of the api is here
 #include "WorldStream.h" //for SendObjectAddPacket
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -72,37 +70,35 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
-
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
+#include "RexNetworkUtils.h"
+#include "GenericMessageUtils.h"
 
+#include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
-#include "Renderer.h"
-#include "EC_OpenSimPresence.h"
-#include "EC_OpenSimPrim.h"
+#include "Avatar/AvatarControllable.h"
+#include "Environment/Primitive.h"
+#include "Environment/PrimGeometryUtils.h"
+#include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "RexNetworkUtils.h"
-#include "GenericMessageUtils.h"
 
-#include "Environment/Primitive.h"
-#include "Environment/PrimGeometryUtils.h"
-
-#include "CameraControllable.h"
-//now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
-//#include "ogrecamera.h"
-
-#include "Avatar/AvatarControllable.h"
 #include "UiModule.h"
 #include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/View/UiWidgetProperties.h"
+
+#include "EC_OpenSimPresence.h"
+#include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_3DCanvasSource.h"
 
@@ -149,8 +145,6 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Load()
     {
-        using namespace PythonScript;
-
         DECLARE_MODULE_EC(EC_DynamicComponent);
     }
 
@@ -1855,7 +1849,7 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
 
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
-        rexlogic->StartLoginOpensim(QString(firstAndLast), QString(password), QString(serverAddressWithPort));
+        rexlogic->StartLoginOpensim(firstAndLast, password, serverAddressWithPort);
 
     Py_RETURN_NONE;
 }
@@ -1890,6 +1884,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
     Py_RETURN_TRUE;
 }
 */
+
 PyObject* RandomTest(PyObject* self, PyObject* args)
 {
     /*
@@ -1928,6 +1923,7 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
     return PythonScriptModule::GetInstance()->WrapQObject(prim);
     //Py_RETURN_NONE;
 }
+
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {

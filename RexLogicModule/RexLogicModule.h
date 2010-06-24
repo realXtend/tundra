@@ -185,7 +185,7 @@ namespace RexLogic
         void HandleMissingParent(entity_id_t entityid);
 
         //! login from py - temp while loginui misses dllexport
-        void StartLoginOpensim(QString &qfirstAndLast, QString &qpassword, QString &qserverAddressWithPort);
+        void StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort);
 
         //! XXX have linking probs to AvatarController so trying this wrapper
         //! \todo figure workarounds for these functions so that dependency to RexLogicModule
