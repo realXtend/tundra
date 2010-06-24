@@ -81,12 +81,12 @@ namespace DebugStats
         void Arrange();
         //void DumpNodeData();
         void ChangeLoggerThreshold();
+        void SetVisibility(bool visibility) { visibility_ = visibility; }
 
     protected:
         void resizeEvent(QResizeEvent *event);
 
     private:
-       
         void FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode);
         Foundation::Framework *framework_;
         DebugStats::DebugStatsModule *owner_;
@@ -116,6 +116,8 @@ namespace DebugStats
         bool show_profiler_tree_;
 
         bool show_unused_;
+        
+        bool visibility_;
 
         QTimer profiler_update_timer_;
 

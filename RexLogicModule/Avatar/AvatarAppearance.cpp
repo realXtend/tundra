@@ -1976,7 +1976,7 @@ namespace RexLogic
             return;
         }
         
-        renderer->AddResourceDirectory(dirname);
+        renderer->AddResourceDirectory(QString::fromStdString(dirname));
     }    
     
     bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, uint index, const std::string& filename)

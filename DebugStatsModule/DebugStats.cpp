@@ -25,6 +25,7 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "UiModule.h"
+#include "UiDefines.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 #include "Renderer.h"
@@ -57,6 +58,7 @@ DebugStatsModule::DebugStatsModule() :
 
 DebugStatsModule::~DebugStatsModule()
 {
+    SAFE_DELETE(profilerWindow_);
 }
 
 void DebugStatsModule::PostInitialize()
@@ -96,6 +98,45 @@ void DebugStatsModule::PostInitialize()
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+
+    AddProfilerWidgetToUi();
+}
+
+void DebugStatsModule::AddProfilerWidgetToUi()
+{
+    if (profilerWindow_)
+        return;
+
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    if (!ui_module.get())
+        return;
+
+    profilerWindow_ = new TimeProfilerWindow(framework_);
+
+    UiServices::UiWidgetProperties profiler_properties("Profiler", UiServices::ModuleWidget);
+
+    UiDefines::MenuNodeStyleMap image_path_map;
+    QString base_url = "./data/ui/images/menus/"; 
+    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
+    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
+    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
+    profiler_properties.SetMenuNodeStyleMap(image_path_map);
+
+    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_, profiler_properties);
+    proxy->resize(650, 530);
+
+    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+}
+
+void DebugStatsModule::StartProfiling(bool profile)
+{
+    if (!profilerWindow_)
+        return;
+
+    profilerWindow_->SetVisibility(profile);
+    // -1 means start updating currently selected tab
+    if (profile)
+        profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
@@ -110,21 +151,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
         ui_module->GetInworldSceneController()->BringProxyToFront(profilerWindow_);
         return Console::ResultSuccess();
     }
-
-    profilerWindow_ = new TimeProfilerWindow(framework_);
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_,
-        UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
-    ui_module->GetInworldSceneController()->ShowProxyForWidget(profilerWindow_);
-    proxy->resize(650, 530);
-
-    QObject::connect(proxy, SIGNAL(Closed()), profilerWindow_, SLOT(deleteLater()));
-
-    if (current_world_stream_)
-        profilerWindow_->SetWorldStreamPtr(current_world_stream_);
-
-    profilerWindow_->RefreshProfilingData();
-
-    return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
 }
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
@@ -169,6 +197,8 @@ void DebugStatsModule::Update(f64 frametime)
 
     if (profilerWindow_)
     {
+        if (!profilerWindow_->isVisible())
+            return;
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
         profilerWindow_->DoThresholdLogging();
     }

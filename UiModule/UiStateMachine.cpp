@@ -36,8 +36,8 @@ namespace CoreUi
         state_ether_->addTransition(this, SIGNAL( EtherTogglePressed()), state_inworld_);
         state_inworld_->addTransition(this, SIGNAL( EtherTogglePressed()), state_ether_);
 
-        connect(state_ether_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
-        connect(state_inworld_, SIGNAL( exited() ), SLOT( AnimationsStart() ));
+        connect(state_ether_, SIGNAL( exited() ), SLOT( StateSwitch() ));
+        connect(state_inworld_, SIGNAL( exited() ), SLOT( StateSwitch() ));
         connect(view_, SIGNAL( ViewKeyPressed(QKeyEvent *) ), SLOT( ViewKeyEvent(QKeyEvent *) ));
     }
 
@@ -64,6 +64,22 @@ namespace CoreUi
             ether_toggle_seq_list_.append((*iter).sequence);
             iter++;
         }
+    }
+
+    void UiStateMachine::StateSwitch()
+    {
+        if (current_scene_ == scene_map_["Ether"])
+            next_scene_name_ = "Inworld";
+        else if (current_scene_ == scene_map_["Inworld"])
+            next_scene_name_ = "Ether";
+        else
+        {
+            if (connection_state_ == UiDefines::Connected)
+                next_scene_name_ = "Inworld";
+            else
+                next_scene_name_ = "Ether";
+        }
+        AnimationsStart();
     }
 
     void UiStateMachine::AnimationsStart()
@@ -105,15 +121,12 @@ namespace CoreUi
 
     void UiStateMachine::AnimationsFinished()
     {
-        if (animations_map_[current_scene_]->direction() != QAbstractAnimation::Forward)
-            return;
+        if (animations_map_.contains(current_scene_))
+            if (animations_map_[current_scene_]->direction() != QAbstractAnimation::Forward)
+                return;
 
-        QString scene_name;
-        if (current_scene_ == scene_map_["Ether"])
-            scene_name = "Inworld";
-        else if (current_scene_ == scene_map_["Inworld"])
-            scene_name = "Ether";
-        SwitchToScene(scene_name);
+        if (scene_map_.contains(next_scene_name_))
+            SwitchToScene(next_scene_name_);
     }
 
     void UiStateMachine::CheckAnimationTargets(QParallelAnimationGroup *animations)
@@ -132,14 +145,12 @@ namespace CoreUi
 
     void UiStateMachine::SwitchToInworldScene()
     {
-        if (current_scene_ == scene_map_["Ether"])
-            AnimationsStart();
+        SwitchToScene("Inworld");
     }
 
     void UiStateMachine::SwitchToEtherScene()
     {
-        if (current_scene_ == scene_map_["Inworld"])
-            AnimationsStart();
+        SwitchToScene("Ether");
     }
 
     void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
@@ -157,27 +168,35 @@ namespace CoreUi
         if (!scene_map_.contains(name))
             return;
 
-        disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-        
-        current_scene_ = scene_map_[name];
-        current_scene_->setSceneRect(view_->viewport()->rect());
-        if (view_->scene() != current_scene_)
-            view_->setScene(current_scene_);
-                
-        connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-
-        if (animations_map_.contains(current_scene_))
+        if (next_scene_name_ != name)
         {
-            QParallelAnimationGroup *animations = animations_map_[current_scene_];
-            CheckAnimationTargets(animations);
-            animations->setDirection(QAbstractAnimation::Backward);
-            animations->start();
+            next_scene_name_ = name;
+            AnimationsStart();
+        }
+        else
+        {
+            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            
+            current_scene_ = scene_map_[name];
+            current_scene_->setSceneRect(view_->viewport()->rect());
+            if (view_->scene() != current_scene_)
+                view_->setScene(current_scene_);
+                    
+            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+
+            if (animations_map_.contains(current_scene_))
+            {
+                QParallelAnimationGroup *animations = animations_map_[current_scene_];
+                CheckAnimationTargets(animations);
+                animations->setDirection(QAbstractAnimation::Backward);
+                animations->start();
+            }
         }
     }
 
     void UiStateMachine::ToggleEther()
     {
-        if (connection_state_ == UiDefines::Connected)
+        if (connection_state_ == UiDefines::Connected)      
             emit EtherTogglePressed();
     }
 

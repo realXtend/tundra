@@ -73,6 +73,7 @@ class ObjectEdit(Component):
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
         self.useLocalTransform = False
+        self.cpp_building_python_handler = None
         
         self.mouse_events = {
             #r.LeftMouseClickPressed: self.LeftMousePressed,
@@ -113,6 +114,9 @@ class ObjectEdit(Component):
         self.selection_rect_startpos = None
         
         r.c = self #this is for using objectedit from command.py
+        
+        # Get world building modules python handler
+        # self.cpp_building_python_handler = r.getQWorldBuildingHandler()
         
     def resetValues(self):
         self.left_button_down = False
