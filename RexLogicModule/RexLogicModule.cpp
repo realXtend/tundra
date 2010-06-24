@@ -779,16 +779,13 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     pending_parents_.erase(i);
 }
 
-void RexLogicModule::StartLoginOpensim(QString &qfirstAndLast, QString &qpassword, QString &qserverAddressWithPort)
+void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort)
 {
-    if (!qserverAddressWithPort.startsWith("http://"))
-        qserverAddressWithPort = "http://" + qserverAddressWithPort;
-
     QMap<QString, QString> map;
     map["AuthType"] = "OpenSim";
-    map["Username"] = qfirstAndLast;
-    map["Password"] = qpassword;
-    map["WorldAddress"] = qserverAddressWithPort;
+    map["Username"] = firstAndLast;
+    map["Password"] = password;
+    map["WorldAddress"] = serverAddressWithPort;
 
     os_login_handler_->ProcessOpenSimLogin(map);
 }

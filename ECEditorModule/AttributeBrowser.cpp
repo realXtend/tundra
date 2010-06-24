@@ -35,7 +35,7 @@ namespace ECEditor
     {
     }
 
-    void AttributeBrowser::CreateOrAddNewComponentToEditor(Foundation::ComponentInterfacePtr newComponent)
+    void AttributeBrowser::CreateOrAddNewComponent(Foundation::ComponentInterfacePtr newComponent, bool updateUi)
     {
         std::string typeName = newComponent->TypeName();
         ComponentEditorMap::iterator iter = componentEditors_.find(typeName);
@@ -47,14 +47,14 @@ namespace ECEditor
             componentEditors_[typeName] = componentEditor;
             //QObject::connect(componentEditor, SIGNAL(destroyed(QObject *)), this, SLOT(RemoveComponentEditorFromMap(QObject *)));
 
-            QtProperty *rootProperty = componentEditors_[typeName]->GetRootProperty();
+            QtProperty *rootProperty = componentEditors_[typeName]->RootProperty();
             componentsBrowserItemMap_[rootProperty];
             componentsBrowserItemMap_[rootProperty].push_back(Foundation::ComponentWeakPtr(newComponent));
         }
         else
         {
-            componentEditors_[typeName]->AddNewComponent(newComponent);
-            componentsBrowserItemMap_[componentEditors_[typeName]->GetRootProperty()].push_back(Foundation::ComponentWeakPtr(newComponent));
+            componentEditors_[typeName]->AddNewComponent(newComponent, updateUi);
+            componentsBrowserItemMap_[componentEditors_[typeName]->RootProperty()].push_back(Foundation::ComponentWeakPtr(newComponent));
         }
     }
 
@@ -228,12 +228,6 @@ namespace ECEditor
         }
     }
 
-    void AttributeBrowser::AddNewComponent(Foundation::ComponentInterfacePtr component)
-    {
-        assert(component.get());
-        CreateOrAddNewComponentToEditor(component);
-    }
-
     void AttributeBrowser::RemoveComponent(Foundation::ComponentInterfacePtr component)
     {
         ComponentEditorMap::iterator iter = componentEditors_.find(component->TypeName());
@@ -242,9 +236,9 @@ namespace ECEditor
             ECComponentEditor *compEditor = iter->second;
             assert(compEditor);
             compEditor->RemoveComponent(component);
-            if(!compEditor->NumberOfComponents())
+            if(!compEditor->ComponentsCount())
             {
-                QtProperty *root = compEditor->GetRootProperty();
+                QtProperty *root = compEditor->RootProperty();
                 if(root)
                 {
                     PropertyToComponentsMap::iterator browIter = componentsBrowserItemMap_.find(root);
@@ -270,7 +264,7 @@ namespace ECEditor
 
         std::vector<Foundation::ComponentInterfacePtr> components = entity->GetComponentVector();
         for(uint i = 0; i < components.size(); i++)
-            AddNewComponent(components[i]);
+            CreateOrAddNewComponent(components[i], false);
 
         // Get scene signals to keep the editor in sync when components are added or removed from the ouside.
         assert(entity->GetScene());
@@ -308,11 +302,12 @@ namespace ECEditor
             return;
 
         for(uint i = 0; i < entityComponents.size(); i++)
-            AddNewComponent(entityComponents[i]);
+            CreateOrAddNewComponent(entityComponents[i], false);
     }
 
     void AttributeBrowser::clear()
     {
+        QtTreePropertyBrowser::clear();
         while(!componentsBrowserItemMap_.empty())
             componentsBrowserItemMap_.erase(componentsBrowserItemMap_.begin());
         while(!componentEditors_.empty())
@@ -321,11 +316,19 @@ namespace ECEditor
             componentEditors_.erase(componentEditors_.begin());
         }
         selectedEntities_.clear();
-
-        QtTreePropertyBrowser::clear();
         // For some odd reason the QtTreePropertyBrowser will destroy it's shortcuts when calling clear mehtod.
         // So we need to reinitialize them.
         //CreateShorcuts();
+    }
+
+    void AttributeBrowser::UpdateBrowserUI()
+    {
+        ComponentEditorMap::iterator iter = componentEditors_.begin();
+        while(iter != componentEditors_.end())
+        {
+            iter->second->UpdateEditorUI();
+            iter++;
+        }
     }
 
     void AttributeBrowser::NewEntityComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp)
@@ -337,7 +340,7 @@ namespace ECEditor
 
         Foundation::ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
-        CreateOrAddNewComponentToEditor(componentPtr);
+        CreateOrAddNewComponent(componentPtr);
     }
 
     void AttributeBrowser::EntityComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp)
@@ -354,7 +357,7 @@ namespace ECEditor
 
     void AttributeBrowser::InitializeEditor()
     {
-        setResizeMode(QtTreePropertyBrowser::ResizeToContents);
+        //setResizeMode(QtTreePropertyBrowser::ResizeToContents); 
         setContextMenuPolicy(Qt::CustomContextMenu);
         QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
         treeWidget_ = findChild<QTreeWidget *>();
