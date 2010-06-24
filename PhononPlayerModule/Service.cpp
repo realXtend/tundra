@@ -1,12 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-//#include "MemoryLeakCheck.h"
 
 #include "Service.h"
-#include "PhononPlayerModule.h" // needed ?
 #include <QWidget>
 #include <Phonon>
+#include <Phonon/BackendCapabilities>
 
 namespace PlayerService
 {
@@ -23,7 +22,6 @@ namespace PlayerService
         video_players_.clear();
     }
 
-    
     bool Service::IsMimeTypeSupported(const QString mime_type)
     {
         return Phonon::BackendCapabilities::isMimeTypeAvailable(QString(mime_type));
@@ -54,13 +52,16 @@ namespace PlayerService
             return;
         
         Phonon::VideoPlayer* player = video_players_[url];
-        if (player)
-            delete player;
+        video_players_.remove(url);
+        player->stop();
+        player->deleteLater();
     }
 
+    /// Just for testing... 
+    /// @todo remove this
     void Service::PlayerDestroyed()
     {
-        // debug...
+        int test = 5;
     }
 
     void Service::UpdatePlayers()
