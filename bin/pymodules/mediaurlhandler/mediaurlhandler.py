@@ -26,9 +26,11 @@ class MediaurlView:
         if self.playback_widget is None:
             return
         if type(self.playback_widget).__name__ == 'Phonon::VideoPlayer':
+            # Phonon::VideoPlayer object
             r.deleteVideoWidget(self.__url.toString())
             self.playback_widget = None
         else:
+            # VewView object
             self.playback_widget.delete()
             
     def url(self):
@@ -64,16 +66,20 @@ class MediaURLHandler(Component):
         #self.wv.show()
         
     def on_logout(self, id):
-        r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
+        #r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            mediaurlview.delete_playback_widget()
-        print("  >>> mediaurlviews DELETED...")
-        #self.texture2mediaurlview.clear()
+            if mediaurlview is not None:
+                mediaurlview.delete_playback_widget()
+                #del self.texture2mediaurlview[textureid]
+                self.texture2mediaurlview[textureid] = None
+        self.texture2mediaurlview.clear()
 
     def on_exit(self):
-        r.logInfo("Uninitializing MediaURLHandler")
+        #r.logInfo("Uninitializing MediaURLHandler")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            mediaurlview.delete_playback_widget()        
+            if mediaurlview is not None:
+                mediaurlview.delete_playback_widget()        
+        self.texture2mediaurlview.clear()                
         self.texture2mediaurlview = None
         
     def on_genericmessage(self, name, data):
@@ -84,13 +90,10 @@ class MediaURLHandler(Component):
             refreshrate = int(refreshrate)
             
             if self.texture2mediaurlview.has_key(textureuuid):
-                print("")
-                print("  >>> TEXTURE UUID WAS ALREDY IN MAP")
-                print("")
                 mediaurlview = self.texture2mediaurlview[textureuuid]
                 mediaurlview.delete_playback_widget()                        
                 del self.texture2mediaurlview[textureuuid]
-                print("  >>>  DELETE: {0}".format(textureuuid))
+                #self.texture2mediaurlview[textureuuid] = None
 
             #could check whether a webview for this url already existed
             mv = MediaurlView(urlstring, refreshrate)
@@ -103,7 +106,7 @@ class MediaURLHandler(Component):
             self.texture2mediaurlview[textureuuid] = mv
                           
     def on_entity_visuals_modified(self, entid):
-        print "MediaURLHandler got Visual Modified for:", entid 
+        #print "MediaURLHandler got Visual Modified for:", entid 
         #XXX add checks to not re-apply blindly when is already up-to-date!
         for tx, wc in self.texture2mediaurlview.iteritems():
             submeshes = r.getSubmeshesWithTexture(entid, tx)
@@ -112,9 +115,8 @@ class MediaURLHandler(Component):
                 r.applyUICanvasToSubmeshes(entid, submeshes, wc.playback_widget, wc.refreshrate)
         
     def on_input(self, evid):
-        print(">>> hander:on_input")    
-
+        #print(">>> hander:on_input")    
         if evid == r.Undo: #WorldInputModule doesn't send all keys, just naali events, so am just reusing ctrl-z for testing herew
             for tx, wc in self.texture2mediaurlview.iteritems():
-                print tx, wc.url().toString()
+                #print tx, wc.url().toString()
                 r.applyUICanvasToSubmeshesWithTexture(wc.playback_widget, tx, wc.refreshrate)
