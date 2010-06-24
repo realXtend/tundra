@@ -756,6 +756,18 @@ namespace RexLogic
             avatar_appearance_.InventoryExportAvatar(entity);
     }
 
+    void Avatar::ExportUserAvatarLocal(const std::string& filename)
+    {
+        Scene::EntityPtr entity = GetUserAvatar();
+        if (!entity)
+        {
+            RexLogicModule::LogError("User avatar not in scene, cannot export locally");
+            return;
+        }
+        
+        avatar_appearance_.ExportAvatarLocal(entity, filename);
+    }
+    
     void Avatar::ReloadUserAvatar()
     {
         Scene::EntityPtr entity = GetUserAvatar();

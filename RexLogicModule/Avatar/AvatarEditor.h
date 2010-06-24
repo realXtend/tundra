@@ -31,6 +31,8 @@ namespace RexLogic
     public slots:
         //! Export click handler
         void ExportAvatar();
+        //! Local export click handler
+        void ExportAvatarLocal();
         //! New avatar click handler
         void LoadAvatar();
         //! Revert click handler
@@ -65,6 +67,9 @@ namespace RexLogic
         
         //! Ask a filename from the user. Store the directory used.
         std::string GetOpenFileName(const std::string& filter, const std::string& prompt);
+        
+        //! Ask a filename from the user for saving. Store the directory used.
+        std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
         
         //! Main widget for avatar editor
         QWidget *avatar_widget_;

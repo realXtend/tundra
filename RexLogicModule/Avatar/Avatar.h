@@ -92,6 +92,11 @@ namespace RexLogic
         //! Exports user's avatar, if in scene
         void ExportUserAvatar();
 
+        //! Exports user's avatar & assets locally to files, if in scene
+        /*! \param filename Filename & full path of the output avatar description xml. Assets will be saved to the same directory
+         */
+        void ExportUserAvatarLocal(const std::string& filename);
+
         //! Reloads user's avatar, if in scene
         void ReloadUserAvatar();
 
