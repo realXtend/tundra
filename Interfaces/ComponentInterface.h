@@ -75,7 +75,8 @@ namespace Foundation
 
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
-
+        //! Get number of attributes in this component.
+        int GetNumberOfAttributes() const { return attributes_.size(); }
         //! Return attributes of this component for reflection
         const AttributeVector& GetAttributes() const { return attributes_; }
 
