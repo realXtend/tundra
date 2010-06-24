@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScript_Script_h
-#define incl_PythonScript_Script_h
+#ifndef incl_PythonScriptModule_PythonEngine_h
+#define incl_PythonScriptModule_PythonEngine_h
 
 #include "ScriptServiceInterface.h"
 

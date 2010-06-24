@@ -1,5 +1,7 @@
-#ifndef incl_RexPythonQt_h
-#define incl_RexPythonQt_h
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#ifndef incl_PythonScriptModule_RexPythonQt_h
+#define incl_PythonScriptModule_RexPythonQt_h
 
 #include <Python.h>
 

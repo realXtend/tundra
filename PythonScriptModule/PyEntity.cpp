@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "PythonScriptModule.h" //for the staticframework hack, for entityptr re-get workaround
@@ -8,6 +10,7 @@
 #include "SceneManager.h"
 
 #include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgrePlaceable.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
@@ -17,7 +20,6 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_DynamicComponent.h"
 #include "EC_OpenSimPresence.h"
-
 
 #include <PythonQt.h>
 

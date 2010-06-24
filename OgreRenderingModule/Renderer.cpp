@@ -1034,7 +1034,7 @@ namespace OgreRenderer
         q_ogre_world_view_->RenderOneFrame();
     }
 
-    void Renderer::AddResourceDirectory(const QString qdirectory)
+    void Renderer::AddResourceDirectory(const QString &qdirectory)
     {
         std::string directory = qdirectory.toStdString();
 
