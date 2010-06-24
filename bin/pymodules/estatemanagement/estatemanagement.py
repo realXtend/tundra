@@ -10,6 +10,9 @@ from circuits import Component
 import window
 from window import EstateManagementWindow
 
+import estatesettings
+from estatesettings import EstateSettings
+
 
 import Queue
 import PythonQt
@@ -55,9 +58,7 @@ class EstateManagement(Component):
         self.appdatafolder = ""
         try:
             self.appdatafolder = r.getApplicationDataDirectory()
-            #print self.appdatafolder
         except:
-            #print "Unexpected error:", sys.exc_info()[0]
             r.logInfo("Unexpected error:", sys.exc_info()[0])
 
         self.rexlogic.connect("OnIncomingEstateOwnerMessage(QVariantList)", self.onEstateOwnerMessage)
@@ -67,6 +68,10 @@ class EstateManagement(Component):
         self.accesslist = {}
         self.publicestate = True
         self.nameToUuidMapCache = {}
+        self.savedusers = {}
+        
+        self.estatesettings = EstateSettings(self.worldstream, self)
+
         
     def on_exit(self):
         r.logInfo("EstateManagement exiting...")
@@ -76,12 +81,15 @@ class EstateManagement(Component):
         r.logInfo("EstateManagement done exiting...")
         
     def on_hide(self, shown):
-        #print "on hide"
         pass
         
     def update(self, time):
-        # print "here", time
         pass
+        
+    def on_sceneadded(self, name):
+        r.logInfo("Estate management scene added.")
+        # self.loadEstate() # cant get caps at this time, should have some on_login_region_finished event
+        pass    
 
     def on_logout(self, id):
         r.logInfo("Estate management Logout.")
@@ -99,21 +107,33 @@ class EstateManagement(Component):
     def tryGetNameFromNameToUuidMapCache(self, uuid):
         for key, val in self.nameToUuidMapCache.items():
             if key==uuid:
-                return d.pop(key)
+                return self.nameToUuidMapCache.pop(key)
+        return "unknown"
+
+    def tryGetNameFromSavedUsers(self, uuid):
+        for key, val in self.savedusers.items():
+            
+            if val==uuid:
+                return key
+                #return d.pop(key)
         return "unknown"
         
     def loadEstate(self):
         s = naali.getScene("World")
         ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
-        #print ids
         self.ents = [r.getEntity(id) for id in ids]
-        #for e in ents:
-            #print dir(e)
-            #print e.opensimpresence.QGetFullName()
         self.window.setRegionUsers(self.ents)
         #self.worldstream.SendEstateInfoRequestpacket() #!!
         self.worldstream.SendEstateOwnerMessage("getinfo", ())        
-        self.updateSavedUsersTab()
+        self.updateSavedUsers()
+        #self.updateSavedUsersTab()
+        #test if rights to modify access
+        cap = self.worldstream.GetCapability('EstateRegionSettingsModification')
+        if cap==None or cap=="":
+            self.window.setNoCapInfo()
+        else:
+            self.estatesettings.fetchEstates()
+            self.window.resetCapInfo()
         pass
         
     def toBan(self, pos):
@@ -143,7 +163,6 @@ class EstateManagement(Component):
     def sendEstateaccessdelta(self, pos, estateAccessType):
         if(self.ents.__len__()>pos):
             e = self.ents[pos]
-            #print(e.opensimpresence.QGetUUIDString())
             uuid = e.opensimpresence.QGetUUIDString()
             #if ((estateAccessType & 256) != 0) // Manager add
             method = "estateaccessdelta"
@@ -162,7 +181,6 @@ class EstateManagement(Component):
         pass
         
     def sendKick(self, pos, message):
-        #print message
         if(self.ents.__len__()>pos):
             e = self.ents[pos]
             uuid = e.opensimpresence.QGetUUIDString()
@@ -179,23 +197,26 @@ class EstateManagement(Component):
                 # create folder
                 os.mkdir(self.appdatafolder + os.sep + EstateManagement.ESTATE_DATA_FOLDER)
             
-            #print filepath
             f = open(filepath, 'a')
             f.write(info)
             f.close()
-            self.updateSavedUsersTab()
+            self.updateSavedUsers()
+            #self.updateSavedUsersTab()
         pass
         
-    def updateSavedUsersTab(self):
+    def updateSavedUsers(self):
+    #def updateSavedUsersTab(self):
         filepath = self.appdatafolder + os.sep + EstateManagement.ESTATE_DATA_FOLDER + os.sep + EstateManagement.SAVED_USERS_FILE
         if(os.access(filepath, os.F_OK)):
             f = open(filepath, 'r')
             lines = f.readlines()
             self.window.setSavedUsers(lines)
+            i = 0
+            while(i<lines.__len__()):
+                line = lines[i].replace('\n','')
+                self.savedusers[line.split('|')[0]] = line.split('|')[1]
+                i=i+1
             f.close()
-            # i = 0
-            # while(lines[i]!=""):
-                # username lines.split('|')
         pass        
 
     def removeSaved(self, line):
@@ -233,21 +254,16 @@ class EstateManagement(Component):
         self.nameToUuidMapCache[uuid]=name
         self.worldstream.SendEstateOwnerMessage("estateaccessdelta", ("", 256, uuid))        
         pass
+
+    def setEstateAccessMode(self, mode):
+        self.estatesettings.setAccessMode(mode)
         
-    def onEstateOwnerMessage(self, args):
-        #print "------------------"
-        #print args
-        # (u'00000000-0000-0000-0000-000000000000', u'00000000-0000-0000-0000-000000000000
-        # ', u'7cc88f34-0898-42f2-943c-16c2bdc897ea', u'estateupdateinfo', u'42232dfa-0308
-        # -4b78-3e75-e64352236375', (u'My Estate', u'c0701390-867e-4bb4-9e7f-b3f01db79441'
-        # agentid, sessionid, transactionid, method, invoice, paramlist = args
         
+    def onEstateOwnerMessage(self, args):        
         method = args[3]
         if(method=='estateupdateinfo'):
             self.handleEstateUpdateMessage(args)
         if(method=='setaccess'):
-            ##print args
-
             self.handleSetAccess(args)
         pass
         
@@ -255,18 +271,14 @@ class EstateManagement(Component):
     def handleEstateUpdateMessage(self, args):    
         agentid, sessionid, transactionid, method, invoice, paramlist = args
         len = paramlist.__len__()
-        #print paramlist.__len__()
         if(len!=10):
             r.logInfo('malformed estateupdateinfo')
             return
         self.queue.put(('EstateUpdate', paramlist))
-        #self.window.setEstateInfo(paramlist)
-        #estateName, estateOwner, estateID, estateFlags, sunPosition, parentEstate, covenant, str1160895077, str1, abuseEmail = paramlist
         
     def handleSetAccess(self, args):
         paramlist = args[5]
         code = int(paramlist[1])
-        #print code
         if(code==1): # AccessOptions = 1,
             self.handleAccessOptions(args)
         if(code==2): # AllowedGroups = 2,
@@ -277,31 +289,17 @@ class EstateManagement(Component):
             self.handleEstateManagers(args)
         
     def handleAccessOptions(self, args):
-        #print "handleAccessOptions"
         self.processIncomingList(args, 'setEsteteAccessList', self.accesslist)
         pass
         
     def handleAllowedGroups(self, args):
-        #print "handleAllowedGroups"
         pass
             
     def handleEstateBans(self, args):
-        #print "handleEstateBans"
         self.processIncomingList(args, 'setEstateBans', self.banned)
             
     def handleEstateManagers(self, args):
-        #print "handleEstateManagers"
-        #(u'c4838283-07d0-4b93-bb0f-3156309ac007', u'f441329c-cb5f-494c-88cd-7e2213b3d3a9', u'd01469e0-6973-4d1c-9a9e-3f9ae3a459b7', u'setaccess', u'536ae083-f539-914c-4399-d59d40115f66', (u'7', u'8', u'0', u'0', u'0', u'2', u'\xc0p\x13\x90\x86~K\xb4\x9e\x7f\xb3\xf0\x1d\xb7\x94A', u'\xc4\x83\x82\x83\x07\xd0K\x93\xbb\x0f1V0\x9a\xc0\x07'))
         self.processIncomingList(args, 'setEstateManagers', self.managers)        
-        # agentid, sessionid, transactionid, method, invoice, paramlist = args
-        # if(paramlist.__len__()>6):
-            # for i in range(6, paramlist.__len__()):
-                # # decode for uuids one by one
-                # uuid = self.uuidFromHex(paramlist[i])
-                # print uuid
-                # name = self.tryGetNameFromSceneEntities(uuid)
-                # self.managers[uuid] = name		
-        # self.queue.put(('setEstateManagers', self.managers))
         
     def processIncomingList(self, args, uiUpdateCommand, updateList):
         updateList.clear()
@@ -310,10 +308,12 @@ class EstateManagement(Component):
             for i in range(6, paramlist.__len__()):
                 # decode for uuids one by one
                 uuid = self.uuidFromHex(paramlist[i])
-                #print uuid
                 name = self.tryGetNameFromSceneEntities(uuid)
                 if name == "unknown":
                     name = self.tryGetNameFromNameToUuidMapCache(uuid)
+                if name == "unknown":
+                    name = self.tryGetNameFromSavedUsers(uuid)
+                    
                 updateList[uuid] = name		
         self.queue.put((uiUpdateCommand, updateList))
         pass
@@ -343,22 +343,3 @@ class EstateManagement(Component):
 
         #(u'7', u'8', u'0', u'0', u'0', u'2', u'\xc0p\x13\x90\x86~K\xb4\x9e\x7f\xb3\xf0\x1d\xb7\x94A', u'\xc4\x83\x82\x83\x07\xd0K\x93\xbb\x0f1V0\x9a\xc0\x07')
 
-            
-# for i in range(6, t.__len__()):
-	# print t[i].__len__()
-	# result = ""
-	# for j in range(0,t[i].__len__()):
-		# hex = "%X"%ord(t[i][j])
-		# if hex.__len__()==1:
-			# hex = "0" + hex
-		# #result = result + "%X"%ord(t[i][j])
-		# result = result + hex
-		# # if(ord(t[i][j])>128):
-			# # print ord(t[i][j])
-	# result = result.lower()
-	# print result[:8] + "-" + result[8:12] + "-" + result[12:16] + "-" + result[16:20] + "-" + result[20:]
-		
-        
-		
-		
-		
