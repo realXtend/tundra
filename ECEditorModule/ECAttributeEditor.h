@@ -8,6 +8,7 @@
 
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
+#include "ComponentInterface.h"
 #include <map>
 
 #include "MultiEditPropertyManager.h"
@@ -25,8 +26,8 @@ class Color;
 namespace Foundation
 {
     class AttributeInterface;
-    class ComponentInterface;
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
+    //class ComponentInterface;
+    //typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     template<typename T> class Attribute;
     typedef std::vector<AttributeInterface*> AttributeVector;
 }
