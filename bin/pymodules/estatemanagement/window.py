@@ -1,9 +1,10 @@
 import rexviewer as r
 import PythonQt
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtGui import QWidget
+from PythonQt.QtGui import QWidget, QMessageBox
 from PythonQt.QtCore import QFile
 import Queue
+import sys
 #from PythonQt.QtCore import QStringList
 
 import traceback
@@ -92,7 +93,31 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.listWEM = self.gui.findChild("QListWidget","listWidgetEstateManagers")
         self.listWSU = self.gui.findChild("QListWidget","listWidgetSavedUsers")
         
+        self.labelEstateInfo = self.gui.findChild("QLabel","labelEstateInfo")
         
+        self.tableEstates = self.gui.findChild("QListWidget","tableWidgetEstates")        
+        
+        
+        self.chkEstateAccess = self.gui.findChild("QCheckBox","checkBoxEstateAccess")
+
+
+        self.chkSunFixed = self.gui.findChild("QCheckBox", "checkBoxSunFixed");
+        # PublicAllowed
+        # ExternallyVisible);
+        self.chkAllowVoice = self.gui.findChild("QCheckBox", "checkBoxAllowVoice")
+        self.chkAllowDirectTeleport = self.gui.findChild("QCheckBox", "checkBoxAllowDirectTeleport")
+        self.chkDenyAnonymous = self.gui.findChild("QCheckBox", "checkBoxDenyAnonymous")
+        self.chkDenyIdentified = self.gui.findChild("QCheckBox", "checkBoxDenyIdentified")
+        self.chkDenyTransacted = self.gui.findChild("QCheckBox", "checkBoxDenyTransacted")
+        self.chkAbuseEmailToEstateOwner = self.gui.findChild("QCheckBox", "checkBoxAbuseEmailToEstateOwner")
+        self.chkBlockDwell = self.gui.findChild("QCheckBox", "checkBoxBlockDwell")
+        self.chkEstateSkipScripts = self.gui.findChild("QCheckBox", "checkBoxEstateSkipScripts")
+        self.chkResetHomeOnTeleport = self.gui.findChild("QCheckBox", "checkBoxResetHomeOnTeleport")
+        self.chkTaxFree = self.gui.findChild("QCheckBox", "checkBoxTaxFree")
+        self.chkDenyAgeUnverified = self.gui.findChild("QCheckBox", "checkBoxDenyAgeUnverified")
+
+
+
         self.btnLoadEstate.connect("clicked(bool)", self.btnLoadEstateClicked)
         
         self.btnToBan = self.gui.findChild("QPushButton", "pushButtonToBan")
@@ -131,6 +156,8 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         
         self.btnRequestGodLikePowers.connect("clicked(bool)", self.btnRequestGodLikePowersClicked)
         self.btnKick.connect("clicked(bool)", self.btnKickClicked)
+
+        #self.chkEstateAccess.connect("toggled(bool)", self.chkEstateAccessToggled)        
         
         
         # add incoming event handlers
@@ -138,6 +165,12 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.addHandler('setEstateManagers', self.setEstateManagers)
         self.addHandler('setEstateBans', self.setEstateBans)
         self.addHandler('setEsteteAccessList', self.setEsteteAccessList)
+        self.addHandler('noCapability', self.noCapabilityInfoMessage)
+        self.addHandler('estateSetting', self.handleEstateAccessSetting)
+        self.addHandler('failedEstateSetting', self.handleEstateAccessFailure)
+        self.addHandler('unknownResponse', self.handleEstateAccessFailure)
+        self.addHandler('malformedResp', self.handleEstateAccessFailure)        
+        
         
         
     def endMethod(self):
@@ -162,46 +195,81 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         pass
         
     def btnToBanClicked(self):
-        self.controller.toBan(self.listWRU.currentRow)
+        if self.isThereItemSelected(self.listWRU):
+            self.controller.toBan(self.listWRU.currentRow)
         
     def btnToAccessClicked(self):
-        self.controller.toAccess(self.listWRU.currentRow)
-        
+        if self.isThereItemSelected(self.listWRU):
+            self.controller.toAccess(self.listWRU.currentRow)
+            
     def btnToManagersClicked(self):
-        self.controller.toManagers(self.listWRU.currentRow)
+        if self.isThereItemSelected(self.listWRU):
+            self.controller.toManagers(self.listWRU.currentRow)
         
     def btnSaveUserInfoClicked(self):
-        self.controller.saveUserInfo(self.listWRU.currentRow)
+        if self.isThereItemSelected(self.listWRU):
+            self.controller.saveUserInfo(self.listWRU.currentRow)
         
     def btnRemoveBanClicked(self):
-        self.controller.removeBan(self.listWEB.currentRow)
+        if self.isThereItemSelected(self.listWEB):
+            self.controller.removeBan(self.listWEB.currentRow)
         
     def btnRemoveAccessClicked(self):
-        self.controller.removeAccess(self.listWAL.currentRow)
+        if self.isThereItemSelected(self.listWAL):
+            self.controller.removeAccess(self.listWAL.currentRow)
         
     def btnRemoveManagersClicked(self):
-        self.controller.removeManager(self.listWEM.currentRow)
+        if self.isThereItemSelected(self.listWEM):
+            self.controller.removeManager(self.listWEM.currentRow)
         
     def btnKickClicked(self):
-        self.controller.kickUser(self.listWRU.currentRow)
+        if self.isThereItemSelected(self.listWRU):
+            self.controller.kickUser(self.listWRU.currentRow)
         
 
     def btnSavedToAccessClicked(self):
-        uuid, name = self.takeItemUuidAndName()
-        self.controller.fromSavedToAccess(uuid, name)
+        success, uuid, name = self.itemUuidAndNameFromList(self.listWSU)
+        if success:
+            #uuid, name = self.takeItemUuidAndName()
+            self.controller.fromSavedToAccess(uuid, name)
         
     def btnSavedToBanClicked(self):
-        uuid, name = self.takeItemUuidAndName()        
-        self.controller.fromSavedToBan(uuid, name)
+        success, uuid, name = self.itemUuidAndNameFromList(self.listWSU)
+        if success:
+            #uuid, name = self.takeItemUuidAndName()        
+            self.controller.fromSavedToBan(uuid, name)
         
     def btnSavedToManagersClicked(self):
-        uuid, name = self.takeItemUuidAndName()        
-        self.controller.fromSavedToManagers(uuid, name)
+        success, uuid, name = self.itemUuidAndNameFromList(self.listWSU)
+        if success:
+            #uuid, name = self.takeItemUuidAndName()
+            self.controller.fromSavedToManagers(uuid, name)
         
-    def takeItemUuidAndName(self):
-        item = self.listWSU.takeItem(self.listWSU.currentRow)
-        txt = item.text()
-        return txt.split('|')[0], txt.split('|')[1]
+    # def takeItemUuidAndName(self):
+        # item = self.listWSU.takeItem(self.listWSU.currentRow)
+        # txt = item.text()
+        # return txt.split('|')[0], txt.split('|')[1]
+
+    def chkEstateAccessToggled(self, checked):
+        self.controller.setEstateAccessMode(checked)
+        pass
+        
+    def isThereItemSelected(self, list):
+        if list.currentItem() != None:
+            return True
+        else:
+            self.displayMessage('no user selected', 'Select user from list for adding it.')
+            return False
+        
+    def itemUuidAndNameFromList(self, list):
+        item = list.currentItem()
+        if(item!=None):
+            txt = item.text()
+            return True, txt.split('|')[1], txt.split('|')[0]
+            #return txt.split('|')[0], txt.split('|')[1]
+        else:
+            self.displayMessage('no user selected', 'Select user from list for adding it.')
+            return False, "", ""
 
         
     def setSavedUsers(self, lines):
@@ -227,7 +295,6 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         
     def btnKickClicked(self):
         message = self.lineKickMessage.text
-        #print message
         self.controller.sendKick(self.listWRU.currentRow, message)
         
     def setEstateInfo(self, paramlist):
@@ -243,6 +310,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.listWEI.addItem("str1160895077: " + str1160895077)
         self.listWEI.addItem("str1: " + str1)
         self.listWEI.addItem("abuseEmail: " + abuseEmail)
+        self.handleEstateFlags(estateFlags)
         pass
         
     def setEstateManagers(self, dict):        
@@ -264,10 +332,78 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
     def setRegionUsers(self, ents):
         self.listWRU.clear()
         for e in ents:
-            #print dir(e)
             displaystring = e.opensimpresence.QGetFullName() + "|" + e.opensimpresence.QGetUUIDString()
             self.listWRU.addItem(displaystring)
             #e.opensimpresence.QGetUUIDString()
             #print e.opensimpresence.QGetFullName()
         pass
         
+    def displayMessage(self, title, msg):
+        QMessageBox.information(None, title, msg)
+
+    def noCapabilityInfoMessage(self, message):
+        self.displayMessage('No capability', message)
+        
+    def handleEstateAccessSetting(self, value):
+        if (value[0].upper()=='T'):
+            if(self.chkEstateAccess.isChecked()==False):
+                self.chkEstateAccess.toggle()
+        else:
+            if(self.chkEstateAccess.isChecked()==True):
+                self.chkEstateAccess.toggle()
+                
+    def handleEstateAccessFailure(self, message):
+        self.displayMessage('something went wrong', message)
+        
+    def setCheckBox(self, chekbox, checked):
+        if(checked):
+            if(chekbox.isChecked()==False):
+                chekbox.toggle()
+        else:
+            if(chekbox.isChecked()==True):
+                chekbox.toggle()
+        
+    def handleEstateFlags(self, flags):
+        intFlags = int(flags)
+        publicAccessOn = 131072|32768 # = 163840
+        if intFlags & publicAccessOn != 0:
+            #public access on
+            self.handleEstateAccessSetting('True')
+        else:
+            #public access off
+            self.handleEstateAccessSetting('False')
+        pass
+
+        setVal = intFlags & 16 != 0
+        self.setCheckBox(self.chkSunFixed,setVal) #SunFixed
+
+        
+        setVal = intFlags & 268435456 != 0
+        self.setCheckBox(self.chkAllowVoice,setVal)
+        setVal = intFlags & 1048576 != 0
+        self.setCheckBox(self.chkAllowDirectTeleport,setVal)
+        setVal = intFlags & 8388608 != 0
+        self.setCheckBox(self.chkDenyAnonymous,setVal)
+        setVal = intFlags & 16777216 != 0
+        self.setCheckBox(self.chkDenyIdentified,setVal)
+        setVal = intFlags & 33554432 != 0
+        self.setCheckBox(self.chkDenyTransacted,setVal)
+        setVal = intFlags & 134217728 != 0
+        self.setCheckBox(self.chkAbuseEmailToEstateOwner,setVal)
+        setVal = intFlags & 262144 != 0
+        self.setCheckBox(self.chkBlockDwell,setVal)
+        setVal = intFlags & 2097152 != 0
+        self.setCheckBox(self.chkEstateSkipScripts,setVal)
+        setVal = intFlags & 8 != 0
+        self.setCheckBox(self.chkResetHomeOnTeleport,setVal)
+        setVal = intFlags & 32 != 0
+        self.setCheckBox(self.chkTaxFree,setVal)
+        setVal = intFlags & 1073741824 != 0
+        self.setCheckBox(self.chkDenyAgeUnverified,setVal)
+        
+
+    def setNoCapInfo(self):
+        self.labelEstateInfo.setText("Estate info: (no caps, \nyou will probably not be able to \nmodify access rights) \n check you are logged in \n as addministrator or owner")
+        
+    def resetCapInfo(self):
+        self.labelEstateInfo.setText("Estate info:")    

@@ -56,7 +56,7 @@ namespace Foundation
         AttributeChange::Type GetChange() const { return change_; }
 
         //! Returns attributes name as const char *.
-        const char* GetName() const { return name_; }
+        const char* GetName() const { return name_.c_str(); }
 
         //! Returns attributes name as string.
         std::string GetNameString() const { return std::string(name_); }
@@ -75,7 +75,7 @@ namespace Foundation
         ComponentInterface* owner_;
 
         //! Name of attribute
-        const char* name_;
+        std::string name_;
 
         //! Change type (dirty flag)
         AttributeChange::Type change_;

@@ -12,14 +12,13 @@
 #include <QObject>
 #include <QPair>
 #include <QTimer>
-#include <QSlider>
 #include <QVector>
-#include <QUiLoader>
 
 class QImage;
 class QColor;
 class QMouseEvent;
 class QColorDialog;
+class QSlider;
 
 class MouseEvent;
 
@@ -58,11 +57,12 @@ namespace Environment
 
     typedef QPair<float, float> MinMaxValue;
 
-    //! Environment editor window. Owned by EnvironmentModule. Handles terrain, water, sky, fog and light editing.
+    //! Environment editor window. Owned by EnvironmentModule. The editor is responsible for terrain, water, sky, fog and light editing.
     //! Terrain: Paint terrain heightmap, update terrain textures and height ranges.
     //! Water: Enable/Disable water geometry and change it height value.
     //! Sky: Choose between three sky types that are Sky_box, Sky_dome and Sky_plane, update sky parameters like distance and texture and enable/disable sky geometry.
-    //! Fog: Change water and ground fog start and end distances and change water and ground fog color.
+    //!      Sky editing is only enabled when the Caelum is turned off.
+    //! Fog: Change water/ground fog color and distances (start and end distances).
     //! Light: Change sunlight direction and color and change ambient light color.
     //! \ingroup EnvironmentModuleClient.
     class EnvironmentEditor: public QObject
