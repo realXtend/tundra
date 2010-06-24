@@ -330,6 +330,9 @@ void TimeProfilerWindow::ShowUnusedButtonPressed()
 
 void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
 {
+    if (newPage == -1)
+        newPage = tab_widget_->currentIndex();
+
     switch(newPage)
     {
     case 0:
@@ -866,7 +869,7 @@ static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 
 void TimeProfilerWindow::RefreshOgreProfilingWindow()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 2)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 2)
         return;
 
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
@@ -985,7 +988,7 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 0)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
     if (show_profiler_tree_)
@@ -1161,7 +1164,7 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
 void TimeProfilerWindow::RefreshNetworkProfilingData()
 {
 #ifdef PROFILING
-    if (!tab_widget_ || tab_widget_->currentIndex() != 3)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
         return;
 
     if (current_world_stream_)
@@ -1336,7 +1339,7 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
 
 void TimeProfilerWindow::RefreshAssetProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 5)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
         return;
 
     tree_asset_cache_->clear();
@@ -1381,7 +1384,7 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
 
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 {
-    if (!tree_rendertargets_)
+    if (!visibility_ || !tree_rendertargets_)
         return;
     
     tree_rendertargets_->clear();
@@ -1433,7 +1436,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 
 void TimeProfilerWindow::RefreshTextureProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 7)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
 
     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();

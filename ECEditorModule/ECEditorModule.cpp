@@ -57,6 +57,8 @@ namespace ECEditor
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
+
+        AddEditorWindowToUI();
     }
 
     void ECEditorModule::Uninitialize()
@@ -106,6 +108,31 @@ namespace ECEditor
         return false;
     }
 
+    void ECEditorModule::AddEditorWindowToUI()
+    {
+        if (editor_window_)
+            return;
+
+        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+        if (!ui_module)
+            return;
+
+        editor_window_ = new ECEditorWindow(GetFramework());
+        UiServices::UiWidgetProperties widget_properties("Entity Components", UiServices::ModuleWidget);
+        
+        UiDefines::MenuNodeStyleMap map;
+        QString base_url = "./data/ui/images/menus/";
+        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
+        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
+        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
+        widget_properties.SetMenuNodeStyleMap(map);
+
+        ui_module->GetInworldSceneController()->AddWidgetToScene(editor_window_, widget_properties);
+
+        connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
+        connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
+    }
+
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
         UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
@@ -117,16 +144,8 @@ namespace ECEditor
             ui_module->GetInworldSceneController()->BringProxyToFront(editor_window_);
             return Console::ResultSuccess();
         }
-
-        editor_window_ = new ECEditorWindow(GetFramework());
-        UiServices::UiWidgetProperties widget_properties(editor_window_->windowTitle(), UiServices::SceneWidget);
-        ui_module->GetInworldSceneController()->AddWidgetToScene(editor_window_, widget_properties);
-        ui_module->GetInworldSceneController()->ShowProxyForWidget(editor_window_);
-
-        connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
-        connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
-
-        return Console::ResultSuccess();
+        else
+            return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
     }
 
     void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)

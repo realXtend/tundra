@@ -4,6 +4,7 @@
 #define incl_UiModule_MenuNode_h
 
 #include <QGraphicsProxyWidget>
+#include <QPropertyAnimation>
 #include <QUuid>
 #include <QString>
 #include <QPointF>
@@ -48,6 +49,8 @@ namespace CoreUi
         void SetOriginalPos(QPointF original_pos){ original_pos_  = original_pos; }
 
         QPropertyAnimation *CreateResizeAnimation(QString anim_property);
+
+        void ResizeStateChanged(QAbstractAnimation::State new_state, QAbstractAnimation::State old_state);
         void ResizeFinished();
         void ChangeMoveState(bool show_borders);
         
