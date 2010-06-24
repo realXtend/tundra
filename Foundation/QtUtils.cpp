@@ -77,6 +77,21 @@ std::string QtUtils::GetOpenFileName(
     return filename.toStdString();
 }
 
+std::string QtUtils::GetSaveFileName(
+    const std::string &filter,
+    const std::string &caption,
+    const std::string &dir)
+{
+    QString qcaption(caption.c_str());
+    QString qdir(dir.c_str());
+    QString qfilter(filter.c_str());
+    QWidget *parent = 0;
+
+    QString filename = QFileDialog::getSaveFileName(parent, qcaption, qdir, qfilter);
+
+    return filename.toStdString();
+}
+
 StringList QtUtils::GetOpenFileNames(
     const std::string &filter,
     const std::string &caption,
