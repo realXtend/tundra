@@ -1,7 +1,6 @@
 import rexviewer as r
 import PythonQt
 import urllib2
-#import inspect
 
 from circuits import Component
 
@@ -16,31 +15,33 @@ class MediaurlView:
     def __init__(self, urlstring, refreshrate):
         self.__url = PythonQt.QtCore.QUrl(urlstring)
         self.refreshrate = refreshrate
-        type = ""
-        try:
-            file = urllib2.urlopen(urlstring)
-            type = str(file.info()["Content-Type"])
-            file.close()
-        except:
-            pass
+        type = self.__get_mime_type(urlstring)
         if len(type) > 0 and r.isMimeTypeSupportedForVideoWidget(type):
             self.playback_widget = r.createVideoWidget(str(urlstring))
         else:
             self.playback_widget = PythonQt.QtWebKit.QWebView()
             self.playback_widget.load(self.__url)
-        print( ">>> MediaurlView CREATED for {0}".format(str(self.__url.toString())) )
 
     def delete_playback_widget(self):
+        if self.playback_widget is None:
+            return
         if type(self.playback_widget).__name__ == 'Phonon::VideoPlayer':
-            self.playback_widget.deleteLater()
-            #r.deleteVideoWidget(self.__url.toString())
-            pass
+            r.deleteVideoWidget(self.__url.toString())
+            self.playback_widget = None
         else:
             self.playback_widget.delete()
-        print(">>> MediaurlView: playback widget DELETED for {0}".format(str(self.__url.toString())))                
             
     def url(self):
         return self.__url        
+        
+    def __get_mime_type(self, url_string):   
+        try:
+            file = urllib2.urlopen(url_string)
+            type = str(file.info()["Content-Type"])
+            file.close()
+            return type
+        except:
+            return ""
 
 class MediaURLHandler(Component):
     def __init__(self):
