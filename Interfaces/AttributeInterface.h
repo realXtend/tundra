@@ -31,16 +31,22 @@ namespace Foundation
         //! Destructor.
         virtual ~AttributeInterface() {}
 
-        //! Sets attribute null i.e. its value is fetched from a parent entity
+        //! Sets attribute null i.e. its value should be fetched from a parent entity
+        /*! \todo Not implemented yet. Implement parent entity concept and fetching of values
+         */
         void SetNull(bool enable) { null_ = enable; }
 
         //! Resets previous/current change to none.
         void ResetChange() { change_ = AttributeChange::None; }
 
-        //! Returns true if the attribute is dirty.
+        //! Returns true if the attribute is dirty i.e. it has changed either locally or because of a network message.
+        /*! The dirty flag should be resetted by the replication manager after it has processed the change. However,
+            LOCALONLY changes most probably are not resetted by anything by default, so that state will stay until one
+            resets it manually.
+         */
         bool IsDirty() const { return change_ != AttributeChange::None; }
 
-        //! Returns true if the attribute is null i.e. its value is fetched from a parent entity
+        //! Returns true if the attribute is null i.e. its value should be fetched from a parent entity
         bool IsNull() const { return null_; }
 
         //! Returns attributes owner component.
@@ -62,6 +68,9 @@ namespace Foundation
         virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
     protected:
+        //! Notifies owner component that the attribute has changed
+        void Changed(AttributeChange::Type change);
+
         //! Owning component
         ComponentInterface* owner_;
 
@@ -112,6 +121,7 @@ namespace Foundation
         {
             value_ = new_value;
             change_ = change;
+            Changed(change);
         }
 
         //! AttributeInterface override.
