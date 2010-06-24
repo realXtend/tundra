@@ -5,16 +5,15 @@
 
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-
-// QtPropertyBrowser headers.
-#include "qtvariantproperty.h"
-#include "qtpropertymanager.h"
-#include "qtpropertybrowser.h"
-#include "qteditorfactory.h"
-
 // Own QtPropertyBrowser headers.
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
+
+// QtPropertyBrowser headers.
+#include <qtvariantproperty.h>
+#include <qtpropertymanager.h>
+#include <qtpropertybrowser.h>
+#include <qteditorfactory.h>
 
 #include "MemoryLeakCheck.h"
 

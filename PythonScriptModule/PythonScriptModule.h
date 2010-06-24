@@ -1,7 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_PythonScriptingModule_h
-#define incl_PythonScriptingModule_h
+#ifndef incl_PythonScriptModule_PythonScriptModule_h
+#define incl_PythonScriptModule_PythonScriptModule_h
+
+#include "Core.h"
+#include "Foundation.h"
+#include "ModuleInterface.h"
+#include "ModuleLoggingFunctions.h"
+
+#include <QObject>
+#include <QList>
+#include <QString>
+#include <QVariantMap>
 
 #ifdef PYTHON_FORCE_RELEASE_VERSION
   #ifdef _DEBUG
@@ -15,21 +25,22 @@
     #include <Python.h>
 #endif
 
-#include "CoreStdIncludes.h"
-#include "Core.h"
-#include "Foundation.h"
-#include "ModuleInterface.h"
-#include "ModuleLoggingFunctions.h"
-#include "ComponentRegistrarInterface.h"
-#include "ServiceManager.h"
-#include "InputServiceInterface.h"
-#include "../OgreRenderingModule/Renderer.h" //for the screenshot api XXX add the path to includes, don't do this.
-#include "SceneManager.h"
-
-#include <PythonQt.h>
-#include <QList>
+class InputContext;
+typedef boost::shared_ptr<InputContext> InputContextPtr;
+class KeyEvent;
+class MouseEvent;
 
 class EC_OpenSimPrim;
+
+namespace OgreRenderer
+{
+    class Renderer;
+}
+
+namespace Scene
+{
+    class SceneManager;
+}
 
 namespace Foundation
 {
@@ -37,16 +48,11 @@ namespace Foundation
     class InputContext;
 }
 
-namespace RexLogic
-{
-    class RexLogicModule;
-    class CameraControllable;
-    class AvatarControllable;
-}
-
 namespace ProtocolUtilities
 {
     class InventorySkeleton;
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
 typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
@@ -62,43 +68,35 @@ namespace PythonScript
         Q_OBJECT
 
     public slots: //things for the py side to call.
-        OgreRenderer::Renderer* GetRenderer();
-        Scene::SceneManager* GetScene(QString name);
-        void RunJavascriptString(QString codestr, QVariantMap context = QVariantMap());
-        InputContext* GetInputContext() { return input.get(); }
+        OgreRenderer::Renderer* GetRenderer() const;
+        Scene::SceneManager* GetScene(const QString &name) const;
+        void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
+        InputContext* GetInputContext() const { return input.get(); }
 
     public:
         PythonScriptModule();
         virtual ~PythonScriptModule();
 
-        //the module interface
+        // Module interface overrides
         virtual void Load();
         virtual void Unload();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-        //handling events
-        virtual bool HandleEvent(
-            event_category_id_t category_id,
-            event_id_t event_id, 
-            Foundation::EventDataInterface* data);
-
-        //! callback for console command        
+        //! callback for console command
         Console::CommandResult ConsoleRunString(const StringVector &params);
         Console::CommandResult ConsoleRunFile(const StringVector &params);
         Console::CommandResult ConsoleReset(const StringVector &params);
 
-        // Subscribing to network categories
-        void SubscribeToNetworkEvents();
-        
         MODULE_LOGGING_FUNCTIONS
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
-        static void Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, QList<uint> submeshes, int refresh_rate);
+        static void Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate);
 
         //Foundation::Framework* GetFramework() { return frameworkptr;  };//this still returns null or 0... WHY?
         //static Foundation::ScriptEventInterface* engineAccess;
@@ -114,15 +112,18 @@ namespace PythonScript
         /// Returns the currently initialized PythonScriptModule.
         static PythonScriptModule *GetInstance();
 
-        Scene::ScenePtr GetScenePtr() { return framework_->GetDefaultWorldScene(); }
-        PyObject* WrapQObject(QObject* qobj) { return PythonQt::self()->priv()->wrapQObject(qobj); }
+        Scene::ScenePtr GetScenePtr() const { return framework_->GetDefaultWorldScene(); }
+        PyObject* WrapQObject(QObject* qobj) const;
 
         PyObject* entity_create(entity_id_t ent_id); //, Scene::EntityPtr entity);
 
-        PyTypeObject *GetRexPyTypeObject();
+//        PyTypeObject *GetRexPyTypeObject();
 
         // Inventory skeleton retrieved during login process
         InventoryPtr inventory;
+
+        /// World stream pointer.
+        ProtocolUtilities::WorldStreamPtr worldstream;
 
     private slots:
         void HandleKeyEvent(KeyEvent &key);
@@ -130,8 +131,12 @@ namespace PythonScript
 
     private:
         //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
+
         //! Type name of the module.
         static std::string type_name_static_;
+
+        //! Static instance of ourselves.
+        static PythonScriptModule *pythonScriptModuleInstance_;
 
         PythonEnginePtr engine_;
         bool pythonqt_inited;

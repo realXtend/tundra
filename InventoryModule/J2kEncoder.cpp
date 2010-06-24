@@ -122,7 +122,6 @@ bool J2kEncode(Ogre::Image &src_image, std::vector<u8> &outbuf, bool reversible)
     }
 
     // Create comment for codestream.
-    ///\todo Custom comments / no comments at all?
     if(parameters.cp_comment == 0)
     {
         const char comment[] = "Created by OpenJPEG version ";

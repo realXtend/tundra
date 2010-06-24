@@ -95,7 +95,7 @@ namespace OgreRenderer
         /*! \param directory Directory path to add
          */
         //for local dotscene loading to be able to load from the dir where the export is
-        void AddResourceDirectory(const QString directory);
+        void AddResourceDirectory(const QString &directory);
 
     public:
         //! Constructor
