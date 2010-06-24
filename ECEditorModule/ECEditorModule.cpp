@@ -18,6 +18,9 @@
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 
+//#include "ComponentInterface.h"
+//#include "EC_DynamicComponent.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
@@ -53,6 +56,10 @@ namespace ECEditor
         RegisterConsoleCommand(Console::CreateCommand("ECEditor",
             "Shows the EC editor.",
             Console::Bind(this, &ECEditorModule::ShowWindow)));
+
+        /*RegisterConsoleCommand(Console::CreateCommand("AddDynamicComponent",
+            "Add dunamic compoent to entity.",
+            Console::Bind(this, &ECEditorModule::AddDynamicComponent)));*/
 
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
@@ -147,6 +154,43 @@ namespace ECEditor
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
     }
+
+    /*Console::CommandResult ECEditorModule::AddDynamicComponent(const StringVector &params)
+    {
+        Scene::SceneManager *sceneMgr = framework_->GetScene("World").get();
+        if(!sceneMgr)
+            return Console::ResultFailure("Failed to find main scene.");
+
+        //for(uint i = 0; i < params.size(); i++)
+        //{
+            entity_id_t id = ParseString<entity_id_t>("-1786949937");
+            Scene::Entity *ent = sceneMgr->GetEntity(id).get();
+            if(!ent)
+                return Console::ResultFailure("Epic fail.");
+            Foundation::ComponentInterfacePtr comp = ent->GetOrCreateComponent("EC_DynamicComponent", AttributeChange::Local);
+            ent->RemoveComponent(ent->GetComponent(comp->TypeName()));
+            comp = ent->GetOrCreateComponent("EC_DynamicComponent", AttributeChange::Local);
+            EC_DynamicComponent *dynamicComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
+            QString name("Test");
+            dynamicComp->AddAttribute<std::string>("StringValue");
+            dynamicComp->AddQVariantAttribute(name);
+            dynamicComp->SetAttribute("Test", QVariant(12));
+            dynamicComp->SetAttribute(1, QVariant(15));
+            dynamicComp->SetAttribute("StringValue", QVariant("This should look as text"));
+            QVariant var = dynamicComp->GetAttribute(1);
+            int integer = var.toInt();
+            var = dynamicComp->GetAttribute(0);
+            QString stringValue = var.toString();
+            int componentCount = dynamicComp->GetNumberOfAttributes();
+            for(uint i = 0; i < componentCount; i++)
+                QString attributeName = dynamicComp->GetAttributeName(i);
+            
+            //Foundation::QVariantAttribute *attribute = new Foundation::QVariantAttribute(comp.get(), "test");
+            //attribute->FromString("Testi", Foundation::ComponentInterface::LocalOnly);
+            //std::string string = attribute->ToString();
+        //}
+        return Console::ResultSuccess();
+    }*/
 
     void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
     {

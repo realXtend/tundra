@@ -36,6 +36,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
             attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), browser, component, editor);
+        else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<QVariant>(attribute.GetName(), browser, component, editor);
         return attributeEditor;
     }
 
@@ -68,12 +70,12 @@ namespace ECEditor
             groupPropertyManager_ = new QtGroupPropertyManager(this);
             if(groupPropertyManager_)
             {
-                components_.insert(component);
+                //components_.insert(component);
                 groupProperty_ = groupPropertyManager_->addProperty();
+                AddNewComponent(component, true);
                 CreateAttriubteEditors(component);
             }
             propertyBrowser_->addProperty(groupProperty_);
-            UpdateGroupPropertyText();
         }
     }
 
@@ -89,9 +91,9 @@ namespace ECEditor
             attributeEditor->UpdateEditorUI();
             groupProperty_->addSubProperty(attributeEditor->GetProperty());
 
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SIGNAL(AttributeChanged(const std::string &)));
+            //QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SIGNAL(AttributeChanged(const std::string &)));
             QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
-            QObject::connect(this, SIGNAL(ComponentRemoved(Foundation::ComponentInterface *)), attributeEditor, SLOT(RemoveComponentFromEditor(Foundation::ComponentInterface *)));
+            //QObject::connect(this, SIGNAL(ComponentRemoved(Foundation::ComponentInterface *)), attributeEditor, SLOT(RemoveComponentFromEditor(Foundation::ComponentInterface *)));
         }
     }
 
@@ -120,28 +122,27 @@ namespace ECEditor
         return false;
     }
 
-    void ECComponentEditor::AddNewComponent(Foundation::ComponentInterfacePtr component)
+    void ECComponentEditor::AddNewComponent(Foundation::ComponentInterfacePtr component, bool updateUi)
     {
         //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
         if(component->TypeName() == typeName_)
         {
             components_.insert(component);
-            AttributeEditorMap::iterator iter = attributeEditors_.begin();
-
+            
             //! insert new component for each attribute editor.
+            AttributeEditorMap::iterator iter = attributeEditors_.begin();
             while(iter != attributeEditors_.end())
             {
-                iter->second->AddNewComponent(component);
-                iter->second->UpdateEditorUI();
+                iter->second->AddNewComponent(component, updateUi);
                 iter++;
             }
+            QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(ComponentChanged()));
             UpdateGroupPropertyText();
         }
     }
 
     void ECComponentEditor::RemoveComponent(Foundation::ComponentInterfacePtr component)
     {
-        // If component is already destoyed from the attribute browser no point to try to do it again.
         if(component.get())
         {
             if(component->TypeName() == typeName_)
@@ -159,7 +160,13 @@ namespace ECEditor
                     Foundation::ComponentPtr componentPtr = (*iter).lock();
                     if(componentPtr.get() == component.get())
                     {
-                        emit ComponentRemoved(componentPtr.get());
+                        AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
+                        while(attributeIter != attributeEditors_.end())
+                        {
+                            attributeIter->second->RemoveComponent(componentPtr.get());
+                            attributeIter++;
+                        }
+                        //emit ComponentRemoved(componentPtr.get());
                         components_.erase(iter);
                         break;
                     }
@@ -167,6 +174,16 @@ namespace ECEditor
                 }
                 UpdateGroupPropertyText();
             }
+        }
+    }
+
+    void ECComponentEditor::UpdateEditorUI()
+    {
+        AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
+        while(attributeIter != attributeEditors_.end())
+        {
+            attributeIter->second->UpdateEditorUI();
+            attributeIter++; 
         }
     }
 
@@ -188,9 +205,30 @@ namespace ECEditor
                     else
                         afterProperty = properties[index];
                     groupProperty_->insertSubProperty(newProperty, afterProperty);
+                    break;
                 }
             }
             index++;
+        }
+    }
+
+    void ECComponentEditor::ComponentChanged()
+    {
+        Foundation::ComponentInterface *component = dynamic_cast<Foundation::ComponentInterface *>(sender());
+        if(component)
+        {
+            if(component->TypeName() != typeName_)
+                return;
+            Foundation::AttributeVector attributes = component->GetAttributes();
+            for(uint i = 0; i < attributes.size(); i++)
+            {
+                if(attributes[i]->IsDirty())
+                {
+                    AttributeEditorMap::iterator iter = attributeEditors_.find(attributes[i]->GetName());
+                    if(iter != attributeEditors_.end())
+                        iter->second->AttributeValueChanged(*attributes[i]);
+                }
+            }
         }
     }
 }

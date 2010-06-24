@@ -34,8 +34,10 @@
 namespace Naali
 {
 
+const std::string InWorldChatModule::moduleName_ = std::string("InWorldChatModule");
+
 InWorldChatModule::InWorldChatModule() :
-    ModuleInterface(NameStatic()),
+    ModuleInterface(moduleName_),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),
@@ -155,13 +157,6 @@ bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t 
     }
 
     return false;
-}
-
-const std::string InWorldChatModule::moduleName = std::string("InWorldChatModule");
-
-const std::string &InWorldChatModule::NameStatic()
-{
-    return moduleName;
 }
 
 void InWorldChatModule::SendChatFromViewer(const QString &msg)
