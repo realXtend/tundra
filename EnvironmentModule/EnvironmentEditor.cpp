@@ -38,6 +38,7 @@
 #include <QPushButton>
 #include <QImage>
 #include <QLabel>
+#include <QSlider>
 #include <QColor>
 #include <QMouseEvent>
 #include <QRadioButton>

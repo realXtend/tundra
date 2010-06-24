@@ -29,7 +29,6 @@ namespace ECEditor
     QWidget *MultiEditPropertyFact::createEditor(MultiEditPropertyManager *manager, QtProperty *property, QWidget *parent)
     {
         QPushButton *multiEditButton = new QPushButton(parent);
-        
         QInputDialog *dialog = new QInputDialog(parent);
         QStringList attributes = manager->AttributeValue(property);
         dialog->setComboBoxItems(attributes);
