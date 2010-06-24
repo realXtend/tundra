@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneModule_StableHeaders_h__
-#define incl_SceneModule_StableHeaders_h__
+#ifndef incl_SceneManager_StableHeaders_h
+#define incl_SceneManager_StableHeaders_h
 
 #include "CoreStdIncludes.h"
 
@@ -16,4 +16,4 @@
 
 #endif
 
-#endif // incl_SceneModule_StableHeaders_h__
+#endif
