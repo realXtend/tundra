@@ -124,13 +124,18 @@ namespace Scene
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
         */
-        template <class T> boost::shared_ptr<T> GetComponent() const
+        template <class T>
+        boost::shared_ptr<T> GetComponent() const
         {
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic()));
         }
 
-        //! Returns list of components with certain class type, already cast to correct type, or empty list if no components was found.
-        template <class T> std::vector<T> GetComponents() const
+        /*! Returns list of components with certain class type, already cast to correct type.
+            \param T Component class type.
+            \return List of components with certain class type, or empty list if no components was found.
+        */
+        template <class T>
+        std::vector<T> GetComponents() const
         {
             std::vector<T> ret;
             for(size_t i = 0; i < components_.size() ; ++i)
@@ -146,7 +151,8 @@ namespace Scene
         /*! 
             \param name name of the component
         */
-        template <class T> boost::shared_ptr<T> GetComponent(const std::string& name) const
+        template <class T>
+        boost::shared_ptr<T> GetComponent(const std::string& name) const
         {
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
@@ -171,6 +177,74 @@ namespace Scene
 
         //! Returns scene
         SceneManager* GetScene() const { return scene_; }
+
+        /*! Returns pointer to the first attribute with spesific name.
+            \param T Typename/class of the attribute.
+            \param name Name of the attribute.
+            \return Pointer to the attribute.
+            \note Always remember to check for null pointer.
+        */
+        template<typename T>
+        Foundation::Attribute<T> *GetAttribute(const std::string &name) const
+        {
+            for(size_t i = 0; i < components_.size() ; ++i)
+            {
+                Foundation::Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+                if (t)
+                    return t;
+            }
+            return 0;
+        }
+
+        /*! Returns attribute interface pointer to attribute with spesific name.
+            \param name Name of the attribute.
+            \return AttributeInterface pointer to the attribute.
+            \note Always remember to check for null pointer.
+        */
+        Foundation::AttributeInterface *GetAttributeInterface(const std::string &name) const
+        {
+            for(size_t i = 0; i < components_.size() ; ++i)
+            {
+                Foundation::AttributeInterface *attr = components_[i]->GetAttribute(name);
+                if (attr)
+                    return attr;
+            }
+            return 0;
+        }
+
+        /*! Returns list of attributes with spesific name.
+            \param T Typename/class of the attribute.
+            \param name Name of the attribute.
+            \return List of attributes, or empty list if no attributes are found.
+        */
+        template<typename T>
+        std::vector<Foundation::Attribute<T> > GetAttributes(const std::string &name) const
+        {
+            std::vector<Foundation::Attribute<T> > ret;
+            for(size_t i = 0; i < components_.size() ; ++i)
+            {
+                Foundation::Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+                if (t)
+                    return ret.push_back(t);
+            }
+            return ret;
+        }
+
+        /*! Returns list of attributes with spesific name.
+            \param name Name of the attribute.
+            \return List of attribute interface pointers, or empty list if no attributes are found.
+        */
+        Foundation::AttributeVector GetAttributes(const std::string &name) const
+        {
+            std::vector<Foundation::AttributeInterface *> ret;
+            for(size_t i = 0; i < components_.size() ; ++i)
+            {
+                Foundation::AttributeInterface *attr = components_[i]->GetAttribute(name);
+                if (attr)
+                    ret.push_back(attr);
+            }
+            return ret;
+        }
 
     private:
         //! a list of all components
