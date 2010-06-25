@@ -22,9 +22,9 @@ use_package (QT4)
 use_package (CURL)
 use_package (XMLRPC)
 
-use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule
+use_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule EnvironmentModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules
-    EntityComponents/EC_OpenSimPresence)
+    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -35,9 +35,9 @@ link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)
 
-link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule
+link_modules (Core Foundation Interfaces SceneManager UiModule RexCommon OgreRenderingModule EnvironmentModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules
-    EC_OpenSimPresence)
+    EC_OpenSimPresence EC_OpenSimPrim)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
