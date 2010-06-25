@@ -19,6 +19,7 @@ class QTabWidget;
 class QLabel;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QTextEdit;
 class QPushButton;
 
 
@@ -76,8 +77,10 @@ namespace DebugStats
         void ExpandAllButtonPressed();
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
+        void RefreshSceneComplexityProfilingData();
         void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
+        void DumpSceneComplexityToFile();
         void Arrange();
         //void DumpNodeData();
         void ChangeLoggerThreshold();
@@ -131,7 +134,11 @@ namespace DebugStats
         void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
         void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
         void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
-
+        uint GetNumResources(Ogre::ResourceManager& manager);
+        void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles);
+        void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
+        void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
+        
         QTreeWidget* tree_texture_assets_;
         QTreeWidget* tree_mesh_assets_; 
         QTreeWidget* tree_material_assets_;
@@ -139,6 +146,7 @@ namespace DebugStats
         QTreeWidget* tree_compositor_assets_;
         QTreeWidget* tree_gpu_assets_;
         QTreeWidget* tree_font_assets_;
+        QTextEdit* text_scenecomplexity_;
         float logThreshold_;
     };
 }

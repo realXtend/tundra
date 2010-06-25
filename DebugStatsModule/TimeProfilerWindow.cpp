@@ -12,6 +12,11 @@
 #include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
 #include "WorldStream.h"
+#include "SceneManager.h"
+#include "RenderServiceInterface.h"
+#include "EC_OpenSimPrim.h"
+#include "EC_OgreMesh.h"
+#include "EC_Terrain.h"
 
 #include <utility>
 
@@ -23,6 +28,7 @@
 #include <QPainter>
 #include <QTreeWidgetItemIterator>
 #include <QtAlgorithms>
+#include <QTextEdit>
 
 
 #include <OgreFontManager.h>
@@ -129,6 +135,9 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_asset_transfers_->header()->resizeSection(1, 90);
     tree_asset_transfers_->header()->resizeSection(2, 90);
     
+    text_scenecomplexity_ = findChild<QTextEdit*>("textSceneComplexity");
+    assert(text_scenecomplexity_);
+    
     tree_rendertargets_ = findChild<QTreeWidget*>("treeRenderTargets");
     assert(tree_rendertargets_);
     tree_rendertargets_->header()->resizeSection(0, 220);
@@ -168,6 +177,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
     QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    QObject::connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
 
     frame_time_update_x_pos_ = 0;
     logThreshold_ = 100.0;
@@ -224,25 +234,25 @@ void TimeProfilerWindow::Arrange()
     QTreeWidget* widget = 0;
     switch (index)
     {
-        case 7:  // Texture
+        case 8:  // Texture
             widget =  tree_texture_assets_;
             break;
-        case 8: // Mesh
+        case 9: // Mesh
             widget =  tree_mesh_assets_;
             break;
-        case 9: // Material
+        case 10: // Material
             widget =  tree_material_assets_;
             break;
-        case 10:
+        case 11:
             widget =  tree_skeleton_assets_;
             break;
-        case 11:
+        case 12:
             widget = tree_compositor_assets_ ;
             break;
-        case 12:
+        case 13:
             widget = tree_gpu_assets_;
             break;
-        case 13:
+        case 14:
             widget = tree_font_assets_;
             break;
     }
@@ -348,31 +358,48 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         RefreshAssetProfilingData();
         break;
     case 6:
+        RefreshSceneComplexityProfilingData();
+        break;
+    case 7:
         RefreshRenderTargetProfilingData();
         break;
-    case 7: // Textures
+    case 8: // Textures
         RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
-    case 8: // Meshes
+    case 9: // Meshes
         RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
-    case 9: // Material
+    case 10: // Material
         RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
-    case 10: // Skeleton
+    case 11: // Skeleton
         RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
-    case 11: // Composition
+    case 12: // Composition
         RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
-    case 12: // Gpu assets
+    case 13: // Gpu assets
         RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
-    case 13: // Font assets
+    case 14: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
 
     }
+}
+
+uint TimeProfilerWindow::GetNumResources(Ogre::ResourceManager& manager)
+{
+    uint count = 0;
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        count++;
+    }
+    return count;
 }
 
 static QTreeWidgetItem *FindItemByName(QTreeWidgetItem *parent, const char *name)
@@ -984,7 +1011,14 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
     DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingleton(), file);
 }
 
-
+void TimeProfilerWindow::DumpSceneComplexityToFile()
+{
+    if (!text_scenecomplexity_)
+        return;
+    
+    std::ofstream file("scenestats.txt");
+    file << text_scenecomplexity_->toPlainText().toStdString();
+}
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
@@ -1382,9 +1416,417 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
 
+void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
+{
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
+        return;
+    
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    std::ostringstream text;
+    
+    uint entities = 0;
+    uint prims = 0;
+    uint invisible_prims = 0;
+    uint meshentities = 0;
+    uint animated = 0;
+    
+    std::set<Ogre::Mesh*> all_meshes;
+    std::set<Ogre::Mesh*> scene_meshes;
+    std::set<Ogre::Mesh*> other_meshes;
+    std::set<Ogre::Texture*> all_textures;
+    std::set<Ogre::Texture*> scene_textures;
+    std::set<Ogre::Texture*> other_textures;
+    uint scene_meshes_size = 0;
+    uint other_meshes_size = 0;
+    uint mesh_vertices = 0;
+    uint mesh_triangles = 0;
+    uint mesh_instance_vertices = 0;
+    uint mesh_instance_triangles = 0;
+    
+    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        entities++;
+        EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
+        Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        Ogre::Entity* ogre_entity = 0;
+        
+        // Get Ogre mesh from mesh EC
+        if (mesh)
+        {
+            ogre_entity = mesh->GetEntity();
+            if (ogre_entity)
+            {
+                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                scene_meshes.insert(ogre_mesh);
+                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                std::set<Ogre::Material*> temp_mat;
+                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetTexturesFromMaterials(temp_mat, scene_textures);
+            }
+        }
+        
+        // Get Ogre meshes from terrain EC
+        if (terrain)
+        {
+            for (int y = 0; y < Environment::EC_Terrain::cNumPatchesPerEdge; ++y)
+            {
+                for(int x = 0; x < Environment::EC_Terrain::cNumPatchesPerEdge; ++x)
+                {
+                    Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
+                    if (!node)
+                        continue;
+                    if (!node->numAttachedObjects())
+                        continue;
+                    ogre_entity = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(0));
+                    if (ogre_entity)
+                    {
+                        Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                        scene_meshes.insert(ogre_mesh);
+                        GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                        std::set<Ogre::Material*> temp_mat;
+                        GetMaterialsFromEntity(ogre_entity, temp_mat);
+                        GetTexturesFromMaterials(temp_mat, scene_textures);
+                    }
+                }
+            }
+        }
+        
+        // Check drawtype for prims
+        if (prim)
+        {
+            
+            int drawtype = prim->getDrawType();
+            if ((drawtype == RexTypes::DRAWTYPE_MESH) && (mesh))
+                meshentities++;
+            if (drawtype == RexTypes::DRAWTYPE_PRIM)
+            {
+                if (mesh)
+                    prims++;
+                else
+                    invisible_prims++;
+            }
+        }
+        else
+        {
+            if (mesh)
+                meshentities++;
+        }
+        if (entity.GetComponent("EC_OgreAnimationController").get())
+            animated++;
+    }
+    
+    // Go through all meshes and see which of them are in the scene
+    Ogre::ResourceManager::ResourceMapIterator iter = Ogre::MeshManager::getSingleton().getResourceIterator();
+    while (iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        Ogre::Mesh* mesh = dynamic_cast<Ogre::Mesh*>(resource.get());
+        if (mesh)
+            all_meshes.insert(mesh);
+        if (scene_meshes.find(mesh) == scene_meshes.end())
+            other_meshes.insert(mesh);
+    }
+    
+    text << "Scene" << std::endl;
+    text << "# of entities in the scene: " << entities << std::endl;
+    text << "# of prims with geometry in the scene: " << prims << std::endl;
+    text << "# of invisible prims in the scene: " << invisible_prims << std::endl;
+    text << "# of mesh entities in the scene: " << meshentities << std::endl;
+    text << "# of animated entities in the scene: " << animated << std::endl;
+    text << std::endl;
+    
+    // Count total vertices/triangles per mesh
+    std::set<Ogre::Mesh*>::iterator mi = all_meshes.begin();
+    while (mi != all_meshes.end())
+    {
+        Ogre::Mesh* mesh = *mi;
+        GetVerticesAndTrianglesFromMesh(mesh, mesh_vertices, mesh_triangles);
+        ++mi;
+    }
+    // Count scene/other mesh byte sizes
+    mi = scene_meshes.begin();
+    while (mi != scene_meshes.end())
+    {
+        scene_meshes_size += (*mi)->getSize();
+        ++mi;
+    }
+    mi = other_meshes.begin();
+    while (mi != other_meshes.end())
+    {
+        other_meshes_size += (*mi)->getSize();
+        ++mi;
+    }
+    
+    text << "Ogre Meshes" << std::endl;
+    text << "# of loaded meshes: " << all_meshes.size() << std::endl;
+    text << "# of meshes in scene: " << scene_meshes.size() << std::endl;
+    text << "Total mesh data size: (" << scene_meshes_size / 1024 << " KBytes scene)+(" << other_meshes_size / 1024 << " KBytes other)" << std::endl;
+    text << "# of vertices in the meshes: " << mesh_vertices << std::endl;
+    text << "# of triangles in the meshes: " << mesh_triangles << std::endl;
+    text << "# of vertices in the scene: " << mesh_instance_vertices << std::endl;
+    text << "# of triangles in the scene: " << mesh_instance_triangles << std::endl;
+    text << std::endl;
+    
+    // Go through all textures and see which of them are in the scene
+    iter = Ogre::TextureManager::getSingleton().getResourceIterator();
+    while (iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        Ogre::Texture* texture = dynamic_cast<Ogre::Texture*>(resource.get());
+        if (texture)
+        {
+            all_textures.insert(texture);
+            if (scene_textures.find(texture) == scene_textures.end())
+                other_textures.insert(texture);
+        }
+    }
+    
+    // Count total/scene texture byte sizes and amount of total pixels
+    uint scene_tex_size = 0;
+    uint total_tex_size = 0;
+    uint other_tex_size = 0;
+    uint scene_tex_pixels = 0;
+    uint total_tex_pixels = 0;
+    uint other_tex_pixels = 0;
+    std::set<Ogre::Texture*>::iterator ti = scene_textures.begin();
+    while (ti != scene_textures.end())
+    {
+        scene_tex_size += (*ti)->getSize();
+        scene_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    ti = all_textures.begin();
+    while (ti != all_textures.end())
+    {
+        total_tex_size += (*ti)->getSize();
+        total_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    ti = other_textures.begin();
+    while (ti != other_textures.end())
+    {
+        other_tex_size += (*ti)->getSize();
+        other_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    
+    // Sort textures into categories
+    uint scene_tex_categories[5];
+    uint other_tex_categories[5];
+    for (uint i = 0; i < 5; ++i)
+    {
+        scene_tex_categories[i] = 0;
+        other_tex_categories[i] = 0;
+    }
+    
+    ti = scene_textures.begin();
+    while (ti != scene_textures.end())
+    {
+        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        if (dimension > 2048)
+            scene_tex_categories[0]++;
+        else if (dimension > 1024)
+            scene_tex_categories[1]++;
+        else if (dimension > 512)
+            scene_tex_categories[2]++;
+        else if (dimension > 256)
+            scene_tex_categories[3]++;
+        else
+            scene_tex_categories[4]++;
+        ++ti;
+    }
+    
+    ti = other_textures.begin();
+    while (ti != other_textures.end())
+    {
+        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        if (dimension > 2048)
+            other_tex_categories[0]++;
+        else if (dimension > 1024)
+            other_tex_categories[1]++;
+        else if (dimension > 512)
+            other_tex_categories[2]++;
+        else if (dimension > 256)
+            other_tex_categories[3]++;
+        else
+            other_tex_categories[4]++;
+        ++ti;
+    }
+    
+    if (!total_tex_pixels)
+        total_tex_pixels = 1;
+    if (!scene_tex_pixels)
+        scene_tex_pixels = 1;
+    if (!other_tex_pixels)
+        other_tex_pixels = 1;
+    
+    text << "Ogre Textures" << std::endl;
+    text << "# of loaded textures: " << all_textures.size() << std::endl;
+    text << "Texture data size in scene: " << scene_tex_size / 1024 << " KBytes" << std::endl;
+    text << "Texture data size total: " << total_tex_size / 1024 << " KBytes" << std::endl;
+    text << "Texture dimensions: " << std::endl;
+    text << "> 2048: (" << scene_tex_categories[0] << " scene)+(" << other_tex_categories[0] << " other)" << std::endl;
+    text << "> 1024: (" << scene_tex_categories[1] << " scene)+(" << other_tex_categories[1] << " other)" << std::endl;
+    text << "> 512: (" << scene_tex_categories[2] << " scene)+(" << other_tex_categories[2] << " other)" << std::endl;
+    text << "> 256: (" << scene_tex_categories[3] << " scene)+(" << other_tex_categories[3] << " other)" << std::endl;
+    text << "smaller: (" << scene_tex_categories[4] << " scene)+(" << other_tex_categories[4] << " other)" << std::endl;
+    text << "Avg. bytes/pixel: (" << floor(((float)scene_tex_size / scene_tex_pixels) * 100.0f) / 100.f
+                   << " scene)/(" << floor(((float)total_tex_size / total_tex_pixels) * 100.0f) / 100.f 
+                   << " total)" << std::endl;
+    text << std::endl;
+    
+    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
+        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+    assert(renderer);
+    if (!renderer)
+        return;
+    
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+    if (!root)
+        return;
+    Ogre::RenderSystem* rendersys = root->getRenderSystem();
+    assert(rendersys);
+    if (!rendersys)
+        return;
+    
+    uint visible_entities = renderer->GetVisibleEntities().size();
+    uint batches = 0;
+    uint triangles = 0;
+    float avgfps = 0.0f;
+        
+    Ogre::RenderSystem::RenderTargetIterator rtiter = rendersys->getRenderTargetIterator();
+    while (rtiter.hasMoreElements())
+    {
+        Ogre::RenderTarget* target = rtiter.getNext();
+        // Sum batches & triangles from all rendertargets updated last frame
+        batches += target->getBatchCount();
+        triangles += target->getTriangleCount();
+        // Get FPS only from the primary
+        if (target->isPrimary())
+            avgfps = floor(target->getAverageFPS() * 100.0f) / 100.0f;
+    }
+    
+    text << "Ogre Materials" << std::endl;
+    text << "# of materials total: " << GetNumResources(Ogre::MaterialManager::getSingleton()) << std::endl;
+    
+    uint vertex_shaders = 0;
+    uint pixel_shaders = 0;
+    Ogre::ResourceManager::ResourceMapIterator shader_iter = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
+    while(shader_iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = shader_iter.getNext();
+        // Count only loaded programs
+        if (!resource->isLoaded())
+            continue;
+        Ogre::HighLevelGpuProgram* program = dynamic_cast<Ogre::HighLevelGpuProgram*>(resource.get());
+        if (program)
+        {
+            Ogre::GpuProgramType type = program->getType();
+            if (type == Ogre::GPT_VERTEX_PROGRAM)
+                vertex_shaders++;
+            if (type == Ogre::GPT_FRAGMENT_PROGRAM)
+                pixel_shaders++;
+        }
+    }
+    text << "# of vertex shaders total: " << vertex_shaders << std::endl;
+    text << "# of pixel shaders total: " << pixel_shaders << std::endl;
+    text << std::endl;
+    
+    text << "# of loaded skeletons: " << GetNumResources(Ogre::SkeletonManager::getSingleton()) << std::endl;
+    text << std::endl;
+    
+    text << "Viewport" << std::endl;
+    text << "# of currently visible entities: " << visible_entities << std::endl;
+    text << "# of total batches rendered last frame: " << batches << std::endl;
+    text << "# of total triangles rendered last frame: " << triangles << std::endl;
+    text << std::endl;
+    text << "Avg. FPS: " << avgfps << std::endl;
+    
+    // Update only if no selection
+    bool text_selected = text_scenecomplexity_->textCursor().hasSelection();
+    if (!text_selected)
+        text_scenecomplexity_->setText(text.str().c_str());
+    
+    QTimer::singleShot(500, this, SLOT(RefreshSceneComplexityProfilingData()));
+}
+
+void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles)
+{
+    // Count total vertices/triangles for each mesh instance
+    for (uint i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (submesh)
+        {
+            Ogre::VertexData* vtx = submesh->vertexData;
+            Ogre::IndexData* idx = submesh->indexData;
+            if (vtx)
+                vertices += vtx->vertexCount;
+            if (idx)
+                triangles += idx->indexCount / 3;
+        }
+    }
+}
+
+void TimeProfilerWindow::GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest)
+{
+    for (uint i = 0; i < entity->getNumSubEntities(); ++i)
+    {
+        Ogre::SubEntity* subentity = entity->getSubEntity(i);
+        if (subentity)
+        {
+            Ogre::Material* mat = subentity->getMaterial().get();
+            if (mat)
+                dest.insert(mat);
+        }
+    }
+}
+
+void TimeProfilerWindow::GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest)
+{
+    Ogre::TextureManager& texMgr = Ogre::TextureManager::getSingleton();
+    
+    std::set<Ogre::Material*>::const_iterator i = materials.begin();
+    while (i != materials.end())
+    {
+        Ogre::Material::TechniqueIterator iter = (*i)->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    std::string texName = texUnit->getTextureName();
+                    Ogre::Texture* tex = dynamic_cast<Ogre::Texture*>(texMgr.getByName(texName).get());
+                    if ((tex) && (tex->isLoaded()))
+                        dest.insert(tex);
+                }
+            }
+        }
+        ++i;
+    }
+}
+
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 {
-    if (!visibility_ || !tree_rendertargets_)
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
     
     tree_rendertargets_->clear();
@@ -1436,7 +1878,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 
 void TimeProfilerWindow::RefreshTextureProfilingData()
 {
-    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 7)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 8)
         return;
 
     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();
