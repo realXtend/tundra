@@ -157,7 +157,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.btnRequestGodLikePowers.connect("clicked(bool)", self.btnRequestGodLikePowersClicked)
         self.btnKick.connect("clicked(bool)", self.btnKickClicked)
 
-        #self.chkEstateAccess.connect("toggled(bool)", self.chkEstateAccessToggled)        
+        self.chkEstateAccess.connect("toggled(bool)", self.chkEstateAccessToggled)        
         
         
         # add incoming event handlers
