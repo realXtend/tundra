@@ -1575,10 +1575,10 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     text << std::endl;
     
     // Go through all textures and see which of them are in the scene
-    iter = Ogre::TextureManager::getSingleton().getResourceIterator();
-    while (iter.hasMoreElements())
+    Ogre::ResourceManager::ResourceMapIterator tex_iter = ((Ogre::ResourceManager*)Ogre::TextureManager::getSingletonPtr())->getResourceIterator();
+    while (tex_iter.hasMoreElements())
     {
-        Ogre::ResourcePtr resource = iter.getNext();
+        Ogre::ResourcePtr resource = tex_iter.getNext();
         if (!resource->isLoaded())
             continue;
         Ogre::Texture* texture = dynamic_cast<Ogre::Texture*>(resource.get());
@@ -1721,7 +1721,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     uint vertex_shaders = 0;
     uint pixel_shaders = 0;
-    Ogre::ResourceManager::ResourceMapIterator shader_iter = Ogre::HighLevelGpuProgramManager::getSingleton().getResourceIterator();
+    Ogre::ResourceManager::ResourceMapIterator shader_iter = ((Ogre::ResourceManager*)Ogre::HighLevelGpuProgramManager::getSingletonPtr())->getResourceIterator();
     while(shader_iter.hasMoreElements())
     {
         Ogre::ResourcePtr resource = shader_iter.getNext();
