@@ -83,12 +83,7 @@ class Manipulator:
                 
         minpos = Vec(min(xs), min(ys), min(zs))
         maxpos = Vec(max(xs), max(ys), max(zs))
-        #median = (minpos + maxpos) / 2
-        #there is some type prob with pythonqt and operator overloads, so this workaround is needed:
         median = (minpos + maxpos) / 2 
-        #print "Min:", minpos
-        #print "Max:", minpos
-        #print "Median:", median
         
         return median
         
@@ -112,27 +107,28 @@ class Manipulator:
             
             if ent is None:
                 return
-                
+
             if ent.id == self.manipulator.id:
-                    submeshid = results[-3]
-                    u = results[-2]
-                    v = results[-1]
-                    #print "ARROW and UV", u, v
-                    #print submeshid
-                    self.grabbed = True
-                    if submeshid in self.BLUEARROW or (u != 0.0 and u < 0.421875):
-                        #~ print "arrow is blue"
-                        self.grabbed_axis = self.AXIS_BLUE
-                    elif submeshid in self.GREENARROW or (u != 0.0 and u < 0.70703125):
-                        #~ print "arrow is green"
-                        self.grabbed_axis = self.AXIS_GREEN
-                    elif submeshid in self.REDARROW or (u != 0.0 and u <= 1.0):
-                        #~ print "arrow is red"
-                        self.grabbed_axis = self.AXIS_RED
-                    else:
-                        #~ print "arrow got screwed..."
-                        self.grabbed_axis = None
-                        self.grabbed = False
+                submeshid = results[-3]
+                self.axisSubmesh = submeshid
+                u = results[-2]
+                v = results[-1]
+                #print "ARROW and UV", u, v
+                #print submeshid
+                self.grabbed = True
+                if submeshid in self.BLUEARROW or (u != 0.0 and u < 0.421875):
+                    #~ print "arrow is blue"
+                    self.grabbed_axis = self.AXIS_BLUE
+                elif submeshid in self.GREENARROW or (u != 0.0 and u < 0.70703125):
+                    #~ print "arrow is green"
+                    self.grabbed_axis = self.AXIS_GREEN
+                elif submeshid in self.REDARROW or (u != 0.0 and u <= 1.0):
+                    #~ print "arrow is red"
+                    self.grabbed_axis = self.AXIS_RED
+                else:
+                    #~ print "arrow got screwed..."
+                    self.grabbed_axis = None
+                    self.grabbed = False
                     
     def manipulate(self, ents, movedx, movedy):
         if ents is not None:
