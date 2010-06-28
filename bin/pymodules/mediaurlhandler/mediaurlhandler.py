@@ -66,26 +66,17 @@ class MediaURLHandler(Component):
         #self.wv.show()
         
     def on_logout(self, id):
-        print(">>>>>>>>>>>>>>>> on_logout")
-        r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
-        print("LEN = {0}".format(len(self.texture2mediaurlview)))
+        #r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            print("  textureid={0}".format(textureid))
             if mediaurlview is None:
                 continue
-                
             self.texture2mediaurlview[textureid] = None
-            #del(mediaurlview)
             mediaurlview.delete_playback_widget()
         self.texture2mediaurlview.clear()
 
     def on_exit(self):
-        print(">>>>>>>>>>>>>>>> on_exit")
-        
-        r.logInfo("Uninitializing MediaURLHandler")
-        print("LEN = {0}".format(len(self.texture2mediaurlview)))
+        #r.logInfo("Uninitializing MediaURLHandler")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            print("  textureid={0}".format(textureid))
             if mediaurlview is None:
                 continue
             mediaurlview.delete_playback_widget()        
@@ -100,31 +91,20 @@ class MediaURLHandler(Component):
             refreshrate = int(refreshrate)
             
             if self.texture2mediaurlview.has_key(textureuuid):
-                print(">>>>>>> REASSIGN MEDUAURL !!!")
                 mediaurlview = self.texture2mediaurlview[textureuuid]
                 if mediaurlview is not None:
                     del self.texture2mediaurlview[textureuuid]
-                    #self.texture2mediaurlview[textureuuid] = None
                     mediaurlview.delete_playback_widget()                        
 
             #could check whether a webview for this url already existed
-            try:
-                print(">>>>>>>>>>>>> MediaurlView object created for {0}".format(urlstring))
-                mv = MediaurlView(urlstring, refreshrate)
+            mv = MediaurlView(urlstring, refreshrate)
 
-                #for objects we already had in the scene
-                print ("... begin")
-                r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
-                print ("... end")
-                
-                #for when get visuals_modified events later, 
-                #e.g. for newly downloaded objects
-                self.texture2mediaurlview[textureuuid] = mv
-                print("LEN = {0}".format(len(self.texture2mediaurlview)))
-                
-            except:
-                print("Cannot create MediaurlView object for {0}".format(urlstring))
+            #for when get visuals_modified events later, 
+            #e.g. for newly downloaded objects
+            self.texture2mediaurlview[textureuuid] = mv
             
+            #for objects we already had in the scene
+            r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
                           
     def on_entity_visuals_modified(self, entid):
         #print "MediaURLHandler got Visual Modified for:", entid 
