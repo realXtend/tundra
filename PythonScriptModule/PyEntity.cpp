@@ -393,13 +393,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
 static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 {
-    /*
-    if (!(tmp = PyObject_GenericSetAttr((PyObject*)self, name, value))) {
-        if (!PyErr_ExceptionMatches(PyExc_AttributeError))
-            return NULL;
-        PyErr_Clear();
-    }*/
-
     const char* c_name = PyString_AsString(name);
     std::string s_name = std::string(c_name);
 
