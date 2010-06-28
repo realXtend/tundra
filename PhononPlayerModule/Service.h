@@ -7,6 +7,7 @@
 #include <QMap>
 
 class QWidget;
+class QSignalMapper;
 
 namespace Phonon
 {
@@ -33,10 +34,11 @@ namespace PlayerService
         /// Restart evey player object which is not playing state
         virtual void UpdatePlayers();
 
-        virtual void PlayerDestroyed(); /// Testing...
+        virtual void PlayerDestroyed(const QString &);
 
     private:
         QMap<QString, Phonon::VideoPlayer*> video_players_;
+        QSignalMapper* destroyed_signal_mapper_;
     };
 
 } // PlayerService
