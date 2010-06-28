@@ -596,12 +596,12 @@ class ObjectEdit(Component):
         avatar = r.getEntity(avatar_id)
         pos = avatar.placeable.Position#r.getUserAvatarPos()
 
-	# TODO determine what is right in front of avatar and use that instead
+        # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .5
         start_y = pos.y() + .5
         start_z = pos.z()
 
-	self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
+        self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
     def deleteObject(self):
         if self.active is not None:
