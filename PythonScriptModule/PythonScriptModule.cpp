@@ -1734,23 +1734,6 @@ PyObject* GetServerConnection(PyObject *self)
     return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->worldstream.get());
 }
 
-PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
-{
-    if (PythonScript::self()->worldstream)
-    {
-        float start_x, start_y, start_z;
-        float end_x, end_y, end_z;
-
-        if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
-            return NULL;   
-        }
-
-        PythonScript::self()->worldstream->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
     std::cout << "Sending rexprimdata" << std::endl;
