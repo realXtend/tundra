@@ -1425,7 +1425,48 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     if (!scene)
         return;
     
+    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
+        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+    assert(renderer);
+    if (!renderer)
+        return;
+    
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+    if (!root)
+        return;
+    
+    Ogre::RenderSystem* rendersys = root->getRenderSystem();
+    assert(rendersys);
+    if (!rendersys)
+        return;
+    
     std::ostringstream text;
+    
+    uint visible_entities = renderer->GetVisibleEntities().size();
+    uint batches = 0;
+    uint triangles = 0;
+    float avgfps = 0.0f;
+
+    // Get overall batchcount/trianglecount/fps data
+    Ogre::RenderSystem::RenderTargetIterator rtiter = rendersys->getRenderTargetIterator();
+    while (rtiter.hasMoreElements())
+    {
+        Ogre::RenderTarget* target = rtiter.getNext();
+        // Sum batches & triangles from all rendertargets updated last frame
+        batches += target->getBatchCount();
+        triangles += target->getTriangleCount();
+        // Get FPS only from the primary
+        if (target->isPrimary())
+            avgfps = floor(target->getAverageFPS() * 100.0f) / 100.0f;
+    }
+    
+    text << "Viewport" << std::endl;
+    text << "# of currently visible entities: " << visible_entities << std::endl;
+    text << "# of total batches rendered last frame: " << batches << std::endl;
+    text << "# of total triangles rendered last frame: " << triangles << std::endl;
+    text << "Avg. FPS: " << avgfps << std::endl;
+    text << std::endl;
     
     uint entities = 0;
     uint prims = 0;
@@ -1446,6 +1487,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_instance_vertices = 0;
     uint mesh_instance_triangles = 0;
     
+    // Loop through entities to see mesh usage
     for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
@@ -1684,38 +1726,6 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                    << " total)" << std::endl;
     text << std::endl;
     
-    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
-        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-    assert(renderer);
-    if (!renderer)
-        return;
-    
-    Ogre::Root *root = Ogre::Root::getSingletonPtr();
-    assert(root);
-    if (!root)
-        return;
-    Ogre::RenderSystem* rendersys = root->getRenderSystem();
-    assert(rendersys);
-    if (!rendersys)
-        return;
-    
-    uint visible_entities = renderer->GetVisibleEntities().size();
-    uint batches = 0;
-    uint triangles = 0;
-    float avgfps = 0.0f;
-        
-    Ogre::RenderSystem::RenderTargetIterator rtiter = rendersys->getRenderTargetIterator();
-    while (rtiter.hasMoreElements())
-    {
-        Ogre::RenderTarget* target = rtiter.getNext();
-        // Sum batches & triangles from all rendertargets updated last frame
-        batches += target->getBatchCount();
-        triangles += target->getTriangleCount();
-        // Get FPS only from the primary
-        if (target->isPrimary())
-            avgfps = floor(target->getAverageFPS() * 100.0f) / 100.0f;
-    }
-    
     text << "Ogre Materials" << std::endl;
     text << "# of materials total: " << GetNumResources(Ogre::MaterialManager::getSingleton()) << std::endl;
     
@@ -1745,17 +1755,26 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     text << "# of loaded skeletons: " << GetNumResources(Ogre::SkeletonManager::getSingleton()) << std::endl;
     text << std::endl;
     
-    text << "Viewport" << std::endl;
-    text << "# of currently visible entities: " << visible_entities << std::endl;
-    text << "# of total batches rendered last frame: " << batches << std::endl;
-    text << "# of total triangles rendered last frame: " << triangles << std::endl;
-    text << std::endl;
-    text << "Avg. FPS: " << avgfps << std::endl;
-    
     // Update only if no selection
-    bool text_selected = text_scenecomplexity_->textCursor().hasSelection();
+    QTextCursor cursor(text_scenecomplexity_->textCursor());
+    bool text_selected = cursor.hasSelection();
     if (!text_selected)
-        text_scenecomplexity_->setText(text.str().c_str());
+    {
+        // Save previous pos, update & restore pos
+        int cursorPos = cursor.position();
+        int anchorPos = cursor.anchor();
+        int scrollPos = 0;
+        if (text_scenecomplexity_->verticalScrollBar())
+            scrollPos = text_scenecomplexity_->verticalScrollBar()->value();
+        
+        text_scenecomplexity_->setPlainText(text.str().c_str());
+        
+        cursor.setPosition(anchorPos);
+        cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
+        text_scenecomplexity_->setTextCursor(cursor);
+        if (text_scenecomplexity_->verticalScrollBar())
+            text_scenecomplexity_->verticalScrollBar()->setValue(scrollPos);
+    }
     
     QTimer::singleShot(500, this, SLOT(RefreshSceneComplexityProfilingData()));
 }
