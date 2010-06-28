@@ -34,6 +34,8 @@ void AttributeInterface::Changed(AttributeChange::Type change)
         owner_->AttributeChanged(this, change);
 }
 
+    // TOSTRING TEMPLATE IMPLEMENTATIONS.
+
 template<> std::string Attribute<std::string>::ToString() const
 {
     ///\todo decode/encode XML-risky characters
@@ -105,6 +107,60 @@ template<> std::string Attribute<QVariant>::ToString() const
     
     return value.toString().toStdString();
 }
+
+// TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
+
+template<> std::string Attribute<int>::TypenameToString() const
+{
+    return "int";
+}
+
+template<> std::string Attribute<uint>::TypenameToString() const
+{
+    return "uint";
+}
+
+template<> std::string Attribute<Real>::TypenameToString() const
+{
+    return "real";
+}
+
+template<> std::string Attribute<std::string>::TypenameToString() const
+{
+    return "string";
+}
+
+template<> std::string Attribute<bool>::TypenameToString() const
+{
+    return "bool";
+}
+
+template<> std::string Attribute<Vector3df>::TypenameToString() const
+{
+    return "vector3df";
+}
+
+template<> std::string Attribute<Quaternion>::TypenameToString() const
+{
+    return "quaternion";
+}
+
+template<> std::string Attribute<Color>::TypenameToString() const
+{
+    return "color";
+}
+
+template<> std::string Attribute<AssetReference>::TypenameToString() const
+{
+    return "assetreference";
+}
+
+template<> std::string Attribute<QVariant>::TypenameToString() const
+{
+    return "qvariant";
+}
+
+    // FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<std::string>::FromString(const std::string& str, AttributeChange::Type change)
 {
