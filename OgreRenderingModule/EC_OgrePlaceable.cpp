@@ -6,12 +6,6 @@
 #include "EC_OgrePlaceable.h"
 #include <Ogre.h>
 
-#include "XMLUtilities.h"
-
-#include <QDomDocument>
-
-using namespace RexTypes;
-
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
