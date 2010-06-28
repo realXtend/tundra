@@ -155,14 +155,13 @@ class Manipulator:
                 temp = [0,0,0]
                 temp[self.grabbed_axis] = 1
                 axis_vec = Vector3(temp)
-                #print amountx, amounty
                 mousey_on_arrow_projection = upvec.dot(axis_vec) * axis_vec
                 lengthy = mousey_on_arrow_projection.length * amounty
                 mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
                 lengthx = mousex_on_arrow_projection.length * amountx
             
             for ent in ents:
-                self._manipulate(ent, amountx, amounty, lengthx, lengthy)
+                self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos[0] < entpos[0], campos[1] < entpos[1])
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -221,7 +220,7 @@ class MoveManipulator(Manipulator):
         6: None, #"axis_red"
     }
 
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
@@ -232,6 +231,17 @@ class MoveManipulator(Manipulator):
             if div == 0:
                 div = 0.00001 #not the best of ideas but...
             mov *= rightvec[self.grabbed_axis]/div
+
+            if xsmaller and ysmaller:
+                dir = 1
+            elif xsmaller and not ysmaller:
+                dir = -1
+            elif not xsmaller and ysmaller:
+                dir = -1
+            else:
+                dir = 1
+
+            mov *= dir
 
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
@@ -260,7 +270,7 @@ class ScaleManipulator(Manipulator):
     REDARROW = [1]
     GREENARROW = [2]
     
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed:
             qscale = ent.placeable.Scale
             scale = list((qscale.x(), qscale.y(), qscale.z()))
@@ -292,7 +302,7 @@ class FreeMoveManipulator(Manipulator):
     USES_MANIPULATOR = False
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         rightvec = Vector3(r.getCameraRight())
         upvec = Vector3(r.getCameraUp())
         changevec = (amountx * rightvec) - (amounty * upvec)
@@ -302,14 +312,6 @@ class FreeMoveManipulator(Manipulator):
         newpos = Vec(newpos.x, newpos.y, newpos.z)
         ent.placeable.Position = newpos
         ent.network.Position = newpos
-        
-    #~ def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
-        #~ rightvec = Vector3(r.getCameraRight())
-        #~ upvec = Vector3(r.getCameraUp())
-        #~ changevec = (amountx * rightvec) - (amounty * upvec)
-        #~ entpos = Vector3(ent.pos)
-        #~ newpos = entpos + changevec
-        #~ ent.pos = newpos.x, newpos.y, newpos.z    
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -329,13 +331,22 @@ class RotationManipulator(Manipulator):
     GREENARROW = [2]
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy):
+    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed and self.grabbed_axis is not None:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
+
+            if xsmaller and ysmaller:
+                dir = -1
+            elif xsmaller and not ysmaller:
+                dir = 1
+            elif not xsmaller and ysmaller:
+                dir = -1
+            else:
+                dir = 1
             
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
@@ -347,23 +358,21 @@ class RotationManipulator(Manipulator):
                 elif self.grabbed_axis == self.AXIS_BLUE:
                     mov = amountx * 30
                     axis = Vec(0, 0, 1)
-                dir = 1
-                math.copysign(dir, mov)
 
                 delta = Quat.fromAxisAndAngle(axis, dir)
                 ort *= delta
             else:
                 if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
                     # print "green axis", self.grabbed_axis,
-                    mov = amountx * 30 
+                    mov = amountx * 30 * dir
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
                     # print "blue axis", self.grabbed_axis,
-                    mov = amountx * 30
+                    mov = amountx * 30 * dir
                     euler[2] += mov
                 elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                     # print "red axis", self.grabbed_axis,
-                    mov = amounty * 30
+                    mov = amounty * 30 * dir
                     euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)
                 # TODO: figure out the shifted members
