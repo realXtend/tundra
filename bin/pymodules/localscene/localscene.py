@@ -72,7 +72,8 @@ class LocalScene(Component):
         # if material file exists copy needed files to needed locations
         self.scenedata = SceneDataManager(filename)
         if(self.scenedata.hasCopyFiles):
-            self.scenedata.copyFilesToDirs()
+            #self.scenedata.copyFilesToDirs()
+            self.scenedata.addResourceDirToRenderer()
             pass
 
         time.sleep(1)
