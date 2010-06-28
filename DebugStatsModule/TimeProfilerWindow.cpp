@@ -1265,6 +1265,21 @@ void TimeProfilerWindow::RefreshNetworkProfilingData()
         double avgPacketSizeOut = (packetsOutPerSec < 1e-5) ? 0 : (dataOutPerSec / packetsOutPerSec);
         findChild<QLabel*>("labelAvgPacketSizeOut")->setText(FormatBytes(avgPacketSizeOut).c_str());
 
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastRoundTripTime);
+        findChild<QLabel*>("labelRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->smoothenedRoundTripTime);
+        findChild<QLabel*>("labelSmoothenedRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastHeardSince);
+        findChild<QLabel*>("labelLastHeardSince")->setText(str);
+
+        sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightPackets")->setText(str);
+        std::cout << netMessageManager->NumUnackedReliablePackets() << std::endl;
+        sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightBytes")->setText(str);
+        std::cout << netMessageManager->NumBytesInUnackedReliablePackets() << std::endl;
         const int ipHeaderSize = 20;
         const int udpHeaderSize = 8;
         const int sludpHeaderSize = 6;
