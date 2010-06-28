@@ -8,6 +8,7 @@
 #include "AttributeInterface.h"#include "ComponentInterface.h"// Own QtPropertyBrowser headers.
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
+#include "LineEditPropertyFactory.h"
 
 // QtPropertyBrowser headers.
 #include <qtvariantproperty.h>
@@ -759,17 +760,17 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            QtVariantPropertyManager *qStringPropertyManager = new QtVariantPropertyManager(this);
-            QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+            QtStringPropertyManager *qStringPropertyManager = new QtStringPropertyManager(this);
+            ECEditor::LineEditPropertyFactory *lineEditFactory = new ECEditor::LineEditPropertyFactory(this);
             propertyMgr_ = qStringPropertyManager;
-            factory_ = variantFactory;
-            rootProperty_ = qStringPropertyManager->addProperty(QVariant::String, attributeName_);
+            factory_ = lineEditFactory;
+            rootProperty_ = qStringPropertyManager->addProperty(attributeName_);
             if(rootProperty_)
             {
                 UpdateValue();
                 QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
             }
-            owner_->setFactoryForManager(qStringPropertyManager, variantFactory);
+            owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
         else
         {
@@ -788,7 +789,8 @@ namespace ECEditor
         if(!useMultiEditor_)
         {
             ECAttributeMap::iterator iter = attributeMap_.begin();
-            QtVariantPropertyManager *qStringPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+            QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
+
             assert(qStringPropertyManager);
             if(!qStringPropertyManager)
                 return;
