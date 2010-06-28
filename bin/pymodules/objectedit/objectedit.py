@@ -592,12 +592,8 @@ class ObjectEdit(Component):
         start_x = pos.x() + .5
         start_y = pos.y() + .5
         start_z = pos.z()
-        end_x = start_x
-        end_y = start_y
-        end_z = start_z
 
-        r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
-        #XXX change to use worldstream and remove this py func from the hand made api
+	self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
     def deleteObject(self):
         if self.active is not None:
