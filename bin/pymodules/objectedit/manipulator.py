@@ -32,6 +32,7 @@ class Manipulator:
         self.usesManipulator = self.USES_MANIPULATOR    
         self.manipulator = None
         self.highlightedSubMesh = None
+        self.axisSubmesh = None
 
     def compareIds(self, id):
         if self.usesManipulator:
