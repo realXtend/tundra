@@ -258,13 +258,13 @@ namespace PythonScript
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
+        /*if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
         {
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
         }
-        else if (category_id == scene_event_category_)
+        else*/ if (category_id == scene_event_category_)
         {
             if (event_id == Scene::Events::EVENT_SCENE_ADDED)
             {

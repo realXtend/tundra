@@ -124,15 +124,19 @@ class ComponentRunner(Component):
             
     def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
+        print "drag", event
         #print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         return self.send_event(MouseMove(event, self.mouseinfo), "on_mousedrag")
         
     def MOUSE_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         #print "CircuitsManager got a mouse click", mb_click, x_abs, y_abs, x_rel, y_rel
+        #print "CircuitsManager", event
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        if event == r.MouseMove:
+        if event == 60: #r.MouseMove:
             return self.send_event(MouseMove(event, self.mouseinfo), "on_mousemove")
+            #return self.send_event(Mouse(event, self XXX
         else:
+            print "click", x_abs, y_abs, x_rel, y_rel
             return self.send_event(MouseClick(event, self.mouseinfo), "on_mouseclick")
 
 ##    def SCENE_EVENT(self, evid, entid):
