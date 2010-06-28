@@ -21,11 +21,12 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile
+from PythonQt.QtCore import QFile, Qt
 import conversions as conv
 reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
+from naali import inputcontext
 
 try:
     window
@@ -76,14 +77,20 @@ class ObjectEdit(Component):
         self.cpp_python_handler = None
         
         self.mouse_events = {
-            #r.LeftMouseClickPressed: self.LeftMousePressed,
-            #r.InWorldClick: self.LeftMousePressed,
-            #r.LeftMouseClickReleased: self.LeftMouseReleased,  
-            #r.RightMouseClickPressed: self.RightMousePressed,
-            #r.RightMouseClickReleased: self.RightMouseReleased
+            43 : self.LeftMousePressed,
+            44 : self.LeftMouseReleased,
+            45 : self.RightMousePressed,
+            46 : self.RightMouseReleased
         }
 
         self.shortcuts = {
+            (Qt.Key_Z, Qt.ControlModifier) : self.undo,
+            (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
+            (Qt.Key_S, Qt.AltModifier) : self.window.manipulator_scale,
+            (Qt.Key_M, Qt.AltModifier) : self.window.manipulator_move,
+            (Qt.Key_R, Qt.AltModifier) : self.window.manipulator_rotate,
+            (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
+            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
             #r.PyObjectEditDeselect: self.deselect,
             #r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
             #r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
@@ -471,6 +478,7 @@ class ObjectEdit(Component):
         self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo):
+        print click_id, mouseinfo
         if self.windowActive: #XXXnot self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)

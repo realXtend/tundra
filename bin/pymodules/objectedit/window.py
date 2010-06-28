@@ -3,7 +3,7 @@ import rexviewer as r
 import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile, QSize
+from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
 reload(conv)
 import math
