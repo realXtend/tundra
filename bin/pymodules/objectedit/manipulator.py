@@ -67,7 +67,7 @@ class Manipulator:
         
     def showManipulator(self, ents):
         #print "Showing arrows!"
-        if self.usesManipulator:
+        if self.usesManipulator and len(ents)>0:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE
             if self.controller.useLocalTransform:
@@ -79,7 +79,7 @@ class Manipulator:
     def getPivotPos(self, ents):        
         xs = [e.placeable.Position.x() for e in ents]
         ys = [e.placeable.Position.y() for e in ents]
-        zs = [e.placeable.Position.z() for e in ents] 
+        zs = [e.placeable.Position.z() for e in ents]
                 
         minpos = Vec(min(xs), min(ys), min(zs))
         maxpos = Vec(max(xs), max(ys), max(zs))
