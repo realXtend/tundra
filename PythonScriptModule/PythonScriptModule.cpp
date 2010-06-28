@@ -967,10 +967,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 }
             }
             // Iterate custom object texture map
-            else if (custom_object_ptr)
+            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
             {
                 TextureMap texture_map = prim.PrimTextures;
+                qDebug() << ">> textures " << prim.PrimTextures.size(); 
                 TextureMap::const_iterator i = texture_map.begin();
+
                 while (i != texture_map.end())
                 {
                     uint submesh_id = i->first;
@@ -1303,10 +1305,10 @@ PyObject* CreateVideoWidget(PyObject* self, PyObject* args)
             if (player)
                 return PythonScriptModule::GetInstance()->WrapQObject(player);
             else
-                Py_RETURN_NONE;
+                return 0;
         }
     }
-    Py_RETURN_NONE;
+    return 0;
 }
 
 PyObject* DeleteVideoWidget(PyObject* self, PyObject* args)

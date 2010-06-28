@@ -4,13 +4,16 @@
 
 #include "Service.h"
 #include <QWidget>
+#include <QSignalMapper>
 #include <Phonon>
 #include <Phonon/BackendCapabilities>
+#include "PhononPlayerModule.h"
 
 namespace PlayerService
 {
     Service::Service()
     {
+        destroyed_signal_mapper_ = new QSignalMapper();
     }
 
     Service::~Service()
@@ -20,6 +23,7 @@ namespace PlayerService
             player->deleteLater();
         }
         video_players_.clear();
+        SAFE_DELETE(destroyed_signal_mapper_);
     }
 
     bool Service::IsMimeTypeSupported(const QString mime_type)
@@ -31,13 +35,17 @@ namespace PlayerService
     {
         if (video_players_.contains(url))
             return dynamic_cast<QWidget*>(video_players_[url]);
+
+        QString message = QString("Created a player for %1").arg(url);
+        PhononPlayerModule::LogDebug(message.toStdString());
         
         Phonon::VideoPlayer* player = new Phonon::VideoPlayer(Phonon::VideoCategory, 0); /// this can block for a long time !!!
-        /// @todo return 0 if cannot create the player
         video_players_[url] = player;
+        destroyed_signal_mapper_->setMapping(player, url);
         QObject::connect(player, SIGNAL(finished()), this, SLOT(UpdatePlayers()));
         QObject::connect(player->mediaObject(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(UpdatePlayers()));
-        QObject::connect(player, SIGNAL(destroyed()), this, SLOT(PlayerDestroyed()));
+        QObject::connect(player, SIGNAL(destroyed()), destroyed_signal_mapper_, SLOT(map()));
+        QObject::connect(destroyed_signal_mapper_, SIGNAL(mapped(const QString &)), this, SLOT(PlayerDestroyed(const QString &)));
 
         player->setVolume(0); // We are just playing the video
         player->load(url);
@@ -54,14 +62,14 @@ namespace PlayerService
         Phonon::VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
         player->stop();
+        //delete player; <-- cannot be used, this crash...
         player->deleteLater();
     }
 
-    /// Just for testing... 
-    /// @todo remove this
-    void Service::PlayerDestroyed()
+    void Service::PlayerDestroyed(const QString &url)
     {
-        int test = 5;
+        QString message = QString("Destroyed player for %1").arg(url);
+        PhononPlayerModule::LogDebug(message.toStdString());
     }
 
     void Service::UpdatePlayers()
