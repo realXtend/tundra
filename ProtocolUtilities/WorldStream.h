@@ -117,9 +117,15 @@ namespace ProtocolUtilities
         /// inventory UUIDs after that, but we'll be ignoring those.
         void SendLogoutRequestPacket();
 
-        /// Sends a message which creates a default prim the in world.
+        /// Sends a message which creates a default prim in the world.
         /// @param position Position in the world.
         void SendObjectAddPacket(const RexTypes::Vector3 &position);
+        
+        /// Sends a message which creates a default prim in the world.
+        /// @param x X coordinate in the world
+        /// @param y Y coordinate in the world
+        /// @param z Z coordinate in the world
+        void SendObjectAddPacket(float x, float y, float z);
 
         /// Sends a message which requests object removal.
         /// @param local_id Local ID.
