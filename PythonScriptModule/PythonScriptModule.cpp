@@ -2069,9 +2069,6 @@ static PyMethodDef EmbMethods[] = {
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
 
-    {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
-    "Creates a new prim at the given points"},
-
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
 
