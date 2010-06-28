@@ -94,12 +94,13 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.listWSU = self.gui.findChild("QListWidget","listWidgetSavedUsers")
         
         self.labelEstateInfo = self.gui.findChild("QLabel","labelEstateInfo")
-        
         self.tableEstates = self.gui.findChild("QListWidget","tableWidgetEstates")        
-        
-        
         self.chkEstateAccess = self.gui.findChild("QCheckBox","checkBoxEstateAccess")
 
+        self.lineCurrentEstate = self.gui.findChild("QLineEdit", "lineEditCurrentEstate")
+        self.listWidgetEstates = self.gui.findChild("QListWidget", "listWidgetEstates")
+        self.btnSetEstate = self.gui.findChild("QPushButton", "pushButtonSetEstate")
+         
 
         self.chkSunFixed = self.gui.findChild("QCheckBox", "checkBoxSunFixed");
         # PublicAllowed
@@ -115,8 +116,6 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.chkResetHomeOnTeleport = self.gui.findChild("QCheckBox", "checkBoxResetHomeOnTeleport")
         self.chkTaxFree = self.gui.findChild("QCheckBox", "checkBoxTaxFree")
         self.chkDenyAgeUnverified = self.gui.findChild("QCheckBox", "checkBoxDenyAgeUnverified")
-
-
 
         self.btnLoadEstate.connect("clicked(bool)", self.btnLoadEstateClicked)
         
@@ -156,8 +155,9 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         
         self.btnRequestGodLikePowers.connect("clicked(bool)", self.btnRequestGodLikePowersClicked)
         self.btnKick.connect("clicked(bool)", self.btnKickClicked)
-
-        self.chkEstateAccess.connect("toggled(bool)", self.chkEstateAccessToggled)        
+        self.btnSetEstate.connect("clicked(bool)", self.btnSetEstateClicked)
+        
+        self.chkEstateAccess.connect("toggled(bool)", self.chkEstateAccessToggled)
         
         
         # add incoming event handlers
@@ -170,7 +170,9 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.addHandler('failedEstateSetting', self.handleEstateAccessFailure)
         self.addHandler('unknownResponse', self.handleEstateAccessFailure)
         self.addHandler('malformedResp', self.handleEstateAccessFailure)        
-        
+        self.addHandler('currentEstateIdAndName', self.handleCurrentEstateIdAndName)        
+        self.addHandler('estates', self.handleEstates)
+        self.addHandler('displayerror', self.handleDisplayError)
         
         
     def endMethod(self):
@@ -245,11 +247,11 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
             #uuid, name = self.takeItemUuidAndName()
             self.controller.fromSavedToManagers(uuid, name)
         
-    # def takeItemUuidAndName(self):
-        # item = self.listWSU.takeItem(self.listWSU.currentRow)
-        # txt = item.text()
-        # return txt.split('|')[0], txt.split('|')[1]
-
+    def btnSetEstateClicked(self):
+        estateData = self.listWidgetEstates.currentItem().text()
+        self.controller.estatesettings.setRegionEstate(estateData)
+        pass
+        
     def chkEstateAccessToggled(self, checked):
         self.controller.setEstateAccessMode(checked)
         pass
@@ -376,8 +378,6 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
 
         setVal = intFlags & 16 != 0
         self.setCheckBox(self.chkSunFixed,setVal) #SunFixed
-
-        
         setVal = intFlags & 268435456 != 0
         self.setCheckBox(self.chkAllowVoice,setVal)
         setVal = intFlags & 1048576 != 0
@@ -401,9 +401,21 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         setVal = intFlags & 1073741824 != 0
         self.setCheckBox(self.chkDenyAgeUnverified,setVal)
         
+    def handleCurrentEstateIdAndName(self, currentEstateIdAndName):
+        self.lineCurrentEstate.setText(currentEstateIdAndName)
 
+    def handleEstates(self, estates):
+        self.listWidgetEstates.clear()
+        for e in estates:
+            self.listWidgetEstates.addItem(e)
+
+    def handleDisplayError(self, message):
+        QMessageBox.information(None, "Error", message)
+        pass
+            
     def setNoCapInfo(self):
         self.labelEstateInfo.setText("Estate info: (no caps, \nyou will probably not be able to \nmodify access rights) \n check you are logged in \n as addministrator or owner")
         
     def resetCapInfo(self):
         self.labelEstateInfo.setText("Estate info:")    
+
