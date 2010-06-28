@@ -50,7 +50,8 @@ class EstateManagement(Component):
     
     def __init__(self):
         Component.__init__(self)
-        self.worldstream = r.getServerConnection()
+        self.worldstream = None
+        #self.worldstream = r.getServerConnection()
         self.queue = Queue.Queue()
         self.window = EstateManagementWindow(self, self.queue)
         self.uievents = UIEventManagement(self.window) 
@@ -70,7 +71,8 @@ class EstateManagement(Component):
         self.nameToUuidMapCache = {}
         self.savedusers = {}
         
-        self.estatesettings = EstateSettings(self.worldstream, self)
+        #self.estatesettings = EstateSettings(self.worldstream, self)
+        self.estatesettings = None
 
         
     def on_exit(self):
@@ -119,22 +121,27 @@ class EstateManagement(Component):
         return "unknown"
         
     def loadEstate(self):
-        s = naali.getScene("World")
-        ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
-        self.ents = [r.getEntity(id) for id in ids]
-        self.window.setRegionUsers(self.ents)
-        #self.worldstream.SendEstateInfoRequestpacket() #!!
-        self.worldstream.SendEstateOwnerMessage("getinfo", ())        
-        self.updateSavedUsers()
-        #self.updateSavedUsersTab()
-        #test if rights to modify access
-        cap = self.worldstream.GetCapability('EstateRegionSettingsModification')
-        if cap==None or cap=="":
-            self.window.setNoCapInfo()
-        else:
-            self.estatesettings.fetchEstates()
-            self.window.resetCapInfo()
-        pass
+        self.worldstream = r.getServerConnection()
+        if self.worldstream==None:
+            self.queue.put(("displayerror", "No worldstream, check if you're connected to server"))
+        else:        
+            self.estatesettings = EstateSettings(self.worldstream, self)
+            s = naali.getScene("World")
+            ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
+            self.ents = [r.getEntity(id) for id in ids]
+            self.window.setRegionUsers(self.ents)
+            #self.worldstream.SendEstateInfoRequestpacket() #!!
+            self.worldstream.SendEstateOwnerMessage("getinfo", ())        
+            self.updateSavedUsers()
+            #self.updateSavedUsersTab()
+            #test if rights to modify access
+            cap = self.worldstream.GetCapability('EstateRegionSettingsModification')
+            if cap==None or cap=="":
+                self.window.setNoCapInfo()
+            else:
+                self.estatesettings.fetchEstates()
+                self.window.resetCapInfo()
+            pass
         
     def toBan(self, pos):
         self.sendEstateaccessdelta(pos, 64)

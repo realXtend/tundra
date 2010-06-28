@@ -120,7 +120,12 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <propertyeditor.h>
 
 // =========== Note py developers: MemoryLeakCheck must be the last include =========== //
+#include <PlayerService.h>
+
 #include "MemoryLeakCheck.h"
+
+
+//#include <QDebug>
 
 namespace PythonScript
 {
@@ -962,11 +967,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 }
             }
             // Iterate custom object texture map
-            else if (custom_object_ptr)
+            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
             {
                 TextureMap texture_map = prim.PrimTextures;
                 TextureMap::const_iterator i = texture_map.begin();
-                while (i != texture_map.end())
+
+                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
                 {
                     uint submesh_id = i->first;
                     if (i->second == texture_uuid.ToString())
@@ -977,7 +983,8 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             else
                 continue;
 
-            PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+            if (submeshes_.size() > 0)
+                PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
         }
     }
 
@@ -1253,6 +1260,76 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //PyString_New
     return PyString_FromString(cache_path.c_str());
     //return QString(cache_path.c_str());
+}
+
+PyObject* IsMimeTypeSupportedForVideoWidget(PyObject* self, PyObject* args)
+{
+    char* mimetype;
+    if(!PyArg_ParseTuple(args, "s", &mimetype))
+        return 0;   
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service)
+        {
+            bool supported = player_service->IsMimeTypeSupported(QString(mimetype));
+            
+            if (supported)
+                Py_RETURN_TRUE;
+            else
+                Py_RETURN_FALSE;
+        }
+    }
+    Py_RETURN_FALSE;
+}
+
+PyObject* CreateVideoWidget(PyObject* self, PyObject* args)
+{
+    char* media_url;
+    if(!PyArg_ParseTuple(args, "s", &media_url))
+        return 0;  
+
+    QString url_string(media_url);
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service.get())
+        {
+            QWidget* player = player_service->GetPlayer(url_string);
+            if (player)
+                return PythonScriptModule::GetInstance()->WrapQObject(player);
+            else
+                return 0;
+        }
+    }
+    return 0;
+}
+
+PyObject* DeleteVideoWidget(PyObject* self, PyObject* args)
+{
+    char* url_string;
+    if(!PyArg_ParseTuple(args, "s", &url_string))
+        return 0;  
+
+    QString url(url_string);
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service)
+        {
+            player_service->DeletePlayer(url);
+        }
+    }
+    Py_RETURN_NONE;
 }
 
 //returns the internal Entity that's now a QObject, 
@@ -2070,6 +2147,15 @@ static PyMethodDef EmbMethods[] = {
     
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
+
+    {"isMimeTypeSupportedForVideoWidget", (PyCFunction)IsMimeTypeSupportedForVideoWidget, METH_VARARGS, 
+    "Return true if given mimetype is supported by Phon library.  Parameters: media_url"},
+
+    {"createVideoWidget", (PyCFunction)CreateVideoWidget, METH_VARARGS, 
+    "Create Phonon::VideoWidget object with MediaObject according given media url.  Parameters: media_url"},
+
+    {"deleteVideoWidget", (PyCFunction)DeleteVideoWidget, METH_VARARGS, 
+    "Delete Phonon::VideoWidget object. Parameters: widget"},
 
     {NULL, NULL, 0, NULL}
 };
