@@ -22,7 +22,6 @@
 #include <boost/timer.hpp>
 
 #include <Poco/Net/NetException.h>
-#include <Poco/Net/DatagramSocket.h> // To get htons etc.
 
 #include "MemoryLeakCheck.h"
 
@@ -136,8 +135,8 @@ namespace ProtocolUtilities
 
     const char *VariableTypeToStr(NetVariableType type)
     {
-        const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d", "LLVector4",
-                               "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
+        const char *data[] = { "Invalid", "U8", "U16", "U32", "U64", "S8", "S16", "S32", "S64", "F32", "F64", "LLVector3", "LLVector3d",
+            "LLVector4", "LLQuaternion", "UUID", "BOOL", "IPADDR", "IPPORT", "Fixed", "Variable", "BufferByte", "Buffer2Bytes", "Buffer4Bytes" };
         if (type < 0 || type >= NUMELEMS(data))
             return data[0];
 
@@ -146,9 +145,9 @@ namespace ProtocolUtilities
 
     NetMessageManager::NetMessageManager(const char *messageListFilename)
     :messageList(boost::shared_ptr<NetMessageList>(new NetMessageList(messageListFilename)))
-    ,messageListener(0), 
-    sequenceNumber(1), // Note here: We always start outbound communication with PacketID==1.
-    lastReceivedSequenceNumber(0)
+    ,messageListener(0)
+    ,sequenceNumber(1) // Note here: We always start outbound communication with PacketID==1.
+    ,lastReceivedSequenceNumber(0)
 #ifdef PROFILING
     ,sentDatagrams(65536)
     ,sentDatabytes(65536)
@@ -158,13 +157,18 @@ namespace ProtocolUtilities
     ,lostPackets(65536)
     ,duplicatesReceived(65536)
 #endif
-    {      
-        receivedSequenceNumbers.clear();        
+    ,lastRoundTripTime(0.0)
+    ,smoothenedRoundTripTime(5.0) // arbitrary default value
+    ,lastHeardSince(0.0)
+    ,lastHeardSinceTick(0)
+    ,pingId(0)
+    {
+        receivedSequenceNumbers.clear();
     }
 
     NetMessageManager::~NetMessageManager()
     {
-        ClearMessagePoolMemory();            
+        ClearMessagePoolMemory();
         receivedSequenceNumbers.clear();
     }
 
@@ -212,7 +216,8 @@ namespace ProtocolUtilities
 
             std::cout << "      Var \"" << var.name << "\"(" << VariableTypeToStr(varType)<< "):" << varData.str() << std::endl;
 
-            if(bMalformed) return;
+            if (bMalformed)
+                return;
         }
     }
 
@@ -220,6 +225,32 @@ namespace ProtocolUtilities
     {
         return messageList->GetMessageInfoByID(id);
     }
+
+#ifndef RELEASE
+
+    void NetMessageManager::DebugSendHardcodedTestPacket()
+    {
+        const uint8_t data[] =
+        { 0x40, 0x00, 0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0x00, 0x03, 0x37, 0x2d, 0x5e, 0x0d, 0xde, 0xc9, 0x50, 
+          0xb7, 0x40, 0x2d, 0xa2, 0x23, 0xc1, 0xae, 0xe0, 0x7e, 0x35, 0xe6, 0x8e, 0x5b, 0x78, 0x42, 0xac, 0x6d, 
+          0x11, 0x67, 0x47, 0xde, 0x91, 0xf3, 0x58, 0xa9, 0x65, 0x49, 0xb0, 0xf0 };
+
+        connection->SendBytes(data, NUMELEMS(data));
+    }
+
+    void NetMessageManager::DebugSendHardcodedRandomPacket(size_t numBytes)
+    {
+        if (numBytes == 0)
+            return;
+
+        std::vector<uint8_t> data(numBytes, 0);
+        for(size_t i = 0; i < numBytes; ++i)
+            data[i] = rand() & 0xFF;
+
+        connection->SendBytes(&data[0], numBytes);
+    }
+
+#endif
 
     void NetMessageManager::HandleInboundBytes(std::vector<uint8_t> &data)
     {
@@ -240,11 +271,9 @@ namespace ProtocolUtilities
 
 #ifdef PROFILING
         if (receivedSequenceNumbers.size() > 0 && seqNum - lastReceivedSequenceNumber < 16)
-        {
             for(int i = lastReceivedSequenceNumber+1; i < seqNum; ++i)
                 if (receivedSequenceNumbers.find(i) == receivedSequenceNumbers.end())
                     lostPackets.InsertRecord(1.0);
-        }
 #endif
         lastReceivedSequenceNumber = seqNum;
 
@@ -289,11 +318,9 @@ namespace ProtocolUtilities
 
             // Process appended acks
             if (appended_acks.size() > 0)
-            {
                 for(unsigned i = 0; i < appended_acks.size(); ++i)
                     ProcessPacketACK(appended_acks[i]);
-            }
-            
+
             // NetMessageManager handles all Acks and Pings. Those are not passed to the application.
             switch(msg.GetMessageID())
             {
@@ -302,6 +329,9 @@ namespace ProtocolUtilities
                 break;
             case RexNetMsgStartPingCheck:
                 SendCompletePingCheck(msg.ReadU8());
+                break;
+            case RexNetMsgCompletePingCheck:
+                HandleCompletePingCheck(&msg);
                 break;
             default:
                 // Pass the message to the listener(s).
@@ -332,25 +362,28 @@ namespace ProtocolUtilities
         PROFILE (NetMessageManager_ProcessMessages);
         if (!connection)
             return;
-            
+
         if (!ResendQueueIsEmpty())
             ProcessResendQueue();
-        
+
         // Process network messages for max. 0.1 seconds, to prevent lack of rendering/mainloop execution during heavy processing
         static const double MAX_PROCESS_TIME = 0.1;
         boost::timer timer;
-        
+
         PROFILE(NetMessageManager_WhilePacketsAvailable);
         while(connection->PacketsAvailable() && timer.elapsed() < MAX_PROCESS_TIME)
         {
             const int cMaxPayload = 2048;
             std::vector<uint8_t> data(cMaxPayload, 0);
             int numBytes = connection->ReceiveBytes(&data[0], cMaxPayload);
-            
             if (numBytes == 0)
                 break;
 
             data.resize(numBytes);
+
+            Core::tick_t now = Core::GetCurrentClockTime();
+            lastHeardSince = (double)(now - lastHeardSinceTick) / Core::GetCurrentClockFreq() * 1000;
+            lastHeardSinceTick = now;
 
 #ifdef PROTOCOL_STRESS_TEST
             const int numDuplications = 10;
@@ -364,10 +397,9 @@ namespace ProtocolUtilities
             }
 #endif
         }
-        
         if (!connection->Open())
             connection.reset();
-            
+
         // To keep memory footprint down and to defend against memory attacks, keep the list of seen sequence numbers to a fixed size.
         const size_t cMaxSeqNumMemorySize = 300;
         while(receivedSequenceNumbers.size() > cMaxSeqNumMemorySize)
@@ -375,6 +407,8 @@ namespace ProtocolUtilities
 
         // Acknowledge all the new accumulated packets that the server sent as reliable.
         SendPendingACKs();
+
+        ManagePingSends();
     }
 
     bool NetMessageManager::ConnectTo(const char *serverAddress, int port)
@@ -382,8 +416,10 @@ namespace ProtocolUtilities
         try
         {
             connection = boost::shared_ptr<NetworkConnection>(new NetworkConnection(serverAddress, port));
+            pingSendTimer.restart();
             return true;
-        } catch(Poco::Net::NetException &e)
+        }
+        catch(Poco::Net::NetException &e)
         {
             std::cout << "Failed to connect to " << serverAddress << ":" << port << ". Error: " << e.message() << std::endl;
             return false;
@@ -581,11 +617,41 @@ namespace ProtocolUtilities
         RemoveMessageFromResendQueue(id);
     }
 
-    void NetMessageManager::SendCompletePingCheck(uint8_t pingID)
+    void NetMessageManager::SendCompletePingCheck(uint8_t id)
     {
         NetOutMessage *m = StartNewMessage(RexNetMsgCompletePingCheck);
         assert(m);
-        m->AddU8(pingID);
+        m->AddU8(pingId);
+        FinishMessage(m);
+    }
+
+    void NetMessageManager::HandleCompletePingCheck(NetInMessage *msg)
+    {
+        msg->ResetReading();
+        uint8_t id = msg->ReadU8();
+
+        std::map<uint8_t, Core::tick_t>::iterator it = pendingPings.find(id);
+        if (it == pendingPings.end())
+        {
+            std::cout << "Reveiced CompletePingCheck with false ID" << std::endl;
+            return;
+        }
+
+        Core::tick_t timeNow = Core::GetCurrentClockTime();
+        lastRoundTripTime = (double)(timeNow - it->second) / Core::GetCurrentClockFreq() * 1000;
+
+        const float alpha = 3.f/4.f;
+        smoothenedRoundTripTime = smoothenedRoundTripTime * alpha + (1.f - alpha) * lastRoundTripTime;
+
+        pendingPings.erase(it);
+    }
+
+    void NetMessageManager::SendStartPingCheck(uint8_t id, uint32_t oldestUnacked)
+    {
+        NetOutMessage *m = StartNewMessage(RexNetMsgStartPingCheck);
+        assert(m);
+        m->AddU8(id);
+        m->AddU32(oldestUnacked);
         FinishMessage(m);
     }
 
@@ -646,32 +712,34 @@ namespace ProtocolUtilities
             }
         }
     }
-
-#ifndef RELEASE
-
-    void NetMessageManager::DebugSendHardcodedTestPacket()
+    void NetMessageManager::ManagePingSends()
     {
-        const uint8_t data[] =
-        { 0x40, 0x00, 0x00, 0x00, 0x01, 0x00, 0xff, 0xff, 0x00, 0x03, 0x37, 0x2d, 0x5e, 0x0d, 0xde, 0xc9, 0x50, 
-          0xb7, 0x40, 0x2d, 0xa2, 0x23, 0xc1, 0xae, 0xe0, 0x7e, 0x35, 0xe6, 0x8e, 0x5b, 0x78, 0x42, 0xac, 0x6d, 
-          0x11, 0x67, 0x47, 0xde, 0x91, 0xf3, 0x58, 0xa9, 0x65, 0x49, 0xb0, 0xf0 };
-
-        connection->SendBytes(data, NUMELEMS(data));
+        const double interval = 2.0;
+        if (pingSendTimer.elapsed() >= interval)
+        {
+            ++pingId;
+            uint32_t oldestUnacked = pendingACKs.empty() ? 0 : *pendingACKs.begin();
+            pendingPings[pingId] = Core::GetCurrentClockTime();
+            SendStartPingCheck(pingId, oldestUnacked);
+            pingSendTimer.restart();
+        }
     }
 
-    void NetMessageManager::DebugSendHardcodedRandomPacket(size_t numBytes)
+    int NetMessageManager::NumUnackedReliablePackets() const
     {
-        if (numBytes == 0)
-            return;
-
-        std::vector<uint8_t> data(numBytes, 0);
-        for(size_t i = 0; i < numBytes; ++i)
-            data[i] = rand() & 0xFF;
-
-        connection->SendBytes(&data[0], numBytes);
+        return messageResendQueue.size();
     }
 
-#endif
-
+    int NetMessageManager::NumBytesInUnackedReliablePackets() const
+    {
+        size_t bytes = 0;
+        MessageResendList::const_iterator it = messageResendQueue.begin();
+        while(it != messageResendQueue.end())
+        {
+            bytes += it->second->BytesFilled();
+            ++it;
+        }
+        return bytes;
+    }
 }
 
