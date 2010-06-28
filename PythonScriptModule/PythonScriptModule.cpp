@@ -970,10 +970,9 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
             {
                 TextureMap texture_map = prim.PrimTextures;
-                qDebug() << ">> textures " << prim.PrimTextures.size(); 
                 TextureMap::const_iterator i = texture_map.begin();
 
-                while (i != texture_map.end())
+                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
                 {
                     uint submesh_id = i->first;
                     if (i->second == texture_uuid.ToString())
@@ -984,7 +983,8 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             else
                 continue;
 
-            PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+            if (submeshes_.size() > 0)
+                PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
         }
     }
 
