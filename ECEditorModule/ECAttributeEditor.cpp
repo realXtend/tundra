@@ -5,7 +5,8 @@
 
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-#include "AttributeInterface.h"#include "ComponentInterface.h"// Own QtPropertyBrowser headers.
+#include "AttributeInterface.h"
+#include "ComponentInterface.h"// Own QtPropertyBrowser headers.
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
