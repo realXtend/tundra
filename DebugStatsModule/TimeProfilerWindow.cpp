@@ -1276,10 +1276,10 @@ void TimeProfilerWindow::RefreshNetworkProfilingData()
 
         sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
         findChild<QLabel*>("labelDataInFlightPackets")->setText(str);
-        std::cout << netMessageManager->NumUnackedReliablePackets() << std::endl;
+
         sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
         findChild<QLabel*>("labelDataInFlightBytes")->setText(str);
-        std::cout << netMessageManager->NumBytesInUnackedReliablePackets() << std::endl;
+
         const int ipHeaderSize = 20;
         const int udpHeaderSize = 8;
         const int sludpHeaderSize = 6;
