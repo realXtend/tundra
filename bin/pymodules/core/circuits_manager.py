@@ -124,7 +124,6 @@ class ComponentRunner(Component):
             
     def MOUSE_DRAG_INPUT_EVENT(self, event, x_abs, y_abs, x_rel, y_rel):
         self.mouseinfo.setInfo(x_abs, y_abs, x_rel, y_rel)
-        print "drag", event
         #print "CircuitsManager got mouse movement", self.mouseinfo, self.mouseinfo.x, self.mouseinfo.y
         return self.send_event(MouseMove(event, self.mouseinfo), "on_mousedrag")
         
