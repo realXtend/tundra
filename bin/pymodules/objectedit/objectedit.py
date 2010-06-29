@@ -478,7 +478,6 @@ class ObjectEdit(Component):
         self.right_button_down = False
         
     def on_mouseclick(self, click_id, mouseinfo):
-        print click_id, mouseinfo
         if self.windowActive: #XXXnot self.canvas.IsHidden():
             if self.mouse_events.has_key(click_id):
                 self.mouse_events[click_id](mouseinfo)

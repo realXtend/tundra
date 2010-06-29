@@ -136,7 +136,6 @@ class ComponentRunner(Component):
             return self.send_event(MouseMove(event, self.mouseinfo), "on_mousemove")
             #return self.send_event(Mouse(event, self XXX
         else:
-            print "click", x_abs, y_abs, x_rel, y_rel
             return self.send_event(MouseClick(event, self.mouseinfo), "on_mouseclick")
 
 ##    def SCENE_EVENT(self, evid, entid):
