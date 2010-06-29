@@ -1,7 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 
 #include "ZeroCode.h"
+
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("ZeroCode")
 
 namespace ProtocolUtilities
 {
@@ -50,15 +55,16 @@ namespace ProtocolUtilities
             if (data[i] == 0)
             {
                 ++i;
-                if (i >= numBytes) // Oops! We received a stream where the last byte was zero. We should have had a length byte after this.. Malformed packet!
+                if (i >= numBytes)
+                {
+                    LogWarning("Oops! We received a stream where the last byte was zero. We should have had a length byte after this.. Malformed packet!");
                     return 0; // return 0 instead of length to signal that this packet is malformed.
+                }
 
                 size_t numZeroes = data[i++];
-                
                 if (numZeroes == 0) // A run of zero zeroes? The packet is then malformed.
                     return 0; // \todo Have heard of rumors that a sequence '00 00 AA BB' would signal a larger block of zeroes, e.g. using a u16 as the length counter.
                               //       libopenmetaverse's code doesn't do this however, so we conclude this case to result in a corrupted stream. 
-
                 length += numZeroes;
             }
             else // A normal non-zero byte.
@@ -80,14 +86,20 @@ namespace ProtocolUtilities
             if (srcData[src] == 0)
             {
                 ++src;
-                if (src >= srcBytes) // Malformed zero-encoded packet found! (Ends in a zero without run-length!
+                if (src >= srcBytes)
+                {
+                    LogWarning("Malformed zero-encoded packet found! (Ends in a zero without run-length!");
                     return false;
+                }
 
                 size_t numZeroes = srcData[src++];
                 for(size_t i = 0; i < numZeroes; ++i)
                 {
                     if (dst >= dstBytes)
-                        return false; // Whoops! Caller didn't provide a buffer big enough!
+                    {
+                        LogWarning("Whoops! Caller didn't provide a buffer big enough!");
+                        return false;
+                    }
 
                     dstData[dst++] = 0;
                 }
@@ -95,11 +107,15 @@ namespace ProtocolUtilities
             else
             {
                 if (dst >= dstBytes)
-                    return false; // Whoops! Caller didn't provide a buffer big enough!
+                {
+                    LogWarning("Whoops! Caller didn't provide a buffer big enough!");
+                    return false;
+                }
 
                 dstData[dst++] = srcData[src++];
             }
         }
+
         return true;
     }
 
@@ -107,7 +123,6 @@ namespace ProtocolUtilities
     {
         size_t dst = 0;
         size_t src = 0;
-        
         while(src < srcBytes)
         {
             if (srcData[src] == 0)
@@ -116,26 +131,30 @@ namespace ProtocolUtilities
                 src += numZeroes;
 
                 ///\bug Fails on a run of 256 or more zeroes.
-
-                ///\todo Warning log out.
                 if (dst >= dstBytes)
-                    return false; // Whoops! Caller didn't provide a buffer big enough!
+                {
+                    LogWarning("Whoops! Caller didn't provide a buffer big enough!");
+                    return false;
+                }
                 dstData[dst++] = 0;
-                ///\todo Warning log out.
                 if (dst >= dstBytes)
-                    return false; // Whoops! Caller didn't provide a buffer big enough!
+                {
+                    LogWarning("Whoops! Caller didn't provide a buffer big enough!");
+                    return false;
+                }
                 dstData[dst++] = numZeroes;
             }
             else
             {
-                ///\todo Warning log out.
                 if (dst >= dstBytes)
-                    return false; // Whoops! Caller didn't provide a buffer big enough!
+                {
+                    LogWarning("Whoops! Caller didn't provide a buffer big enough!");
+                    return false;
+                }
                 dstData[dst++] = srcData[src++];
             }
         }
 
         return true;
     }
-
 }
