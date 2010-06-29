@@ -159,17 +159,18 @@ namespace RexLogic
         void HandleParticleScriptReady(entity_id_t entity, Foundation::ResourcePtr res);
 
         /** Attachs a light component to a prim.
-         * @param entity Entity pointer of the prim.
-         * @param color Color.
-         * @param radius Radius of the light.
-         * @param falloff Falloff factor of the light.
-         */ 
-        void AttachLightComponent(Scene::EntityPtr entity, const Color &color, float radius, float falloff);
+            @param entity Entity pointer of the prim.
+            @param color Color.
+            @param radius Radius of the light.
+            @param falloff Falloff factor of the light.
+         */
+        void AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff);
 
-        /// Creates hovering text above entity. Uses EC_HoveringText
-        /// @param entity Entity.
-        /// @param text Text to be shown. If null ("") the EC_HoveringText compoenent will be removed from the entity.
-        /// @param text_color Color of the text.
+        /** Creates hovering text above entity. Uses EC_HoveringText
+            @param entity Entity.
+            @param text Text to be shown. If null ("") the EC_HoveringText compoenent will be removed from the entity.
+            @param text_color Color of the text.
+        */
         void AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color);
 
         //! handles mesh or prim texture resource being ready
