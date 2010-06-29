@@ -121,6 +121,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 // =========== Note py developers: MemoryLeakCheck must be the last include =========== //
 #include <PlayerService.h>
+#include <WorldBuildingServiceInterface.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -719,16 +720,11 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQWorldBuildingHandler(PyObject *self)
 {
-    // Get as service so no linking is needed for the optional (for now) build module
-
-    /*
-    WorldBuilding::WorldBuildingModule *wb_module;
-    wb_module = PythonScript::self()->GetFramework()->GetModule<WorldBuilding::WorldBuildingModule>();
-    if (wb_module)
-        return PythonScriptModule::GetInstance()->WrapQObject(wb_module->GetPythonHandler());
-    */
-    PyErr_SetString(PyExc_RuntimeError, "WorldBuildingModule is missing.");
-    return NULL;
+    Foundation::WorldBuildingServicePtr wb_service =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
+    if (wb_service)
+        return PythonScriptModule::GetInstance()->WrapQObject(wb_service->GetPythonHandler());
+    else
+        Py_RETURN_NONE;
 }
 
 static PyObject* GetQRenderer(PyObject *self)

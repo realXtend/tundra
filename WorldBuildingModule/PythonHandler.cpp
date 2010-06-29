@@ -24,7 +24,7 @@ namespace WorldBuilding
         qDebug() << "Hello from python!";
     }
 
-    void PythonHandler::Selected(EC_OpenSimPrim *prim)
+    void PythonHandler::ObjectSelected(EC_OpenSimPrim *prim)
     {
         qDebug() << "Name : " << prim->getName() << endl
                  << "ID   : " << prim->getFullId() << endl

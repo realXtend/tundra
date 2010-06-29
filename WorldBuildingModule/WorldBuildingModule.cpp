@@ -3,8 +3,11 @@
 #include "StableHeaders.h"
 #include "WorldBuildingModule.h"
 #include "EventManager.h"
+#include "ServiceManager.h"
 
 #include "NetworkEvents.h"
+#include "SceneEvents.h"
+
 #include "BuildSceneManager.h"
 
 #include <QDebug>
@@ -19,11 +22,12 @@ namespace WorldBuilding
         QObject(),
         ModuleInterface(module_name)
     {
-        event_query_categories_ << "Framework" << "NetworkState";
+        event_query_categories_ << "Framework" << "NetworkState" << "Scene";
     }
 
     WorldBuildingModule::~WorldBuildingModule()
     {
+        build_scene_manager_.reset();
     }
 
     // Module interface
@@ -33,8 +37,9 @@ namespace WorldBuilding
         // Get all category id's that we are interested in
         SubscribeToEventCategories();
         
-        // Init building scene manager
-        build_scene_manager_ = new BuildSceneManager(this, GetFramework());
+        // Init building scene manager and register as service
+        build_scene_manager_ = BuildServicePtr(new BuildSceneManager(this, GetFramework()));
+        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldBuilding, build_scene_manager_);
 
         // Register building key context
         input_context_ = GetFramework()->Input().RegisterInputContext("WorldBuildingContext", 90);
@@ -50,6 +55,21 @@ namespace WorldBuilding
         if (category == "Framework")
         {
             // Might need world stream later from here...
+        }
+        else if (category == "Scene")
+        {
+            switch (event_id)
+            {
+                case Scene::Events::EVENT_ENTITY_CLICKED:
+                {
+                    Scene::Events::EntityClickedData *entity_data = checked_static_cast<Scene::Events::EntityClickedData*>(data);
+                    if (entity_data)
+                        build_scene_manager_->ObjectSelected(entity_data->entity);
+                    break;
+                }
+                default:
+                    break;
+            }
         }
         else if (category == "NetworkState")
         {
@@ -87,6 +107,7 @@ namespace WorldBuilding
     {
         if (build_scene_manager_)
             return build_scene_manager_->GetPythonHandler();
+        return 0;
     }
     void WorldBuildingModule::SubscribeToEventCategories()
     {

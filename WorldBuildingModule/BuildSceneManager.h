@@ -4,11 +4,21 @@
 #define incl_WorldBuildingModule_BuildSceneManager_h
 
 #include "Foundation.h"
+#include "WorldBuildingServiceInterface.h"
+#include "Entity.h"
+
 #include "UiStateMachine.h"
 #include "BuildingWidget.h"
+#include "UiHelper.h"
 #include "PythonHandler.h"
 
+#include "ui_ObjectInfoWidget.h"
+#include "ui_ObjectManipulationsWidget.h"
+
 #include <QObject>
+
+class QtAbstractPropertyBrowser;
+class QtProperty;
 
 namespace WorldBuilding
 {
@@ -17,7 +27,7 @@ namespace WorldBuilding
 
     typedef CoreUi::UiStateMachine StateMachine;
 
-    class BuildSceneManager : public QObject
+    class BuildSceneManager : public Foundation::WorldBuildingServiceInterface
     {
         
     Q_OBJECT
@@ -33,10 +43,18 @@ namespace WorldBuilding
         void ShowBuildScene();
         void HideBuildScene();
 
-        QObject *GetPythonHandler() { return python_handler_; }
-
+        // WorldBuildingServiceInterface
+        virtual QObject *GetPythonHandler() const;
+        
+        // Add below to service interface later
+        void ObjectSelected(Scene::Entity *entity);
+        
     private slots:
         void InitialseScene();
+        void ObjectSelected(bool selected);
+
+        void PrimValueChanged(QtProperty *prop, const QVariant &value);
+
         StateMachine *GetStateMachine();
 
     private:
@@ -49,8 +67,16 @@ namespace WorldBuilding
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
 
+        Ui_ObjectInfoWidget object_info_ui;
+        Ui_ObjectManipulationsWidget object_manip_ui;
+
+        Helpers::UiHelper ui_helper_;
         PythonHandler *python_handler_;
-        
+
+        QtAbstractPropertyBrowser *property_browser_;
+        QString last_qstring_value;
+
+        EC_OpenSimPrim *current_prim_;
     };
 }
 

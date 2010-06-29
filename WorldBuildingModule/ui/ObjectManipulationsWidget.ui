@@ -6,13 +6,13 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>300</width>
+    <width>302</width>
     <height>326</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
-    <width>300</width>
+    <width>302</width>
     <height>0</height>
    </size>
   </property>
@@ -41,7 +41,7 @@ QLabel#editing_title {
 	font-size: 18px;
 	font-weight: bold;
 	color: white;
-	padding-bottom: 15px;
+	padding-bottom: 10px;
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -72,15 +72,18 @@ QLabel#editing_title {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>293</width>
+          <width>295</width>
           <height>324</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
          <item>
           <layout class="QVBoxLayout" name="main_layout">
+           <property name="spacing">
+            <number>6</number>
+           </property>
            <property name="margin">
-            <number>9</number>
+            <number>0</number>
            </property>
            <item>
             <widget class="QLabel" name="editing_title">

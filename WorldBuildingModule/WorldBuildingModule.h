@@ -15,6 +15,7 @@
 namespace WorldBuilding
 {
     class BuildSceneManager;
+    typedef boost::shared_ptr<BuildSceneManager> BuildServicePtr;
 
     class WB_MODULE_API WorldBuildingModule : public QObject, public Foundation::ModuleInterface
     {
@@ -48,9 +49,11 @@ namespace WorldBuilding
         //! Current subscribed category events
         QMap<QString, event_category_id_t> service_category_identifiers_;
 
-        BuildSceneManager *build_scene_manager_;
-
+        //! World building input context
         InputContextPtr input_context_;
+
+        //! WorldBuilding service
+        BuildServicePtr build_scene_manager_;
     };
 }
 #endif
