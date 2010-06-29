@@ -121,6 +121,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 // =========== Note py developers: MemoryLeakCheck must be the last include =========== //
 #include <PlayerService.h>
+#include <WorldBuildingServiceInterface.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -257,13 +258,13 @@ namespace PythonScript
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
+        /*if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
         {
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
         }
-        else if (category_id == scene_event_category_)
+        else*/ if (category_id == scene_event_category_)
         {
             if (event_id == Scene::Events::EVENT_SCENE_ADDED)
             {
@@ -719,16 +720,11 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQWorldBuildingHandler(PyObject *self)
 {
-    // Get as service so no linking is needed for the optional (for now) build module
-
-    /*
-    WorldBuilding::WorldBuildingModule *wb_module;
-    wb_module = PythonScript::self()->GetFramework()->GetModule<WorldBuilding::WorldBuildingModule>();
-    if (wb_module)
-        return PythonScriptModule::GetInstance()->WrapQObject(wb_module->GetPythonHandler());
-    */
-    PyErr_SetString(PyExc_RuntimeError, "WorldBuildingModule is missing.");
-    return NULL;
+    Foundation::WorldBuildingServicePtr wb_service =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
+    if (wb_service)
+        return PythonScriptModule::GetInstance()->WrapQObject(wb_service->GetPythonHandler());
+    else
+        Py_RETURN_NONE;
 }
 
 static PyObject* GetQRenderer(PyObject *self)
@@ -1738,23 +1734,6 @@ PyObject* GetServerConnection(PyObject *self)
     return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->worldstream.get());
 }
 
-PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
-{
-    if (PythonScript::self()->worldstream)
-    {
-        float start_x, start_y, start_z;
-        float end_x, end_y, end_z;
-
-        if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
-            return NULL;   
-        }
-
-        PythonScript::self()->worldstream->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
     std::cout << "Sending rexprimdata" << std::endl;
@@ -2089,9 +2068,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
-
-    {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
-    "Creates a new prim at the given points"},
 
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},

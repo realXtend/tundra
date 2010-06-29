@@ -38,9 +38,6 @@ namespace ECEditor
         //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
 
-        //! For test use, remove this after dynamic component has fully tested.
-        //Console::CommandResult AddDynamicComponent(const StringVector &params);
-
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return name_static_; }
 

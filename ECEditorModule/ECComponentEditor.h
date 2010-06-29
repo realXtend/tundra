@@ -94,6 +94,7 @@ namespace ECEditor
         QtGroupPropertyManager      *groupPropertyManager_;
         QtAbstractPropertyBrowser   *propertyBrowser_;
         std::string                 typeName_;
+        bool                        isDynamicComponent_;
     };
 }
 

@@ -592,11 +592,9 @@ if 0:
     start_x = e.pos[0]
     start_y = e.pos[1]
     start_z = e.pos[2]
-    end_x = e.pos[0]
-    end_y = e.pos[1]
-    end_z = e.pos[2]
         
-    r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
+    worldstream = r.getServerConnection()
+    worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
 if 0: #getUserAvatar 
     id = r.getUserAvatarId()

@@ -46,7 +46,8 @@ namespace ECEditor
         QObject(propertyBrowser),
         groupProperty_(0),
         groupPropertyManager_(0),
-        propertyBrowser_(propertyBrowser)
+        propertyBrowser_(propertyBrowser),
+        isDynamicComponent_(false)
     {
         InitializeEditor(component);
     }
@@ -63,8 +64,10 @@ namespace ECEditor
         }
     }
 
-    void ECComponentEditor::InitializeEditor(Foundation::ComponentInterfacePtr component)//std::vector<Foundation::ComponentInterfacePtr> components)
+    void ECComponentEditor::InitializeEditor(Foundation::ComponentInterfacePtr component)
     {
+        if(component->TypeName() == "EC_DynamicComponent")
+            isDynamicComponent_ = true;
         if(propertyBrowser_)
         {
             groupPropertyManager_ = new QtGroupPropertyManager(this);
@@ -219,7 +222,17 @@ namespace ECEditor
         {
             if(component->TypeName() != typeName_)
                 return;
+
             Foundation::AttributeVector attributes = component->GetAttributes();
+            // Extra checking for dynamic component. We need to check if attributes has been added or removed.
+            if(isDynamicComponent_)
+            {
+                if(attributes.size() != component->GetNumberOfAttributes())
+                {
+                    
+                }
+            }
+            
             for(uint i = 0; i < attributes.size(); i++)
             {
                 if(attributes[i]->IsDirty())

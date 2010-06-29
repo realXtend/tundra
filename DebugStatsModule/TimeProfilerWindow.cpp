@@ -9,6 +9,7 @@
 #include "HighPerfClock.h"
 #include "Framework.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "NetworkMessages/NetOutMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
 #include "WorldStream.h"
@@ -18,6 +19,8 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
+//#include "RealXtend/RexProtocolMsgIDs.h"
+//#include "GenericMessageUtils.h"
 
 #include <utility>
 
@@ -31,7 +34,6 @@
 #include <QtAlgorithms>
 #include <QTextEdit>
 
-
 #include <OgreFontManager.h>
 
 #include "MemoryLeakCheck.h"
@@ -40,6 +42,8 @@ using namespace std;
 
 namespace DebugStats
 {
+
+const QString DEFAULT_LOG_DIR("logs");
 
 TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
 {
@@ -101,7 +105,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_profiling_data_->header()->resizeSection(3, 50);
     tree_profiling_data_->header()->resizeSection(4, 50);
 
-    QObject::connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
+    connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
 
     label_region_map_coords_ = findChild<QLabel*>("labelRegionMapCoords");
     label_region_object_capacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
@@ -166,19 +170,16 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
 
     QList<QPushButton* > buttons = findChildren<QPushButton* >();
     for (int i = 0; i < buttons.size(); ++i )
-    {
         if ( buttons[i]->objectName().contains("arrange") )
-            QObject::connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
+            connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
 
-    }
-   
-    QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-    QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-    QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+    connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
+    connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
+    connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
+    connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
-    QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
-    QObject::connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
+    connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
 
     frame_time_update_x_pos_ = 0;
     logThreshold_ = 100.0;
@@ -194,8 +195,19 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     if ( apply != 0)
     {
         apply->setCheckable(true);
-        QObject::connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
+        connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
     }
+
+    QCheckBox* checkBoxLogTraffic = findChild<QCheckBox*>("checkBoxLogTraffic");
+    assert(checkBoxLogTraffic);
+    if (checkBoxLogTraffic)
+        connect(checkBoxLogTraffic, SIGNAL(stateChanged (int)), this, SLOT(SetNetworkLogging(int)));
+
+    // Set/init working directory for log files.
+    logDirectory_ = framework_->GetPlatform()->GetApplicationDataDirectory().c_str();
+    if (!logDirectory_.exists(DEFAULT_LOG_DIR))
+        logDirectory_.mkdir(DEFAULT_LOG_DIR);
+    logDirectory_.cd(DEFAULT_LOG_DIR);
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
@@ -203,7 +215,19 @@ void TimeProfilerWindow::ChangeLoggerThreshold()
      QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
      if ( box != 0)
         logThreshold_ = box->value();
+}
 
+void TimeProfilerWindow::SetNetworkLogging(int value)
+{
+    QFile file(logDirectory_.path() + "/networking.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+        return;
+
+    QTextStream log(&file);
+    if (value)
+        log << "========== Logging started " << GetLocalTimeString().c_str() << " ==========\n";
+    else if (!value)
+        log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
 }
 
 struct ResNameAndSize
@@ -265,12 +289,10 @@ void TimeProfilerWindow::Arrange()
     {
         // By name
         widget->sortItems(0, Qt::AscendingOrder);
-        
     }
     else if ( name.contains("size") )
     {
         // By size
-        
         int va = widget->topLevelItemCount();
         QList<QTreeWidgetItem* > items;
         for ( int i = va; i--;)
@@ -281,18 +303,14 @@ void TimeProfilerWindow::Arrange()
            else
                break;
         }
-        
-     
+
         if ( items.size () != 0)
         {
             qStableSort(items.begin(), items.end(), LessThen);
             widget->addTopLevelItems(items);
         }
-        
     }
-
 }
-
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
 {
@@ -385,7 +403,6 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
     case 14: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
-
     }
 }
 
@@ -423,20 +440,20 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
 
 void TimeProfilerWindow::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
 {
-    current_world_stream_ = worldStream;
+    world_stream_ = worldStream;
 }
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    using namespace Foundation;
+    const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *node = iter->get();
+        ProfilerNodeTree *node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
-           continue;
+            continue;
 
 //        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
 
@@ -520,7 +537,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
         uint color = colorOdd;
 #ifdef _WINDOWS
-        double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;// Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
+        double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;
+        // Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
         color = (fmod(age, 2.0) >= 1.0) ? colorOdd : colorEven;
 #endif
         if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 &&
@@ -569,10 +587,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
     //if ( timePerFrame >= logThreshold_ )
     //     DumpNodeData();
-    
-    
-
 }
+
 /*
 void TimeProfilerWindow::DumpNodeData()
 {
@@ -617,45 +633,38 @@ void TimeProfilerWindow::DumpNodeData()
 
 void TimeProfilerWindow::DoThresholdLogging()
 {
+    using namespace Foundation;
+
      QPushButton* button = findChild<QPushButton* >("loggerApply");
-     
-     if ( button == 0)
+     if (button == 0)
          return;
 
-     if ( tab_widget_->currentIndex() != 1 && button->isChecked() )
+     if (tab_widget_->currentIndex() != 1 && button->isChecked())
      {
         button->setChecked(false);
         return;
      }
-    
-     if ( tab_widget_->currentIndex() == 1 && !button->isChecked())
+
+     if (tab_widget_->currentIndex() == 1 && !button->isChecked())
         return;
-    
 
-    using namespace Foundation;
-
-    QFile file("performancelogger.txt");
+    assert(logDirectory_.exists());
+    QFile file(logDirectory_.path() + "/performancelogger.txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
- 
     QTextStream out(&file);
-    
-
-//   Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
 
     Profiler &profiler = framework_->GetProfiler();
     profiler.Lock();
-//    ProfilerNodeTree *node = profiler.Lock().get();
-    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
 
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    ProfilerNodeTree *node = profiler.GetRoot();
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 )
             continue;
 
@@ -678,7 +687,7 @@ void TimeProfilerWindow::DoThresholdLogging()
             bool saveData = false;
             if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
-                
+
             line = line + QString(" ")+ QString(str);
             //item->setText(2, str);
             if (timings_node->num_called_custom_ > 0)
@@ -713,20 +722,75 @@ void TimeProfilerWindow::DoThresholdLogging()
 
         FillThresholdLogger(out, node);
     }
-    profiler.Release();
-    
 
+    profiler.Release();
+}
+
+void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *msg)
+{
+    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
+    {
+        assert(logDirectory_.exists());
+        QFile file(logDirectory_.path() + "/networking.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+
+        QTextStream log(&file);
+        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "IN\t" << msg->GetMessageID() ;
+
+        size_t numWidth = QString::number(msg->GetMessageID()).length();
+        if (numWidth < 9)
+            log << '\t';
+        if (numWidth < 5)
+            log << '\t';
+
+        log << '\t' << msg->GetMessageInfo()->name.c_str();
+
+        ///\todo Get MethogName out from GenericMessage
+//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
+//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
+
+        log << '\n';
+    }
+}
+
+void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg)
+{
+    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
+    {
+        assert(logDirectory_.exists());
+        QFile file(logDirectory_.path() + "/networking.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+
+        QTextStream log(&file);
+        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "OUT\t" << msg->GetMessageID();
+
+        size_t numWidth = QString::number(msg->GetMessageID()).length();
+        if (numWidth < 9)
+            log << '\t';
+        if (numWidth < 5)
+            log << '\t';
+
+         log << '\t' << msg->GetMessageInfo()->name.c_str();
+
+        ///\todo Get MethogName out from GenericMessage
+//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
+//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
+
+         log << '\n';
+    }
 }
 
 void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    using namespace Foundation;
+    const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *node = iter->get();
+        ProfilerNodeTree *node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 )
            continue;
 
@@ -948,9 +1012,6 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
     QTimer::singleShot(500, this, SLOT(RefreshOgreProfilingWindow()));
 }
 
-
-
-
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
 {
     std::vector<ResNameAndSize> resources;
@@ -1046,7 +1107,6 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
     Foundation::ProfilerNodeTree *node = profiler.GetRoot();
 
     const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-
     for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
@@ -1202,10 +1262,12 @@ void TimeProfilerWindow::RefreshNetworkProfilingData()
     if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
         return;
 
-    if (current_world_stream_)
+    if (world_stream_)
     {
-        ProtocolUtilities::NetMessageManager *netMessageManager = current_world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
-        assert(netMessageManager);
+        ProtocolUtilities::NetMessageManager *netMessageManager = world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
+        if (!netMessageManager)
+            return;
+
         std::vector<double> dstAccum;
         std::vector<double> dstOccur;
         const size_t numEntries = 256;
@@ -1265,6 +1327,21 @@ void TimeProfilerWindow::RefreshNetworkProfilingData()
 
         double avgPacketSizeOut = (packetsOutPerSec < 1e-5) ? 0 : (dataOutPerSec / packetsOutPerSec);
         findChild<QLabel*>("labelAvgPacketSizeOut")->setText(FormatBytes(avgPacketSizeOut).c_str());
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastRoundTripTime);
+        findChild<QLabel*>("labelRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->smoothenedRoundTripTime);
+        findChild<QLabel*>("labelSmoothenedRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastHeardSince);
+        findChild<QLabel*>("labelLastHeardSince")->setText(str);
+
+        sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightPackets")->setText(str);
+
+        sprintf(str, "%i", netMessageManager->NumBytesInUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightBytes")->setText(str);
 
         const int ipHeaderSize = 20;
         const int udpHeaderSize = 8;

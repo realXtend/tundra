@@ -21,6 +21,8 @@ import os
 from xml.dom import minidom 
 import shutil
 import rexviewer as r
+import naali
+    
 #from xml.dom.minidom import getDOMImplementation
 
 
@@ -70,7 +72,14 @@ class SceneDataManager:
             srcPath = self.folderPath + os.sep + material
             dstPath = MATERIAL_FOLDER + os.sep + material
             self.safeCopy(srcPath, dstPath, m, self.olMaterials)
-    
+
+    def addResourceDirToRenderer(self):
+        r = naali.renderer
+        print dir(r)
+        print self.folderPath
+        r.AddResourceDirectory(self.folderPath)
+        pass
+            
     
     def safeCopy(self, srcPath, dstPath, fname, olList):
         # check if file exists
