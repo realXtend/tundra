@@ -24,6 +24,7 @@ namespace WorldBuilding
 {
     class BuildScene;
     class AnchorLayout;
+    class PropertyEditorHandler;
 
     typedef CoreUi::UiStateMachine StateMachine;
 
@@ -52,9 +53,6 @@ namespace WorldBuilding
     private slots:
         void InitialseScene();
         void ObjectSelected(bool selected);
-
-        void PrimValueChanged(QtProperty *prop, const QVariant &value);
-
         StateMachine *GetStateMachine();
 
     private:
@@ -73,10 +71,9 @@ namespace WorldBuilding
         Helpers::UiHelper ui_helper_;
         PythonHandler *python_handler_;
 
-        QtAbstractPropertyBrowser *property_browser_;
-        QString last_qstring_value;
+        PropertyEditorHandler *property_editor_handler_;
 
-        EC_OpenSimPrim *current_prim_;
+        bool prim_selected_;
     };
 }
 
