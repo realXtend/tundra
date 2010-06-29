@@ -142,6 +142,12 @@ namespace Foundation
         //! Helper function for adding an attribute to the component xml serialization
         void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const;
 
+        //! Helper function for adding an attribute and it's type to the component xml serialization.
+        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, 
+                                                const std::string& name, 
+                                                const std::string& value, 
+                                                const std::string &type) const;
+
         //! Helper function for starting deserialization. 
         /*! Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
             Otherwise returns false and does nothing.
@@ -150,6 +156,9 @@ namespace Foundation
 
         //! Helper function for getting an attribute from serialized component
         std::string ReadAttribute(QDomElement& comp_element, const std::string& name) const;
+
+        //! Helper function for getting a attribute type from serialized component.
+        std::string ReadAttributeType(QDomElement& comp_element, const std::string& name) const;
 
         //! Pointer to parent entity (null if not attached to any entity)
         Scene::Entity* parent_entity_;

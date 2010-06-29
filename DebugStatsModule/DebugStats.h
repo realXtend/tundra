@@ -53,10 +53,10 @@ namespace DebugStats
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic();
+        static const std::string &NameStatic() { return moduleName; }
 
         /// Name of this module.
-        static const std::string ModuleName;
+        static const std::string moduleName;
 
     public slots:
         /// Creates and shows the profiling window.
@@ -100,6 +100,9 @@ namespace DebugStats
 
         /// NetworkIn event category
         event_category_id_t networkEventCategory_;
+
+        /// NetworkOut event category
+        event_category_id_t networkOutEventCategory_;
 
         /// NetworkState event category
         event_category_id_t networkStateEventCategory_;

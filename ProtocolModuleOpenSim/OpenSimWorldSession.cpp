@@ -35,7 +35,7 @@ namespace OpenSimProtocol
                 credentials_->GetFirstName(),
                 credentials_->GetLastName(), 
                 credentials_->GetPassword(), 
-                serverEntryPointUrl_.host(), 
+                serverEntryPointUrl_.toString(), 
                 QString::number(serverEntryPointUrl_.port()), 
                 credentials_->GetStartLocation(),
                 GetConnectionThreadState());

@@ -461,13 +461,14 @@ namespace Environment
             break;
         }
         case TPLayerWater:
-            EnvironmentModule::LogDebug("Unhandled LayerData: Water");
+            ///\todo Enable Unhandled LayerData prints when we have network logging channel
+            //EnvironmentModule::LogDebug("Unhandled LayerData: Water");
             break;
         case TPLayerWind:
-            EnvironmentModule::LogDebug("Unhandled LayerData: Wind");
+            //EnvironmentModule::LogDebug("Unhandled LayerData: Wind");
             break;
         case TPLayerCloud:
-            EnvironmentModule::LogDebug("Unhandled LayerData: Cloud");
+            //EnvironmentModule::LogDebug("Unhandled LayerData: Cloud");
             break;
         default:
             EnvironmentModule::LogDebug("Uknown LayerData: " + ToString(header.layerType));

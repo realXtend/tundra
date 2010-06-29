@@ -282,6 +282,12 @@ void WorldStream::SendImprovedInstantMessagePacket(const RexUUID &target, const 
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectAddPacket(float x, float y, float z)
+{
+    const RexTypes::Vector3 pos(x, y, z);
+    SendObjectAddPacket(pos);
+}
+
 void WorldStream::SendObjectAddPacket(const RexTypes::Vector3 &position)
 {
     if (!connected_)

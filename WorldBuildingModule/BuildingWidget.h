@@ -11,7 +11,6 @@ namespace WorldBuilding
 {
     namespace Ui
     {
-        
         class BuildingWidget : public QGraphicsProxyWidget
         {
         
@@ -33,6 +32,7 @@ namespace WorldBuilding
 
         public slots:
             void PrepWidget();
+            void CheckSize();
             QWidget *GetInternal() { return internal_widget_; }
 
         private slots:
