@@ -199,7 +199,8 @@ class ObjectEdit(Component):
         self.canmove = True
         
         if self.cpp_python_handler != None:
-            self.cpp_python_handler.ObjectSelected(ent)
+            if ent.prim != None:
+                self.cpp_python_handler.ObjectSelected(ent.prim)
         
         self.highlightChildren(children)
 

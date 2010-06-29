@@ -376,8 +376,6 @@ class ObjectEditWindow:
     def updatePropertyEditor(self, ent):
         qprim = ent.prim
         if qprim is not None:
-            self.propedit.setObject(qprim)
-            qprim.SetEditor(self.propedit)
             self.tabwidget.setTabEnabled(2, True)
             
     def untoggleButtons(self):
