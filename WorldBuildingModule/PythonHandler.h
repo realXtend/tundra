@@ -20,7 +20,7 @@ namespace WorldBuilding
 
     public slots:
         void HelloPython();
-        void Selected(EC_OpenSimPrim *prim);
+        void ObjectSelected(EC_OpenSimPrim *prim);
 
     signals:
         void HelloFromPython();

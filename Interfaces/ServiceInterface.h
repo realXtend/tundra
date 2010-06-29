@@ -48,6 +48,7 @@ namespace Foundation
             ST_Communications,
             ST_UiSettings,
             ST_Player,
+            ST_WorldBuilding,
             ST_Unknown
         };
     }

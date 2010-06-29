@@ -21,6 +21,7 @@ namespace UiServices
     void UiDarkBlueStyle::polish(QPalette &palette)
     {     
         QColor lightgray(209, 212, 214);
+        QColor highlight_lightgray(134, 136, 137);
         QColor base(42, 45, 50);
         QColor paletteColor(39, 41, 44);
         QColor white(236, 236, 236);
@@ -45,7 +46,7 @@ namespace UiServices
         palette.setBrush(QPalette::WindowText, white);
         palette.setBrush(QPalette::Base, baseColor);
         palette.setBrush(QPalette::AlternateBase, alternateBaseColor);
-        palette.setBrush(QPalette::Highlight, lightgray);
+        palette.setBrush(QPalette::Highlight, highlight_lightgray);
         palette.setBrush(QPalette::ButtonText, white);
         palette.setBrush(QPalette::HighlightedText, Qt::white);  
 

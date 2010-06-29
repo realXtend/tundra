@@ -25,10 +25,19 @@ namespace WorldBuilding
         {
             setWidget(internal_widget_);
             min_width_ = internal_widget_->minimumWidth();
-            
-            internal_widget_->setMinimumWidth(min_width_);
-            if (tool_position_ == Right && scene())
-                setPos(scene()->sceneRect().width() - min_width_, 0);
+        }
+
+        void BuildingWidget::CheckSize()
+        {
+            int current_min_width = widget()->minimumWidth();
+            if (current_min_width < min_width_)
+            {
+                QRect w_rect = widget()->rect();
+                if (tool_position_ == Right && scene())
+                    setPos(scene()->sceneRect().width() - min_width_, 0);
+                widget()->setMinimumWidth(min_width_);
+                widget()->setGeometry(w_rect.x(), w_rect.y(), min_width_, w_rect.height());
+            }
         }
 
         void BuildingWidget::hoverEnterEvent(QGraphicsSceneHoverEvent *mouse_hover_enter_event)
@@ -101,6 +110,13 @@ namespace WorldBuilding
                             widget()->setMinimumWidth(scene_pos.x());
                             resized = true;
                         }
+                        else
+                        {
+                            widget()->setMinimumWidth(min_width_);
+                            if (QApplication::overrideCursor())
+                                if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
+                                    QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
+                        }
                     }
                 }
                 else if (tool_position_ == Right)
@@ -110,17 +126,25 @@ namespace WorldBuilding
                         if (QApplication::overrideCursor())
                             if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
                                 QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
-                        setPos(scene()->sceneRect().width() / 2, 0);
                         widget()->setMinimumWidth(scene()->sceneRect().width() / 2);
+                        setPos(scene()->sceneRect().width() / 2, 0);
                     }
                     else
                     {
                         int width = scene()->sceneRect().width() - scene_pos.x();
                         if (width >= min_width_)
                         {
-                            setPos(scene_pos.x(), 0);
                             widget()->setMinimumWidth(width);
+                            setPos(scene_pos.x(), 0);
                             resized = true;
+                        }
+                        else
+                        {
+                            widget()->setMinimumWidth(min_width_);
+                            setPos(scene()->sceneRect().width() - min_width_, 0);
+                            if (QApplication::overrideCursor())
+                                if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
+                                    QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
                         }
                     }
                 }
