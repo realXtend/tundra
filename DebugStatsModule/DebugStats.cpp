@@ -45,10 +45,13 @@ using namespace std;
 namespace DebugStats
 {
 
+const std::string DebugStatsModule::moduleName = std::string("DebugStats");
+
 DebugStatsModule::DebugStatsModule() :
     ModuleInterface(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
+    networkOutEventCategory_(0),
     networkStateEventCategory_(0),
     profilerWindow_(0),
     participantWindow_(0),
@@ -208,13 +211,14 @@ void DebugStatsModule::Update(f64 frametime)
 
 bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
 {
+    using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);
 
     if (category_id == frameworkEventCategory_)
     {
         if (event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            WorldStreamReadyEvent *event_data = checked_static_cast<WorldStreamReadyEvent *>(data);
             assert(event_data);
             if (event_data)
                 current_world_stream_ = event_data->WorldStream;
@@ -222,6 +226,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
             networkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+            networkOutEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkOut");
             networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
             return false;
@@ -232,9 +237,9 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
     {
         switch(event_id)
         {
-        case ProtocolUtilities::Events::EVENT_USER_CONNECTED:
+        case Events::EVENT_USER_CONNECTED:
         {
-            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            UserConnectivityEvent *event_data = checked_static_cast<UserConnectivityEvent *>(data);
             assert(event_data);
             if (!event_data)
                 return false;
@@ -248,9 +253,9 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 participantWindow_->AddUserEntry(ec_presence);
             break;
         }
-        case ProtocolUtilities::Events::EVENT_USER_DISCONNECTED:
+        case Events::EVENT_USER_DISCONNECTED:
         {
-            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<UserConnectivityEvent *>(data);
             assert(event_data);
             if (!event_data)
                 return false;
@@ -273,43 +278,45 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
 
     if (category_id == networkEventCategory_)
     {
+        NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
+        assert(netdata);
+        if (!netdata)
+            return false;
+
         if (event_id == RexNetMsgSimStats)
         {
-            ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            assert(netdata);
-            if (!netdata)
-                return false;
             if (profilerWindow_)
                 profilerWindow_->RefreshSimStatsData(netdata->message);
         }
         else if (event_id == RexNetMsgGrantGodlikePowers)
         {
-            ProtocolUtilities::NetworkEventInboundData *net = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            assert(net);
-            if (!net)
-                return false;
-
-            ProtocolUtilities::NetInMessage &msg = *net->message;
+            NetInMessage &msg = *netdata->message;
             RexUUID agent_id = msg.ReadUUID();
             RexUUID sessiont_id = msg.ReadUUID();
             uint8_t god_level = msg.ReadU8();
             if (god_level >= 200)
-            {
                 LogInfo("God powers granted, level: " + QString::number(god_level).toStdString());
-            }
             else
                 LogInfo("God powers denied");
         }
+
+        if (profilerWindow_)
+            profilerWindow_->LogNetInMessage(netdata->message);
+    }
+    if (category_id == networkOutEventCategory_)
+    {
+        NetworkEventOutboundData *netdata = checked_static_cast<NetworkEventOutboundData *>(data);
+        assert(netdata);
+        if (!netdata)
+            return false;
+
+        if (profilerWindow_)
+            profilerWindow_->LogNetOutMessage(netdata->message);
+
+        return false;
     }
 
     return false;
-}
-
-const std::string DebugStatsModule::ModuleName = std::string("DebugStatsModule");
-
-const std::string &DebugStatsModule::NameStatic()
-{
-    return ModuleName;
 }
 
 Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)
