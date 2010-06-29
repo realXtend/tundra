@@ -9,12 +9,9 @@
 
 #include "BuildScene.h"
 #include "AnchorLayout.h"
+#include "PropertyEditorHandler.h"
 
 #include <QPixmap>
-#include <QtAbstractPropertyBrowser>
-#include <QtTreePropertyBrowser>
-
-#include <QDebug>
 
 namespace WorldBuilding
 {
@@ -22,7 +19,8 @@ namespace WorldBuilding
         framework_(framework),
         inworld_state(false),
         scene_name_("WorldBuilding"),
-        property_browser_(0)
+        property_editor_handler_(0),
+        prim_selected_(true)
     {
         setParent(parent);
         InitialseScene();
@@ -71,6 +69,9 @@ namespace WorldBuilding
 
         // Init python handler
         python_handler_ = new PythonHandler(this);
+
+        // Init editor handler
+        property_editor_handler_ = new PropertyEditorHandler(&ui_helper_, this);
     }
 
     QObject *BuildSceneManager::GetPythonHandler() const
@@ -124,15 +125,17 @@ namespace WorldBuilding
 
     void BuildSceneManager::ObjectSelected(bool selected)
     {
+        // Lets not do this on every prim selection
+        // if not really needed
+        if (prim_selected_ == selected)
+            return;
         object_info_ui.status_label->setVisible(!selected);
         object_info_ui.object_viewport->setVisible(selected);
         object_info_ui.server_id_title->setVisible(selected);
         object_info_ui.server_id_value->setVisible(selected);
         object_info_ui.local_id_title->setVisible(selected);
         object_info_ui.local_id_value->setVisible(selected);
-
-        if (!selected)
-            current_prim_ = 0;
+        prim_selected_ = selected;
     }
 
     void BuildSceneManager::ObjectSelected(Scene::Entity *entity)
@@ -144,53 +147,23 @@ namespace WorldBuilding
         if (!prim)
             return;
 
-        if (!current_prim_)
-            ObjectSelected(true);
-
-        // Update ID's
+        // Update our widgets UI
         object_info_ui.server_id_value->setText(ui_helper_.CheckUiValue(prim->getFullId()));
         object_info_ui.local_id_value->setText(ui_helper_.CheckUiValue(prim->getLocalId()));
 
-        if (!property_browser_)
+        // Update pixmap here!
+
+        if (!property_editor_handler_->HasCurrentPrim())
         {
-            // Init browser once
-            property_browser_ = ui_helper_.CreatePropertyBrowser(object_info_widget_->GetInternal(), this, prim);
-            if (property_browser_)
-                object_info_ui.property_browser_layout->addWidget(property_browser_);
+            // Create browser and element visibility
+            property_editor_handler_->CreatePropertyBrowser(object_info_widget_->GetInternal(),
+                                                            object_info_ui.property_browser_layout, prim);
+            ObjectSelected(true);
         }
         else
         {
-            // Update browser with current prim
-            current_prim_ = 0;
-            foreach(QString property_name, ui_helper_.editor_items.keys())
-                ui_helper_.editor_items[property_name]->setValue(prim->property(property_name.toStdString().c_str()));
+            // Update property editor UI
+            property_editor_handler_->PrimSelected(prim);
         }
-
-        // Update current prim pointer
-        current_prim_ = prim;
-    }
-
-    void BuildSceneManager::PrimValueChanged(QtProperty *prop, const QVariant &value)
-    {
-        if (!current_prim_)
-            return;
-
-        if (value.type() == QVariant::String && prop->subProperties().count() > 0)
-        {
-            // Keep titles as they are, the browser doesent let us
-            // say to items that they cant be modified...
-            if (prop->whatsThis().endsWith(" items)"))
-            {
-                ui_helper_.variant_manager->setValue(prop, QVariant(prop->whatsThis()));
-                return;
-            }
-        }
-
-        const char* prop_name = prop->propertyName().toStdString().c_str();
-        qDebug() << "Property : " << prop->propertyName();
-        qDebug() << "Value    : " << value;
-
-        current_prim_->setProperty(prop_name, value);
-        qDebug() << "Current prim value for prop : " << current_prim_->property(prop_name) << endl;
     }
 }

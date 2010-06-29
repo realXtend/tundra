@@ -22,7 +22,7 @@ namespace WorldBuilding
 
     Q_OBJECT
     
-    MODULE_LOGGING_FUNCTIONS
+    
     static const std::string &NameStatic();
 
     public:
@@ -31,6 +31,8 @@ namespace WorldBuilding
 
         void Initialize();
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+
+        MODULE_LOGGING_FUNCTIONS
 
     public slots:
         //! Return the python handler
