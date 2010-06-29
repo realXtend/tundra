@@ -16,6 +16,7 @@
 #include "RenderServiceInterface.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
 
 #include <utility>
@@ -1495,6 +1496,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
         OgreRenderer::EC_OgreMesh* mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_OgreCustomObject* custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;
         
         // Get Ogre mesh from mesh EC
@@ -1511,9 +1513,22 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 GetTexturesFromMaterials(temp_mat, scene_textures);
             }
         }
-        
+        // Get Ogre mesh from customobject EC
+        else if (custom)
+        {
+            ogre_entity = custom->GetEntity();
+            if (ogre_entity)
+            {
+                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                scene_meshes.insert(ogre_mesh);
+                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                std::set<Ogre::Material*> temp_mat;
+                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetTexturesFromMaterials(temp_mat, scene_textures);
+            }
+        }
         // Get Ogre meshes from terrain EC
-        if (terrain)
+        else if (terrain)
         {
             for (int y = 0; y < Environment::EC_Terrain::cNumPatchesPerEdge; ++y)
             {
@@ -1543,11 +1558,11 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         {
             
             int drawtype = prim->getDrawType();
-            if ((drawtype == RexTypes::DRAWTYPE_MESH) && (mesh))
+            if ((drawtype == RexTypes::DRAWTYPE_MESH) && (ogre_entity))
                 meshentities++;
             if (drawtype == RexTypes::DRAWTYPE_PRIM)
             {
-                if (mesh)
+                if (ogre_entity)
                     prims++;
                 else
                     invisible_prims++;
@@ -1555,7 +1570,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         }
         else
         {
-            if (mesh)
+            if (ogre_entity)
                 meshentities++;
         }
         if (entity.GetComponent("EC_OgreAnimationController").get())
