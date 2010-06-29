@@ -8,7 +8,6 @@
 #include "RexUUID.h"
 
 #include <iomanip>
-#include <cstring>
 
 using namespace std;
 
@@ -17,7 +16,7 @@ namespace
 /// Converts a single char to a value of 0-15. (4 bits)
 static uint8_t CharToNibble(char c)
 {
-    if (isdigit(c))
+    if (c >= '0' && c <= '9')
         return c - '0';
     if (c >= 'a' && c <= 'f')
         return 0xA + c - 'a';
