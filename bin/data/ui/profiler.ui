@@ -1303,6 +1303,31 @@
            <string>-</string>
           </property>
          </widget>
+         <widget class="QCheckBox" name="checkBoxLogTraffic">
+          <property name="geometry">
+           <rect>
+            <x>320</x>
+            <y>460</y>
+            <width>151</width>
+            <height>23</height>
+           </rect>
+          </property>
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
+          <property name="text">
+           <string>Log network traffic to file</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+          <property name="checked">
+           <bool>false</bool>
+          </property>
+         </widget>
         </widget>
         <widget class="QWidget" name="simstats">
          <attribute name="title">
