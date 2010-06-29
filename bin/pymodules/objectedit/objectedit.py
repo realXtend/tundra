@@ -91,14 +91,6 @@ class ObjectEdit(Component):
             (Qt.Key_R, Qt.AltModifier) : self.window.manipulator_rotate,
             (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
-            #r.PyObjectEditDeselect: self.deselect,
-            #r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
-            #r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
-            #r.Delete: self.deleteObject,
-            #r.Undo: self.undo, 
-            #r.PyDuplicateDrag: self.duplicateStart, 
-            #r.ObjectLink: self.linkObjects,
-            #r.ObjectUnlink: self.unlinkObjects,
         }
         
         self.resetManipulators()
@@ -549,20 +541,21 @@ class ObjectEdit(Component):
                         
                         self.window.update_guivals(ent)
    
-    def on_input(self, evid):
-        #print "input", evid
+    def on_keydown(self, keycode, keymod):
+        trigger = (keycode, keymod)
         if self.windowActive:
-            if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
+            # check to see if a shortcut we understand was pressed, if so, trigger it and consume the event
+            if trigger in self.shortcuts:
                 self.keypressed = True
-                self.shortcuts[evid]()
+                self.shortcuts[trigger]()
                 return True
         
     def on_inboundnetwork(self, evid, name):
+        #return False
+        print "editgui got an inbound network event:", id, name
         return False
-        #print "editgui got an inbound network event:", id, name
 
     def undo(self):
-        #print "undo clicked"
         ent = self.active
         if ent is not None:
             self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
