@@ -19,13 +19,15 @@ namespace ProtocolUtilities
 
 namespace WorldMap
 {
-    class WorldMapWidget : public QWidget, private Ui::WorldMapWidget
+    class WorldMapWidget : public QWidget, public Ui::WorldMapWidget
     {
         Q_OBJECT
 
     public:
         WorldMapWidget();
         virtual ~WorldMapWidget();
+
+        void ClearAllContent();
 
         void StoreMapData(QPixmap &image, QString map_id);
         void UpdateAvatarPosition(Vector3df position, QString avatar_id, QString avatar_name);
@@ -39,8 +41,6 @@ namespace WorldMap
         QTimer *update_timer_;
 
     private:                
-        void StartUpdateTimer();
-        void StopUpdateTimer();
         void DrawMap();
         QMap<QString, WorldMap::ImageItem *> avatar_items_;
         QMap<QString, QString> avatar_names_;
@@ -49,7 +49,6 @@ namespace WorldMap
         QString my_avatar_id_;
         QString sim_name_;
         QList<ProtocolUtilities::MapBlock> map_blocks_;
-        
         
     };
 }

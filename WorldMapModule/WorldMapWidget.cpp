@@ -30,21 +30,20 @@ namespace WorldMap
         }
     }
 
+    void WorldMapWidget::ClearAllContent()
+    {
+        if (worldMapGraphicsView->scene())
+            worldMapGraphicsView->scene()->clear();
+
+        avatar_items_.clear();
+        avatar_names_.clear();
+        region_images_.clear();
+        map_blocks_.clear();
+    }
+
     void WorldMapWidget::SetMyAvatarId(QString avatar_id)
     {
         my_avatar_id_ = avatar_id;
-    }
-
-    void WorldMapWidget::StartUpdateTimer()
-    {        
-        update_timer_->setSingleShot(false);
-        update_timer_->start(1000);
-        connect(update_timer_, SIGNAL(timeout()), SLOT(UpdateAvatarPosition()));
-
-    }
-
-    void WorldMapWidget::StopUpdateTimer()
-    {
     }
 
     void WorldMapWidget::SetSimName(QString simName)
@@ -82,11 +81,9 @@ namespace WorldMap
             DrawMap();
         }
     }
-
     
     void WorldMapWidget::DrawMap()
     {
-        
         //Try to draw current region map.
         if (sim_name_.isEmpty())
             return;
@@ -120,8 +117,9 @@ namespace WorldMap
                 {
                     if (iter.key() == currentBlock->mapImageID.ToQString())
                     {
-                        scene->addPixmap(iter.value());
                         worldMapGraphicsView->setScene(scene);
+                        worldMapGraphicsView->scene()->setSceneRect(iter.value().rect());
+                        scene->setBackgroundBrush(QBrush(iter.value()));                       
 
                         QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);                        
                         item->setHtml(sim_name_);                        
@@ -138,7 +136,6 @@ namespace WorldMap
         }
 
     }
-
 
     void WorldMapWidget::UpdateAvatarPosition(Vector3df position, QString avatar_id, QString avatar_name)
     {
@@ -172,14 +169,12 @@ namespace WorldMap
         if (!scene->items().contains(item))
             scene->addItem(item);
 
-        item->setPos(position.x, position.y);
-        item->SetTextPosition(position.x, position.y);
+        item->setPos(position.x, 256-position.y);
+        item->SetTextPosition(position.x, 256-position.y);
         item->UpdateTextPosition();
         item->setOffset(-10, -10);
         item->show();
         scene->update();
-
     }
-
 }
 

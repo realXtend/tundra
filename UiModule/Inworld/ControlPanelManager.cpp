@@ -127,16 +127,32 @@ namespace CoreUi
         {
             case UiDefines::Settings:
             {
-                ControlButtonAction *action = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Notifications]);
-                if (action)
-                    action->RequestHide();
+                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Notifications]);
+                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
+                if (action_notifications)
+                    action_notifications->RequestHide();
+                if (action_teleport)
+                    action_teleport->RequestHide();
+                break;
+            }
+            case UiDefines::Teleport:
+            {
+                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Notifications]);
+                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Settings]);
+                if (action_notifications)
+                    action_notifications->RequestHide();
+                if (action_settings)
+                    action_settings->RequestHide();
                 break;
             }
             case UiDefines::Notifications:
             {
-                ControlButtonAction *action = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Settings]);
-                if (action)
-                    action->RequestHide();
+                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Settings]);
+                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
+                if (action_settings)
+                    action_settings->RequestHide();
+                if (action_teleport)
+                    action_teleport->RequestHide();
                 break;
             }
             default:
