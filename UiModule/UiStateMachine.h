@@ -28,6 +28,7 @@ namespace CoreUi
     public slots:
         void SwitchToInworldScene();
         void SwitchToEtherScene();
+        void SwitchToBuildScene();
         void RegisterScene(QString name, QGraphicsScene *scene);
         void SwitchToScene(QString name);
         void ToggleEther();

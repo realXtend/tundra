@@ -21,7 +21,7 @@ namespace UiServices
     void UiDarkBlueStyle::polish(QPalette &palette)
     {     
         QColor lightgray(209, 212, 214);
-        QColor highlight_lightgray(134, 136, 137);
+        QColor highlight_lightgray(40, 40, 40);
         QColor base(42, 45, 50);
         QColor paletteColor(39, 41, 44);
         QColor white(236, 236, 236);

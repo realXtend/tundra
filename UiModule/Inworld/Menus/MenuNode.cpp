@@ -35,13 +35,14 @@ namespace CoreUi
 
         centerContainer->setMinimumWidth(0);
 
-        if (style_to_path_map_.contains(UiDefines::TextNormal))
-        {
-            QPixmap center_piece_image = QPixmap(style_to_path_map_[UiDefines::TextNormal]);
-            center_image_width_ = center_piece_image.width();
-        }
-        else
-        {
+        // Always render with fallback so the looks are consistent, remove this text pixmap thing
+        //if (style_to_path_map_.contains(UiDefines::TextNormal))
+        //{
+        //    QPixmap center_piece_image = QPixmap(style_to_path_map_[UiDefines::TextNormal]);
+        //    center_image_width_ = center_piece_image.width();
+        //}
+        //else
+        //{
             if (node_name_ != "RootNode")
             {
                 // fall back here for text rendering widgts name if no graphics were provded!
@@ -52,14 +53,14 @@ namespace CoreUi
                     QLabel *label = new QLabel(node_name_.toUpper());
                     layout->addWidget(label);
                     text_widget->setLayout(layout);
-                    label->setStyleSheet("background-color: transparent; color: white; font-size: 12px; text-align: center; font-weight: bold;");
+                    label->setStyleSheet("background-color: transparent; color: rgba(255,255,255,200); font-size: 12px; text-align: center; font-weight: bold;");
                     QFontMetrics metric(label->font());
                     center_image_width_ = metric.width(label->text()) + 20;
                 }
             }
             else
                 center_image_width_ = 20;
-        }
+        //}
 
         QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
         shadow_effect->setColor(Qt::white);
@@ -200,7 +201,7 @@ namespace CoreUi
                     break;
             }
 
-            textWidget->setStyleSheet("QWidget#textWidget { background-image: url('" + text_image + "'); background-position: top left; background-repeat: no-repeat; }");
+            //textWidget->setStyleSheet("QWidget#textWidget { background-image: url('" + text_image + "'); background-position: top left; background-repeat: no-repeat; }");
             iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_image + "'); background-position: top left; background-repeat: no-repeat; }");
         }
         else

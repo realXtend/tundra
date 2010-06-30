@@ -93,11 +93,14 @@ namespace UiServices
             ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             UiAction *ether_action = new UiAction(ui_state_machine_);
+            UiAction *build_action = new UiAction(ui_state_machine_);
             QObject::connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
+            QObject::connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Ether, ether_action);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Build, build_action);
             LogDebug("Scene Manager service READY");
 
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);

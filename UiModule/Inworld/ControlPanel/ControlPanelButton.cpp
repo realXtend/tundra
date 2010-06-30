@@ -50,9 +50,9 @@ namespace CoreUi
 
             case UiDefines::Teleport:
                 if (item_visible)
-                    normal_image += "uibutton_TEL_click.png";
+                    normal_image += "uibutton_MAP_click.png";
                 else
-                    normal_image += "uibutton_TEL_normal.png";
+                    normal_image += "uibutton_MAP_normal.png";
                 break;
 
             default:
@@ -81,6 +81,15 @@ namespace CoreUi
                 hover_image += "uibutton_ETHER_hover.png";
                 clicked_image += "uibutton_ETHER_click.png";
                 fixed_size = QSize(100,32);
+                internal_widget_->setContentsMargins(0,0,0,0);
+                break;
+            }
+            case UiDefines::Build:
+            {
+                normal_image += "uibutton_BUILD_normal.png";
+                hover_image += "uibutton_BUILD_hover.png";
+                clicked_image += "uibutton_BUILD_click.png";
+                fixed_size = QSize(76,32);
                 internal_widget_->setContentsMargins(0,0,0,0);
                 break;
             }
@@ -115,9 +124,9 @@ namespace CoreUi
             }
             case UiDefines::Teleport:
             {
-                normal_image += "uibutton_TEL_normal.png";
-                hover_image += "uibutton_TEL_hover.png";
-                clicked_image += "uibutton_TEL_click.png";
+                normal_image += "uibutton_MAP_normal.png";
+                hover_image += "uibutton_MAP_hover.png";
+                clicked_image += "uibutton_MAP_click.png";
                 fixed_size = QSize(62,23);
                 internal_widget_->setContentsMargins(3,5,3,0);
                 internal_widget_->setMaximumSize(62+6,23+5);
