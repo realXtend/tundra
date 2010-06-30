@@ -756,6 +756,11 @@ class ObjectEdit(Component):
         self.selection_box = None
         self.resetValues()
         self.resetManipulators()
+
+    def on_worldstreamready(self, id):
+        r.logInfo("Worldstream ready")
+        self.worldstream = r.getServerConnection()
+        return True
         
     def setUseLocalTransform(self, local):
         self.useLocalTransform = local

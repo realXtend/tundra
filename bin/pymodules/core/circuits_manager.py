@@ -29,6 +29,7 @@ class LoginInfo(Event): pass
 class InboundNetwork(Event): pass
 class GenericMessage(Event): pass
 class Logout(Event): pass
+class WorldStreamReady(Event): pass
     
 class ComponentRunner(Component):
     instance = None
@@ -50,7 +51,7 @@ class ComponentRunner(Component):
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]
-        ignchannames = ['update', 'on_mousemove', 'on_mousedrag', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout']
+        ignchannames = ['update', 'on_mousemove', 'on_mousedrag', 'on_keydown', 'on_input', 'on_mouseclick', 'on_entityupdated', 'on_exit', 'on_keyup', 'on_login', 'on_inboundnetwork', 'on_genericmessage', 'on_scene', 'on_entity_visuals_modified', 'on_logout', 'on_worldstreamready']
         ignchannels = [('*', n) for n in ignchannames]
         
         # Note: instantiating Manager with debugger causes severe lag when running as a true windowed app (no console), so instantiate without debugger
@@ -167,6 +168,9 @@ class ComponentRunner(Component):
     def GENERIC_MESSAGE(self, typename, data):
         #print "Circuits got Generic Message event:", data
         return self.send_event(GenericMessage(typename, data), "on_genericmessage")
+
+    def WORLD_STREAM_READY(self, event_id):
+        return self.send_event(WorldStreamReady(event_id), "on_worldstreamready")
                
     def exit(self):
         r.logInfo("Circuits manager stopping...")
