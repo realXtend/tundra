@@ -37,6 +37,10 @@ namespace TextureDecoder
             //! @param texture id
             TextureResource *GetTexture(const std::string &texture_id);
 
+            //! Delete a texture from disk cache
+            //! @param texture_id
+            void DeleteFromCache(const std::string &texture_id);
+
             //! Read config
             void ReadConfig();
 
