@@ -64,6 +64,9 @@ namespace WorldBuilding
 
         object_manipulations_widget_->PrepWidget();
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_manipulations_widget_, SLOT(SceneRectChanged(const QRectF&)));
+        
+        // Hide this for now as it has no functionality
+        object_manipulations_widget_->hide();
 
         // Init python handler
         python_handler_ = new PythonHandler(this);

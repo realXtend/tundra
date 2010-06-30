@@ -153,6 +153,11 @@ namespace CoreUi
         SwitchToScene("Ether");
     }
 
+    void UiStateMachine::SwitchToBuildScene()
+    {
+        SwitchToScene("WorldBuilding");
+    }
+
     void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
     {
         if (!scene_map_.contains(name))

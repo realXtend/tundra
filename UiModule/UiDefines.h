@@ -20,6 +20,7 @@ namespace UiDefines
     {
         Unknown,
         Ether,
+        Build,
         Quit,
         Settings,
         Notifications,

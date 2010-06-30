@@ -74,8 +74,6 @@ namespace CoreUi
         // Adding change theme tab
         changetheme_widget_ = new ChangeThemeWidget(settings_widget_);
         settings_widget_->AddWidget(changetheme_widget_, "Change theme");
-
-
     }
 
     ControlPanelManager::~ControlPanelManager()
@@ -88,7 +86,7 @@ namespace CoreUi
     void ControlPanelManager::CreateBasicControls()
     {
         QList<UiDefines::ControlButtonType> buttons;
-        buttons << UiDefines::Notifications << UiDefines::Teleport << UiDefines::Settings << UiDefines::Quit << UiDefines::Ether;
+        buttons << UiDefines::Notifications << UiDefines::Teleport << UiDefines::Settings << UiDefines::Quit << UiDefines::Build << UiDefines::Ether;
 
         ControlPanelButton *button = 0;
         ControlPanelButton *previous_button = 0;
