@@ -28,6 +28,7 @@ namespace Foundation
     };
 
     typedef boost::shared_ptr<ComponentRegistrarInterface> ComponentRegistrarInterfacePtr;
+    typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 }
 
 #endif
