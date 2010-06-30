@@ -142,18 +142,26 @@ namespace WorldBuilding
         }
     }
 
+    void BuildSceneManager::ResetEditing()
+    {
+        ObjectSelected(false);
+        property_editor_handler_->ClearCurrentPrim();
+    }
+
     void BuildSceneManager::ObjectSelected(bool selected)
     {
-        // Lets not do this on every prim selection
-        // if not really needed
+        // Lets not do this on every prim selection if not really needed
         if (prim_selected_ == selected)
             return;
+
         object_info_ui.status_label->setVisible(!selected);
         object_info_ui.object_viewport->setVisible(selected);
         object_info_ui.server_id_title->setVisible(selected);
         object_info_ui.server_id_value->setVisible(selected);
         object_info_ui.local_id_title->setVisible(selected);
         object_info_ui.local_id_value->setVisible(selected);
+
+        property_editor_handler_->SetEditorVisible(selected);
         prim_selected_ = selected;
     }
 
