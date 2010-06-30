@@ -4,6 +4,7 @@
 #define incl_Interfaces_ComponentRegistrarInterface_h
 
 #include <boost/shared_ptr.hpp>
+#include <vector>
 
 namespace Foundation
 {
