@@ -9,9 +9,9 @@
 
 #include <QWidget>
 #include <QTimer>
-#include <Ogre.h>
-#include <QTextStream>
+#include <QDir>
 
+#include <Ogre.h>
 
 class QTreeWidget;
 class QComboBox;
@@ -19,28 +19,16 @@ class QTabWidget;
 class QLabel;
 class QTreeWidget;
 class QTreeWidgetItem;
+class QTextEdit;
 class QPushButton;
-
-
-namespace ProtocolUtilities
-{
-    class WorldStream;
-    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
-}
+class QTextStream;
 
 namespace ProtocolUtilities
 {
     class NetInMessage;
-}
-
-namespace UiServices
-{
-    class UiModule;
-}
-
-namespace DebugStats
-{
-    class DebugStatsModule;
+    class NetOutMessage;
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
 namespace Foundation
@@ -52,6 +40,7 @@ namespace Foundation
 
 namespace DebugStats
 {
+    /// Provides various profiling data, performance statistics and tools for Naali.
     class TimeProfilerWindow : public QWidget
     {
         Q_OBJECT
@@ -65,6 +54,14 @@ namespace DebugStats
         void RefreshSimStatsData(ProtocolUtilities::NetInMessage *simStats);
         void DoThresholdLogging();
 
+        /// Writes brief log entry about network message to log file, if logging is enabled.
+        /// @param msg Inbound SLUDP message
+        void LogNetInMessage(const ProtocolUtilities::NetInMessage *msg);
+
+        /// Writes brief log entry about network message to log file, if logging is enabled.
+        /// @param msg Outbound SLUDP message
+        void LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg);
+
     public slots:
         void RefreshProfilingData();
         void OnProfilerWindowTabChanged(int newPage);
@@ -76,20 +73,45 @@ namespace DebugStats
         void ExpandAllButtonPressed();
         void ShowUnusedButtonPressed();
         void RefreshAssetProfilingData();
+        void RefreshSceneComplexityProfilingData();
         void RefreshRenderTargetProfilingData();
         void DumpOgreResourceStatsToFile();
+        void DumpSceneComplexityToFile();
         void Arrange();
         //void DumpNodeData();
         void ChangeLoggerThreshold();
+        void SetVisibility(bool visibility) { visibility_ = visibility; }
+        /// Sets network logging on/off
+        void SetNetworkLogging(int value);
 
     protected:
         void resizeEvent(QResizeEvent *event);
 
     private:
-       
         void FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode);
+        void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
+        int ReadProfilingRefreshInterval();
+        void RefreshProfilingDataTree();
+        void RefreshProfilingDataList();
+        void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
+        void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
+        void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
+        uint GetNumResources(Ogre::ResourceManager& manager);
+        void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles);
+        void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
+        void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
+
         Foundation::Framework *framework_;
-        DebugStats::DebugStatsModule *owner_;
+        int frame_time_update_x_pos_;
+        /// If true, profiling data is shown in a tree, otherwise using a flat list.
+        bool show_profiler_tree_;
+        bool show_unused_;
+        bool visibility_;
+        QTimer profiler_update_timer_;
+        ProtocolUtilities::WorldStreamPtr world_stream_;
+        float logThreshold_;
+        /// Directory.for log files.
+        QDir logDirectory_;
 
         QTreeWidget *tree_profiling_data_;
         QComboBox *combo_timing_refresh_interval_;
@@ -109,27 +131,6 @@ namespace DebugStats
         QTreeWidget *tree_asset_cache_;
         QTreeWidget *tree_asset_transfers_;
         QTreeWidget *tree_rendertargets_;
-
-        int frame_time_update_x_pos_;
-
-        // If true, profiling data is shown in a tree, otherwise using a flat list.
-        bool show_profiler_tree_;
-
-        bool show_unused_;
-
-        QTimer profiler_update_timer_;
-
-        ProtocolUtilities::WorldStreamPtr current_world_stream_;
-
-        void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
-
-        int ReadProfilingRefreshInterval();
-        void RefreshProfilingDataTree();
-        void RefreshProfilingDataList();
-        void CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst);
-        void FillItem(QTreeWidgetItem* item, const Ogre::ResourcePtr& resource);
-        void RefreshAssetData(Ogre::ResourceManager& manager, QTreeWidget* widget);
-
         QTreeWidget* tree_texture_assets_;
         QTreeWidget* tree_mesh_assets_; 
         QTreeWidget* tree_material_assets_;
@@ -137,7 +138,7 @@ namespace DebugStats
         QTreeWidget* tree_compositor_assets_;
         QTreeWidget* tree_gpu_assets_;
         QTreeWidget* tree_font_assets_;
-        float logThreshold_;
+        QTextEdit* text_scenecomplexity_;
     };
 }
 

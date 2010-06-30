@@ -40,6 +40,7 @@ namespace CoreUi
         void ViewKeyEvent(QKeyEvent *key_event);
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
+        void StateSwitch();
         void AnimationsStart();
         void AnimationsFinished();
 
@@ -61,6 +62,8 @@ namespace CoreUi
         UiDefines::ConnectionState connection_state_;
 
         QList<QKeySequence> ether_toggle_seq_list_;
+
+        QString next_scene_name_;
 
     signals:
         void EtherTogglePressed();

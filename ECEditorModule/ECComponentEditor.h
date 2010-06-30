@@ -25,11 +25,11 @@ namespace ECEditor
 {
     class ECAttributeEditorBase;
 
-    //! ECComponentEditor get components as it input and it is responsible to create all attribute editors for that compoennt.
-    /*! ECComponentEditor will only accept same type of component. When object is first time initialized user need tell the typename
+    //! ECComponentEditor is responsible to create the all attribute editors for each component (Note! each component must contain same attributes).
+    /*! ECComponentEditor will only accept same type of components. When the object is first time initialized, user need tell the typename
      *  of the component that we want to edit. ECComponentEditor is holding a GetAttributeEditor static method switch will check if 
-     *  component's attribute is holding a implementation for that spesific attriubte type (ECAttributeEditor) if attribute is supported
-     *  mehtod will create a new attriubte editor and return it's pointer to user.
+     *  component's attribute implementation is supported in ECAttributeEditor class. If the attribute is supported, mehtod will create a new 
+     *  ECAttributeEditor instance for that attribute type.
      *  \ingroup ECEditorModuleClient.
      */
     class ECComponentEditor: public QObject
@@ -43,32 +43,34 @@ namespace ECEditor
         bool ContainProperty(QtProperty *property) const;
 
         //! Get group property pointer.
-        QtProperty *GetRootProperty() const {return groupProperty_;}
+        QtProperty *RootProperty() const {return groupProperty_;}
 
-        int NumberOfComponents() const { return components_.size(); }
+        int ComponentsCount() const { return components_.size(); }
 
-        //! Insert new component to this editor.
-        void AddNewComponent(Foundation::ComponentInterfacePtr component);
+        //! Add new component into the editor.
+        void AddNewComponent(Foundation::ComponentInterfacePtr component, bool updateUi = true);
 
-        //! Remove component from editor's map and update attribute eidtors.
+        //! Remove component from the editor.
         void RemoveComponent(Foundation::ComponentInterfacePtr component);
 
+        void UpdateEditorUI();
+
     public slots:
-        //! Sometimes attribute editor need to recreate it's property and we need to insert this property into same location as previous the one was located.
+        //! W
         //! \bug When user reinitialize the attribute editor's properties the order will go invalid.
         void AttributeEditorUpdated(const std::string &attributeName);
 
-    signals:
-        //! Attribute editor has changed attribute value.
-        void AttributeChanged(const std::string &attributeName);
-
-        //! Emit a signal when component is removed from the editor's set.
-        void ComponentRemoved(Foundation::ComponentInterface *component);
+    private slots:
+        //! When component's state has been changed, this method is called.
+        //! Method will check what component's attribute value has been changed
+        //! and will ask the ECAttributeEditor to update it's fields to new attribute valeus (UpdateEditorUI).
+        void ComponentChanged();
 
     private:
-        //! Trying to find the right attribute type by using a dynamic_cast and if object is succefully casted 
-        //! new ECAttributeEditor is created and it's pointer returned. If attribute type is not supported return a null pointer.
-        //! @return return attribute pointer if attribute type is supported if not return null pointer.
+        //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 
+        //! a new ECAttributeEditor instance is created and it's pointer returned to user. If attribute type is not supported
+        //! the method will return a null pointer.
+        //! @return return attribute pointer if attribute type is supported and if not return null pointer.
         static ECAttributeEditorBase *GetAttributeEditor( QtAbstractPropertyBrowser *browser, 
                                                           ECComponentEditor *editor, 
                                                           const Foundation::AttributeInterface &attribute,
@@ -92,6 +94,7 @@ namespace ECEditor
         QtGroupPropertyManager      *groupPropertyManager_;
         QtAbstractPropertyBrowser   *propertyBrowser_;
         std::string                 typeName_;
+        bool                        isDynamicComponent_;
     };
 }
 

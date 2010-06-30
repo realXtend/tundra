@@ -6,12 +6,6 @@
 #include "EC_OgrePlaceable.h"
 #include <Ogre.h>
 
-#include "XMLUtilities.h"
-
-#include <QDomDocument>
-
-using namespace RexTypes;
-
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
@@ -35,7 +29,7 @@ namespace OgreRenderer
     {
         if (renderer_.expired())
             return;
-        RendererPtr renderer = renderer_.lock();  
+        RendererPtr renderer = renderer_.lock();
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
                         
         if (scene_node_ && link_scene_node_)
@@ -140,7 +134,7 @@ namespace OgreRenderer
         // Don't rely on the stability of the lookat (since it uses previous orientation), 
         // so start in identity transform
         link_scene_node_->setOrientation(Ogre::Quaternion::IDENTITY);
-        link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);        
+        link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);
     }
     
     void EC_OgrePlaceable::SetYaw(Real radians)
@@ -177,13 +171,13 @@ namespace OgreRenderer
     void EC_OgrePlaceable::SetScale(const Vector3df& scale)
     {
         scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
-    }       
+    }
 
     void EC_OgrePlaceable::AttachNode()
     {
         if (renderer_.expired())
             return;
-        RendererPtr renderer = renderer_.lock();  
+        RendererPtr renderer = renderer_.lock();
             
         if (attached_)
             return;
@@ -209,7 +203,7 @@ namespace OgreRenderer
     {
         if (renderer_.expired())
             return;
-        RendererPtr renderer = renderer_.lock();  
+        RendererPtr renderer = renderer_.lock();
             
         if (!attached_)
             return;

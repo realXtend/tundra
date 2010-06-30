@@ -8,9 +8,11 @@
 #include <Windows.h>
 #endif
 
+#include "HighPerfClock.h"
+
 #include "boost/thread.hpp"
 
-#if defined(_WINDOWS) && defined(PROFILING)
+#if (defined(_POSIX_C_SOURCE) || defined(_WINDOWS)) && defined(PROFILING)
 //! Profiles a block of code in current scope. Ends the profiling when it goes out of scope
 /*! Name of the profiling block must be unique in the scope, so do not use the name of the function
     as the name of the profiling block!
@@ -36,15 +38,11 @@
 #   define RESETPROFILER
 #endif
 
-#ifndef _WINDOWS
-    typedef int LONGLONG;
-#endif
-
 namespace Foundation
 {
     class ProfilerNodeTree;
 
-    //! Profiles a block of code using Windows API function QueryPerformanceCounter
+    //! Profiles a block of code
     class ProfilerBlock
     {
         friend class ProfilerNode;
@@ -62,83 +60,68 @@ namespace Foundation
 
         void Start()
         {
-            if (supported_)
-            {
+            if (supported_) {
                 // yield time to other threads, to potentially reduce chance of another thread pre-empting our profiling effort.
                 // Commented out because can in itself skew pofiling data.
                 // boost::this_thread::yield();
-#ifdef _WINDOWS
-                QueryPerformanceCounter(&start_time_);
-#endif
+                start_time_ = Core::GetCurrentClockTime();
             }
         }
 
         void Stop()
         {
-            if (supported_)
-            {
-#ifdef _WINDOWS
-                QueryPerformanceCounter(&end_time_);
-#endif
+            if (supported_) {
+                end_time_ = Core::GetCurrentClockTime();
             }
         }
 
         //! Returns elapsed time between start and stop in seconds
         double ElapsedTimeSeconds()
         {
-#ifdef _WINDOWS
-            if (supported_)
-            {
-                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;        
-                double elapsed_s = (double)time_elapsed_.QuadPart / (double)frequency_.QuadPart;
+            if (supported_) {
+                time_elapsed_ = end_time_ - start_time_;
+                double elapsed_s = (double)time_elapsed_ / (double)Core::GetCurrentClockFreq();
                 return (elapsed_s < 0 ? 0 : elapsed_s);
+            } else {
+                return 0.0;
             }
-#endif
-            return 0.0;
         }
 
-#ifdef _WINDOWS
-        static double ElapsedTimeSeconds(const LARGE_INTEGER &start, const LARGE_INTEGER &end)
+        static double ElapsedTimeSeconds(const boost::int64_t &start, const boost::int64_t &end)
         {
-            if (supported_)
-            {
-                double elapsed_s = (double)(end.QuadPart - start.QuadPart) / (double)frequency_.QuadPart;
+            if (supported_) {
+                double elapsed_s = (double)(end - start) / (double)Core::GetCurrentClockFreq();
                 return (elapsed_s < 0 ? 0 : elapsed_s);
+            } else {
+                return 0.0;
             }
-            return 0.0;
         }
-#endif
 
         //! Returns elapsed time in microseconds
-        LONGLONG ElapsedTimeMicroSeconds()
+        boost::int64_t ElapsedTimeMicroSeconds()
         {
-#ifdef _WINDOWS
-            if (supported_)
-            {
-                time_elapsed_.QuadPart = end_time_.QuadPart - start_time_.QuadPart - api_overhead_.QuadPart;        
-                LONGLONG elapsed_ms = static_cast<LONGLONG>(time_elapsed_.QuadPart * 1.e+6) / frequency_.QuadPart;
-                return (elapsed_ms < 0 ? 0 : (LONGLONG)0);
+            if (supported_) {
+                time_elapsed_ = end_time_ - start_time_;
+                boost::int64_t elapsed_us = static_cast<boost::int64_t>(time_elapsed_ * 1000000) / Core::GetCurrentClockFreq();
+                return (elapsed_us < 0 ? 0 : (boost::int64_t)0);
+            } else {
+                return 0.0;
             }
-#endif
-            return 0;
+            
         }
 
     private:
         //! is high frequency perf counter supported in this platform
         static bool supported_;
 
-#ifdef _WINDOWS 
         //! performance counter frequency
-        static LARGE_INTEGER frequency_;
+        static boost::int64_t frequency_;
+        static boost::int64_t api_overhead_;
 
-        //! Time taken to call QueryPerformanceCounter() api function
-        static LARGE_INTEGER api_overhead_;
-
-        LARGE_INTEGER start_time_;
-        LARGE_INTEGER end_time_;
+        boost::int64_t start_time_;
+        boost::int64_t end_time_;
    
-        LARGE_INTEGER time_elapsed_;
-#endif
+        boost::int64_t time_elapsed_;
     };
 
     class Profiler;
@@ -192,8 +175,8 @@ namespace Foundation
 
         //! Returns a child node
         /*!
-            \param name Name of the child node
-            \return Child node or 0 if the node was not child
+          \param name Name of the child node
+          \return Child node or 0 if the node was not child
         */
         ProfilerNodeTree* GetChild(const std::string &name)
         {
@@ -238,23 +221,23 @@ namespace Foundation
     public:
         //! constructor that takes a name for the node
         explicit ProfilerNode(const std::string &name) : 
-          ProfilerNodeTree(name),
-          num_called_total_(0),
-          num_called_(0),
-          num_called_current_(0),
-          total_(0.0),
-          elapsed_current_(0.0),
-          elapsed_(0.0) ,
-          elapsed_min_(0.0),
-          elapsed_max_(0.0),
-          elapsed_min_current_(0.0),
-          elapsed_max_current_(0.0),
-          num_called_custom_(0),
-          total_custom_(0),
-          custom_elapsed_min_(0),
-          custom_elapsed_max_(0)
-          {
-          }
+        ProfilerNodeTree(name),
+            num_called_total_(0),
+            num_called_(0),
+            num_called_current_(0),
+            total_(0.0),
+            elapsed_current_(0.0),
+            elapsed_(0.0) ,
+            elapsed_min_(0.0),
+            elapsed_max_(0.0),
+            elapsed_min_current_(0.0),
+            elapsed_max_current_(0.0),
+            num_called_custom_(0),
+            total_custom_(0),
+            custom_elapsed_min_(0),
+            custom_elapsed_max_(0)
+            {
+            }
 
         virtual ~ProfilerNode()
         {
@@ -317,65 +300,62 @@ namespace Foundation
         //! For boost::thread_specific_ptr, we don't want it doing automatic deletion
         void EmptyDeletor(ProfilerNodeTree *node) { }
 /*        void TSPNodeDeletor(ProfilerNodeTree *node)
-        { 
-            delete node;
-        }*/
+          { 
+          delete node;
+          }*/
     }
 
     //! Profiler can be used to measure execution time of a block of code.
     /*!
-        Do not use this class directly for profiling, use instead PROFILE
-        and ELIFORP macros.
+      Do not use this class directly for profiling, use instead PROFILE
+      and ELIFORP macros.
 
-        Threadsafety: all profiling related functions are re-entrant so can
-              be safely used from any thread. Profiling data needs to be reset
-              per frame, so ThreadedReset() should be called from within the 
-              profiled thread. The profiling data won't show up otherwise.
+      Threadsafety: all profiling related functions are re-entrant so can
+      be safely used from any thread. Profiling data needs to be reset
+      per frame, so ThreadedReset() should be called from within the 
+      profiled thread. The profiling data won't show up otherwise.
 
-              Lock() and Release() functions should not be used, they are for
-              reporting profiling data. They are threadsafe because the
-              variables that are accessed during reporting are ones that are only
-              written to during Reset() or ResetThread and that is protected by a lock.
-              Otherwise for thread safety boost::thread_specific_ptr is used to store
-              thread specific profiling data. 
+      Lock() and Release() functions should not be used, they are for
+      reporting profiling data. They are threadsafe because the
+      variables that are accessed during reporting are ones that are only
+      written to during Reset() or ResetThread and that is protected by a lock.
+      Otherwise for thread safety boost::thread_specific_ptr is used to store
+      thread specific profiling data. 
               
-              Locks are not used when dealing with profiling blocks, as they might skew
-              the data too much.
+      Locks are not used when dealing with profiling blocks, as they might skew
+      the data too much.
 
-        \todo A memory leak around here somewhere of several kilobytes.
+      \todo A memory leak around here somewhere of several kilobytes.
     */
     class Profiler
     {
         friend class Framework;
     public://private:
-        Profiler()
-            :current_node_(&EmptyDeletor),
+    Profiler()
+        :current_node_(&EmptyDeletor),
             root_("Root")
-        {
-#ifdef PROFILING
-            ProfilerBlock::QueryCapability();
-#endif
-        }
+            {
+            }
     public:
         ~Profiler();
 
         //! Start a profiling block.
         /*!
-            Normally you don't use this directly, instead you use the macro PROFILE.
-            However if you want profiling that lasts out of scope, you can use this directly,
-            you also need to call matching Profiler::EndBlock()
+          Normally you don't use this directly, instead you use the macro PROFILE.
+          However if you want profiling that lasts out of scope, you can use this directly,
+          you also need to call matching Profiler::EndBlock()
 
-            Can be called multiple times with the same name without calling EndBlock() for
-            recursion support.
+          Can be called multiple times with the same name without calling EndBlock() for
+          recursion support.
 
-            Re-entrant.
+          Re-entrant.
         */
         void StartBlock(const std::string &name);
 
         //! End the profiling block
         /*! Each StartBlock() should have a matching EndBlock(). Recursion is supported.
             
-            Re-entrant.
+          Re-entrant.
         */
         void EndBlock(const std::string &name);
 
@@ -456,7 +436,7 @@ namespace Foundation
         }
         static Profiler *GetProfiler() { return profiler_; }
         //! This should only be called once per translation unit. it contains some side-effects too
-        static void SetProfiler(Profiler *profiler) { profiler_ = profiler; ProfilerBlock::QueryCapability(); }
+        static void SetProfiler(Profiler *profiler) { profiler_ = profiler; }
 
     private:
         //! Parent profiler used by this section

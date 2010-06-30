@@ -6,258 +6,212 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>830</width>
+    <width>870</width>
     <height>432</height>
    </rect>
   </property>
   <property name="sizePolicy">
-   <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+   <sizepolicy hsizetype="Fixed" vsizetype="Preferred">
     <horstretch>0</horstretch>
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
   <property name="minimumSize">
    <size>
-    <width>830</width>
+    <width>870</width>
     <height>432</height>
    </size>
   </property>
   <property name="maximumSize">
    <size>
-    <width>830</width>
+    <width>870</width>
     <height>432</height>
    </size>
   </property>
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <widget class="QPushButton" name="btnLoadEstate">
+  <widget class="QWidget" name="layoutWidget">
    <property name="geometry">
     <rect>
-     <x>24</x>
+     <x>10</x>
      <y>10</y>
-     <width>101</width>
-     <height>23</height>
+     <width>851</width>
+     <height>411</height>
     </rect>
    </property>
-   <property name="text">
-    <string>&amp;Load Estate data</string>
-   </property>
-  </widget>
-  <widget class="QTabWidget" name="tabWidget">
-   <property name="geometry">
-    <rect>
-     <x>540</x>
-     <y>30</y>
-     <width>281</width>
-     <height>301</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>0</number>
-   </property>
-   <widget class="QWidget" name="tab">
-    <attribute name="title">
-     <string>Banlist</string>
-    </attribute>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>258</width>
-       <height>252</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_3">
+    <item>
+     <layout class="QVBoxLayout" name="verticalLayout_10">
       <item>
-       <widget class="QListWidget" name="listWidgetBanList"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonRemoveBan">
+       <widget class="QPushButton" name="btnLoadEstate">
         <property name="text">
-         <string>Remove</string>
+         <string>&amp;Load Estate data</string>
         </property>
        </widget>
       </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_3">
-    <attribute name="title">
-     <string>Accesslist</string>
-    </attribute>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>258</width>
-       <height>252</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
       <item>
-       <widget class="QListWidget" name="listWidgetAccessList"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonRemoveAccess">
-        <property name="text">
-         <string>Remove</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_2">
-    <attribute name="title">
-     <string>Managers</string>
-    </attribute>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>258</width>
-       <height>252</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_4">
-      <item>
-       <widget class="QListWidget" name="listWidgetEstateManagers"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonRemoveManager">
-        <property name="text">
-         <string>Remove</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
-  </widget>
-  <widget class="QTabWidget" name="tabWidget_2">
-   <property name="geometry">
-    <rect>
-     <x>250</x>
-     <y>30</y>
-     <width>281</width>
-     <height>391</height>
-    </rect>
-   </property>
-   <property name="currentIndex">
-    <number>0</number>
-   </property>
-   <widget class="QWidget" name="tab_4">
-    <attribute name="title">
-     <string>Users in region</string>
-    </attribute>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>11</y>
-       <width>258</width>
-       <height>351</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_5">
-      <item>
-       <widget class="QListWidget" name="listWidgetRegionUsers"/>
-      </item>
-      <item>
-       <widget class="QTabWidget" name="tabWidget_3">
+       <widget class="QTabWidget" name="tabWidget_4">
         <property name="currentIndex">
          <number>0</number>
         </property>
-        <widget class="QWidget" name="tab_6">
+        <widget class="QWidget" name="Tab_8">
          <attribute name="title">
-          <string>Estate lists</string>
-         </attribute>
-         <widget class="QWidget" name="layoutWidget">
-          <property name="geometry">
-           <rect>
-            <x>11</x>
-            <y>11</y>
-            <width>231</width>
-            <height>112</height>
-           </rect>
-          </property>
-          <layout class="QVBoxLayout" name="verticalLayout">
-           <item>
-            <widget class="QPushButton" name="pushButtonToBan">
-             <property name="text">
-              <string>To BanList</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonToAccess">
-             <property name="text">
-              <string>To AccessList</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonToManagers">
-             <property name="text">
-              <string>To SceneManagers</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="pushButtonSaveUserInfo">
-             <property name="text">
-              <string>Save user info</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
-         </widget>
-        </widget>
-        <widget class="QWidget" name="tab_7">
-         <attribute name="title">
-          <string>God kick</string>
+          <string>Estate Access</string>
          </attribute>
          <widget class="QWidget" name="layoutWidget">
           <property name="geometry">
            <rect>
             <x>10</x>
-            <y>20</y>
-            <width>231</width>
-            <height>82</height>
+            <y>10</y>
+            <width>258</width>
+            <height>341</height>
            </rect>
           </property>
-          <layout class="QVBoxLayout" name="verticalLayout_7">
+          <layout class="QVBoxLayout" name="verticalLayout_8">
            <item>
-            <widget class="QPushButton" name="pushButtonRequestGodLikePowers">
+            <widget class="QLabel" name="labelEstateInfo">
              <property name="text">
-              <string>Request god like powers</string>
+              <string>Estate info:</string>
              </property>
             </widget>
            </item>
            <item>
-            <widget class="QPushButton" name="pushButtonKick">
+            <widget class="QListWidget" name="listWidgetEstateInfo"/>
+           </item>
+           <item>
+            <widget class="QCheckBox" name="checkBoxEstateAccess">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
              <property name="text">
-              <string>Send god Kick</string>
+              <string>Public mode</string>
+             </property>
+             <property name="checked">
+              <bool>false</bool>
              </property>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout">
-             <item>
-              <widget class="QLabel" name="label_2">
+            <layout class="QFormLayout" name="formLayout">
+             <item row="0" column="0">
+              <widget class="QCheckBox" name="checkBoxSunFixed">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
-                <string>Message:</string>
+                <string>SunFixed</string>
                </property>
               </widget>
              </item>
-             <item>
-              <widget class="QLineEdit" name="lineEditKickMessage">
+             <item row="0" column="1">
+              <widget class="QCheckBox" name="checkBoxAllowVoice">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
                <property name="text">
-                <string>God does not want you here</string>
+                <string>AllowVoice</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="0">
+              <widget class="QCheckBox" name="checkBoxAllowDirectTeleport">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>AllowDirectTeleport</string>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="1">
+              <widget class="QCheckBox" name="checkBoxDenyAnonymous">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>DenyAnonymous</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="0">
+              <widget class="QCheckBox" name="checkBoxDenyIdentified">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>DenyIdentified</string>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="1">
+              <widget class="QCheckBox" name="checkBoxDenyTransacted">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>DenyTransacted</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="0">
+              <widget class="QCheckBox" name="checkBoxAbuseEmailToEstateOwner">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>AbuseEmailTo
+EstateOwner</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="0">
+              <widget class="QCheckBox" name="checkBoxEstateSkipScripts">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>EstateSkipScripts</string>
+               </property>
+              </widget>
+             </item>
+             <item row="4" column="1">
+              <widget class="QCheckBox" name="checkBoxResetHomeOnTeleport">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>ResetHomeOnTelep.</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="0">
+              <widget class="QCheckBox" name="checkBoxTaxFree">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>TaxFree</string>
+               </property>
+              </widget>
+             </item>
+             <item row="5" column="1">
+              <widget class="QCheckBox" name="checkBoxDenyAgeUnverified">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>DenyAgeUnverified</string>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1">
+              <widget class="QCheckBox" name="checkBoxBlockDwell">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+               <property name="text">
+                <string>BlockDwell</string>
                </property>
               </widget>
              </item>
@@ -266,105 +220,333 @@
           </layout>
          </widget>
         </widget>
+        <widget class="QWidget" name="tab_9">
+         <attribute name="title">
+          <string>Set Regions estate</string>
+         </attribute>
+         <widget class="QWidget" name="layoutWidget">
+          <property name="geometry">
+           <rect>
+            <x>10</x>
+            <y>20</y>
+            <width>251</width>
+            <height>301</height>
+           </rect>
+          </property>
+          <layout class="QVBoxLayout" name="verticalLayout_9">
+           <item>
+            <layout class="QHBoxLayout" name="horizontalLayout_2">
+             <item>
+              <widget class="QLabel" name="label">
+               <property name="text">
+                <string>Current estate:</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLineEdit" name="lineEditCurrentEstate">
+               <property name="enabled">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </item>
+           <item>
+            <widget class="QLabel" name="labelEstateInfo_2">
+             <property name="text">
+              <string>&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;&gt;
+&lt;html&gt;&lt;head&gt;&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; /&gt;&lt;style type=&quot;text/css&quot;&gt;
+p, li { white-space: pre-wrap; }
+&lt;/style&gt;&lt;/head&gt;&lt;body style=&quot; font-family:'MS Shell Dlg 2'; font-size:8.25pt; font-weight:400; font-style:normal;&quot;&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;Select estate in which you want this &lt;/span&gt;&lt;/p&gt;
+&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;&gt;&lt;span style=&quot; font-size:8pt;&quot;&gt;region to be:&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QListWidget" name="listWidgetEstates"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="pushButtonSetEstate">
+             <property name="text">
+              <string>Set</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+        </widget>
        </widget>
       </item>
      </layout>
-    </widget>
-   </widget>
-   <widget class="QWidget" name="tab_5">
-    <attribute name="title">
-     <string>Saved user info</string>
-    </attribute>
-    <widget class="QWidget" name="layoutWidget">
-     <property name="geometry">
-      <rect>
-       <x>10</x>
-       <y>10</y>
-       <width>261</width>
-       <height>311</height>
-      </rect>
-     </property>
-     <layout class="QVBoxLayout" name="verticalLayout_6">
-      <item>
-       <widget class="QListWidget" name="listWidgetSavedUsers"/>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonRemoveSaved">
-        <property name="text">
-         <string>Remove</string>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget_2">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Users in region</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>11</y>
+          <width>271</width>
+          <height>361</height>
+         </rect>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_5">
+         <item>
+          <widget class="QListWidget" name="listWidgetRegionUsers"/>
+         </item>
+         <item>
+          <widget class="QTabWidget" name="tabWidget_3">
+           <property name="currentIndex">
+            <number>0</number>
+           </property>
+           <widget class="QWidget" name="tab_6">
+            <attribute name="title">
+             <string>Estate lists</string>
+            </attribute>
+            <widget class="QWidget" name="layoutWidget">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>10</y>
+               <width>241</width>
+               <height>112</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout">
+              <item>
+               <widget class="QPushButton" name="pushButtonToBan">
+                <property name="text">
+                 <string>To BanList</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonToAccess">
+                <property name="text">
+                 <string>To AccessList</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonToManagers">
+                <property name="text">
+                 <string>To SceneManagers</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonSaveUserInfo">
+                <property name="text">
+                 <string>Save user info</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+           <widget class="QWidget" name="tab_7">
+            <attribute name="title">
+             <string>God kick</string>
+            </attribute>
+            <widget class="QWidget" name="layoutWidget">
+             <property name="geometry">
+              <rect>
+               <x>0</x>
+               <y>20</y>
+               <width>241</width>
+               <height>82</height>
+              </rect>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayout_7">
+              <item>
+               <widget class="QPushButton" name="pushButtonRequestGodLikePowers">
+                <property name="text">
+                 <string>Request god like powers</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="pushButtonKick">
+                <property name="text">
+                 <string>Send god Kick</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayout">
+                <item>
+                 <widget class="QLabel" name="label_2">
+                  <property name="text">
+                   <string>Message:</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="lineEditKickMessage">
+                  <property name="text">
+                   <string>God does not want you here</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </widget>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonSavedToAccess">
-        <property name="text">
-         <string>To AccessList</string>
+      </widget>
+      <widget class="QWidget" name="tab_5">
+       <attribute name="title">
+        <string>Saved user info</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>0</x>
+          <y>10</y>
+          <width>271</width>
+          <height>311</height>
+         </rect>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_6">
+         <item>
+          <widget class="QListWidget" name="listWidgetSavedUsers"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonRemoveSaved">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonSavedToAccess">
+           <property name="text">
+            <string>To AccessList</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonSavedToBan">
+           <property name="text">
+            <string>To BanList</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonSavedToManagers">
+           <property name="text">
+            <string>To SceneManagers</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonSavedToBan">
-        <property name="text">
-         <string>To BanList</string>
+      </widget>
+     </widget>
+    </item>
+    <item>
+     <widget class="QTabWidget" name="tabWidget">
+      <property name="currentIndex">
+       <number>0</number>
+      </property>
+      <widget class="QWidget" name="tab">
+       <attribute name="title">
+        <string>Banlist</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>11</x>
+          <y>11</y>
+          <width>251</width>
+          <height>341</height>
+         </rect>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QListWidget" name="listWidgetBanList"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonRemoveBan">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="pushButtonSavedToManagers">
-        <property name="text">
-         <string>To SceneManagers</string>
+      </widget>
+      <widget class="QWidget" name="tab_3">
+       <attribute name="title">
+        <string>Accesslist</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>11</x>
+          <y>11</y>
+          <width>251</width>
+          <height>341</height>
+         </rect>
         </property>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="QListWidget" name="listWidgetAccessList"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonRemoveAccess">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
        </widget>
-      </item>
-     </layout>
-    </widget>
-   </widget>
+      </widget>
+      <widget class="QWidget" name="tab_2">
+       <attribute name="title">
+        <string>Managers</string>
+       </attribute>
+       <widget class="QWidget" name="layoutWidget">
+        <property name="geometry">
+         <rect>
+          <x>11</x>
+          <y>11</y>
+          <width>251</width>
+          <height>341</height>
+         </rect>
+        </property>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="QListWidget" name="listWidgetEstateManagers"/>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pushButtonRemoveManager">
+           <property name="text">
+            <string>Remove</string>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </widget>
+      </widget>
+     </widget>
+    </item>
+   </layout>
   </widget>
-  <widget class="QLabel" name="label">
-   <property name="geometry">
-    <rect>
-     <x>22</x>
-     <y>42</y>
-     <width>56</width>
-     <height>16</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Estate info:</string>
-   </property>
-  </widget>
-  <widget class="QListWidget" name="listWidgetEstateInfo">
-   <property name="geometry">
-    <rect>
-     <x>12</x>
-     <y>61</y>
-     <width>231</width>
-     <height>221</height>
-    </rect>
-   </property>
-  </widget>
-  <widget class="QCheckBox" name="checkBox">
-   <property name="geometry">
-    <rect>
-     <x>50</x>
-     <y>300</y>
-     <width>79</width>
-     <height>17</height>
-    </rect>
-   </property>
-   <property name="text">
-    <string>Public mode</string>
-   </property>
-   <property name="checked">
-    <bool>true</bool>
-   </property>
-  </widget>
-  <zorder>tabWidget</zorder>
-  <zorder>tabWidget_2</zorder>
-  <zorder>label</zorder>
-  <zorder>listWidgetEstateInfo</zorder>
-  <zorder>checkBox</zorder>
-  <zorder>btnLoadEstate</zorder>
  </widget>
  <resources/>
  <connections/>

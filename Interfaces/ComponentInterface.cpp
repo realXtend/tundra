@@ -81,6 +81,15 @@ void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_ele
     comp_element.appendChild(attribute_element);
 }
 
+void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value, const std::string &type) const
+{
+    QDomElement attribute_element = doc.createElement("attribute");
+    attribute_element.setAttribute("name", QString::fromStdString(name));
+    attribute_element.setAttribute("value", QString::fromStdString(value));
+    attribute_element.setAttribute("type", QString::fromStdString(type));
+    comp_element.appendChild(attribute_element);
+}
+
 bool ComponentInterface::BeginDeserialization(QDomElement& comp_element)
 {
     std::string type = comp_element.attribute("type").toStdString();
@@ -108,6 +117,22 @@ std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const s
     return std::string();
 }
 
+std::string ComponentInterface::ReadAttributeType(QDomElement& comp_element, const std::string& name) const
+{
+    QString name_str = QString::fromStdString(name);
+    
+    QDomElement attribute_element = comp_element.firstChildElement("attribute");
+    while (!attribute_element.isNull())
+    {
+        if (attribute_element.attribute("name") == name_str)
+            return attribute_element.attribute("type").toStdString();
+        
+        attribute_element = attribute_element.nextSiblingElement("attribute");
+    }
+    
+    return std::string();
+}
+
 void ComponentInterface::ComponentChanged(AttributeChange::Type change)
 {
     change_ = change;
@@ -121,6 +146,20 @@ void ComponentInterface::ComponentChanged(AttributeChange::Type change)
     
     // Trigger also internal change
     emit OnChanged();
+}
+
+void ComponentInterface::AttributeChanged(Foundation::AttributeInterface* attribute, AttributeChange::Type change)
+{
+    // Trigger scenemanager signal
+    if (parent_entity_)
+    {
+        Scene::SceneManager* scene = parent_entity_->GetScene();
+        if (scene)
+            scene->EmitAttributeChanged(this, attribute, change);
+    }
+    
+    // Trigger internal signal
+    emit OnAttributeChanged(attribute, change);
 }
 
 void ComponentInterface::ResetChange()

@@ -4,7 +4,19 @@
  *  @file   RexLogicModule.cpp
  *  @brief  The main client module of Naali.
  *
- *          @todo Longer description here.
+ *          RexLogicModule is the main client module of Naali and controls
+ *          most of the world logic e.g. the default world scene creation and deletion,
+ *          avatars, prims, and camera.
+ *
+ *  @note   Avoid direct module dependency to RexLogicModule at all costs because
+ *          it's likely to cause cyclic dependy which fails the whole application.
+ *          Instead use the WorldLogicInterface or different entity-components which
+ *          are not within RexLogicModule. 
+ *
+ *          Currenly e.g. PythonScriptModule is highly dependant of RexLogicModule,
+ *          but work is made to overcome this. If some feature you need from RexLogicModule
+ *          is missing, please try to find a delicate abstraction/mechanism/design for retrieving it,
+ *          instead of just hacking it to RexLogicModule directly.
  */
 
 #include "StableHeaders.h"
@@ -779,16 +791,13 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
     pending_parents_.erase(i);
 }
 
-void RexLogicModule::StartLoginOpensim(QString &qfirstAndLast, QString &qpassword, QString &qserverAddressWithPort)
+void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort)
 {
-    if (!qserverAddressWithPort.startsWith("http://"))
-        qserverAddressWithPort = "http://" + qserverAddressWithPort;
-
     QMap<QString, QString> map;
     map["AuthType"] = "OpenSim";
-    map["Username"] = qfirstAndLast;
-    map["Password"] = qpassword;
-    map["WorldAddress"] = qserverAddressWithPort;
+    map["Username"] = firstAndLast;
+    map["Password"] = password;
+    map["WorldAddress"] = serverAddressWithPort;
 
     os_login_handler_->ProcessOpenSimLogin(map);
 }

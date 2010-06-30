@@ -21,11 +21,12 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile
+from PythonQt.QtCore import QFile, Qt
 import conversions as conv
 reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
+from naali import inputcontext
 
 try:
     window
@@ -73,24 +74,23 @@ class ObjectEdit(Component):
         self.worldstream = r.getServerConnection()
         self.usingManipulator = False
         self.useLocalTransform = False
+        self.cpp_python_handler = None
         
         self.mouse_events = {
-            #r.LeftMouseClickPressed: self.LeftMousePressed,
-            #r.InWorldClick: self.LeftMousePressed,
-            #r.LeftMouseClickReleased: self.LeftMouseReleased,  
-            #r.RightMouseClickPressed: self.RightMousePressed,
-            #r.RightMouseClickReleased: self.RightMouseReleased
+            43 : self.LeftMousePressed,
+            44 : self.LeftMouseReleased,
+            45 : self.RightMousePressed,
+            46 : self.RightMouseReleased
         }
 
         self.shortcuts = {
-            #r.PyObjectEditDeselect: self.deselect,
-            #r.PyObjectEditToggleMove: self.window.manipulator_move,#"ALT+M", #move
-            #r.PyObjectEditToggleScale: self.window.manipulator_scale,#"ALT+S" #, #scale
-            #r.Delete: self.deleteObject,
-            #r.Undo: self.undo, 
-            #r.PyDuplicateDrag: self.duplicateStart, 
-            #r.ObjectLink: self.linkObjects,
-            #r.ObjectUnlink: self.unlinkObjects,
+            (Qt.Key_Z, Qt.ControlModifier) : self.undo,
+            (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
+            (Qt.Key_S, Qt.AltModifier) : self.window.manipulator_scale,
+            (Qt.Key_M, Qt.AltModifier) : self.window.manipulator_move,
+            (Qt.Key_R, Qt.AltModifier) : self.window.manipulator_rotate,
+            (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
+            (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
         
         self.resetManipulators()
@@ -113,6 +113,12 @@ class ObjectEdit(Component):
         self.selection_rect_startpos = None
         
         r.c = self #this is for using objectedit from command.py
+        
+        # Get world building modules python handler
+        self.cpp_python_handler = r.getQWorldBuildingHandler()
+        print self.cpp_python_handler
+        if self.cpp_python_handler == None:
+           r.logDebug("Could not aqquire world building service to object edit")
         
     def resetValues(self):
         self.left_button_down = False
@@ -183,6 +189,10 @@ class ObjectEdit(Component):
         self.sels.append(ent)
         self.window.selected(ent, False) 
         self.canmove = True
+        
+        if self.cpp_python_handler != None:
+            if ent.prim != None:
+                self.cpp_python_handler.ObjectSelected(ent.prim)
         
         self.highlightChildren(children)
 
@@ -531,20 +541,21 @@ class ObjectEdit(Component):
                         
                         self.window.update_guivals(ent)
    
-    def on_input(self, evid):
-        #print "input", evid
+    def on_keydown(self, keycode, keymod):
+        trigger = (keycode, keymod)
         if self.windowActive:
-            if evid in self.shortcuts:#self.shortcuts.has_key((keycode, keymod)):
+            # check to see if a shortcut we understand was pressed, if so, trigger it and consume the event
+            if trigger in self.shortcuts:
                 self.keypressed = True
-                self.shortcuts[evid]()
+                self.shortcuts[trigger]()
                 return True
         
     def on_inboundnetwork(self, evid, name):
+        #return False
+        print "editgui got an inbound network event:", id, name
         return False
-        #print "editgui got an inbound network event:", id, name
 
     def undo(self):
-        #print "undo clicked"
         ent = self.active
         if ent is not None:
             self.worldstream.SendObjectUndoPacket(ent.prim.FullId)
@@ -578,16 +589,12 @@ class ObjectEdit(Component):
         avatar = r.getEntity(avatar_id)
         pos = avatar.placeable.Position#r.getUserAvatarPos()
 
-	# TODO determine what is right in front of avatar and use that instead
+        # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .5
         start_y = pos.y() + .5
         start_z = pos.z()
-        end_x = start_x
-        end_y = start_y
-        end_z = start_z
 
-        r.sendObjectAddPacket(start_x, start_y, start_z, end_x, end_y, end_z)
-        #XXX change to use worldstream and remove this py func from the hand made api
+        self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
     def deleteObject(self):
         if self.active is not None:

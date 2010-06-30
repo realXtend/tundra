@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "PythonScriptModule.h" //for the staticframework hack, for entityptr re-get workaround
@@ -8,6 +10,7 @@
 #include "SceneManager.h"
 
 #include "EC_OgreMovableTextOverlay.h"
+#include "EC_OgrePlaceable.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
@@ -17,7 +20,6 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_DynamicComponent.h"
 #include "EC_OpenSimPresence.h"
-
 
 #include <PythonQt.h>
 
@@ -255,51 +257,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             Py_RETURN_TRUE;
     }
 
-    else if (s_name.compare("pos") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }       
-        //std::cout << placeable->GetSelectPriority() << std::endl;
-        /* this must probably return a new object, a 'Place' instance, that has these.
-           or do we wanna hide the E-C system in the api and have these directly on entity? 
-           probably not a good idea to hide the actual system that much. or? */
-        Vector3df pos = placeable->GetPosition();
-        //RexTypes::Vector3 scale = ogre_pos->GetScale();
-        //RexTypes::Vector3 rot = PackQuaternionToFloat3(ogre_pos->GetOrientation());
-        /* .. i guess best to wrap the Rex Vector and other types soon,
-           the pyrr irrlicht binding project does it for these using swig,
-           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i 
-    Now am experimenting with the new QVector3D type, see GetQPlaceable*/
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
-    }
-
-    else if (s_name.compare("scale") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }     
-        Vector3df scale = placeable->GetScale();
-
-        return Py_BuildValue("fff", scale.x, scale.y, scale.z);
-    }
-
-    else if (s_name.compare("orientation") == 0)
-    {
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;   
-        }         
-        
-        Quaternion orient = placeable->GetOrientation();
-        return Py_BuildValue("ffff", orient.x, orient.y, orient.z, orient.w);
-    }
-
     else if (s_name.compare("text") == 0)
     {
         const Foundation::ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
@@ -436,13 +393,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
 static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 {
-    /*
-    if (!(tmp = PyObject_GenericSetAttr((PyObject*)self, name, value))) {
-        if (!PyErr_ExceptionMatches(PyExc_AttributeError))
-            return NULL;
-        PyErr_Clear();
-    }*/
-
     const char* c_name = PyString_AsString(name);
     std::string s_name = std::string(c_name);
 
@@ -473,110 +423,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
     RexLogic::EC_NetworkPosition* networkpos = entity->GetComponent<RexLogic::EC_NetworkPosition>().get();
 
-    if (s_name.compare("pos") == 0)
-    {
-        /* this must probably return a new object, a 'Place' instance, that has these.
-           or do we wanna hide the E-C system in the api and have these directly on entity? 
-           probably not a good idea to hide the actual system that much. or? */
-        float x, y, z;
-        x = 0;
-        y = 0;
-        z = 0;
-
-        //int parsing;
-        //parsing = PyArg_ParseTuple(value, "fff", &x, &y, &z);
-        /*
-        PyObject* pos;
-        if(!parsing) {
-            parsing = PyArg_ParseTuple(value, "O", &pos);
-            if (parsing != 0)
-            {
-                PyErr_SetString(PyExc_ValueError, "it worked.");
-                return -1;
-            }
-        }
-        */
-        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {    
-            //std::cout << "...parse error" << std::endl;
-            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float).");
-            return -1;
-        }
-        
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;
-        }  
-
-        // Set the new values.
-        placeable->SetPosition(Vector3df(x, y, z));
-        if (networkpos)
-        {
-            // Override the dead reckoning system
-            networkpos->SetPosition(placeable->GetPosition());
-        }
-            
-        //ogre_pos->SetScale(OpenSimToOgreCoordinateAxes(scale));
-        //ogre_pos->SetOrientation(OpenSimToOgreQuaternion(quat));
-        /* .. i guess best to wrap the Rex Vector and other types soon,
-           the pyrr irrlicht binding project does it for these using swig,
-           https://opensvn.csie.org/traccgi/pyrr/browser/pyrr/irrlicht.i */
-
-        /* sending a scene updated event to trigger network synch,
-           copy-paste from DebugStats, 
-           perhaps there'll be some MoveEntity thing in logic that can reuse for this? */
-        return 0; //success.
-    }
-
-    else if (s_name.compare("scale") == 0)
-    {
-        float x, y, z;
-        x = 0;
-        y = 0;
-        z = 0;
-        if(!PyArg_ParseTuple(value, "fff", &x, &y, &z))
-        {
-            //PyErr_SetString(PyExc_ValueError, "params should be: (float, float, float)");
-            return -1;   
-        }
-
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;   
-        }  
-        // Set the new values.
-        placeable->SetScale(Vector3df(x, y, z));
- 
-        return 0; //success.
-    }
-    
-    else if (s_name.compare("orientation") == 0)
-    {
-        float x, y, z, w;
-        if(!PyArg_ParseTuple(value, "ffff", &x, &y, &z, &w))
-        {
-            PyErr_SetString(PyExc_ValueError, "params should be (float, float, float, float)"); //XXX change the exception
-            return NULL;   
-        }
-        if (!placeable)
-        {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return -1;   
-        }          
-        // Set the new values.
-        placeable->SetOrientation(Quaternion(x, y, z, w));
-        if (networkpos)
-        {
-            // Override the dead reckoning system
-            networkpos->SetOrientation(placeable->GetOrientation());
-        }
-                    
-        return 0; //success.
-    }
-
-    else if (s_name.compare("text") == 0)
+    if (s_name.compare("text") == 0)
     {
         if (PyString_Check(value) || PyUnicode_Check(value)) 
         {

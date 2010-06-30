@@ -35,18 +35,27 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
                 in rexlogic it makes the packets too, and not e.g. worldstream
                 which doesn't know EC_OpenSimPrim
 
-
-2010/04/21 Removed the RexLogicModule::GetInventory() dependency. -Stinkfist
-
+======================================================================================
+2010/04/21  Removed the RexLogicModule::GetInventory() dependency.
+            -Stinkfist
+2010/06/24  Removed the RexLogicModule::GetServerConnection() dependency. WorldStream
+            is now saved as PythonScriptModule member variable.
+            -Stinkfist
+======================================================================================
 */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "PythonScriptModule.h"
+#include "Vector3Wrapper.h"
+#include "QuaternionWrapper.h"
+#include "QEC_Prim.h"
+#include "PyEntity.h"
+#include "RexPythonQt.h"
 
 #include "ModuleManager.h"
 #include "EventManager.h"
-
 #include "ServiceManager.h"
 #include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -54,8 +63,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "InputServiceInterface.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
-
-#include "RexLogicModule.h" //much of the api is here
 #include "WorldStream.h" //for SendObjectAddPacket
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -63,84 +70,69 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
-
 #include "SceneManager.h"
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
+#include "RexNetworkUtils.h"
+#include "GenericMessageUtils.h"
 
+#include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
-#include "EC_OpenSimPresence.h"
-#include "EC_OpenSimPrim.h"
+#include "Avatar/AvatarControllable.h"
+#include "Environment/Primitive.h"
+#include "Environment/PrimGeometryUtils.h"
+#include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
+#include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "RexNetworkUtils.h"
-#include "GenericMessageUtils.h"
 
-#include "Environment/Primitive.h"
-#include "Environment/PrimGeometryUtils.h"
+#include "UiModule.h"
+#include "UiDefines.h"
+#include "Inworld/InworldSceneController.h"
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
 
-#include "CameraControllable.h"
-//now done via logic cameracontrollable #include "Renderer.h" //for setting camera pitch
-//#include "ogrecamera.h"
-
-#include "Avatar/AvatarControllable.h"
-
-#include "PyEntity.h"
-#include "RexPythonQt.h"
-
-//had to move the createcanvas func here due to the staticframework ref prob
-#include <PythonQt.h>
-#include <QGroupBox> //just for testing addObject
-#include <QtUiTools> //for .ui loading in testing
-#include <QApplication>
-#include <QGraphicsView>
-#include <QWebView>
-
-//the new qt integration, the previous stuff (above) still used for 3d inworld things
-#include <UiModule.h>
-#include <UiDefines.h>
-#include <Inworld/InworldSceneController.h>
-#include <Inworld/View/UiProxyWidget.h>
-#include <Inworld/View/UiWidgetProperties.h>
-
-#include "Vector3Wrapper.h"
-#include "QuaternionWrapper.h"
-
-#include "propertyeditor.h"
-
+#include "EC_OpenSimPresence.h"
+#include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_3DCanvasSource.h"
 
-#include "QEC_Prim.h"
-#include "RexUUID.h"
-
-#include "MemoryLeakCheck.h"
-
-//#include <QDebug>
-
-//ECs declared here
+//ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
 
 //for py_print
 //#include <stdio.h>
 
-namespace PythonScript
-{
-    class PythonScriptModule;
-}
+#include <PythonQt.h>
 
-namespace
-{
-    PythonScript::PythonScriptModule *pythonScriptModuleInstance_ = 0;
-}
+#include <QGroupBox> //just for testing addObject
+#include <QtUiTools> //for .ui loading in testing
+#include <QApplication>
+#include <QGraphicsView>
+#include <QWebView>
+//#include <QDebug>
+
+#include <propertyeditor.h>
+
+// =========== Note py developers: MemoryLeakCheck must be the last include =========== //
+#include <PlayerService.h>
+#include <WorldBuildingServiceInterface.h>
+
+#include "MemoryLeakCheck.h"
+
+
+//#include <QDebug>
 
 namespace PythonScript
 {
     std::string PythonScriptModule::type_name_static_ = "PythonScript";
+
+    PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
 
     PythonScriptModule::PythonScriptModule() : ModuleInterface(type_name_static_)
     {
@@ -159,8 +151,6 @@ namespace PythonScript
     // virtual
     void PythonScriptModule::Load()
     {
-        using namespace PythonScript;
-
         DECLARE_MODULE_EC(EC_DynamicComponent);
     }
 
@@ -261,34 +251,20 @@ namespace PythonScript
             Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
     }
 
-    void PythonScriptModule::SubscribeToNetworkEvents()
-    {
-        // Network In
-        if (inboundCategoryID_ == 0)
-        {
-            inboundCategoryID_ = em_->QueryEventCategory("NetworkIn");
-        }
-        // Network State
-        networkstate_category_id = em_->QueryEventCategory("NetworkState");
-    }
-
-    bool PythonScriptModule::HandleEvent(
-        event_category_id_t category_id,
-        event_id_t event_id, 
-        Foundation::EventDataInterface* data)
+    bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {    
         PyObject* value = NULL;
 
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
+        /*if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
         {
             Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
         }
-        else if (category_id == scene_event_category_)
+        else*/ if (category_id == scene_event_category_)
         {
             if (event_id == Scene::Events::EVENT_SCENE_ADDED)
             {
@@ -356,11 +332,21 @@ namespace PythonScript
                 value = PyObject_CallMethod(pmmInstance, "SERVER_DISCONNECTED", "i", event_id);
             }
         }
-        else if (category_id == framework_category_id && event_id == Foundation::NETWORKING_REGISTERED)
+        else if (category_id == framework_category_id)
         {
-            SubscribeToNetworkEvents();
+            if  (event_id == Foundation::NETWORKING_REGISTERED)
+            {
+                inboundCategoryID_ = em_->QueryEventCategory("NetworkIn");
+                networkstate_category_id = em_->QueryEventCategory("NetworkState");
+            }
+            else if (event_id == Foundation::WORLD_STREAM_READY)
+            {
+                ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                if (event_data)
+                    worldstream = event_data->WorldStream;
+            }
         }
-                
+
         //was for first receive chat test, when no module provided it, so handles net event directly
         /* got a crash with this now during login, when the viewer was also getting asset data etc.
            disabling the direct reading of network data here now to be on the safe side,
@@ -592,12 +578,16 @@ namespace PythonScript
         return pythonScriptModuleInstance_;
     }
 
-    OgreRenderer::Renderer* PythonScriptModule::GetRenderer()
+     PyObject* PythonScriptModule::WrapQObject(QObject* qobj) const
+     {
+        return PythonQt::self()->priv()->wrapQObject(qobj);
+    }
+
+    OgreRenderer::Renderer* PythonScriptModule::GetRenderer() const
     {
-        boost::shared_ptr<OgreRenderer::Renderer> rendererptr= framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (rendererptr)
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+        if (renderer)
         {
-            OgreRenderer::Renderer* renderer = rendererptr.get(); 
             PythonQt::self()->registerClass(renderer->metaObject());
             return renderer;
         }
@@ -607,7 +597,7 @@ namespace PythonScript
         return 0;
     }
 
-    Scene::SceneManager* PythonScriptModule::GetScene(QString name)
+    Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
 
@@ -621,9 +611,9 @@ namespace PythonScript
         return 0;
     }
 
-    void PythonScriptModule::RunJavascriptString(QString codestr, QVariantMap context)
+    void PythonScriptModule::RunJavascriptString(const QString &codestr, const QVariantMap &context)
     {
-        boost::shared_ptr<Foundation::ScriptServiceInterface> js = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_JavascriptScripting).lock();
+        Foundation::ScriptServiceInterface *js = framework_->GetService<Foundation::ScriptServiceInterface>();
         if (js)
             js->RunString(codestr, context);
         else
@@ -660,16 +650,10 @@ PyObject* SendChat(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    //Foundation::Framework *framework_ = Foundation::ComponentInterfacePythonScriptModule::GetFramework();
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;//
-    //todo weak_pointerize
-
     //move decl to .h and getting to Initialize (see NetTEstLogicModule::Initialize)
     //if this kind of usage, i.e. getting the logic module for the api, is to remain.
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
-
-    rexlogic_->GetServerConnection()->SendChatFromViewerPacket(msg);
+    if (PythonScript::self()->worldstream)
+        PythonScript::self()->worldstream->SendChatFromViewerPacket(msg);
     //rexlogic_->GetServerConnection()->IsConnected();
     //Real newyaw = 0.1;
     //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
@@ -681,18 +665,20 @@ PyObject* SendChat(PyObject *self, PyObject *args)
 
 static PyObject* SetAvatarRotation(PyObject *self, PyObject *args)
 {
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
-    float x, y, z, w;
-
-    if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        PyErr_SetString(PyExc_ValueError, "Value error, need x, y, z, w params");
-        return NULL;
+        float x, y, z, w;
+
+        if(!PyArg_ParseTuple(args, "ffff", &x, &y, &z, &w))
+        {
+            PyErr_SetString(PyExc_ValueError, "Value error, need x, y, z, w params");
+            return NULL;
+        }
+        std::cout << "Sending newrot..." << std::endl;
+        Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
+        rexlogic->SetAvatarRotation(newrot);
     }
-    std::cout << "Sending newrot..." << std::endl;
-    Quaternion newrot(x, y, z, w); //seriously, is this how constructing a quat works!?
-    rexlogic_->SetAvatarRotation(newrot);
 
     Py_RETURN_NONE;
 }
@@ -708,16 +694,17 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         return NULL;   
     }
 
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    boost::shared_ptr<Foundation::RenderServiceInterface> render = framework_->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
-    //Scene::Entity *entity = render->Raycast(x, y).entity_;
-    Foundation::RaycastResult result = render->Raycast(x, y);
+    Foundation::RenderServiceInterface *render = PythonScript::self()->GetFramework()->GetService<Foundation::RenderServiceInterface>();
+    if (render)
+    {
+        //Scene::Entity *entity = render->Raycast(x, y).entity_;
+        Foundation::RaycastResult result = render->Raycast(x, y);
 
-    if (result.entity_){
-        return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+        if (result.entity_)
+            return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+        else
+            Py_RETURN_NONE;
     }
-    else
-        Py_RETURN_NONE;
     /*
     if (result)
     {
@@ -728,17 +715,23 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
     else 
         Py_RETURN_NONE;
     */
+    Py_RETURN_NONE;
+}
+
+static PyObject* GetQWorldBuildingHandler(PyObject *self)
+{
+    Foundation::WorldBuildingServicePtr wb_service =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
+    if (wb_service)
+        return PythonScriptModule::GetInstance()->WrapQObject(wb_service->GetPythonHandler());
+    else
+        Py_RETURN_NONE;
 }
 
 static PyObject* GetQRenderer(PyObject *self)
 {
-    OgreRenderer::Renderer* renderer; 
-    renderer = dynamic_cast<OgreRenderer::Renderer*>(PythonScript::self()->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock().get());
-
+    OgreRenderer::Renderer* renderer = PythonScript::self()->GetFramework()->GetService<OgreRenderer::Renderer>();
     if (renderer)
-    {
         return PythonScriptModule::GetInstance()->WrapQObject(renderer);
-    }
 
     PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
     return NULL;
@@ -749,34 +742,25 @@ static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
     const char* filePath;
     const char* fileName;
 
-    std::string oFilePath;
-    std::string oFileName;
-
     if(!PyArg_ParseTuple(args, "ss", &filePath, &fileName))
         PyErr_SetString(PyExc_ValueError, "Getting the filepath and filename failed.");
 
-    
-    oFilePath = filePath;
-    oFileName = fileName;
-    
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    if (renderer){
-
+    OgreRenderer::Renderer *renderer = PythonScript::self()->GetFramework()->GetService<OgreRenderer::Renderer>();
+    if (renderer)
+    {
         //std::cout << "Screenshot in PYSM ... " << std::endl;
-        renderer->TakeScreenshot(oFilePath, oFileName);
+        renderer->TakeScreenshot(filePath, fileName);
     }
     else
-        std::cout << "Failed ..." << std::endl;
+        std::cout << "Could not retrieve Ogre renderer." << std::endl;
 
     Py_RETURN_NONE;
 }
 
 static PyObject* SwitchCameraState(PyObject *self)
 {
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    RexLogic::RexLogicModule *rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
-    rexlogic_->SwitchCameraState();
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    rexlogic->SwitchCameraState();
     Py_RETURN_NONE;
 }
 
@@ -979,11 +963,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 }
             }
             // Iterate custom object texture map
-            else if (custom_object_ptr)
+            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
             {
                 TextureMap texture_map = prim.PrimTextures;
                 TextureMap::const_iterator i = texture_map.begin();
-                while (i != texture_map.end())
+
+                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
                 {
                     uint submesh_id = i->first;
                     if (i->second == texture_uuid.ToString())
@@ -994,7 +979,8 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             else
                 continue;
 
-            PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+            if (submeshes_.size() > 0)
+                PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
         }
     }
 
@@ -1056,7 +1042,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
-void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, QList<uint> submeshes, int refresh_rate)
+void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
 {
     // Always create new EC_3DCanvas component
     if (submeshes.isEmpty())
@@ -1272,6 +1258,76 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //return QString(cache_path.c_str());
 }
 
+PyObject* IsMimeTypeSupportedForVideoWidget(PyObject* self, PyObject* args)
+{
+    char* mimetype;
+    if(!PyArg_ParseTuple(args, "s", &mimetype))
+        return 0;   
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service)
+        {
+            bool supported = player_service->IsMimeTypeSupported(QString(mimetype));
+            
+            if (supported)
+                Py_RETURN_TRUE;
+            else
+                Py_RETURN_FALSE;
+        }
+    }
+    Py_RETURN_FALSE;
+}
+
+PyObject* CreateVideoWidget(PyObject* self, PyObject* args)
+{
+    char* media_url;
+    if(!PyArg_ParseTuple(args, "s", &media_url))
+        return 0;  
+
+    QString url_string(media_url);
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service.get())
+        {
+            QWidget* player = player_service->GetPlayer(url_string);
+            if (player)
+                return PythonScriptModule::GetInstance()->WrapQObject(player);
+            else
+                return 0;
+        }
+    }
+    return 0;
+}
+
+PyObject* DeleteVideoWidget(PyObject* self, PyObject* args)
+{
+    char* url_string;
+    if(!PyArg_ParseTuple(args, "s", &url_string))
+        return 0;  
+
+    QString url(url_string);
+
+    Foundation::Framework* framework = PythonScript::self()->GetFramework();
+    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
+    if (service_manager)
+    {
+        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
+        if (player_service)
+        {
+            player_service->DeletePlayer(url);
+        }
+    }
+    Py_RETURN_NONE;
+}
+
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
 //experimental now, may replace the PyType in Entity.h used above
@@ -1433,12 +1489,10 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
 {
     Real yaw, pitch;
-
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
+        boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic->GetCameraControllable();
         pitch = cam->GetPitch();
         yaw = 0; //XXX not implemented yet (?)
 
@@ -1483,11 +1537,10 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
     }
     newyaw = (Real) y;
 
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        rexlogic_->GetServerConnection()->IsConnected();
+        //rexlogic_->GetServerConnection()->IsConnected();
         //had linking problems with these, hopefully can be solved somehow easily.
         //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
         //boost::shared_ptr<RexLogic::AvatarControllable> avc = rexlogic_->GetAvatarControllable();
@@ -1495,7 +1548,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
         //f64 t = (f64) 0.01;
         //avc->AddTime(t);
         //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
-        rexlogic_->SetAvatarYaw(newyaw);
+        rexlogic->SetAvatarYaw(newyaw);
     }
     
     else
@@ -1668,10 +1721,9 @@ PyObject* GetUIView(PyObject *self)
 
 PyObject* GetRexLogic(PyObject *self)
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
-        return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_);
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
+        return PythonScriptModule::GetInstance()->WrapQObject(rexlogic);
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
     return NULL;
 }
@@ -1679,41 +1731,13 @@ PyObject* GetRexLogic(PyObject *self)
 
 PyObject* GetServerConnection(PyObject *self)
 {
-    ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
-        return PythonScriptModule::GetInstance()->WrapQObject(rexlogic_->GetServerConnection().get());
-    PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
-    return NULL;
-}
-
-PyObject* SendObjectAddPacket(PyObject *self, PyObject *args)
-{
-    ///\todo Remove RexLogicModule dependency by getting the worldstream from WORLDSTREAM_READY event
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
-    {
-        float start_x, start_y, start_z;
-        float end_x, end_y, end_z;
-
-        if(!PyArg_ParseTuple(args, "ffffff", &start_x, &start_y, &start_z, &end_x, &end_y, &end_z)) {
-            PyErr_SetString(PyExc_ValueError, "Value error, need x1, y1, z1, x2, y2 and z2 params");
-            return NULL;   
-        }
-
-        rexlogic_->GetServerConnection()->SendObjectAddPacket(Vector3df(start_x, start_y, start_z));
-    }
-    Py_RETURN_NONE;
+    return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->worldstream.get());
 }
 
 PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 {
     std::cout << "Sending rexprimdata" << std::endl;
-    
-    RexLogic::RexLogicModule *rexlogic_;
-    
+
     /*rexviewer_EntityObject* py_ent;
     if(!PyArg_ParseTuple(args, "O!", rexviewer_EntityType, &py_ent))
     {
@@ -1731,11 +1755,9 @@ PyObject* SendRexPrimData(PyObject *self, PyObject *args)
 
     ent_id = (entity_id_t) ent_id_int;
 
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
-    {
-        rexlogic_->SendRexPrimData(ent_id); //py_ent->ent_id);
-    }
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
+        rexlogic->SendRexPrimData(ent_id); //py_ent->ent_id);
 
     Py_RETURN_NONE;
 }
@@ -1750,11 +1772,10 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
 
 PyObject* GetUserAvatarId(PyObject* self)
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        entity_id_t id = rexlogic_->GetUserAvatarId();
+        entity_id_t id = rexlogic->GetUserAvatarId();
         return Py_BuildValue("I", id);
     }
 
@@ -1763,11 +1784,10 @@ PyObject* GetUserAvatarId(PyObject* self)
 
 PyObject* GetCameraId(PyObject* self)
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        Scene::EntityPtr camentptr = rexlogic_->GetCameraEntity();
+        Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
         if (!camentptr)
           Py_RETURN_NONE;
         entity_id_t id = camentptr->GetId();
@@ -1780,11 +1800,10 @@ PyObject* GetCameraId(PyObject* self)
 PyObject* GetCameraUp(PyObject *self) 
 {
     Vector3df up;
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        up = rexlogic_->GetCameraUp();
+        up = rexlogic->GetCameraUp();
         return Py_BuildValue("fff", up.x, up.y, up.z);
     }
     Py_RETURN_NONE;
@@ -1793,11 +1812,10 @@ PyObject* GetCameraUp(PyObject *self)
 PyObject* GetCameraRight(PyObject *self) 
 {
     Vector3df right;
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        right = rexlogic_->GetCameraRight();
+        right = rexlogic->GetCameraRight();
         return Py_BuildValue("fff", right.x, right.y, right.z);
     }
     Py_RETURN_NONE;
@@ -1805,11 +1823,10 @@ PyObject* GetCameraRight(PyObject *self)
 
 PyObject* GetCameraFOV(PyObject *self) 
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        float fovy = rexlogic_->GetCameraFOV();
+        float fovy = rexlogic->GetCameraFOV();
         return Py_BuildValue("f", fovy);
     }
     Py_RETURN_NONE;
@@ -1818,11 +1835,10 @@ PyObject* GetCameraFOV(PyObject *self)
 PyObject* GetCameraPosition(PyObject *self) 
 {
     Vector3df pos;
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        pos = rexlogic_->GetCameraPosition();
+        pos = rexlogic->GetCameraPosition();
         return Py_BuildValue("fff", pos.x, pos.y, pos.z);
     }
     Py_RETURN_NONE;
@@ -1830,12 +1846,11 @@ PyObject* GetCameraPosition(PyObject *self)
 
 PyObject* GetScreenSize(PyObject *self) 
 {
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
-        float width = rexlogic_->GetCameraViewportWidth();
-        float height = rexlogic_->GetCameraViewportHeight();
+        float width = rexlogic->GetCameraViewportWidth();
+        float height = rexlogic->GetCameraViewportHeight();
         return Py_BuildValue("ff", width, height);
     }
     Py_RETURN_NONE;
@@ -1882,28 +1897,15 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
     const char* password;
     const char* serverAddressWithPort;
 
-    QString qfirstAndLast;
-    QString qpassword;
-    QString qserverAddressWithPort;
-
-    Foundation::Framework *framework_;
-    RexLogic::RexLogicModule *rexlogic_;
- 
     if(!PyArg_ParseTuple(args, "sss", &firstAndLast, &password, &serverAddressWithPort))
     {
         PyErr_SetString(PyExc_ValueError, "Opensim login requires three params: User Name, password, server:port");
         return NULL;
     }
-    
-    qfirstAndLast = QString(firstAndLast);
-    qpassword = QString(password);
-    qserverAddressWithPort = QString(serverAddressWithPort);
 
-    framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
-    rexlogic_->StartLoginOpensim(qfirstAndLast, qpassword, qserverAddressWithPort);
-    //boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    //if (renderer){
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
+        rexlogic->StartLoginOpensim(firstAndLast, password, serverAddressWithPort);
 
     Py_RETURN_NONE;
 }
@@ -1916,12 +1918,9 @@ PyObject *Exit(PyObject *self, PyObject *null)
 
 PyObject* Logout(PyObject *self)
 {
-    Foundation::Framework *framework_;
-    RexLogic::RexLogicModule *rexlogic_;
-
-    framework_ = PythonScript::self()->GetFramework();
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(framework_->GetModuleManager()->GetModule("RexLogic").lock().get());
-    rexlogic_->LogoutAndDeleteWorld();
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
+        rexlogic->LogoutAndDeleteWorld();
 
     Py_RETURN_NONE;
 }
@@ -1941,6 +1940,7 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
     Py_RETURN_TRUE;
 }
 */
+
 PyObject* RandomTest(PyObject* self, PyObject* args)
 {
     /*
@@ -1979,6 +1979,7 @@ PyObject* RandomTest(PyObject* self, PyObject* args)
     return PythonScriptModule::GetInstance()->WrapQObject(prim);
     //Py_RETURN_NONE;
 }
+
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
@@ -1989,7 +1990,10 @@ static PyMethodDef EmbMethods[] = {
     "Random test function."},
 
     {"getQRenderer", (PyCFunction)GetQRenderer, METH_NOARGS,
-     "Gets the Renderer module as a QObject"},
+    "Gets the Renderer module as a QObject"},
+
+    {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
+    "Get the World Building Modules python handler as a QObject"},
 
     {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
     "Gets the entity with the given ID."},
@@ -2065,9 +2069,6 @@ static PyMethodDef EmbMethods[] = {
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
 
-    {"sendObjectAddPacket", (PyCFunction)SendObjectAddPacket, METH_VARARGS, 
-    "Creates a new prim at the given points"},
-
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
 
@@ -2122,6 +2123,15 @@ static PyMethodDef EmbMethods[] = {
     
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
+
+    {"isMimeTypeSupportedForVideoWidget", (PyCFunction)IsMimeTypeSupportedForVideoWidget, METH_VARARGS, 
+    "Return true if given mimetype is supported by Phon library.  Parameters: media_url"},
+
+    {"createVideoWidget", (PyCFunction)CreateVideoWidget, METH_VARARGS, 
+    "Create Phonon::VideoWidget object with MediaObject according given media url.  Parameters: media_url"},
+
+    {"deleteVideoWidget", (PyCFunction)DeleteVideoWidget, METH_VARARGS, 
+    "Delete Phonon::VideoWidget object. Parameters: widget"},
 
     {NULL, NULL, 0, NULL}
 };

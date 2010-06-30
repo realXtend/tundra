@@ -25,6 +25,7 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "UiModule.h"
+#include "UiDefines.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 #include "Renderer.h"
@@ -44,10 +45,13 @@ using namespace std;
 namespace DebugStats
 {
 
+const std::string DebugStatsModule::moduleName = std::string("DebugStats");
+
 DebugStatsModule::DebugStatsModule() :
     ModuleInterface(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
+    networkOutEventCategory_(0),
     networkStateEventCategory_(0),
     profilerWindow_(0),
     participantWindow_(0),
@@ -57,6 +61,7 @@ DebugStatsModule::DebugStatsModule() :
 
 DebugStatsModule::~DebugStatsModule()
 {
+    SAFE_DELETE(profilerWindow_);
 }
 
 void DebugStatsModule::PostInitialize()
@@ -96,6 +101,45 @@ void DebugStatsModule::PostInitialize()
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+
+    AddProfilerWidgetToUi();
+}
+
+void DebugStatsModule::AddProfilerWidgetToUi()
+{
+    if (profilerWindow_)
+        return;
+
+    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    if (!ui_module.get())
+        return;
+
+    profilerWindow_ = new TimeProfilerWindow(framework_);
+
+    UiServices::UiWidgetProperties profiler_properties("Profiler", UiServices::ModuleWidget);
+
+    UiDefines::MenuNodeStyleMap image_path_map;
+    QString base_url = "./data/ui/images/menus/"; 
+    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
+    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
+    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
+    profiler_properties.SetMenuNodeStyleMap(image_path_map);
+
+    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_, profiler_properties);
+    proxy->resize(650, 530);
+
+    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
+}
+
+void DebugStatsModule::StartProfiling(bool profile)
+{
+    if (!profilerWindow_)
+        return;
+
+    profilerWindow_->SetVisibility(profile);
+    // -1 means start updating currently selected tab
+    if (profile)
+        profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
@@ -110,21 +154,8 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
         ui_module->GetInworldSceneController()->BringProxyToFront(profilerWindow_);
         return Console::ResultSuccess();
     }
-
-    profilerWindow_ = new TimeProfilerWindow(framework_);
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_,
-        UiServices::UiWidgetProperties("Profiler", UiServices::SceneWidget));
-    ui_module->GetInworldSceneController()->ShowProxyForWidget(profilerWindow_);
-    proxy->resize(650, 530);
-
-    QObject::connect(proxy, SIGNAL(Closed()), profilerWindow_, SLOT(deleteLater()));
-
-    if (current_world_stream_)
-        profilerWindow_->SetWorldStreamPtr(current_world_stream_);
-
-    profilerWindow_->RefreshProfilingData();
-
-    return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Profiler window has not been initialised, something went wrong on startup!");
 }
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
@@ -160,7 +191,7 @@ void DebugStatsModule::Update(f64 frametime)
 #ifdef _WINDOWS
     LARGE_INTEGER now;
     QueryPerformanceCounter(&now);
-    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime, now);
+    double timeSpent = Foundation::ProfilerBlock::ElapsedTimeSeconds(lastCallTime.QuadPart, now.QuadPart);
     lastCallTime = now;
 
     frameTimes.push_back(make_pair(*(boost::uint64_t*)&now, timeSpent));
@@ -169,6 +200,8 @@ void DebugStatsModule::Update(f64 frametime)
 
     if (profilerWindow_)
     {
+        if (!profilerWindow_->isVisible())
+            return;
         profilerWindow_->RedrawFrameTimeHistoryGraph(frameTimes);
         profilerWindow_->DoThresholdLogging();
     }
@@ -178,13 +211,14 @@ void DebugStatsModule::Update(f64 frametime)
 
 bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
 {
+    using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);
 
     if (category_id == frameworkEventCategory_)
     {
         if (event_id == Foundation::WORLD_STREAM_READY)
         {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+            WorldStreamReadyEvent *event_data = checked_static_cast<WorldStreamReadyEvent *>(data);
             assert(event_data);
             if (event_data)
                 current_world_stream_ = event_data->WorldStream;
@@ -192,6 +226,7 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 profilerWindow_->SetWorldStreamPtr(current_world_stream_);
 
             networkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+            networkOutEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkOut");
             networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
             return false;
@@ -202,9 +237,9 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
     {
         switch(event_id)
         {
-        case ProtocolUtilities::Events::EVENT_USER_CONNECTED:
+        case Events::EVENT_USER_CONNECTED:
         {
-            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            UserConnectivityEvent *event_data = checked_static_cast<UserConnectivityEvent *>(data);
             assert(event_data);
             if (!event_data)
                 return false;
@@ -218,9 +253,9 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
                 participantWindow_->AddUserEntry(ec_presence);
             break;
         }
-        case ProtocolUtilities::Events::EVENT_USER_DISCONNECTED:
+        case Events::EVENT_USER_DISCONNECTED:
         {
-            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
+            ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<UserConnectivityEvent *>(data);
             assert(event_data);
             if (!event_data)
                 return false;
@@ -243,43 +278,45 @@ bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t e
 
     if (category_id == networkEventCategory_)
     {
+        NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
+        assert(netdata);
+        if (!netdata)
+            return false;
+
         if (event_id == RexNetMsgSimStats)
         {
-            ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            assert(netdata);
-            if (!netdata)
-                return false;
             if (profilerWindow_)
                 profilerWindow_->RefreshSimStatsData(netdata->message);
         }
         else if (event_id == RexNetMsgGrantGodlikePowers)
         {
-            ProtocolUtilities::NetworkEventInboundData *net = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            assert(net);
-            if (!net)
-                return false;
-
-            ProtocolUtilities::NetInMessage &msg = *net->message;
+            NetInMessage &msg = *netdata->message;
             RexUUID agent_id = msg.ReadUUID();
             RexUUID sessiont_id = msg.ReadUUID();
             uint8_t god_level = msg.ReadU8();
             if (god_level >= 200)
-            {
                 LogInfo("God powers granted, level: " + QString::number(god_level).toStdString());
-            }
             else
                 LogInfo("God powers denied");
         }
+
+        if (profilerWindow_)
+            profilerWindow_->LogNetInMessage(netdata->message);
+    }
+    if (category_id == networkOutEventCategory_)
+    {
+        NetworkEventOutboundData *netdata = checked_static_cast<NetworkEventOutboundData *>(data);
+        assert(netdata);
+        if (!netdata)
+            return false;
+
+        if (profilerWindow_)
+            profilerWindow_->LogNetOutMessage(netdata->message);
+
+        return false;
     }
 
     return false;
-}
-
-const std::string DebugStatsModule::ModuleName = std::string("DebugStatsModule");
-
-const std::string &DebugStatsModule::NameStatic()
-{
-    return ModuleName;
 }
 
 Console::CommandResult DebugStatsModule::SendRandomNetworkInPacket(const StringVector &params)

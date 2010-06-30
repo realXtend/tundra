@@ -56,21 +56,19 @@ namespace ECEditor
 
     public slots:
         //! Check component's type name and if there isn't any ComponentEditor created for that spesific type name create a new istance
-        //! of that editor. If editor is already created add new compoent to ComponentEditor that will handle the ui updates (Multiedit).
+        //! of that editor.
         //! @param newComponent new component that we want to add to edit.
-        void CreateOrAddNewComponentToEditor(Foundation::ComponentInterfacePtr newComponent);
-
-        //! Add new component to editor browser.
-        void AddNewComponent(Foundation::ComponentInterfacePtr component);
+        void CreateOrAddNewComponent(Foundation::ComponentInterfacePtr newComponent, bool updateUi = true);
 
         //! Remove component from editor browser.
         void RemoveComponent(Foundation::ComponentInterfacePtr component);
 
         //! Iterate all the entity's components and add them into the editor window.
+        //! Note! you need to call UpateEditorUI to be able to see changes on the browser.
         //! @param entity New entity pointer.
         void AddNewEntity(Scene::EntityPtr entity);
 
-        //! Remove all entity's components from the browser.
+        //! Remove all entity's components from the browser. Note! you need to call UpateEditorUI to be able to see changes on the browser.
         void RemoveEntity(Scene::Entity *entity);
 
         //! add entity components that we want to edit with attribute browser.
@@ -79,6 +77,9 @@ namespace ECEditor
 
         //! Reset Attribute editor's state to where it was while it was first time intialized.
         void clear();
+
+        //! User can ask the editor to update all it's ui elements based on recent changes.
+        void UpdateBrowserUI();
 
     signals:
         //! Some of this browser's attribute has been changed by user.
@@ -133,7 +134,6 @@ namespace ECEditor
 
         typedef std::map<std::string, ECComponentEditor *> ComponentEditorMap;
         ComponentEditorMap componentEditors_;
-        //One component editor can contain many components that it's editing in the same time.
         typedef std::map<QtProperty *, ComponentWeakPtrVector> PropertyToComponentsMap;
         PropertyToComponentsMap componentsBrowserItemMap_;
         typedef std::set<entity_id_t> EntityIDSet;

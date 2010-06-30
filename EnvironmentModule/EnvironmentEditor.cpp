@@ -38,6 +38,7 @@
 #include <QPushButton>
 #include <QImage>
 #include <QLabel>
+#include <QSlider>
 #include <QColor>
 #include <QMouseEvent>
 #include <QRadioButton>
@@ -259,7 +260,9 @@ namespace Environment
         image_path_map[UiDefines::IconNormal] = base_url + "edbutton_ENVED_normal.png";
         image_path_map[UiDefines::IconHover] = base_url + "edbutton_ENVED_hover.png";
         image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
+        
         env_editor_properties.SetMenuNodeStyleMap(image_path_map);
+        env_editor_properties.SetMenuGroup(UiDefines::WorldToolsGroup);
 
         editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
 

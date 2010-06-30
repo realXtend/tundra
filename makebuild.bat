@@ -10,7 +10,10 @@ copy vcredist_x86.exe build
 copy oalinst.exe build
 copy dxwebsetup.exe build
 xcopy bin\*.* build /S /C /Y
+del build\performancelogger.txt
 del build\fullmemoryleaklog.txt
+del build\scenestats.txt
+del build\ogrestats.txt
 del build\openal32.dll
 del build\wrap_oal.dll
 del build\*d4.dll

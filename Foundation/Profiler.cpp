@@ -5,27 +5,32 @@
 #include "CoreDefines.h"
 #include "CoreMath.h"
 #include "CoreStringUtils.h"
+#include "HighPerfClock.h"
 
 namespace Foundation
 {
     bool ProfilerBlock::supported_ = false;
-
-#ifdef _WINDOWS
-    LARGE_INTEGER ProfilerBlock::frequency_;
-    LARGE_INTEGER ProfilerBlock::api_overhead_;
-#endif
-
     Profiler *ProfilerSection::profiler_ = 0;
 
     bool ProfilerBlock::QueryCapability()
     {
-#ifdef _WINDOWS
-        BOOL result = QueryPerformanceFrequency(&frequency_);
+        if (supported_)
+            return true;
+        
+#if defined(_WINDOWS)
+        LARGE_INTEGER frequency;
+        BOOL result = QueryPerformanceFrequency(&frequency);
+        frequency_ = frequency.QuadPart;
         supported_ = (result != 0);
+#elif defined(_POSIX_C_SOURCE)
+        supported_ = true;
 #endif
         return supported_;
     }
 
+    boost::int64_t ProfilerBlock::frequency_;
+    boost::int64_t ProfilerBlock::api_overhead_;
+    
     void Profiler::StartBlock(const std::string &name)
     {
         // Get the current topmost profiling node in the stack, or 
@@ -124,6 +129,8 @@ namespace Foundation
 
     ProfilerNodeTree *Profiler::CreateThreadRootBlock()
     {
+        ProfilerBlock::QueryCapability();
+        
         std::string rootObjectName = GetThisThreadRootBlockName();
 
         ProfilerNodeTree *root = new ProfilerNodeTree(rootObjectName);

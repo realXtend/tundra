@@ -75,7 +75,8 @@ namespace Foundation
 
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
-
+        //! Get number of attributes in this component.
+        int GetNumberOfAttributes() const { return attributes_.size(); }
         //! Return attributes of this component for reflection
         const AttributeVector& GetAttributes() const { return attributes_; }
 
@@ -103,6 +104,11 @@ namespace Foundation
          */
         void ComponentChanged(AttributeChange::Type change);
 
+        //! Attribute has changed. Send component & scenemanager change notifications
+        /*! Called by AttributeInterface::Changed.
+         */
+        void AttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+
         //! Read change status of the component
         AttributeChange::Type GetChange() const { return change_; }
 
@@ -121,6 +127,11 @@ namespace Foundation
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
         void OnChanged();
 
+        //! Signal when a single attribute has changed.
+        /*! Note: also a scenemanager change signal will be sent, but this is a way to hook to a specific component
+         */
+        void OnAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+
         //! Emitted when the parent entity is set.
         void ParentEntitySet();
 
@@ -131,6 +142,12 @@ namespace Foundation
         //! Helper function for adding an attribute to the component xml serialization
         void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const;
 
+        //! Helper function for adding an attribute and it's type to the component xml serialization.
+        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, 
+                                                const std::string& name, 
+                                                const std::string& value, 
+                                                const std::string &type) const;
+
         //! Helper function for starting deserialization. 
         /*! Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
             Otherwise returns false and does nothing.
@@ -139,6 +156,9 @@ namespace Foundation
 
         //! Helper function for getting an attribute from serialized component
         std::string ReadAttribute(QDomElement& comp_element, const std::string& name) const;
+
+        //! Helper function for getting a attribute type from serialized component.
+        std::string ReadAttributeType(QDomElement& comp_element, const std::string& name) const;
 
         //! Pointer to parent entity (null if not attached to any entity)
         Scene::Entity* parent_entity_;

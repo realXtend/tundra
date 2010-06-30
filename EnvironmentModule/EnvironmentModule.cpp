@@ -84,7 +84,10 @@ namespace Environment
             image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
             image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
             image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
+
             ui_properties.SetMenuNodeStyleMap(image_path_map);
+            ui_properties.SetMenuGroup(UiDefines::WorldToolsGroup);
+
             ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
         }
     }
