@@ -1,16 +1,15 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   InventoryEvents.h
  *  @brief  Inventory events.
  */
 
-#ifndef incl_Protocol_InventoryEvents_h
-#define incl_Protocol_InventoryEvents_h
+#ifndef incl_ProtocolUtilities_InventoryEvents_h
+#define incl_ProtocolUtilities_InventoryEvents_h
 
 #include "EventDataInterface.h"
-#include <RexUUID.h>
-#include <AssetServiceInterface.h>
+#include "AssetServiceInterface.h"
+#include "RexUUID.h"
 
 #include <QStringList>
 #include <QVector>
@@ -54,7 +53,7 @@ namespace Inventory
     public:
         /// Constructor.
         /// @param type Item type.
-        InventoryItemEventData(const ItemType &type) : item_type(type) {}
+        InventoryItemEventData(const ItemType &type) : item_type(type), lastItem(false) {}
         /// Destructor.
         virtual ~InventoryItemEventData() {}
         /// Item type (asset or folder)
@@ -81,8 +80,10 @@ namespace Inventory
         RexUUID groupId;
         /// Time of creation.
         time_t creationTime;
-        //! Original filename of upload, if applicable
+        /// Original filename of upload, if applicable
         std::string fileName;
+        /// Is this item last in its parent folder.
+        bool lastItem;
     };
 
     /// Event data class to be used with EVENT_INVENTORY_UPLOAD_FILE.

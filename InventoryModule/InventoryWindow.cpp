@@ -8,7 +8,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "InventoryWindow.h"
-#include "InventoryModule.h"
 #include "InventoryItemModel.h"
 #include "AbstractInventoryDataModel.h"
 #include "InventoryTreeView.h"
@@ -17,6 +16,9 @@
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("InventoryWindow")
 
 #include <QUiLoader>
 #include <QFile>
@@ -36,9 +38,8 @@
 namespace Inventory
 {
 
-InventoryWindow::InventoryWindow(InventoryModule *owner, QWidget *parent) :
+InventoryWindow::InventoryWindow(QWidget *parent) :
     QWidget(parent),
-    owner_(owner),
     mainWidget_(0),
     inventoryItemModel_(0),
     treeView_(0),
@@ -74,7 +75,7 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 {
     if (inventoryItemModel_)
     {
-        InventoryModule::LogError("Inventory treeview has already item model set!");
+        LogError("Inventory treeview has already item model set!");
         return;
     }
 
@@ -82,8 +83,14 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     inventoryItemModel_ = new InventoryItemModel(inventory_model.get());
     treeView_->setModel(inventoryItemModel_);
 
-    connect(inventoryItemModel_, SIGNAL(IndexModelIsDirty(const QModelIndex &)), 
+    // Connect view/selection-related signals.
+    connect(inventoryItemModel_, SIGNAL(IndexModelIsDirty(const QModelIndex &)),
         this, SLOT(IndexIsDirty(const QModelIndex &)));
+
+    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
+
+    connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
+        const QItemSelection &)), this, SLOT(UpdateActions()));
 
     // Connect download progress signals.
     connect(inventory_model.get(), SIGNAL(DownloadStarted(const QString &, const QString &)),
@@ -103,20 +110,6 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
 
     connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
         this, SLOT(FinishProgessNotification(const QString &)));
-
-    // Connect selectionChanged
-    connect(treeView_->selectionModel(), SIGNAL(selectionChanged(const QItemSelection &,
-        const QItemSelection &)), this, SLOT(UpdateActions()));
-
-    // Connect notification delayed sending to avoid ui thread problems when creating the notification widget
-//    connect(inventoryItemModel_->GetInventory(), SIGNAL(Notification(const QString &, int)),
-//        this, SLOT(CreateNotification(QString, int)), Qt::QueuedConnection);
-
-//    connect(inventoryItemModel_, SIGNAL(dataChanged), treeView_, SLOT(
-
-    ///\todo Hack: connect this signal only for regular OS, causes problems with WebDAV.
-    if (owner_->GetInventoryDataModelType() == InventoryModule::IDMT_OpenSim)
-        connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -139,11 +132,21 @@ void InventoryWindow::changeEvent(QEvent* e)
     }
 }
 
-void InventoryWindow::IndexIsDirty(const QModelIndex &index_model)
+void InventoryWindow::IndexIsDirty(const QModelIndex &index)
 {
-    treeView_->collapse(index_model);
-    inventoryItemModel_->Open(index_model);
-    treeView_->expand(index_model);
+    treeView_->collapse(index);
+    inventoryItemModel_->Open(index);
+    treeView_->expand(index);
+
+    /**\todo
+        This is hack to get around Qt bug introduced in 4.6.0:
+        When dynamically adding new children for folder the expand arrow will not become visible
+        until we've collapsed and expanded the parent folder also.
+        When we've updated to newer version, try if this is needed anymore.
+    QModelIndex parentIndex = inventoryItemModel_->parent(index);
+    treeView_->collapse(parentIndex);
+    treeView_->expand(parentIndex);
+    */
 }
 
 void InventoryWindow::OpenItem()
@@ -156,6 +159,7 @@ void InventoryWindow::OpenItem()
     }
     else
         inventoryItemModel_->Open(index);
+
     treeView_->selectionModel()->setCurrentIndex(index, QItemSelectionModel::ClearAndSelect);
     UpdateActions();
 }
@@ -172,12 +176,12 @@ void InventoryWindow::OpenItemProperties()
     if (!index.isValid())
         return;
 
-    InventoryAsset *item = dynamic_cast<InventoryAsset *>(inventoryItemModel_->GetItem(index));
-    if (!item)
+    QString id = inventoryItemModel_->GetItemId(index);
+    if (id.isEmpty())
         return;
 
     // InventoryModule manages item properties windows.
-    emit OpenItemProperties(item->GetID());
+    emit OpenItemProperties(id);
 }
 
 void InventoryWindow::AddFolder()
@@ -200,16 +204,25 @@ void InventoryWindow::AddFolder()
 
 void InventoryWindow::DeleteItem()
 {
-    ///\todo Delete for multiple items.
+/// @todo Delete for multiple items. Currenly causes crash in InventoryItemModel::parent()
 /*
     const QItemSelection &selection = treeView_->selectionModel()->selection();
     if (selection.isEmpty())
         return;
+
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (treeView_->model()->removeRow(index.row(), index.parent()))
+            UpdateActions();
+    }
 */
     QModelIndex index = treeView_->selectionModel()->currentIndex();
-    QAbstractItemModel *model = treeView_->model();
+    if (!index.isValid())
+        return;
 
-    if (model->removeRow(index.row(), index.parent()))
+    if (treeView_->model()->removeRow(index.row(), index.parent()))
         UpdateActions();
 
     inventoryItemModel_->CheckTreeForDirtys();
@@ -304,8 +317,6 @@ void InventoryWindow::UpdateActions()
     bool editable = treeView_->model()->flags(index) & Qt::ItemIsEditable;
     if (actionDelete)
         actionDelete->setEnabled(editable);
-    if (actionNewFolder)
-        actionNewFolder->setEnabled(editable);
     if (actionRename)
         actionRename->setEnabled(editable);
 
@@ -349,8 +360,7 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     msgBox->show();
 */
 
-    // Ali find a way to update the download/upload process! just do controller->setValue(int)
-    // Now its just sitting there at artificial 11%
+    ///\todo Find a way to update the download process if possible
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Downloading " + name + " from inventory", progress_controller));
     progress_controller->Start(11);
@@ -378,9 +388,7 @@ void InventoryWindow::FinishProgessNotification(const QString &id)
 
 void InventoryWindow::UploadStarted(const QString &filename)
 {
-    ///\todo Ali find a way to update the download/upload process! just do controller->setValue(int)
-    /// Now its just sitting there at artificial 13%
-    /// Pforce: Not possible to show progress for single asset with the current HTTP upload path -Ali.
+    /// No way to have any real upload progress info with current current HTTP upload path.
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
     progress_controller->Start(13);

@@ -191,6 +191,8 @@ void InventoryTreeView::dropEvent(QDropEvent *event)
             m->UploadFiles(filenames, itemnames, 0);
 
         event->acceptProposedAction();
+
+        itemModel->CheckTreeForDirtys();
     }
     else
         QTreeView::dropEvent(event);

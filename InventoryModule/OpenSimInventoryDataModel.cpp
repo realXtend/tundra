@@ -177,12 +177,6 @@ bool OpenSimInventoryDataModel::FetchInventoryDescendents(AbstractInventoryItem 
         currentWorldStream_->SendFetchInventoryDescendentsPacket(QSTR_TO_UUID(item->GetID()), RexUUID(), 0, false, true);
     }
 
-    ///\todo hack: delete dummy item.
-    /*
-    AbstractInventoryItem *dummy = dynamic_cast<InventoryFolder *>(item)->GetChildAssetById("DummyItem");
-    if (dummy)
-        SAFE_DELETE(dummy);
-    */
     return true;
 }
 
@@ -236,16 +230,13 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
     if (!asset)
         return false;
 
-    // Get asset service interface.
-    ServiceManagerPtr service_manager = owner_->GetFramework()->GetServiceManager();
-    if (!service_manager->IsRegistered(Service::ST_Asset))
+    // Get asset service.
+    AssetServiceInterface *asset_service = owner_->GetFramework()->GetService<AssetServiceInterface>();
+    if (!asset_service)
     {
         InventoryModule::LogError("Asset service doesn't exist.");
         return false;
     }
-
-    boost::shared_ptr<AssetServiceInterface> asset_service =
-        service_manager->GetService<AssetServiceInterface>(Service::ST_Asset).lock();
 
     // Get event manager.
     EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
@@ -277,21 +268,17 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         // If not, request asset from asset system.
         switch(asset_type)
         {
+        case RexAT_Texture:
+        {
+            TextureServiceInterface *texture_service = owner_->GetFramework()->GetService<TextureServiceInterface>();
+            if (texture_service)
+                tag = texture_service->RequestTexture(asset_id);
+            break;
+        }
         case RexAT_MaterialScript:
         case RexAT_ParticleScript:
-            tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
-            break;
-        case RexAT_Texture:
-            {
-            boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = 
-                service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
-            tag = texture_service->RequestTexture(asset_id);
-            break;
-            }
         case RexAT_SoundVorbis:
         case RexAT_SoundWav:
-            tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
-            break;
         case RexAT_Mesh:
             tag = asset_service->RequestAsset(asset_id, GetTypeNameFromAssetType(asset_type));
             break;
@@ -425,11 +412,9 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     case RexAT_FlashAnimation:
     {
         // Request assets from asset service.
-        if (service_manager->IsRegistered(Foundation::Service::ST_Asset))
+        AssetServiceInterface *asset_service = owner_->GetFramework()->GetService<AssetServiceInterface>();
+        if (asset_service)
         {
-            boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-                service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-
             request_tag_t tag = asset_service->RequestAsset(id, GetTypeNameFromAssetType(asset_type));
             if (tag)
             {
@@ -594,35 +579,43 @@ void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventData
     if (!parentFolder)
         return;
 
+    static_cast<InventoryFolder *>(parentFolder)->SetDirty(false);
+
     AbstractInventoryItem *existing = GetChildById(item_data->id.ToQString());
-    if (existing)
-        return;
-
-    if (item_data->item_type == IIT_Folder)
+    if (!existing)
     {
-        InventoryFolder *newFolder = static_cast<InventoryFolder *>(GetOrCreateNewFolder(
-            item_data->id.ToQString(), *parentFolder, false));
+        if (item_data->item_type == IIT_Folder)
+        {
+            InventoryFolder *newFolder = static_cast<InventoryFolder *>(GetOrCreateNewFolder(
+                item_data->id.ToQString(), *parentFolder, false));
 
-        newFolder->SetName(item_data->name.c_str());
-        ///\todo newFolder->SetType(item_data->type);
-        newFolder->SetDirty(true);
+            newFolder->SetName(item_data->name.c_str());
+            ///\todo newFolder->SetType(item_data->type);
+            newFolder->SetDirty(true);
+        }
+        else if (item_data->item_type == IIT_Asset)
+        {
+            InventoryAsset *newAsset = static_cast<InventoryAsset *>(GetOrCreateNewAsset(
+                item_data->id.ToQString(), item_data->assetId.ToQString(),
+                *parentFolder, item_data->name.c_str()));
+
+            newAsset->SetDescription(item_data->description.c_str());
+            newAsset->SetInventoryType(item_data->inventoryType);
+            newAsset->SetAssetType(item_data->assetType);
+            newAsset->SetCreatorId(item_data->creatorId);
+            newAsset->SetOwnerId(item_data->ownerId);
+            newAsset->SetGroupId(item_data->groupId);
+            newAsset->SetCreationTime(item_data->creationTime);
+
+            // Request names for the UUID's.
+            SendNameUuidRequest(newAsset);
+        }
     }
-    if (item_data->item_type == IIT_Asset)
+
+    if (item_data->lastItem)
     {
-        InventoryAsset *newAsset = static_cast<InventoryAsset *>(GetOrCreateNewAsset(
-            item_data->id.ToQString(), item_data->assetId.ToQString(),
-            *parentFolder, item_data->name.c_str()));
-
-        newAsset->SetDescription(item_data->description.c_str());
-        newAsset->SetInventoryType(item_data->inventoryType);
-        newAsset->SetAssetType(item_data->assetType);
-        newAsset->SetCreatorId(item_data->creatorId);
-        newAsset->SetOwnerId(item_data->ownerId);
-        newAsset->SetGroupId(item_data->groupId);
-        newAsset->SetCreationTime(item_data->creationTime);
-
-        // Request names for the UUID's.
-        SendNameUuidRequest(newAsset);
+        emit NewItem(parentFolder);
+        EmitFolderDescendentsFetched(parentFolder->GetID());
     }
 }
 
@@ -854,9 +847,10 @@ void OpenSimInventoryDataModel::CreateNewFolderFromFolderSkeleton(
     if (parent_folder)
     {
         parent_folder->AddChild(newFolder);
-        ///\todo  small hack: Add dummy item so that the expand/collapse arrows appear for every folder.
-        //  These dummy items are deleted after the folder has been expanded for the first time.
-        //InventoryAsset *dummy = new InventoryAsset("DummyItem", "DummyItem", "DummyItem", newFolder);
+        // A small hack: Add dummy item so that the expand/collapse arrows appear for every folder.
+        // These dummy items are deleted after the folder has been expanded for the first time.
+        InventoryAsset *dummy = new InventoryAsset("DummyItem", "", "Loading...", newFolder);
+        newFolder->AddChild(dummy);
 
         if (newFolder == GetOpenSimLibraryFolder())
             newFolder->SetIsLibraryItem(true);

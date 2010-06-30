@@ -22,7 +22,6 @@ class RexUUID;
 
 namespace Foundation
 {
-    class Framework;
     class EventDataInterface;
 }
 
@@ -40,6 +39,7 @@ namespace Inventory
     class InventoryFolder;
     class InventoryAsset;
 
+    /// Data model providing the OpenSim inventory model backend functionality.
     class OpenSimInventoryDataModel : public AbstractInventoryDataModel
     {
         Q_OBJECT
@@ -48,9 +48,7 @@ namespace Inventory
         /// Constructor.
         /// @param owner Owner module
         /// @inventory_skeleton Inventory skeleton pointer.
-        OpenSimInventoryDataModel(
-            InventoryModule *owner,
-            ProtocolUtilities::InventorySkeleton *inventory_skeleton);
+        OpenSimInventoryDataModel(InventoryModule *owner, ProtocolUtilities::InventorySkeleton *inventory_skeleton);
 
         /// Destructor.
         virtual ~OpenSimInventoryDataModel();
@@ -154,12 +152,12 @@ namespace Inventory
         void HandleAssetReadyForOpen(Foundation::EventDataInterface *data);
 
         /** Uploads a file using HTTP.
-         *  @param asset_type_t Asset type.
-         *  @param filename Filename.
-         *  @param name User-defined name.
-         *  @param description User-defined description.
-         *  @param folder_id Id of the destination folder for this item.
-         *  @return true if successful
+            @param asset_type_t Asset type.
+            @param filename Filename.
+            @param name User-defined name.
+            @param description User-defined description.
+            @param folder_id Id of the destination folder for this item.
+            @return true if successful
          */
         bool UploadFile(
             const asset_type_t asset_type,
@@ -169,15 +167,14 @@ namespace Inventory
             const RexUUID &folder_id);
 
         /** Uploads a buffer using HTTP.
-         *  @param asset_type_t Asset type.
-         *  @param filename Filename (used to decide asset type)
-         *  @param name User-defined name.
-         *  @param description User-defined description.
-         *  @param folder_id Id of the destination folder for this item.
-         *  @param data buffer
-         *  @return true if successful
+            @param asset_type_t Asset type.
+            @param filename Filename (used to decide asset type)
+            @param name User-defined name.
+            @param description User-defined description.
+            @param folder_id Id of the destination folder for this item.
+            @param data buffer
+            @return true if successful
          */
-
         bool UploadBuffer(
             const asset_type_t asset_type,
             const std::string &filename,
@@ -202,13 +199,6 @@ namespace Inventory
         /// @param asset Inventory asset for which the requst is made.
         void SendNameUuidRequest(InventoryAsset *asset);
 
-        /// Handles UUID-name map parsed from bot NameUUIDReply and GroupNameUUIDReply messages.
-        /// and assigns the reveiced names for the inventory assets who have requsted them.
-        /// @param map Map of UUID-name pairs.
-//        void HandleNameUuidReply(QMap<RexUUID, QString> map);
-
-        typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
-
     private:
         Q_DISABLE_COPY(OpenSimInventoryDataModel);
 
@@ -227,7 +217,6 @@ namespace Inventory
         void ThreadedUploadFiles(QStringList &filenames, QStringList &item_names);
 
         /// Used by UploadBuffers.
-        //void ThreadedUploadBuffers(StringList filenames, std::vector<std::vector<u8> > buffers);
         void ThreadedUploadBuffers(QStringList filenames, QVector<QVector<uchar> > buffers);
 
         /// Creates NewFileAgentInventory XML message.
@@ -255,6 +244,9 @@ namespace Inventory
 
         /// Pointer to WorldStream
         ProtocolUtilities::WorldStreamPtr currentWorldStream_;
+
+        /// Typedef for asset request map containing pair(request tag, asset reference) as key and item/filename as value.
+        typedef QMap<QPair<request_tag_t, QString>, QString> AssetRequestMap;
 
         /// Download request map.
         AssetRequestMap downloadRequests_;

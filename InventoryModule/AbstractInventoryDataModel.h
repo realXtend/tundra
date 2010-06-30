@@ -1,6 +1,6 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   AbstractInventoryDataModel.h
  *  @brief  Abstract inventory data model, pure virtual class. Inherit this class to create your own inventory
  *          data models to use in InventoryItemModel.
@@ -20,7 +20,7 @@ namespace Inventory
 {
     class AbstractInventoryItem;
 
-    /// Pure virtual class.
+    /// Abstract inventory data model, pure virtual class. Inherit this class to create your own inventory data models to use in InventoryItemModel.
     class AbstractInventoryDataModel : public QObject
     {
         Q_OBJECT
@@ -118,6 +118,10 @@ namespace Inventory
         /// @return Inventory trash folder.
         virtual bool GetUseTrashFolder() const = 0;
 
+        /// Semi-hack: sends signal indicating that folders contents are fetched and
+        /// the dummy "Loading..." folder can be deleted.
+        void EmitFolderDescendentsFetched(const QString &folder_id) { emit FolderDescendentsFetched(folder_id); }
+
     signals:
         /// Indicates that multiupload has started.
         /// @param file_count Number of files to be uploaded.
@@ -139,17 +143,25 @@ namespace Inventory
         void MultiUploadCompleted();
 
         /// Indicates that asset download has started.
-        /// @param asset_id
-        /// @param name
+        /// @param asset_id Asset ID.
+        /// @param name Name of the asset.
         void DownloadStarted(const QString &asset_id, const QString &name);
 
         /// Indicates that asset download has aborted.
-        /// @param asset_id
+        /// @param asset_id Asset ID.
         void DownloadAborted(const QString &asset_id);
 
         /// Indicates that asset download is completed.
-        /// @param asset_id
+        /// @param asset_id Asset ID.
         void DownloadCompleted(const QString &asset_id);
+
+        /// 
+        /// @param
+        void NewItem(AbstractInventoryItem *item);
+
+        /// Semi-hack: signal indicating that folders contents are fetched and the dummy "Loading..." asset can be deleted.
+        /// @param folder_id ID of the folder whose dummy asset we want to delete.
+        void FolderDescendentsFetched(const QString &folder_id);
 
     private:
         Q_DISABLE_COPY(AbstractInventoryDataModel);

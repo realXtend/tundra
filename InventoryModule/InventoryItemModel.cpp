@@ -1,18 +1,19 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
 /**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
  *  @file   InventoryItemModel.cpp
  *  @brief  Common inventory item tree model for different inventory data models.
  */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "InventoryItemModel.h"
 #include "InventoryModule.h"
 #include "AbstractInventoryDataModel.h"
 #include "InventoryFolder.h"
 #include "InventoryAsset.h"
-#include <RexUUID.h>
+#include "RexUUID.h"
 
 #include <QModelIndex>
 #include <QVariant>
@@ -37,6 +38,12 @@ InventoryItemModel::InventoryItemModel(AbstractInventoryDataModel *data_model) :
     useTrash_(data_model->GetUseTrashFolder()),
     itemMoveFlag_(false)
 {
+    // Hack: in order to increase Inventory tree view's visual responsiveness we add dummy "Loading..."
+    // asset to each folder when they are created for the first time. We connect this signal to know
+    // when it's ok to delete the dummy asset.
+    connect(dataModel_, SIGNAL(FolderDescendentsFetched(const QString &)), this, SLOT(DeleteDummyFolder(const QString &)));
+
+    connect(dataModel_, SIGNAL(NewItem(AbstractInventoryItem *)), this, SLOT(Update(AbstractInventoryItem *)));
 }
 
 InventoryItemModel::~InventoryItemModel()
@@ -266,11 +273,11 @@ QModelIndex InventoryItemModel::index(int row, int column, const QModelIndex &pa
     if (!parent.isValid())
         parentItem = static_cast<InventoryFolder *>(dataModel_->GetRoot());
     else
-        parentItem = static_cast<InventoryFolder *>((AbstractInventoryItem *)(parent.internalPointer()));
+        parentItem = static_cast<InventoryFolder *>(reinterpret_cast<AbstractInventoryItem *>(parent.internalPointer()));
 
     AbstractInventoryItem *childItem = parentItem->Child(row);
     if (childItem)
-        return createIndex(row, column, childItem);
+        return createIndex(row, column, reinterpret_cast<void *>(childItem));
     else
         return QModelIndex();
 
@@ -365,7 +372,6 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
 
     beginInsertRows(parent, position, position );
 
-#ifdef _DEBUG
     RexUUID id;
     bool unique = false;
     while(!unique)
@@ -379,9 +385,6 @@ bool InventoryItemModel::InsertFolder(int position, const QModelIndex &parent, c
     }
 
     dataModel_->GetOrCreateNewFolder(id.ToQString(), *parentFolder, name);
-#else
-    dataModel_->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *parentFolder, name);
-#endif
 
     endInsertRows();
 
@@ -427,7 +430,6 @@ bool InventoryItemModel::InsertExistingItem(int position, AbstractInventoryItem 
     if (item->GetItemType()== AbstractInventoryItem::Type_Asset)
     {
         InventoryAsset *oldAsset= static_cast<InventoryAsset *>(item);
-
         if (oldAsset->IsLibraryItem())
         {
             // Library asset can only be copied, moving not possible.
@@ -473,11 +475,12 @@ QModelIndex InventoryItemModel::parent(const QModelIndex &index) const
         return QModelIndex();
 
     AbstractInventoryItem *childItem = GetItem(index);
+    assert(childItem);
     InventoryFolder *parentItem = static_cast<InventoryFolder *>(childItem->GetParent());
     if (parentItem == static_cast<InventoryFolder *>(dataModel_->GetRoot()))
         return QModelIndex();
 
-    return createIndex(parentItem->Row(), 0, parentItem);
+    return createIndex(parentItem->Row(), 0, reinterpret_cast<void *>(static_cast<AbstractInventoryItem*>(parentItem)));
 
 /*
     if (!index.isValid())
@@ -513,7 +516,7 @@ int InventoryItemModel::rowCount(const QModelIndex &parent) const
 
 int InventoryItemModel::columnCount(const QModelIndex &parent) const
 {
-    ///\note We probably won't have more than one column.
+    ///\note We probably never have more than one column.
     //if (parent.isValid())
     //    return static_cast<InventoryAsset *>(parent.internalPointer())->ColumnCount();
     //return dynamic_cast<InventoryFolder *>(dataModel_->GetRoot())->ColumnCount();
@@ -582,14 +585,6 @@ void InventoryItemModel::CopyAssetReferenceToClipboard(const QModelIndex &index)
     clipboard->setText(asset->GetAssetReference(), QClipboard::Clipboard);
 }
 
-AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const
-{
-    if (index.isValid())
-        return static_cast<AbstractInventoryItem *>(index.internalPointer());
-
-    return dataModel_->GetRoot();
-}
-
 void InventoryItemModel::CheckTreeForDirtys()
 {
     InventoryFolder *root = dynamic_cast<InventoryFolder*>(dataModel_->GetRoot());
@@ -597,7 +592,7 @@ void InventoryItemModel::CheckTreeForDirtys()
         CheckChildrenForDirtys(root->GetChildren());
 }
 
-void InventoryItemModel::CheckChildrenForDirtys(QList<AbstractInventoryItem*> children)
+void InventoryItemModel::CheckChildrenForDirtys(const QList<AbstractInventoryItem*> &children)
 {
     foreach (AbstractInventoryItem *item, children)
     {
@@ -611,11 +606,68 @@ void InventoryItemModel::CheckChildrenForDirtys(QList<AbstractInventoryItem*> ch
                 continue;
             QModelIndexList all_items = persistentIndexList();
             foreach (QModelIndex index, all_items)
-                if (item == static_cast<AbstractInventoryItem *>(index.internalPointer()))
+                if (item == reinterpret_cast<AbstractInventoryItem *>(index.internalPointer()))
                     emit IndexModelIsDirty(index);
             folder->SetDirty(false);
         }
     }
+}
+
+QString InventoryItemModel::GetItemId(const QModelIndex &index) const
+{
+    AbstractInventoryItem *item = GetItem(index);
+    if (item)
+        return item->GetID();
+    else
+        return QString();
+}
+
+void InventoryItemModel::Update(AbstractInventoryItem *parent)
+{
+    QModelIndexList indexList = persistentIndexList();
+    foreach (QModelIndex index, indexList)
+        if (parent == reinterpret_cast<AbstractInventoryItem *>(index.internalPointer()))
+        {
+            emit IndexModelIsDirty(index);
+            break;
+        }
+}
+
+void InventoryItemModel::DeleteDummyFolder(const QString &parent_id)
+{
+    AbstractInventoryItem *parentFolder = dataModel_->GetChildFolderById(parent_id);
+    if (!parentFolder)
+        return;
+
+    AbstractInventoryItem *dummyFolder = static_cast<InventoryFolder *>(parentFolder)->GetChildById("DummyItem");
+    if (!dummyFolder)
+        return;
+
+    QModelIndexList all_items = persistentIndexList();
+    QModelIndex parent_index;
+    foreach (QModelIndex index, all_items)
+        if (parentFolder == static_cast<InventoryFolder *>(reinterpret_cast<AbstractInventoryItem *>(index.internalPointer())))
+        {
+            parent_index = index;
+            break;
+        }
+
+    if (parent_index.isValid())
+    {
+        beginRemoveRows(parent_index, 0, 1);
+        static_cast<InventoryFolder *>(parentFolder)->RemoveChildren(0, 1);
+        endRemoveRows();
+
+        emit IndexModelIsDirty(parent_index);
+    }
+}
+
+AbstractInventoryItem *InventoryItemModel::GetItem(const QModelIndex &index) const
+{
+    if (index.isValid())
+        return reinterpret_cast<AbstractInventoryItem *>(index.internalPointer());
+
+    return dataModel_->GetRoot();
 }
 
 }

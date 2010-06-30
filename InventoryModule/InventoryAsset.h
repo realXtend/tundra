@@ -15,6 +15,7 @@ namespace Inventory
 {
     class InventoryFolder;
 
+    /// A class representing asset in inventory.
     class InventoryAsset : public AbstractInventoryItem
     {
         Q_OBJECT
@@ -24,11 +25,14 @@ namespace Inventory
         Q_PROPERTY(inventory_type_t inventoryType_ READ GetInventoryType WRITE SetInventoryType)
 
     public:
-        /// Constructor.
-        /// @param id ID.
-        /// @param asset_reference Asset reference.
-        /// @param name Name.
-        /// @param parent Parent folder.
+        /** Constructor.
+            @param id ID.
+            @param asset_reference Asset reference.
+            @param name Name.
+            @param parent Parent folder.
+
+            @note If you pass parent folder, the asset isn't currently added to parent's child automatically.
+        */
         InventoryAsset(const QString &id, const QString &asset_reference = "", const QString &name = "New Item",
             InventoryFolder *parent = 0);
 
@@ -65,14 +69,14 @@ namespace Inventory
         /// AbstractInventoryItem override
         void SetIsLibraryItem(const bool value) { libraryItem_ = value; }
 
-        /// Is this folder descendent of spesific folder.
-        /// @param searchFolder Folder to be investigated.
-        bool IsDescendentOf(AbstractInventoryItem *searchFolder) const;
-
         /// AbstractInventoryItem override
         InventoryItemType GetItemType() const { return itemType_; }
 
-        // InventoryAsset API
+        // ===== InventoryAsset API ===== //
+
+        /// Is this folder descendent of spesific folder.
+        /// @param searchFolder Folder to be investigated.
+        bool IsDescendentOf(AbstractInventoryItem *searchFolder) const;
 
         /// @return asset reference.
         QString GetAssetReference() const { return assetReference_; }
@@ -87,14 +91,14 @@ namespace Inventory
         void SetDescription(const QString &description) { description_ = description; }
 
         /// Get/set for the description.
-        void SetAssetType(const asset_type_t &asset_type) { assetType_ = asset_type; }
+        void SetAssetType(const asset_type_t asset_type) { assetType_ = asset_type; }
         asset_type_t GetAssetType() const { return assetType_;}
 
         /// @return Inventory type (see RexTypes.h).
         inventory_type_t GetInventoryType() const { return inventoryType_; }
 
         /// @param inventory_type New inventory type (see RexTypes.h).
-        void SetInventoryType(const inventory_type_t &inventory_type) { inventoryType_ = inventory_type; }
+        void SetInventoryType(const inventory_type_t inventory_type) { inventoryType_ = inventory_type; }
 
         /// Get/set for creator ID.
         void SetCreatorId(const RexUUID &creator_id) { creatorId_ = creator_id; uuids_.push_back(creator_id); }
