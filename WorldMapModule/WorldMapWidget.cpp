@@ -121,18 +121,15 @@ namespace WorldMap
                     if (iter.key() == currentBlock->mapImageID.ToQString())
                     {
                         scene->addPixmap(iter.value());
-
-                        QGraphicsScene *graphicsViewScene = worldMapGraphicsView->scene();
-                        if (!graphicsViewScene)
-                            graphicsViewScene = new QGraphicsScene(this);
-
-                        QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);
-                        item->font().setPixelSize(6);
-                        item->setHtml(currentBlock->regionName.c_str());
-                        graphicsViewScene->addItem(item);
-
                         worldMapGraphicsView->setScene(scene);
+
+                        QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);                        
+                        item->setHtml(sim_name_);                        
+                        scene->addItem(item);
+                        item->show();
+
                         worldMapGraphicsView->update();
+                        scene->update();
 
                         break;
                     }
@@ -149,6 +146,8 @@ namespace WorldMap
         if (!scene)
             scene = new QGraphicsScene(this);
                 
+        worldMapGraphicsView->setScene(scene);
+
         ImageItem *item = 0;
         if (avatar_items_.contains(avatar_id))
         {
@@ -163,13 +162,16 @@ namespace WorldMap
             }
 
             item->SetAvatarName(avatar_name);            
-            scene->addItem(item);            
+            scene->addItem(item);
             avatar_items_.insert(avatar_id, item); //Add to items            
         }
 
         if (!avatar_names_.contains(avatar_id))
             avatar_names_.insert(avatar_id, avatar_name); //Add to names
-                
+        
+        if (!scene->items().contains(item))
+            scene->addItem(item);
+
         item->setPos(position.x, position.y);
         item->SetTextPosition(position.x, position.y);
         item->UpdateTextPosition();
