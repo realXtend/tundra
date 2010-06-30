@@ -120,10 +120,25 @@ namespace TextureDecoder
             data_stream.readRawData(data_str_ptr, data_length);
 
             decoded_texture.close();
-            TextureDecoderModule::LogDebug("Found decoded texture " +id.left(7).toStdString() + "... from cache");
+            TextureDecoderModule::LogDebug("Found decoded texture " + id.left(7).toStdString() + "... from cache");
             return texture;
         }
         return 0;
+    }
+
+    void TextureCache::DeleteFromCache(const std::string &texture_id)
+    {
+        QString id = GetHash(texture_id);
+        QFile decoded_texture(GetFullPath(id));
+        if (decoded_texture.exists())
+        {
+            if (decoded_texture.remove())
+                TextureDecoderModule::LogDebug("Removed decoded texture " + id.left(7).toStdString() + "... from cache");
+            else
+                TextureDecoderModule::LogDebug("Could not remove decoded texture " + id.left(7).toStdString() + "... from cache. I/O error.");
+        }
+        else
+            TextureDecoderModule::LogDebug("Decoded texture " + id.left(7).toStdString() + "... was not in cache. Could not remove.");
     }
 
     void TextureCache::CheckCacheSize(bool make_extra_space)

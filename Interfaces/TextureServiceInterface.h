@@ -28,6 +28,10 @@ namespace Foundation
             \return request tag, will be sent back along with RESOURCE_READY event
          */
         virtual request_tag_t RequestTexture(const std::string& asset_id) = 0;
+
+        //! Removes a texture from the disk cache with the texture id
+        //! @param texture_is as std::string
+        virtual void DeleteFromCache(const std::string &texture_id) = 0;
     };
 }
 

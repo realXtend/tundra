@@ -350,7 +350,8 @@ namespace Asset
         const std::string& asset_id = asset->GetId();
 
         // Delete from disk cache
-        boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id));
+        const std::string& type = asset->GetType();
+        boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id)  + "." + type);
         if (boost::filesystem::exists(file_path))
         {
             if (boost::filesystem::remove(file_path))

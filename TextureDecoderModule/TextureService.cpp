@@ -82,6 +82,12 @@ namespace TextureDecoder
 
         return tag;
     }
+
+    void TextureService::DeleteFromCache(const std::string &texture_id)
+    {
+        if (cache_)
+            cache_->DeleteFromCache(texture_id);
+    }
     
     void TextureService::Update(f64 frametime)
     {

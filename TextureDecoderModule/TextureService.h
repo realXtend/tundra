@@ -32,6 +32,10 @@ namespace TextureDecoder
             \return request tag, will be used in eventual RESOURCE_READY event
          */
         virtual request_tag_t RequestTexture(const std::string& asset_id);
+
+        //! Removes a texture from the disk cache with the texture id
+        //! @param texture_is as std::string
+        virtual void DeleteFromCache(const std::string &texture_id);
         
         //! Updates texture requests. Called by TextureDecoderModule
         void Update(f64 frametime);
