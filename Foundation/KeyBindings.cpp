@@ -57,8 +57,8 @@ namespace Foundation
              << "toggle.camera" << "toggle.console" << "toggle.fly" 
              << "rotate.left" << "rotate.right"
              << "zoom.in" << "zoom.out" << "naali.unfocus.ui"
-			 << "toggle.tripod"
-			 << "object.focus";
+             << "toggle.tripod"
+             << "object.focus";
     }
 
     void KeyBindings::BindKey(Binding binding)
@@ -138,10 +138,11 @@ namespace Foundation
 
     QString KeyBindings::NameForEvent(int event_id)
     {
+        return QString();
+/*
         QString name;
         switch (event_id)
         {
-/*
             // Fly
             case Input::Events::TOGGLE_FLYMODE:
                 name = "toggle.fly";
@@ -152,14 +153,14 @@ namespace Foundation
                 name = "toggle.camera";
                 break;
 
-			// Lock Camera - Tripod
-			case Input::Events::CAMERA_TRIPOD:
+            // Lock Camera - Tripod
+            case Input::Events::CAMERA_TRIPOD:
                 name = "toggle.tripod";
                 break;
 
-			case Input::Events::FOCUS_ON_OBJECT:
-				name = "object.focus";
-				break;
+            case Input::Events::FOCUS_ON_OBJECT:
+                name = "object.focus";
+                break;
 
             // Console
             case Input::Events::SHOW_DEBUG_CONSOLE:
@@ -241,13 +242,13 @@ namespace Foundation
             case Input::Events::PY_OBJECTEDIT_TOGGLE_SCALE:
                 name = "python.object.toggle.scale";
                 break;
-*/
             // Unknown
             default:
                 name = "";
                 break;
         }
         return name;
+*/
     }
 
     std::pair<int,int> KeyBindings::EventPairForName(QString name)
@@ -264,15 +265,15 @@ namespace Foundation
             id_pair.first = Input::Events::SWITCH_CAMERA_STATE;
             id_pair.second = 0;
         }
-		else if (name == "toggle.tripod")
+        else if (name == "toggle.tripod")
         {
-			id_pair.first = Input::Events::CAMERA_TRIPOD;
+            id_pair.first = Input::Events::CAMERA_TRIPOD;
             id_pair.second = 0;
         }
-		else if (name == "object.focus")
+        else if (name == "object.focus")
         {
-			id_pair.first = Input::Events::FOCUS_ON_OBJECT;
-			id_pair.second = 0;
+            id_pair.first = Input::Events::FOCUS_ON_OBJECT;
+            id_pair.second = 0;
         }
         else if (name == "toggle.console")
         {
