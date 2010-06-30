@@ -365,6 +365,7 @@ namespace Foundation
         default_scene_.reset();
         scenes_.clear();
 
+        event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
     }

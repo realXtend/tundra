@@ -139,6 +139,12 @@ namespace Foundation
          */
         bool HasEventSubscriber(ModuleInterface* module);
         
+        //! Clears all delayed events. Called by the framework.
+        /*! Called before unloading modules so that shared pointers left in the delayed event queue do not cause trouble
+            (for example Ogre textures that would otherwise freed after Ogre uninit, leading to a crash)
+         */
+        void ClearDelayedEvents();
+        
         //! Processes delayed events. Called by the framework.
         /*! \param frametime Time since last frame
          */ 
