@@ -42,13 +42,13 @@ namespace
         if (!tex)
         {
             std::stringstream ss;
-            ss << "Ogre Texture \"" << texName << "\" not found!";
+            ss << "Ogre Texture " << texName << " not found!";
             Environment::EnvironmentModule::LogWarning(ss.str());
             return;
         }
 
         std::stringstream ss;
-        ss << "Texture \"" << texName << "\": width: " << tex->getWidth() << ", height: " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
+        ss << "Texture " << texName << " - " << tex->getWidth() << " x " << tex->getHeight() << ", mips: " << tex->getNumMipmaps();
         Environment::EnvironmentModule::LogDebug(ss.str());
     }
 

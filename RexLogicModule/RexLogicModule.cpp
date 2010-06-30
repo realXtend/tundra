@@ -237,13 +237,11 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-    LogInfo("System " + Name() + " subscribed to network events [NetworkState] and added to LogicEventHandlerMap");
 
     // NetworkIn events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-    LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
 
     send_input_state_ = true;
 
