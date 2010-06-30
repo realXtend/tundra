@@ -342,8 +342,10 @@ namespace PythonScript
             else if (event_id == Foundation::WORLD_STREAM_READY)
             {
                 ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
-                if (event_data)
+                if (event_data) {
                     worldstream = event_data->WorldStream;
+                    value = PyObject_CallMethod(pmmInstance, "WORLD_STREAM_READY", "i", event_id);
+                }
             }
         }
 
