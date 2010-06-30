@@ -210,8 +210,8 @@ namespace Asset
         } 
             
         // Last check disk cache
-        asset = cache_->GetAsset(asset_id, false, true);    
-        return asset;    
+        asset = cache_->GetAsset(asset_id, false, true, asset_type);
+        return asset;
     }
     
     Foundation::AssetCacheInfoMap AssetManager::GetAssetCacheInfo()

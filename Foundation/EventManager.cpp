@@ -250,6 +250,13 @@ namespace Foundation
         return next_request_tag_++;
     }    
     
+    void EventManager::ClearDelayedEvents()
+    {
+        MutexLock lock(delayed_events_mutex_);
+        delayed_events_.clear();
+        new_delayed_events_.clear();
+    }
+    
     void EventManager::ProcessDelayedEvents(f64 frametime)
     {
         {
