@@ -21,12 +21,6 @@ namespace CoreUi
         setupUi(internal_widget_);
         setWidget(internal_widget_);
 
-        QFont titleFont("facetblack", 10, QFont::Normal, false);
-        titleFont.setCapitalization(QFont::AllUppercase);
-        titleFont.setStyleStrategy(QFont::PreferAntialias);
-        titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-        titleLabel->setFont(titleFont);
-
         setZValue(100);
         visibility_animation_ = new QPropertyAnimation(this, "opacity", this);
         visibility_animation_->setDuration(500);
@@ -58,14 +52,18 @@ namespace CoreUi
 
     void TeleportWidget::SetCurrentRegion(const QString &region_name)
     {
-        current_region_ = region_name;
-        currentRegionLabel->setText(current_region_);        
+        current_region_ = region_name;        
     }
 
     void TeleportWidget::AnimatedHide()
     {
         visibility_animation_->setDirection(QAbstractAnimation::Backward);
         visibility_animation_->start();        
+    }
+
+    void TeleportWidget::InsertMapWidget(QWidget *map_widget)
+    {
+        mapWidgetLayout->addWidget(map_widget);
     }
 
     // Protected

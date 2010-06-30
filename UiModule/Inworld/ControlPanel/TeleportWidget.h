@@ -28,6 +28,7 @@ namespace CoreUi
     public slots:
         UI_MODULE_API void SetMapBlocks(const QList<ProtocolUtilities::MapBlock> &map_blocks);
         UI_MODULE_API void SetCurrentRegion(const QString &region_name);
+        UI_MODULE_API void InsertMapWidget(QWidget *map_widget);
         void AnimatedHide();
 
     protected:

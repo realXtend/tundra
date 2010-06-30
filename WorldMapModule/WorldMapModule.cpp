@@ -20,14 +20,13 @@
 #include "AssetEvents.h"
 #include "WorldLogicInterface.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "UiSettingsServiceInterface.h"
 
 #include "EC_OgrePlaceable.h"
 #include "EC_OpenSimPresence.h"
 #include "SceneManager.h"
 
-#include <UiModule.h>
-#include <Inworld/InworldSceneController.h>
-#include "Inworld/View/UiWidgetProperties.h"
+#include <Inworld/ControlPanel/TeleportWidget.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -55,24 +54,29 @@ namespace WorldMap
 
     void WorldMapModule::PostInitialize()
     {
-        
-        RegisterConsoleCommand(Console::CreateCommand("WorldMap",
-            "Shows the world map.",
-            Console::Bind(this, &WorldMapModule::ShowWindow)));
-
         frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         resource_event_category_ = framework_->GetEventManager()->QueryEventCategory("Resource");
+        
+        Foundation::UiSettingsServiceInterface *ui_settings_service = framework_->GetService<Foundation::UiSettingsServiceInterface>();
+        if (ui_settings_service)
+        {
+            CoreUi::TeleportWidget *teleport_widget = dynamic_cast<CoreUi::TeleportWidget*>(ui_settings_service->GetTeleportWidget());
+            if (teleport_widget)
+            {
+                worldmap_widget_ = new WorldMapWidget();    
+                teleport_widget->InsertMapWidget(worldmap_widget_);
+            }
+        }
     }
 
     void WorldMapModule::Update(f64 frametime)
     {
         time_from_last_update_ms_ += frametime;
-        if (time_from_last_update_ms_ < 1)
+        if (time_from_last_update_ms_ < 0.5)
             return;
         time_from_last_update_ms_ = 0;
 
         UpdateAvatarPositions();
-
     }
 
     bool WorldMapModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
@@ -86,7 +90,6 @@ namespace WorldMap
                 {
                     networkStateEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
                     networkInEventCategory_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-
                     return false;
                 }
             }
@@ -110,35 +113,19 @@ namespace WorldMap
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
-                boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-                if (ui_module.get())
-                {
-                    WorldMapModule::LogInfo("WorldMapModule: Initializing world map widget");
-
-                    worldmap_widget_ = new WorldMapWidget();
-                    UiServices::UiWidgetProperties widget_properties("World map", UiServices::SceneWidget);
-                    ui_module->GetInworldSceneController()->AddWidgetToScene(worldmap_widget_, widget_properties);                    
-                }
-
+                
             }
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             {
-                boost::shared_ptr<UiServices::UiModule> ui_module =
-                    framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-                if (ui_module)
-                    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(worldmap_widget_);
+                if (worldmap_widget_)
+                    worldmap_widget_->ClearAllContent();
             }
             else if (event_id == ProtocolUtilities::Events::EVENT_USER_DISCONNECTED)
             {
                 ProtocolUtilities::UserConnectivityEvent *event_data = checked_static_cast<ProtocolUtilities::UserConnectivityEvent *>(data);
                 assert(event_data);
-                if (event_data)
-                {
-                    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();                        
-                    if (ui_module.get() && worldmap_widget_)
-                        worldmap_widget_->RemoveAvatar(event_data->agentId.ToQString());
-                }
-
+                if (event_data && worldmap_widget_)
+                    worldmap_widget_->RemoveAvatar(event_data->agentId.ToQString());
             }
         }
 
@@ -149,7 +136,6 @@ namespace WorldMap
 
         if (category_id == networkInEventCategory_)
         {
-
             using namespace ProtocolUtilities;
             NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
             assert(netdata);
@@ -158,16 +144,13 @@ namespace WorldMap
 
             switch(event_id)
             {
-            case RexNetMsgMapBlockReply:
-                return HandleOSNE_MapBlock(netdata);
-
-            case RexNetMsgRegionHandshake:
-                return HandleOSNE_RegionHandshake(netdata);
-
-            default:
-                break;
+                case RexNetMsgMapBlockReply:
+                    return HandleOSNE_MapBlock(netdata);
+                case RexNetMsgRegionHandshake:
+                    return HandleOSNE_RegionHandshake(netdata);
+                default:
+                    break;
             }
-            
         }
 
         return false;
@@ -230,18 +213,14 @@ namespace WorldMap
             boost::shared_ptr<Foundation::TextureServiceInterface> texture_service = framework_->GetServiceManager()->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();            
             if (texture_service)
             {
-
-                //TODO remove texture from cache if exists
-
+                texture_service->DeleteFromCache(block.mapImageID.ToString());
                 request_tag_t tag = texture_service->RequestTexture(block.mapImageID.ToString());
                 if (tag)
                     map_asset_requests_.push_back(tag);                
             }
-
         }
 
         worldmap_widget_->SetMapBlocks(mapBlocks);
-
         return false;
         
     }
@@ -268,7 +247,6 @@ namespace WorldMap
 
     void WorldMapModule::UpdateAvatarPositions()
     {
-
         if (!worldmap_widget_)
             return;
 
@@ -312,29 +290,6 @@ namespace WorldMap
             }
         }
                 
-    }
-
-    Console::CommandResult WorldMapModule::ShowWindow(const StringVector &params)
-    {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module)
-            return Console::ResultFailure("Failed to acquire UiModule pointer!");
-
-        if (worldmap_widget_)
-        {
-            ui_module->GetInworldSceneController()->BringProxyToFront(worldmap_widget_);
-            return Console::ResultSuccess();
-        }
-
-        worldmap_widget_ = new WorldMapWidget();
-        UiServices::UiWidgetProperties widget_properties("World map", UiServices::SceneWidget);
-        ui_module->GetInworldSceneController()->AddWidgetToScene(worldmap_widget_, widget_properties);
-        worldmap_widget_->show();
-
-        if (currentWorldStream_)
-            currentWorldStream_->SendMapBlockRequest();        
-
-        return Console::ResultSuccess();
     }
 
     QImage WorldMapModule::ConvertToQImage(Foundation::TextureInterface &tex)
