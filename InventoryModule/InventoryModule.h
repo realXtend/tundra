@@ -7,8 +7,8 @@
  *          or InventoryItemModel classes.
  */
 
-#ifndef incl_InventoryModule_h
-#define incl_InventoryModule_h
+#ifndef incl_InventoryModule_InventoryModule_h
+#define incl_InventoryModule_InventoryModule_h
 
 #include "InventoryModuleApi.h"
 #include "ModuleInterface.h"
@@ -66,26 +66,9 @@ namespace Inventory
         /// Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
-        /// Subscribes this module to listen network events.
-        void SubscribeToNetworkEvents();
-
-        /// Console command for uploading an asset, non-threaded.
-        Console::CommandResult UploadAsset(const StringVector &params);
-
-        /// Console command for uploading multiple assets, threaded.
-        Console::CommandResult UploadMultipleAssets(const StringVector &params);
-
-#ifdef _DEBUG
-        /// Console command for testing the inventory service.
-        Console::CommandResult InventoryServiceTest(const StringVector &params);
-#endif
-
-        /// Returns the inventory pointer
+        /// Returns the inventory (data model) pointer
         /// @note Meant mostly for module's internal use.
         InventoryPtr GetInventoryPtr() const { return inventory_; }
-
-        /// Return the type of the inventory data model (e.g. OpenSim or WebDAV).
-        InventoryDataModelType GetInventoryDataModelType() const { return inventoryType_; }
 
         /// Returns pointer to the inventory service.
         InventoryService *GetInventoryService() const { return service_; }
@@ -104,12 +87,26 @@ namespace Inventory
     private:
         Q_DISABLE_COPY(InventoryModule);
 
+        /// Console command for uploading an asset, non-threaded.
+        Console::CommandResult UploadAsset(const StringVector &params);
+
+        /// Console command for uploading multiple assets, threaded.
+        Console::CommandResult UploadMultipleAssets(const StringVector &params);
+
+        /// Console command for testing the inventory service.
+        Console::CommandResult InventoryServiceTest(const StringVector &params);
+
+        /// Creates inventory window.
+        void CreateInventoryWindow();
+
         /// Handles InventoryDescendents packet.
         /// @param data Event data.
         void HandleInventoryDescendents(Foundation::EventDataInterface* event_data);
 
-        /// Handles CreateInventoryItem packet.
-        /// @param data Event data.
+        /** Handles CreateInventoryItem packet.
+            @param data Event data.
+            @note It seems that this packet is only sent by 0.4 reX server. Maybe drop support at some point?
+        */
         void HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data);
 
         /// Handles CreateInventoryItem packet.
@@ -125,6 +122,10 @@ namespace Inventory
 
         /// Connects upload-related signals.
         void ConnectSignals();
+
+        /// Handles WebDAV upload request related to avatar.
+        /// @param data Event data.
+        void HandleWebDavAvatarUploadRequest(event_id_t event_id, Foundation::EventDataInterface* event_data);
 
         /// Name of the module.
         static std::string type_name_static_;
@@ -170,6 +171,9 @@ namespace Inventory
 
         /// Inventory service pointer.
         InventoryService *service_;
+
+        /// Used when handling InventoryDescendents packet.
+        int descendents_;
     };
 }
 

@@ -23,22 +23,9 @@ class QModelIndex;
 class QLineEdit;
 QT_END_NAMESPACE
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
-
-namespace ProtocolUtilities
-{
-    class WorldStream;
-    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
-}
-
 namespace UiServices
 {
-    class UiProxyWidget;
     class ProgressController;
-    class ProgressNotification;
 }
 
 namespace CoreUi
@@ -48,9 +35,7 @@ namespace CoreUi
 
 namespace Inventory
 {
-    class InventoryModule;
     class InventoryTreeView;
-    class InventoryItemEventData;
     class InventoryItemModel;
     class AbstractInventoryDataModel;
     typedef boost::shared_ptr<AbstractInventoryDataModel> InventoryPtr;
@@ -62,9 +47,8 @@ namespace Inventory
 
     public:
         /// Constructor.
-        /// @param owner InventoryModule pointer
         /// @param parent Parent widget.
-        InventoryWindow(InventoryModule *owner, QWidget *parent = 0);
+        explicit InventoryWindow(QWidget *parent = 0);
 
         /// Destructor.
         virtual ~InventoryWindow();
@@ -91,8 +75,9 @@ namespace Inventory
         void changeEvent(QEvent* e);
 
     private slots:
-        ///
-        void IndexIsDirty(const QModelIndex &index_model);
+        /// Refreshes (collapses, opens and expands) item at spesific index. Used mostly for folders.
+        /// @param index Model index.
+        void IndexIsDirty(const QModelIndex &index);
 
         /// Opens inventory item (folder or asset) when user double-clicks it.
         void OpenItem();
@@ -168,9 +153,6 @@ namespace Inventory
 
         /// Creates the context menu actions.
         void CreateActions();
-
-        /// InventoryModule pointer.
-        InventoryModule *owner_;
 
         /// Inventory view model.
         QPointer<InventoryItemModel> inventoryItemModel_;
