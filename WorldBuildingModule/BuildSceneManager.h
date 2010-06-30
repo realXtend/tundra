@@ -11,6 +11,7 @@
 #include "BuildingWidget.h"
 #include "UiHelper.h"
 #include "PythonHandler.h"
+#include "CameraHandler.h"
 
 #include "ui_ObjectInfoWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
@@ -44,6 +45,9 @@ namespace WorldBuilding
         void ShowBuildScene();
         void HideBuildScene();
 
+        void CreateCamera();
+        void ResetCamera();
+
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
         
@@ -70,10 +74,12 @@ namespace WorldBuilding
 
         Helpers::UiHelper ui_helper_;
         PythonHandler *python_handler_;
-
+        
         PropertyEditorHandler *property_editor_handler_;
-
         bool prim_selected_;
+
+        View::CameraHandler *camera_handler_;
+        View::CameraID selected_camera_id_;
     };
 }
 

@@ -50,10 +50,11 @@ add_definitions (-DWORLD_BUILDING_MODULE_EXPORTS)
 use_package (BOOST)
 use_package (QT4)
 use_package (POCO)
+use_package (OGRE)
 use_package (CURL)    # NEEDED BY ProtocolUtilities
 use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities UiModule RexLogicModule EntityComponents/EC_OpenSimPrim)
+use_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities UiModule RexLogicModule OgreRenderingModule EntityComponents/EC_OpenSimPrim)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -61,10 +62,11 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RE
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
+link_package (OGRE)
 link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities UiModule RexLogicModule EC_OpenSimPrim)
+link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities UiModule RexLogicModule OgreRenderingModule EC_OpenSimPrim)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

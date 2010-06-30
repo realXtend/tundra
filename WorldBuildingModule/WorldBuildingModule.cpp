@@ -77,12 +77,15 @@ namespace WorldBuilding
             {
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
                     build_scene_manager_->inworld_state = true;
+                    build_scene_manager_->CreateCamera();
                     break;
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                     build_scene_manager_->inworld_state = false;
+                    build_scene_manager_->ResetCamera();
                     break;
                 case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                     build_scene_manager_->inworld_state = false;
+                    build_scene_manager_->ResetCamera();
                     break;
                 case ProtocolUtilities::Events::EVENT_CAPS_FETCHED:
                     break;
