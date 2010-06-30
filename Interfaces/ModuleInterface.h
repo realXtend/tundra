@@ -139,6 +139,10 @@ namespace Foundation
         void RegisterConsoleCommand(const Console::Command &command);
 
     private:
+        // Modules are noncopyable.
+        ModuleInterface(const ModuleInterface &);
+        void operator=(const ModuleInterface &);
+
         /// Only for internal use.
         void SetFramework(Framework *framework) { framework_ = framework; assert (framework_); }
 
@@ -161,8 +165,6 @@ namespace Foundation
         /// Uninitialize the module. Called when module is removed from use. For internal use.
         /// Unregisters all declared components
         void UninitializeInternal();
-
-        typedef std::vector<ComponentRegistrarInterfacePtr> RegistrarVector;
 
         /// Component registrars
         RegistrarVector component_registrars_;
