@@ -20,6 +20,11 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 
+/*#include <UiModule.h>
+#include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/View/UiWidgetProperties.h"
+#include "Inworld/InworldSceneController.h"*/
+
 #include <QUiLoader>
 #include <QDomDocument>
 #include <QtTreePropertyBrowser>
@@ -336,7 +341,7 @@ namespace ECEditor
 
     void ECEditorWindow::RefreshPropertyBrowser()
     {
-        PROFILE(AttributeBrowser_ui_updated);
+        PROFILE(EC_AttributeBrowser_refresh_browser);
         if(!attribute_browser_)
             return;
 
@@ -346,25 +351,27 @@ namespace ECEditor
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         // No entities selected we can clear the attribute broser.
-        /*if(!entities.size())
+        if(!entities.size())
         {
             attribute_browser_->clear();
             return;
-        }*/
+        }
 
+        // \todo hackish way to improve the browser perfomance by hiding the widget until all changes are made
+        // and unnecessary widget paint is avoided. This need be fixed so that browser's load is minimal so it can
+        // handle thousands of induvidual QTreeWidgetItems without a hard perfomance hit for the application.
+        attribute_browser_->hide();
         EntityIdSet noneSelectedEntities = selectedEntities_;
         selectedEntities_.clear();
-        /*for(uint i = 0; i < entities.size(); i++)
-        {
-            selectedEntities_.insert(entities[i]->GetId());
-        }*/
+        // Check what new entities has been added and what old need to bee removed from the attribute browser.
         for(uint i = 0; i < entities.size(); i++)
         {
             attribute_browser_->AddNewEntity(entities[i]);
             selectedEntities_.insert(entities[i]->GetId());
             noneSelectedEntities.erase(entities[i]->GetId());
         }
-
+        // After we have the list of entities that need to be removed we do so and after we are done we will update browser's ui
+        // to fit those changes that we have done.
         while(!noneSelectedEntities.empty())
         {
             Scene::EntityPtr entity = scene->GetEntity(*(noneSelectedEntities.begin()));
@@ -374,6 +381,8 @@ namespace ECEditor
             }
             noneSelectedEntities.erase(noneSelectedEntities.begin());
         }
+        attribute_browser_->show();
+        attribute_browser_->UpdateBrowserUI();
     }
 
     void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -610,6 +619,27 @@ namespace ECEditor
 
         if (toggle_entities_button_)
             connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
+
+        //Initialize QGraphicProxyWidget and it's properties.
+        /*boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>(Foundation::Module::MT_UiServices).lock();
+        if (!ui_module.get())
+            return;
+
+        UiServices::UiWidgetProperties env_editor_properties(tr("ECEditor"), UiServices::ModuleWidget);
+
+        // Menu graphics
+        // \todo! Change placeholder images to other ones.
+        UiDefines::MenuNodeStyleMap image_path_map;
+        QString base_url = "./data/ui/images/menus/"; 
+        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_ENVEDtxt_normal.png";
+        image_path_map[UiDefines::TextHover] = base_url + "edbutton_ENVEDtxt_hover.png";
+        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_ENVEDtxt_click.png";
+        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_ENVED_normal.png";
+        image_path_map[UiDefines::IconHover] = base_url + "edbutton_ENVED_hover.png";
+        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
+        env_editor_properties.SetMenuNodeStyleMap(image_path_map); 
+
+        ui_module->GetInworldSceneController()->AddWidgetToScene(contents, env_editor_properties);*/ 
     }
 
     QStringList ECEditorWindow::GetAvailableComponents() const

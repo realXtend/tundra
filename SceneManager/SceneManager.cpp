@@ -131,6 +131,11 @@ namespace Scene
         emit ComponentRemoved(entity, comp, change);
     }
 
+    void SceneManager::EmitAttributeChanged(Foundation::ComponentInterface* comp, Foundation::AttributeInterface* attribute, AttributeChange::Type change)
+    {
+        emit AttributeChanged(comp, attribute, change);
+    }
+
   /*void SceneManager::EmitComponentInitialized(Foundation::ComponentInterface* comp)
     {
         emit ComponentInitialized(comp);

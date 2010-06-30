@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_SceneEvents_h
-#define incl_SceneEvents_h
+#ifndef incl_SceneManager_SceneEvents_h
+#define incl_SceneManager_SceneEvents_h
 
 #include "EventDataInterface.h"
 #include "Vector3D.h"

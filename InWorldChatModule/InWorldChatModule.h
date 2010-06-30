@@ -67,10 +67,7 @@ namespace Naali
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
-        static const std::string &NameStatic();
-
-        /// Name of this module.
-        static const std::string moduleName;
+        static const std::string &NameStatic() { return moduleName_; }
 
     public slots:
         /// Sends chat message to server.
@@ -121,6 +118,9 @@ namespace Naali
         /// Creates file for logging.
         /// @return True if the creation was succesful, false otherwise.
         bool CreateLogFile();
+
+        /// Name of this module.
+        static const std::string moduleName_;
 
         /// NetworkState event category.
         event_category_id_t networkStateEventCategory_;

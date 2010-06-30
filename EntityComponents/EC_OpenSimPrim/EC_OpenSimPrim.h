@@ -182,67 +182,67 @@ public:
 
     // 0 to 1, quanta = 0.01
     double getPathBegin() const { return (double)PathBegin; }
-    void setPathBegin(double value) { clamp<double>(value, 0, 1); PathBegin = (float)value; }
+    void setPathBegin(double value) { value = clamp<double>(value, 0.00, 1.00); PathBegin = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathEnd()const  { return (double)PathEnd; }
-    void setPathEnd(double value) { clamp<double>(value, 0, 1); PathEnd = (float)value; }
+    void setPathEnd(double value) { value = clamp<double>(value, 0.00, 1.00); PathEnd = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleX() const { return (double)PathScaleX; }
-    void setPathScaleX(double value) { clamp<double>(value, 0, 1); PathScaleX = (float)value; }
+    void setPathScaleX(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleX = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleY() const { return (double)PathScaleY; }
-    void setPathScaleY(double value) { clamp<double>(value, 0, 1); PathScaleY = (float)value; }
+    void setPathScaleY(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleY = (float)value; }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearX() const { return (double)PathShearX; }
-    void setPathShearX(double value) { clamp<double>(value, -0.5, 0.5); PathShearX = (float)value; }
+    void setPathShearX(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearX = (float)value; }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearY() const { return (double)PathShearY; }
-    void setPathShearY(double value) { clamp<double>(value, -0.5, 0.5); PathShearY = (float)value; }
+    void setPathShearY(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearY = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTwist() const { return (double)PathTwist; }
-    void setPathTwist(double value) { clamp<double>(value, -1, 1); PathTwist = (float)value; }
+    void setPathTwist(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwist = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTwistBegin() const { return (double)PathTwistBegin; }
-    void setPathTwistBegin(double value) { clamp<double>(value, -1, 1); PathTwistBegin = (float)value; }
+    void setPathTwistBegin(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwistBegin = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathRadiusOffset() const { return (double)PathRadiusOffset; }
-    void setPathRadiusOffset(double value) { clamp<double>(value, -1, 1); PathRadiusOffset = (float)value; }
+    void setPathRadiusOffset(double value) { value = clamp<double>(value, -1.00, 1.00); PathRadiusOffset = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperX() const { return (double)PathTaperX; }
-    void setPathTaperX(double value) { clamp<double>(value, -1, 1); PathTaperX = (float)value; }
+    void setPathTaperX(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperX = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperY() const { return (double)PathTaperY; }
-    void setPathTaperY(double value) { clamp<double>(value, -1, 1); PathTaperY = (float)value; }
+    void setPathTaperY(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperY = (float)value; }
 
-    // 0 to 3, quanta = 0.015 NOT EDITABLE IN PROP EDITOR, caused too much problems (corrupted prims with wrong values)
+    // 0 to 3, quanta = 0.015
     double getPathRevolutions() const { return (double)PathRevolutions; }
-    void setPathRevolutions(double value) { clamp<double>(value, 0, 3); PathRevolutions = (float)value; }
+    void setPathRevolutions(double value) { value = clamp<double>(value, 0.000, 3.000); PathRevolutions = (float)value; }
 
     // -1 to 1, quanta = 0.01
     double getPathSkew() const { return (double)PathSkew; }
-    void setPathSkew(double value) { clamp<double>(value, -1, 1); (float)value; }
+    void setPathSkew(double value) { value = clamp<double>(value, -1.00, 1.00); (float)value; }
     
     // 0 to 1, quanta = 0.01
     double getProfileBegin() const { return (double)ProfileBegin; }
-    void setProfileBegin(double value) { clamp<double>(value, 0, 1); ProfileBegin = (float)value; }
+    void setProfileBegin(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileBegin = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getProfileEnd() const { return (double)ProfileEnd; }
-    void setProfileEnd(double value) { clamp<double>(value, 0, 1); ProfileEnd = (float)value; }
+    void setProfileEnd(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileEnd = (float)value; }
 
     // 0 to 1, quanta = 0.01
     double getProfileHollow() const { return (double)ProfileHollow; }
-    void setProfileHollow(double value) { clamp<double>(value, 0, 1); ProfileHollow = (float)value; }
+    void setProfileHollow(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileHollow = (float)value; }
 
     bool getHasPrimShapeData() const { return HasPrimShapeData; }
 

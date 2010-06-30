@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_PythonEntityType_h
 #define incl_PythonEntityType_h
 
@@ -13,7 +15,7 @@
     #include <Python.h>
 #endif
 
-#include "EC_OgrePlaceable.h"
+#include "CoreTypes.h"
 
 namespace PythonScript
 {

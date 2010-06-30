@@ -62,7 +62,7 @@ namespace OgreRenderer
         //! orients to look at a point in space
         /*! \param look_at point to look at
          */
-        void LookAt(const Vector3df& look_at);        
+        void LookAt(const Vector3df& look_at);
         //! yaws the node
         /*! \param radians how many radians to yaw
          */
@@ -70,14 +70,17 @@ namespace OgreRenderer
         //! pitches the node
         /*! \param radians how many radians to pitch
          */
-        void SetPitch(Real radians);        
+        void SetPitch(Real radians);
         //! rolls the node
         /*! \param radians how many radians to roll
          */
-        void SetRoll(Real radians);           
+        void SetRoll(Real radians);
 
+        //! get the yaw of the node
         float GetYaw() const;
+        //! get the pitch of the node
         float GetPitch() const;
+        //! get the roll of the node
         float GetRoll() const;
         
         //! sets scale
@@ -100,11 +103,17 @@ namespace OgreRenderer
         //! returns scale
         Vector3df GetScale() const;
 
+        //! Get the local X axis from the node orientation
         Vector3df GetLocalXAxis() const;
+        //! Get the local Y axis from the node orientation
         Vector3df GetLocalYAxis() const;
+        //! Get the local Z axis from the node orientation
         Vector3df GetLocalZAxis() const;
+        //! Get the local X axis from the node orientation
         QVector3D GetQLocalXAxis() const;
+        //! Get the local Y axis from the node orientation
         QVector3D GetQLocalYAxis() const;
+        //! Get the local Z axis from the node orientation
         QVector3D GetQLocalZAxis() const;
         
         //! returns Ogre scenenode for attaching geometry.
@@ -125,10 +134,14 @@ namespace OgreRenderer
         QVector3D GetQPosition() const;
         void SetQPosition(const QVector3D newpos);
 
+        //! get node orientation
         QQuaternion GetQOrientation() const;
+        //! set node orientation
         void SetQOrientation(const QQuaternion newort);
 
+        //! set node scale
         QVector3D GetQScale() const;
+        //! get node scale
         void SetQScale(const QVector3D newscale);
 
     public slots:
@@ -136,6 +149,8 @@ namespace OgreRenderer
         /* 0 = x, 1 = y, 2 = z. returns new position */
         QVector3D translate( int axis, float amount);
 
+        //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
+        void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
     private:
         //! constructor

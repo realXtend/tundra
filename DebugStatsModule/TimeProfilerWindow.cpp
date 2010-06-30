@@ -9,9 +9,18 @@
 #include "HighPerfClock.h"
 #include "Framework.h"
 #include "NetworkMessages/NetInMessage.h"
+#include "NetworkMessages/NetOutMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
 #include "AssetServiceInterface.h"
 #include "WorldStream.h"
+#include "SceneManager.h"
+#include "RenderServiceInterface.h"
+#include "EC_OpenSimPrim.h"
+#include "EC_OgreMesh.h"
+#include "EC_OgreCustomObject.h"
+#include "EC_Terrain.h"
+//#include "RealXtend/RexProtocolMsgIDs.h"
+//#include "GenericMessageUtils.h"
 
 #include <utility>
 
@@ -23,7 +32,7 @@
 #include <QPainter>
 #include <QTreeWidgetItemIterator>
 #include <QtAlgorithms>
-
+#include <QTextEdit>
 
 #include <OgreFontManager.h>
 
@@ -33,6 +42,8 @@ using namespace std;
 
 namespace DebugStats
 {
+
+const QString DEFAULT_LOG_DIR("logs");
 
 TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(fw)
 {
@@ -94,7 +105,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_profiling_data_->header()->resizeSection(3, 50);
     tree_profiling_data_->header()->resizeSection(4, 50);
 
-    QObject::connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
+    connect(tab_widget_, SIGNAL(currentChanged(int)), this, SLOT(OnProfilerWindowTabChanged(int)));
 
     label_region_map_coords_ = findChild<QLabel*>("labelRegionMapCoords");
     label_region_object_capacity_ = findChild<QLabel*>("labelRegionObjectCapacity");
@@ -129,6 +140,9 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     tree_asset_transfers_->header()->resizeSection(1, 90);
     tree_asset_transfers_->header()->resizeSection(2, 90);
     
+    text_scenecomplexity_ = findChild<QTextEdit*>("textSceneComplexity");
+    assert(text_scenecomplexity_);
+    
     tree_rendertargets_ = findChild<QTreeWidget*>("treeRenderTargets");
     assert(tree_rendertargets_);
     tree_rendertargets_->header()->resizeSection(0, 220);
@@ -156,18 +170,16 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
 
     QList<QPushButton* > buttons = findChildren<QPushButton* >();
     for (int i = 0; i < buttons.size(); ++i )
-    {
         if ( buttons[i]->objectName().contains("arrange") )
-            QObject::connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
+            connect(buttons[i], SIGNAL(clicked()), this, SLOT(Arrange()));
 
-    }
-   
-    QObject::connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
-    QObject::connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
-    QObject::connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
-    QObject::connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
+    connect(push_button_toggle_tree_, SIGNAL(pressed()), this, SLOT(ToggleTreeButtonPressed()));
+    connect(push_button_collapse_all_, SIGNAL(pressed()), this, SLOT(CollapseAllButtonPressed()));
+    connect(push_button_expand_all_, SIGNAL(pressed()), this, SLOT(ExpandAllButtonPressed()));
+    connect(push_button_show_unused_, SIGNAL(pressed()), this, SLOT(ShowUnusedButtonPressed()));
 
-    QObject::connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    connect(findChild<QPushButton*>("pushButtonDumpOgreStats"), SIGNAL(pressed()), this, SLOT(DumpOgreResourceStatsToFile()));
+    connect(findChild<QPushButton*>("buttonDumpSceneComplexity"), SIGNAL(pressed()), this, SLOT(DumpSceneComplexityToFile()));
 
     frame_time_update_x_pos_ = 0;
     logThreshold_ = 100.0;
@@ -183,8 +195,19 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     if ( apply != 0)
     {
         apply->setCheckable(true);
-        QObject::connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
+        connect(apply, SIGNAL(clicked()), this, SLOT(ChangeLoggerThreshold()));
     }
+
+    QCheckBox* checkBoxLogTraffic = findChild<QCheckBox*>("checkBoxLogTraffic");
+    assert(checkBoxLogTraffic);
+    if (checkBoxLogTraffic)
+        connect(checkBoxLogTraffic, SIGNAL(stateChanged (int)), this, SLOT(SetNetworkLogging(int)));
+
+    // Set/init working directory for log files.
+    logDirectory_ = framework_->GetPlatform()->GetApplicationDataDirectory().c_str();
+    if (!logDirectory_.exists(DEFAULT_LOG_DIR))
+        logDirectory_.mkdir(DEFAULT_LOG_DIR);
+    logDirectory_.cd(DEFAULT_LOG_DIR);
 }
 
 void TimeProfilerWindow::ChangeLoggerThreshold()
@@ -192,7 +215,19 @@ void TimeProfilerWindow::ChangeLoggerThreshold()
      QDoubleSpinBox* box = findChild<QDoubleSpinBox* >("loggerSpinbox");
      if ( box != 0)
         logThreshold_ = box->value();
+}
 
+void TimeProfilerWindow::SetNetworkLogging(int value)
+{
+    QFile file(logDirectory_.path() + "/networking.txt");
+    if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+        return;
+
+    QTextStream log(&file);
+    if (value)
+        log << "========== Logging started " << GetLocalTimeString().c_str() << " ==========\n";
+    else if (!value)
+        log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
 }
 
 struct ResNameAndSize
@@ -224,25 +259,25 @@ void TimeProfilerWindow::Arrange()
     QTreeWidget* widget = 0;
     switch (index)
     {
-        case 7:  // Texture
+        case 8:  // Texture
             widget =  tree_texture_assets_;
             break;
-        case 8: // Mesh
+        case 9: // Mesh
             widget =  tree_mesh_assets_;
             break;
-        case 9: // Material
+        case 10: // Material
             widget =  tree_material_assets_;
             break;
-        case 10:
+        case 11:
             widget =  tree_skeleton_assets_;
             break;
-        case 11:
+        case 12:
             widget = tree_compositor_assets_ ;
             break;
-        case 12:
+        case 13:
             widget = tree_gpu_assets_;
             break;
-        case 13:
+        case 14:
             widget = tree_font_assets_;
             break;
     }
@@ -254,12 +289,10 @@ void TimeProfilerWindow::Arrange()
     {
         // By name
         widget->sortItems(0, Qt::AscendingOrder);
-        
     }
     else if ( name.contains("size") )
     {
         // By size
-        
         int va = widget->topLevelItemCount();
         QList<QTreeWidgetItem* > items;
         for ( int i = va; i--;)
@@ -270,18 +303,14 @@ void TimeProfilerWindow::Arrange()
            else
                break;
         }
-        
-     
+
         if ( items.size () != 0)
         {
             qStableSort(items.begin(), items.end(), LessThen);
             widget->addTopLevelItems(items);
         }
-        
     }
-
 }
-
 
 void TimeProfilerWindow::ToggleTreeButtonPressed()
 {
@@ -330,6 +359,9 @@ void TimeProfilerWindow::ShowUnusedButtonPressed()
 
 void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
 {
+    if (newPage == -1)
+        newPage = tab_widget_->currentIndex();
+
     switch(newPage)
     {
     case 0:
@@ -345,31 +377,47 @@ void TimeProfilerWindow::OnProfilerWindowTabChanged(int newPage)
         RefreshAssetProfilingData();
         break;
     case 6:
+        RefreshSceneComplexityProfilingData();
+        break;
+    case 7:
         RefreshRenderTargetProfilingData();
         break;
-    case 7: // Textures
+    case 8: // Textures
         RefreshAssetData(Ogre::TextureManager::getSingleton(), tree_texture_assets_ );
         break;
-    case 8: // Meshes
+    case 9: // Meshes
         RefreshAssetData(Ogre::MeshManager::getSingleton(), tree_mesh_assets_ );
         break;
-    case 9: // Material
+    case 10: // Material
         RefreshAssetData(Ogre::MaterialManager::getSingleton(), tree_material_assets_);
         break;
-    case 10: // Skeleton
+    case 11: // Skeleton
         RefreshAssetData(Ogre::SkeletonManager::getSingleton(), tree_skeleton_assets_);
         break;
-    case 11: // Composition
+    case 12: // Composition
         RefreshAssetData(Ogre::CompositorManager::getSingleton(), tree_compositor_assets_);
         break;
-    case 12: // Gpu assets
+    case 13: // Gpu assets
         RefreshAssetData(Ogre::HighLevelGpuProgramManager::getSingleton(), tree_gpu_assets_);
         break;
-    case 13: // Font assets
+    case 14: // Font assets
         RefreshAssetData(Ogre::FontManager::getSingleton(), tree_font_assets_);
         break;
-
     }
+}
+
+uint TimeProfilerWindow::GetNumResources(Ogre::ResourceManager& manager)
+{
+    uint count = 0;
+    Ogre::ResourceManager::ResourceMapIterator iter = manager.getResourceIterator();
+    while(iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        count++;
+    }
+    return count;
 }
 
 static QTreeWidgetItem *FindItemByName(QTreeWidgetItem *parent, const char *name)
@@ -392,20 +440,20 @@ static QTreeWidgetItem *FindItemByName(QTreeWidget *parent, const char *name)
 
 void TimeProfilerWindow::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
 {
-    current_world_stream_ = worldStream;
+    world_stream_ = worldStream;
 }
 
 void TimeProfilerWindow::FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    using namespace Foundation;
+    const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *node = iter->get();
+        ProfilerNodeTree *node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 && !show_unused_)
-           continue;
+            continue;
 
 //        QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(node->Name().c_str())));
 
@@ -489,7 +537,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
         uint color = colorOdd;
 #ifdef _WINDOWS
-        double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;// Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
+        double age = (double)frameTimes[firstEntry + i].first / freq.QuadPart;
+        // Foundation::ProfilerBlock::ElapsedTimeSeconds(*(LARGE_INTEGER*)&frameTimes[firstEntry + i].first, now);
         color = (fmod(age, 2.0) >= 1.0) ? colorOdd : colorEven;
 #endif
         if ((frameTimes[firstEntry + i].second / maxTime >= 1.0 &&
@@ -538,10 +587,8 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
 
     //if ( timePerFrame >= logThreshold_ )
     //     DumpNodeData();
-    
-    
-
 }
+
 /*
 void TimeProfilerWindow::DumpNodeData()
 {
@@ -586,45 +633,38 @@ void TimeProfilerWindow::DumpNodeData()
 
 void TimeProfilerWindow::DoThresholdLogging()
 {
+    using namespace Foundation;
+
      QPushButton* button = findChild<QPushButton* >("loggerApply");
-     
-     if ( button == 0)
+     if (button == 0)
          return;
 
-     if ( tab_widget_->currentIndex() != 1 && button->isChecked() )
+     if (tab_widget_->currentIndex() != 1 && button->isChecked())
      {
         button->setChecked(false);
         return;
      }
-    
-     if ( tab_widget_->currentIndex() == 1 && !button->isChecked())
+
+     if (tab_widget_->currentIndex() == 1 && !button->isChecked())
         return;
-    
 
-    using namespace Foundation;
-
-    QFile file("performancelogger.txt");
+    assert(logDirectory_.exists());
+    QFile file(logDirectory_.path() + "/performancelogger.txt");
     if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
          return;
 
- 
     QTextStream out(&file);
-    
-
-//   Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
 
     Profiler &profiler = framework_->GetProfiler();
     profiler.Lock();
-//    ProfilerNodeTree *node = profiler.Lock().get();
-    Foundation::ProfilerNodeTree *node = profiler.GetRoot();
 
-    const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    ProfilerNodeTree *node = profiler.GetRoot();
+    const ProfilerNodeTree::NodeList &children = node->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 )
             continue;
 
@@ -647,7 +687,7 @@ void TimeProfilerWindow::DoThresholdLogging()
             bool saveData = false;
             if (timings_node->num_called_custom_ > 0 && timings_node->custom_elapsed_min_ < 1e8)
                 sprintf(str, "%.2fms", timings_node->custom_elapsed_min_*1000.f);
-                
+
             line = line + QString(" ")+ QString(str);
             //item->setText(2, str);
             if (timings_node->num_called_custom_ > 0)
@@ -682,20 +722,75 @@ void TimeProfilerWindow::DoThresholdLogging()
 
         FillThresholdLogger(out, node);
     }
-    profiler.Release();
-    
 
+    profiler.Release();
+}
+
+void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *msg)
+{
+    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
+    {
+        assert(logDirectory_.exists());
+        QFile file(logDirectory_.path() + "/networking.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+
+        QTextStream log(&file);
+        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "IN\t" << msg->GetMessageID() ;
+
+        size_t numWidth = QString::number(msg->GetMessageID()).length();
+        if (numWidth < 9)
+            log << '\t';
+        if (numWidth < 5)
+            log << '\t';
+
+        log << '\t' << msg->GetMessageInfo()->name.c_str();
+
+        ///\todo Get MethogName out from GenericMessage
+//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
+//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
+
+        log << '\n';
+    }
+}
+
+void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage *msg)
+{
+    if (findChild<QCheckBox*>("checkBoxLogTraffic")->isChecked())
+    {
+        assert(logDirectory_.exists());
+        QFile file(logDirectory_.path() + "/networking.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+
+        QTextStream log(&file);
+        log <<'[' << GetLocalTimeString().c_str() << "]\t" << "OUT\t" << msg->GetMessageID();
+
+        size_t numWidth = QString::number(msg->GetMessageID()).length();
+        if (numWidth < 9)
+            log << '\t';
+        if (numWidth < 5)
+            log << '\t';
+
+         log << '\t' << msg->GetMessageInfo()->name.c_str();
+
+        ///\todo Get MethogName out from GenericMessage
+//        if (msg->GetMessageID() == RexNetMsgGenericMessage)
+//            log << ' ' << ProtocolUtilities::ParseGenericMessageMethod(*msg).c_str();
+
+         log << '\n';
+    }
 }
 
 void TimeProfilerWindow::FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode)
 {
-    const Foundation::ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
-
-    for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
+    using namespace Foundation;
+    const ProfilerNodeTree::NodeList &children = profilerNode->GetChildren();
+    for(ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
-        Foundation::ProfilerNodeTree *node = iter->get();
+        ProfilerNodeTree *node = iter->get();
 
-        const Foundation::ProfilerNode *timings_node = dynamic_cast<const Foundation::ProfilerNode*>(node);
+        const ProfilerNode *timings_node = dynamic_cast<const ProfilerNode*>(node);
         if (timings_node && timings_node->num_called_ == 0 )
            continue;
 
@@ -866,7 +961,7 @@ static std::string ReadOgreManagerStatus(Ogre::ResourceManager &manager)
 
 void TimeProfilerWindow::RefreshOgreProfilingWindow()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 2)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 2)
         return;
 
     Ogre::Root *root = Ogre::Root::getSingletonPtr();
@@ -916,9 +1011,6 @@ void TimeProfilerWindow::RefreshOgreProfilingWindow()
 
     QTimer::singleShot(500, this, SLOT(RefreshOgreProfilingWindow()));
 }
-
-
-
 
 static void DumpOgreResManagerStatsToFile(Ogre::ResourceManager &manager, std::ofstream &file)
 {
@@ -981,11 +1073,18 @@ void TimeProfilerWindow::DumpOgreResourceStatsToFile()
     DumpOgreResManagerStatsToFile(Ogre::FontManager::getSingleton(), file);
 }
 
-
+void TimeProfilerWindow::DumpSceneComplexityToFile()
+{
+    if (!text_scenecomplexity_)
+        return;
+    
+    std::ofstream file("scenestats.txt");
+    file << text_scenecomplexity_->toPlainText().toStdString();
+}
 
 void TimeProfilerWindow::RefreshProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 0)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 0)
         return;
 
     if (show_profiler_tree_)
@@ -1008,7 +1107,6 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
     Foundation::ProfilerNodeTree *node = profiler.GetRoot();
 
     const Foundation::ProfilerNodeTree::NodeList &children = node->GetChildren();
-
     for(Foundation::ProfilerNodeTree::NodeList::const_iterator iter = children.begin(); iter != children.end(); ++iter)
     {
         node = iter->get();
@@ -1161,13 +1259,15 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
 void TimeProfilerWindow::RefreshNetworkProfilingData()
 {
 #ifdef PROFILING
-    if (!tab_widget_ || tab_widget_->currentIndex() != 3)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 3)
         return;
 
-    if (current_world_stream_)
+    if (world_stream_)
     {
-        ProtocolUtilities::NetMessageManager *netMessageManager = current_world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
-        assert(netMessageManager);
+        ProtocolUtilities::NetMessageManager *netMessageManager = world_stream_->GetCurrentProtocolModule()->GetNetworkMessageManager();
+        if (!netMessageManager)
+            return;
+
         std::vector<double> dstAccum;
         std::vector<double> dstOccur;
         const size_t numEntries = 256;
@@ -1227,6 +1327,21 @@ void TimeProfilerWindow::RefreshNetworkProfilingData()
 
         double avgPacketSizeOut = (packetsOutPerSec < 1e-5) ? 0 : (dataOutPerSec / packetsOutPerSec);
         findChild<QLabel*>("labelAvgPacketSizeOut")->setText(FormatBytes(avgPacketSizeOut).c_str());
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastRoundTripTime);
+        findChild<QLabel*>("labelRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->smoothenedRoundTripTime);
+        findChild<QLabel*>("labelSmoothenedRoundTripTime")->setText(str);
+
+        sprintf(str, "%.2f ms", (float)netMessageManager->lastHeardSince);
+        findChild<QLabel*>("labelLastHeardSince")->setText(str);
+
+        sprintf(str, "%i", netMessageManager->NumUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightPackets")->setText(str);
+
+        sprintf(str, "%i", netMessageManager->NumBytesInUnackedReliablePackets());
+        findChild<QLabel*>("labelDataInFlightBytes")->setText(str);
 
         const int ipHeaderSize = 20;
         const int udpHeaderSize = 8;
@@ -1336,7 +1451,7 @@ void TimeProfilerWindow::RefreshSimStatsData(ProtocolUtilities::NetInMessage *si
 
 void TimeProfilerWindow::RefreshAssetProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 5)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 5)
         return;
 
     tree_asset_cache_->clear();
@@ -1379,9 +1494,450 @@ void TimeProfilerWindow::RefreshAssetProfilingData()
     QTimer::singleShot(500, this, SLOT(RefreshAssetProfilingData()));
 }
 
+void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
+{
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 6)
+        return;
+    
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    boost::shared_ptr<Foundation::RenderServiceInterface> renderer = 
+        framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+    assert(renderer);
+    if (!renderer)
+        return;
+    
+    Ogre::Root *root = Ogre::Root::getSingletonPtr();
+    assert(root);
+    if (!root)
+        return;
+    
+    Ogre::RenderSystem* rendersys = root->getRenderSystem();
+    assert(rendersys);
+    if (!rendersys)
+        return;
+    
+    std::ostringstream text;
+    
+    uint visible_entities = renderer->GetVisibleEntities().size();
+    uint batches = 0;
+    uint triangles = 0;
+    float avgfps = 0.0f;
+
+    // Get overall batchcount/trianglecount/fps data
+    Ogre::RenderSystem::RenderTargetIterator rtiter = rendersys->getRenderTargetIterator();
+    while (rtiter.hasMoreElements())
+    {
+        Ogre::RenderTarget* target = rtiter.getNext();
+        // Sum batches & triangles from all rendertargets updated last frame
+        batches += target->getBatchCount();
+        triangles += target->getTriangleCount();
+        // Get FPS only from the primary
+        if (target->isPrimary())
+            avgfps = floor(target->getAverageFPS() * 100.0f) / 100.0f;
+    }
+    
+    text << "Viewport" << std::endl;
+    text << "# of currently visible entities: " << visible_entities << std::endl;
+    text << "# of total batches rendered last frame: " << batches << std::endl;
+    text << "# of total triangles rendered last frame: " << triangles << std::endl;
+    text << "Avg. FPS: " << avgfps << std::endl;
+    text << std::endl;
+    
+    uint entities = 0;
+    uint prims = 0;
+    uint invisible_prims = 0;
+    uint meshentities = 0;
+    uint animated = 0;
+    
+    std::set<Ogre::Mesh*> all_meshes;
+    std::set<Ogre::Mesh*> scene_meshes;
+    std::set<Ogre::Mesh*> other_meshes;
+    std::set<Ogre::Texture*> all_textures;
+    std::set<Ogre::Texture*> scene_textures;
+    std::set<Ogre::Texture*> other_textures;
+    uint scene_meshes_size = 0;
+    uint other_meshes_size = 0;
+    uint mesh_vertices = 0;
+    uint mesh_triangles = 0;
+    uint mesh_instance_vertices = 0;
+    uint mesh_instance_triangles = 0;
+    
+    // Loop through entities to see mesh usage
+    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        entities++;
+        EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
+        Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
+        OgreRenderer::EC_OgreMesh* mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_OgreCustomObject* custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        Ogre::Entity* ogre_entity = 0;
+        
+        // Get Ogre mesh from mesh EC
+        if (mesh)
+        {
+            ogre_entity = mesh->GetEntity();
+            if (ogre_entity)
+            {
+                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                scene_meshes.insert(ogre_mesh);
+                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                std::set<Ogre::Material*> temp_mat;
+                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetTexturesFromMaterials(temp_mat, scene_textures);
+            }
+        }
+        // Get Ogre mesh from customobject EC
+        else if (custom)
+        {
+            ogre_entity = custom->GetEntity();
+            if (ogre_entity)
+            {
+                Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                scene_meshes.insert(ogre_mesh);
+                GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                std::set<Ogre::Material*> temp_mat;
+                GetMaterialsFromEntity(ogre_entity, temp_mat);
+                GetTexturesFromMaterials(temp_mat, scene_textures);
+            }
+        }
+        // Get Ogre meshes from terrain EC
+        else if (terrain)
+        {
+            for (int y = 0; y < Environment::EC_Terrain::cNumPatchesPerEdge; ++y)
+            {
+                for(int x = 0; x < Environment::EC_Terrain::cNumPatchesPerEdge; ++x)
+                {
+                    Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
+                    if (!node)
+                        continue;
+                    if (!node->numAttachedObjects())
+                        continue;
+                    ogre_entity = dynamic_cast<Ogre::Entity*>(node->getAttachedObject(0));
+                    if (ogre_entity)
+                    {
+                        Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
+                        scene_meshes.insert(ogre_mesh);
+                        GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                        std::set<Ogre::Material*> temp_mat;
+                        GetMaterialsFromEntity(ogre_entity, temp_mat);
+                        GetTexturesFromMaterials(temp_mat, scene_textures);
+                    }
+                }
+            }
+        }
+        
+        // Check drawtype for prims
+        if (prim)
+        {
+            
+            int drawtype = prim->getDrawType();
+            if ((drawtype == RexTypes::DRAWTYPE_MESH) && (ogre_entity))
+                meshentities++;
+            if (drawtype == RexTypes::DRAWTYPE_PRIM)
+            {
+                if (ogre_entity)
+                    prims++;
+                else
+                    invisible_prims++;
+            }
+        }
+        else
+        {
+            if (ogre_entity)
+                meshentities++;
+        }
+        if (entity.GetComponent("EC_OgreAnimationController").get())
+            animated++;
+    }
+    
+    // Go through all meshes and see which of them are in the scene
+    Ogre::ResourceManager::ResourceMapIterator iter = Ogre::MeshManager::getSingleton().getResourceIterator();
+    while (iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        Ogre::Mesh* mesh = dynamic_cast<Ogre::Mesh*>(resource.get());
+        if (mesh)
+            all_meshes.insert(mesh);
+        if (scene_meshes.find(mesh) == scene_meshes.end())
+            other_meshes.insert(mesh);
+    }
+    
+    text << "Scene" << std::endl;
+    text << "# of entities in the scene: " << entities << std::endl;
+    text << "# of prims with geometry in the scene: " << prims << std::endl;
+    text << "# of invisible prims in the scene: " << invisible_prims << std::endl;
+    text << "# of mesh entities in the scene: " << meshentities << std::endl;
+    text << "# of animated entities in the scene: " << animated << std::endl;
+    text << std::endl;
+    
+    // Count total vertices/triangles per mesh
+    std::set<Ogre::Mesh*>::iterator mi = all_meshes.begin();
+    while (mi != all_meshes.end())
+    {
+        Ogre::Mesh* mesh = *mi;
+        GetVerticesAndTrianglesFromMesh(mesh, mesh_vertices, mesh_triangles);
+        ++mi;
+    }
+    // Count scene/other mesh byte sizes
+    mi = scene_meshes.begin();
+    while (mi != scene_meshes.end())
+    {
+        scene_meshes_size += (*mi)->getSize();
+        ++mi;
+    }
+    mi = other_meshes.begin();
+    while (mi != other_meshes.end())
+    {
+        other_meshes_size += (*mi)->getSize();
+        ++mi;
+    }
+    
+    text << "Ogre Meshes" << std::endl;
+    text << "# of loaded meshes: " << all_meshes.size() << std::endl;
+    text << "# of meshes in scene: " << scene_meshes.size() << std::endl;
+    text << "Total mesh data size: (" << scene_meshes_size / 1024 << " KBytes scene)+(" << other_meshes_size / 1024 << " KBytes other)" << std::endl;
+    text << "# of vertices in the meshes: " << mesh_vertices << std::endl;
+    text << "# of triangles in the meshes: " << mesh_triangles << std::endl;
+    text << "# of vertices in the scene: " << mesh_instance_vertices << std::endl;
+    text << "# of triangles in the scene: " << mesh_instance_triangles << std::endl;
+    text << std::endl;
+    
+    // Go through all textures and see which of them are in the scene
+    Ogre::ResourceManager::ResourceMapIterator tex_iter = ((Ogre::ResourceManager*)Ogre::TextureManager::getSingletonPtr())->getResourceIterator();
+    while (tex_iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = tex_iter.getNext();
+        if (!resource->isLoaded())
+            continue;
+        Ogre::Texture* texture = dynamic_cast<Ogre::Texture*>(resource.get());
+        if (texture)
+        {
+            all_textures.insert(texture);
+            if (scene_textures.find(texture) == scene_textures.end())
+                other_textures.insert(texture);
+        }
+    }
+    
+    // Count total/scene texture byte sizes and amount of total pixels
+    uint scene_tex_size = 0;
+    uint total_tex_size = 0;
+    uint other_tex_size = 0;
+    uint scene_tex_pixels = 0;
+    uint total_tex_pixels = 0;
+    uint other_tex_pixels = 0;
+    std::set<Ogre::Texture*>::iterator ti = scene_textures.begin();
+    while (ti != scene_textures.end())
+    {
+        scene_tex_size += (*ti)->getSize();
+        scene_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    ti = all_textures.begin();
+    while (ti != all_textures.end())
+    {
+        total_tex_size += (*ti)->getSize();
+        total_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    ti = other_textures.begin();
+    while (ti != other_textures.end())
+    {
+        other_tex_size += (*ti)->getSize();
+        other_tex_pixels += (*ti)->getWidth() * (*ti)->getHeight();
+        ++ti;
+    }
+    
+    // Sort textures into categories
+    uint scene_tex_categories[5];
+    uint other_tex_categories[5];
+    for (uint i = 0; i < 5; ++i)
+    {
+        scene_tex_categories[i] = 0;
+        other_tex_categories[i] = 0;
+    }
+    
+    ti = scene_textures.begin();
+    while (ti != scene_textures.end())
+    {
+        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        if (dimension > 2048)
+            scene_tex_categories[0]++;
+        else if (dimension > 1024)
+            scene_tex_categories[1]++;
+        else if (dimension > 512)
+            scene_tex_categories[2]++;
+        else if (dimension > 256)
+            scene_tex_categories[3]++;
+        else
+            scene_tex_categories[4]++;
+        ++ti;
+    }
+    
+    ti = other_textures.begin();
+    while (ti != other_textures.end())
+    {
+        uint dimension = max((*ti)->getWidth(), (*ti)->getHeight());
+        if (dimension > 2048)
+            other_tex_categories[0]++;
+        else if (dimension > 1024)
+            other_tex_categories[1]++;
+        else if (dimension > 512)
+            other_tex_categories[2]++;
+        else if (dimension > 256)
+            other_tex_categories[3]++;
+        else
+            other_tex_categories[4]++;
+        ++ti;
+    }
+    
+    if (!total_tex_pixels)
+        total_tex_pixels = 1;
+    if (!scene_tex_pixels)
+        scene_tex_pixels = 1;
+    if (!other_tex_pixels)
+        other_tex_pixels = 1;
+    
+    text << "Ogre Textures" << std::endl;
+    text << "# of loaded textures: " << all_textures.size() << std::endl;
+    text << "Texture data size in scene: " << scene_tex_size / 1024 << " KBytes" << std::endl;
+    text << "Texture data size total: " << total_tex_size / 1024 << " KBytes" << std::endl;
+    text << "Texture dimensions: " << std::endl;
+    text << "> 2048: (" << scene_tex_categories[0] << " scene)+(" << other_tex_categories[0] << " other)" << std::endl;
+    text << "> 1024: (" << scene_tex_categories[1] << " scene)+(" << other_tex_categories[1] << " other)" << std::endl;
+    text << "> 512: (" << scene_tex_categories[2] << " scene)+(" << other_tex_categories[2] << " other)" << std::endl;
+    text << "> 256: (" << scene_tex_categories[3] << " scene)+(" << other_tex_categories[3] << " other)" << std::endl;
+    text << "smaller: (" << scene_tex_categories[4] << " scene)+(" << other_tex_categories[4] << " other)" << std::endl;
+    text << "Avg. bytes/pixel: (" << floor(((float)scene_tex_size / scene_tex_pixels) * 100.0f) / 100.f
+                   << " scene)/(" << floor(((float)total_tex_size / total_tex_pixels) * 100.0f) / 100.f 
+                   << " total)" << std::endl;
+    text << std::endl;
+    
+    text << "Ogre Materials" << std::endl;
+    text << "# of materials total: " << GetNumResources(Ogre::MaterialManager::getSingleton()) << std::endl;
+    
+    uint vertex_shaders = 0;
+    uint pixel_shaders = 0;
+    Ogre::ResourceManager::ResourceMapIterator shader_iter = ((Ogre::ResourceManager*)Ogre::HighLevelGpuProgramManager::getSingletonPtr())->getResourceIterator();
+    while(shader_iter.hasMoreElements())
+    {
+        Ogre::ResourcePtr resource = shader_iter.getNext();
+        // Count only loaded programs
+        if (!resource->isLoaded())
+            continue;
+        Ogre::HighLevelGpuProgram* program = dynamic_cast<Ogre::HighLevelGpuProgram*>(resource.get());
+        if (program)
+        {
+            Ogre::GpuProgramType type = program->getType();
+            if (type == Ogre::GPT_VERTEX_PROGRAM)
+                vertex_shaders++;
+            if (type == Ogre::GPT_FRAGMENT_PROGRAM)
+                pixel_shaders++;
+        }
+    }
+    text << "# of vertex shaders total: " << vertex_shaders << std::endl;
+    text << "# of pixel shaders total: " << pixel_shaders << std::endl;
+    text << std::endl;
+    
+    text << "# of loaded skeletons: " << GetNumResources(Ogre::SkeletonManager::getSingleton()) << std::endl;
+    text << std::endl;
+    
+    // Update only if no selection
+    QTextCursor cursor(text_scenecomplexity_->textCursor());
+    bool text_selected = cursor.hasSelection();
+    if (!text_selected)
+    {
+        // Save previous pos, update & restore pos
+        int cursorPos = cursor.position();
+        int anchorPos = cursor.anchor();
+        int scrollPos = 0;
+        if (text_scenecomplexity_->verticalScrollBar())
+            scrollPos = text_scenecomplexity_->verticalScrollBar()->value();
+        
+        text_scenecomplexity_->setPlainText(text.str().c_str());
+        
+        cursor.setPosition(anchorPos);
+        cursor.setPosition(cursorPos, QTextCursor::KeepAnchor);
+        text_scenecomplexity_->setTextCursor(cursor);
+        if (text_scenecomplexity_->verticalScrollBar())
+            text_scenecomplexity_->verticalScrollBar()->setValue(scrollPos);
+    }
+    
+    QTimer::singleShot(500, this, SLOT(RefreshSceneComplexityProfilingData()));
+}
+
+void TimeProfilerWindow::GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles)
+{
+    // Count total vertices/triangles for each mesh instance
+    for (uint i = 0; i < mesh->getNumSubMeshes(); ++i)
+    {
+        Ogre::SubMesh* submesh = mesh->getSubMesh(i);
+        if (submesh)
+        {
+            Ogre::VertexData* vtx = submesh->vertexData;
+            Ogre::IndexData* idx = submesh->indexData;
+            if (vtx)
+                vertices += vtx->vertexCount;
+            if (idx)
+                triangles += idx->indexCount / 3;
+        }
+    }
+}
+
+void TimeProfilerWindow::GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest)
+{
+    for (uint i = 0; i < entity->getNumSubEntities(); ++i)
+    {
+        Ogre::SubEntity* subentity = entity->getSubEntity(i);
+        if (subentity)
+        {
+            Ogre::Material* mat = subentity->getMaterial().get();
+            if (mat)
+                dest.insert(mat);
+        }
+    }
+}
+
+void TimeProfilerWindow::GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest)
+{
+    Ogre::TextureManager& texMgr = Ogre::TextureManager::getSingleton();
+    
+    std::set<Ogre::Material*>::const_iterator i = materials.begin();
+    while (i != materials.end())
+    {
+        Ogre::Material::TechniqueIterator iter = (*i)->getTechniqueIterator();
+        while(iter.hasMoreElements())
+        {
+            Ogre::Technique *tech = iter.getNext();
+            assert(tech);
+            Ogre::Technique::PassIterator passIter = tech->getPassIterator();
+            while(passIter.hasMoreElements())
+            {
+                Ogre::Pass *pass = passIter.getNext();
+                
+                Ogre::Pass::TextureUnitStateIterator texIter = pass->getTextureUnitStateIterator();
+                while(texIter.hasMoreElements())
+                {
+                    Ogre::TextureUnitState *texUnit = texIter.getNext();
+                    std::string texName = texUnit->getTextureName();
+                    Ogre::Texture* tex = dynamic_cast<Ogre::Texture*>(texMgr.getByName(texName).get());
+                    if ((tex) && (tex->isLoaded()))
+                        dest.insert(tex);
+                }
+            }
+        }
+        ++i;
+    }
+}
+
 void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 {
-    if (!tree_rendertargets_)
+    if (!visibility_ || !text_scenecomplexity_ || !tab_widget_ || tab_widget_->currentIndex() != 7)
         return;
     
     tree_rendertargets_->clear();
@@ -1433,7 +1989,7 @@ void TimeProfilerWindow::RefreshRenderTargetProfilingData()
 
 void TimeProfilerWindow::RefreshTextureProfilingData()
 {
-    if (!tab_widget_ || tab_widget_->currentIndex() != 7)
+    if (!visibility_ || !tab_widget_ || tab_widget_->currentIndex() != 8)
         return;
 
     Ogre::ResourceManager::ResourceMapIterator iter = Ogre::TextureManager::getSingleton().getResourceIterator();

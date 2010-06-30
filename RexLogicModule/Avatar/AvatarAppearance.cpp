@@ -31,6 +31,7 @@
 #include "RenderServiceInterface.h"
 #include "Inventory/InventoryEvents.h"
 #include "ConfigurationManager.h"
+#include "CoreStringUtils.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "WorldStream.h"
@@ -1549,10 +1550,59 @@ namespace RexLogic
         std::string avatar_export_str = avatar_export.toString().toStdString();
         request->avatar_xml_ = avatar_export_str;
 
-        // Get assets for export 
+        // Get assets for export
         GetAvatarAssetsForExport(request, *appearance);
-                                                
+        
         avatar_exporter_->AddRequest<AvatarExporterRequest>(request);
+    }
+    
+    void AvatarAppearance::ExportAvatarLocal(Scene::EntityPtr entity, const std::string& outname)
+    {
+        if (!entity)
+            return;
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;
+        
+        boost::filesystem::path path(outname);
+        std::string dirname = path.branch_path().string();
+        
+        // Convert avatar appearance to xml
+        QDomDocument avatar_export("Avatar");
+        LegacyAvatarSerializer::WriteAvatarAppearance(avatar_export, *appearance);
+        QByteArray bytes = avatar_export.toByteArray();
+        QFile avatarxmlfile(outname.c_str());
+        if (avatarxmlfile.open(QFile::WriteOnly))
+        {
+            avatarxmlfile.write(bytes);
+            avatarxmlfile.close();
+        }
+        else
+            RexLogicModule::LogError("Could not save avatar description file " + outname);
+        
+        // Get assets & dump them all
+        AvatarExporterRequestPtr request(new AvatarExporterRequest());
+        GetAvatarAssetsForExport(request, *appearance, false);
+        ExportAssetMap::const_iterator i = request->assets_.begin();
+        while (i != request->assets_.end())
+        {
+            // Replace problematic chars in asset names
+            std::string filename = i->first;
+            ReplaceCharInplace(filename, '/', '_');
+            ReplaceCharInplace(filename, '\\', '_');
+            filename = dirname + "/" + filename;
+            
+            QFile assetfile(filename.c_str());
+            QByteArray assetbytes((const char*)&i->second.data_[0], i->second.data_.size());
+            if (assetfile.open(QFile::WriteOnly))
+            {
+                assetfile.write(assetbytes);
+                assetfile.close();
+            }
+            else
+                RexLogicModule::LogError("Could not save avatar asset " + filename);
+            ++i;
+        }
     }
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
@@ -1562,7 +1612,7 @@ namespace RexLogic
         RexLogicModule::LogDebug("Getting skeleton for export");
         GetAvatarAssetForExport(request, appearance.GetSkeleton(), false, inventorymode);
 
-        RexLogicModule::LogDebug("Getting materials for export");        
+        RexLogicModule::LogDebug("Getting materials for export");
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (uint i = 0; i < materials.size(); ++i)
         {
@@ -1976,7 +2026,7 @@ namespace RexLogic
             return;
         }
         
-        renderer->AddResourceDirectory(dirname);
+        renderer->AddResourceDirectory(QString::fromStdString(dirname));
     }    
     
     bool AvatarAppearance::ChangeAvatarMaterial(Scene::EntityPtr entity, uint index, const std::string& filename)

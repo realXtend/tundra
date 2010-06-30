@@ -36,6 +36,14 @@ namespace UiDefines
         IconPressed
     };
 
+    enum MenuGroup
+    { 
+        NoGroup = 0,
+        RootGroup = 1, 
+        ServerToolsGroup = 2,
+        WorldToolsGroup = 3
+    };
+
     typedef QMap<UiDefines::MenuNodeStyle, QString> MenuNodeStyleMap;
 }
 

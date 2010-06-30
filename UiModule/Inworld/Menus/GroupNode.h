@@ -23,7 +23,7 @@ namespace CoreUi
 
     public:
         //! Constructor
-        GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0);
+        GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0, UiDefines::MenuNodeStyleMap style_map = UiDefines::MenuNodeStyleMap());
 
         //! Destructor.
         ~GroupNode();

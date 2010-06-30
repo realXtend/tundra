@@ -16,7 +16,7 @@
 class AttributeChange : public QObject
 {
     Q_OBJECT
-    Q_ENUMS(ChangeType)
+    Q_ENUMS(Type)
 
 public:
     //! Enumeration of attribute/component change types for replication

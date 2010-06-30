@@ -1207,7 +1207,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
     }
 }
 
-void Primitive::AttachLightComponent(Scene::EntityPtr entity, const Color &color, float radius, float falloff)
+void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff)
 {
     if (radius < 0.001)
         radius = 0.001;
@@ -1239,10 +1239,10 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, const Color &color
     if (placeable)
         light->SetPlaceable(placeable);
 
-    clamp<float>(color.r, 0.f, 1.f);
-    clamp<float>(color.g, 0.f, 1.f);
-    clamp<float>(color.b, 0.f, 1.f);
-    clamp<float>(color.a, 0.f, 1.f);
+    color.r = clamp<float>(color.r, 0.f, 1.f);
+    color.g = clamp<float>(color.g, 0.f, 1.f);
+    color.b = clamp<float>(color.b, 0.f, 1.f);
+    color.a = clamp<float>(color.a, 0.f, 1.f);
 
     light->SetColor(color);
     light->SetAttenuation(max_radius, 0.0f, linear, quad);

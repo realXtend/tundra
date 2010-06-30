@@ -67,11 +67,12 @@ namespace MumbleVoip
 
     void MumbleVoipModule::Initialize()
     {
-        InitializeConsoleCommands();
     }
 
     void MumbleVoipModule::PostInitialize()
     {
+        InitializeConsoleCommands();
+        
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         if (event_category_framework_ == 0)
             LogError("Unable to find event category for Framework");

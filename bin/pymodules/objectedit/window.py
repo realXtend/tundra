@@ -3,7 +3,7 @@ import rexviewer as r
 import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
 from PythonQt.QtUiTools import QUiLoader
-from PythonQt.QtCore import QFile, QSize
+from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
 reload(conv)
 import math
@@ -376,8 +376,6 @@ class ObjectEditWindow:
     def updatePropertyEditor(self, ent):
         qprim = ent.prim
         if qprim is not None:
-            self.propedit.setObject(qprim)
-            qprim.SetEditor(self.propedit)
             self.tabwidget.setTabEnabled(2, True)
             
     def untoggleButtons(self):

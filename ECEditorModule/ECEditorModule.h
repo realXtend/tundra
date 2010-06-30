@@ -45,6 +45,8 @@ namespace ECEditor
         MODULE_LOGGING_FUNCTIONS
 
     public slots:
+        void AddEditorWindowToUI();
+
         //! Creates EC attribute XML editor widget for entity.
         //! \param entity Entity pointer.
         void CreateXmlEditor(Scene::EntityPtr entity);

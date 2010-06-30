@@ -53,6 +53,14 @@ namespace RexLogic
         rexlogicmodule_->GetAvatarHandler()->ExportUserAvatar();
     }
 
+    void AvatarEditor::ExportAvatarLocal()
+    {
+        const std::string filter = "Avatar description file (*.xml)";
+        std::string filename = GetSaveFileName(filter, "Save avatar description and all assets");
+        if (!filename.empty())
+            rexlogicmodule_->GetAvatarHandler()->ExportUserAvatarLocal(filename);
+    }
+    
     void AvatarEditor::InitEditorWindow()
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
@@ -84,6 +92,10 @@ namespace RexLogic
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(ExportAvatar()));
+
+        button = avatar_widget_->findChild<QPushButton *>("but_exportlocal");
+        if (button)
+            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ExportAvatarLocal()));
 
         button = avatar_widget_->findChild<QPushButton *>("but_load");
         if (button)
@@ -465,7 +477,7 @@ namespace RexLogic
         
         tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
         tab_scroll->setWidgetResizable(false);
-        tab_scroll->resize(tabs->contentsRect().size());            
+        tab_scroll->resize(tabs->contentsRect().size());
         tab_scroll->setWidget(tab_panel);
         tabs->addTab(tab_scroll, name_with_space);
         return tab_panel;
@@ -474,6 +486,18 @@ namespace RexLogic
     std::string AvatarEditor::GetOpenFileName(const std::string& filter, const std::string& prompt)
     {
         std::string filename = Foundation::QtUtils::GetOpenFileName(filter, prompt, last_directory_);
+        if (!filename.empty())
+        {
+            boost::filesystem::path path(filename);
+            std::string dirname = path.branch_path().string();
+            last_directory_ = dirname;
+        }
+        return filename; 
+    }
+    
+    std::string AvatarEditor::GetSaveFileName(const std::string& filter, const std::string& prompt)
+    {
+        std::string filename = Foundation::QtUtils::GetSaveFileName(filter, prompt, last_directory_);
         if (!filename.empty())
         {
             boost::filesystem::path path(filename);

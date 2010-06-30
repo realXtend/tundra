@@ -7,9 +7,13 @@
 #include "CoreAnyIterator.h"
 #include "Entity.h"
 #include "ComponentInterface.h"
-
 #include <QObject>
 #include <qvariant.h>
+
+namespace Foundation
+{
+    class AttributeInterface;
+}
 
 namespace Scene
 {
@@ -133,6 +137,13 @@ namespace Scene
          */
         void EmitComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
         
+        //! Emit notification of an attribute changing
+        /*! \param comp Component pointer
+            \param attribute Attribute pointer
+            \param change Type of change (local, from network...)
+         */
+        void EmitAttributeChanged(Foundation::ComponentInterface* comp, Foundation::AttributeInterface* attribute, AttributeChange::Type change);
+        
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
@@ -181,6 +192,9 @@ namespace Scene
         /*! Network synchronization managers should connect to this
          */
         void ComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+
+        //! Signal when an attribute of a component has changed
+        void AttributeChanged(Foundation::ComponentInterface* comp, Foundation::AttributeInterface* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
