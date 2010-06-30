@@ -114,7 +114,7 @@ class MediaURLHandler(Component):
                 continue
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
-                print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, mediaurlview
+                #print "Modified entity uses a known mediaurl texture:", entid, tx, submeshes, mediaurlview
                 r.applyUICanvasToSubmeshes(entid, submeshes, mediaurlview.playback_widget, mediaurlview.refreshrate)
         
     def on_input(self, evid):
