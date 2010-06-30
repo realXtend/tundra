@@ -196,7 +196,7 @@ namespace TelepathyIM
     {
         connect(&kill_old_gabble_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(ClearDBusDaemon() ));
         connect(&kill_old_gabble_, SIGNAL( error(QProcess::ProcessError) ), SLOT(ClearDBusDaemon() ));
-        LogDebug("Try to kill gabble.exe process.");
+        LogDebug("Killing gabble.exe process if running.");
         kill_old_gabble_.start("taskkill /F /FI \"IMAGENAME eq gabble.exe");
     }
 
@@ -204,7 +204,7 @@ namespace TelepathyIM
     {
         connect(&kill_old_dbusdaemon_, SIGNAL( finished(int, QProcess::ExitStatus) ), SLOT(StartDBusDaemon() ));
         connect(&kill_old_dbusdaemon_, SIGNAL( error(QProcess::ProcessError) ), SLOT(StartDBusDaemon() ));
-        LogDebug("Try to kill dbus-daemon.exe processs");
+        LogDebug("Killing dbus-daemon.exe process if running.");
         kill_old_dbusdaemon_.start("taskkill /F /FI \"IMAGENAME eq dbus-daemon.exe");
     }
 

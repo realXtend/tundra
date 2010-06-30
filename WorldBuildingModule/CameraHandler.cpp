@@ -93,20 +93,20 @@ namespace WorldBuilding
             else
                 return focus_completed;
 
-            qDebug() << "B.Min    : x " << bounding_min.x << " y " << bounding_min.y << " z " << bounding_min.z;
-            qDebug() << "B.Max    : x " << bounding_max.x << " y " << bounding_max.y << " z " << bounding_max.z;
+            //qDebug() << "B.Min    : x " << bounding_min.x << " y " << bounding_min.y << " z " << bounding_min.z;
+            //qDebug() << "B.Max    : x " << bounding_max.x << " y " << bounding_max.y << " z " << bounding_max.z;
 
             Vector3df scale_vector = entity_ec_placable->GetScale();
-            qDebug() << "Scale    : x " << scale_vector.x << " y " << scale_vector.y << " z " << scale_vector.z;
-            
+            //qDebug() << "Scale    : x " << scale_vector.x << " y " << scale_vector.y << " z " << scale_vector.z;
+
             Vector3df position_offset(scale_vector.x, -scale_vector.y*2.5, scale_vector.z*1.5);
-            qDebug() << "Offset   : x " << position_offset.x << " y " << position_offset.y << " z " << position_offset.z;
+            //qDebug() << "Offset   : x " << position_offset.x << " y " << position_offset.y << " z " << position_offset.z;
 
             Vector3df position_vector = entity_ec_placable->GetPosition();
-            qDebug() << "Position : x " << position_vector.x << " y " << position_vector.y << " z " << position_vector.z;
+            //qDebug() << "Position : x " << position_vector.x << " y " << position_vector.y << " z " << position_vector.z;
 
             Vector3df look_at(position_vector.x, position_vector.y, position_vector.z + position_offset.z);
-            qDebug() << "Look at  : x " << look_at.x << " y " << look_at.y << " z " << look_at.z << endl;
+            //qDebug() << "Look at  : x " << look_at.x << " y " << look_at.y << " z " << look_at.z << endl;
 
             cam_ec_placable->SetPosition(entity_ec_placable->GetPosition() + (entity_ec_placable->GetOrientation() * position_offset));
             cam_ec_placable->LookAt(look_at);
