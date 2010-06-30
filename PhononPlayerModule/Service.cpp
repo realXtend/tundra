@@ -6,8 +6,9 @@
 #include "Service.h"
 #include <QWidget>
 #include <QSignalMapper>
-#include <Phonon>
-#include <Phonon/BackendCapabilities>
+#include <phonon/VideoPlayer>
+#include <phonon/MediaObject>
+#include <phonon/BackendCapabilities>
 #include "PhononPlayerModule.h"
 
 #include "MemoryLeakCheck.h"
