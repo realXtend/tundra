@@ -44,7 +44,7 @@ QLabel#object_information_title, #object_properties_title {
 	padding-bottom: 10px;
 }
 
-QLabel#server_id_title, #local_id_title, #desc_id, #name_id, #status_label {
+QLabel#server_id_title, #local_id_title, #desc_id, #name_id, #status_label, #object_viewport {
 	font: Arial;
 	font-size: 14px;
 	font-weight: bold;
@@ -146,20 +146,13 @@ QLabel#server_id_value, #local_id_value, #desc_value, #name_value {
               <number>0</number>
              </property>
              <item>
-              <spacer name="viewport_horizontalSpacer_1">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
               <widget class="QLabel" name="object_viewport">
+               <property name="sizePolicy">
+                <sizepolicy hsizetype="Expanding" vsizetype="Preferred">
+                 <horstretch>0</horstretch>
+                 <verstretch>0</verstretch>
+                </sizepolicy>
+               </property>
                <property name="minimumSize">
                 <size>
                  <width>300</width>
@@ -191,19 +184,6 @@ QLabel#server_id_value, #local_id_value, #desc_value, #name_value {
                 <set>Qt::AlignCenter</set>
                </property>
               </widget>
-             </item>
-             <item>
-              <spacer name="viewport_horizontalSpacer_2">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>40</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
              </item>
             </layout>
            </item>
