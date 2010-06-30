@@ -63,6 +63,14 @@ namespace WorldBuilding
         {
             if (id_to_cam_entity_.contains(cam_id))
                 id_to_cam_entity_.remove(cam_id);
+
+            Ogre::TexturePtr entity_viewport_texture = Ogre::TextureManager::getSingleton().getByName(render_texture_name_);
+            if (entity_viewport_texture.isNull())
+                return;
+
+            Ogre::RenderTexture *render_texture = entity_viewport_texture->getBuffer()->getRenderTarget();
+            if (render_texture)
+                render_texture->removeAllViewports();
         }
 
         bool CameraHandler::FocusToEntity(CameraID cam_id, Scene::Entity *entity, Vector3df offset)
@@ -84,31 +92,45 @@ namespace WorldBuilding
             OgreRenderer::EC_OgreMesh *entity_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
             OgreRenderer::EC_OgreCustomObject *entity_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
 
+            Vector3df position_vector = entity_ec_placable->GetPosition();
+            Vector3df position_offset;
+            Vector3df look_at;
+
             Vector3df bounding_min;
             Vector3df bounding_max;
+            Vector3df der_size_vector;
+            Ogre::Vector3 derived_scale;
+
             if (entity_mesh)
+            {
                 entity_mesh->GetBoundingBox(bounding_min, bounding_max);
+                derived_scale = entity_mesh->GetEntity()->getParentNode()->_getDerivedScale();
+                der_size_vector = Vector3df(derived_scale.x, derived_scale.y, derived_scale.z) * (bounding_max - bounding_min);
+                
+                position_offset = Vector3df(der_size_vector.x, -der_size_vector.y, der_size_vector.y);
+                look_at = Vector3df(position_vector.x, position_vector.y, position_vector.z + (position_offset.z/2));
+            }
             else if (entity_custom_object)
+            {
                 entity_custom_object->GetBoundingBox(bounding_min, bounding_max);
+                derived_scale = entity_custom_object->GetEntity()->getParentNode()->_getDerivedScale();
+                der_size_vector = Vector3df(derived_scale.x, derived_scale.y, derived_scale.z) * (bounding_max - bounding_min);
+                
+                float max_distance = 0;
+                if (der_size_vector.x > max_distance)
+                    max_distance = der_size_vector.x;
+                if (der_size_vector.y > max_distance)
+                    max_distance = der_size_vector.y;
+                if (der_size_vector.z > max_distance)
+                    max_distance = der_size_vector.z;
+
+                position_offset = Vector3df(der_size_vector.x, -max_distance, max_distance/4);
+                look_at = Vector3df(position_vector.x, position_vector.y, position_vector.z + (position_offset.z/2));
+            }
             else
                 return focus_completed;
-
-            //qDebug() << "B.Min    : x " << bounding_min.x << " y " << bounding_min.y << " z " << bounding_min.z;
-            //qDebug() << "B.Max    : x " << bounding_max.x << " y " << bounding_max.y << " z " << bounding_max.z;
-
-            Vector3df scale_vector = entity_ec_placable->GetScale();
-            //qDebug() << "Scale    : x " << scale_vector.x << " y " << scale_vector.y << " z " << scale_vector.z;
-
-            Vector3df position_offset(scale_vector.x, -scale_vector.y*2.5, scale_vector.z*1.5);
-            //qDebug() << "Offset   : x " << position_offset.x << " y " << position_offset.y << " z " << position_offset.z;
-
-            Vector3df position_vector = entity_ec_placable->GetPosition();
-            //qDebug() << "Position : x " << position_vector.x << " y " << position_vector.y << " z " << position_vector.z;
-
-            Vector3df look_at(position_vector.x, position_vector.y, position_vector.z + position_offset.z);
-            //qDebug() << "Look at  : x " << look_at.x << " y " << look_at.y << " z " << look_at.z << endl;
-
-            cam_ec_placable->SetPosition(entity_ec_placable->GetPosition() + (entity_ec_placable->GetOrientation() * position_offset));
+            
+            cam_ec_placable->SetPosition(position_vector + (entity_ec_placable->GetOrientation() * position_offset));
             cam_ec_placable->LookAt(look_at);
 
             focus_completed = true;
@@ -155,13 +177,6 @@ namespace WorldBuilding
                 Ogre::Viewport *vp = render_texture->addViewport(ec_camera->GetCamera());
                 vp->setOverlaysEnabled(false);
             }
-            //else
-            //{
-            //    Ogre::Viewport *vp = render_texture->getViewport(0);
-            //    vp->setCamera(ec_camera->GetCamera());
-            //    int i = 0;
-            //}
-
             render_texture->update();
 
             // Copy render target pixels into memory

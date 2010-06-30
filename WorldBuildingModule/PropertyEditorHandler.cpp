@@ -23,6 +23,12 @@ namespace WorldBuilding
     {
     }
 
+    void PropertyEditorHandler::SetEditorVisible(bool visible)
+    {
+        if (property_browser_)
+            property_browser_->setVisible(visible);
+    }
+
     void PropertyEditorHandler::SetCurrentPrim(EC_OpenSimPrim *prim)
     {
         current_prim_ = prim;
@@ -137,7 +143,10 @@ namespace WorldBuilding
     void PropertyEditorHandler::CreatePropertyBrowser(QWidget *parent, QLayout *container, EC_OpenSimPrim *prim)
     {
         if (property_browser_)
+        {
+            PrimSelected(prim);
             return;
+        }
 
         property_browser_ = ui_helper_->CreatePropertyBrowser(parent, this, prim);
         container->addWidget(property_browser_);

@@ -27,6 +27,7 @@ namespace WorldBuilding
         virtual ~PropertyEditorHandler();
 
     public slots:
+        void SetEditorVisible(bool visible);
         void PrimSelected(EC_OpenSimPrim *prim);
         void SetCurrentPrim(EC_OpenSimPrim *prim);
         void ClearCurrentPrim();

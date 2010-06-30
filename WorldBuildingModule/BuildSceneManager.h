@@ -47,6 +47,7 @@ namespace WorldBuilding
 
         void CreateCamera();
         void ResetCamera();
+        void ResetEditing();
 
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
