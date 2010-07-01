@@ -79,17 +79,6 @@ namespace UiServices
         if (qobject_cast<QWebView *>(widget))
         {
             widget->setPalette(default_palette_);
-            
-            //QPalette palette;
-            //QApplication::
-            //palette.setBrush(QPalette::BrightText, Qt::white);
-            //palette.setBrush(QPalette::WindowText,  Qt::white);
-            //palette.setBrush(QPalette::Base, Qt::red);
-            //palette.setBrush(QPalette::AlternateBase,  Qt::white);
-            //palette.setBrush(QPalette::Highlight,  Qt::white);
-            //palette.setBrush(QPalette::ButtonText, Qt::white);
-            //palette.setBrush(QPalette::HighlightedText, Qt::white);  
-            //widget->setPalette(palette);
         }
 
     }
@@ -154,7 +143,8 @@ namespace UiServices
                     bool active = (myTitleBar->titleBarState & State_Active);
 
                     QRect textRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarLabel, widget);
-                    QFont font("facetblack", 10, QFont::Normal, false);
+                    //QFont font("facetextrabold", 10, QFont::Normal, false);
+                    QFont font("facetextrabold", 10, 25, false);
                     font.setCapitalization(QFont::AllUppercase);
                     font.setStyleStrategy(QFont::PreferAntialias);
                     font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
@@ -250,7 +240,7 @@ namespace UiServices
                  }
              }
 
-             QFont font("facet", 9, 0, false);
+             QFont font("facetextrabold", 8, 0, false);
              if (widget)
              {
                 qreal w_psize = widget->font().pointSize();
@@ -258,7 +248,8 @@ namespace UiServices
                     font.setPointSize(w_psize);
              }
              font.setCapitalization(QFont::AllUppercase);
-             font.setStyleStrategy(QFont::PreferAntialias);             
+             font.setStyleStrategy(QFont::PreferAntialias);
+             font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
              painter->setRenderHint(QPainter::Antialiasing, true);
              painter->setFont(font);
 

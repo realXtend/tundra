@@ -123,7 +123,10 @@ namespace WorldMap
 
                         QGraphicsTextItem *item = new QGraphicsTextItem(0, scene);                        
                         item->setHtml(sim_name_);                        
-                        scene->addItem(item);
+                        
+                        if (!item->scene())
+                            scene->addItem(item);
+
                         item->show();
 
                         worldMapGraphicsView->update();
@@ -158,16 +161,19 @@ namespace WorldMap
                 item->SetMyAvatar(true);                
             }
 
-            item->SetAvatarName(avatar_name);            
-            scene->addItem(item);
+            item->SetAvatarName(avatar_name);
+            
+            if (!item->scene()) 
+                scene->addItem(item);
+            
             avatar_items_.insert(avatar_id, item); //Add to items            
         }
 
         if (!avatar_names_.contains(avatar_id))
             avatar_names_.insert(avatar_id, avatar_name); //Add to names
         
-        if (!scene->items().contains(item))
-            scene->addItem(item);
+        if (!item->scene()) 
+            scene->addItem(item);            
 
         item->setPos(position.x, 256-position.y);
         item->SetTextPosition(position.x, 256-position.y);
