@@ -16,6 +16,9 @@ from core.logger import NaaliLogger
 #MouseInfo = namedtuple('MouseInfo', 'x y rel_x rel_y')
 from core.mouseinfo import MouseInfo
 
+#XXX a temporary fix 'cause circuits socket internals depend on a Started event now
+from circuits.core.events import Started
+
 class Key(Event): pass
 class Update(Event): pass     
 class Chat(Event): pass    
@@ -72,9 +75,11 @@ class ComponentRunner:
             autoload = reload(autoload)            
         #print "Autoload module:", autoload
         autoload.load(self.m)
+
+        self.m.push(Started(self.m, None)) #webserver requires this now, temporarily XXX
                     
     def run(self, deltatime=0.1):
-        print "."
+        #print "."
         self.send_event(Update(deltatime), "update") #so that all components are updated immediately once for this frame
         #XXX should this be using the __tick__ mechanism of circuits, and how?
         m = self.m
