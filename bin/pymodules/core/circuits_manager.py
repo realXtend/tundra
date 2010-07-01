@@ -59,8 +59,8 @@ class ComponentRunner(Component):
         # Todo: if the default stdout is hidden, the py stdout should be changed
         # to something that shows e.g. in console, so prints from scripts show
         # (people commonly use those for debugging so they should show somewhere)
-        d = Debugger(IgnoreChannels = ignchannels, logger=NaaliLogger()) #IgnoreEvents = ignored)
-        self.m = Manager() + d
+        #d = Debugger(IgnoreChannels = ignchannels, logger=NaaliLogger()) #IgnoreEvents = ignored)
+        self.m = Manager() #+ d
         #self.m = Manager()
 
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)

@@ -7,8 +7,6 @@
 This module define the @handler decorator/function and the HandlesType type.
 """
 
-from copy import copy
-from types import MethodType
 from inspect import getargspec
 
 def handler(*channels, **kwargs):
@@ -55,7 +53,7 @@ def handler(*channels, **kwargs):
 
         if args and args[0] == "self":
             del args[0]
-        f._passEvent = args and args[0] == "event"
+        f.event = bool(args and args[0] == "event")
 
         return f
 
