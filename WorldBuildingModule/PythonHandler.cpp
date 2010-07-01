@@ -2,10 +2,9 @@
 
 #include "StableHeaders.h"
 #include "PythonHandler.h"
+#include "WorldBuildingModule.h"
 
 #include <EC_OpenSimPrim.h>
-
-#include <QDebug>
 
 namespace WorldBuilding
 {
@@ -21,13 +20,11 @@ namespace WorldBuilding
 
     void PythonHandler::HelloPython()
     {
-        qDebug() << "Hello from python!";
+        WorldBuildingModule::LogDebug("Python says hello!");
     }
 
     void PythonHandler::ObjectSelected(EC_OpenSimPrim *prim)
     {
-        qDebug() << "Name : " << prim->getName() << endl
-                 << "ID   : " << prim->getFullId() << endl
-                 << "Desc : " << prim->getDescription();
+
     }
 }

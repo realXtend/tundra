@@ -116,7 +116,6 @@ class ObjectEdit(Component):
         
         # Get world building modules python handler
         self.cpp_python_handler = r.getQWorldBuildingHandler()
-        print self.cpp_python_handler
         if self.cpp_python_handler == None:
            r.logDebug("Could not aqquire world building service to object edit")
         
@@ -190,10 +189,11 @@ class ObjectEdit(Component):
         self.window.selected(ent, False) 
         self.canmove = True
         
-        if self.cpp_python_handler != None:
-            if ent.prim != None:
-                self.cpp_python_handler.ObjectSelected(ent.prim)
-        
+        # Not needed at this point, c++ module gets selected entitys itself
+        #if self.cpp_python_handler != None:
+        #    if ent.prim != None:
+        #        self.cpp_python_handler.ObjectSelected(ent.prim)
+
         self.highlightChildren(children)
 
     def multiselect(self, ent):
