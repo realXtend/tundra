@@ -65,9 +65,12 @@ relhtml = """\
 abshtml = open(OWNPATH + "webui.html").read()
 
 def save_screenshot():
-    naali.renderer.Render()
+    rend = naali.renderer
+    rend.HideCurrentWorldView()
+    rend.Render()
     imgname = "image-%s.png" % time.time()
     r.takeScreenshot(SHOTPATH, imgname)
+    rend.ShowCurrentWorldView()    
     imgurl = imgname #base is added when the server has a separate http for serving the image
     return imgurl
 
