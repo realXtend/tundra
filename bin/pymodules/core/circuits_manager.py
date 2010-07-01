@@ -59,8 +59,8 @@ class ComponentRunner(Component):
         # Todo: if the default stdout is hidden, the py stdout should be changed
         # to something that shows e.g. in console, so prints from scripts show
         # (people commonly use those for debugging so they should show somewhere)
-        d = Debugger(IgnoreChannels = ignchannels, logger=NaaliLogger()) #IgnoreEvents = ignored)
-        self.m = Manager() + d
+        #d = Debugger(IgnoreChannels = ignchannels, logger=NaaliLogger()) #IgnoreEvents = ignored)
+        self.m = Manager() #+ d
         #self.m = Manager()
 
         #or __all__ in pymodules __init__ ? (i.e. import pymodules would do that)
@@ -81,7 +81,6 @@ class ComponentRunner(Component):
         m = self.m
         m.tick()
         while m: m.flush()
-        #XXX NOTE: now that we tick & flush, circuits works normally, and we could change from send() to push() for the events
 
     def send_event(self, event, channel):
         """simulate sync sending of events using the async lib.
@@ -90,9 +89,9 @@ class ComponentRunner(Component):
         m = self.m
         ret = m.push(event, channel)
         while m: m.flush() #circuits components evaluate to false when have no pending events left
-        if not ret.errors and ret.value is not None:
+        if not ret.errors:
             #print "EVENT:", event, ret.value
-            return True in ret.value
+            return True in ret #circuits return values implement __contains__ for this use case
         else:
             #did the debugger already show the traceback?
             return False
