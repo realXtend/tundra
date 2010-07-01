@@ -760,7 +760,7 @@ class ObjectEdit(Component):
     def on_worldstreamready(self, id):
         r.logInfo("Worldstream ready")
         self.worldstream = r.getServerConnection()
-        return True
+        return False # return False, we don't want to consume the event and not have it for others available
         
     def setUseLocalTransform(self, local):
         self.useLocalTransform = local
