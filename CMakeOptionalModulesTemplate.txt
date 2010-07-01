@@ -34,5 +34,5 @@ add_subdirectory (EntityComponents/EC_DynamicComponent)      # declared by Pytho
 
 add_subdirectory (MumbleVoipModule)
 add_subdirectory (WorldBuildingModule)
-#add_subdirectory (PhononPlayerModule)
+add_subdirectory (PhononPlayerModule)
 add_subdirectory (WorldMapModule)

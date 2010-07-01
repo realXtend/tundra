@@ -5,17 +5,12 @@
 
 #include "PlayerService.h"
 #include <QMap>
-
-class QWidget;
-class QSignalMapper;
-
-namespace Phonon
-{
-    class VideoPlayer;
-}
+#include <QWidget>
 
 namespace PlayerService
 {
+    class VideoPlayer;
+
     class Service : public Player::PlayerServiceInterface
     {
         Q_OBJECT
@@ -30,15 +25,8 @@ namespace PlayerService
         virtual QWidget* GetPlayer(const QString &url);
         virtual void DeletePlayer(const QString &url);
 
-    private slots:
-        /// Restart evey player object which is not playing state
-        virtual void UpdatePlayers();
-
-        virtual void PlayerDestroyed(const QString &);
-
     private:
-        QMap<QString, Phonon::VideoPlayer*> video_players_;
-        QSignalMapper* destroyed_signal_mapper_;
+        QMap<QString, VideoPlayer*> video_players_;
     };
 
 } // PlayerService
