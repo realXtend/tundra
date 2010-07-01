@@ -5,11 +5,10 @@
 
 #include "Service.h"
 #include <QWidget>
-#include <QSignalMapper>
-#include <phonon/VideoPlayer>
-#include <phonon/MediaObject>
 #include <phonon/BackendCapabilities>
+#include <QApplication>
 #include "PhononPlayerModule.h"
+#include "VideoPlayer.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -17,17 +16,15 @@ namespace PlayerService
 {
     Service::Service()
     {
-        destroyed_signal_mapper_ = new QSignalMapper();
     }
 
     Service::~Service()
     {
-        foreach(Phonon::VideoPlayer* player, video_players_)
+        foreach(VideoPlayer* player, video_players_)
         {
-            player->deleteLater();
+            SAFE_DELETE(player);
         }
         video_players_.clear();
-        SAFE_DELETE(destroyed_signal_mapper_);
     }
 
     bool Service::IsMimeTypeSupported(const QString mime_type)
@@ -43,19 +40,9 @@ namespace PlayerService
         QString message = QString("Created a player for %1").arg(url);
         PhononPlayerModule::LogDebug(message.toStdString());
         
-        Phonon::VideoPlayer* player = new Phonon::VideoPlayer(Phonon::VideoCategory, 0); /// this can block for a long time !!!
-        video_players_[url] = player;
-        destroyed_signal_mapper_->setMapping(player, url);
-        QObject::connect(player, SIGNAL(finished()), this, SLOT(UpdatePlayers()));
-        QObject::connect(player->mediaObject(), SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(UpdatePlayers()));
-        QObject::connect(player, SIGNAL(destroyed()), destroyed_signal_mapper_, SLOT(map()));
-        QObject::connect(destroyed_signal_mapper_, SIGNAL(mapped(const QString &)), this, SLOT(PlayerDestroyed(const QString &)));
+        video_players_[url] = new VideoPlayer(url);
 
-        player->setVolume(0); // We are just playing the video
-        player->load(url);
-        player->play();
-
-        return player;
+        return video_players_[url];
     }
 
     void Service::DeletePlayer(const QString &url)
@@ -63,30 +50,9 @@ namespace PlayerService
         if (!video_players_.contains(url))
             return;
         
-        Phonon::VideoPlayer* player = video_players_[url];
+        VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
-        player->stop();
-        //delete player; <-- cannot be used, this crash...
-        player->deleteLater();
-    }
-
-    void Service::PlayerDestroyed(const QString &url)
-    {
-        QString message = QString("Destroyed player for %1").arg(url);
-        PhononPlayerModule::LogDebug(message.toStdString());
-    }
-
-    void Service::UpdatePlayers()
-    {
-        foreach(Phonon::VideoPlayer* p, video_players_)
-        {
-            if (!p->isPlaying())
-            {
-                if (p->mediaObject()->isSeekable())
-                    p->seek(0);
-                p->play();
-            }
-        }
-    }
+        SAFE_DELETE(player);
+     }
 
 } // PlayerService

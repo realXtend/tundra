@@ -25,8 +25,8 @@ class MediaurlView:
     def delete_playback_widget(self):
         if self.playback_widget is None:
             return
-        if type(self.playback_widget).__name__ == 'Phonon::VideoPlayer':
-            # Phonon::VideoPlayer object
+        if type(self.playback_widget).__name__ == 'PlayerService::VideoPlayer':
+            # PlayerService::VideoPlayer object
             r.deleteVideoWidget(self.__url.toString())
             self.playback_widget = None
         else:
@@ -93,6 +93,8 @@ class MediaURLHandler(Component):
             if self.texture2mediaurlview.has_key(textureuuid):
                 mediaurlview = self.texture2mediaurlview[textureuuid]
                 if mediaurlview is not None:
+                    if mediaurlview.url().toString() == urlstring:
+                        return # we already have this information...
                     del self.texture2mediaurlview[textureuuid]
                     mediaurlview.delete_playback_widget()                        
 
@@ -104,13 +106,14 @@ class MediaURLHandler(Component):
             self.texture2mediaurlview[textureuuid] = mv
             
             #for objects we already had in the scene
-            r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
+            if mv.playback_widget is not None:
+                r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
                           
     def on_entity_visuals_modified(self, entid):
         #print "MediaURLHandler got Visual Modified for:", entid 
         #XXX add checks to not re-apply blindly when is already up-to-date!
         for tx, mediaurlview in self.texture2mediaurlview.iteritems():
-            if mediaurlview is None:
+            if mediaurlview is None or mediaurlview.playback_widget is None:
                 continue
             submeshes = r.getSubmeshesWithTexture(entid, tx)
             if submeshes:
