@@ -43,8 +43,7 @@ namespace CoreUi
         if (theme == "Naali dark blue") {
             QApplication::setStyle(new UiServices::UiDarkBlueStyle());
             
-            QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
-            QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
+            QFontDatabase::addApplicationFont("./media/fonts/FACEB.TTF");
         } 
         else
         {            

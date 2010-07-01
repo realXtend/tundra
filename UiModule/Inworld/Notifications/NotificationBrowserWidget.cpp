@@ -18,7 +18,7 @@ namespace CoreUi
         setupUi(internal_widget_);
         setWidget(internal_widget_);
 
-        QFont titleFont("facetblack", 10, QFont::Normal, false);
+        QFont titleFont("facetextrabold", 10, 25, false);
         titleFont.setCapitalization(QFont::AllUppercase);
         titleFont.setStyleStrategy(QFont::PreferAntialias);
         titleFont.setLetterSpacing(QFont::AbsoluteSpacing, 1);

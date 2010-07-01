@@ -53,7 +53,13 @@ namespace CoreUi
                     QLabel *label = new QLabel(node_name_.toUpper());
                     layout->addWidget(label);
                     text_widget->setLayout(layout);
-                    label->setStyleSheet("background-color: transparent; color: rgba(255,255,255,200); font-size: 12px; text-align: center; font-weight: bold;");
+
+                    QFont font("facetextrabold", 11, 50, false);
+                    font.setCapitalization(QFont::AllUppercase);
+                    font.setStyleStrategy(QFont::PreferAntialias);
+
+                    label->setFont(font);
+                    label->setStyleSheet("background-color: transparent; color: white; text-align: center;");
                     QFontMetrics metric(label->font());
                     center_image_width_ = metric.width(label->text()) + 20;
                 }
