@@ -31,13 +31,12 @@ class GenericMessage(Event): pass
 class Logout(Event): pass
 class WorldStreamReady(Event): pass
     
-class ComponentRunner(Component):
+class ComponentRunner:
     instance = None
     
     def __init__(self):
         # instanciated from the c++ side, as modulemanager there
         #assert self.instance is None
-        Component.__init__(self)
         ComponentRunner.instance = self #is used as a singleton now
         
         self.mouseinfo = MouseInfo(0,0,0,0)
@@ -75,12 +74,11 @@ class ComponentRunner(Component):
         autoload.load(self.m)
                     
     def run(self, deltatime=0.1):
-        #print ".",
+        print "."
         self.send_event(Update(deltatime), "update") #so that all components are updated immediately once for this frame
         #XXX should this be using the __tick__ mechanism of circuits, and how?
         m = self.m
         m.tick()
-        while m: m.flush()
 
     def send_event(self, event, channel):
         """simulate sync sending of events using the async lib.
