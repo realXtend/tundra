@@ -22,8 +22,8 @@ except ImportError:
     warnings.warn("No SSL support available. Using python-2.5 ? Try isntalling the ssl module: http://pypi.python.org/pypi/ssl/")
     HAS_SSL = 0
 
-from circuits.net.pollers import Select as DefaultPoller
 from circuits.core import handler, Event, Component
+from circuits.net.pollers import _Poller, Select as DefaultPoller
 
 BUFSIZE = 4096 # 4KB Buffer
 BACKLOG = 5000 #  5K Concurrent Connections
@@ -276,7 +276,7 @@ class Client(Component):
 
     def write(self, data):
         if not self._poller.isWriting(self._sock):
-            self._poller.addWriter(self._sock)
+            self._poller.addWriter(self, self._sock)
         self._buffer.append(data)
 
     @handler("_disconnect", filter=True)
@@ -335,7 +335,7 @@ class TCPClient(Client):
 
         self._connected = True
 
-        self._poller.addReader(self._sock)
+        self._poller.addReader(self, self._sock)
 
         if self.ssl:
             self._sslsock = socket.ssl(self._sock)
@@ -376,7 +376,7 @@ class UNIXClient(Client):
 
         self._connected = True
 
-        self._poller.addReader(self._sock)
+        self._poller.addReader(self, self._sock)
 
         if self.ssl:
             self._sslsock = socket.ssl(self._sock)
@@ -411,10 +411,8 @@ class Server(Component):
         self._bufsize = kwargs.get("bufsize", BUFSIZE)
         self._backlog = kwargs.get("backlog", BACKLOG)
 
-        Poller = kwargs.get("poller", DefaultPoller)
-
-        self._poller = Poller(channel=self.channel)
-        self._poller.register(self)
+        self._poller = None
+        self._PollerComponent = kwargs.get("poller", DefaultPoller)
 
         self._sock = None
         self._buffers = defaultdict(deque)
@@ -432,6 +430,20 @@ class Server(Component):
     @property
     def port(self):
         return self.bind[1] if hasattr(self, "bind") else None
+
+    @handler("registered", target="*")
+    def registered(self, component, manager):
+        if self._poller is None and isinstance(component, _Poller):
+            self._poller = component
+            self._poller.addReader(self, self._sock)
+
+    @handler("started", filter=True, target="*")
+    def _on_started(self, component, mode):
+        if self._poller is None:
+            self._poller = self._PollerComponent()
+            self._poller.register(self.root)
+            self._poller.addReader(self, self._sock)
+            return True
 
     def _close(self, sock):
         if not sock == self._sock and sock not in self._clients:
@@ -502,7 +514,7 @@ class Server(Component):
 
     def write(self, sock, data):
         if not self._poller.isWriting(sock):
-            self._poller.addWriter(sock)
+            self._poller.addWriter(self, sock)
         self._buffers[sock].append(data)
 
     def broadcast(self, data):
@@ -545,7 +557,7 @@ class Server(Component):
                 raise
 
         newsock.setblocking(False)
-        self._poller.addReader(newsock)
+        self._poller.addReader(self, newsock)
         self._clients.append(newsock)
         self.push(Connect(newsock, *host), "connect", self.channel)
 
@@ -592,8 +604,6 @@ class TCPServer(Server):
             self._sock.bind(self.bind)
         self._sock.listen(self._backlog)
 
-        self._poller.addReader(self._sock)
-
 class UNIXServer(Server):
 
     def __init__(self, bind, ssl=False, **kwargs):
@@ -620,8 +630,6 @@ class UNIXServer(Server):
         self._sock.setblocking(False)
         self._sock.listen(self._backlog)
 
-        self._poller.addReader(self._sock)
-
 class UDPServer(Server):
 
     def __init__(self, bind, ssl=False, **kwargs):
@@ -636,8 +644,6 @@ class UDPServer(Server):
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_BROADCAST, 1)
         self._sock.setblocking(False)
-
-        self._poller.addReader(self._sock)
 
     def _close(self, sock):
         self._poller.discard(sock)
@@ -663,9 +669,9 @@ class UDPServer(Server):
             data, address = self._sock.recvfrom(self._bufsize)
             if data:
                 self.push(Read(address, data), "read", self.channel)
-            else:
-                self.close(self._sock)
         except socket.error, e:
+            if e[0] in (EWOULDBLOCK, EAGAIN):
+                return
             self.push(Error(self._sock, e), "error", self.channel)
             self._close(self._sock)
 
@@ -686,7 +692,7 @@ class UDPServer(Server):
     @handler("write", override=True)
     def write(self, address, data):
         if not self._poller.isWriting(self._sock):
-            self._poller.addWriter(self._sock)
+            self._poller.addWriter(self, self._sock)
         self._buffers[self._sock].append((address, data))
 
     def broadcast(self, data, port):
@@ -726,7 +732,7 @@ def Pipe(channels=("pipe", "pipe"), **kwargs):
     a = UNIXClient(s1, channel=channels[0], **kwargs)
     b = UNIXClient(s2, channel=channels[1], **kwargs)
     a._connected = True
-    a._poller.addReader(a._sock)
+    a._poller.addReader(a, a._sock)
     b._connected = True
-    b._poller.addReader(b._sock)
+    b._poller.addReader(b, b._sock)
     return a, b
