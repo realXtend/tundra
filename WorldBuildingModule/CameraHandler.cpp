@@ -30,6 +30,8 @@ namespace WorldBuilding
             Ogre::TexturePtr entity_screenshot = Ogre::TextureManager::getSingleton().createManual(
                 render_texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
                 Ogre::TEX_TYPE_2D, 1, 1, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+                
+            entity_screenshot->getBuffer()->getRenderTarget()->setAutoUpdated(false);
         }
 
         CameraHandler::~CameraHandler()

@@ -1543,6 +1543,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     text << "# of currently visible entities: " << visible_entities << std::endl;
     text << "# of total batches rendered last frame: " << batches << std::endl;
     text << "# of total triangles rendered last frame: " << triangles << std::endl;
+    text << "# of avg. triangles per batch: " << triangles / (batches ? batches : 1) << std::endl;
     text << "Avg. FPS: " << avgfps << std::endl;
     text << std::endl;
     
@@ -1564,6 +1565,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     uint mesh_triangles = 0;
     uint mesh_instance_vertices = 0;
     uint mesh_instance_triangles = 0;
+    uint mesh_instances = 0;
     
     // Loop through entities to see mesh usage
     for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
@@ -1585,6 +1587,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
                 scene_meshes.insert(ogre_mesh);
                 GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                mesh_instances++;
                 std::set<Ogre::Material*> temp_mat;
                 GetMaterialsFromEntity(ogre_entity, temp_mat);
                 GetTexturesFromMaterials(temp_mat, scene_textures);
@@ -1599,6 +1602,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                 Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
                 scene_meshes.insert(ogre_mesh);
                 GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                mesh_instances++;
                 std::set<Ogre::Material*> temp_mat;
                 GetMaterialsFromEntity(ogre_entity, temp_mat);
                 GetTexturesFromMaterials(temp_mat, scene_textures);
@@ -1622,6 +1626,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                         Ogre::Mesh* ogre_mesh = ogre_entity->getMesh().get();
                         scene_meshes.insert(ogre_mesh);
                         GetVerticesAndTrianglesFromMesh(ogre_mesh, mesh_instance_vertices, mesh_instance_triangles);
+                        mesh_instances++;
                         std::set<Ogre::Material*> temp_mat;
                         GetMaterialsFromEntity(ogre_entity, temp_mat);
                         GetTexturesFromMaterials(temp_mat, scene_textures);
@@ -1700,12 +1705,14 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     
     text << "Ogre Meshes" << std::endl;
     text << "# of loaded meshes: " << all_meshes.size() << std::endl;
-    text << "# of meshes in scene: " << scene_meshes.size() << std::endl;
+    text << "# of unique meshes in scene: " << scene_meshes.size() << std::endl;
+    text << "# of mesh instances in scene: " << mesh_instances << std::endl;
     text << "Total mesh data size: (" << scene_meshes_size / 1024 << " KBytes scene)+(" << other_meshes_size / 1024 << " KBytes other)" << std::endl;
     text << "# of vertices in the meshes: " << mesh_vertices << std::endl;
     text << "# of triangles in the meshes: " << mesh_triangles << std::endl;
     text << "# of vertices in the scene: " << mesh_instance_vertices << std::endl;
     text << "# of triangles in the scene: " << mesh_instance_triangles << std::endl;
+    text << "# of avg. triangles in the scene per mesh: " << mesh_instance_triangles / (mesh_instances ? mesh_instances : 1) << std::endl;
     text << std::endl;
     
     // Go through all textures and see which of them are in the scene
