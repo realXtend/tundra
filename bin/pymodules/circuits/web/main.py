@@ -7,6 +7,7 @@
 circutis.web Web Server and Testing Tool.
 """
 
+import os
 import optparse
 from wsgiref.validate import validator
 from wsgiref.simple_server import make_server
@@ -22,11 +23,16 @@ try:
 except ImportError:
     psyco = None
 
+from circuits.net.pollers import Select
 from circuits.tools import inspect, graph
-from circuits.net.pollers import Select, Poll
 from circuits import Component, Manager, Debugger
 from circuits import __version__ as systemVersion
 from circuits.web import BaseServer, Server, Controller, Static, wsgi
+
+try:
+    from circuits.net.pollers import Poll
+except ImportError:
+    Poll = None
 
 try:
     from circuits.net.pollers import EPoll
@@ -34,7 +40,7 @@ except ImportError:
     EPoll = None
 
 
-USAGE = "%prog [options]"
+USAGE = "%prog [options] [docroot]"
 VERSION = "%prog v" + systemVersion
 
 ###
@@ -136,7 +142,11 @@ def main():
 
     poller = opts.type.lower()
     if poller == "poll":
-        Poller = Poll
+        if Poll is None:
+            print "No poll support available - defaulting to Select..."
+            Poller = Select
+        else:
+            Poller = Poll
     elif poller == "epoll":
         if EPoll is None:
             print "No epoll support available - defaulting to Select..."
@@ -147,9 +157,15 @@ def main():
         Poller = Select
 
     if opts.server.lower() == "base":
-        manager += (BaseServer(bind, poller=Poller) + HelloWorld() + Static())
+        BaseServer(bind, poller=Poller).register(manager)
+        HelloWorld().register(manager)
     else:
-        manager += (Server(bind, poller=Poller) + Root() + Static())
+        Server(bind, poller=Poller).register(manager)
+        Root().register(manager)
+
+    docroot = os.getcwd() if not args else args[0]
+
+    Static(docroot=docroot, dirlisting=True).register(manager)
 
     if opts.profile:
         if hotshot:

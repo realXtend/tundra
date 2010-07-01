@@ -60,16 +60,13 @@ class Value(object):
         self._parent = self
         self._value = None
 
-    def __eq__(self, other):
-        return (self.__class__ is other.__class__
-                and self.event == other.event
-                and self.result == other.result
-                and self.errors == other.errors
-                and self._value == other._value)
-
     def __getstate__(self):
-        keys = ("event", "onSet", "result", "errors", "_parent", "_value")
+        keys = ("event", "onSet", "result", "errors", "_value")
         return dict([(k, getattr(self, k, None)) for k in keys])
+
+    def __contains__(self, y):
+        value = self.value
+        return y in value if type(value) is ListType else y == value
 
     def __getitem__(self, y):
         v = self.value[y]

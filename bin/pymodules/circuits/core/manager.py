@@ -14,6 +14,7 @@ from types import TupleType
 from threading import Thread
 from collections import deque
 from inspect import getargspec
+from traceback import format_tb
 from sys import exc_info as _exc_info
 
 try:
@@ -32,14 +33,12 @@ else:
 
 try:
     from multiprocessing import Process
-    from multiprocessing import current_process as process
-    from multiprocessing import active_children as processes
+    from multiprocessing import current_process
     HAS_MULTIPROCESSING = 2
 except:
     try:
         from processing import Process
-        from processing import currentProcess as process
-        from processing import activeChildren as processes
+        from processing import currentProcess as current_process
         HAS_MULTIPROCESSING = 1
     except:
         HAS_MULTIPROCESSING = 0
@@ -81,12 +80,31 @@ class Manager(object):
         "x.__repr__() <==> repr(x)"
 
         name = self.__class__.__name__
+
+        if hasattr(self, "channel") and self.channel is not None:
+            channel = "/%s" % self.channel 
+        else:
+            channel = ""
+
         q = len(self._queue)
         c = len(self.channels)
         h = len(self._handlers)
         state = self.state
-        format = "<%s (queued=%d, channels=%d, handlers=%d) [%s]>"
-        return format % (name, q, c, h, state)
+
+        if HAS_MULTIPROCESSING == 2:
+            pid = current_process().ident
+        if HAS_MULTIPROCESSING == 1:
+            pid = current_process().getPid()
+        else:
+            pid = os.getpid()
+
+        if pid:
+            id = "%s:%s" % (pid, current_thread().getName())
+        else:
+            id = current_thread().getName()
+
+        format = "<%s%s %s (queued=%d, channels=%d, handlers=%d) [%s]>"
+        return format % (name, channel, id, q, c, h, state)
 
     def __contains__(self, y):
         """x.__contains__(y) <==> y in x
@@ -168,31 +186,38 @@ class Manager(object):
         tmap = self._tmap.get
         cmap = self._cmap.get
 
+        def _sortkey(handler):
+            return (self._handlerattrs[handler]["priority"],
+                    self._handlerattrs[handler]["filter"])
+
         # Global Channels
-        handlers = self._globals
-  
+        handlers = self._globals[:]
+
         # This channel on all targets
         if channel == "*":
-            all = tmap(target, [])
-            return chain(handlers, all)
+            handlers.extend(tmap(target, []))
+            handlers.sort(key=_sortkey, reverse=True)
+            return handlers
 
         # Every channel on this target
         if target == "*":
-            all = cmap(channel, [])
-            return chain(handlers, all)
+            handlers.extend(cmap(channel, []))
+            handlers.sort(key=_sortkey, reverse=True)
+            return handlers
 
         # Any global channels
         if exists(("*", channel)):
-            handlers = chain(handlers, get(("*", channel)))
+            handlers.extend(get(("*", channel)))
  
         # Any global channels for this target
         if exists((channel, "*")):
-            handlers = chain(handlers, get((channel, "*")))
+            handlers.extend(get((channel, "*")))
 
         # The actual channel and target
         if exists(_channel):
-            handlers = chain(handlers, get((_channel)))
-  
+            handlers.extend(get((_channel)))
+
+        handlers.sort(key=_sortkey, reverse=True)
         return handlers
 
     @property
@@ -217,14 +242,10 @@ class Manager(object):
          - [S]topped
         """
 
-        if self.running:
-            if self._task is None:
-                return "R"
-            else:
-                if self._task.isAlive():
-                    return "R"
-                else:
-                    return "D"
+        if self.running or (self._task and self._task.isAlive()):
+            return "R"
+        elif self._task and not self._task.isAlive():
+            return "D"
         else:
             return "S"
 
@@ -251,13 +272,13 @@ class Manager(object):
         attrs["priority"] = getattr(handler, "priority",
                 kwargs.get("priority", 0))
 
-        if not hasattr(handler, "_passEvent"):
+        if not hasattr(handler, "event"):
             args = getargspec(handler)[0]
             if args and args[0] == "self":
                 del args[0]
-            attrs["_passEvent"] = args and args[0] == "event"
+            attrs["event"] = bool(args and args[0] == "event")
         else:
-            attrs["_passEvent"] = getattr(handler, "_passEvent")
+            attrs["event"] = getattr(handler, "event")
 
         self._handlerattrs[handler] = attrs
 
@@ -268,8 +289,7 @@ class Manager(object):
         if not channels and target == "*":
             if handler not in self._globals:
                 self._globals.append(handler)
-                self._globals.sort(key=_sortkey)
-                self._globals.reverse()
+                self._globals.sort(key=_sortkey, reverse=True)
         else:
             for channel in channels:
                 self._handlers.add(handler)
@@ -279,8 +299,8 @@ class Manager(object):
 
                 if handler not in self.channels[(target, channel)]:
                     self.channels[(target, channel)].append(handler)
-                    self.channels[(target, channel)].sort(key=_sortkey)
-                    self.channels[(target, channel)].reverse()
+                    self.channels[(target, channel)].sort(key=_sortkey,
+                            reverse=True)
 
                 if target not in self._tmap:
                     self._tmap[target] = []
@@ -416,7 +436,7 @@ class Manager(object):
             attrs = self._handlerattrs[handler]
             event.handler = handler
             try:
-                if attrs["_passEvent"]:
+                if attrs["event"]:
                     retval = handler(event, *eargs, **ekwargs)
                 else:
                     retval = handler(*eargs, **ekwargs)
@@ -426,10 +446,10 @@ class Manager(object):
             except:
                 etype, evalue, etraceback = _exc_info()
                 event.value.errors = True
-                event.value.value = etype, evalue, etraceback
-                self.fire(Error(etype, evalue, etraceback, handler))
+                event.value.value = etype, evalue, format_tb(etraceback)
+                self.fire(Error(etype, evalue, format_tb(etraceback), handler))
                 if event.failure is not None:
-                    error = (etype, evalue, etraceback)
+                    error = (etype, evalue, format_tb(etraceback))
                     self.fire(Failure(event, handler, error), *event.failure)
 
             if retval is not None:
@@ -448,18 +468,29 @@ class Manager(object):
         if signal in [SIGINT, SIGTERM]:
             self.stop()
 
-    def start(self, sleep=0, log=True, process=False):
+    def start(self, sleep=0, log=True, link=None, process=False):
         group = None
         target = self.run
         name = self.__class__.__name__
         mode = "P" if process else "T"
-        args = (sleep, mode, log,)
+        args = (sleep, log, mode,)
 
         if process and HAS_MULTIPROCESSING:
-            args += (self,)
+            if link is not None and isinstance(link, Manager):
+                from circuits.net.sockets import Pipe
+                from circuits.core.bridge import Bridge
+                from circuits.core.utils import findroot
+                root = findroot(link)
+                parent, child = Pipe()
+                self._bridge = Bridge(root, socket=parent)
+                self._bridge.start()
+                args += (child,)
+
             self._task = Process(group, target, name, args)
+            self._task.daemon = True
             if HAS_MULTIPROCESSING == 2:
                 setattr(self._task, "isAlive", self._task.is_alive)
+            self.tick()
             self._task.start()
             return
 
@@ -467,52 +498,50 @@ class Manager(object):
         self._task.setDaemon(True)
         self._task.start()
 
-    def join(self, timeout=None):
-        if hasattr(self._task, "join"):
-            self._task.join(timeout)
-
     def stop(self):
         self._running = False
         self.fire(Stopped(self))
-
-        if hasattr(self._task, "terminate"):
-            self._task.terminate()
-        if hasattr(self._task, "join"):
-            self._task.join(3)
-
+        if self._task and type(self._task) is Process and self._task.isAlive():
+            if not current_process() == self._task:
+                self._task.terminate()
         self._task = None
-
-    def _terminate(self):
-        if HAS_MULTIPROCESSING:
-            for p in processes():
-                if not p == process():
-                    p.terminate()
-                    p.join(3)
+        self.tick()
 
     def tick(self):
         if self._ticks:
             try:
                 [f() for f in self._ticks.copy()]
             except:
-                self.fire(Error(*_exc_info()))
-        if len(self):
+                etype, evalue, etraceback = _exc_info()
+                self.fire(Error(etype, evalue, format_tb(etraceback)))
+        if self:
             self._flush()
 
-    def run(self, sleep=0, mode=None, log=True, __self=None):
-        if __self is not None:
-            self = __self
-
-        if not mode == "T" and current_thread().name == "MainThread":
+    def run(self, sleep=0, log=True, __mode=None, __socket=None):
+        if not __mode == "T" and current_thread().getName() == "MainThread":
             if os.name == "posix":
                 _registerSignalHandler(SIGHUP, self._signalHandler)
             _registerSignalHandler(SIGINT, self._signalHandler)
             _registerSignalHandler(SIGTERM, self._signalHandler)
 
+        if __socket is not None:
+            from circuits.core.bridge import Bridge
+            manager = Manager()
+            bridge = Bridge(manager, socket=__socket)
+            self.register(manager)
+            manager.start()
+
         self._running = True
 
-        self.fire(Started(self, mode))
+        self.fire(Started(self, __mode))
 
-        while self or self.running:
-            self.tick()
-            if sleep:
-                time.sleep(sleep)
+        try:
+            while self or self.running:
+                self.tick()
+                if sleep:
+                    time.sleep(sleep)
+        finally:
+            if __socket is not None:
+                while bridge or manager: pass
+                manager.stop()
+                bridge.stop()

@@ -67,18 +67,29 @@ class _Poller(BaseComponent):
 
         self._read = []
         self._write = []
+        self._targets = {}
 
-    def addReader(self, fd):
+    def addReader(self, source, fd):
+        channel = getattr(source, "channel", "*")
         self._read.append(fd)
+        self._targets[fd] = channel
 
-    def addWriter(self, fd):
+    def addWriter(self, source, fd):
+        channel = getattr(source, "channel", "*")
         self._write.append(fd)
+        self._targets[fd] = channel
 
     def removeReader(self, fd):
-        self._read.remove(fd)
+        if fd in self._read:
+            self._read.remove(fd)
+        if fd in self._targets:
+            del self._targets[fd]
 
     def removeWriter(self, fd):
-        self._write.remove(fd)
+        if fd in self._write:
+            self._write.remove(fd)
+        if fd in self._targets:
+            del self._targets[fd]
 
     def isReading(self, fd):
         return fd in self._read
@@ -91,6 +102,11 @@ class _Poller(BaseComponent):
             self._read.remove(fd)
         if fd in self._write:
             self._write.remove(fd)
+        if fd in self._targets:
+            del self._targets[fd]
+
+    def getTarget(self, fd):
+        return self._targets.get(fd, self.manager)
 
 class Select(_Poller):
     """Select(...) -> new Select Poller Component
@@ -157,10 +173,12 @@ class Select(_Poller):
                 raise
 
         for sock in w:
-            self.push(Write(sock), "_write", self.manager)
+            if self.isWriting(sock):
+                self.push(Write(sock), "_write", self.getTarget(sock))
             
         for sock in r:
-            self.push(Read(sock), "_read", self.manager)
+            if self.isReading(sock):
+                self.push(Read(sock), "_read", self.getTarget(sock))
 
 class Poll(_Poller):
     """Poll(...) -> new Poll Poller Component
@@ -199,12 +217,12 @@ class Poll(_Poller):
             super(Poll, self).discard(fd)
             del self._map[fileno]
 
-    def addReader(self, fd):
-        super(Poll, self).addReader(fd)
+    def addReader(self, source, fd):
+        super(Poll, self).addReader(source, fd)
         self._updateRegistration(fd)
 
-    def addWriter(self, fd):
-        super(Poll, self).addWriter(fd)
+    def addWriter(self, source, fd):
+        super(Poll, self).addWriter(source, fd)
         self._updateRegistration(fd)
 
     def removeReader(self, fd):
@@ -238,19 +256,19 @@ class Poll(_Poller):
         fd = self._map[fileno]
 
         if event & _POLL_DISCONNECTED and not (event & POLLIN):
-            self.push(Disconnect(fd), "_disconnect", self.manager)
+            self.push(Disconnect(fd), "_disconnect", self.getTarget(fd))
             self._poller.unregister(fileno)
             super(Poll, self).discard(fd)
             del self._map[fileno]
         else:
             try:
                 if event & POLLIN:
-                    self.push(Read(fd), "_read", self.manager)
+                    self.push(Read(fd), "_read", self.getTarget(fd))
                 if event & POLLOUT:
-                    self.push(Write(fd), "_write", self.manager)
+                    self.push(Write(fd), "_write", self.getTarget(fd))
             except Exception, e:
-                self.push(Error(fd, e), "_error", self.manager)
-                self.push(Disconnect(fd), "_disconnect", self.manager)
+                self.push(Error(fd, e), "_error", self.getTarget(fd))
+                self.push(Disconnect(fd), "_disconnect", self.getTarget(fd))
                 self._poller.unregister(fileno)
                 super(Poll, self).discard(fd)
                 del self._map[fileno]
@@ -269,11 +287,6 @@ class EPoll(_Poller):
 
         self._map = {}
         self._poller = epoll()
-
-    #@handler("started", target="*")
-    #def started(self, component, mode):
-    #    if mode in ("P", "T"):
-    #        self._poller = epoll()
 
     def _updateRegistration(self, fd):
         try:
@@ -298,12 +311,12 @@ class EPoll(_Poller):
         else:
             super(EPoll, self).discard(fd)
 
-    def addReader(self, fd):
-        super(EPoll, self).addReader(fd)
+    def addReader(self, source, fd):
+        super(EPoll, self).addReader(source, fd)
         self._updateRegistration(fd)
 
-    def addWriter(self, fd):
-        super(EPoll, self).addWriter(fd)
+    def addWriter(self, source, fd):
+        super(EPoll, self).addWriter(source, fd)
         self._updateRegistration(fd)
 
     def removeReader(self, fd):
@@ -337,19 +350,19 @@ class EPoll(_Poller):
         fd = self._map[fileno]
 
         if event & _EPOLL_DISCONNECTED and not (event & POLLIN):
-            self.push(Disconnect(fd), "_disconnect", self.manager)
+            self.push(Disconnect(fd), "_disconnect", self.getTarget(fd))
             self._poller.unregister(fileno)
             super(EPoll, self).discard(fd)
             del self._map[fileno]
         else:
             try:
                 if event & EPOLLIN:
-                    self.push(Read(fd), "_read", self.manager)
+                    self.push(Read(fd), "_read", self.getTarget(fd))
                 if event & EPOLLOUT:
-                    self.push(Write(fd), "_write", self.manager)
+                    self.push(Write(fd), "_write", self.getTarget(fd))
             except Exception, e:
-                self.push(Error(fd, e), "_error", self.manager)
-                self.push(Disconnect(fd), "_disconnect", self.manager)
+                self.push(Error(fd, e), "_error", self.getTarget(fd))
+                self.push(Disconnect(fd), "_disconnect", self.getTarget(fd))
                 self._poller.unregister(fileno)
                 super(EPoll, self).discard(fd)
                 del self._map[fileno]
