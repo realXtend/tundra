@@ -81,7 +81,6 @@ class ComponentRunner(Component):
         m = self.m
         m.tick()
         while m: m.flush()
-        #XXX NOTE: now that we tick & flush, circuits works normally, and we could change from send() to push() for the events
 
     def send_event(self, event, channel):
         """simulate sync sending of events using the async lib.
