@@ -34,6 +34,8 @@ namespace PlayerService
     {
         media_object_ = new Phonon::MediaObject(this);
         video_widget_ = new Phonon::VideoWidget(this);
+        video_widget_->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
+
         Phonon::createPath(media_object_, video_widget_);
         QObject::connect(media_object_, SIGNAL(finished()), this, SLOT(Restart()));
         QObject::connect(media_object_, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(CheckState()));
