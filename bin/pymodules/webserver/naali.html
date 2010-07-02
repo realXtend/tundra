@@ -9,6 +9,7 @@
 		// 	- selectable resolution for images
 		//		- the map position should probably set and show estiameted view plane instead of camera position
 		//		- simulate moving by compositing existing image(s) suitably?
+		// 	- map zoom in/out like in google maps
 		//		- cache images in JS in addition to browser's own cache
 		//			+ could also image prefetching on idle time
 		//		- label yaw,pitch and roll so that they actually mean what they do in planes
@@ -18,10 +19,12 @@
 		//		- automatic current view updating (update view every n seconds)
 		//		- get knowledge about the part of the scene the image represents (distance from camera and area?)
 
-		var screenshot_server = "http://192.168.0.177:28008";
+		// by default try to get screenshots from a local Naali
+		var screenshot_server = "http://127.0.0.1:28008";
+		//var screenshot_server = "http://192.168.0.177:28008"; // playsign's test machine
 
-		var canvas;			// main drawing canvas
-		var ctx;				// main drawing context, though should probably be passed to drawers
+		var canvas;			// screenshot drawing canvas
+		var ctx;				// screenshot drawing context
 		var map;				// map drawing context
 		var mapelem;		// map drawing canvas
 		var cons;			// text console (a div)
@@ -41,6 +44,8 @@
 		var roll = 86;		// should rotate camera
 
 		var deg2rad = 0.0174532925; // pi/180
+		
+		var load_time; // page load time
 
 		document.onmousemove = function(event) {
 			mx = event.pageX;
@@ -86,21 +91,26 @@
 		var current_image = new Image();
 		current_image.counter = -1;
 
+		function now_ms() {
+			var now = new Date();
+			return now.getTime();
+		}
+
 		function get_screenshot() {
-			var now = new Date(); // ...
 			var me = new Image();
 			var quat = euler_to_quat(yaw, pitch, roll);
 
 			var uri = screenshot_server + "/renderimg?camposx=" + x + "&camposy=" + y + "&camposz=" + z + "&camortx=" + quat.x + "&camorty=" + quat.y + "&camortz=" + quat.z + "&camortw=" + quat.w;
 
 			log("loading <a href=\"" + uri + "\">frame " + counter + "</a>");
-			me.request_time = now.getTime()
-			me.src = uri;
+			me.request_time = now_ms();
+			me.onerror = function() {
+				log("<b>load error for frame " + me.counter + "</b>");
+			}
 			me.counter = counter;
 			counter += 1;
-			me.onload = function () {
-				var now = new Date(); // ...
-				var load_time = now.getTime() - me.request_time;
+			me.onload = function() {
+				var load_time = now_ms() - me.request_time;
 				if(me.counter > current_image.counter) { // if progress?
 					current_image = me;
 					ctx.drawImage(me, 0, 0, w, h);
@@ -110,6 +120,7 @@
 					log("dropped frame " + me.counter);
 				}
 			}
+			me.src = uri;
 		}
 
 		var map_img = new Image();
@@ -117,7 +128,10 @@
 			var map_uri = screenshot_server + "/renderimg?camposx=128&camposy=128&camposz=260&camortx=0&camorty=0&camortz=0&camortw=1";
 			log("loading <a href=\"" + map_uri + "\">map</a>");
 			map_img.src = map_uri;
-			map_img.onload = function () {
+			map_img.onerror = function() {
+				alert("Failed to get a map screenshot from " + screenshot_server + "\n\nCheck that the server is correct, you indeed have Naali running there, and have uncommented the webserver module in the beginning of pymodules/autoload.py.");
+			}
+			map_img.onload = function() {
 				log("map loaded");
 				map.drawImage(this, 0, 0, 300, 300);
 			}
@@ -159,6 +173,7 @@
 			update_map();
 		}
 
+		// a usually fast version of remainder, just in case this will be called a lot later
 		function crop_angle(angle) {
 			if (angle >= 360) 
 				return(crop_angle(angle - 360));
@@ -247,7 +262,13 @@
 			}
 		}
 
+		// update view later if it's been a while since the last one
+		function beatnik() {
+			log("dumdidum");
+		}
+
 		function init() {
+			load_time = now_ms();
 			canvas =  document.getElementById('canvas');
 			ctx = canvas.getContext('2d');
 			mapelem =  document.getElementById('map');
@@ -256,7 +277,7 @@
 			map = mapelem.getContext('2d');
 			canvas.addEventListener("click", handle_click, false);
 			mapelem.addEventListener("click", handle_map_click, true);
-			//setInterval(update, 10000);  
+			setInterval(beatnik, 100000);  
 			get_map();
 			update();
 		}
@@ -271,11 +292,11 @@
     </style>
   </head>
   <body onload="init();">
-  		<div width="1000" style="border=solid red 1px">
+  		<div>
 			<canvas id="canvas" width="800" height="600"></canvas>
 			<div style="float: left">
 				<canvas id="map" width="300" height="300"></canvas><br>
-				<div style="overflow: auto; border: none; width:300px; height:300px; overflow: auto" id="console" width="300" height="300">You see a Naali.</div>
+				<div style="overflow: auto; border: none; width:300px; height:300px; overflow: auto" id="console" width="300" height="300">Starting web UI.</div>
 			</div>
 		</div>
   </body>
