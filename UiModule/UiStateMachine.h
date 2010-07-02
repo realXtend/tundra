@@ -37,6 +37,7 @@ namespace CoreUi
         void SetServiceGetter(QObject *service_getter);
 
     private slots:
+        void DelayedSceneChange();
         void SetTransitions();
         void ViewKeyEvent(QKeyEvent *key_event);
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
