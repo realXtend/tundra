@@ -16,6 +16,7 @@
 #include "ui_ObjectInfoWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
 
+#include <QtInputKeyEvent.h>
 #include <QObject>
 
 class QtAbstractPropertyBrowser;
@@ -41,6 +42,11 @@ namespace WorldBuilding
         bool inworld_state;
 
     public slots:
+        //! Handle our key context input
+        void KeyPressed(KeyEvent &key);
+        void KeyReleased(KeyEvent &key);
+
+        // Public functions called by WorldBuildingModule
         void ToggleBuildScene();
         void ShowBuildScene();
         void HideBuildScene();
@@ -49,15 +55,22 @@ namespace WorldBuilding
         void ResetCamera();
         void ResetEditing();
 
+        void ObjectSelected(Scene::Entity *entity);
+        void ObjectDeselected();
+
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
-        
-        // Add below to service interface later
-        void ObjectSelected(Scene::Entity *entity);
-        
+
     private slots:
         void InitialseScene();
+        void SceneChangedNotification(QString scene_name);
         void ObjectSelected(bool selected);
+
+        void ModeToggleMove();
+        void ModeToggleScale();
+        void ModeToggleRotate();
+        void ManipModeChanged(PythonParams::ManipulationMode mode);
+
         StateMachine *GetStateMachine();
 
     private:

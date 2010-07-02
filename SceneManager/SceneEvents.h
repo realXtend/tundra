@@ -65,6 +65,9 @@ namespace Scene
         /// Sent when object clicked. Same as EVENT_ENTITY_GRAB but sends a entity pointer, not just id
         static const event_id_t EVENT_ENTITY_CLICKED =    0x0b;
 
+        /// Sent when ray cast result did not have a entity. For example the sky was clicked.
+        static const event_id_t EVENT_ENTITY_NONE_CLICKED = 0x1b;
+
         /// Sent when mouse is hovering above entity.
         static const event_id_t EVENT_ENTITY_MOUSE_HOVER =  0x0c;
 

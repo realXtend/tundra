@@ -147,6 +147,8 @@ namespace OgreRenderer
                 Scene::Events::EntityClickedData clicked_event_data(entity);
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_CLICKED, &clicked_event_data);
             }
+            else
+                framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_NONE_CLICKED, 0);
         }
 
         return false;

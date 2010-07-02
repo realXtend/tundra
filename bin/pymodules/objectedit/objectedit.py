@@ -117,7 +117,11 @@ class ObjectEdit(Component):
         # Get world building modules python handler
         self.cpp_python_handler = r.getQWorldBuildingHandler()
         if self.cpp_python_handler == None:
-           r.logDebug("Could not aqquire world building service to object edit")
+            r.logDebug("Could not aqquire world building service to object edit")
+        else:
+            self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
+            self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
+            self.cpp_python_handler.connect('RemoveHightlight()', self.deselect_all)
         
     def resetValues(self):
         self.left_button_down = False
@@ -129,6 +133,7 @@ class ObjectEdit(Component):
         self.time = 0
         self.keypressed = False
         self.windowActive = False
+        self.windowActiveStoredState = None
         self.canmove = False
         #self.selection_box = None
         self.selection_rect_startpos = None
@@ -259,7 +264,6 @@ class ObjectEdit(Component):
     
         if not h.IsVisible():
             h.Show()
-            
         else:
             r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.id)
             
@@ -713,10 +717,8 @@ class ObjectEdit(Component):
 
     def on_hide(self, shown):
         self.windowActive = shown
-        
         if self.windowActive:
             self.sels = []
-            
             try:
                 self.manipulator.hideManipulator()
                 #if self.move_arrows is not None:
@@ -729,6 +731,24 @@ class ObjectEdit(Component):
                 self.deselect_all()
         else:
             self.deselect_all()
+ 
+    def on_activate_editing(self, activate):
+        # Restore stored state when exiting build mode
+        if activate == False and self.windowActiveStoredState != None:
+            self.windowActive = self.windowActiveStoredState
+            self.windowActiveStoredState = None
+            if self.windowActive == False:
+                self.deselect_all()
+                for ent in self.sels:
+                    self.remove_highlight(ent)
+
+        # Store the state before build scene activated us
+        if activate == True and self.windowActiveStoredState == None:
+            self.windowActiveStoredState = self.windowActive
+            self.windowActive = True
+        
+    def on_manupulation_mode_change(self, mode):
+        self.changeManipulator(mode)
             
     def update(self, time):
         #print "here", time

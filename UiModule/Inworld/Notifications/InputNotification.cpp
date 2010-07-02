@@ -20,6 +20,7 @@ namespace UiServices
         // Ui init
         message_box_->setReadOnly(true);
         message_box_->setFrameShape(QFrame::NoFrame);
+        message_box_->setStyleSheet("background-color: transparent;");
 
         QFontMetrics metric(message_box_->font());
         QRect text_rect = metric.boundingRect(QRect(0,0,160,400), Qt::AlignLeft|Qt::TextWordWrap, message);
