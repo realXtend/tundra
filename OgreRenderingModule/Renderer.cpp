@@ -215,8 +215,7 @@ namespace OgreRenderer
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
         // Lets disable icon for now, put real one here when one is created for Naali
-        QPixmap pm(16,16);
-        pm.fill(Qt::transparent);
+        QPixmap pm("./data/ui/images/naali_icon.png");
         main_window_->setWindowIcon(QIcon(pm));
         ///\todo Memory leak below, see very end of ~Renderer() for comments.
         main_window_->setLayout(new QVBoxLayout(main_window_));
