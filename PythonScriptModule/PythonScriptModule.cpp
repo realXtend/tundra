@@ -10,10 +10,6 @@
    if we could use the ECs without depending on the module itself, the dependency might be removed,
    and it would be more feasible to replace rexlogic with something and still have the py module work.
 
-   event WORLD_STREAM_READY gives the WorldStream object, needed for getServerConnection here
-   (to be refactored to be just a naali.worldstream object readily there in the api)
-                framework too - and most stuff like creating entities, getting
-                existing entities etc. works via scene
 18:04 < antont> getting av and cam and doing session stuff like login&logout
                 remains open
 18:05 < Stinkfist> antont: pretty much, and after sempuki's re-factor,
