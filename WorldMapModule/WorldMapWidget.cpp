@@ -73,7 +73,7 @@ namespace WorldMap
         }
     }
         
-    void WorldMapWidget::StoreMapData(QPixmap &image, QString map_id)
+    void WorldMapWidget::StoreMapData(QPixmap image, QString map_id)
     {        
         if (!region_images_.contains(map_id))
         {
