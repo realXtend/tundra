@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "imageitem.h"
+#include "ImageItem.h"
 
 #include "MemoryLeakCheck.h"
 
