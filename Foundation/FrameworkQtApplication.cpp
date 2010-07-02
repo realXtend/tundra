@@ -11,6 +11,7 @@
 #include <QGraphicsView>
 #include <QTranslator>
 #include <QLocale>
+#include <QIcon>
 
 #include "MemoryLeakCheck.h"
 
@@ -43,6 +44,8 @@ namespace Foundation
         
         std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(), "language", std::string("data/translations/naali_en"));
         ChangeLanguage(QString::fromStdString(default_language));
+
+        setWindowIcon(QIcon("./data/ui/images/naali_icon.png"));
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
