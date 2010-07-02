@@ -1,4 +1,4 @@
-!define VERSION "0.2.3"
+!define VERSION "0.2.5-rc3"
 
 Name "Naali ${VERSION}"
 
@@ -8,7 +8,7 @@ Page instfiles
 InstallDir "$PROGRAMFILES\Naali${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "naali-viewer-installer.exe"
+OutFile "Naali-0.2.5-rc3.exe"
 
 XPStyle on
 
