@@ -4,6 +4,8 @@
 #define incl_PhononPlayer_VideoPlayer_h
 
 #include <QWidget>
+#include <QBoxLayout>
+#include <phonon>
 
 namespace Phonon
 {
@@ -28,7 +30,11 @@ namespace PlayerService
         void Play(const QString &url);
     private slots:
         void Restart();
-        void CheckState();
+        void CheckState(Phonon::State newstate);
+        void StartVideoPlayback(bool has_video);
+    private:
+        bool error_handled_;
+        QBoxLayout *layout_;
     };
 } // PlayerService
 
