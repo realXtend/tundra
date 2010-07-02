@@ -21,13 +21,14 @@ namespace UiServices
     void UiDarkBlueStyle::polish(QPalette &palette)
     {     
         QColor lightgray(209, 212, 214);
-        QColor highlight_lightgray(40, 40, 40);
+        QColor highlight_lightgray(241, 241, 241);
         QColor base(42, 45, 50);
         QColor paletteColor(39, 41, 44);
         QColor white(236, 236, 236);
         QColor slightlyOpaqueBlack(0, 0, 0, 60);
         QColor baseColor(63, 72, 86);
         QColor alternateBaseColor(49, 54, 62);
+        QColor highlightedText(19, 20, 20);
 
         QPixmap backgroundImage("./data/ui/images/styles/darkblue_bg.png");
         QPixmap buttonImage("./data/ui/images/styles/darkblue_button.png");
@@ -48,7 +49,7 @@ namespace UiServices
         palette.setBrush(QPalette::AlternateBase, alternateBaseColor);
         palette.setBrush(QPalette::Highlight, highlight_lightgray);
         palette.setBrush(QPalette::ButtonText, white);
-        palette.setBrush(QPalette::HighlightedText, Qt::white);  
+        palette.setBrush(QPalette::HighlightedText, highlightedText);  
 
         setTexture(palette, QPalette::Button, buttonImage);     
         setTexture(palette, QPalette::Mid, midImage);
@@ -143,7 +144,6 @@ namespace UiServices
                     bool active = (myTitleBar->titleBarState & State_Active);
 
                     QRect textRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarLabel, widget);
-                    //QFont font("facetextrabold", 10, QFont::Normal, false);
                     QFont font("facetextrabold", 10, 25, false);
                     font.setCapitalization(QFont::AllUppercase);
                     font.setStyleStrategy(QFont::PreferAntialias);
@@ -306,7 +306,7 @@ namespace UiServices
              painter->setBrush(QColor(42, 45, 50));
              painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
              painter->restore();
-         }    
+         }
      default:
          QCleanlooksStyle::drawPrimitive(element, option, painter, widget);
         }
