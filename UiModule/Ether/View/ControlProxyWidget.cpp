@@ -55,6 +55,7 @@ namespace Ether
 
                 case StatusWidget:
                     InitStatusWidget();
+                    break;
             }
 
             QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);

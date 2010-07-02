@@ -285,10 +285,9 @@ namespace Ether
 
             // Notify widget
             status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
-            connect(control_widget_, SIGNAL( ActionRequest(QString) ), SLOT( ControlsWidgetHandler(QString) ));
-            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner);
-            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
-            status_widget_->hide();
+            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
+            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner); 
+            status_widget_->hide(); 
         }
 
         void EtherSceneController::LoadClassicLoginWidget(EtherLoginNotifier *login_notifier, bool default_view, QMap<QString,QString> stored_login_data)
@@ -510,6 +509,7 @@ namespace Ether
                     if (!world_card)
                         return;
                     ShowStatusInformation(QString("Login to %1 canceled").arg(world_card->title()));
+
                 }
                 else if (request_type == "disconnect" && connected_world_)
                     ShowStatusInformation(QString("Disconnected from %1").arg(connected_world_->title()));
@@ -518,6 +518,9 @@ namespace Ether
                 SuppressControlWidgets(false);
                 scene_->SupressKeyEvents(false);
                 SceneRectChanged(scene_->sceneRect());
+
+                control_widget_->setOpacity(1);
+                control_widget_->show();
             }
         }
 
@@ -667,7 +670,7 @@ namespace Ether
         {
             if (control_widget_)
                 control_widget_->SetConnected(connected);
-            if (connected && connected_world_)
+            if (connected && bottom_menu_)
                 connected_world_ = bottom_menu_->GetHighlighted();
             else
                 connected_world_ = 0;

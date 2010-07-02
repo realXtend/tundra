@@ -125,6 +125,11 @@ namespace CoreUi
             if (animations_map_[current_scene_]->direction() != QAbstractAnimation::Forward)
                 return;
 
+        QTimer::singleShot(50, this, SLOT(DelayedSceneChange()));
+    }
+
+    void UiStateMachine::DelayedSceneChange()
+    {
         if (scene_map_.contains(next_scene_name_))
             SwitchToScene(next_scene_name_);
     }
