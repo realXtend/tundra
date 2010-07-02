@@ -502,7 +502,8 @@ namespace OgreRenderer
             QRect viewrect(QPoint(0, 0), viewsize);
 
             // Compositing back buffer
-            backBuffer = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);            
+            if (backBuffer.width() != viewsize.width() || backBuffer.height() != viewsize.height() || backBuffer.format() != QImage::Format_ARGB32_Premultiplied)
+                backBuffer = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);
             backBuffer.fill(Qt::transparent);
 
             // Paint ui view into buffer
