@@ -29,7 +29,7 @@ namespace WorldMap
 
         void ClearAllContent();
 
-        void StoreMapData(QPixmap &image, QString map_id);
+        void StoreMapData(QPixmap image, QString map_id);
         void UpdateAvatarPosition(Vector3df position, QString avatar_id, QString avatar_name);
         void SetMyAvatarId(QString avatar_id);
         void SetSimName(QString simName);
