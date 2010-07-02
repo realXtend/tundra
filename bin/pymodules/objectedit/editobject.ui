@@ -477,6 +477,12 @@ QPushButton::pressed{
                   </item>
                   <item>
                    <widget class="QPushButton" name="deleteObject">
+                    <property name="minimumSize">
+                     <size>
+                      <width>90</width>
+                      <height>0</height>
+                     </size>
+                    </property>
                     <property name="text">
                      <string>Move to Trash</string>
                     </property>
