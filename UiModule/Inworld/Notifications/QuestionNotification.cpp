@@ -24,6 +24,7 @@ namespace UiServices
         // Ui init
         question_box_->setReadOnly(true);
         question_box_->setFrameShape(QFrame::NoFrame);
+        question_box_->setStyleSheet("background-color: transparent;");
         
         QFontMetrics metric(question_box_->font());
         QRect text_rect = metric.boundingRect(QRect(0,0,160,400), Qt::AlignLeft|Qt::TextWordWrap, question);

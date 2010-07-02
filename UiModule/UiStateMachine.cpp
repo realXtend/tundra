@@ -196,6 +196,10 @@ namespace CoreUi
                 animations->setDirection(QAbstractAnimation::Backward);
                 animations->start();
             }
+
+            // Inform anyone who is interested that 
+            // we changed the currently viewed scene
+            emit SceneChangedTo(name);
         }
     }
 

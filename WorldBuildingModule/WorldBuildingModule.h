@@ -40,9 +40,7 @@ namespace WorldBuilding
     
     private slots:
         //! Populate service_category_identifiers_
-        void SubscribeToEventCategories();
-        //! Handle our key context input
-        void KeyPressed(KeyEvent &key);       
+        void SubscribeToEventCategories();    
 
     private:
         //! Current query categories

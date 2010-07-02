@@ -69,6 +69,7 @@ namespace CoreUi
     signals:
         void EtherTogglePressed();
         void SceneOutAnimationFinised();
+        void SceneChangedTo(QString);
 
     };
 }

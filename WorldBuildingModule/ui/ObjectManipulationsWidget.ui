@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>302</width>
-    <height>326</height>
+    <height>329</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -73,7 +73,7 @@ QLabel#editing_title {
           <x>0</x>
           <y>0</y>
           <width>295</width>
-          <height>324</height>
+          <height>327</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -96,12 +96,12 @@ QLabel#editing_title {
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="horizontalLayout_2">
+            <layout class="QHBoxLayout" name="manip_button_layout">
              <property name="spacing">
               <number>10</number>
              </property>
              <item>
-              <widget class="QPushButton" name="pushButton_2">
+              <widget class="QPushButton" name="pushButton_move">
                <property name="font">
                 <font>
                  <pointsize>10</pointsize>
@@ -113,7 +113,7 @@ QLabel#editing_title {
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_3">
+              <widget class="QPushButton" name="pushButton_rotate">
                <property name="font">
                 <font>
                  <pointsize>10</pointsize>
@@ -125,7 +125,7 @@ QLabel#editing_title {
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton">
+              <widget class="QPushButton" name="pushButton_scale">
                <property name="font">
                 <font>
                  <pointsize>10</pointsize>

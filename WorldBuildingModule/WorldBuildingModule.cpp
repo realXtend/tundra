@@ -43,7 +43,8 @@ namespace WorldBuilding
 
         // Register building key context
         input_context_ = GetFramework()->Input().RegisterInputContext("WorldBuildingContext", 90);
-        connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent&)), SLOT(KeyPressed(KeyEvent&)));
+        connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent&)), build_scene_manager_.get(), SLOT(KeyPressed(KeyEvent&)));
+        connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent&)), build_scene_manager_.get(), SLOT(KeyReleased(KeyEvent&)));
     }
 
     bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
@@ -65,6 +66,11 @@ namespace WorldBuilding
                     Scene::Events::EntityClickedData *entity_data = checked_static_cast<Scene::Events::EntityClickedData*>(data);
                     if (entity_data)
                         build_scene_manager_->ObjectSelected(entity_data->entity);
+                    break;
+                }
+                case Scene::Events::EVENT_ENTITY_NONE_CLICKED:
+                {
+                    build_scene_manager_->ObjectDeselected();
                     break;
                 }
                 default:
@@ -100,13 +106,6 @@ namespace WorldBuilding
     }
 
     // WorldBuildingModule
-
-    void WorldBuildingModule::KeyPressed(KeyEvent &key)
-    {
-        // Ctrl + B to toggle build scene
-        if (!key.IsRepeat() && key.modifiers == Qt::ControlModifier && key.keyCode == Qt::Key_B)
-            build_scene_manager_->ToggleBuildScene();
-    }
 
     QObject *WorldBuildingModule::GetPythonHandler()
     {

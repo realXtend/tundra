@@ -9,22 +9,28 @@
 namespace WorldBuilding
 {
     PythonHandler::PythonHandler(QObject *parent) :
-        QObject(parent)
+        QObject(parent),
+        current_mode_(PythonParams::FREEMOVE)
     {
-        connect(this, SIGNAL(HelloFromPython()), SLOT(HelloPython()));
     }
 
     PythonHandler::~PythonHandler()
     {
     }
 
-    void PythonHandler::HelloPython()
+    void PythonHandler::EmitManipulationModeChange(int mode)
     {
-        WorldBuildingModule::LogDebug("Python says hello!");
+        current_mode_ = (PythonParams::ManipulationMode)mode;
+        emit ManipulationMode(mode);
     }
 
-    void PythonHandler::ObjectSelected(EC_OpenSimPrim *prim)
+    void PythonHandler::EmitEditingActivated(bool activated)
     {
+        emit ActivateEditing(activated);
+    }
 
+    void PythonHandler::EmitRemoveHightlight()
+    {
+        emit RemoveHightlight();
     }
 }
