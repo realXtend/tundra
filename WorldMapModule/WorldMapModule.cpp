@@ -177,7 +177,7 @@ namespace WorldMap
 
                 QImage img = ConvertToQImage(*tex);
                 if(worldmap_widget_)
-                    worldmap_widget_->StoreMapData(QPixmap::fromImage(img), res->id_.c_str());
+                    worldmap_widget_->StoreMapData(QPixmap::fromImage(img), QString(res->id_.c_str()));
 
             }
         }
