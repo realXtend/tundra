@@ -2,11 +2,11 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h" 
 
 #include "PhononPlayerModule.h"
 #include "Service.h"
-//#include "Service.h"
+
+#include "MemoryLeakCheck.h" 
 
 namespace PlayerService
 {
