@@ -19,7 +19,6 @@
 18:05 < sempuki> Stinkfist: yes
 18:05 < antont> yep was thinking of that too, there'd be some session service
                 thing or something by the new module
-18:06 < antont> ok i copy-paste this to a note in the source so can perhaps remove the rexlogic dep at some point
 
 rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 18:16 < antont> ah it's world_stream_->GetInfo().inventory
