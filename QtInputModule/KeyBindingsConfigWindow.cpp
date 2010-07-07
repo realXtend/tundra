@@ -68,7 +68,7 @@ void KeyBindingsConfigWindow::ExtractBindingsList()
     {
         QTreeWidgetItem *item = configList->topLevelItem(i);
         std::string actionName = item->text(0).toStdString();
-        QKeySequence shortcut = QKeySequence(item->text(1));
+        QKeySequence shortcut = QKeySequence::fromString(item->text(1), QKeySequence::NativeText);
         editedActions[actionName] = shortcut;
     }
 }
@@ -85,6 +85,7 @@ void KeyBindingsConfigWindow::PopulateBindingsList()
 
     for(QtInputService::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
+        ///\todo Fix - this leaks?
         QTreeWidgetItem *item = new QTreeWidgetItem((QTreeWidget*)0, QStringList(QString(iter->first.c_str())));
         item->setText(1, iter->second.toString(QKeySequence::NativeText));
         item->setFlags(Qt::ItemIsSelectable|Qt::ItemIsEnabled|Qt::ItemIsEditable);
