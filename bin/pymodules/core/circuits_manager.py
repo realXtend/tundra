@@ -156,7 +156,7 @@ class ComponentRunner:
     def LOGIN_INFO(self, id): 
         #print "Login Info", id
         #return self.send_event(LoginInfo(id), "on_login") #XXX so wasn't needed or?
-	return False
+        return False
     
     def SERVER_DISCONNECTED(self, id):
         #print "Circuits got the server disconnection event."
