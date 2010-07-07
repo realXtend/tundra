@@ -28,6 +28,9 @@ EC_Ruler::EC_Ruler(Foundation::ModuleInterface *module) :
     typeAttr_(this, "ruler type", EC_Ruler::Rotation),
     visibleAttr_(this, "visible", false),
     axisAttr_(this, "axis", EC_Ruler::X),
+    localAttr_(this, "local", false),
+    radiusAttr_(this, "radius", 5),
+    segmentsAttr_(this, "segments", 29),
     rulerObject(0),
     sceneNode_(0),
     type(EC_Ruler::Rotation)
@@ -70,14 +73,23 @@ void  EC_Ruler::Show()
 
 void  EC_Ruler::Hide()
 {
+    if (!rulerObject)
+        Create();
+        
+    if (!rulerObject)
+    {
+        LogError("EC_Ruler not initialized properly.");
+        return;
+    }
+    
     if (rulerObject)
         rulerObject->setVisible(false);
 }
 
 bool EC_Ruler::IsVisible() const
 {
-    if (rulerObject&& sceneNode_)
-        return sceneNode_->getAttachedObject(rulerName)->isVisible();
+    if (rulerObject)
+        return rulerObject->isVisible();
 
     return false;
 }
@@ -106,7 +118,7 @@ void EC_Ruler::Create()
     assert(sceneNode_);
     if (!sceneNode_)
         return;
-        
+    
     if(scene_mgr->hasManualObject("translateRuler")) {
         rulerObject = scene_mgr->getManualObject("translateRuler");
         if(rulerObject->isAttached())
@@ -122,18 +134,67 @@ void EC_Ruler::Create()
         case EC_Ruler::Translation:
             SetupTranslateRuler();
             break;
+        case EC_Ruler::Scale:
+            SetupScaleRuler();
+            break;
     }
 
-    sceneNode_->attachObject(rulerObject);
+    if(localAttr_.Get()) {
+        sceneNode_->attachObject(rulerObject);
+    } else {
+        // get translateNode only when we are working in world space
+        if(scene_mgr->hasSceneNode("translateNode")) {
+            globalSceneNode = scene_mgr->getSceneNode("translateNode");
+        } else {
+            globalSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode("translateNode");
+            globalSceneNode->setVisible(true);
+        }
+        assert(globalSceneNode);
+        if(!globalSceneNode)
+            return;
+    
+        globalSceneNode->setPosition(sceneNode_->getParent()->getPosition());
+        globalSceneNode->attachObject(rulerObject);
+    }
+}
+
+void EC_Ruler::SetupScaleRuler()
+{
+    if(!rulerObject)
+        return;
+        
+    float x, y, z;
+    x = y = z = 0;
+    
+    float size = radiusAttr_.Get();
+
+    switch(axisAttr_.Get()) {
+        case EC_Ruler::X:
+            x = size;
+            break;
+        case EC_Ruler::Y:
+            y = size;
+            break;
+        case EC_Ruler::Z:
+            z = size;
+            break;
+        default:
+            x = size;
+            y = size;
+    }
+    rulerObject->clear();
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    rulerObject->position(0, 0, 0);
+    rulerObject->position(x, y, z);
+    rulerObject->end();
 }
 
 void EC_Ruler::SetupRotationRuler()
 {
-    float const radius = 5;
-    float const segments = 35;
-    
     if(!rulerObject)
         return;
+    float const radius = radiusAttr_.Get();
+    float const segments = segmentsAttr_.Get();
 
     rulerObject->clear();
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
@@ -163,23 +224,25 @@ void EC_Ruler::SetupTranslateRuler() {
 
     float x, y, z;
     x = y = z = 0;
+    
+    float size = radiusAttr_.Get();
 
     // Note, this arbitrary order is result from Py Code
     // TODO: Fix this to something more unified (0 = x, 1 = y, 2 = z) throughout
     // manipulator widget code
     switch(axisAttr_.Get()) {
-        case 0: /* Y */
-            y = 5;
+        case EC_Ruler::X:
+            x = size;
             break;
-        case 1: /* X */
-            x = 5;
+        case EC_Ruler::Y:
+            y = size;
             break;
-        case 2: /* Z */
-            z = 5;
+        case EC_Ruler::Z:
+            z = size;
             break;
         default:
-            x = 5;
-            y = 5;
+            x = size;
+            y = size;
     }
     rulerObject->clear();
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);

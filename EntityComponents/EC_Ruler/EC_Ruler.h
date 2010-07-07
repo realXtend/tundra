@@ -57,6 +57,13 @@ public:
     
     //! Axis
     Foundation::Attribute<int> axisAttr_;
+    
+    //! Local or global space
+    Foundation::Attribute<bool> localAttr_;
+    
+    Foundation::Attribute<Real> radiusAttr_;
+    
+    Foundation::Attribute<Real> segmentsAttr_;
 
 public slots:
     /// Shows the highlighting effect.
@@ -91,6 +98,7 @@ private:
     
     void SetupRotationRuler();
     void SetupTranslateRuler();
+    void SetupScaleRuler();
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
@@ -101,7 +109,8 @@ private:
     /// Ogre scene node where this EC is attached.
     Ogre::SceneNode *sceneNode_;
     
-    std::string rulerName;
+    /// Ogre scene node to attach EC to when we want global space axis vis
+    Ogre::SceneNode *globalSceneNode;
     
     EC_Ruler::Type type;
 };
