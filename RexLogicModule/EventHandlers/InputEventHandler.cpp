@@ -14,6 +14,8 @@
 #include "EC_Touchable.h"
 #include "Renderer.h"
 
+#include <QDebug>
+
 namespace RexLogic
 {
 
@@ -48,12 +50,6 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
             owner_->CameraTripod();
         break;
     }
-    case Events::FOCUS_ON_OBJECT:
-    {
-        if (owner_->GetServerConnection()->IsConnected())
-            owner_->FocusOnObject();
-        break;
-    }
     case Events::MOUSEMOVE:
     {
         if (owner_->GetServerConnection()->IsConnected())
@@ -70,6 +66,19 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
         Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
         owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
+        break;
+    }
+    case Events::ALT_LEFTCLICK:
+    {
+        Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+        Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
+        owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
+        owner_->FocusOnObject(result.pos_.x, result.pos_.y, result.pos_.z);
+        break;
+    }
+    case Events::ALT_LEFTCLICK_REL:
+    {
+        owner_->ResetCameraState();
         break;
     }
     default:

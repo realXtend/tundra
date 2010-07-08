@@ -7,9 +7,7 @@
 #include "ForwardDefines.h"
 #include "Vector3D.h"
 #include <QObject>
-
-/* tofilovski */
-#include "Ogre.h"
+#include <QMap>
 
 namespace Foundation
 {
@@ -32,7 +30,7 @@ namespace RexLogic
 
         \todo Implement properly as a controllable.
     */
-	class CameraControllable
+    class CameraControllable
     {
     public:
         //! State flags for the camera
@@ -41,19 +39,23 @@ namespace RexLogic
             FirstPerson,
             ThirdPerson,
             FreeLook,
-			Tripod,
-			FocusOnObject
+            Tripod,
+            FocusOnObject
         };
 
-		float rotation_angle;
-		// current camera angle
-		float current_angle;
-		float center_x, center_y, center_z;
-		// new camera coordinates after mathematical calculations
-		float new_x, new_y, new_z;
-		// the length from the camera to the pivot point
-		float focus_radius;
-		float camera_position_x, camera_position_y, camera_position_z, fixed_camera_position_z;
+        float rotation_angle;
+        // current camera angle
+        float current_angle;
+        float center_x, center_y, center_z;
+        // new camera coordinates after mathematical calculations
+        float new_x, new_y, new_z;
+        // the length from the camera to the pivot point
+        float focus_radius;
+        float camera_position_x, camera_position_y, camera_position_z, fixed_camera_position_z;
+        bool isRotating;
+        int rotation_direction;
+        QMap<QString, int> mouse_position_map;
+        QMap<QString, int> keep_mouse_position;
 
         //! default constructor
         //! \param fw Framework pointer
@@ -114,10 +116,10 @@ namespace RexLogic
         //! \param position Current camera position.
         void ClampPosition(Vector3df &position);
 
-		//! This function is called when the user clicks somewhere and gets the current coordinates
-		void funcFocusOnObject(float, float, float);
-		//! Rotate camera around the point that is clicked on
-		void rotateCameraAroundObject();
+        //! This function is called when the user holds ALT key and clicks somewhere;
+        void funcFocusOnObject(float, float, float);
+        //! Rotate camera around the point that is clicked on
+        void rotateCameraAroundObject();
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;

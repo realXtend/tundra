@@ -5,6 +5,8 @@
 #include "InputServiceInterface.h"
 #include "EventManager.h"
 
+#include <QApplication>
+
 namespace RexLogic
 {
 
@@ -59,6 +61,7 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     const QKeySequence down = inputService.KeyBinding("Avatar.Down", /*Qt::Key_Control*/Qt::Key_C); // Crouch or fly down, depending on whether in fly mode or walk mode.
     const QKeySequence flyModeToggle =    inputService.KeyBinding("Avatar.ToggleFly", Qt::Key_F);
     const QKeySequence cameraModeToggle = inputService.KeyBinding("Avatar.ToggleCameraMode", Qt::Key_Tab);
+    const QKeySequence cameraModeTripod = inputService.KeyBinding("Avatar.TripodCameraMode", Qt::Key_T);
 
     Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
 
@@ -78,6 +81,13 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
             key.handled = true; // Suppress Qt from moving the focus to a widget.
         input->ReleaseAllKeys();
         eventMgr->SendEvent("Input", Input::Events::SWITCH_CAMERA_STATE, 0); 
+    }
+    if (key.keyCode == cameraModeTripod && key.eventType == KeyEvent::KeyPressed)
+    {
+        if (key.keyCode == Qt::Key_T)
+            key.handled = true; // Suppress Qt from moving the focus to a widget.
+        input->ReleaseAllKeys();
+		eventMgr->SendEvent("Input", Input::Events::CAMERA_TRIPOD, 0); 
     }
 }
 
@@ -107,6 +117,11 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
             // Left mouse button press produces click events on world objects (prims, mostly)
             if (mouse.button == MouseEvent::LeftButton)
                 eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
+      
+            if(QApplication::keyboardModifiers() == Qt::KeyboardModifier::AltModifier)
+            {
+                eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK, &movement);
+            }
 
             // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
             // mouse input.
@@ -118,6 +133,11 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
         if (mouse.button == MouseEvent::RightButton)
             framework->Input().SetMouseCursorVisible(true);
+        
+        if (mouse.button == MouseEvent::LeftButton)
+        {
+            eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK_REL, 0);
+        }
         break;
     case MouseEvent::MouseMove:
         if (mouse.IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
