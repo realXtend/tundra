@@ -140,7 +140,7 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
             if (mouse.button == MouseEvent::LeftButton)
                 eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
       
-            if(QApplication::keyboardModifiers() == Qt::KeyboardModifier::AltModifier)
+            if(QApplication::keyboardModifiers() == Qt::AltModifier)
             {
                 eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK, &movement);
             }
