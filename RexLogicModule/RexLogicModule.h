@@ -136,10 +136,13 @@ namespace RexLogic
         void CameraTripod();
 
         //! focus on object, and rotate around it
-        void FocusOnObject();
+        void FocusOnObject(float, float, float);
 
         //! return camera state
         CameraState GetCameraState() { return camera_state_; }
+
+        //! reset camera state to CS_Follow
+        void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
         AvatarPtr GetAvatarHandler() const;
@@ -401,8 +404,6 @@ namespace RexLogic
         MainPanelHandler *main_panel_handler_;
 
         InWorldChatProviderPtr in_world_chat_provider_;
-    signals:
-        void sigFocusOnObject(float, float, float);
     };
 }
 

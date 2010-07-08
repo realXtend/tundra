@@ -510,27 +510,20 @@ void RexLogicModule::CameraTripod()
     else
     {
         camera_state_ = CS_Follow;
-
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
         GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
-void RexLogicModule::FocusOnObject()
+void RexLogicModule::FocusOnObject(float x, float y, float z)
 {
-    if (camera_state_ == CS_Follow)
-    {
-        camera_state_ = CS_FocusOnObject;
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FOCUSONOBJECT, 0);
-    }
-    else
-    {
-        camera_state_ = CS_Follow;
+    camera_state_ = CS_FocusOnObject;
+    camera_controllable_->funcFocusOnObject(x, y, z);
+}
 
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-    }
+void RexLogicModule::ResetCameraState()
+{
+    camera_state_ = CS_Follow;
 }
 
 AvatarPtr RexLogicModule::GetAvatarHandler() const
@@ -1179,7 +1172,6 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     if (result->entity_)
     {
         Ogre::Vector3 ent_pos(result->pos_.x,result->pos_.y,result->pos_.z);
-        camera_controllable_->funcFocusOnObject(result->pos_.x,result->pos_.y,result->pos_.z);
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
