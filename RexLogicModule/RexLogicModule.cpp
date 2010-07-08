@@ -81,6 +81,7 @@
 #include "EC_3DCanvas.h"
 #include "EC_3DCanvasSource.h"
 #include "EC_ChatBubble.h"
+#include "EC_Ruler.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -140,6 +141,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Touchable);
     DECLARE_MODULE_EC(EC_3DCanvas);
     DECLARE_MODULE_EC(EC_3DCanvasSource);
+    DECLARE_MODULE_EC(EC_Ruler);
 }
 
 // virtual

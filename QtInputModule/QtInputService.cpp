@@ -470,7 +470,7 @@ void QtInputService::LoadKeyBindingsFromFile()
     {
         settings.setArrayIndex(i);
         QString actionName = settings.value("actionName").toString();
-        QKeySequence keySequence = QKeySequence(settings.value("keySequence").toString());
+        QKeySequence keySequence = QKeySequence::fromString(settings.value("keySequence").toString(), QKeySequence::PortableText);
         SetKeyBinding(actionName, keySequence);
     }
     settings.endArray();
@@ -487,7 +487,7 @@ void QtInputService::SaveKeyBindingsToFile()
     {
         settings.setArrayIndex(index++);
         settings.setValue("actionName", QString(iter->first.c_str()));
-        settings.setValue("keySequence", iter->second);
+        settings.setValue("keySequence", iter->second.toString(QKeySequence::PortableText));
     }
     settings.endArray();
 }

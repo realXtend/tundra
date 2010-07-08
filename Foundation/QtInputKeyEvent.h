@@ -35,6 +35,7 @@ public:
 
 	/// The key code associated with this key event.
     /// See Qt::Key from http://doc.trolltech.com/4.6/qt.html#Key-enum
+    /// \note This member stores the pressed key without keyboard modifiers attached.
     Qt::Key keyCode;
 
 	/// How many times this key event has been pressed during the time the key has been held down. If 1, this means a new 
@@ -98,6 +99,8 @@ public slots:
 	/// On windows, this is associated with the Win key.
 	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; }
 
+    /// Returns the pressed key with the modifier bits in it.
+    int KeyWithModifier() const { return (int)keyCode | (int)modifiers; }
 public:
     // Meta-information wrappers for dynamic languages.
     Q_PROPERTY(QKeySequence sequence READ Sequence)

@@ -43,11 +43,33 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     // Naali input events. New modules should really prefer using an InputContext of their
     // own to read input data, or use the QtInputService API directly.
 
-    // We ignore all key presses that are repeats.
+    InputServiceInterface &inputService = framework->Input();
+
+    Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
+
+    ///\todo Accessing the key bindings by string names is a bit silly, since for each key event, this
+    /// generates a string compare. Now for every key, we do this for every key we want to act on.
+    /// For optimization we can prehash the strings, but that will occur later when we profile performance
+    /// issues here.
+    PROFILE(RexMovement_HandleKeyEvent);
+
+    ///\bug Qt does not have a separate key code for keypad minus, but instead uses "Qt::Key_Minus | Qt::KeypadModifier". However,
+    /// this causes it to fail when showing it in portable text mode in the key bindings editor, i.e. 
+    /// QKeySequence(Qt::Key_Minus | Qt::KeypadModifier | Qt::ControlModifier).toString(QKeySequence::NativeText); fails.
+
+    // As a workaround, the following two keys are hardcoded to keypad plus. See http://bugreports.qt.nokia.com/browse/QTBUG-2913
+    // and http://qt.nokia.com/developer/task-tracker/index_html?method=entry&id=229868
+
+    const QKeySequence zoomIn = inputService.KeyBinding("Avatar.ZoomIn", Qt::Key_Minus | Qt::ControlModifier);
+    const QKeySequence zoomOut = inputService.KeyBinding("Avatar.ZoomOut", Qt::Key_Plus | Qt::ControlModifier);
+
+    // For the zoom in and out keys, key repeats trigger continuous actions.
+    if ((key.KeyWithModifier() & ~Qt::KeypadModifier) == zoomIn) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_IN_PRESSED);
+    if ((key.KeyWithModifier() & ~Qt::KeypadModifier) == zoomOut) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_OUT_PRESSED);
+
+    // For the following keys, we ignore all key presses that are repeats.
     if (key.eventType == KeyEvent::KeyPressed && key.keyPressCount > 1)
         return;
-
-    InputServiceInterface &inputService = framework->Input();
 
     const QKeySequence walkForward =   inputService.KeyBinding("Avatar.WalkForward", Qt::Key_W);
     const QKeySequence walkBackward =  inputService.KeyBinding("Avatar.WalkBack", Qt::Key_S);
@@ -58,12 +80,12 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     const QKeySequence rotateLeft =  inputService.KeyBinding("Avatar.RotateLeft", Qt::Key_Left);
     const QKeySequence rotateRight = inputService.KeyBinding("Avatar.RotateRight", Qt::Key_Right);
     const QKeySequence up =   inputService.KeyBinding("Avatar.Up", Qt::Key_Space); // Jump or fly up, depending on whether in fly mode or walk mode.
+    const QKeySequence up2 =   inputService.KeyBinding("Avatar.Up2", Qt::Key_PageUp); // Jump or fly up, depending on whether in fly mode or walk mode.
     const QKeySequence down = inputService.KeyBinding("Avatar.Down", /*Qt::Key_Control*/Qt::Key_C); // Crouch or fly down, depending on whether in fly mode or walk mode.
+    const QKeySequence down2 = inputService.KeyBinding("Avatar.Down2", /*Qt::Key_Control*/Qt::Key_PageDown); // Crouch or fly down, depending on whether in fly mode or walk mode.
     const QKeySequence flyModeToggle =    inputService.KeyBinding("Avatar.ToggleFly", Qt::Key_F);
     const QKeySequence cameraModeToggle = inputService.KeyBinding("Avatar.ToggleCameraMode", Qt::Key_Tab);
     const QKeySequence cameraModeTripod = inputService.KeyBinding("Avatar.TripodCameraMode", Qt::Key_T);
-
-    Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
 
     // The following code defines the keyboard actions that are available for the avatar/freelookcamera system.
     if (key.keyCode == walkForward || key.keyCode == walkForward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_FORWARD_PRESSED);
@@ -72,8 +94,8 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     if (key.keyCode == strafeRight) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_RIGHT_PRESSED); 
     if (key.keyCode == rotateLeft)  SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_LEFT_PRESSED); 
     if (key.keyCode == rotateRight) SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); 
-    if (key.keyCode == up)   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); 
-    if (key.keyCode == down) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); 
+    if (key.keyCode == up || key.keyCode == up2)   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); 
+    if (key.keyCode == down || key.keyCode == down2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); 
     if (key.keyCode == flyModeToggle) SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); 
     if (key.keyCode == cameraModeToggle && key.eventType == KeyEvent::KeyPressed)
     {
