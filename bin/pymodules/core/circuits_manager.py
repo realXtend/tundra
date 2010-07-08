@@ -153,9 +153,9 @@ class ComponentRunner:
     def ENTITY_VISUALS_MODIFIED(self, entid):
         return self.send_event(EntityUpdate(entid), "on_entity_visuals_modified")
 
-    def LOGIN_INFO(self, *args): 
-        #print "Login Info", args
-        #self.send_event(LoginInfo(), "on_login") #XXX so wasn't needed or?
+    def LOGIN_INFO(self, id): 
+        #print "Login Info", id
+        #return self.send_event(LoginInfo(id), "on_login") #XXX so wasn't needed or?
         return False
     
     def SERVER_DISCONNECTED(self, id):

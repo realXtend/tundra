@@ -60,13 +60,13 @@ use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderin
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable EntityComponents/EC_3DCanvas 
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble EntityComponents/EC_Ruler)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon UiModule
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
-    EC_Highlight EC_HoveringText EC_Clone EC_Light EC_OpenSimPresence EC_OpenSimPrim EC_Touchable EC_3DCanvas EC_3DCanvasSource EC_ChatBubble)
+    EC_Highlight EC_HoveringText EC_Clone EC_Light EC_OpenSimPresence EC_OpenSimPrim EC_Touchable EC_3DCanvas EC_3DCanvasSource EC_ChatBubble EC_Ruler)
 
 link_package (OGRE)
 link_package (BOOST)
