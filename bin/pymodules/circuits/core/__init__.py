@@ -20,6 +20,9 @@ from timers import Timer
 try:
     from bridge import Bridge
 except:
+    import rexviewer as r
+    import traceback as tb
+    r.logInfo(tb.format_exc())
     print "Failed to import circuits.core.bridge. This probably means we're running in debug mode in Windows, and the debug version of the Python socket library is not available. Continuing without."
     Bridge = None
 from debugger import Debugger
