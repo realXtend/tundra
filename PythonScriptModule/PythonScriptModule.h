@@ -25,12 +25,12 @@
     #include <Python.h>
 #endif
 
+class EC_OpenSimPrim;
+
 class InputContext;
 typedef boost::shared_ptr<InputContext> InputContextPtr;
 class KeyEvent;
 class MouseEvent;
-
-class EC_OpenSimPrim;
 
 namespace OgreRenderer
 {
@@ -45,7 +45,6 @@ namespace Scene
 namespace Foundation
 {
     class Framework;
-    class InputContext;
 }
 
 namespace ProtocolUtilities

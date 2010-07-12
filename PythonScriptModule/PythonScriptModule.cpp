@@ -119,6 +119,9 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <PlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
+#include "QtInputKeyEvent.h"
+#include "QtInputMouseEvent.h"
+
 #include "MemoryLeakCheck.h"
 
 
@@ -2175,6 +2178,8 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
+            PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
+            PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
 
             pythonqt_inited = true;
             
