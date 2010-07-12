@@ -92,6 +92,8 @@ class ObjectEdit(Component):
             (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
+
+        inputcontext.connect('OnKeyEvent(KeyEvent&)', self.inp_on_keyevent)
         
         self.resetManipulators()
         
@@ -122,6 +124,9 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
             self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
             self.cpp_python_handler.connect('RemoveHightlight()', self.deselect_all)
+
+    def inp_on_keyevent(self, k):
+        print k, dir(k)
         
     def resetValues(self):
         self.left_button_down = False
