@@ -61,8 +61,9 @@ if USE_CIRCUITS:
     try:
         import core.circuits_manager
     except ImportError:
-        #print "circuits_manager not available"
+        import traceback as tb
         r.logInfo("Circuits Manager not available.")
+        r.logInfo(tb.format_exc())
         try:
             import os
         except:
@@ -70,7 +71,6 @@ if USE_CIRCUITS:
         else:
             r.logInfo("Unknown reason for failing circuits load.")
     else:
-        #print "Using circuits_manager"
         r.logInfo("Using Circuits Manager.")
         ModuleManager = core.circuits_manager.ComponentRunner
         
