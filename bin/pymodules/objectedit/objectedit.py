@@ -93,7 +93,9 @@ class ObjectEdit(Component):
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
-        inputcontext.connect('OnKeyEvent(KeyEvent&)', self.inp_on_keyevent)
+        inputcontext.disconnect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
+        inputcontext.connect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
+        r.logInfo(' | '.join(dir(inputcontext)))
         
         self.resetManipulators()
         
