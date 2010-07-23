@@ -8,6 +8,7 @@
 #include <QLineEdit>
 #include <QWebFrame>
 #include <QUrl>
+#include <QNetworkCookie>
 
 #include "MemoryLeakCheck.h"
 #include "NetworkAccessManager.h"
@@ -19,8 +20,13 @@ namespace CoreUi
         WebLoginWidget::WebLoginWidget(QWidget *parent) : 
             QWidget(parent)
         {
+            permanentCookieStore = new WebLoginPermanentCookie(this);
             InitWidget();
             ConnectSignals();
+        }
+        WebLoginWidget::~WebLoginWidget()
+        {
+            delete permanentCookieStore;
         }
 
         void WebLoginWidget::InitWidget()
@@ -48,13 +54,19 @@ namespace CoreUi
             pushButton_Refresh->setIconSize(QSize(20, 20));
             pushButton_Go->setIcon(QIcon("./data/ui/images/arrow_right_green_48.png"));
             pushButton_Go->setIconSize(QSize(20, 20));
+            pushButton_ClearCookie->setIcon(QIcon("./data/ui/images/clear_cookie_48.png"));
+            pushButton_ClearCookie->setIconSize(QSize(20, 20));
+            pushButton_ClearCookie->setToolTip("Clear cookie");
         }
 
         void WebLoginWidget::ConnectSignals()
         {
             QNetworkAccessManager *oldManager = webView->page()->networkAccessManager();
             NetworkAccessManager *newManager = new NetworkAccessManager(oldManager, webView);
+
             webView->page()->setNetworkAccessManager(newManager);
+
+            webView->page()->networkAccessManager()->setCookieJar( permanentCookieStore);
 
             connect(newManager, SIGNAL( WebLoginUrlRecived(QUrl) ), this, SLOT( LoadUrl(QUrl) ));
 
@@ -64,6 +76,7 @@ namespace CoreUi
             connect(pushButton_Stop, SIGNAL( clicked() ), webView, SLOT( stop() ));
             connect(pushButton_Refresh, SIGNAL( clicked() ), webView, SLOT( reload() ));
             connect(pushButton_Go, SIGNAL( clicked(bool) ), this, SLOT( GoToUrl(bool) ));
+            connect(pushButton_ClearCookie, SIGNAL( clicked() ), permanentCookieStore, SLOT(clear()));
             
             // Addressbar
             connect(comboBox_Address->lineEdit(), SIGNAL( returnPressed() ), this, SLOT( GoToUrl() ));

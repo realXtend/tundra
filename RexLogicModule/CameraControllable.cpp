@@ -175,7 +175,7 @@ namespace RexLogic
         {
             if (current_state_ == FocusOnObject)
             {
-                Input::Events::Movement *mouse_pos = checked_static_cast<Input::Events::Movement*>(data);
+                Input::Events::Movement *mouse_pos = checked_static_cast<Input::Events::Movement*>(data); 
                 if (mouse_position_map.size() < 4)
                 {
                     if(mouse_position_map.size() < 2)

@@ -4,6 +4,7 @@
 #define incl_UiModule_WebLoginWidget_h
 
 #include "ui_WebLoginWidget.h"
+#include "WebLoginPermanentCookie.h"
 
 namespace CoreUi
 {
@@ -16,6 +17,8 @@ namespace CoreUi
 
         public:
             WebLoginWidget(QWidget *parent);
+            ~WebLoginWidget();
+            WebLoginPermanentCookie* permanentCookieStore;
 
         private slots:
             void InitWidget();
