@@ -4,14 +4,14 @@
 #define incl_ECEditorModule_LineEditFactory_h
 
 #define QT_QTPROPERTYBROWSER_IMPORT
-#include <QtLineEditFactory>
-//#include <QLineEdit>
+#include <qteditorfactory.h>
 #include <QMap>
 
 class QLineEdit;
 
 namespace ECEditor
 {
+    // \todo add support to RegExp functionality.
     class LineEditPropertyFactory: public QtAbstractEditorFactory<QtStringPropertyManager>
     {
         Q_OBJECT
@@ -33,7 +33,7 @@ namespace ECEditor
 
     private slots:
         //void EditingFinnished();
-        void EditorDestoryed(QObject *object);
+        void EditorDestroyed(QObject *object);
 
     private:
         QMap<QtProperty *, QLineEdit *> propertyToEditor_;

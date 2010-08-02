@@ -17,6 +17,7 @@
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
+#include "EC_DynamicComponent.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -53,6 +54,17 @@ namespace ECEditor
         RegisterConsoleCommand(Console::CreateCommand("ECEditor",
             "Shows the EC editor.",
             Console::Bind(this, &ECEditorModule::ShowWindow)));
+
+        RegisterConsoleCommand(Console::CreateCommand("EditDynComp",
+            "Edit dynamic component's attributes."
+            "Params:"
+            " 0 = entity id."
+            " 1 = operation (add or rem)"
+            " 2 = component type.(ec. EC_DynamicComponent)"
+            " 3 = attribute name."
+            " 4 = attribute type. !Only rem dont use in rem operation."
+            " 5 = attribute value. !Only rem dont use in rem operation.",
+            Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
 
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
@@ -146,6 +158,60 @@ namespace ECEditor
         }
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
+    }
+
+    /* Params
+     * 0 = entity id.
+     * 1 = operation (add/rem)
+     * 2 = component type.
+     * 3 = attribute name
+     * 4 = attribute type
+     * 5 = attribute value
+     */
+    Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
+    {
+        Scene::SceneManager *sceneMgr = framework_->GetScene("World").get();
+        if(!sceneMgr)
+            return Console::ResultFailure("Failed to find main scene.");
+
+        if(params.size() == 6)
+        {
+            entity_id_t id = ParseString<entity_id_t>(params[0]);
+            Scene::Entity *ent = sceneMgr->GetEntity(id).get();
+            if(!ent)
+                return Console::ResultFailure("Cannot find entity by name of " + params[0]);
+
+            if(params[1] == "add")
+            {
+                Foundation::ComponentInterfacePtr comp = ent->GetComponent(params[2]);
+                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
+                if(!dynComp)
+                    return Console::ResultFailure("Wrong component type name" + params[2]);
+                Foundation::AttributeInterface *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
+                if(!attribute)
+                    return Console::ResultFailure("invalid attribute type" + params[4]);
+                attribute->FromString(params[5], AttributeChange::Local);
+                dynComp->ComponentChanged("Local");//AttributeChange::Local); 
+            }
+        }
+        if(params.size() == 4)
+        {
+            entity_id_t id = ParseString<entity_id_t>(params[0]);
+            Scene::Entity *ent = sceneMgr->GetEntity(id).get();
+            if(!ent)
+                return Console::ResultFailure("Cannot find entity by name of" + params[0]);
+
+            else if(params[1] == "rem")
+            {
+                Foundation::ComponentInterfacePtr comp = ent->GetComponent(params[2]);
+                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
+                if(!dynComp)
+                    return Console::ResultFailure("Wrong component type name" + params[2]);
+                dynComp->RemoveAttribute(QString::fromStdString(params[3]));
+                dynComp->ComponentChanged("Local");
+            }
+        }
+        return Console::ResultSuccess();
     }
 
     void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)

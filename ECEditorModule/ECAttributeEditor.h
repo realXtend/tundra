@@ -159,6 +159,7 @@ namespace ECEditor
         QString attributeName_;
         bool listenEditorChangedSignal_;
         bool componentIsSerializable_;
+
         typedef std::map<Foundation::ComponentWeakPtr, Foundation::AttributeInterface *> ECAttributeMap;
         ECAttributeMap attributeMap_;
         bool useMultiEditor_;
@@ -282,6 +283,12 @@ namespace ECEditor
                     if(rootProperty_ && iter->second)
                     {
                         Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(iter->second);
+                        if(!attribute)
+                        {
+                            iter++;
+                            continue;
+                        }
+
                         QString newValue(attribute->ToString().c_str());
                         if(!stringList.contains(newValue))
                             stringList << newValue;
