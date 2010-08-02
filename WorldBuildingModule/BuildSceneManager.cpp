@@ -96,21 +96,17 @@ namespace WorldBuilding
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
 
+        PythonParams::ManipulationMode mode = PythonParams::None;
         if (key.HasCtrlModifier())
         {
-            ManipModeChanged(PythonParams::MOVE);
-            return;
+            mode = PythonParams::MOVE;
+            if (key.HasAltModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::ROTATE))
+                mode = PythonParams::SCALE;
+            if (key.HasShiftModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::SCALE))
+                mode = PythonParams::ROTATE;
         }
-        if (key.HasAltModifier())
-        {
-            ManipModeChanged(PythonParams::SCALE);
-            return;
-        }
-        if (key.HasShiftModifier())
-        {
-            ManipModeChanged(PythonParams::ROTATE);
-            return;
-        }
+        if (mode != PythonParams::None)
+            ManipModeChanged(mode);
     }
 
     void BuildSceneManager::KeyReleased(KeyEvent &key)
@@ -120,15 +116,25 @@ namespace WorldBuilding
         if (key.IsRepeat())
             return;
 
-        bool back_to_freemove = false;
+        PythonParams::ManipulationMode mode = PythonParams::None;
         if (key.keyCode == Qt::Key_Control && (python_handler_->GetCurrentManipulationMode() == PythonParams::MOVE))
-            back_to_freemove = true;
+            mode = PythonParams::FREEMOVE;
         if (key.keyCode == Qt::Key_Alt && (python_handler_->GetCurrentManipulationMode() == PythonParams::SCALE))
-            back_to_freemove = true;
+        {
+            if (key.HasCtrlModifier())
+                mode = PythonParams::MOVE;
+            else
+                mode = PythonParams::FREEMOVE;
+        }
         if (key.keyCode == Qt::Key_Shift && (python_handler_->GetCurrentManipulationMode() == PythonParams::ROTATE))
-            back_to_freemove = true;
-        if (back_to_freemove)
-            ManipModeChanged(PythonParams::FREEMOVE);
+        {
+            if (key.HasCtrlModifier())
+                mode = PythonParams::MOVE;
+            else
+                mode = PythonParams::FREEMOVE;
+        }
+        if (mode != PythonParams::None)
+            ManipModeChanged(mode);
     }
 
     void BuildSceneManager::ModeToggleMove()

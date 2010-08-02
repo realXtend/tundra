@@ -16,7 +16,8 @@ namespace WorldBuilding
             FREEMOVE = 0,
             MOVE,
             SCALE,
-            ROTATE
+            ROTATE,
+            None
         };
     }
 
