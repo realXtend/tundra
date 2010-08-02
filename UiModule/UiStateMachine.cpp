@@ -17,6 +17,7 @@ namespace CoreUi
         : QStateMachine(parent),
           view_(view),
           current_scene_(view->scene()),
+          current_scene_name_(""),
           connection_state_(UiDefines::Disconnected)
     {
         state_ether_ = new QState(this);
@@ -178,6 +179,7 @@ namespace CoreUi
         if (!scene_map_.contains(name))
             return;
 
+        
         if (next_scene_name_ != name)
         {
             next_scene_name_ = name;
@@ -186,8 +188,11 @@ namespace CoreUi
         else
         {
             disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-            
+         
+            QString old_scene_name = current_scene_name_;
             current_scene_ = scene_map_[name];
+            current_scene_name_ = name;
+
             current_scene_->setSceneRect(view_->viewport()->rect());
             if (view_->scene() != current_scene_)
                 view_->setScene(current_scene_);
@@ -204,7 +209,7 @@ namespace CoreUi
 
             // Inform anyone who is interested that 
             // we changed the currently viewed scene
-            emit SceneChangedTo(name);
+            emit SceneChangedTo(old_scene_name, current_scene_name_);
         }
     }
 

@@ -47,7 +47,7 @@ namespace WorldBuilding
         if (machine)
         {
             machine->RegisterScene(scene_name_, scene_);
-            connect(machine, SIGNAL(SceneChangedTo(QString)), SLOT(SceneChangedNotification(QString)));
+            connect(machine, SIGNAL(SceneChangedTo(QString, QString)), SLOT(SceneChangedNotification(QString, QString)));
         }
 
         // Init info widget
@@ -245,20 +245,18 @@ namespace WorldBuilding
                 machine->SwitchToScene("Inworld");
             else
                 machine->SwitchToScene("Ether");
-
-            python_handler_->EmitEditingActivated(false);
         }
     }
 
-    void BuildSceneManager::SceneChangedNotification(QString scene_name)
+    void BuildSceneManager::SceneChangedNotification(QString old_scene_name, QString new_scene_name)
     {
-        if (scene_name == scene_name_)
+        if (new_scene_name == scene_name_)
         {
             object_info_widget_->CheckSize();
             object_manipulations_widget_->CheckSize();         
             python_handler_->EmitEditingActivated(true);
         }
-        else if (scene_->isActive())
+        else if (old_scene_name == scene_name_)
         {
             ObjectSelected(false);
             python_handler_->EmitEditingActivated(false);
