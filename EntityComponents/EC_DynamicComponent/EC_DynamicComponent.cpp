@@ -19,9 +19,11 @@
 #define LogWarning(msg) Poco::Logger::get("EC_DynamicComponent").warning(std::string("Warning: ") + msg);
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface()
+    Foundation::ComponentInterface(),
+    framework_(0)
 {
-
+    assert(module);
+    framework_ = module->GetFramework();
 }
 
 EC_DynamicComponent::~EC_DynamicComponent()
@@ -137,6 +139,12 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 Foundation::AttributeInterface *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
 {
     Foundation::AttributeInterface *attribute = 0;
+    attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
+    if(attribute)
+        emit AttributeAdded(name);
+    return attribute;
+
+    /*Foundation::AttributeInterface *attribute = 0;
     if(ContainAttribute(name))
         return attribute;
 
@@ -165,7 +173,7 @@ Foundation::AttributeInterface *EC_DynamicComponent::CreateAttribute(const QStri
 
     if(attribute)
         emit AttributeAdded(name);
-    return attribute;
+    return attribute;*/
 }
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name)
