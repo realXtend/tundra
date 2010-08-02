@@ -10,7 +10,7 @@
 
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
-#include "AttributeBrowser.h"
+#include "ECBrowser.h"
 #include "AttributeInterface.h"
 
 #include "ModuleManager.h"
@@ -35,6 +35,7 @@ using namespace RexTypes;
 
 namespace ECEditor
 {
+    //! @bug code below causes a crash if user relog into the server and try to use ECEditorWindow.
     uint AddUniqueListItem(QListWidget* list, const QString& name)
     {
         for (int i = 0; i < list->count(); ++i)
@@ -102,7 +103,7 @@ namespace ECEditor
         toggle_entities_button_(0),
         entity_list_(0),
         //component_list_(0),
-        attribute_browser_(0)
+        browser_(0)
     {
         Initialize();
     }
@@ -162,7 +163,7 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::DeleteComponent(const std::string &componentType)
+    void ECEditorWindow::DeleteComponent(const std::string &componentType, const std::string &name)
     {
         if(componentType.empty())
             return;
@@ -170,11 +171,13 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType);
+            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
             if(component)
+            {
                 entities[i]->RemoveComponent(component, AttributeChange::Local);
+                BoldEntityListItem(entities[i]->GetId(), false);
+            }
         }
-        //RefreshPropertyBrowser();
     }
 
     /*void ECEditorWindow::DeleteComponent()
@@ -201,8 +204,11 @@ namespace ECEditor
     void ECEditorWindow::CreateComponent()
     {
         bool ok;
-        QString name = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
-        if (!ok || name.isEmpty())
+        QString typeName = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
+        if (!ok || typeName.isEmpty())
+            return;
+        QString name = QInputDialog::getText(this, tr("Set component name (optional)"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
+        if (!ok)
             return;
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
@@ -210,12 +216,19 @@ namespace ECEditor
         {
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            Foundation::ComponentInterfacePtr comp = entities[i]->GetOrCreateComponent(name.toStdString(), AttributeChange::Local);
+            Foundation::ComponentInterfacePtr comp;
+            if(!name.isEmpty())
+                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString(), name.toStdString());//entities[i]->GetOrCreateComponent(typeName.toStdString(), AttributeChange::Local);
+            else
+                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString()); 
             if (comp)
             {
+                entities[i]->AddComponent(comp, AttributeChange::Local);
                 // Trigger change notification in the component so that it updates its initial internal state, if necessary
-                comp->ComponentChanged(AttributeChange::Local);
+                //comp->ComponentChanged(AttributeChange::Local);
             }
+            
+                comp->SetName(name.toStdString());
         }
     }
 
@@ -312,6 +325,18 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::HighlightEntities(Foundation::ComponentInterface *component)
+    {
+        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
+        for(uint i = 0; i < entities.size(); i++)
+        {
+            if(entities[i]->GetComponent(component->TypeName(), component->Name()))
+                BoldEntityListItem(entities[i]->GetId(), true);
+            else
+                BoldEntityListItem(entities[i]->GetId(), false);
+        }
+    }
+
     /*void ECEditorWindow::RefreshEntityComponents()
     {
         for(int i = component_list_->topLevelItemCount() - 1; i >= 0; --i)
@@ -339,10 +364,10 @@ namespace ECEditor
         RefreshPropertyBrowser();
     }*/
 
-    void ECEditorWindow::RefreshPropertyBrowser()
+    void ECEditorWindow::RefreshPropertyBrowser() 
     {
-        PROFILE(EC_AttributeBrowser_refresh_browser);
-        if(!attribute_browser_)
+        PROFILE(EC_refresh_browser);
+        if(!browser_)
             return;
 
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
@@ -350,39 +375,43 @@ namespace ECEditor
             return;
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        // No entities selected we can clear the attribute broser.
+        // If any of enities was not selected clear the browser window.
         if(!entities.size())
         {
-            attribute_browser_->clear();
+            browser_->clear();
+            // Unbold all list elements from the enity list.
+            for(uint i = 0; i < entity_list_->count(); i++)
+                BoldEntityListItem(entity_list_->item(i)->text().toInt(), false);
             return;
         }
 
-        // \todo hackish way to improve the browser perfomance by hiding the widget until all changes are made
-        // and unnecessary widget paint is avoided. This need be fixed so that browser's load is minimal so it can
-        // handle thousands of induvidual QTreeWidgetItems without a hard perfomance hit for the application.
-        attribute_browser_->hide();
+        //! \todo hackish way to improve the browser perfomance by hiding the widget until all the changes are made
+        //! so that unnecessary widget paints are avoided. This need be fixed in a way that browser's load is minimal.
+        //! To ensure that the editor can handle thousands of induvicual elements in the same time.
+        browser_->hide();
         EntityIdSet noneSelectedEntities = selectedEntities_;
         selectedEntities_.clear();
-        // Check what new entities has been added and what old need to bee removed from the attribute browser.
+        // Check what new entities has been added and what old need to be removed from the browser.
         for(uint i = 0; i < entities.size(); i++)
         {
-            attribute_browser_->AddNewEntity(entities[i]);
+            browser_->AddNewEntity(entities[i].get());
             selectedEntities_.insert(entities[i]->GetId());
             noneSelectedEntities.erase(entities[i]->GetId());
         }
-        // After we have the list of entities that need to be removed we do so and after we are done we will update browser's ui
-        // to fit those changes that we have done.
+        // After we have the list of entities that need to be removed we do so and after we are done, we will update browser's ui
+        // to fit those changes that we just made.
         while(!noneSelectedEntities.empty())
         {
             Scene::EntityPtr entity = scene->GetEntity(*(noneSelectedEntities.begin()));
             if (entity)
             {
-                attribute_browser_->RemoveEntity(entity.get());
+                BoldEntityListItem(entity->GetId(), false);
+                browser_->RemoveEntity(entity.get());
             }
             noneSelectedEntities.erase(noneSelectedEntities.begin());
         }
-        attribute_browser_->show();
-        attribute_browser_->UpdateBrowserUI();
+        browser_->show();
+        browser_->UpdateBrowser();
     }
 
     void ECEditorWindow::ShowEntityContextMenu(const QPoint &pos)
@@ -420,8 +449,8 @@ namespace ECEditor
 
     void ECEditorWindow::ShowComponentContextMenu(const QPoint &pos)
     {
-        /*assert(attribute_browser_);
-        if (!attribute_browser_)
+        /*assert(browser_);
+        if (!browser_)
             return;
 
         QTreeWidgetItem *item = component_list_->itemAt(pos);
@@ -531,8 +560,8 @@ namespace ECEditor
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
     {
         ClearEntities();
-        if(attribute_browser_)
-            attribute_browser_->clear();
+        if(browser_)
+            browser_->clear();
         QWidget::hideEvent(hide_event);
     }
 
@@ -545,6 +574,19 @@ namespace ECEditor
         }
         else
            QWidget::changeEvent(e);
+    }
+
+    void ECEditorWindow::BoldEntityListItem(entity_id_t entity_id, bool bold)
+    {
+        QString entity_id_str;
+        entity_id_str.setNum((int)entity_id);
+        QList<QListWidgetItem*> items = entity_list_->findItems(QString::fromStdString(entity_id_str.toStdString()), Qt::MatchExactly);
+        for(uint i = 0; i < items.size(); i++)
+        {
+            QFont font = items[i]->font();
+            font.setBold(bold);
+            items[i]->setFont(font);
+        }
     }
 
     void ECEditorWindow::Initialize()
@@ -578,22 +620,23 @@ namespace ECEditor
         QWidget *browserWidget = findChild<QWidget*>("browser_widget");
         if(browserWidget)
         {
-            attribute_browser_ = new AttributeBrowser(framework_, browserWidget);
+            browser_ = new ECBrowser(framework_, browserWidget);
             QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
             if (property_layout)
-                property_layout->addWidget(attribute_browser_);
+                property_layout->addWidget(browser_);
         }
 
-        if(attribute_browser_)
+        if(browser_)
         {
             // signals from attribute browser to editor window.
-            QObject::connect(attribute_browser_, SIGNAL(DeleteComponent(const std::string &)), this, SLOT(DeleteComponent(const std::string &)));
-            QObject::connect(attribute_browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
-            QObject::connect(attribute_browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
+            QObject::connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
+            QObject::connect(browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
+            QObject::connect(browser_, SIGNAL(ComponentSelected(Foundation::ComponentInterface *)), 
+                             this, SLOT(HighlightEntities(Foundation::ComponentInterface *)));
         }
 /*
-        if (component_list_ && attribute_browser_)
-            connect(attribute_browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentXmlData()));
+        if (component_list_ && browser_)
+            connect(browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentXmlData()));
 */
         if (entity_list_)
         {
@@ -639,7 +682,7 @@ namespace ECEditor
         image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
         env_editor_properties.SetMenuNodeStyleMap(image_path_map); 
 
-        ui_module->GetInworldSceneController()->AddWidgetToScene(contents, env_editor_properties);*/ 
+        ui_module->GetInworldSceneController()->AddWidgetToScene(contents, env_editor_properties);*/
     }
 
     QStringList ECEditorWindow::GetAvailableComponents() const

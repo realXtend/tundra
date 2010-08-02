@@ -161,6 +161,7 @@ namespace ECEditor
         componentIsSerializable_ = component->IsSerializable();
         if(attribute)
         {
+            //! @todo it's unwise to use weakpointer as a keys. Change this to raw pointer and make sure that components are not expired when they are in use.
             attributeMap_[Foundation::ComponentWeakPtr(component)] = attribute;
             listenEditorChangedSignal_ = true;
             //QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
@@ -831,17 +832,18 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            QtVariantPropertyManager *qStringPropertyManager = new QtVariantPropertyManager(this);
-            QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+            QtStringPropertyManager *qStringPropertyManager = new QtStringPropertyManager(this);
+            ECEditor::LineEditPropertyFactory *lineEditFactory = new ECEditor::LineEditPropertyFactory(this);
             propertyMgr_ = qStringPropertyManager;
-            factory_ = variantFactory;
-            rootProperty_ = qStringPropertyManager->addProperty(QVariant::String, attributeName_);
+            factory_ = lineEditFactory;
+            rootProperty_ = qStringPropertyManager->addProperty(attributeName_);
+            //rootProperty_ = qStringPropertyManager->addProperty(QVariant::String, attributeName_);
             if(rootProperty_)
             {
                 UpdateValue();
                 QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
             }
-            owner_->setFactoryForManager(qStringPropertyManager, variantFactory);
+            owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
         else
         {
@@ -863,7 +865,7 @@ namespace ECEditor
         if(!useMultiEditor_)
         {
             ECAttributeMap::iterator iter = attributeMap_.begin();
-            QtVariantPropertyManager *qStringPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
+            QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
             assert(qStringPropertyManager);
             if(!qStringPropertyManager)
                 return;
@@ -873,7 +875,7 @@ namespace ECEditor
                 if (rootProperty_ && iter->second)
                 {
                     Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant>*>(iter->second);
-                    qStringPropertyManager->setValue(rootProperty_, attribute->Get());
+                    qStringPropertyManager->setValue(rootProperty_, attribute->Get().toString());
                 }
                 iter++;
             }

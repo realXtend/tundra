@@ -39,7 +39,7 @@ namespace ECEditor
         ECComponentEditor(Foundation::ComponentInterfacePtr component, const std::string &typeName, QtAbstractPropertyBrowser *propertyBrowser);
         virtual ~ECComponentEditor();
 
-        //! Check if this component editor is holding spesific property inside it's root property.
+        //! Check if this component editor is holding spesific property as it's root property.
         bool ContainProperty(QtProperty *property) const;
 
         //! Get group property pointer.
@@ -47,11 +47,13 @@ namespace ECEditor
 
         int ComponentsCount() const { return components_.size(); }
 
+        int AttributeCount() const { return attributeEditors_.size(); }
+
         //! Add new component into the editor.
         void AddNewComponent(Foundation::ComponentInterfacePtr component, bool updateUi = true);
 
         //! Remove component from the editor.
-        void RemoveComponent(Foundation::ComponentInterfacePtr component);
+        void RemoveComponent(Foundation::ComponentInterface *component);
 
         void UpdateEditorUI();
 
@@ -68,13 +70,13 @@ namespace ECEditor
 
     private:
         //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 
-        //! a new ECAttributeEditor instance is created and it's pointer returned to user. If attribute type is not supported
+        //! a new ECAttributeEditor instance is created and it's pointer returned to a user. If attribute type is not supported
         //! the method will return a null pointer.
         //! @return return attribute pointer if attribute type is supported and if not return null pointer.
-        static ECAttributeEditorBase *GetAttributeEditor( QtAbstractPropertyBrowser *browser, 
-                                                          ECComponentEditor *editor, 
-                                                          const Foundation::AttributeInterface &attribute,
-                                                          Foundation::ComponentInterfacePtr component );
+        static ECAttributeEditorBase *CreateAttributeEditor( QtAbstractPropertyBrowser *browser, 
+                                                             ECComponentEditor *editor, 
+                                                             const Foundation::AttributeInterface &attribute,
+                                                             Foundation::ComponentInterfacePtr component );
 
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what
@@ -82,6 +84,7 @@ namespace ECEditor
         void InitializeEditor(Foundation::ComponentInterfacePtr component);
 
         //! Create new attribute editors for spesific component.
+        //! @param component Compoent that we need to use, to get all attributes that we want to edit.
         void CreateAttriubteEditors(Foundation::ComponentInterfacePtr component);
 
         void UpdateGroupPropertyText();
@@ -94,7 +97,6 @@ namespace ECEditor
         QtGroupPropertyManager      *groupPropertyManager_;
         QtAbstractPropertyBrowser   *propertyBrowser_;
         std::string                 typeName_;
-        bool                        isDynamicComponent_;
     };
 }
 
