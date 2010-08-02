@@ -423,12 +423,12 @@ namespace ECEditor
             return;
 
         bool ok = false;
-        /*QStringList attributeList;
-        for(uint i = 0; i < AttributeTypenames.size(); i++)
-            attributeList.push_back(AttributeTypenames[i]);*/
+        QStringList attributeList;
+        StringVector attributeTypes = framework_->GetComponentManager()->GetAttributeTypes();
+        for(uint i = 0; i < attributeTypes.size(); i++)
+            attributeList.push_back(QString::fromStdString(attributeTypes[i]));
 
-        //QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, QLineEdit::Normal, QString(), &ok);
-        QString typeName = QInputDialog::getText(this, tr("Give attribute type"), tr("Typename:"), QLineEdit::Normal, QString(), &ok);
+        QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, &ok);
         if (!ok)
             return;
         QString name = QInputDialog::getText(this, tr("Give attribute name"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
