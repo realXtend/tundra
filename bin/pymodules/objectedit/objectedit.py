@@ -95,7 +95,6 @@ class ObjectEdit(Component):
 
         inputcontext.disconnect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
         inputcontext.connect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
-        r.logInfo(' | '.join(dir(inputcontext)))
         
         self.resetManipulators()
         
