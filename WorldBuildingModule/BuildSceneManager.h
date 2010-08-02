@@ -63,7 +63,7 @@ namespace WorldBuilding
 
     private slots:
         void InitialseScene();
-        void SceneChangedNotification(QString scene_name);
+        void SceneChangedNotification(QString old_scene_name, QString new_scene_name);
         void ObjectSelected(bool selected);
 
         void ModeToggleMove();
