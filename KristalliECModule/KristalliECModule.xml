@@ -1,0 +1,4 @@
+<config>
+	<entry>KristalliECModule</entry>
+	<dependency>KristalliProtocolModule</dependency>
+</config>

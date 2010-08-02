@@ -1,0 +1,41 @@
+<xml>
+    <!-- LOGIN -->
+
+    <!-- Client to server -->
+    <message id="100" name="Login" reliable="true" priority="100">
+        <u8 name="userUUID" count="16" />
+        <s8 name="userName" dynamicCount="8" />
+        <!-- Todo: add security to the login as appropriate -->
+    </message>
+    <!-- Server to client that attempts to join -->
+    <message id="101" name="LoginReply" reliable="true" priority="100">
+        <u8 name="success" />
+        <!-- Note: in case of failure, userID is undefined -->
+        <u8 name="userID" />
+    </message>
+    <!-- Server to other clients when a client joins -->
+    <message id="102" name="ClientJoined" reliable="true" priority="100">
+        <u8 name="userID" />
+        <u8 name="userUUID" count="16" />
+        <s8 name="userName" dynamicCount="8" />
+    </message>
+    <!-- Server to other clients when a client left or timed out -->
+    <message id="103" name="ClientLeft" reliable="true" priority="100">
+        <u8 name="userID" />
+    </message>
+    <!-- Server to clients: who are the current master users -->
+    <message id="104" name="MasterUser" reliable="true" inOrder="true" priority="100">
+        <struct name="masterUsers" dynamicCount="8">
+            <u8 name="userUUID" count="16" />
+        </struct>
+    </message>
+    <!-- Master user client to server: enable (1) or disable (0) someone else's master status  -->
+    <message id="105" name="SetMasterUser" reliable="true" priority="100">
+        <u8 name="userUUID" count="16" />
+        <u8 name="enable" />
+    </message>
+    <!-- Master user client to server: end meeting (trigger server reset) -->
+    <message id="106" name="ResetServer" reliable="true" priority="100" />
+    <!-- Server to clients: server has been reset -->
+    <message id="107" name="ServerReset" reliable="true" priority="100" />
+</xml>

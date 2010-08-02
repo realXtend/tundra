@@ -1,0 +1,100 @@
+<xml>
+    <!-- ENTITY & COMPONENT ACTIONS -->
+
+    <!-- Client to server: create a new entity, possibly with components -->
+    <message id="110" name="CreateEntity" reliable="true" priority="100">
+        <!-- Client-generated ID to identify action -->
+        <u32 name="actionID" />
+        <struct name="permissions" dynamicCount="8">
+            <u8 name="userUUID" count="16" />
+            <u32 name="permissionFlags" />
+        </struct>
+        <struct name="initialComponents" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="32" />
+        </struct>
+    </message>
+    <!-- Client to server: delete entity -->
+    <message id="111" name="DeleteEntity" reliable="true" priority="100">
+        <u32 name="actionID" />
+        <u32 name="entityID" />
+        <!-- If UUID is non-null, it will be used to look up the entity instead -->
+        <u8 name="entityUUID" count="16" />        
+    </message>
+    <!-- Client to server: create or modify entity-component -->
+    <message id="112" name="ModifyComponent" reliable="true" priority="100">
+        <!-- Note: for now, this closely follows the Naali model of typename & optional name identifying the EC -->
+        <!-- Initially, the typename & name will also be redundantly contained in the data, which is XML serialization of the EC -->
+        <u32 name="actionID" />
+        <u32 name="entityID" />
+        <!-- If UUID is non-null, it will be used to look up the entity instead -->
+        <u8 name="entityUUID" count="16" />
+        <s8 name="componentTypeName" dynamicCount="8" />
+        <s8 name="componentName" dynamicCount="8" />
+        <u8 name="componentData" dynamicCount="32" />
+    </message>
+    <!-- Client to server: delete entity-component -->
+    <message id="113" name="DeleteComponent" reliable="true" priority="100">
+        <u32 name="actionID" />
+        <u32 name="entityID" />
+        <!-- If UUID is non-null, it will be used to look up the entity instead -->
+        <u8 name="entityUUID" count="16" />
+        <s8 name="componentTypeName" dynamicCount="8" />
+        <s8 name="componentName" dynamicCount="8" />
+    </message>
+    <!-- Client to server: set entity permissions -->
+    <message id="114" name="SetPermissions" reliable="true" priority="100">
+        <u32 name="actionID" />
+        <u32 name="entityID" />
+        <!-- If UUID is non-null, it will be used to look up the entity instead -->
+        <u8 name="entityUUID" count="16" />
+        <struct name="permissions" dynamicCount="8">
+            <u8 name="userUUID" count="16" />
+            <u32 name="permissionFlags" />
+        </struct>
+    </message>
+    <!-- Server to client: response to an entity or EC action. For entity create, this also gives the server-generated entity-ID -->
+    <message id="115" name="ActionReply" reliable="true" priority="100">
+        <u8 name="success" />
+        <u32 name="actionID" />
+        <u32 name="entityID" />
+        <u8 name="entityUUID" count="16" />
+    </message>
+    
+    <!-- ENTITY & COMPONENT REPLICATION -->
+
+    <!-- Server to client: entity update -->
+    <message id="120" name="EntityUpdated" reliable="true" inOrder="true" priority="100">
+        <!-- When a client joins, all entities (that user has permission to see) will be sent to him using this message -->
+        <u32 name="entityID" />
+        <u8 name="entityUUID" count="16" />
+        <u8 name="creatorUUID" count="16" />
+        <!-- Note: we might not want to give user access to the permission info. In this case, the count will be 0 -->
+        <struct name="permissions" dynamicCount="8">
+            <u8 name="userUUID" count="16" />
+            <u32 name="permissionFlags" />
+        </struct>
+    </message>
+    <!-- Server to client: entity-component update (full sync) -->
+    <message id="121" name="ComponentUpdated" reliable="true" inOrder="true" priority="100">
+        <!-- When a client joins, all components will be sent to him using this message -->
+        <u32 name="entityID" />
+        <u8 name="entityUUID" count="16" />
+        <s8 name="componentTypeName" dynamicCount="8" />
+        <s8 name="componentName" dynamicCount="8" />
+        <u8 name="componentData" dynamicCount="32" />
+    </message>
+    <!-- Server to client: entity was deleted -->
+    <message id="122" name="EntityDeleted" reliable="true" inOrder="true" priority="100">
+        <u32 name="entityID" />
+        <u8 name="entityUUID" count="16" />
+    </message>
+    <!-- Server to client: entity-component was deleted -->
+    <message id="123" name="ComponentDeleted" reliable="true" inOrder="true" priority="100">
+        <u32 name="entityID" />
+        <u8 name="entityUUID" count="16" />
+        <s8 name="componentTypeName" dynamicCount="8" />
+        <s8 name="componentName" dynamicCount="8" />
+    </message>
+</xml>

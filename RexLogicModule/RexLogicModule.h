@@ -123,9 +123,20 @@ namespace RexLogic
         Scene::EntityPtr GetUserAvatarEntity() const;
         Scene::EntityPtr GetCameraEntity() const;
         Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const;
-
+        Scene::EntityPtr GetPrimEntity(const RexUUID &fullid) const;
+        Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid) const;
+        
         //=============== RexLogicModule API ===============/
 
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
+        __inline Scene::EntityPtr GetPrimEntity(entity_id_t entityid) const{ return GetEntityWithComponent(entityid, "EC_OpenSimPrim"); }
+
+        //! @return The entity corresponding to given scene entityid, or null if not found. 
+        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component,
+        //!         and EC_OpenSimPresence component.
+        __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) const { return GetEntityWithComponent(entityid, "EC_OpenSimAvatar"); }
+        
         //! Returns world stream pointer.
         WorldStreamPtr GetServerConnection() const { return world_stream_; }
 
@@ -173,17 +184,6 @@ namespace RexLogic
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
-
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
-        __inline Scene::EntityPtr GetPrimEntity(entity_id_t entityid) const{ return GetEntityWithComponent(entityid, "EC_OpenSimPrim"); }
-        Scene::EntityPtr GetPrimEntity(const RexUUID &fullid) const;
-
-        //! @return The entity corresponding to given scene entityid, or null if not found. 
-        //!         This entity is guaranteed to have an existing EC_OpenSimAvatar component,
-        //!         and EC_OpenSimPresence component.
-        __inline Scene::EntityPtr GetAvatarEntity(entity_id_t entityid) const { return GetEntityWithComponent(entityid, "EC_OpenSimAvatar"); }
-        Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid) const;
 
         InWorldChatProviderPtr GetInWorldChatProvider() const;
 

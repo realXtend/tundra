@@ -12,6 +12,8 @@
 
 #include "ForwardDefines.h"
 
+class RexUUID;
+
 namespace Foundation
 {
     class WorldLogicInterface : public ServiceInterface
@@ -34,7 +36,12 @@ namespace Foundation
         /// @param component Type name of the component.
         virtual Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const = 0;
 
-        // 
+        /// Returns entity with prim component by fullid
+        virtual Scene::EntityPtr GetPrimEntity(const RexUUID &fullid) const = 0;
+
+        /// Returns entity with an avatar component by fullid
+        virtual Scene::EntityPtr GetAvatarEntity(const RexUUID &fullid) const = 0;
+
     };
 }
 

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="libspeex">
+</Property><Property Name="Solution File" Value="C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex.sln">
+</Property><Property Name="Date" Value="Thursday, January 21, 2010">
+</Property><Property Name="Time" Value="1:36:53 AM">
+</Property><Property Name="Log Number" Value="4">
+</Property></Properties><Event ErrorLevel="0" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Converting project file 'C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcproj'.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" Description="VCConvertEngine.dll encountered an error.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Attribute 'OptimizeForWindows98' of 'VCLinkerTool' is not supported in this version and has been removed during conversion.">
+</Event><Event ErrorLevel="0" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Done converting to new project file 'C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcxproj'.">
+</Event><Event ErrorLevel="3" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Converted">
+</Event></UpgradeLog>
