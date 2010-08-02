@@ -18,7 +18,7 @@ namespace CoreUi
         QNetworkReply *NetworkAccessManager::createRequest(
             QNetworkAccessManager::Operation operation, const QNetworkRequest &request,
             QIODevice *device)
-        {
+        {           
             if (request.url().scheme() != "cablebeach")
                 return QNetworkAccessManager::createRequest(operation, request, device);
 
