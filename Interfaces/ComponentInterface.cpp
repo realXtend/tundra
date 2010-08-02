@@ -39,6 +39,12 @@ Framework* ComponentInterface::GetFramework() const
         return 0;
 }
 
+void ComponentInterface::SetName(const std::string& name)
+{
+    name_ = name;
+    emit OnComponentNameChanged(name);
+}
+
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
 {
     parent_entity_ = entity;

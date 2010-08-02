@@ -64,7 +64,7 @@ namespace Foundation
         const std::string& Name() const { return name_; }
 
         //! Sets name of the component.
-        void SetName(const std::string& name) { name_ = name; }
+        void SetName(const std::string& name);
 
         //! Sets parent entity for this component.
         void SetParentEntity(Scene::Entity* entity);
@@ -131,6 +131,12 @@ namespace Foundation
         /*! Note: also a scenemanager change signal will be sent, but this is a way to hook to a specific component
          */
         void OnAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+
+        //! Signal just before the components name is about to change.
+        /*! Note! If you are asking components name when the singal is emitted component will return old name.
+         *  /param newName new component name.
+         */
+        void OnComponentNameChanged(const std::string &newName);
 
         //! Emitted when the parent entity is set.
         void ParentEntitySet();
