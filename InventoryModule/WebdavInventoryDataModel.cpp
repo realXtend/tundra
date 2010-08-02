@@ -433,7 +433,13 @@ namespace Inventory
         // Set urls
         webdavclient_.call("setHostAndUser", QVariantList() << webdav_identity_ << webdav_host_ << webdav_password_);
         // Connect to webdav
-        webdavclient_.call("setupConnection");
+        bool success = webdavclient_.call("setupConnection").toBool();
+        if (!success)
+        {
+            InventoryModule::LogWarning("Could not setup webdav connection to " + webdav_host_.toStdString() + " with user " + webdav_identity_.toStdString());
+            return;
+        }
+
         // Fetch root resources
         QStringList rootResources = webdavclient_.call("listResources").toStringList();
         if (rootResources.count() < 1)
