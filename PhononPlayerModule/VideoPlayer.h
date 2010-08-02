@@ -29,9 +29,10 @@ namespace PlayerService
     public slots:
         void Play(const QString &url);
     private slots:
-        void Restart();
-        void CheckState(Phonon::State newstate);
+//        void Restart();
+        void CheckState(Phonon::State new_state, Phonon::State old_state);
         void StartVideoPlayback(bool has_video);
+        void RestartVideoPlayback();
     private:
         bool error_handled_;
         QBoxLayout *layout_;
