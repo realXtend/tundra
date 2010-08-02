@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\src\Math\MathFunc.cpp" />
+    <ClCompile Include="..\..\..\src\Math\MathOps.cpp" />
+    <ClCompile Include="..\..\..\src\Math\MatrixMathTM.cpp" />
+    <ClCompile Include="..\..\..\src\Math\Polyhedron.cpp" />
+    <ClCompile Include="..\..\..\src\Math\Util\BitOps.cpp" />
+    <ClCompile Include="..\..\..\src\Math\Util\Polar.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\include\clb\Math\MatrixGen.inl" />
+    <None Include="..\..\..\include\clb\Math\MatrixGenTM.inl" />
+    <None Include="..\..\..\include\clb\Math\MatrixMath.inl" />
+    <None Include="..\..\..\include\clb\Math\MatrixOps.inl" />
+    <None Include="..\..\..\include\clb\Math\MatrixOverloads.inl" />
+    <None Include="..\..\..\include\clb\Math\VectorMath.inl" />
+    <None Include="..\..\..\include\clb\Math\VectorOps.inl" />
+    <None Include="..\..\..\include\clb\Math\VectorOverloads.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\include\clb\Math\Complex.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\FixedPoint.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MathConstants.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MathFunc.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MathOps.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MathSettings.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Matrix.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MatrixMathTM.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\MatrixOps.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Polyhedron.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Quaternion.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Rect.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Util\BitOps.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Util\EulerAngles.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Util\FloatCmp.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Util\PointToLine.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Util\Polar.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Vector.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Vector2.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Vector3.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\Vector4.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\VectorMath.h" />
+    <ClInclude Include="..\..\..\include\clb\Math\VectorOps.h" />
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1535DBA1-80FF-4215-833F-509C1CCF4A7E}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>Math</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\clbLibCore.props" />
+    <Import Project="..\..\clbLibCoreDebug.props" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="..\..\clbLibCore.props" />
+    <Import Project="..\..\clbLibCoreRelease.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisRules />
+    <CodeAnalysisRuleAssemblies />
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <Optimization>Disabled</Optimization>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../include;../../../3rdParty/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <Optimization>MaxSpeed</Optimization>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>../../../include;../../../3rdParty/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Windows</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

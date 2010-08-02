@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?><?xml-stylesheet type='text/xsl' href='_UpgradeReport_Files/UpgradeReport.xslt'?><UpgradeLog>
+<Properties><Property Name="Solution" Value="libspeex">
+</Property><Property Name="Solution File" Value="C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex.sln">
+</Property><Property Name="Date" Value="Thursday, January 21, 2010">
+</Property><Property Name="Time" Value="1:33:30 AM">
+</Property><Property Name="Log Number" Value="2">
+</Property></Properties><Event ErrorLevel="0" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Converting project file 'C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcproj'.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Failed to upgrade platform 'Windows Mobile 5.0 Pocket PC SDK (ARMV4I)'. Please make sure you have it installed under '%vctargetspath%\platforms\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)'">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" Description="VCConvertEngine.dll encountered an error.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="VCWebServiceProxyGeneratorTool is no longer supported. The tool has been removed from your project settings.">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Failed to upgrade 'Debug|Windows Mobile 5.0 Pocket PC SDK (ARMV4I)'. Please make sure you have the corresponding platform installed under '%vctargetspath%\platforms\Windows Mobile 5.0 Pocket PC SDK (ARMV4I)'">
+</Event><Event ErrorLevel="1" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Cannot load the project due to a corrupt project file.">
+</Event><Event ErrorLevel="2" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="The property sheet &quot;$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props&quot; is already imported by &quot;C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcxproj&quot;.">
+</Event><Event ErrorLevel="2" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="The following error has occurred during XML parsing:&#xA;&#xA;File: C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcproj&#xA;Line: 97&#xA;Column: 5&#xA;Error Message:&#xA;System error: -2147154677.&#xA;&#xA;The file 'C:\Users\clb\Desktop\test\NetworkTests\speex-1.2rc1\win32\VS2010\libspeex\libspeex.vcproj' has failed to load.">
+</Event><Event ErrorLevel="2" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Project upgrade failed.">
+</Event><Event ErrorLevel="3" Project="libspeex" Source="libspeex\libspeex.vcproj" Description="Not Converted">
+</Event></UpgradeLog>

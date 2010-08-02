@@ -756,6 +756,9 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
     EC_FreeData& free = *(dynamic_cast<EC_FreeData*>(freeptr.get()));
     free.FreeData = freedata;
     
+    // KristalliECSync: Do not parse freedata for EC's, let KristalliProtocol handle EC replication
+    return;
+    
     // Parse into XML form (may or may not succeed), and create/update EC's as result
     // (primitive form of EC serialization/replication)
     QDomDocument temp_doc;
@@ -1940,6 +1943,9 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
+    // KristalliECSync: Do not register for EC changes, let KristalliProtocol handle EC replication
+    return;
+    
     connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
         this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
