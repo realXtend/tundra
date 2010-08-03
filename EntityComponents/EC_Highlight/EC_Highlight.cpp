@@ -136,6 +136,9 @@ void EC_Highlight::Create()
     // Clone the Ogre entity.
     cloneName_ = std::string("entity") + renderer_.lock()->GetUniqueObjectName();
     entityClone_ = originalEntity->clone(cloneName_);
+
+    //This is set so we can exclude the hightlight mesh from a viewport, if so wanted
+    entityClone_->setVisibilityFlags(0x1);
     assert(entityClone_);
 
     // Disable casting of shadows for the clone.

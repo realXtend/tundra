@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "CameraHandler.h"
 #include "WorldBuildingModule.h"
+#include "Quaternion.h"
 
 #include <SceneManager.h>
 #include <EC_OgrePlaceable.h>
@@ -139,17 +140,31 @@ namespace WorldBuilding
             return focus_completed;
         }
 
-        void CameraHandler::RotateCamera(CameraID id,qreal x, qreal y)
+        void CameraHandler::RotateCamera(Vector3df pivot,CameraID id,qreal x, qreal y)
         {
 
             if (id_to_cam_entity_.contains(id))
             {
+
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
                 OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+                OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+ 
+
                 Ogre::Camera* cam = ec_camera->GetCamera();
-                Ogre::Quaternion quat(Ogre::Radian(x),Ogre::Vector3::NEGATIVE_UNIT_Y);
-                quat = quat * Ogre::Quaternion(Ogre::Radian(y), Ogre::Vector3::NEGATIVE_UNIT_X);
-                cam->rotate(quat);
+                Vector3df pos = cam_ec_placable->GetPosition();
+
+                
+
+                Vector3df dir(pos-pivot);
+                Quaternion quat(x,cam_ec_placable->GetLocalYAxis());
+                quat *= Quaternion(y, cam_ec_placable->GetLocalXAxis());
+                dir = quat * dir;
+        
+                Vector3df new_pos(pivot+dir);
+                cam_ec_placable->SetPosition(new_pos);
+                cam_ec_placable->LookAt(pivot);
+    
 
             }
         }
@@ -193,6 +208,8 @@ namespace WorldBuilding
             {
                 Ogre::Viewport *vp = render_texture->addViewport(ec_camera->GetCamera());
                 vp->setOverlaysEnabled(false);
+                // Exclude highlight mesh from rendering
+                vp->setVisibilityMask(0x2);
             }
             render_texture->update();
 
