@@ -96,6 +96,13 @@ namespace Scene
         */
         Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name) const;
 
+        //! Returns a component with type typename and name or empty pointer if component was not found
+        /*! If there are several components with the specified type, returns the first component found (arbitrary).
+
+            \param component component that we want to find.
+        */
+        Foundation::ComponentInterfacePtr GetComponent(const Foundation::ComponentInterface *component) const;
+
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component
         ComponentVector GetComponents(const std::string &type_name) const

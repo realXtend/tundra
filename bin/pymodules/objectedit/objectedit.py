@@ -93,7 +93,9 @@ class ObjectEdit(Component):
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
-        inputcontext.connect('OnKeyEvent(KeyEvent&)', self.inp_on_keyevent)
+        # Removed for ugly printing and does nothing really, enable back when handling types is fixed
+        #inputcontext.disconnect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
+        #inputcontext.connect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
         
         self.resetManipulators()
         

@@ -37,6 +37,16 @@ namespace ECEditor
 
         //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
+        //! Added for testing EC_DynamicComponent.
+        /*! @param params Params should be following:
+         *  0 = entity id.
+         *  1 = operation (add or rem)
+         *  2 = component type.(ec. EC_DynamicComponent)
+         *  3 = attribute name.
+         *  4 = attribute type. !Only rem dont use in rem operation.
+         *  5 = attribute value. !Only rem dont use in rem operation.
+         */
+        Console::CommandResult EditDynamicComponent(const StringVector &params);
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return name_static_; }

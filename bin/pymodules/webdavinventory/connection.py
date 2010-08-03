@@ -93,7 +93,7 @@ class WebDavClient(object):
             self.determineAuthentication()
             return True
         except WebdavError:
-            raise HTTPException
+            return False
             
     def determineAuthentication(self):       
         authFailures = 0
