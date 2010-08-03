@@ -497,8 +497,11 @@ namespace ECEditor
         if (!selection.size())
             return;
 
+        QList<Scene::EntityPtr> ents;
         foreach(EntityComponentSelection ecs, selection)
-            emit EditEntityXml(ecs.entity);
+            ents << ecs.entity;
+
+        emit EditEntityXml(ents);
     }
 
     void ECEditorWindow::ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components)
@@ -506,8 +509,11 @@ namespace ECEditor
         if(!components.size())
             return;
 
+        QList<Foundation::ComponentPtr> comps;
         foreach(Foundation::ComponentInterfacePtr component, components)
-            emit EditComponentXml(component);
+            comps << component;
+
+        emit EditComponentXml(comps);
     }
 
     void ECEditorWindow::ShowXmlEditorForComponent(const std::string &componentType)
