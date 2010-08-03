@@ -17,7 +17,7 @@ namespace PlayerService
     VideoPlayer::VideoPlayer(const QString &url) : video_widget_(0), error_handled_(false)
     {
         this->setLayout(new QBoxLayout(QBoxLayout::LeftToRight, this));
-        Play(url);
+        PlayVideo(url);
     }
 
     VideoPlayer::~VideoPlayer()
@@ -27,7 +27,7 @@ namespace PlayerService
         media_object_.clear();
     }
 
-    void VideoPlayer::Play(const QString &url)
+    void VideoPlayer::PlayVideo(const QString &url)
     {
         video_widget_ = new Phonon::VideoWidget(this);
         Phonon::createPath(&media_object_, video_widget_);
@@ -55,6 +55,7 @@ namespace PlayerService
        
     void VideoPlayer::RestartVideoPlayback()
     {
+        qDebug() << " -- RestartVideoPlayback";
         media_object_.enqueue(media_object_.currentSource());
     }
 
@@ -67,7 +68,7 @@ namespace PlayerService
                 error_handled_ = true;
                 QString message = QString("Videoplayback error [%1] for %2").arg(media_object_.errorString()).arg(media_object_.currentSource().url().toString());
                 PhononPlayerModule::LogError(message.toStdString());
-                //media_object_.clear();
+                media_object_.clear();
             }
             return;
         }
