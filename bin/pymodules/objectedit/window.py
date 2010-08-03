@@ -148,9 +148,14 @@ class ObjectEditWindow:
         # TODO: figure out this shift - Looks like we need to give Ogre-style
         # info. Yaw in viewer is around z axis, but placeable gets
         # directly Ogre orientation
-        self.mainTab.rot_x.setValue(math.degrees(placeable.Pitch))
-        self.mainTab.rot_y.setValue(math.degrees(placeable.Yaw))
-        self.mainTab.rot_z.setValue(math.degrees(placeable.Roll))
+        x_val = math.degrees(placeable.Pitch)
+        y_val = math.degrees(placeable.Yaw)
+        z_val = math.degrees(placeable.Roll)
+        self.mainTab.rot_x.setValue(x_val)
+        self.mainTab.rot_y.setValue(y_val)
+        self.mainTab.rot_z.setValue(z_val)
+        if self.controller.cpp_python_handler != None:
+            self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
     def reset_guivals(self):
         self.mainTab.xpos.setValue(0)

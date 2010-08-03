@@ -35,7 +35,6 @@ namespace WorldBuilding
         
         void PrimValueChanged(QtProperty *prop, const QString &value);
         void PrimValueChanged(QtProperty *prop, const QVariant &value);
-
         void CreatePropertyBrowser(QWidget *parent, QLayout *container, EC_OpenSimPrim *prim);
 
     private slots:

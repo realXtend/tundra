@@ -20,6 +20,7 @@ namespace WorldBuilding
 {
     BuildSceneManager::BuildSceneManager(QObject *parent, Foundation::Framework *framework) :
         framework_(framework),
+        ui_helper_(new Helpers::UiHelper(parent)),
         inworld_state(false),
         scene_name_("WorldBuilding"),
         world_object_view_(0),
@@ -72,7 +73,11 @@ namespace WorldBuilding
         // Init manipulations widget
         object_manipulations_widget_ = new Ui::BuildingWidget(Ui::BuildingWidget::Left);
         object_manip_ui.setupUi(object_manipulations_widget_->GetInternal());
+        object_manip_ui.rotate_frame->hide();
 
+        connect(object_manip_ui.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
+        connect(object_manip_ui.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
+        connect(object_manip_ui.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
         connect(object_manip_ui.pushButton_move, SIGNAL(clicked()), SLOT(ModeToggleMove()));
         connect(object_manip_ui.pushButton_scale, SIGNAL(clicked()), SLOT(ModeToggleScale()));
         connect(object_manip_ui.pushButton_rotate, SIGNAL(clicked()), SLOT(ModeToggleRotate()));
@@ -87,12 +92,14 @@ namespace WorldBuilding
         python_handler_ = new PythonHandler(this);
 
         // Init editor handler
-        property_editor_handler_ = new PropertyEditorHandler(&ui_helper_, this);
+        property_editor_handler_ = new PropertyEditorHandler(ui_helper_, this);
 
         // Init camera handler
         camera_handler_ = new View::CameraHandler(framework_, this);
         connect(world_object_view_, SIGNAL(RotateObject(qreal, qreal)), this, SLOT(RotateObject(qreal, qreal))); 
-        
+
+        // Setup ui helper
+        ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
     }
 
     void BuildSceneManager::RotateObject(qreal x, qreal y)
@@ -117,21 +124,24 @@ namespace WorldBuilding
 
         // Ctrl + B to toggle build scene
         if (key.HasCtrlModifier() && key.keyCode == Qt::Key_B)
+        {
             ToggleBuildScene();
+            return;
+        }
 
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
 
-        PythonParams::ManipulationMode mode = PythonParams::None;
+        PythonParams::ManipulationMode mode = PythonParams::MANIP_NONE;
         if (key.HasCtrlModifier())
         {
-            mode = PythonParams::MOVE;
-            if (key.HasAltModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::ROTATE))
-                mode = PythonParams::SCALE;
-            if (key.HasShiftModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::SCALE))
-                mode = PythonParams::ROTATE;
+            mode = PythonParams::MANIP_MOVE;
+            if (key.HasAltModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_ROTATE))
+                mode = PythonParams::MANIP_SCALE;
+            if (key.HasShiftModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_SCALE))
+                mode = PythonParams::MANIP_ROTATE;
         }
-        if (mode != PythonParams::None)
+        if (mode != PythonParams::MANIP_NONE)
             ManipModeChanged(mode);
     }
 
@@ -142,24 +152,24 @@ namespace WorldBuilding
         if (key.IsRepeat())
             return;
 
-        PythonParams::ManipulationMode mode = PythonParams::None;
-        if (key.keyCode == Qt::Key_Control && (python_handler_->GetCurrentManipulationMode() == PythonParams::MOVE))
-            mode = PythonParams::FREEMOVE;
-        if (key.keyCode == Qt::Key_Alt && (python_handler_->GetCurrentManipulationMode() == PythonParams::SCALE))
+        PythonParams::ManipulationMode mode = PythonParams::MANIP_NONE;
+        if (key.keyCode == Qt::Key_Control && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE))
+            mode = PythonParams::MANIP_FREEMOVE;
+        if (key.keyCode == Qt::Key_Alt && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE))
         {
             if (key.HasCtrlModifier())
-                mode = PythonParams::MOVE;
+                mode = PythonParams::MANIP_MOVE;
             else
-                mode = PythonParams::FREEMOVE;
+                mode = PythonParams::MANIP_FREEMOVE;
         }
-        if (key.keyCode == Qt::Key_Shift && (python_handler_->GetCurrentManipulationMode() == PythonParams::ROTATE))
+        if (key.keyCode == Qt::Key_Shift && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE))
         {
             if (key.HasCtrlModifier())
-                mode = PythonParams::MOVE;
+                mode = PythonParams::MANIP_MOVE;
             else
-                mode = PythonParams::FREEMOVE;
+                mode = PythonParams::MANIP_FREEMOVE;
         }
-        if (mode != PythonParams::None)
+        if (mode != PythonParams::MANIP_NONE)
             ManipModeChanged(mode);
     }
 
@@ -168,10 +178,10 @@ namespace WorldBuilding
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
 
-        if (python_handler_->GetCurrentManipulationMode() == PythonParams::MOVE)
-            ManipModeChanged(PythonParams::FREEMOVE);
+        if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE)
+            ManipModeChanged(PythonParams::MANIP_FREEMOVE);
         else
-            ManipModeChanged(PythonParams::MOVE);
+            ManipModeChanged(PythonParams::MANIP_MOVE);
     }
 
     void BuildSceneManager::ModeToggleScale()
@@ -179,10 +189,10 @@ namespace WorldBuilding
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
 
-        if (python_handler_->GetCurrentManipulationMode() == PythonParams::SCALE)
-            ManipModeChanged(PythonParams::FREEMOVE);
+        if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE)
+            ManipModeChanged(PythonParams::MANIP_FREEMOVE);
         else
-            ManipModeChanged(PythonParams::SCALE);
+            ManipModeChanged(PythonParams::MANIP_SCALE);
     }
 
     void BuildSceneManager::ModeToggleRotate()
@@ -190,36 +200,54 @@ namespace WorldBuilding
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
 
-        if (python_handler_->GetCurrentManipulationMode() == PythonParams::ROTATE)
-            ManipModeChanged(PythonParams::FREEMOVE);
+        if (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE)
+            ManipModeChanged(PythonParams::MANIP_FREEMOVE);
         else
-            ManipModeChanged(PythonParams::ROTATE);
+            ManipModeChanged(PythonParams::MANIP_ROTATE);
+    }
+
+    void BuildSceneManager::NewObjectClicked()
+    {
+        python_handler_->EmitObjectAction(PythonParams::OBJ_NEW);
+    }
+
+    void BuildSceneManager::DuplicateObjectClicked()
+    {
+        python_handler_->EmitObjectAction(PythonParams::OBJ_CLONE);
+    }
+
+    void BuildSceneManager::DeleteObjectClicked()
+    {
+        python_handler_->EmitObjectAction(PythonParams::OBJ_DELETE);
+        ObjectSelected(false);
     }
 
     void BuildSceneManager::ManipModeChanged(PythonParams::ManipulationMode mode)
     {
         python_handler_->EmitManipulationModeChange(mode);
 
+        bool show_rotate_controls = false;
         QString selected_style = "background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));"
-                                 "border-radius: 3px; color: black; font-weight: bold; padding-top: 5px; padding-bottom: 4px;";
+                                 "border: 1px solid grey; border-radius: 0px; color: black; font-weight: bold; padding-top: 5px; padding-bottom: 4px;";
         switch (mode)
         {
-            case PythonParams::MOVE:
+            case PythonParams::MANIP_MOVE:
                 object_manip_ui.pushButton_move->setStyleSheet(selected_style);
                 object_manip_ui.pushButton_scale->setStyleSheet("");
                 object_manip_ui.pushButton_rotate->setStyleSheet("");
                 break;
-            case PythonParams::SCALE:
+            case PythonParams::MANIP_SCALE:
                 object_manip_ui.pushButton_scale->setStyleSheet(selected_style);
                 object_manip_ui.pushButton_move->setStyleSheet("");
                 object_manip_ui.pushButton_rotate->setStyleSheet("");
                 break;
-            case PythonParams::ROTATE:
+            case PythonParams::MANIP_ROTATE:
                 object_manip_ui.pushButton_rotate->setStyleSheet(selected_style);
                 object_manip_ui.pushButton_move->setStyleSheet("");
                 object_manip_ui.pushButton_scale->setStyleSheet("");
+                show_rotate_controls = true;
                 break;
-            case PythonParams::FREEMOVE:
+            case PythonParams::MANIP_FREEMOVE:
                 object_manip_ui.pushButton_move->setStyleSheet("");
                 object_manip_ui.pushButton_scale->setStyleSheet("");
                 object_manip_ui.pushButton_rotate->setStyleSheet("");
@@ -227,6 +255,7 @@ namespace WorldBuilding
             default:
                 break;
         }
+        object_manip_ui.rotate_frame->setVisible(show_rotate_controls);
     }
 
     QObject *BuildSceneManager::GetPythonHandler() const
@@ -318,9 +347,16 @@ namespace WorldBuilding
 
     void BuildSceneManager::ObjectSelected(bool selected)
     {
-        // Lets not do this on every prim selection if not really needed
+        // Update ui elements
+        if (selected)
+            ManipModeChanged(python_handler_->GetCurrentManipulationMode());
+        else
+            ManipModeChanged(PythonParams::MANIP_FREEMOVE);
+
+         // Update ui visibility if the mode changed from previous known one
         if (prim_selected_ == selected)
             return;
+        prim_selected_ = selected;
 
         object_info_ui.status_label->setVisible(!selected);
         world_object_view_->setVisible(selected);
@@ -329,16 +365,13 @@ namespace WorldBuilding
         object_info_ui.local_id_title->setVisible(selected);
         object_info_ui.local_id_value->setVisible(selected);
 
-        // TODO: Works but looks ugly, do something later for this...
-        //object_manip_ui.pushButton_move->setEnabled(selected);
-        //object_manip_ui.pushButton_scale->setEnabled(selected);
-        //object_manip_ui.pushButton_rotate->setEnabled(selected);
-        object_manip_ui.pushButton_move->setStyleSheet("");
-        object_manip_ui.pushButton_scale->setStyleSheet("");
-        object_manip_ui.pushButton_rotate->setStyleSheet("");
+        object_manip_ui.button_clone->setEnabled(selected);
+        object_manip_ui.button_delete->setEnabled(selected);
+        object_manip_ui.pushButton_scale->setEnabled(selected);
+        object_manip_ui.pushButton_move->setEnabled(selected);
+        object_manip_ui.pushButton_rotate->setEnabled(selected);
 
         property_editor_handler_->SetEditorVisible(selected);
-        prim_selected_ = selected;
     }
 
     void BuildSceneManager::ObjectSelected(Scene::Entity *entity)
@@ -358,8 +391,8 @@ namespace WorldBuilding
         }
 
         // Update our widgets UI
-        object_info_ui.server_id_value->setText(ui_helper_.CheckUiValue(prim->getFullId()));
-        object_info_ui.local_id_value->setText(ui_helper_.CheckUiValue(prim->getLocalId()));
+        object_info_ui.server_id_value->setText(ui_helper_->CheckUiValue(prim->getFullId()));
+        object_info_ui.local_id_value->setText(ui_helper_->CheckUiValue(prim->getLocalId()));
 
         // Update entity viewport UI
         if (camera_handler_->FocusToEntity(selected_camera_id_, entity))
