@@ -11,6 +11,7 @@
 #include "AnchorLayout.h"
 #include "PropertyEditorHandler.h"
 #include "WorldObjectView.h"
+#include <EC_OgrePlaceable.h>
 
 #include <QPixmap>
 #include <QDebug>
@@ -26,6 +27,7 @@ namespace WorldBuilding
         property_editor_handler_(0),
         camera_handler_(0),
         prim_selected_(true),
+        selected_entity_(0),
         selected_camera_id_(-1)
     {
         setParent(parent);
@@ -95,9 +97,17 @@ namespace WorldBuilding
 
     void BuildSceneManager::RotateObject(qreal x, qreal y)
     {
-        camera_handler_->RotateCamera(selected_camera_id_,x,y);
-        world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-
+        if(selected_entity_)
+        {
+            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if(entity_ec_placable)
+            {
+                qreal acceleration_x = 3;
+                qreal acceleration_y = 3;
+                camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
+                world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+            }
+        }
     }
 
     void BuildSceneManager::KeyPressed(KeyEvent &key)

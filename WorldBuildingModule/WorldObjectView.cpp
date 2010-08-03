@@ -2,6 +2,7 @@
 #include "WorldObjectView.h"
 #include <QMouseEvent>
 #include <QDebug>
+#include <QCursor>
 
 #define PI 3.14159265
 
@@ -17,6 +18,10 @@ namespace WorldBuilding
         if(e->button()==Qt::LeftButton)
         {
             left_mousebutton_pressed_=true;
+            QCursor cursor(Qt::SizeAllCursor);
+            
+           // if(!QApplication::overrideCursor)
+                QApplication::setOverrideCursor(Qt::SizeAllCursor);
         }
     }
     void WorldObjectView::mouseReleaseEvent ( QMouseEvent * e)
@@ -26,6 +31,9 @@ namespace WorldBuilding
             left_mousebutton_pressed_=false;
             last_pos_.setX(0);
             last_pos_.setY(0);
+
+            if(QApplication::overrideCursor)
+                QApplication::restoreOverrideCursor();
             
         }
     }
