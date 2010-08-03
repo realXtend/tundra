@@ -139,6 +139,21 @@ namespace WorldBuilding
             return focus_completed;
         }
 
+        void CameraHandler::RotateCamera(CameraID id,qreal x, qreal y)
+        {
+
+            if (id_to_cam_entity_.contains(id))
+            {
+                Scene::Entity *cam_entity = id_to_cam_entity_[id];
+                OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+                Ogre::Camera* cam = ec_camera->GetCamera();
+                Ogre::Quaternion quat(Ogre::Radian(x),Ogre::Vector3::NEGATIVE_UNIT_Y);
+                quat = quat * Ogre::Quaternion(Ogre::Radian(y), Ogre::Vector3::NEGATIVE_UNIT_X);
+                cam->rotate(quat);
+
+            }
+        }
+
         QPixmap CameraHandler::RenderCamera(CameraID cam_id, QSize image_size)
         {
             // Get camera
