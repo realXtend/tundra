@@ -96,10 +96,8 @@ namespace Environment
 
         enum TerrainPaintMode
         {
-            //!Only 2D painting is enabled.
-            Paint2D,
-            //!Both 2D and 3D painting are enabled.
-            Paint3D
+            ACTIVE,
+            INACTIVE
         };
 
         //! Constuctor

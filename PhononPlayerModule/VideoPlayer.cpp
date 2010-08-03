@@ -14,55 +14,62 @@
 
 namespace PlayerService
 {
-    VideoPlayer::VideoPlayer(const QString &url) : media_object_(0), video_widget_(0)
+    VideoPlayer::VideoPlayer(const QString &url) : video_widget_(0), error_handled_(false)
     {
-        Play(url);
+        this->setLayout(new QBoxLayout(QBoxLayout::LeftToRight, this));
+        PlayVideo(url);
     }
 
     VideoPlayer::~VideoPlayer()
     {
-        if (media_object_)
-        {
-            if (media_object_->state() == Phonon::PlayingState)
-                media_object_->stop();
-
-            media_object_->clear();
-        }
+        media_object_.disconnect(this, SIGNAL(RestartVideoPlayback()));
+        media_object_.stop();
+        media_object_.clear();
     }
 
-    void VideoPlayer::Play(const QString &url)
+    void VideoPlayer::PlayVideo(const QString &url)
     {
-        media_object_ = new Phonon::MediaObject(this);
         video_widget_ = new Phonon::VideoWidget(this);
+        Phonon::createPath(&media_object_, video_widget_);
+        
+        QObject::connect(&media_object_, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(CheckState(Phonon::State, Phonon::State)));
+        QObject::connect(&media_object_, SIGNAL(hasVideoChanged(bool)), this, SLOT(StartVideoPlayback(bool)));
+        QObject::connect(&media_object_, SIGNAL(aboutToFinish()), this, SLOT(RestartVideoPlayback()));
+    
+        media_object_.setCurrentSource(url);
+        media_object_.stop();
+        media_object_.play();
+    }
+
+    void VideoPlayer::StartVideoPlayback(bool has_video)
+    {
+        if (!has_video)
+            return;
+
         video_widget_->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
+        video_widget_->setScaleMode(Phonon::VideoWidget::FitInView);    
 
-        Phonon::createPath(media_object_, video_widget_);
-        QObject::connect(media_object_, SIGNAL(finished()), this, SLOT(Restart()));
-        QObject::connect(media_object_, SIGNAL(stateChanged(Phonon::State, Phonon::State)), this, SLOT(CheckState()));
-
-        media_object_->setCurrentSource(url);
-        media_object_->play();
+        this->layout()->addWidget(video_widget_);
+        this->layout()->setContentsMargins(0, 0, 0, 0);
     }
        
-    void VideoPlayer::Restart()
+    void VideoPlayer::RestartVideoPlayback()
     {
-        if (media_object_ && (media_object_->state() == Phonon::StoppedState || media_object_->state() == Phonon::PausedState))
-        {
-            if (media_object_->isSeekable())
-                media_object_->seek(0);
-            media_object_->play();
-        }
+        media_object_.enqueue(media_object_.currentSource());
     }
 
-    void VideoPlayer::CheckState()
+    void VideoPlayer::CheckState(Phonon::State new_state, Phonon::State old_state)
     {
-        if (media_object_->state() == Phonon::ErrorState)
+        if (new_state == Phonon::ErrorState)
         {
-            QString message = QString("Videoplayback error [%1] for %2").arg(media_object_->errorString()).arg(media_object_->currentSource().url().toString());
-            PhononPlayerModule::LogError(message.toStdString());
+            if (!error_handled_)
+            {
+                error_handled_ = true;
+                QString message = QString("Videoplayback error [%1] for %2").arg(media_object_.errorString()).arg(media_object_.currentSource().url().toString());
+                PhononPlayerModule::LogError(message.toStdString());
+                media_object_.clear();
+            }
             return;
         }
-        if (media_object_->state() == Phonon::StoppedState || media_object_->state() == Phonon::PausedState)
-            Restart();
     }
 }
