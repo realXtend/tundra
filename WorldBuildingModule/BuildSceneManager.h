@@ -27,6 +27,7 @@ namespace WorldBuilding
     class BuildScene;
     class AnchorLayout;
     class PropertyEditorHandler;
+    class WorldObjectView;
 
     typedef CoreUi::UiStateMachine StateMachine;
 
@@ -57,6 +58,8 @@ namespace WorldBuilding
 
         void ObjectSelected(Scene::Entity *entity);
         void ObjectDeselected();
+        
+        void RotateObject(qreal x, qreal y);
 
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
@@ -80,6 +83,8 @@ namespace WorldBuilding
         BuildScene *scene_;
         AnchorLayout *layout_;
 
+        WorldObjectView* world_object_view_;
+
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
 
@@ -91,6 +96,7 @@ namespace WorldBuilding
         
         PropertyEditorHandler *property_editor_handler_;
         bool prim_selected_;
+        Scene::Entity* selected_entity_;
 
         View::CameraHandler *camera_handler_;
         View::CameraID selected_camera_id_;

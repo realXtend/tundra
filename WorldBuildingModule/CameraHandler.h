@@ -33,6 +33,8 @@ namespace WorldBuilding
             CameraID CreateCustomCamera();
             void DestroyCamera(CameraID cam_id);
 
+            void RotateCamera(CameraID id, qreal x, qreal y);
+
             bool FocusToEntity(CameraID cam_id, Scene::Entity *entity, Vector3df offset = Vector3df(-0.5f, -0.5f, -0.5f));
             QPixmap RenderCamera(CameraID cam_id, QSize image_size);
 

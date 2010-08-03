@@ -677,6 +677,7 @@ void EC_OgreEnvironment::InitShadows()
 
         OgreShadowCameraSetupFocusedPSSM::SplitPointList splitpoints;
         splitpoints.push_back(cameraNearClip_);
+        //these splitpoints are hardcoded also to the shaders. If you modify these, also change them to shaders.
         splitpoints.push_back(3.5);
         splitpoints.push_back(11);
         splitpoints.push_back(shadowFarDist);
