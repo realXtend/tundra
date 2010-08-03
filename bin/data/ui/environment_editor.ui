@@ -248,7 +248,7 @@
                         </font>
                        </property>
                        <property name="text">
-                        <string>Inactive</string>
+                        <string>Terrain paint</string>
                        </property>
                        <property name="alignment">
                         <set>Qt::AlignCenter</set>
@@ -258,7 +258,7 @@
                      <item>
                       <widget class="QPushButton" name="paint_terrain_button">
                        <property name="text">
-                        <string>3D Paint</string>
+                        <string>Inactive</string>
                        </property>
                       </widget>
                      </item>
@@ -1031,7 +1031,7 @@
                        <rect>
                         <x>0</x>
                         <y>0</y>
-                        <width>336</width>
+                        <width>98</width>
                         <height>500</height>
                        </rect>
                       </property>
