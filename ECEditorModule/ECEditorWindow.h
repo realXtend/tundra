@@ -119,6 +119,14 @@ namespace ECEditor
         /// Emitted user wants to edit EC attributes in XML editor.
         void EditComponentXml(Foundation::ComponentPtr component);
 
+        /// Emitted user wants to edit entity's EC attributes in XML editor.
+        /// @param entities list of entities
+        void EditEntityXml(const QList<Scene::EntityPtr> &entities);
+
+        /// Emitted user wants to edit EC attributes in XML editor.
+        /// @param list of components
+        void EditComponentXml(const QList<Foundation::ComponentPtr> & components);
+
     protected:
         /// QWidget override.
         void hideEvent(QHideEvent *hide_event);

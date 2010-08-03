@@ -12,15 +12,11 @@
 
 #include <QWidget>
 
-namespace Foundation
-{
-    class Framework;
-}
-
 class QTextEdit;
 
 namespace ECEditor
 {
+    //! Entity-component XML editor widget used for editing EC attributes in XML format.
     //! \ingroup ECEditorModuleClient.
     class EcXmlEditorWidget : public QWidget
     {
@@ -35,13 +31,13 @@ namespace ECEditor
         /// Destructor.
         ~EcXmlEditorWidget();
 
-        /// Sets the entity which EC attributes are shown as XML.
-        /// @param entity Entity.
-        void SetEntity(Scene::EntityPtr entity);
+        /// Sets the entities whose EC attributes we want to edit as XML.
+        /// @param entities List of entities.
+        void SetEntity(const QList<Scene::EntityPtr> &entities);
 
-        /// Sets the component which EC attributes are shown as XML.
-        /// @param component Component.
-        void SetComponent(Foundation::ComponentPtr component);
+        /// Sets the components whose EC attributes we want to edit as XML.
+        /// @param components List of components.
+        void SetComponent(const QList<Foundation::ComponentPtr> &components);
 
     public slots:
         /// Refreshes XML data.
@@ -64,11 +60,11 @@ namespace ECEditor
         /// XML text edit field.
         QTextEdit *xmlEdit_;
 
-        /// Entity whom EC('s) we're editing.
-        Scene::EntityWeakPtr entity_;
+        /// Entities whose EC's we're editing.
+        QList<Scene::EntityWeakPtr> entities_;
 
-        /// Component which we're editing if we're editing single component, not entire entity.
-        Foundation::ComponentWeakPtr component_;
+        /// Components which we're editing.
+        QList<Foundation::ComponentWeakPtr > components_;
     };
 }
 
