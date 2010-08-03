@@ -55,7 +55,6 @@ namespace PlayerService
        
     void VideoPlayer::RestartVideoPlayback()
     {
-        qDebug() << " -- RestartVideoPlayback";
         media_object_.enqueue(media_object_.currentSource());
     }
 
