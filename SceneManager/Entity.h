@@ -176,6 +176,12 @@ namespace Scene
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 
+        //! Returns name of this entity if EC_Name is available, empty string otherwise.
+        std::string GetName() const;
+
+        //! Returns description of this entity if EC_Name is available, empty string otherwise.
+        std::string GetDescription() const;
+
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const { return components_; }
 
