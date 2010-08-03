@@ -62,7 +62,7 @@ namespace Environment
     editor_widget_(0),
     action_(Flatten),
     brush_size_(Small),
-    terrainPaintMode_(Paint2D),
+    terrainPaintMode_(INACTIVE),
     sky_type_(OgreRenderer::SKYTYPE_NONE),
     ambient_(false),
     edit_terrain_active_(false),
@@ -1790,22 +1790,22 @@ namespace Environment
         if(!editor_widget_)
             return;
 
-        QLabel *textLabel = editor_widget_->findChild<QLabel*>("terrain_paint_3d_label");
-        if(!textLabel)
+        QPushButton *paintButton = editor_widget_->findChild<QPushButton*>("paint_terrain_button");
+        if(!paintButton)
             return;
 
-        if(terrainPaintMode_ == Paint2D)
+        if(terrainPaintMode_ == INACTIVE)
         {
-            terrainPaintMode_ = Paint3D;
-            textLabel->setText("Active");
+            terrainPaintMode_ = ACTIVE;
+            paintButton->setText("Active");
 
             // Create an input context 
             CreateInputContext();
         }
-        else if(terrainPaintMode_ == Paint3D)
+        else if(terrainPaintMode_ == ACTIVE)
         {
-            terrainPaintMode_ = Paint2D;
-            textLabel->setText("Inactive");
+            terrainPaintMode_ = INACTIVE;
+            paintButton->setText("Inactive");
 
             // Release the terrain painting input context.
             terrainPaintInputContext.reset();
@@ -1854,7 +1854,7 @@ namespace Environment
     void EnvironmentEditor::HandleKeyInputEvent(KeyEvent &key)
     {
         // The 'ESC' key cancels terrain height painting, if it is active.
-        if (key.eventType == KeyEvent::KeyPressed && key.keyCode == Qt::Key_Escape && GetTerrainPaintMode() == Paint3D)
+        if (key.eventType == KeyEvent::KeyPressed && key.keyCode == Qt::Key_Escape && GetTerrainPaintMode() == ACTIVE)
         {
             key.Suppress();
 
@@ -1864,7 +1864,7 @@ namespace Environment
             ReleasePaintMeshOnScene();
 
             // Disable terrain paint mode.
-            if (GetTerrainPaintMode() == Paint3D)
+            if (GetTerrainPaintMode() == ACTIVE)
                 ToggleTerrainPaintMode();
         }
     }
@@ -2009,11 +2009,11 @@ namespace Environment
 
             if(textLabel->text() == "Active")
             {
-                terrainPaintMode_ = Paint3D;
+                terrainPaintMode_ = ACTIVE;
             }
             else
             {
-                terrainPaintMode_ = Paint2D;
+                terrainPaintMode_ = INACTIVE;
             }
         }
         else if(tab->objectName() == "edit_terrain_texture") // Texture tab
@@ -2046,10 +2046,10 @@ namespace Environment
 
                 terrain_texture_requests_[i] = RequestTerrainTexture(i);
             }
-            terrainPaintMode_ = Paint2D;
+            terrainPaintMode_ = INACTIVE;
         }
         else
-            terrainPaintMode_ = Paint2D;
+            terrainPaintMode_ = INACTIVE;
     }
 
     void EnvironmentEditor::HandleResourceReady(Resource::Events::ResourceReady *res)
