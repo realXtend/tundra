@@ -10,7 +10,7 @@ namespace WorldBuilding
 {
     PythonHandler::PythonHandler(QObject *parent) :
         QObject(parent),
-        current_mode_(PythonParams::FREEMOVE)
+        current_mode_(PythonParams::MANIP_FREEMOVE)
     {
     }
 
@@ -32,5 +32,33 @@ namespace WorldBuilding
     void PythonHandler::EmitRemoveHightlight()
     {
         emit RemoveHightlight();
+    }
+
+    void PythonHandler::EmitRotateChange(int x, int y, int z)
+    {
+        emit RotateValuesChangedToNetwork(x, y, z);
+    }
+
+    void PythonHandler::SetRotateValues(int x, int y, int z)
+    {
+        emit RotateValuesChangedToUi(x, y, z);
+    }
+
+    void PythonHandler::EmitObjectAction(PythonParams::ObjectAction action)
+    {
+        switch (action)
+        {
+            case PythonParams::OBJ_NEW:
+                emit CreateObject();
+                break;
+            case PythonParams::OBJ_CLONE:
+                emit DuplicateObject();
+                break;
+            case PythonParams::OBJ_DELETE:
+                emit DeleteObject();
+                break;
+            default:
+                break;
+        }
     }
 }

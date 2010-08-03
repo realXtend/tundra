@@ -126,7 +126,11 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
             self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
             self.cpp_python_handler.connect('RemoveHightlight()', self.deselect_all)
-
+            self.cpp_python_handler.connect('RotateValuesChangedToNetwork(int, int, int)', self.changerot_cpp)
+            self.cpp_python_handler.connect('CreateObject()', self.createObject)
+            self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
+            self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
+            
     def inp_on_keyevent(self, k):
         print k, dir(k)
         
@@ -590,7 +594,7 @@ class ObjectEdit(Component):
         #ent = self.active
         #if ent is not None:
         for ent in self.sels:
-            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 1) #nasty hardcoded offset
+            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
     def duplicateStart(self):
         self.duplicateDragStart = True
@@ -601,8 +605,8 @@ class ObjectEdit(Component):
         pos = avatar.placeable.Position#r.getUserAvatarPos()
 
         # TODO determine what is right in front of avatar and use that instead
-        start_x = pos.x() + .5
-        start_y = pos.y() + .5
+        start_x = pos.x() + .7
+        start_y = pos.y() + .7
         start_z = pos.z()
 
         self.worldstream.SendObjectAddPacket(start_x, start_y, start_z)
@@ -686,6 +690,9 @@ class ObjectEdit(Component):
 
                 #self.updateSelectionBox(ent)
             
+    def changerot_cpp(self, x, y, z):
+        self.changerot(0, (x, y, z))
+        
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
