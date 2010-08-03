@@ -91,6 +91,15 @@ namespace Scene
         return Foundation::ComponentInterfacePtr();
     }
 
+    Foundation::ComponentInterfacePtr Entity::GetComponent(const Foundation::ComponentInterface *component) const
+    {
+        for (size_t i = 0; i < components_.size(); i++)
+            if(component->TypeName() == components_[i]->TypeName() &&
+               component->Name() == components_[i]->Name())
+               return components_[i];
+        return Foundation::ComponentInterfacePtr();
+    }
+
     Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &type_name, const std::string& name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)

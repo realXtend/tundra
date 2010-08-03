@@ -14,6 +14,8 @@
 
 #include <QWidget>
 
+extern std::vector<std::string> AttributeTypenames;
+
 namespace Foundation
 {
     class Framework;
@@ -35,7 +37,7 @@ struct EntityComponentSelection
 
 namespace ECEditor
 {
-    class AttributeBrowser;
+    class ECBrowser;
     
     //! ECEditorWindow
     /*! /todo add description.
@@ -67,7 +69,7 @@ namespace ECEditor
         void DeleteEntitiesFromList();
 
         //! Remove coponent from entity and refresh property browser.
-        void DeleteComponent(const std::string &componentType);
+        void DeleteComponent(const std::string &componentType, const std::string &name);
         /// Deletes currently selected components.
         //void DeleteComponent();
 
@@ -79,6 +81,9 @@ namespace ECEditor
 
         void CopyEntity();
         void PasteEntity();
+
+        /// Highlights all entities from the list that owns the component.
+        void HighlightEntities(Foundation::ComponentInterface *component);
 
         ///
         //void RefreshEntityComponents();
@@ -122,6 +127,7 @@ namespace ECEditor
         void changeEvent(QEvent *change_event);
 
     private:
+        void BoldEntityListItem(entity_id_t entity_id, bool bold = true);
         /// Initializes the widget.
         void Initialize();
 
@@ -140,7 +146,7 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         //QTreeWidget* component_list_;
-        AttributeBrowser* attribute_browser_;
+        ECBrowser *browser_;
         typedef std::set<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
     };

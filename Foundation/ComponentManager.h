@@ -10,6 +10,8 @@
 namespace Foundation
 {
     class Framework;
+    class AttributeInterface;
+    class ComponentInterface;
 
     //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
     /*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
@@ -31,7 +33,7 @@ namespace Foundation
         typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
 
         //! default constructor
-        ComponentManager(Framework *framework) : framework_(framework) {}
+        ComponentManager(Framework *framework);// : framework_(framework) {}
 
         //! destructor
         ~ComponentManager() { }
@@ -78,12 +80,17 @@ namespace Foundation
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
 
+        //! Create new attribute for spesific component.
+        AttributeInterface *CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name);
+        StringVector GetAttributeTypes() const;
+
         //! Get all component factories
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
     private:
         //! map of component factories
         ComponentFactoryMap factories_;
+        StringVector attributeTypes_;
 
         //! Framework
         Framework *framework_;

@@ -20,8 +20,7 @@ namespace ECEditor
         editor->setText(manager->value(property));
         propertyToEditor_[property] = editor;
         editorToProperty_[editor] = property;
-        //connect(editor, SIGNAL(editingFinished()), this, SLOT(EditingFinnished()));
-        connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(EditorDestoryed(QObject *)));
+        connect(editor, SIGNAL(destroyed(QObject *)), this, SLOT(EditorDestroyed(QObject *)));
         return editor;
     }
 
@@ -30,25 +29,7 @@ namespace ECEditor
         
     }
 
-    /*void LineEditPropertyFactory::EditingFinnished()
-    {
-        QObject *object = sender();
-        QMap<QLineEdit*, QtProperty*>::iterator iter = editorToProperty_.begin();
-        while(iter != editorToProperty_.end())
-        {
-            if(iter.key() == object)
-            {
-                QtProperty *property = iter.value();
-                QtStringPropertyManager *stringManager = qobject_cast<QtStringPropertyManager*>(property->propertyManager());
-                if(stringManager)
-                    stringManager->setValue(property, iter.key()->text());
-                break;
-            }
-            iter++;
-        }
-    }*/
-
-    void LineEditPropertyFactory::EditorDestoryed(QObject *object)
+    void LineEditPropertyFactory::EditorDestroyed(QObject *object)
     {
         QMap<QLineEdit*, QtProperty*>::ConstIterator iter = editorToProperty_.constBegin();
         while (iter != editorToProperty_.constEnd()) 
