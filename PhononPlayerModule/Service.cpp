@@ -49,7 +49,7 @@ namespace PlayerService
     {
         if (!video_players_.contains(url))
             return;
-        
+ 
         VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
         SAFE_DELETE(player);
