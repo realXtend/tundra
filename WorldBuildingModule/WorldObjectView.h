@@ -21,9 +21,11 @@ namespace WorldBuilding
         void mousePressEvent ( QMouseEvent * e);
         void mouseReleaseEvent ( QMouseEvent * e);
         void mouseMoveEvent ( QMouseEvent * e);
+        void wheelEvent ( QWheelEvent * e ); 
 
     signals:
         void RotateObject(qreal x, qreal y);
+        void Zoom(qreal delta);
 
     private:
         bool left_mousebutton_pressed_;

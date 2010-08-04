@@ -37,6 +37,13 @@ namespace WorldBuilding
             
         }
     }
+
+    void WorldObjectView::wheelEvent ( QWheelEvent * e )
+    {
+        
+        emit Zoom(e->delta());
+    }
+
     void WorldObjectView::mouseMoveEvent ( QMouseEvent * e)
     {
         
