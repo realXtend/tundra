@@ -27,8 +27,8 @@ class MediaurlView:
             return
         if type(self.playback_widget).__name__ == 'PlayerService::VideoPlayer':
             # PlayerService::VideoPlayer object
-            r.deleteVideoWidget(self.__url.toString())
-            self.playback_widget = None
+            #r.deleteVideoWidget(self.__url.toString()) #for now we delete VideoPlayer objects here on python side
+            self.playback_widget.deleteLater()
         else:
             # VewView object
             self.playback_widget.delete()
@@ -96,7 +96,7 @@ class MediaURLHandler(Component):
                     if mediaurlview.url().toString() == urlstring:
                         return # we already have this information...
                     del self.texture2mediaurlview[textureuuid]
-                    mediaurlview.delete_playback_widget()                        
+                    mediaurlview.delete_playback_widget()
 
             #could check whether a webview for this url already existed
             mv = MediaurlView(urlstring, refreshrate)
