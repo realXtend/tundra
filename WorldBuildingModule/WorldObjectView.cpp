@@ -11,6 +11,7 @@ namespace WorldBuilding
     WorldObjectView::WorldObjectView(QWidget* widget):QLabel(widget),
         left_mousebutton_pressed_(false)
     {
+        setMouseTracking(true);
     }
 
     void WorldObjectView::mousePressEvent ( QMouseEvent * e)
@@ -18,9 +19,8 @@ namespace WorldBuilding
         if(e->button()==Qt::LeftButton)
         {
             left_mousebutton_pressed_=true;
-            QCursor cursor(Qt::SizeAllCursor);
             
-           // if(!QApplication::overrideCursor)
+            if(!QApplication::overrideCursor())
                 QApplication::setOverrideCursor(Qt::SizeAllCursor);
         }
     }
@@ -37,6 +37,13 @@ namespace WorldBuilding
             
         }
     }
+
+    void WorldObjectView::wheelEvent ( QWheelEvent * e )
+    {
+        
+        emit Zoom(e->delta());
+    }
+
     void WorldObjectView::mouseMoveEvent ( QMouseEvent * e)
     {
         

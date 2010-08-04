@@ -22,8 +22,9 @@ namespace PlayerService
 
     VideoPlayer::~VideoPlayer()
     {
-        media_object_.disconnect(this, SIGNAL(RestartVideoPlayback()));
-        media_object_.stop();
+        media_object_.disconnect(this, SLOT(RestartVideoPlayback()));
+        media_object_.disconnect(this, SLOT(StartVideoPlayback(bool)));
+        media_object_.disconnect(this, SLOT(CheckState(Phonon::State, Phonon::State)));
         media_object_.clear();
     }
 
@@ -36,8 +37,7 @@ namespace PlayerService
         QObject::connect(&media_object_, SIGNAL(hasVideoChanged(bool)), this, SLOT(StartVideoPlayback(bool)));
         QObject::connect(&media_object_, SIGNAL(aboutToFinish()), this, SLOT(RestartVideoPlayback()));
     
-        media_object_.setCurrentSource(url);
-        media_object_.stop();
+        media_object_.setCurrentSource(QUrl(url));
         media_object_.play();
     }
 
@@ -46,8 +46,11 @@ namespace PlayerService
         if (!has_video)
             return;
 
-        video_widget_->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
-        video_widget_->setScaleMode(Phonon::VideoWidget::FitInView);    
+        if (video_widget_)
+        {
+            video_widget_->setAspectRatio(Phonon::VideoWidget::AspectRatioWidget);
+            video_widget_->setScaleMode(Phonon::VideoWidget::FitInView);    
+        }
 
         this->layout()->addWidget(video_widget_);
         this->layout()->setContentsMargins(0, 0, 0, 0);

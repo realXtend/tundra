@@ -7,7 +7,11 @@ namespace WorldBuilding
 {
     namespace Helpers
     {
-        UiHelper::UiHelper() : variant_manager(0), browser(0)
+        UiHelper::UiHelper(QObject *parent) :
+            QObject(parent),
+            variant_manager(0),
+            browser(0),
+            manip_ui_(0)
         {
             information_items << "Name" << "Description";
 
@@ -278,6 +282,48 @@ namespace WorldBuilding
             title_group->addSubProperty(title_group_path);
 
             return title_group;
+        }
+
+        void UiHelper::SetupRotateControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler)
+        {
+            manip_ui_ = manip_ui;
+            
+            connect(python_handler, SIGNAL(RotateValuesChangedToUi(int, int, int)), SLOT(SetRotateValues(int, int, int)));
+            connect(this, SIGNAL(RotationChanged(int, int, int)), python_handler, SLOT(EmitRotateChange(int, int, int)));
+            connect(manip_ui_->slider_rotate_x, SIGNAL(valueChanged(int)), SLOT(RotateXChanged(int)));
+            connect(manip_ui_->slider_rotate_y, SIGNAL(valueChanged(int)), SLOT(RotateYChanged(int)));
+            connect(manip_ui_->slider_rotate_z, SIGNAL(valueChanged(int)), SLOT(RotateZChanged(int)));
+        }
+
+        void UiHelper::SetRotateValues(int x, int y, int z)
+        {
+            if (x < 0)
+                x += 360;
+            if (y < 0)
+                y += 360;
+            if (z < 0)
+                z += 360;
+            manip_ui_->slider_rotate_z->setValue(z);
+            manip_ui_->slider_rotate_x->setValue(x);
+            manip_ui_->slider_rotate_y->setValue(y);
+        }
+
+        void UiHelper::RotateXChanged(int value)
+        {
+            manip_ui_->label_rotate_x_value->setText(QString("%1 °").arg(QString::number(value)));
+            emit RotationChanged(value, manip_ui_->slider_rotate_y->value(), manip_ui_->slider_rotate_z->value());
+        }
+
+        void UiHelper::RotateYChanged(int value)
+        {
+            manip_ui_->label_rotate_y_value->setText(QString("%1 °").arg(QString::number(value)));
+            emit RotationChanged(manip_ui_->slider_rotate_x->value(), value, manip_ui_->slider_rotate_z->value());
+        }
+
+        void UiHelper::RotateZChanged(int value)
+        {
+            manip_ui_->label_rotate_z_value->setText(QString("%1 °").arg(QString::number(value)));
+            emit RotationChanged(manip_ui_->slider_rotate_x->value(), manip_ui_->slider_rotate_y->value(), value);
         }
     }
 }

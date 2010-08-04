@@ -55,9 +55,11 @@ namespace WorldBuilding
             if (!component_placable.get() || !ec_camera)
                 return -1;
             ec_camera->SetPlaceable(component_placable);
-
+            
             camera_count_++;
             id_to_cam_entity_[camera_count_] = cam_entity.get();
+
+
 
             return camera_count_;
         }
@@ -149,24 +151,63 @@ namespace WorldBuilding
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
                 OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
                 OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
- 
+                
+                if(!ec_camera || !cam_ec_placable)
+                    return;
 
                 Ogre::Camera* cam = ec_camera->GetCamera();
                 Vector3df pos = cam_ec_placable->GetPosition();
 
-                
+
 
                 Vector3df dir(pos-pivot);
-                Quaternion quat(x,cam_ec_placable->GetLocalYAxis());
-                quat *= Quaternion(y, cam_ec_placable->GetLocalXAxis());
+
+                Quaternion quat(-x,cam_ec_placable->GetLocalYAxis());
+                quat *= Quaternion(-y, cam_ec_placable->GetLocalXAxis());
                 dir = quat * dir;
-        
+
                 Vector3df new_pos(pivot+dir);
                 cam_ec_placable->SetPosition(new_pos);
                 cam_ec_placable->LookAt(pivot);
-    
-
             }
+        }
+
+        bool CameraHandler::ZoomRelativeToPoint(Vector3df point, CameraID id,qreal delta, qreal min, qreal max)
+        {
+            bool zoomed = false;
+            if (id_to_cam_entity_.contains(id))
+            {
+                Scene::Entity *cam_entity = id_to_cam_entity_[id];
+                OgreRenderer::EC_OgrePlaceable *placeable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+
+                if(!placeable)
+                    return false;
+
+
+                Vector3df pos = placeable->GetPosition();
+                Vector3df dir = point-pos;
+                Vector3df distance = dir;
+                dir.normalize();
+                dir *=delta;
+                
+                //something fishy, even if we check that we never go beyond min/max, we still might end up there and zoom will be disabled. So we check the also
+                //if were zooming in or out.
+                if(delta>0 && (distance.getLength()+dir.getLength() > min))
+                {
+                    zoomed = true;
+                }
+                if(delta<0 && (distance.getLength()+dir.getLength() <max))
+                {
+                    zoomed = true;
+                }
+                if(zoomed)
+                {
+                    placeable->SetPosition(placeable->GetPosition() + dir);
+                }
+     
+                
+            }
+            return zoomed;
         }
 
         QPixmap CameraHandler::RenderCamera(CameraID cam_id, QSize image_size)

@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "BuildingWidget.h"
+#include "WorldObjectView.h"
 
 #include <QDebug>
 
@@ -11,6 +12,7 @@ namespace WorldBuilding
     {
         BuildingWidget::BuildingWidget(ToolPosition tool_position) :
             QGraphicsProxyWidget(0, Qt::Widget),
+            view_(0),
             internal_widget_(new QWidget()),
             tool_position_(tool_position),
             resizing_(false)
@@ -88,12 +90,18 @@ namespace WorldBuilding
             QGraphicsProxyWidget::mousePressEvent(mouse_press_event);
         }
 
+        void BuildingWidget::SetWorldObjectView(WorldObjectView* view)
+        {
+            view_=view;
+        }
+
         void BuildingWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event)
         {
+            QPointF scene_pos = mouse_move_event->scenePos();
             if (resizing_)
             {
                 bool resized = false;
-                QPointF scene_pos = mouse_move_event->scenePos();
+               
                 if (tool_position_ == Left)
                 {
                     if (scene_pos.x() >= scene()->sceneRect().width() / 2)
@@ -152,6 +160,20 @@ namespace WorldBuilding
                 if (resized && QApplication::overrideCursor())
                     if (QApplication::overrideCursor()->shape() == Qt::ForbiddenCursor)
                         QApplication::restoreOverrideCursor();
+            }
+            if (QApplication::overrideCursor()->shape() == Qt::PointingHandCursor)
+            {
+                QApplication::restoreOverrideCursor();
+            }
+
+            if(view_)
+            {
+                if(widget()->childAt(scene_pos.toPoint()) == view_)
+                {
+                    if (QApplication::overrideCursor()->shape() != Qt::PointingHandCursor)
+                        QApplication::setOverrideCursor(QCursor(Qt::PointingHandCursor));
+                   
+                }
             }
             QGraphicsProxyWidget::mouseMoveEvent(mouse_move_event);
         }
