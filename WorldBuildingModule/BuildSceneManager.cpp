@@ -79,9 +79,9 @@ namespace WorldBuilding
         connect(object_manip_ui.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
         connect(object_manip_ui.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
         connect(object_manip_ui.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
-        connect(object_manip_ui.pushButton_move, SIGNAL(clicked()), SLOT(ModeToggleMove()));
-        connect(object_manip_ui.pushButton_scale, SIGNAL(clicked()), SLOT(ModeToggleScale()));
-        connect(object_manip_ui.pushButton_rotate, SIGNAL(clicked()), SLOT(ModeToggleRotate()));
+        connect(object_manip_ui.button_move, SIGNAL(clicked()), SLOT(ModeToggleMove()));
+        connect(object_manip_ui.button_scale, SIGNAL(clicked()), SLOT(ModeToggleScale()));
+        connect(object_manip_ui.button_rotate, SIGNAL(clicked()), SLOT(ModeToggleRotate()));
 
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
@@ -250,25 +250,25 @@ namespace WorldBuilding
         switch (mode)
         {
             case PythonParams::MANIP_MOVE:
-                object_manip_ui.pushButton_move->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_scale->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_move->setStyleSheet(selected_style);
+                object_manip_ui.button_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             case PythonParams::MANIP_SCALE:
-                object_manip_ui.pushButton_scale->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet(selected_style);
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             case PythonParams::MANIP_ROTATE:
-                object_manip_ui.pushButton_rotate->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet(selected_style);
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet("");
                 show_rotate_controls = true;
                 break;
             case PythonParams::MANIP_FREEMOVE:
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_scale->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             default:
                 break;
@@ -385,9 +385,9 @@ namespace WorldBuilding
 
         object_manip_ui.button_clone->setEnabled(selected);
         object_manip_ui.button_delete->setEnabled(selected);
-        object_manip_ui.pushButton_scale->setEnabled(selected);
-        object_manip_ui.pushButton_move->setEnabled(selected);
-        object_manip_ui.pushButton_rotate->setEnabled(selected);
+        object_manip_ui.button_scale->setEnabled(selected);
+        object_manip_ui.button_move->setEnabled(selected);
+        object_manip_ui.button_rotate->setEnabled(selected);
 
         property_editor_handler_->SetEditorVisible(selected);
     }
