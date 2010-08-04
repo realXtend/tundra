@@ -48,8 +48,11 @@ ui_*.h
 # viewer bin/ and build/ files
 bin/modules/core/*.xml
 bin/viewer
+bin/viewer.exe
 bin/viewerd
+bin/viewerd.exe
 bin/dbus/
+bin/gabble/
 bin/gstreamer/
 bin/fullmemoryleaklog.txt
 bin/pymodules/DLLs/
