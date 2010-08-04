@@ -92,8 +92,24 @@ namespace WorldBuilding
         // Init camera handler
         camera_handler_ = new View::CameraHandler(framework_, this);
         connect(world_object_view_, SIGNAL(RotateObject(qreal, qreal)), this, SLOT(RotateObject(qreal, qreal))); 
+        connect(world_object_view_, SIGNAL(Zoom(qreal)), this, SLOT(Zoom(qreal))); 
         
     }
+
+    void BuildSceneManager::Zoom(qreal delta)
+    {
+         if(selected_entity_)
+        {
+            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if(entity_ec_placable)
+            {
+                qreal acceleration = 0.01;
+                if(camera_handler_->ZoomRelativeToPoint( entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
+                    world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+            }
+        }
+    }
+
 
     void BuildSceneManager::RotateObject(qreal x, qreal y)
     {
@@ -102,8 +118,8 @@ namespace WorldBuilding
             OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
             if(entity_ec_placable)
             {
-                qreal acceleration_x = 3;
-                qreal acceleration_y = 3;
+                qreal acceleration_x = 2;
+                qreal acceleration_y = 2;
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
                 world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
             }

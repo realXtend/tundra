@@ -60,6 +60,7 @@ namespace WorldBuilding
         void ObjectDeselected();
         
         void RotateObject(qreal x, qreal y);
+        void Zoom(qreal delta);
 
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
