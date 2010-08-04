@@ -60,6 +60,7 @@ namespace WorldBuilding
         void ObjectDeselected();
         
         void RotateObject(qreal x, qreal y);
+        void Zoom(qreal delta);
 
         // WorldBuildingServiceInterface
         virtual QObject *GetPythonHandler() const;
@@ -72,6 +73,10 @@ namespace WorldBuilding
         void ModeToggleMove();
         void ModeToggleScale();
         void ModeToggleRotate();
+        void NewObjectClicked();
+        void DuplicateObjectClicked();
+        void DeleteObjectClicked();
+
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
         StateMachine *GetStateMachine();
@@ -91,7 +96,7 @@ namespace WorldBuilding
         Ui_ObjectInfoWidget object_info_ui;
         Ui_ObjectManipulationsWidget object_manip_ui;
 
-        Helpers::UiHelper ui_helper_;
+        Helpers::UiHelper *ui_helper_;
         PythonHandler *python_handler_;
         
         PropertyEditorHandler *property_editor_handler_;

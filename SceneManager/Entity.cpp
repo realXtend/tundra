@@ -7,6 +7,7 @@
 #include "SceneManager.h"
 #include "CoreStringUtils.h"
 #include "ComponentManager.h"
+#include "EC_Name.h"
 
 namespace Scene
 {
@@ -123,5 +124,23 @@ namespace Scene
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return true;
         return false;
+    }
+
+    std::string Entity::GetName() const
+    {
+        boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+        if (name)
+            return name->name.Get();
+        else
+            return "";
+    }
+
+    std::string Entity::GetDescription() const
+    {
+        boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
+        if (name)
+            return name->description.Get();
+        else
+            return "";
     }
 }

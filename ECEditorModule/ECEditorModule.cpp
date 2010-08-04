@@ -27,11 +27,12 @@ namespace ECEditor
     
     ECEditorModule::ECEditorModule() :
         ModuleInterface(name_static_),
-        editor_window_(0),
         scene_event_category_(0),
         framework_event_category_(0),
         input_event_category_(0),
-        network_state_event_category_(0)
+        network_state_event_category_(0),
+        editor_window_(0),
+        xmlEditor_(0)
     {
     }
     
@@ -77,6 +78,7 @@ namespace ECEditor
     {
         event_manager_.reset();
         SAFE_DELETE_LATER(editor_window_);
+        SAFE_DELETE_LATER(xmlEditor_);
     }
 
     void ECEditorModule::Update(f64 frametime)
@@ -143,6 +145,8 @@ namespace ECEditor
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
+        connect(editor_window_, SIGNAL(EditEntityXml(const QList<Scene::EntityPtr> &)), this, SLOT(CreateXmlEditor(const QList<Scene::EntityPtr> &)));
+        connect(editor_window_, SIGNAL(EditComponentXml(const QList<Foundation::ComponentPtr> &)), this, SLOT(CreateXmlEditor(const QList<Foundation::ComponentPtr> &)));
     }
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
@@ -216,32 +220,52 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(Scene::EntityPtr entity)
     {
+        QList<Scene::EntityPtr> entities;
+        entities << entity;
+        CreateXmlEditor(entities);
+    }
+
+    void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
+    {
         UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!entity || !ui_module)
+        if (entities.empty() || !ui_module)
             return;
 
-        EcXmlEditorWidget *editor = new EcXmlEditorWidget(framework_);
-        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(editor,
-            UiServices::UiWidgetProperties(editor->windowTitle(), UiServices::SceneWidget));
-        connect(proxy, SIGNAL(Closed()), editor, SLOT(deleteLater()));
+        if (!xmlEditor_)
+        {
+            xmlEditor_ = new EcXmlEditorWidget(framework_);
+            UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(xmlEditor_,
+                UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
+            connect(proxy, SIGNAL(Closed()), xmlEditor_, SLOT(deleteLater()));
+        }
 
-        editor->SetEntity(entity);
-        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+        xmlEditor_->SetEntity(entities);
+        ui_module->GetInworldSceneController()->BringProxyToFront(xmlEditor_);
     }
 
     void ECEditorModule::CreateXmlEditor(Foundation::ComponentPtr component)
     {
+        QList<Foundation::ComponentPtr> components;
+        components << component;
+        CreateXmlEditor(components);
+    }
+
+    void ECEditorModule::CreateXmlEditor(const QList<Foundation::ComponentPtr> &components)
+    {
         UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!component || !ui_module)
+        if (components.empty() || !ui_module)
             return;
 
-        EcXmlEditorWidget *editor = new EcXmlEditorWidget(framework_);
-        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(editor,
-            UiServices::UiWidgetProperties(editor->windowTitle(), UiServices::SceneWidget));
-        connect(proxy, SIGNAL(Closed()), editor, SLOT(deleteLater()));
+        if (!xmlEditor_)
+        {
+            xmlEditor_ = new EcXmlEditorWidget(framework_);
+            UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(xmlEditor_,
+                UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
+            connect(proxy, SIGNAL(Closed()), xmlEditor_, SLOT(deleteLater()));
+        }
 
-        editor->SetComponent(component);
-        ui_module->GetInworldSceneController()->BringProxyToFront(editor);
+        xmlEditor_->SetComponent(components);
+        ui_module->GetInworldSceneController()->BringProxyToFront(xmlEditor_);
     }
 }
 
@@ -255,5 +279,5 @@ using namespace ECEditor;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
     POCO_EXPORT_CLASS(ECEditorModule)
-POCO_END_MANIFEST 
+POCO_END_MANIFEST
 

@@ -13,11 +13,19 @@ namespace WorldBuilding
     {
         enum ManipulationMode
         {
-            FREEMOVE = 0,
-            MOVE,
-            SCALE,
-            ROTATE,
-            None
+            MANIP_FREEMOVE = 0,
+            MANIP_MOVE,
+            MANIP_SCALE,
+            MANIP_ROTATE,
+            MANIP_NONE
+        };
+
+        enum ObjectAction
+        {
+            OBJ_None = 0,
+            OBJ_NEW,
+            OBJ_CLONE,
+            OBJ_DELETE
         };
     }
 
@@ -34,8 +42,11 @@ namespace WorldBuilding
         void EmitManipulationModeChange(int mode);
         void EmitEditingActivated(bool activated);
         void EmitRemoveHightlight();
-        
-        PythonParams::ManipulationMode GetCurrentManipulationMode() { return current_mode_; }
+        void SetRotateValues(int x, int y, int z);
+        void EmitRotateChange(int x, int y, int z);
+        void EmitObjectAction(PythonParams::ObjectAction action);
+
+        PythonParams::ManipulationMode GetCurrentManipulationMode() { return current_mode_; }        
 
     private:
         PythonParams::ManipulationMode current_mode_;
@@ -45,6 +56,11 @@ namespace WorldBuilding
         void ManipulationMode(int);
         void ActivateEditing(bool);
         void RemoveHightlight();
+        void RotateValuesChangedToUi(int x, int y, int z);
+        void RotateValuesChangedToNetwork(int x, int y, int z);
+        void CreateObject();
+        void DuplicateObject();
+        void DeleteObject();
     };
 }
 
