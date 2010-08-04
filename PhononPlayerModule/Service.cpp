@@ -22,7 +22,8 @@ namespace PlayerService
     {
         foreach(VideoPlayer* player, video_players_)
         {
-            SAFE_DELETE(player);
+            // For now we destroy VideoPlayer objects on python side...
+            // SAFE_DELETE(player);
         }
         video_players_.clear();
     }
@@ -52,7 +53,7 @@ namespace PlayerService
  
         VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
-        SAFE_DELETE(player);
-     }
+        player->deleteLater();
+    }
 
 } // PlayerService
