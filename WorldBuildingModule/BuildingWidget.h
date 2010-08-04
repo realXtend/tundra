@@ -7,8 +7,11 @@
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneHoverEvent>
 
+
 namespace WorldBuilding
 {
+    class WorldObjectView;
+
     namespace Ui
     {
         class BuildingWidget : public QGraphicsProxyWidget
@@ -34,11 +37,13 @@ namespace WorldBuilding
             void PrepWidget();
             void CheckSize();
             QWidget *GetInternal() { return internal_widget_; }
+            void SetWorldObjectView(WorldObjectView* view);
 
         private slots:
             void SceneRectChanged(const QRectF &new_rect);
         
         private:
+            WorldObjectView *view_;
             QWidget *internal_widget_;
             ToolPosition tool_position_;
             bool resizing_;

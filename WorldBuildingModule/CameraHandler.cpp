@@ -158,18 +158,17 @@ namespace WorldBuilding
                 Ogre::Camera* cam = ec_camera->GetCamera();
                 Vector3df pos = cam_ec_placable->GetPosition();
 
-                
+
 
                 Vector3df dir(pos-pivot);
-                Quaternion quat(x,cam_ec_placable->GetLocalYAxis());
-                quat *= Quaternion(y, cam_ec_placable->GetLocalXAxis());
+
+                Quaternion quat(-x,cam_ec_placable->GetLocalYAxis());
+                quat *= Quaternion(-y, cam_ec_placable->GetLocalXAxis());
                 dir = quat * dir;
-        
+
                 Vector3df new_pos(pivot+dir);
                 cam_ec_placable->SetPosition(new_pos);
                 cam_ec_placable->LookAt(pivot);
-    
-
             }
         }
 

@@ -68,6 +68,7 @@ namespace WorldBuilding
         world_object_view_ = new WorldObjectView();
         world_object_view_->setFixedSize(300,300);
         object_info_ui.viewport_layout->addWidget(world_object_view_);
+        object_info_widget_->SetWorldObjectView(world_object_view_);
 
 
         // Init manipulations widget
@@ -126,8 +127,8 @@ namespace WorldBuilding
             OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
             if(entity_ec_placable)
             {
-                qreal acceleration_x = 2;
-                qreal acceleration_y = 2;
+                qreal acceleration_x = 1;
+                qreal acceleration_y = 1;
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
                 world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
             }
