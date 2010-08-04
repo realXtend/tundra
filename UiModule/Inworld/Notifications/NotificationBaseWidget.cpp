@@ -7,6 +7,8 @@
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
 
+#include <QDebug>
+
 namespace CoreUi
 {
     NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec, QString message) :
@@ -68,9 +70,6 @@ namespace CoreUi
 
     void NotificationBaseWidget::TimedOut()
     {
-        if (opacity() != 1.0)
-            return;
-
         progress_animation_->stop();
         fade_animation_->start();
     }
