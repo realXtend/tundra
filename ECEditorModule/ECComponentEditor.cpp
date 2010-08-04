@@ -39,6 +39,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), browser, component, editor);
         else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))
             attributeEditor = new ECAttributeEditor<QVariant>(attribute.GetName(), browser, component, editor);
+        else if(dynamic_cast<const Foundation::Attribute<Foundation::AssetReference> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(attribute.GetName(), browser, component, editor);
         return attributeEditor;
     }
 

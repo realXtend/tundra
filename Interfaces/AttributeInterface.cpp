@@ -98,7 +98,7 @@ template<> std::string Attribute<AssetReference>::ToString() const
 {
     AssetReference value = Get();
     
-    return value.type_ + ":" + value.id_;
+    return value.type_ + "," + value.id_;
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -273,8 +273,8 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
 
 template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
 {
-    // We store type first, then ":", then asset id
-    std::string::size_type pos = str.find(':');
+    // We store type first, then ",", then asset id
+    std::string::size_type pos = str.find(',');
     if (pos == std::string::npos)
         return;
     std::string type = str.substr(0, pos);
