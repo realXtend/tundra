@@ -69,6 +69,8 @@ namespace WorldBuilding
 
             QObject *python_handler_;
             Ui_ObjectManipulationsWidget *manip_ui_;
+
+            bool ignore_rotate_value_changes_;
         };
     }
 }
