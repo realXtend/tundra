@@ -16,21 +16,35 @@ class QTranslator;
 namespace Foundation
 {
     class Framework;
+    class MainWindow;
 
-    /// Bridges QtApplication and Framework objects together and helps drive the continuous
-    /// application update ticks using a timer object.
-    /// Owns QApplication and QGraphicsView (main window) for its lifetime.
-
+    /** Bridges QtApplication and Framework objects together and helps drive the continuous
+     *  application update ticks using a timer object.
+     *  Owns QApplication and QGraphicsView (main window) for its lifetime.
+     */
     class FrameworkQtApplication : public QApplication
     {
         Q_OBJECT
 
     public:
-        FrameworkQtApplication (Framework *owner, int &argc, char** argv);
+        /** Constuctor.
+         *  @param Framework pointer.
+         *  @param arc Command line argument count.
+         *  @param argv Command line arguments.
+         */
+        FrameworkQtApplication(Framework *owner, int argc, char** argv);
+
+        /// Destructor.
         ~FrameworkQtApplication();
 
+        /// Returns the main UI graphics view.
         QGraphicsView *GetUIView() const;
-        void SetUIView (std::auto_ptr <QGraphicsView> view);
+
+        /// Sets the main UI graphics view.
+        void SetUIView(std::auto_ptr<QGraphicsView> view);
+
+        /// Returns the main window.
+        MainWindow *GetMainWindow() const;
 
         virtual bool notify(QObject* receiver, QEvent* e);
 
@@ -44,12 +58,12 @@ namespace Foundation
     signals:
         /// Signal is sent when QApplication language is changed, provided for convience.
         void LanguageChanged();
-        
+
         /// Signal is sent when window close / framework exit has been requested
         void ExitRequested();
 
     protected:
-        bool eventFilter (QObject *obj, QEvent *event);
+        bool eventFilter(QObject *obj, QEvent *event);
 
     private:
         QStringList GetQmFiles(const QDir& dir);
@@ -58,11 +72,13 @@ namespace Foundation
         QTimer frame_update_timer_;
         bool app_activated_;
 
-        std::auto_ptr <QGraphicsView> view_;
+        std::auto_ptr<QGraphicsView> view_;
         QTranslator* native_translator_;
         QTranslator* app_translator_;
-    };
 
+        /// Main window
+        MainWindow *main_window_;
+    };
 }
 
 #endif
