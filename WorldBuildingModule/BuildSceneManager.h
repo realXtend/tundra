@@ -12,6 +12,7 @@
 #include "UiHelper.h"
 #include "PythonHandler.h"
 #include "CameraHandler.h"
+#include "WorldObjectView.h"
 
 #include "ui_ObjectInfoWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
@@ -27,7 +28,6 @@ namespace WorldBuilding
     class BuildScene;
     class AnchorLayout;
     class PropertyEditorHandler;
-    class WorldObjectView;
 
     typedef CoreUi::UiStateMachine StateMachine;
 
@@ -89,6 +89,7 @@ namespace WorldBuilding
         AnchorLayout *layout_;
 
         WorldObjectView* world_object_view_;
+        ObjectViewData object_view_data_;
 
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
@@ -104,7 +105,7 @@ namespace WorldBuilding
         Scene::Entity* selected_entity_;
 
         View::CameraHandler *camera_handler_;
-        View::CameraID selected_camera_id_;
+        View::CameraID selected_camera_id_;        
     };
 }
 

@@ -9,6 +9,7 @@
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
 #include "ComponentInterface.h"
+#include "AssetInterface.h"
 #include <map>
 
 #include "MultiEditPropertyManager.h"
@@ -99,7 +100,7 @@ namespace ECEditor
         //! update edtior ui when attribute value is changed.
         void AttributeValueChanged(const Foundation::AttributeInterface &attribute);
         
-        //! Listens if any of editor's values has been changed and then for it's attributes need to be updated.
+        //! Listens if any of editor's values has been changed and then for editor's attribute values need to be updated.
         void SendNewAttributeValue(QtProperty *property) 
         { 
             SendValue(property); 
@@ -155,6 +156,8 @@ namespace ECEditor
         QtAbstractPropertyBrowser *owner_;
         QtAbstractPropertyManager *propertyMgr_;
         QtAbstractEditorFactoryBase *factory_;
+        std::vector<QtAbstractPropertyManager*> optionalPropertyManagers_;
+        std::vector<QtAbstractEditorFactoryBase*> optionalPropertyFactories_;
         QtProperty *rootProperty_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
@@ -334,6 +337,11 @@ namespace ECEditor
     template<> void ECAttributeEditor<QVariant>::Initialize();
     template<> void ECAttributeEditor<QVariant>::SendValue(QtProperty *property);
     template<> void ECAttributeEditor<QVariant>::ValueSelected(const QtProperty *property, const QString &value);
+
+    template<> void ECAttributeEditor<Foundation::AssetReference>::UpdateValue();
+    template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize();
+    template<> void ECAttributeEditor<Foundation::AssetReference>::SendValue(QtProperty *property);
+    template<> void ECAttributeEditor<Foundation::AssetReference>::ValueSelected(const QtProperty *property, const QString &value);
 }
 
 

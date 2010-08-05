@@ -230,16 +230,30 @@ namespace ECEditor
     void ECAttributeEditorBase::UnInitialize()
     {
         if(owner_)
+        {
             owner_->unsetFactoryForManager(propertyMgr_);
+            for(uint i = 0; i < optionalPropertyManagers_.size(); i++)
+                owner_->unsetFactoryForManager(optionalPropertyManagers_[i]);
+        }
         if(propertyMgr_)
         {
             propertyMgr_->deleteLater();
             propertyMgr_ = 0;
         }
+        while(!optionalPropertyManagers_.empty())
+        {
+            optionalPropertyManagers_.back()->deleteLater();
+            optionalPropertyManagers_.pop_back();
+        }
         if(factory_)
         {
             factory_->deleteLater();
             factory_ = 0;
+        }
+        while(!optionalPropertyFactories_.empty())
+        {
+            optionalPropertyFactories_.back()->deleteLater();
+            optionalPropertyFactories_.pop_back();
         }
         editorState_ = Uninitialized;
     }
@@ -894,6 +908,103 @@ namespace ECEditor
                 useMultiEditor_ = false;
                 Initialize();
                 SetValue(QVariant(value));
+            }
+        }
+    }
+
+    //-------------------------ASSETREFERENCE ATTRIBUTE TYPE-------------------------
+
+    template<> void ECAttributeEditor<Foundation::AssetReference>::UpdateValue()
+    {
+        if(!useMultiEditor_)
+        {
+            QList<QtProperty*> children = rootProperty_->subProperties();
+            if(children.size() == 2)
+            {
+                QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
+                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(attributeMap_.begin()->second);
+                if(!attribute || !stringManager)
+                    return;
+
+                Foundation::AssetReference value = attribute->Get();
+                stringManager->setValue(children[0], QString::fromStdString(value.id_));
+                stringManager->setValue(children[1], QString::fromStdString(value.type_));
+            }
+        }
+        else
+            UpdateMultiEditorValue();
+    }
+
+    template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize()
+    {
+        ECAttributeEditorBase::PreInitialize();
+        if(!useMultiEditor_)
+        {
+            QtGroupPropertyManager *groupManager = new QtGroupPropertyManager(this);
+            QtStringPropertyManager *stringManager = new QtStringPropertyManager(this);
+            LineEditPropertyFactory *lineEditFactory = new LineEditPropertyFactory(this);
+            propertyMgr_ = groupManager;
+            factory_ = lineEditFactory;
+            optionalPropertyManagers_.push_back(stringManager);
+
+            rootProperty_ = groupManager->addProperty();
+            rootProperty_->setPropertyName(attributeName_);
+            if(rootProperty_)
+            {
+                QtProperty *childProperty = 0;
+                childProperty = stringManager->addProperty("Asset ID");
+                rootProperty_->addSubProperty(childProperty);
+
+                childProperty = stringManager->addProperty("Asset type");
+                rootProperty_->addSubProperty(childProperty);
+
+                UpdateValue();
+                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+            }
+            owner_->setFactoryForManager(stringManager, lineEditFactory);
+        }
+        else
+            InitializeMultiEditor();
+    }
+
+    template<> void ECAttributeEditor<Foundation::AssetReference>::SendValue(QtProperty *property)
+    {
+        if(listenEditorChangedSignal_)
+        {
+            QList<QtProperty*> children = rootProperty_->subProperties();
+            if(children.size() == 2)
+            {
+                QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
+                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(attributeMap_.begin()->second);
+                if(!attribute || !stringManager)
+                    return;
+
+                Foundation::AssetReference value;
+                value.id_ = stringManager->value(children[0]).toStdString();
+                value.type_ = stringManager->value(children[1]).toStdString();
+                SetValue(value);
+            }
+        }
+    }
+
+    template<> void ECAttributeEditor<Foundation::AssetReference>::ValueSelected(const QtProperty *property, const QString &value)
+    {
+        if(useMultiEditor_)
+        {
+            if(rootProperty_ == property)
+            {
+                StringVector values = SplitString(value.toStdString(), ',');
+                if(values.size() != 2)
+                    return;
+
+                Foundation::AssetReference value;
+                value.id_ = values[0];
+                value.type_ = values[1];
+
+                UnInitialize();
+                useMultiEditor_ = false;
+                Initialize();
+                SetValue(value);
             }
         }
     }

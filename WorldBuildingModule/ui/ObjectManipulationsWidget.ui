@@ -82,6 +82,42 @@ QPushButton:hover {
 QPushButton:pressed {
 	color: white;
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+}
+
+QPushButton#button_new, #button_clone, #button_delete {
+	background-repeat: no-repeat;
+	background-position: center left;
+	padding-left: 16px;
+}
+
+QPushButton#button_move, #button_rotate, #button_scale {
+	background-repeat: no-repeat;
+	background-position: center left;
+	padding-left: 12px;
+}
+
+QPushButton#button_new {
+	background-image: url(&quot;./data/ui/images/worldbuilding/object_add.png&quot;);
+}
+
+QPushButton#button_clone {
+	background-image: url(&quot;./data/ui/images/worldbuilding/object_clone.png&quot;);
+}
+
+QPushButton#button_delete {
+	background-image: url(&quot;./data/ui/images/worldbuilding/object_delete.png&quot;);
+}
+
+QPushButton#button_move {
+	background-image: url(&quot;./data/ui/images/worldbuilding/transform-move.png&quot;);
+}
+
+QPushButton#button_rotate {
+	background-image: url(&quot;./data/ui/images/worldbuilding/transform-rotate.png&quot;);
+}
+
+QPushButton#button_scale {
+	background-image: url(&quot;./data/ui/images/worldbuilding/transform-scale.png&quot;);
 }</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
@@ -152,14 +188,7 @@ QPushButton:pressed {
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">QPushButton {
-	background-image: url(&quot;./data/ui/images/worldbuilding/object_add.png&quot;);
-	background-repeat: no-repeat;
-	background-position: center left;
-	padding-left: 10px;
-}
-
-</string>
+                <string notr="true"/>
                </property>
                <property name="text">
                 <string>New Object</string>
@@ -181,12 +210,7 @@ QPushButton:pressed {
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">QPushButton {
-	background-image: url(&quot;./data/ui/images/worldbuilding/object_clone.png&quot;);
-	background-repeat: no-repeat;
-	background-position: center left;
-	padding-left: 10px;
-}</string>
+                <string notr="true"/>
                </property>
                <property name="text">
                 <string>Clone Object</string>
@@ -229,12 +253,7 @@ QPushButton:pressed {
                 </size>
                </property>
                <property name="styleSheet">
-                <string notr="true">QPushButton {
-	background-image: url(&quot;./data/ui/images/worldbuilding/object_delete.png&quot;);
-	background-repeat: no-repeat;
-	background-position: center left;
-	padding-left: 10px;
-}</string>
+                <string notr="true"/>
                </property>
                <property name="text">
                 <string>Move To Trash</string>
@@ -249,11 +268,11 @@ QPushButton:pressed {
               <number>10</number>
              </property>
              <item>
-              <widget class="QPushButton" name="pushButton_move">
+              <widget class="QPushButton" name="button_move">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>24</height>
+                 <height>28</height>
                 </size>
                </property>
                <property name="maximumSize">
@@ -276,11 +295,11 @@ QPushButton:pressed {
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_rotate">
+              <widget class="QPushButton" name="button_rotate">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>24</height>
+                 <height>28</height>
                 </size>
                </property>
                <property name="maximumSize">
@@ -303,11 +322,11 @@ QPushButton:pressed {
               </widget>
              </item>
              <item>
-              <widget class="QPushButton" name="pushButton_scale">
+              <widget class="QPushButton" name="button_scale">
                <property name="minimumSize">
                 <size>
                  <width>0</width>
-                 <height>24</height>
+                 <height>28</height>
                 </size>
                </property>
                <property name="maximumSize">

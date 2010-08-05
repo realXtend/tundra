@@ -34,6 +34,7 @@ namespace WorldBuilding
         setParent(parent);
         InitialseScene();
         ObjectSelected(false);
+        object_view_data_.Reset();
     }
 
     BuildSceneManager::~BuildSceneManager()
@@ -68,6 +69,7 @@ namespace WorldBuilding
         world_object_view_ = new WorldObjectView();
         world_object_view_->setFixedSize(300,300);
         object_info_ui.viewport_layout->addWidget(world_object_view_);
+        object_info_widget_->SetWorldObjectView(world_object_view_);
 
 
         // Init manipulations widget
@@ -78,9 +80,9 @@ namespace WorldBuilding
         connect(object_manip_ui.button_new, SIGNAL(clicked()), SLOT(NewObjectClicked()));
         connect(object_manip_ui.button_clone, SIGNAL(clicked()), SLOT(DuplicateObjectClicked()));
         connect(object_manip_ui.button_delete, SIGNAL(clicked()), SLOT(DeleteObjectClicked()));
-        connect(object_manip_ui.pushButton_move, SIGNAL(clicked()), SLOT(ModeToggleMove()));
-        connect(object_manip_ui.pushButton_scale, SIGNAL(clicked()), SLOT(ModeToggleScale()));
-        connect(object_manip_ui.pushButton_rotate, SIGNAL(clicked()), SLOT(ModeToggleRotate()));
+        connect(object_manip_ui.button_move, SIGNAL(clicked()), SLOT(ModeToggleMove()));
+        connect(object_manip_ui.button_scale, SIGNAL(clicked()), SLOT(ModeToggleScale()));
+        connect(object_manip_ui.button_rotate, SIGNAL(clicked()), SLOT(ModeToggleRotate()));
 
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         layout_->AddCornerAnchor(object_manipulations_widget_, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
@@ -102,36 +104,6 @@ namespace WorldBuilding
 
         // Setup ui helper
         ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
-    }
-
-    void BuildSceneManager::Zoom(qreal delta)
-    {
-         if(selected_entity_)
-        {
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-            if(entity_ec_placable)
-            {
-                qreal acceleration = 0.01;
-                if(camera_handler_->ZoomRelativeToPoint( entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
-                    world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-            }
-        }
-    }
-
-
-    void BuildSceneManager::RotateObject(qreal x, qreal y)
-    {
-        if(selected_entity_)
-        {
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-            if(entity_ec_placable)
-            {
-                qreal acceleration_x = 2;
-                qreal acceleration_y = 2;
-                camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
-                world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-            }
-        }
     }
 
     void BuildSceneManager::KeyPressed(KeyEvent &key)
@@ -249,25 +221,25 @@ namespace WorldBuilding
         switch (mode)
         {
             case PythonParams::MANIP_MOVE:
-                object_manip_ui.pushButton_move->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_scale->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_move->setStyleSheet(selected_style);
+                object_manip_ui.button_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             case PythonParams::MANIP_SCALE:
-                object_manip_ui.pushButton_scale->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet(selected_style);
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             case PythonParams::MANIP_ROTATE:
-                object_manip_ui.pushButton_rotate->setStyleSheet(selected_style);
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet(selected_style);
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet("");
                 show_rotate_controls = true;
                 break;
             case PythonParams::MANIP_FREEMOVE:
-                object_manip_ui.pushButton_move->setStyleSheet("");
-                object_manip_ui.pushButton_scale->setStyleSheet("");
-                object_manip_ui.pushButton_rotate->setStyleSheet("");
+                object_manip_ui.button_move->setStyleSheet("");
+                object_manip_ui.button_scale->setStyleSheet("");
+                object_manip_ui.button_rotate->setStyleSheet("");
                 break;
             default:
                 break;
@@ -361,6 +333,12 @@ namespace WorldBuilding
         ObjectSelected(false);
         property_editor_handler_->ClearCurrentPrim();
     }
+    
+    void BuildSceneManager::ObjectDeselected()
+    {
+        ObjectSelected(false);
+        python_handler_->EmitRemoveHightlight();
+    }
 
     void BuildSceneManager::ObjectSelected(bool selected)
     {
@@ -384,9 +362,9 @@ namespace WorldBuilding
 
         object_manip_ui.button_clone->setEnabled(selected);
         object_manip_ui.button_delete->setEnabled(selected);
-        object_manip_ui.pushButton_scale->setEnabled(selected);
-        object_manip_ui.pushButton_move->setEnabled(selected);
-        object_manip_ui.pushButton_rotate->setEnabled(selected);
+        object_manip_ui.button_scale->setEnabled(selected);
+        object_manip_ui.button_move->setEnabled(selected);
+        object_manip_ui.button_rotate->setEnabled(selected);
 
         property_editor_handler_->SetEditorVisible(selected);
     }
@@ -414,6 +392,7 @@ namespace WorldBuilding
         // Update entity viewport UI
         if (camera_handler_->FocusToEntity(selected_camera_id_, entity))
         {
+            //qDebug() << "ObjectViewData: " << object_view_data_.x << " - " << object_view_data_.y << " : " << object_view_data_.delta;
             world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
             if (!world_object_view_->text().isEmpty())
                 world_object_view_->setText("");
@@ -433,12 +412,48 @@ namespace WorldBuilding
             property_editor_handler_->PrimSelected(prim);
         ObjectSelected(true);
         selected_entity_ =  entity;
-        
     }
 
-    void BuildSceneManager::ObjectDeselected()
+    void BuildSceneManager::Zoom(qreal delta)
     {
-        ObjectSelected(false);
-        python_handler_->EmitRemoveHightlight();
+        if (selected_entity_)
+        {
+            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (entity_ec_placable)
+            {
+                qreal acceleration = 0.01;
+                if (camera_handler_->ZoomRelativeToPoint(entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
+                    world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+                
+                // Manaluusua: Fill this with needed data to remember zoom/rotation/pos of camera when you change object
+                // prolly will be vectors etc not these simple x,y as they mean nothing to the camera
+                object_view_data_.delta = delta;
+                object_view_data_.acceleration_delta = acceleration;
+                //qDebug() << "Zoom: " << delta << " with accel " << acceleration;
+            }
+        }
+    }
+
+    void BuildSceneManager::RotateObject(qreal x, qreal y)
+    {
+        if (selected_entity_)
+        {
+            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (entity_ec_placable)
+            {
+                qreal acceleration_x = 1;
+                qreal acceleration_y = 1;
+                camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
+                world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+
+                // Manaluusua: Fill this with needed data to remember zoom/rotation/pos of camera when you change object
+                // prolly will be vectors etc not these simple x,y as they mean nothing to the camera
+                object_view_data_.x = x;
+                object_view_data_.y = y;
+                object_view_data_.acceleration_x = acceleration_x;
+                object_view_data_.acceleration_y = acceleration_y;
+                //qDebug() << "Rotate: " << x << " - " << y << " with accel " << acceleration_x << " - " << acceleration_y;
+            }
+        }
     }
 }
