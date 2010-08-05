@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "BuildingWidget.h"
+#include "WorldObjectView.h"
 
 #include <QDebug>
 
@@ -11,6 +12,7 @@ namespace WorldBuilding
     {
         BuildingWidget::BuildingWidget(ToolPosition tool_position) :
             QGraphicsProxyWidget(0, Qt::Widget),
+            view_(0),
             internal_widget_(new QWidget()),
             tool_position_(tool_position),
             resizing_(false)
@@ -64,13 +66,35 @@ namespace WorldBuilding
                 QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
             else if (!change_cursor && QApplication::overrideCursor())
                 QApplication::restoreOverrideCursor();
+            
+            if (view_)
+            {
+                QPointF widget_pos = mouse_hover_move_event->pos();
+                QCursor *current_cursor = QApplication::overrideCursor();
+                if (widget()->childAt(widget_pos.toPoint()) == view_)
+                {
+                    if (current_cursor == 0)
+                        QApplication::setOverrideCursor(Qt::PointingHandCursor);
+                    else if (current_cursor->shape() != Qt::PointingHandCursor)
+                        QApplication::changeOverrideCursor(Qt::PointingHandCursor);
+                }
+                else if (current_cursor)
+                {
+                    if (current_cursor->shape() == Qt::PointingHandCursor)
+                        QApplication::restoreOverrideCursor();
+                }
+            }
             QGraphicsProxyWidget::hoverMoveEvent(mouse_hover_move_event);
         }
 
         void BuildingWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *mouse_hover_leave_event)
         {
-            if (QApplication::overrideCursor())
+            QCursor *stack_cursor = QApplication::overrideCursor();
+            while (stack_cursor)
+            {
                 QApplication::restoreOverrideCursor();
+                stack_cursor = QApplication::overrideCursor();
+            }
             QGraphicsProxyWidget::hoverLeaveEvent(mouse_hover_leave_event);
         }
 
@@ -88,12 +112,18 @@ namespace WorldBuilding
             QGraphicsProxyWidget::mousePressEvent(mouse_press_event);
         }
 
+        void BuildingWidget::SetWorldObjectView(WorldObjectView* view)
+        {
+            view_ = view;
+        }
+
         void BuildingWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event)
         {
+            QPointF scene_pos = mouse_move_event->scenePos();
             if (resizing_)
             {
                 bool resized = false;
-                QPointF scene_pos = mouse_move_event->scenePos();
+               
                 if (tool_position_ == Left)
                 {
                     if (scene_pos.x() >= scene()->sceneRect().width() / 2)

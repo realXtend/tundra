@@ -47,6 +47,8 @@ namespace WorldBuilding
 
             std::string render_texture_name_;
             Ogre::uchar *pixelData_;
+
+            Vector3df last_dir_;
         };
     }
 }

@@ -375,6 +375,11 @@ namespace ECEditor
                     Scene::Entity *entity = comp->GetParentEntity();
                     entity->RemoveComponent(comp, AttributeChange::Local);
                 }
+                else
+                {
+                    // If component has been expired no point to keep in the component group
+                    componentGroup->components_.pop_back();
+                }
             }
             break;
         }

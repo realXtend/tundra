@@ -24,7 +24,8 @@ namespace WorldBuilding
             QObject(parent),
             framework_(framework),
             camera_count_(0),
-            pixelData_(0)
+            pixelData_(0),
+            last_dir_(Vector3df::ZERO)
         {
             render_texture_name_ = "EntityViewPortTexture-" + QUuid::createUuid().toString().toStdString();
 
@@ -58,8 +59,6 @@ namespace WorldBuilding
             
             camera_count_++;
             id_to_cam_entity_[camera_count_] = cam_entity.get();
-
-
 
             return camera_count_;
         }
@@ -134,56 +133,52 @@ namespace WorldBuilding
             }
             else
                 return focus_completed;
-            
+                 
             cam_ec_placable->SetPosition(position_vector + (entity_ec_placable->GetOrientation() * position_offset));
+            if (last_dir_ != Vector3df::ZERO)
+            {
+                //qDebug() << "Testig";
+                //cam_ec_placable->SetPosition(cam_ec_placable->GetPosition() + last_dir_);
+            }
             cam_ec_placable->LookAt(look_at);
 
             focus_completed = true;
             return focus_completed;
         }
 
-        void CameraHandler::RotateCamera(Vector3df pivot,CameraID id,qreal x, qreal y)
+        void CameraHandler::RotateCamera(Vector3df pivot, CameraID id, qreal x, qreal y)
         {
-
             if (id_to_cam_entity_.contains(id))
             {
-
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
                 OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
                 OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-                
-                if(!ec_camera || !cam_ec_placable)
+                if (!ec_camera || !cam_ec_placable)
                     return;
 
                 Ogre::Camera* cam = ec_camera->GetCamera();
                 Vector3df pos = cam_ec_placable->GetPosition();
 
-                
-
                 Vector3df dir(pos-pivot);
-                Quaternion quat(x,cam_ec_placable->GetLocalYAxis());
-                quat *= Quaternion(y, cam_ec_placable->GetLocalXAxis());
+                Quaternion quat(-x,cam_ec_placable->GetLocalYAxis());
+                quat *= Quaternion(-y, cam_ec_placable->GetLocalXAxis());
                 dir = quat * dir;
-        
+
                 Vector3df new_pos(pivot+dir);
                 cam_ec_placable->SetPosition(new_pos);
                 cam_ec_placable->LookAt(pivot);
-    
-
             }
         }
 
-        bool CameraHandler::ZoomRelativeToPoint(Vector3df point, CameraID id,qreal delta, qreal min, qreal max)
+        bool CameraHandler::ZoomRelativeToPoint(Vector3df point, CameraID id, qreal delta, qreal min, qreal max)
         {
             bool zoomed = false;
             if (id_to_cam_entity_.contains(id))
             {
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
                 OgreRenderer::EC_OgrePlaceable *placeable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-
-                if(!placeable)
+                if (!placeable)
                     return false;
-
 
                 Vector3df pos = placeable->GetPosition();
                 Vector3df dir = point-pos;
@@ -204,9 +199,8 @@ namespace WorldBuilding
                 if(zoomed)
                 {
                     placeable->SetPosition(placeable->GetPosition() + dir);
+                    last_dir_ = dir;
                 }
-     
-                
             }
             return zoomed;
         }
