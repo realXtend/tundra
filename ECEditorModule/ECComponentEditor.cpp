@@ -44,13 +44,14 @@ namespace ECEditor
         return attributeEditor;
     }
 
-    ECComponentEditor::ECComponentEditor(Foundation::ComponentInterfacePtr component, const std::string &typeName, QtAbstractPropertyBrowser *propertyBrowser):
-        typeName_(typeName),
+    ECComponentEditor::ECComponentEditor(Foundation::ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser):
         QObject(propertyBrowser),
         groupProperty_(0),
         groupPropertyManager_(0),
         propertyBrowser_(propertyBrowser)
     {
+        typeName_   = component->TypeName();
+        name_       = component->Name();
         InitializeEditor(component);
     }
     
@@ -102,10 +103,11 @@ namespace ECEditor
     {
         if(!groupProperty_ || !components_.size())
             return;
-        
         std::string componentName = typeName_;
         ReplaceSubstringInplace(componentName, "EC_", "");
         QString groupPropertyName = componentName.c_str();
+        if(!name_.empty())
+            groupPropertyName += QString::fromStdString(" (" + name_ + ") ");
         if(components_.size() > 1)
             groupPropertyName += QString(" (%1 components)").arg(components_.size());
         groupProperty_->setPropertyName(groupPropertyName);

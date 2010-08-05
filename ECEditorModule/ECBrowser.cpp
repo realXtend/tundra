@@ -137,9 +137,6 @@ namespace ECEditor
         SAFE_DELETE(menu_);
         menu_ = new QMenu(this);
         menu_->setAttribute(Qt::WA_DeleteOnClose);
-        QAction *addComponent = new QAction(tr("Add new component"), menu_);
-        menu_->addAction(addComponent);
-        QObject::connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()));
         if(treeWidgetItem)
         {
             QAction *copyComponent = new QAction(tr("Copy"), menu_);
@@ -186,21 +183,15 @@ namespace ECEditor
                     menu_->addAction(addAttribute);
                 }
             }
-
-            //Check if any component is selected and if not disable delete component, and edit xml options.
-            /*QtBrowserItem *item = currentItem();
-            if(!item)
-            {
-                editXml->setEnabled(false);
-                deleteComponent->setEnabled(false);
-                copyComponent->setEnabled(false);
-            }
-            else
-            {
-                editXml->setEnabled(true);
-                deleteComponent->setEnabled(true);
-                copyComponent->setEnabled(true);
-            }*/
+        }
+        else
+        {
+            QAction *addComponent = new QAction(tr("Add new component"), menu_);
+            QAction *pasteComponent = new QAction(tr("Paste"), menu_);
+            menu_->addAction(addComponent);
+            menu_->addAction(pasteComponent);
+            QObject::connect(addComponent, SIGNAL(triggered()), this, SIGNAL(CreateNewComponent()));
+            QObject::connect(pasteComponent, SIGNAL(triggered()), this, SLOT(PasteComponent()));
         }
         menu_->popup(mapToGlobal(pos));
     }
@@ -543,7 +534,7 @@ namespace ECEditor
         // Find a new QTreeWidgetItem from the browser and save the information to ComponentGroup object.
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             oldList.insert(treeWidget_->topLevelItem(i));
-        ECComponentEditor *componentEditor = new ECComponentEditor(comp, typeName, this);
+        ECComponentEditor *componentEditor = new ECComponentEditor(comp, this);
         for(uint i = 0; i < treeWidget_->topLevelItemCount(); i++)
             newList.insert(treeWidget_->topLevelItem(i));
         QSet<QTreeWidgetItem*> changeList = newList - oldList;

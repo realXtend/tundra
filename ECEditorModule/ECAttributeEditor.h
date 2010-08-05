@@ -41,10 +41,11 @@ namespace ECEditor
      *  If attribute is edited outside of the editor, user need to inform the editor by calling a AttributeValueChanged method, witch will get a new attribute values from the
      *  AttributeInterface and update it's ui. If you are planing to add new attribute type to editor, you should take a look at ECAttributeEditor's template implementation code
      *  to see how other attribute types have been included into the editor.
-     *  \todo Make this class struture more simple and rename those methods in a way that they will give a user a better picture what they are ment to do.
-     *  \todo Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory connections need to be registered in elsewhere.
-     *  \todo Remove component pointers from the editor and only new attribute interface are included to this editor when necessary.
-     *  This should make editor more clear and run faster. Note! Component editor need to make sure that ECAttributeEditor's attribute interfaces
+     *  \todo Make this class struture more simple and rename those methods in a way that they will give a user better understanding what they are ment to do.
+     *  \todo Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory connections need to 
+     *        be registered in elsewhere eg. inside the ECComponentEditor's addAttribute mehtod.
+     *  \todo Remove component  weak pointers from the editor and only use attribute raw pointers for editing.
+     *  This should make editor simpler to use. Note! Component editor need to make sure that ECAttributeEditor's attribute interfaces
      *  are always valid.
      *  \ingroup ECEditorModuleClient.
      */
@@ -179,7 +180,7 @@ namespace ECEditor
      *   - UpdateValue: Getter function between AttriubteInterface and Editor. Editor will ask attribute's value and
      *     set it to editor's ui element.
      *   - ValueSelected: This method is used for multiediting. When user has picked one of the multiedit options we need to 
-     *     convert the string value to actual attribute value (usually this is done by using boost's lexical_cast).
+     *     convert the string value to actual attribute value (usually this is done by using a boost's lexical_cast).
      */
     template<typename T> class ECAttributeEditor : public ECAttributeEditorBase
     {
