@@ -595,6 +595,11 @@ namespace Foundation
         return engine_.get();
     }
 
+    MainWindow *Framework::GetMainWindow() const
+    {
+        return engine_->GetMainWindow();
+    }
+
     QGraphicsView *Framework::GetUIView() const
     {
         return engine_->GetUIView();
@@ -664,6 +669,7 @@ namespace Foundation
 
         return *input_logic;
     }
+
     bool Framework::HasScene(const std::string &name) const
     {
         return scenes_.find(name) != scenes_.end();

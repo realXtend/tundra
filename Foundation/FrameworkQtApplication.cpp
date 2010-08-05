@@ -6,6 +6,7 @@
 #include "FrameworkQtApplication.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
+#include "MainWindow.h"
 
 #include <QDir>
 #include <QGraphicsView>
@@ -17,8 +18,13 @@
 
 namespace Foundation
 {
-    FrameworkQtApplication::FrameworkQtApplication(Framework *framework, int &argc, char **argv) :
-        QApplication(argc, argv), framework_(framework), app_activated_(true), native_translator_(new QTranslator), app_translator_(new QTranslator)
+    FrameworkQtApplication::FrameworkQtApplication(Framework *framework, int argc, char **argv) :
+        QApplication(argc, argv),
+        framework_(framework),
+        app_activated_(true),
+        native_translator_(new QTranslator),
+        app_translator_(new QTranslator),
+        main_window_(new MainWindow(framework_))
     {
 #ifdef Q_WS_WIN
         // If under windows, add run_dir/plugins as library path
@@ -42,7 +48,8 @@ namespace Foundation
 
         this->installTranslator(native_translator_);
         
-        std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(), "language", std::string("data/translations/naali_en"));
+        std::string default_language = framework_->GetConfigManager()->DeclareSetting(Framework::ConfigurationGroup(),
+            "language", std::string("data/translations/naali_en"));
         ChangeLanguage(QString::fromStdString(default_language));
 
         setWindowIcon(QIcon("./data/ui/images/naali_icon.png"));
@@ -50,8 +57,10 @@ namespace Foundation
 
     FrameworkQtApplication::~FrameworkQtApplication()
     {
+        view_.reset();
         SAFE_DELETE(native_translator_);
         SAFE_DELETE(app_translator_);
+        SAFE_DELETE(main_window_);
     }
 
     QGraphicsView *FrameworkQtApplication::GetUIView() const
@@ -62,6 +71,11 @@ namespace Foundation
     void FrameworkQtApplication::SetUIView(std::auto_ptr <QGraphicsView> view)
     {
         view_ = view;
+    }
+
+    MainWindow *FrameworkQtApplication::GetMainWindow() const
+    {
+        return main_window_;
     }
 
     QStringList FrameworkQtApplication::GetQmFiles(const QDir& dir)

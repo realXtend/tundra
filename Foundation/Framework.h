@@ -32,6 +32,7 @@ namespace Foundation
 {
     class FrameworkQtApplication;
     class KeyStateListener;
+    class MainWindow;
 
     //! contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
@@ -225,6 +226,9 @@ namespace Foundation
 
         //! Get main QApplication
         QApplication *GetQApplication() const;
+
+        //! Get main window
+        MainWindow *GetMainWindow() const;
 
         //! Get main UI View
         QGraphicsView *GetUIView() const;
