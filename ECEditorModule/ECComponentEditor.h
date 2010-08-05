@@ -36,7 +36,7 @@ namespace ECEditor
     {
         Q_OBJECT
     public:
-        ECComponentEditor(Foundation::ComponentInterfacePtr component, const std::string &typeName, QtAbstractPropertyBrowser *propertyBrowser);
+        ECComponentEditor(Foundation::ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser);
         virtual ~ECComponentEditor();
 
         //! Check if this component editor is holding spesific property as it's root property.
@@ -97,6 +97,7 @@ namespace ECEditor
         QtGroupPropertyManager      *groupPropertyManager_;
         QtAbstractPropertyBrowser   *propertyBrowser_;
         std::string                 typeName_;
+        std::string                 name_;
     };
 }
 
