@@ -11,7 +11,8 @@ namespace WorldBuilding
             QObject(parent),
             variant_manager(0),
             browser(0),
-            manip_ui_(0)
+            manip_ui_(0),
+            ignore_rotate_value_changes_(false)
         {
             information_items << "Name" << "Description";
 
@@ -297,31 +298,41 @@ namespace WorldBuilding
 
         void UiHelper::SetRotateValues(int x, int y, int z)
         {
+            
             if (x < 0)
                 x += 360;
             if (y < 0)
                 y += 360;
             if (z < 0)
                 z += 360;
+
+            ignore_rotate_value_changes_ = true;
             manip_ui_->slider_rotate_z->setValue(z);
             manip_ui_->slider_rotate_x->setValue(x);
             manip_ui_->slider_rotate_y->setValue(y);
+            ignore_rotate_value_changes_ = false;
         }
 
         void UiHelper::RotateXChanged(int value)
         {
+            if (ignore_rotate_value_changes_)
+                return;
             manip_ui_->label_rotate_x_value->setText(QString("%1 °").arg(QString::number(value)));
             emit RotationChanged(value, manip_ui_->slider_rotate_y->value(), manip_ui_->slider_rotate_z->value());
         }
 
         void UiHelper::RotateYChanged(int value)
         {
+            if (ignore_rotate_value_changes_)
+            return;
             manip_ui_->label_rotate_y_value->setText(QString("%1 °").arg(QString::number(value)));
             emit RotationChanged(manip_ui_->slider_rotate_x->value(), value, manip_ui_->slider_rotate_z->value());
         }
 
         void UiHelper::RotateZChanged(int value)
         {
+            if (ignore_rotate_value_changes_)
+                return;
             manip_ui_->label_rotate_z_value->setText(QString("%1 °").arg(QString::number(value)));
             emit RotationChanged(manip_ui_->slider_rotate_x->value(), manip_ui_->slider_rotate_y->value(), value);
         }
