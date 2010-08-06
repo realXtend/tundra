@@ -11,6 +11,7 @@
 #include "ScriptDialogRequest.h"
 
 #include <QPushButton>
+#include <QLineEdit>
 
 class QWidget;
 
@@ -62,15 +63,16 @@ namespace RexLogic
     protected:
         void hideEvent(QHideEvent *hide_event);
         void InitWindow(ScriptDialogRequest &request);
+        void showEvent(QShowEvent* show_event);
 
     private:
         QWidget *widget_;
         ScriptDialogRequest request_;
         QString text_value_;
+        QLineEdit *text_input_;
         //UiServices::UiProxyWidget *proxyWidget_;
 
     private slots:
-        void OnTextChanged(QString value);
         void OnButtonPressed(QString id);
         void OnIgnorePressed();
 
