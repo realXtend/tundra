@@ -24,6 +24,7 @@
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
 #include "Common/UiAction.h"
+#include "UiSceneService.h"
 
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -34,6 +35,7 @@
 #include "SceneEvents.h"
 #include "ConsoleEvents.h"
 #include "InputEvents.h"
+#include "UiServiceInterface.h"
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -117,6 +119,10 @@ namespace UiServices
             ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
             GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_UiSettings, ui_settings_service_);
             LogDebug("UI Settings Service registered and READY");
+
+            // Register UI service.
+            ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
+            framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, ui_scene_service_);
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
@@ -139,6 +145,8 @@ namespace UiServices
 
     void UiModule::Uninitialize()
     {
+        if (ui_scene_service_)
+            framework_->GetServiceManager()->UnregisterService(ui_scene_service_);
     }
 
     void UiModule::Update(f64 frametime)
