@@ -6,7 +6,6 @@
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
 #include "AttributeInterface.h"
-#include "ComponentInterface.h"// Own QtPropertyBrowser headers.
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
@@ -21,57 +20,20 @@
 
 namespace ECEditor
 {
-    ECAttributeEditorBase::ECAttributeEditorBase(const QString &attributeName,
-            QtAbstractPropertyBrowser *owner,
-            Foundation::ComponentPtr component,
-            QObject *parent):
+    ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
+                                                 Foundation::AttributeInterface *attribute,
+                                                 QObject *parent):
         QObject(parent),
         owner_(owner),
-        attributeName_(attributeName),
         rootProperty_(0),
         factory_(0),
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
         useMultiEditor_(false),
-        //isInitialized_(false),
         editorState_(Uninitialized)
     {
-        assert(component.get());
-        Foundation::AttributeInterface *attribute = component->GetAttribute(attributeName_.toStdString());
-        if(attribute)
-        {
-            attributeMap_[Foundation::ComponentWeakPtr(component)] = attribute;
-            //QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
-        }
-    }
-
-    ECAttributeEditorBase::ECAttributeEditorBase(const QString &attributeName,
-           QtAbstractPropertyBrowser *owner,
-           std::vector<Foundation::ComponentPtr> components,
-           QObject *parent):
-        QObject(parent),
-        owner_(owner),
-        attributeName_(attributeName),
-        rootProperty_(0),
-        factory_(0),
-        propertyMgr_(0),
-        listenEditorChangedSignal_(false),
-        useMultiEditor_(false),
-        componentIsSerializable_(false),
-        //isInitialized_(false),
-        editorState_(Uninitialized)
-    {
-        for(uint i = 0; i < components.size(); i++)
-        {
-            Foundation::ComponentPtr component = components[i];
-            assert(component.get());
-            Foundation::AttributeInterface *attribute = component->GetAttribute(attributeName_.toStdString());
-            if(attribute)
-            {
-                attributeMap_[Foundation::ComponentWeakPtr(component)] = attribute;
-                //QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
-            }
-        }
+        attributeName_ = attribute->GetName();
+        attributes_.push_back(attribute);
     }
 
     ECAttributeEditorBase::~ECAttributeEditorBase()
@@ -88,19 +50,12 @@ namespace ECEditor
         return false;
     }
 
-    void ECAttributeEditorBase::AddNewComponents(std::vector<Foundation::ComponentPtr>  components)
-    {
-        for(uint i = 0; i < components.size() - 1; i++)
-            AddNewComponent(components[i], false);
-        AddNewComponent(components[components.size()], true);
-    }
-
     void ECAttributeEditorBase::UpdateEditorUI()
     {
-        if(attributeMap_.size() == 1)
+        if(attributes_.size() == 1)
         {
             if(!useMultiEditor_ && editorState_ != Uninitialized)
-                UpdateValue(); 
+                Update(); 
             else
             {
                 useMultiEditor_ = false;
@@ -108,9 +63,9 @@ namespace ECEditor
             }
             emit AttributeChanged(attributeName_.toStdString());
         }
-        else if(attributeMap_.size() > 1)
+        else if(attributes_.size() > 1)
         {
-            if(!AttributesValueCheck())
+            if(!IsIdentical())
             {
                 if(!useMultiEditor_)
                 {
@@ -130,89 +85,46 @@ namespace ECEditor
             if(editorState_ == Uninitialized)
                 Initialize();
             else
-                UpdateValue();
+                Update();
             emit AttributeChanged(attributeName_.toStdString()); 
         }
     }
 
-    void ECAttributeEditorBase::AttributeValueChanged(const Foundation::AttributeInterface &attribute)
+    void ECAttributeEditorBase::AddNewAttribute(Foundation::AttributeInterface *attribute)
     {
-        if(editorState_ == WaitingForResponse)
+        AttributeList::iterator iter = attributes_.begin();
+        for(;iter != attributes_.end(); iter++)
         {
-            UpdateEditorUI();
+            if(*iter == attribute)
+                return;
         }
-        // \todo Fast hack to avoid unnecessary ui repainting. When change is done by local but server will send those changes to
-        // client anyway.
-        else if(editorState_ == AttributeEdited)
-        {
-            UpdateEditorUI();
-            editorState_ = AttributeUpdated;
-        }
-        else if(editorState_ == AttributeUpdated)
-        {
-            editorState_ = WaitingForResponse;
-        }
+        attributes_.push_back(attribute);
+        UpdateEditorUI();
     }
 
-    void ECAttributeEditorBase::AddNewComponent(Foundation::ComponentPtr component, bool updateUi)
+    void ECAttributeEditorBase::RemoveAttribute(Foundation::AttributeInterface *attribute)
     {
-        assert(component.get());
-        Foundation::AttributeInterface *attribute = component->GetAttribute(attributeName_.toStdString());
-        componentIsSerializable_ = component->IsSerializable();
-        if(attribute)
+        AttributeList::iterator iter = attributes_.begin();
+        for(;iter != attributes_.end(); iter++)
         {
-            //! @todo it's unwise to use weakpointer as a keys. Change this to raw pointer and make sure that components are not expired when they are in use.
-            attributeMap_[Foundation::ComponentWeakPtr(component)] = attribute;
-            listenEditorChangedSignal_ = true;
-            //QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(AttributeValueChanged()));
-            if(updateUi)
+            if(*iter == attribute)
+            {
+                attributes_.erase(iter);
                 UpdateEditorUI();
-        }
-    }
-
-    void ECAttributeEditorBase::RemoveComponent(Foundation::ComponentInterface *component)
-    {
-        ECAttributeMap::iterator iter = attributeMap_.begin();
-        while(iter != attributeMap_.end())
-        {
-            Foundation::ComponentWeakPtr compWeakPtr = iter->first;
-            if(compWeakPtr.expired())
-                continue;
-            Foundation::ComponentPtr componentPtr = compWeakPtr.lock();
-            assert(componentPtr.get());
-            Foundation::ComponentInterface *compInterface = componentPtr.get();
-            if(compInterface == component)
-            {
-                attributeMap_.erase(iter);
-                break;
-            }
-            iter++;
-        }
-    }
-
-    Foundation::AttributeInterface *ECAttributeEditorBase::FindAttribute(Foundation::AttributeVector attributes)
-    {
-        Foundation::AttributeInterface *attribute = 0;
-        for(uint i = 0; i < attributes.size(); i++)
-        {
-            if(attributes[i]->GetName() == attributeName_)
-            {
-                attribute = attributes[i];
-                break;
+                return;
             }
         }
-        return attribute;
     }
 
-    bool ECAttributeEditorBase::AttributesValueCheck() const
+    bool ECAttributeEditorBase::IsIdentical() const
     {
-        if(attributeMap_.size() > 1)
+        if(attributes_.size() > 1)
         {
-            ECAttributeMap::const_iterator iter = attributeMap_.begin();
-            std::string value = iter->second->ToString();
-            while(iter != attributeMap_.end())
+            AttributeList::const_iterator iter = attributes_.begin();
+            std::string value = (*iter)->ToString();
+            while(iter != attributes_.end())
             {
-                if(value != iter->second->ToString())
+                if(value != (*iter)->ToString())
                     return false;
                 iter++;
             }
@@ -273,8 +185,8 @@ namespace ECEditor
             rootProperty_ = realPropertyManager->addProperty(QVariant::Double, attributeName_);
             if(rootProperty_)
             {
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(realPropertyManager, variantFactory);
         }
@@ -285,21 +197,21 @@ namespace ECEditor
     }
 
 
-    template<> void ECAttributeEditor<Real>::UpdateValue()
+    template<> void ECAttributeEditor<Real>::Update()
     {
         if(!useMultiEditor_)
         {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
+            AttributeList::iterator iter = attributes_.begin();
             QtVariantPropertyManager *realPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
             assert(realPropertyManager);
             if(!realPropertyManager)
                 return;
 
-            if(iter != attributeMap_.end())
+            if(iter != attributes_.end())
             {
-                if(rootProperty_ && iter->second)
+                if(rootProperty_)
                 {
-                    Foundation::Attribute<Real> *attribute = dynamic_cast<Foundation::Attribute<Real>*>(iter->second);
+                    Foundation::Attribute<Real> *attribute = dynamic_cast<Foundation::Attribute<Real>*>(*iter);
                     realPropertyManager->setValue(rootProperty_, attribute->Get());
                 }
             }
@@ -308,7 +220,7 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    template<> void ECAttributeEditor<Real>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<Real>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -317,47 +229,23 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<Real>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                Real newValue;
-                try
-                {
-                    newValue = ParseString<Real>(value.toStdString());//StringToValue(value);
-                }
-                catch (boost::bad_lexical_cast e)
-                {
-                    ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
-                    return;
-                }
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(newValue);
-            }
-        }
-    }
-
     //-------------------------INT ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<int>::UpdateValue()
+    template<> void ECAttributeEditor<int>::Update()
     {
         if(!useMultiEditor_)
         {
             QtVariantPropertyManager *intPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            ECAttributeMap::iterator iter = attributeMap_.begin();
+            AttributeList::iterator iter = attributes_.begin();
             assert(intPropertyManager);
             if(!intPropertyManager)
                 return;
 
-            if(iter != attributeMap_.end())
+            if(iter != attributes_.end())
             {
-                if(rootProperty_ && iter->second)
+                if(rootProperty_)
                 {
-                    Foundation::Attribute<int> *attribute = dynamic_cast<Foundation::Attribute<int>*>(iter->second);
+                    Foundation::Attribute<int> *attribute = dynamic_cast<Foundation::Attribute<int>*>(*iter);
                     intPropertyManager->setValue(rootProperty_, attribute->Get());
                 }
             }
@@ -378,8 +266,8 @@ namespace ECEditor
             rootProperty_ = intPropertyManager->addProperty(QVariant::Int, attributeName_);
             if(rootProperty_)
             {
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(intPropertyManager, variantFactory);
         }
@@ -389,31 +277,7 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<int>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                int newValue;
-                try
-                {
-                    newValue = ParseString<int>(value.toStdString());
-                }
-                catch (boost::bad_lexical_cast e)
-                {
-                    ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
-                    return;
-                }
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(newValue);
-            }
-        }
-    }
-
-    template<> void ECAttributeEditor<int>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<int>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -436,8 +300,8 @@ namespace ECEditor
             rootProperty_ = boolPropertyManager->addProperty(QVariant::Bool, attributeName_);
             if(rootProperty_)
             {
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(boolPropertyManager, variantFactory);
         }
@@ -447,7 +311,7 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<bool>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<bool>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -458,21 +322,20 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<bool>::UpdateValue()
+    template<> void ECAttributeEditor<bool>::Update()
     {
         if(!useMultiEditor_)
         {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
+            AttributeList::iterator iter = attributes_.begin();
             QtVariantPropertyManager *boolPropertyManager = dynamic_cast<QtVariantPropertyManager *>(propertyMgr_);
-            assert(boolPropertyManager);
             if(!boolPropertyManager)
                 return;
 
-            if(iter != attributeMap_.end())
+            if(iter != attributes_.end())
             {
-                if(rootProperty_ && iter->second)
+                if(rootProperty_)
                 {
-                    Foundation::Attribute<bool> *attribute = dynamic_cast<Foundation::Attribute<bool>*>(iter->second);
+                    Foundation::Attribute<bool> *attribute = dynamic_cast<Foundation::Attribute<bool>*>(*iter);
                     boolPropertyManager->setValue(rootProperty_, attribute->Get());
                 }
             }
@@ -481,34 +344,9 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    template<> void ECAttributeEditor<bool>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                if(value.size() < 4 || value.size() > 5)
-                    return;
-
-                bool newValue = false;
-                if(value == "false" || value == "False" || value == "0")
-                    newValue = false;
-                else if(value == "true" || value == "True" || value == "1")
-                    newValue = true;
-                else
-                    return;
-
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(newValue);
-            }
-        }
-    }
-
     //-------------------------VECTOR3DF ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<Vector3df>::UpdateValue()
+    template<> void ECAttributeEditor<Vector3df>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -518,10 +356,7 @@ namespace ECEditor
                 QList<QtProperty *> children = rootProperty_->subProperties();
                 if(children.size() >= 3)
                 {
-                    if(attributeMap_.size() <= 0)
-                        return;
-
-                    Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(attributeMap_.begin()->second);
+                    Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(*(attributes_.begin()));
                     if(!attribute)
                         return;
 
@@ -558,8 +393,8 @@ namespace ECEditor
 
                 childProperty = variantManager->addProperty(QVariant::Double, "z");
                 rootProperty_->addSubProperty(childProperty);
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
@@ -569,7 +404,7 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<Vector3df>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -577,10 +412,7 @@ namespace ECEditor
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 3)
             {
-                if(attributeMap_.size() <= 0)
-                return;
-
-                Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(attributeMap_.begin()->second);
+                Foundation::Attribute<Vector3df> *attribute = dynamic_cast<Foundation::Attribute<Vector3df> *>(*(attributes_.begin()));
                 if(!attribute)
                     return;
 
@@ -597,42 +429,9 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<Vector3df>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                StringVector values = SplitString(value.toStdString(), ' ');
-                if(values.size() != 3)
-                    return;
-
-                Real vector[3];
-                for(uint i = 0; i < 3; i++)
-                {
-                    try
-                    {
-                        vector[i] = ParseString<Real>(values[i]);
-                    }
-                    catch (boost::bad_lexical_cast e)
-                    {
-                        ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
-                        return;
-                    }
-                }
-                Vector3df newValue = Vector3df(vector[0], vector[1], vector[2]);
-
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(newValue);
-            }
-        }
-    }
-
     //-------------------------COLOR ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<Color>::UpdateValue()
+    template<> void ECAttributeEditor<Color>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -642,10 +441,7 @@ namespace ECEditor
                 QList<QtProperty *> children = rootProperty_->subProperties();
                 if(children.size() >= 4)
                 {
-                    if(attributeMap_.size() <= 0)
-                    return;
-
-                    Foundation::Attribute<Color> *attribute = dynamic_cast<Foundation::Attribute<Color> *>(attributeMap_.begin()->second);
+                    Foundation::Attribute<Color> *attribute = dynamic_cast<Foundation::Attribute<Color> *>(*(attributes_.begin()));
                     if(!attribute)
                         return;
 
@@ -695,8 +491,8 @@ namespace ECEditor
                 variantManager->setAttribute(childProperty, "minimum", QVariant(0));
                 variantManager->setAttribute(childProperty, "maximum", QVariant(255));
 
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
@@ -706,7 +502,7 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<Color>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -714,10 +510,7 @@ namespace ECEditor
             QList<QtProperty *> children = rootProperty_->subProperties();
             if(children.size() >= 4)
             {
-                if(attributeMap_.size() <= 0)
-                    return;
-
-                Foundation::Attribute<Color> *attribute = dynamic_cast<Foundation::Attribute<Color> *>(attributeMap_.begin()->second);
+                Foundation::Attribute<Color> *attribute = dynamic_cast<Foundation::Attribute<Color> *>(*(attributes_.begin()));
                 if(!attribute)
                     return;
 
@@ -731,39 +524,6 @@ namespace ECEditor
                     newValue.b = ParseString<int>(property->valueText().toStdString()) / 255.0f;
                 else if(propertyName == "Alpha")
                     newValue.a = ParseString<int>(property->valueText().toStdString()) / 255.0f;
-                SetValue(newValue);
-            }
-        }
-    }
-
-    template<> void ECAttributeEditor<Color>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                StringVector values = SplitString(value.toStdString(), ' ');
-                if(values.size() != 4)
-                    return;
-
-                Real color[4];
-                for(uint i = 0; i < 4; i++)
-                {
-                    try
-                    {
-                        color[i] = ParseString<Real>(values[i]);
-                    }
-                    catch (boost::bad_lexical_cast e)
-                    {
-                        ECEditor::ECEditorModule::LogError(std::string(e.what()) + ". ECAttributeEditor cannot cast string value to real format.");
-                        return;
-                    }
-                }
-                Color newValue = Color(color[0], color[1], color[2], color[3]);
-
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
                 SetValue(newValue);
             }
         }
@@ -783,8 +543,8 @@ namespace ECEditor
             rootProperty_ = qStringPropertyManager->addProperty(attributeName_);
             if(rootProperty_)
             {
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
@@ -794,28 +554,28 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<std::string>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<std::string>::Set(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
             SetValue(property->valueText().toStdString());
     }
 
-    template<> void ECAttributeEditor<std::string>::UpdateValue()
+    template<> void ECAttributeEditor<std::string>::Update()
     {
         if(!useMultiEditor_)
         {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
+            AttributeList::iterator iter = attributes_.begin();
             QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
 
             assert(qStringPropertyManager);
             if(!qStringPropertyManager)
                 return;
-            
-            if(iter != attributeMap_.end())
+
+            if(iter != attributes_.end())
             {
-                if (rootProperty_ && iter->second)
+                if (rootProperty_)
                 {
-                    Foundation::Attribute<std::string> *attribute = dynamic_cast<Foundation::Attribute<std::string>*>(iter->second);
+                    Foundation::Attribute<std::string> *attribute = dynamic_cast<Foundation::Attribute<std::string>*>(*iter);
                     qStringPropertyManager->setValue(rootProperty_, attribute->Get().c_str());
                 }
                 iter++;
@@ -823,20 +583,6 @@ namespace ECEditor
         }
         else
             UpdateMultiEditorValue();
-    }
-
-    template<> void ECAttributeEditor<std::string>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(value.toStdString());
-            }
-        }
     }
 
     //-------------------------QVARIANT ATTRIBUTE TYPE-------------------------
@@ -851,11 +597,10 @@ namespace ECEditor
             propertyMgr_ = qStringPropertyManager;
             factory_ = lineEditFactory;
             rootProperty_ = qStringPropertyManager->addProperty(attributeName_);
-            //rootProperty_ = qStringPropertyManager->addProperty(QVariant::String, attributeName_);
             if(rootProperty_)
             {
-                UpdateValue();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
@@ -865,7 +610,7 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<QVariant>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
         {
@@ -874,21 +619,21 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<QVariant>::UpdateValue()
+    template<> void ECAttributeEditor<QVariant>::Update()
     {
         if(!useMultiEditor_)
         {
-            ECAttributeMap::iterator iter = attributeMap_.begin();
+            AttributeList::iterator iter = attributes_.begin();
             QtStringPropertyManager *qStringPropertyManager = dynamic_cast<QtStringPropertyManager *>(propertyMgr_);
             assert(qStringPropertyManager);
             if(!qStringPropertyManager)
                 return;
-            
-            if(iter != attributeMap_.end())
+
+            if(iter != attributes_.end())
             {
-                if (rootProperty_ && iter->second)
+                if (rootProperty_)
                 {
-                    Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant>*>(iter->second);
+                    Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant>*>(*iter);
                     qStringPropertyManager->setValue(rootProperty_, attribute->Get().toString());
                 }
                 iter++;
@@ -898,23 +643,9 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    template<> void ECAttributeEditor<QVariant>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
-                SetValue(QVariant(value));
-            }
-        }
-    }
-
     //-------------------------ASSETREFERENCE ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::UpdateValue()
+    template<> void ECAttributeEditor<Foundation::AssetReference>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -922,7 +653,7 @@ namespace ECEditor
             if(children.size() == 2)
             {
                 QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
-                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(attributeMap_.begin()->second);
+                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(*(attributes_.begin()));
                 if(!attribute || !stringManager)
                     return;
 
@@ -958,8 +689,8 @@ namespace ECEditor
                 childProperty = stringManager->addProperty("Asset type");
                 rootProperty_->addSubProperty(childProperty);
 
-                UpdateValue();
-                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SendNewAttributeValue(QtProperty*)));
+                Update();
+                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
             }
             owner_->setFactoryForManager(stringManager, lineEditFactory);
         }
@@ -967,7 +698,7 @@ namespace ECEditor
             InitializeMultiEditor();
     }
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::SendValue(QtProperty *property)
+    template<> void ECAttributeEditor<Foundation::AssetReference>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
@@ -975,35 +706,13 @@ namespace ECEditor
             if(children.size() == 2)
             {
                 QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
-                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(attributeMap_.begin()->second);
+                Foundation::Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Foundation::Attribute<Foundation::AssetReference> *>(*(attributes_.begin()));
                 if(!attribute || !stringManager)
                     return;
 
                 Foundation::AssetReference value;
                 value.id_ = stringManager->value(children[0]).toStdString();
                 value.type_ = stringManager->value(children[1]).toStdString();
-                SetValue(value);
-            }
-        }
-    }
-
-    template<> void ECAttributeEditor<Foundation::AssetReference>::ValueSelected(const QtProperty *property, const QString &value)
-    {
-        if(useMultiEditor_)
-        {
-            if(rootProperty_ == property)
-            {
-                StringVector values = SplitString(value.toStdString(), ',');
-                if(values.size() != 2)
-                    return;
-
-                Foundation::AssetReference value;
-                value.id_ = values[0];
-                value.type_ = values[1];
-
-                UnInitialize();
-                useMultiEditor_ = false;
-                Initialize();
                 SetValue(value);
             }
         }

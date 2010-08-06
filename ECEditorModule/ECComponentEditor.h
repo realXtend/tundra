@@ -75,8 +75,7 @@ namespace ECEditor
         //! @return return attribute pointer if attribute type is supported and if not return null pointer.
         static ECAttributeEditorBase *CreateAttributeEditor( QtAbstractPropertyBrowser *browser, 
                                                              ECComponentEditor *editor, 
-                                                             const Foundation::AttributeInterface &attribute,
-                                                             Foundation::ComponentInterfacePtr component );
+                                                             Foundation::AttributeInterface &attribute);
 
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what
