@@ -164,7 +164,13 @@ namespace CoreUi
         SwitchToScene("WorldBuilding");
     }
 
-    void UiStateMachine::RegisterScene(QString name, QGraphicsScene *scene)
+    void UiStateMachine::ToggleEther()
+    {
+        if (connection_state_ == UiDefines::Connected)
+            emit EtherTogglePressed();
+    }
+
+    void UiStateMachine::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
         if (!scene_map_.contains(name))
             scene_map_[name] = scene;
@@ -173,13 +179,19 @@ namespace CoreUi
         if (name == "Ether")
             connect(scene, SIGNAL( EtherSceneReadyForSwitch() ), SLOT( SwitchToInworldScene() ));
     }
-    
-    void UiStateMachine::SwitchToScene(QString name)
+
+    bool UiStateMachine::UnregisterScene(const QString &name)
     {
         if (!scene_map_.contains(name))
-            return;
+            return false;
+        scene_map_.remove(name);
+    }
 
-        
+    bool UiStateMachine::SwitchToScene(const QString &name)
+    {
+        if (!scene_map_.contains(name))
+            return false;
+
         if (next_scene_name_ != name)
         {
             next_scene_name_ = name;
@@ -211,12 +223,16 @@ namespace CoreUi
             // we changed the currently viewed scene
             emit SceneChangedTo(old_scene_name, current_scene_name_);
         }
+
+        return true;
     }
 
-    void UiStateMachine::ToggleEther()
+    const QGraphicsScene *UiStateMachine::GetScene(const QString &name) const
     {
-        if (connection_state_ == UiDefines::Connected)      
-            emit EtherTogglePressed();
+        if (scene_map_.contains(name))
+            return scene_map_[name];
+        else
+            return 0;
     }
 
     void UiStateMachine::SetConnectionState(UiDefines::ConnectionState new_connection_state)

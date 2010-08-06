@@ -12,6 +12,8 @@
 
 namespace UiServices
 {
+    class UiModule;
+
     /** Implements UiServiceInterface and provides ...
      *  
      */
@@ -20,8 +22,10 @@ namespace UiServices
         Q_OBJECT
 
     public:
-        /// Default destructor.
-        UiSceneService();
+        /** Constuctor.
+         *  @param owner Owner module.
+         */
+        UiSceneService(UiModule *owner);
 
         /// Destructor.
         ~UiSceneService();
@@ -58,16 +62,20 @@ namespace UiServices
         void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
 
         /// UiServiceInterface override.
-        QGraphicsScene *GetScene(const QString &name) const;
+        const QGraphicsScene *GetScene(const QString &name) const;
 
         /// UiServiceInterface override.
         void RegisterScene(const QString &name, QGraphicsScene *scene);
 
         /// UiServiceInterface override.
-        bool DeleteScene(const QString &name);
+        bool UnregisterScene(const QString &name);
 
         /// UiServiceInterface override.
         bool SwitchToScene(const QString &name);
+
+    private:
+        /// In-world scene controller.
+        UiModule *owner_;
     };
 }
 

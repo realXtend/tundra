@@ -31,13 +31,16 @@ namespace ProtocolUtilities
 namespace UiServices
 {
     class UiSettingsService;
+    class UiSceneService;
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
+    typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
 
     //! UiModule provides user interface services
-    /// For details about Inworld Widget Services read UiWidgetServices.h
-    /// For details about Notification Services read UiNotificationServices.h
-    /// Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
-
+    /*! For details about Inworld Widget Services read UiWidgetServices.h
+     *  For details about Notification Services read UiNotificationServices.h
+     *  Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
+     *  For the UI services provided for other, see @see UiSceneService
+     */
     class UI_MODULE_API UiModule : public QObject, public Foundation::ModuleInterface
     {
         Q_OBJECT
@@ -70,10 +73,10 @@ namespace UiServices
 
         QPair<QString, QString> GetScreenshotPaths();
 
-        /*************** Logging ***************/
-
+        //! Logging
         MODULE_LOGGING_FUNCTIONS;
-        //! Returns name of this module. Needed for logging.
+
+        //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
 
     private slots:
@@ -121,6 +124,9 @@ namespace UiServices
 
         //! Ui settings service 
         UiSettingsPtr ui_settings_service_;
+
+        //! Ui service.
+        UiSceneServicePtr ui_scene_service_;
 
         boost::shared_ptr<InputContext> input;
     };

@@ -7,10 +7,14 @@
 
 #include "StableHeaders.h"
 #include "UiSceneService.h"
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+#include "UiStateMachine.h"
 
 namespace UiServices
 {
-    UiSceneService::UiSceneService()
+    UiSceneService::UiSceneService(UiModule *owner) :
+        owner_(owner)
     {
     }
 
@@ -20,62 +24,74 @@ namespace UiServices
 
     QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget)
     {
-        return &QGraphicsProxyWidget();
+        //return owner_->GetInworldSceneController()->AddWidgetToScene(widget);
+        return 0;
     }
 
     void UiSceneService::AddWidgetToScene(QGraphicsProxyWidget *widget)
     {
+        //owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
     {
+        owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     {
+        //owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
     }
 
     void UiSceneService::ShowWidget(QWidget *widget) const
     {
+        owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
 
     void UiSceneService::ShowWidget(QGraphicsProxyWidget *widget) const
     {
+        //owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
 
     void UiSceneService::HideWidget(QWidget *widget) const
     {
+        owner_->GetInworldSceneController()->HideProxyForWidget(widget);
     }
 
     void UiSceneService::HideWidget(QGraphicsProxyWidget *widget) const
     {
+        //owner_->GetInworldSceneController()->HideProxyForWidget(widget);
     }
 
     void UiSceneService::BringWidgetToFront(QWidget *widget) const
     {
+        owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
     void UiSceneService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     {
+        //owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
-    QGraphicsScene *UiSceneService::GetScene(const QString &name) const
+    const QGraphicsScene *UiSceneService::GetScene(const QString &name) const
     {
-        return &QGraphicsScene();
+        owner_->GetUiStateMachine()->GetScene(name);
+        return 0;
     }
 
     void UiSceneService::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
+        owner_->GetUiStateMachine()->RegisterScene(name, scene);
     }
 
-    bool UiSceneService::DeleteScene(const QString &name)
+    bool UiSceneService::UnregisterScene(const QString &name)
     {
-        return false;
+        return owner_->GetUiStateMachine()->UnregisterScene(name);
     }
 
     bool UiSceneService::SwitchToScene(const QString &name)
     {
-        return false;
+        return owner_->GetUiStateMachine()->SwitchToScene(name);
     }
 }
 

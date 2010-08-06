@@ -18,6 +18,7 @@
 #include "InventoryAsset.h"
 #include "ItemPropertiesWindow.h"
 #include "InventoryService.h"
+#include "UiServiceInterface.h"
 
 #include "Framework.h"
 #include "EventManager.h"
@@ -229,12 +230,12 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
         {
             // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
-            UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-            if (ui_module)
+            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            if (ui)
             {
                 if (inventoryWindow_)
                 {
-                    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(inventoryWindow_);
+                    ui->RemoveWidgetFromScene(inventoryWindow_);
                     SAFE_DELETE_LATER(inventoryWindow_);
                 }
 /*

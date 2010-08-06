@@ -13,12 +13,18 @@
 
 #include <QObject>
 
+#include <boost/shared_ptr.hpp>
+
 class QWidget;
 class QGraphicsProxyWidget;
 class QGraphicsScene;
 
 namespace Foundation
 {
+    class UiServiceInterface;
+    typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
+    typedef boost::shared_ptr<UiServiceInterface> UiServiceWeakPtr;
+
     /** Interface for Naali's user interface ulitizing Qt's QWidgets.
      *  If you want to see your QWidgets external to the main application just call show() for them.
      */
@@ -88,23 +94,26 @@ namespace Foundation
          */
         virtual void BringWidgetToFront(QGraphicsProxyWidget *widget) const = 0;
 
-        /** Returns scene with the requested name.
+        /** Returns scene with the requested name for introspection.
          *  @param name Name of the scene.
          *  @return Graphic scene with the requested name, or null if not found.
          */
-        virtual QGraphicsScene *GetScene(const QString &name) const = 0;
+        virtual const QGraphicsScene *GetScene(const QString &name) const = 0;
 
         /** Registers new scene.
+         *  The instance which creates new scene is also responsible for its deletion.
          *  @param name Name of the scene.
          *  @param scene Graphics scene.
+         *  @sa UnregisterScene.
          */
         virtual void RegisterScene(const QString &name, QGraphicsScene *scene) = 0;
 
-        /** Deletes graphics scene.
+        /** Unregisters graphics scene.
          *  @param name Name of the scene.
          *  @return True if the scene was found and deleted succesfully, false otherwise.
+         *  @note Does not delete the scene.
          */
-        virtual bool DeleteScene(const QString &name) = 0;
+        virtual bool UnregisterScene(const QString &name) = 0;
 
         /** Switches the active scene.
          *  @param name Name of the scene.
