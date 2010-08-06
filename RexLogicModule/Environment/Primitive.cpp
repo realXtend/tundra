@@ -2081,6 +2081,7 @@ void Primitive::SerializeECsToNetwork()
 void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument& doc)
 {
     StringVector type_names;
+    StringVector names;
     QDomElement entity_elem = doc.firstChildElement("entity");
     if (!entity_elem.isNull())
     {
@@ -2088,8 +2089,10 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
         while (!comp_elem.isNull())
         {
             std::string type_name = comp_elem.attribute("type").toStdString();
+            std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
-            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name);
+            names.push_back(name);
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
             if (new_comp)
             {
                 new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
@@ -2111,7 +2114,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             bool found = false;
             for (uint j = 0; j < type_names.size(); ++j)
             {
-                if (type_names[j] == all_components[i]->TypeName())
+                if (type_names[j] == all_components[i]->TypeName() && names[j] == all_components[i]->Name())
                 {
                     found = true;
                     break;

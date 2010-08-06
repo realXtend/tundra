@@ -127,6 +127,7 @@ namespace Scene
             \param change Change type for network replication, in case component has to be created
         */
         Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, const std::string &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).

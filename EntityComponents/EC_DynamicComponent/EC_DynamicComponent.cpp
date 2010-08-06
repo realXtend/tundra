@@ -56,7 +56,6 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         QString type = child.attribute("type");
         QString value = child.attribute("value");
         DeserializeData attributeData(name.toStdString(), type.toStdString(), value.toStdString());
-        //if(!attributeData.isNull())
         deserializedAttributes.push_back(attributeData);
 
         child = child.nextSiblingElement("attribute");
@@ -80,8 +79,6 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
             for(;iter2 != deserializedAttributes.end(); iter2++)
             {
                 addAttributes.push_back(*iter2);
-                //Foundation::AttributeInterface *attribute = CreateAttribute((*iter2).type_.c_str(), (*iter2).name_.c_str());
-                //attribute->FromString((*iter2).value_, AttributeChange::LocalOnly);
             }
             break;
         }
@@ -90,7 +87,6 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         {
             for(;iter1 != oldAttributes.end(); iter1++)
                 remAttributes.push_back(DeserializeData((*iter1)->GetNameString().c_str()));
-                //RemoveAttribute((*iter1)->GetNameString().c_str());
             break;
         }
 
@@ -105,22 +101,16 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         else if((*iter1)->GetNameString() > (*iter2).name_)
         {
             addAttributes.push_back(*iter2);
-            //Foundation::AttributeInterface *attribute = CreateAttribute((*iter2).type_.c_str(), (*iter2).name_.c_str());
-            //attribute->FromString((*iter2).value_, AttributeChange::LocalOnly);
             iter2++;
         }
         // Couldn't find the attribute in a new list so it need to be removed from the component.
         else
         {
             remAttributes.push_back(DeserializeData((*iter1)->GetNameString().c_str()));
-            //RemoveAttribute((*iter1)->GetNameString().c_str());
-            //iter1 = oldAttributes.erase(iter1);
             iter1++;
         }
     }
 
-    //! @todo for some odd reason editor will goto ethernal loop when new attributes are added to the component and the ECEditor is opened. Same goes with remove attribute.
-    //! Find a way what is causing this odd behaviour and fix it. Remove blockSignals while done.
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
@@ -139,41 +129,12 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 Foundation::AttributeInterface *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
 {
     Foundation::AttributeInterface *attribute = 0;
+    if(ContainAttribute(name))
+        return attribute;
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(attribute)
         emit AttributeAdded(name);
     return attribute;
-
-    /*Foundation::AttributeInterface *attribute = 0;
-    if(ContainAttribute(name))
-        return attribute;
-
-    if (typeName == "string")
-        attribute = new Foundation::Attribute<std::string>(this, name.toStdString().c_str());
-    else if(typeName == "int")
-        attribute = new Foundation::Attribute<int>(this, name.toStdString().c_str());
-    else if(typeName == "real")
-        attribute = new Foundation::Attribute<Real>(this, name.toStdString().c_str());
-    else if(typeName == "color")
-        attribute = new Foundation::Attribute<Color>(this, name.toStdString().c_str());
-    else if(typeName == "vector3df")
-        attribute = new Foundation::Attribute<Vector3df>(this, name.toStdString().c_str());
-    else if(typeName == "bool")
-        attribute = new Foundation::Attribute<bool>(this, name.toStdString().c_str());
-    else if(typeName == "uint")
-        attribute = new Foundation::Attribute<uint>(this, name.toStdString().c_str());
-    else if(typeName == "quaternion")
-        attribute = new Foundation::Attribute<Quaternion>(this, name.toStdString().c_str());
-    else if(typeName == "assetreference")
-        attribute = new Foundation::Attribute<Foundation::AssetReference>(this, name.toStdString().c_str());
-    else if(typeName == "qvariant")
-        attribute = new Foundation::Attribute<QVariant>(this, name.toStdString().c_str());
-    //else // If the right attribute type was not found treat the attribute as string.
-    //    attribute = new Foundation::Attribute<std::string>(this, name.toStdString().c_str());
-
-    if(attribute)
-        emit AttributeAdded(name);
-    return attribute;*/
 }
 
 void EC_DynamicComponent::RemoveAttribute(const QString &name)

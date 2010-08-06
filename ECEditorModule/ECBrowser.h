@@ -56,8 +56,12 @@ namespace ECEditor
         virtual ~ECBrowser();
 
         //! Insert new entity to browser and add it's components to the browser.
+        /*! @param enity a new entity that we want to edit on the ECEditor.
+         */
         void AddNewEntity(Scene::Entity *entity);
         //! Remove edited entity from the browser widget.
+        /*! @param entity Entity that we want to remove on the ECEditor.
+         */
         void RemoveEntity(Scene::Entity *entity);
 
     public slots:
@@ -68,10 +72,14 @@ namespace ECEditor
 
     signals:
         //! User want to open xml editor for that spesific component type.
+        /*! @param componentType type name of a component.
+         */
         void ShowXmlEditorForComponent(const std::string &componentType);
         //! User want to add new component for selected entities.
         void CreateNewComponent();
         //! Emitted when component is selected from the browser widget.
+        /*! @param component Pointer to a component that has just been selected.
+         */
         void ComponentSelected(Foundation::ComponentInterface *component);
 
     private:
@@ -79,25 +87,43 @@ namespace ECEditor
         void InitBrowser();
         //! Try to find the right component group for spesific component type. if found return it's position on the list as in iterator format.
         //! If any component group wasn't found return .end() iterator value.
+        /*! @param comp component that we want to find in some of the component group.
+         */
         ComponentGroupList::iterator FindSuitableGroup(const Foundation::ComponentInterface &comp);
         //! Try to find component group for spesific QTreeWidgetItem.
+        /*! @param item QTreeWidgetItem that we want to use to find a right component group.
+         */
         ComponentGroupList::iterator FindSuitableGroup(const QTreeWidgetItem &item);
         //! Add new component to existing component group if same type of component have been already added to editor,
-        //! if component type is not included as yet to browser create new component group and add it to editor's list container.
+        /*! if component type is not included, create new component group and add it to editor.
+         *  @param comp a new component that we want to add into the enity.
+         */
         void AddNewComponentToGroup(Foundation::ComponentInterfacePtr comp);
         //! Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
+        /*! @param comp that we want to remove from  the component group.
+         */
         void RemoveComponentFromGroup(Foundation::ComponentInterface *comp);
         //! Remove whole component group object from the browser.
+        /*! componentGroup component group object that we want to remove from the editor.
+         */
         void RemoveComponentGroup(ComponentGroup *componentGroup);
 
     private slots:
         //! User have right clicked the browser and QMenu need to be open to display copy, paste, delete ations etc.
+        /*! @param pos Mouse click position.
+         */
         void ShowComponentContextMenu(const QPoint &pos);
         //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
         void SelectionChanged();
         //! a new component have been added to entity.
+        /*! @param entity Entity that owns the component
+         *  @param comp a new component that has added into the entity.
+         */
         void NewComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp);
         //! Component have been removed from the entity.
+        /*! @param entity Entity that owns the component
+         *  @param comp Component that is planned to be removed from the entity.
+         */
         void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp);
         //! User has selected xml edit action from a QMenu.
         void OpenComponentXmlEditor();
@@ -108,10 +134,13 @@ namespace ECEditor
         //! User has selected delete action from a QMenu.
         void DeleteComponent();
         //! New dynamic component attribute has been added.
-        //! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
-        //! This will consume too much time and should be fixed so that coponent editor will be initialized only once when the dynamic component's attributes changes.
+        /*! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
+         * This will consume too much time and should be fixed so that coponent editor will be initialized only once when all the dynamic component's attributes have been added.
+         */
         void DynamicComponentChanged(const QString &name);
-        //! Components name has been changed and we need to repostion it on the browser.
+        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
+        /*! @param newName component's new name.
+         */
         void ComponentNameChanged(const std::string &newName);
         //! Show dialog, so that user can create a new attribute.
         void CreateAttribute();

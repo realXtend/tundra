@@ -41,6 +41,10 @@ Framework* ComponentInterface::GetFramework() const
 
 void ComponentInterface::SetName(const std::string& name)
 {
+    // no point to send a signal if name have stayed same as before.
+    if(name_ == name)
+        return;
+
     name_ = name;
     emit OnComponentNameChanged(name);
 }
