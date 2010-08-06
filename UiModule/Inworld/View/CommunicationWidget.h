@@ -96,7 +96,7 @@ namespace CoreUi
         NormalChatViewWidget *normal_view_widget_;
         UiServices::UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
-        bool in_world_speak_mode_on_;
+        static bool in_world_speak_mode_on_;
 
         QPointF press_pos_;
         QPointF release_pos_;

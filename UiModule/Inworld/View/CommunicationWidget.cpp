@@ -72,6 +72,8 @@ namespace
 
 namespace CoreUi
 {
+    bool CommunicationWidget::in_world_speak_mode_on_ = false; 
+
     CommunicationWidget::CommunicationWidget(Foundation::Framework* framework) :
         framework_(framework),
         QGraphicsProxyWidget(),
@@ -80,7 +82,6 @@ namespace CoreUi
         viewmode_(Normal),
         resizing_horizontal_(false),
         resizing_vertical_(false),
-        in_world_speak_mode_on_(false),
         voice_state_widget_(0),
         voice_users_info_widget_(0),
         voice_users_widget_(0),
