@@ -108,7 +108,7 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("2.5-rc3"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("2.5"));
 
             CreateLoggingSystem(); // depends on config and platform
 
@@ -595,6 +595,11 @@ namespace Foundation
         return engine_.get();
     }
 
+    MainWindow *Framework::GetMainWindow() const
+    {
+        return engine_->GetMainWindow();
+    }
+
     QGraphicsView *Framework::GetUIView() const
     {
         return engine_->GetUIView();
@@ -664,6 +669,7 @@ namespace Foundation
 
         return *input_logic;
     }
+
     bool Framework::HasScene(const std::string &name) const
     {
         return scenes_.find(name) != scenes_.end();
