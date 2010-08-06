@@ -82,6 +82,24 @@ namespace Scene
         // Could not be created
         return Foundation::ComponentInterfacePtr();
     }
+
+    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const std::string &type_name, const std::string &name, AttributeChange::Type change)
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
+                return components_[i];
+
+        // If component was not found, try to create
+        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        if (new_comp)
+        {
+            AddComponent(new_comp, change);
+            return new_comp;
+        }
+
+        // Could not be created
+        return Foundation::ComponentInterfacePtr();
+    }
     
     Foundation::ComponentInterfacePtr Entity::GetComponent(const std::string &type_name) const
     {

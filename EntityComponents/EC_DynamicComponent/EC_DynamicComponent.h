@@ -14,22 +14,6 @@ class QDomElement;
 #include <map>
 #include <string>
 
-/*class AttributeProduct
-{
-public:
-    AttributeProduct(){}
-    virtual ~AttributeProduct(){}
-    std::string GetName() const {return name_;}
-    std::string GetTypeName() const {return typeName_;}
-    Foundation::ComponentInterface *GetOwner() const {return owner_;}
-protected:
-    virtual AttributeProduct *CreateAttribute();
-private:
-    std::string typeName_;
-    std::string name_;
-    Foundation::ComponentInterface *owner_;
-};*/
-
 class EC_DynamicComponent : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_DynamicComponent);

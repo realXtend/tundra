@@ -111,20 +111,6 @@ namespace ECEditor
         if(components_.size() > 1)
             groupPropertyName += QString(" (%1 components)").arg(components_.size());
         groupProperty_->setPropertyName(groupPropertyName);
-
-        // If component has setted a name use it instead of component typename.
-        /*if(!components_.begin()->expired())
-        {
-            Foundation::ComponentInterface *comp = components_.begin()->lock().get();
-            if(comp->Name().size() > 0)
-            {
-                QString groupPropertyName = comp->Name().c_str();
-                if(components_.size() > 1)
-                    groupPropertyName += QString(" (%1 components)").arg(components_.size());
-                groupProperty_->setPropertyName(groupPropertyName);
-                return;
-            }
-        }*/
     }
 
     bool ECComponentEditor::ContainProperty(QtProperty *property) const

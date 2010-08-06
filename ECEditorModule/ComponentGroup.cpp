@@ -93,8 +93,8 @@ namespace ECEditor
 
     bool ComponentGroup::AddComponent(Foundation::ComponentInterfacePtr comp)
     {
-        //Check if the component have already added to component group.
-        if(ContainComponent(comp.get())) 
+        //Check if the component have already added to component group or it's name or type are different for the component group.
+        if(ContainComponent(comp.get()) || comp->Name() != name_ || comp->TypeName() != typeName_) 
             return false;
         components_.push_back(Foundation::ComponentWeakPtr(comp));
         editor_->AddNewComponent(comp, false);

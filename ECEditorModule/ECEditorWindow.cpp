@@ -214,21 +214,19 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for (uint i = 0; i < entities.size(); ++i)
         {
+            Foundation::ComponentInterfacePtr comp;
+            comp = entities[i]->GetComponent(typeName.toStdString(), name.toStdString());
+            // Check if component has been already added to a entity.
+            if(comp.get())
+                continue;
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
-            Foundation::ComponentInterfacePtr comp;
             if(!name.isEmpty())
-                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString(), name.toStdString());//entities[i]->GetOrCreateComponent(typeName.toStdString(), AttributeChange::Local);
+                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString(), name.toStdString());
             else
                 comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString()); 
             if (comp)
-            {
                 entities[i]->AddComponent(comp, AttributeChange::Local);
-                // Trigger change notification in the component so that it updates its initial internal state, if necessary
-                //comp->ComponentChanged(AttributeChange::Local);
-            }
-            
-                comp->SetName(name.toStdString());
         }
     }
 
@@ -302,7 +300,7 @@ namespace ECEditor
             Scene::Entity::ComponentVector components = originalEntity->GetComponentVector();
             for(uint i = 0; i < components.size(); i++)
             {
-                Foundation::ComponentInterfacePtr component = newEntity->GetOrCreateComponent(components[i]->TypeName(), components[i]->GetChange());
+                Foundation::ComponentInterfacePtr component = newEntity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                 if(component->IsSerializable())
                 {
                     Foundation::AttributeVector attributes = components[i]->GetAttributes();

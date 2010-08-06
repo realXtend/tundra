@@ -440,8 +440,8 @@ namespace ECEditor
             EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(components[i].lock().get());
             if(component)
             {
-                component->CreateAttribute(typeName, name);
-                component->ComponentChanged("Local");
+                if(component->CreateAttribute(typeName, name))
+                    component->ComponentChanged("Local");
             }
         }
     }
