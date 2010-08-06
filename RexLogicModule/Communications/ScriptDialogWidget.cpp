@@ -36,7 +36,7 @@ namespace RexLogic
     }
 
     ScriptDialogWidget::ScriptDialogWidget(ScriptDialogRequest &request, QWidget *parent) :
-        QWidget(parent), request_(request)
+        QWidget(parent), request_(request), text_input_(0)
     {
         InitWindow(request_);
     }
@@ -98,13 +98,14 @@ namespace RexLogic
             if(label.compare("!!llTextBox!!") == 0) //this is not regular llDialog. this is llTextBox
             {
                 isTextBox = true;
-                QLineEdit* lineEdit = new QLineEdit(0);
-                button_container->addWidget(lineEdit, 0, 0);
-                connect(lineEdit, SIGNAL( textChanged(QString)), this, SLOT( OnTextChanged(QString)));
+                text_input_ = new QLineEdit(0);
+                button_container->addWidget(text_input_, 0, 0);
+                text_input_->setFocus(Qt::MouseFocusReason);
 
                 SelectionButton* button = new SelectionButton(0, "Ok", "!!llTextBox!!");
                 button_container->addWidget(button, 0, 1);
                 connect(button, SIGNAL( Clicked(QString)), this, SLOT( OnButtonPressed(QString)));
+                connect(text_input_, SIGNAL( returnPressed ()), button, SLOT( OnClicked()));
 
                 QPushButton* default_button = widget_->findChild<QPushButton*>("defaultButton");
                 if (default_button)
@@ -149,22 +150,26 @@ namespace RexLogic
         }
     }
 
+    void ScriptDialogWidget::showEvent(QShowEvent* show_event)
+    {
+        QWidget::showEvent(show_event);
+        if(text_input_){
+            text_input_->setFocus(Qt::MouseFocusReason);
+        }
+    }
+
     void ScriptDialogWidget::hideEvent(QHideEvent *hide_event)
     {
         QWidget::hideEvent(hide_event);
         OnIgnorePressed();
     }
 
-    void ScriptDialogWidget::OnTextChanged(QString value)
-    {
-        text_value_ = value;
-    }
-
     void ScriptDialogWidget::OnButtonPressed(QString id)
     {
         if(id.compare("!!llTextBox!!")==0)
         {
-            id = text_value_;
+            if(text_input_)
+                id = text_input_->text();
         }
 
         close();

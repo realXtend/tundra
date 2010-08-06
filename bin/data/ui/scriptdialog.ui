@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>373</width>
-    <height>205</height>
+    <width>271</width>
+    <height>180</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -38,10 +38,29 @@
       </widget>
      </item>
      <item>
-      <widget class="QPlainTextEdit" name="messageText"/>
-     </item>
-     <item>
-      <layout class="QHBoxLayout" name="horizontalLayout"/>
+      <widget class="QPlainTextEdit" name="messageText">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>16777215</width>
+         <height>60</height>
+        </size>
+       </property>
+       <property name="acceptDrops">
+        <bool>false</bool>
+       </property>
+       <property name="readOnly">
+        <bool>true</bool>
+       </property>
+       <property name="plainText">
+        <string/>
+       </property>
+      </widget>
      </item>
     </layout>
    </item>
@@ -73,10 +92,7 @@
     </layout>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout_2">
-     <property name="topMargin">
-      <number>0</number>
-     </property>
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
       <spacer name="horizontalSpacer_2">
        <property name="orientation">
