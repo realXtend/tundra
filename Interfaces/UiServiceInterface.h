@@ -24,13 +24,14 @@ namespace Foundation
     {
         Q_OBJECT
 
-    public slots:
+    public:
         /// Default destructor.
         UiServiceInterface() {}
 
         /// Destructor.
         virtual ~UiServiceInterface() {}
 
+    public slots:
         /** Add widget to scene.
          *  @param widget Widget.
          *  @return Proxy widget of the added widget.
