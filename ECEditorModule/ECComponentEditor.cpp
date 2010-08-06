@@ -18,29 +18,29 @@
 namespace ECEditor
 {
     // static
-    // \todo Replace this more practical implementation where new attribute type support would be more pratical.
+    //! @todo Replace this more practical implementation where new attribute type support would be more pratical.
+    //! Like somesort of factory that is ownd by ComponentManager.
     ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(QtAbstractPropertyBrowser *browser, 
                                                                     ECComponentEditor *editor, 
-                                                                    const Foundation::AttributeInterface &attribute, 
-                                                                    Foundation::ComponentInterfacePtr component)
+                                                                    Foundation::AttributeInterface &attribute)
     {
         ECAttributeEditorBase *attributeEditor = 0;
         if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Real>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<Real>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<int>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<int>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Vector3df>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<Vector3df>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Color>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<Color>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<std::string>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<std::string>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<bool>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<QVariant>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Foundation::AssetReference> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(attribute.GetName(), browser, component, editor);
+            attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
         return attributeEditor;
     }
 
@@ -87,7 +87,7 @@ namespace ECEditor
         Foundation::AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
-            ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, *attributes[i], component);
+            ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, *attributes[i]);
             if(!attributeEditor)
                 continue;
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
@@ -136,7 +136,9 @@ namespace ECEditor
         AttributeEditorMap::iterator iter = attributeEditors_.begin();
         while(iter != attributeEditors_.end())
         {
-            iter->second->AddNewComponent(component, updateUi);
+            Foundation::AttributeInterface *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
+            if(attribute)
+                iter->second->AddNewAttribute(attribute);
             iter++;
         }
         QObject::connect(component.get(), SIGNAL(OnChanged()), this, SLOT(ComponentChanged()));
@@ -160,10 +162,11 @@ namespace ECEditor
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
-                    attributeIter->second->RemoveComponent(componentPtr.get());
+                    Foundation::AttributeInterface *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
+                    if(attribute)
+                        attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;
                 }
-                //emit ComponentRemoved(componentPtr.get());
                 components_.erase(iter);
                 break;
             }
@@ -222,7 +225,7 @@ namespace ECEditor
             {
                 AttributeEditorMap::iterator iter = attributeEditors_.find(attributes[i]->GetName());
                 if(iter != attributeEditors_.end())
-                    iter->second->AttributeValueChanged(*attributes[i]);
+                    iter->second->UpdateEditorUI();//AttributeValueChanged(*attributes[i]);
             }
         }
     }

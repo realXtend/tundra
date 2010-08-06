@@ -31,7 +31,7 @@ namespace ECEditor
         void SetAttributeValues(QtProperty *property, const QStringList &attributes);
 
     signals:
-        void ValueChanged(const QtProperty *property, const QString &value);
+        void ValueChanged(const QString &value);
         void AttributeValuesUpdated(const QtProperty *property, const QStringList &attributes);
 
     protected:

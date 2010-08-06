@@ -34,7 +34,7 @@ namespace ECEditor
             return;
 
         values_[property].value = value;
-        emit ValueChanged(property, value);
+        emit ValueChanged(value);
     }
 
     void MultiEditPropertyManager::SetAttributeValues(QtProperty *property, const QStringList &attributes)
