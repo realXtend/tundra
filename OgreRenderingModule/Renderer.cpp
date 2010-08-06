@@ -13,12 +13,14 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
+
 #include "SceneEvents.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
+#include "MainWindow.h"
 
 #include <Ogre.h>
 //#include <OgreRenderQueue.h>
@@ -66,7 +68,7 @@ namespace OgreRenderer
                 if (entity)
                     renderer_->visible_entities_.insert(entity->GetId());
             }
-            catch (Ogre::InvalidParametersException)
+            catch (Ogre::InvalidParametersException &/*e*/)
             {
             }
             return true;
@@ -107,12 +109,6 @@ namespace OgreRenderer
         //! list of subscribed listeners
         ListenerList listeners_;
     };
-
-    void NaaliMainWindow::closeEvent(QCloseEvent* e)
-    {
-        framework_->Exit();
-        e->ignore();
-    }
 
     Renderer::Renderer(Framework* framework, const std::string& config, const std::string& plugins, const std::string& window_title) :
         initialized_(false),
@@ -192,11 +188,6 @@ namespace OgreRenderer
         resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(q_ogre_world_view_);
-        /** @note   We cannot delete main window here because it will cause many dangling pointers
-         *          in UiModule which is uninitalized after destruction of Renderer. Probably we will 
-         *          refactor the UiModule to be authorative of the main window instead of Renderer.
-         */
-         //SAFE_DELETE(main_window_);
     }
 
     void Renderer::RemoveLogListener()
@@ -210,11 +201,10 @@ namespace OgreRenderer
 
     void Renderer::InitializeQt()
     {
-        ///\todo Memory leak below, see very end of ~Renderer() for comments.
-        main_window_ = new NaaliMainWindow(framework_);
+        // FrameworkQtApplication owns the main window.
+        main_window_ = framework_->GetMainWindow();
         q_ogre_ui_view_ = new QOgreUIView(main_window_);
 
-        ///\todo Memory leak below, see very end of ~Renderer() for comments.
         main_window_->setLayout(new QVBoxLayout(main_window_));
         main_window_->layout()->setMargin(0);
         main_window_->layout()->addWidget(q_ogre_ui_view_);
@@ -351,7 +341,7 @@ namespace OgreRenderer
         {
             file.load(plugin_filename);
         }
-        catch (Ogre::Exception e)
+        catch (Ogre::Exception &/*e*/)
         {
             OgreRenderingModule::LogError("Could not load Ogre plugins configuration file");
             return;
@@ -741,7 +731,7 @@ namespace OgreRenderer
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
             }
-            catch (Ogre::InvalidParametersException)
+            catch (Ogre::InvalidParametersException &/*e*/)
             {
                 continue;
             }
@@ -789,7 +779,7 @@ namespace OgreRenderer
             {
                 entity = Ogre::any_cast<Scene::Entity*>(any);
             }
-            catch (Ogre::InvalidParametersException)
+            catch (Ogre::InvalidParametersException &/*e*/)
             {
                 continue;
             }

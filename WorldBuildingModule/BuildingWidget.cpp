@@ -66,13 +66,35 @@ namespace WorldBuilding
                 QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
             else if (!change_cursor && QApplication::overrideCursor())
                 QApplication::restoreOverrideCursor();
+            
+            if (view_)
+            {
+                QPointF widget_pos = mouse_hover_move_event->pos();
+                QCursor *current_cursor = QApplication::overrideCursor();
+                if (widget()->childAt(widget_pos.toPoint()) == view_)
+                {
+                    if (current_cursor == 0)
+                        QApplication::setOverrideCursor(Qt::PointingHandCursor);
+                    else if (current_cursor->shape() != Qt::PointingHandCursor)
+                        QApplication::changeOverrideCursor(Qt::PointingHandCursor);
+                }
+                else if (current_cursor)
+                {
+                    if (current_cursor->shape() == Qt::PointingHandCursor)
+                        QApplication::restoreOverrideCursor();
+                }
+            }
             QGraphicsProxyWidget::hoverMoveEvent(mouse_hover_move_event);
         }
 
         void BuildingWidget::hoverLeaveEvent(QGraphicsSceneHoverEvent *mouse_hover_leave_event)
         {
-            if (QApplication::overrideCursor())
+            QCursor *stack_cursor = QApplication::overrideCursor();
+            while (stack_cursor)
+            {
                 QApplication::restoreOverrideCursor();
+                stack_cursor = QApplication::overrideCursor();
+            }
             QGraphicsProxyWidget::hoverLeaveEvent(mouse_hover_leave_event);
         }
 
@@ -92,7 +114,7 @@ namespace WorldBuilding
 
         void BuildingWidget::SetWorldObjectView(WorldObjectView* view)
         {
-            view_=view;
+            view_ = view;
         }
 
         void BuildingWidget::mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event)
@@ -160,20 +182,6 @@ namespace WorldBuilding
                 if (resized && QApplication::overrideCursor())
                     if (QApplication::overrideCursor()->shape() == Qt::ForbiddenCursor)
                         QApplication::restoreOverrideCursor();
-            }
-            if (QApplication::overrideCursor()->shape() == Qt::PointingHandCursor)
-            {
-                QApplication::restoreOverrideCursor();
-            }
-
-            if(view_)
-            {
-                if(widget()->childAt(scene_pos.toPoint()) == view_)
-                {
-                    if (QApplication::overrideCursor()->shape() != Qt::PointingHandCursor)
-                        QApplication::setOverrideCursor(QCursor(Qt::PointingHandCursor));
-                   
-                }
             }
             QGraphicsProxyWidget::mouseMoveEvent(mouse_move_event);
         }
