@@ -9,7 +9,7 @@ namespace Foundation
 
 namespace OgreRenderer
 {
-    //! Sound settings editing window. Owned by OpenALAudioModule.
+    //! Widget for rendering settings
     class RendererSettings : public QObject
     {
         Q_OBJECT
@@ -20,6 +20,9 @@ namespace OgreRenderer
 
     public slots:
         void ViewDistanceChanged(double value);
+
+        //! toggles fullscreen mode
+        void SetFullScreenMode(bool value);
 
     private:
         void InitWindow();

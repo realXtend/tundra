@@ -127,6 +127,9 @@ namespace OgreRenderer
         //! force UI repaint
         virtual void RepaintUi();
 
+        //!Is window fullscreen?
+        bool IsFullScreen();
+
         //! get visible entities last frame
         virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
         
@@ -239,7 +242,8 @@ namespace OgreRenderer
         QImage &GetBackBuffer() { return backBuffer; }
 
     public slots:
-
+        //! Toggles fullscreen
+        void SetFullScreen(bool value);
 
     private:
         //! Initialises Qt
