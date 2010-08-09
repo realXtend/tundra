@@ -96,10 +96,17 @@ namespace UiServices
 
         QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, widget->windowFlags());
         proxy->setWidget(widget);
-        if (AddProxyWidget(proxy))
-            return proxy;
-        else
+
+        if (!AddProxyWidget(proxy))
             return 0;
+
+        // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
+        // signal to a slot which handles the deletion. This must be done because closing
+        // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
+        if (widget->testAttribute(Qt::WA_DeleteOnClose))
+            connect(proxy, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
+
+        return proxy;
     }
 
     void  InworldSceneController::AddWidgetToScene(QGraphicsProxyWidget *widget)
@@ -432,5 +439,12 @@ namespace UiServices
         DockLineup();
         docking_widget_proxy_->hide();
         docking_widget_proxy_->setVisible(false);
+    }
+
+    void InworldSceneController::DeleteCallingWidgetOnClose()
+    {
+        QGraphicsProxyWidget *proxy = dynamic_cast<QGraphicsProxyWidget *>(sender());
+        if (proxy && !proxy->isVisible())
+            proxy->deleteLater();
     }
 }

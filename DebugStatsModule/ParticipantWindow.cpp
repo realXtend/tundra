@@ -29,6 +29,7 @@ ParticipantWindow::ParticipantWindow(Foundation::Framework *fw, QWidget *parent)
     QWidget(parent), framework_(fw)
 {
     setWindowTitle(tr("Particpants"));
+    setAttribute(Qt::WA_DeleteOnClose);
     // Base layout for this widget
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
