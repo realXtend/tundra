@@ -43,9 +43,17 @@ namespace UiServices
         bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
 
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
-        //! Convenience function if you dont want to bother and define your UiWidgetProperties.
-        //! \param widget QWidget to be added to the scene.
-        //! \return UiProxyWidget if succesfull, otherwise 0
+        /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
+         *
+         *  \param  widget QWidget to be added to the scene.
+         *  \return Proxy widget if succesfull, otherwise 0
+
+         *  \note   QGraphicsProxyWidget maintains symmetry for the following states:
+         *          state, enabled, visible, geometry, layoutDirection, style, palette,
+         *          font, cursor, sizeHint, getContentsMargins and windowTitle. If you want to
+         *          set some other property/attribute value for the proxy, do it for the proxy
+         *          after calling this function.
+         */
         QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget);
 
         //! Adds a Qt proxy widget to the current scene.
@@ -148,16 +156,13 @@ namespace UiServices
         //! Core Widgets
         CoreUi::CommunicationWidget *communication_widget_;
 
-        //! Internal list of UiProxyWidgets in scene
-//        QList<UiProxyWidget *> all_proxy_widgets_in_scene_;
+        //! Internal list of proxy widgets in scene.
         QList<QGraphicsProxyWidget *> all_proxy_widgets_in_scene_;
 
-        //! Internal list of all docked UiProxyWidgets
-//        QList<UiProxyWidget *> all_docked_proxy_widgets_;
+        //! Internal list of all docked proxy widgets.
         QList<QGraphicsProxyWidget *> all_docked_proxy_widgets_;
 
         //! QMap of docked UiProxyWidgets and their original size
-//        QMap<UiProxyWidget*, QSizeF> old_proxy_size;
         QMap<QGraphicsProxyWidget *, QSizeF> old_proxy_size;
 
         //! Framework pointer.
@@ -178,6 +183,10 @@ namespace UiServices
 
         //! Aligning widgets in the docking area
         void DockLineup();
+
+        //! Deletes widget and the corresponding proxy widget if widget has WA_DeleteOnClose on.
+        //! The caller of this slot is retrieved by using QObject::sender().
+        void DeleteCallingWidgetOnClose();
     };
 }
 
