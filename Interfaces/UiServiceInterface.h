@@ -13,8 +13,6 @@
 
 #include <QObject>
 
-#include <boost/shared_ptr.hpp>
-
 class QWidget;
 class QGraphicsProxyWidget;
 class QGraphicsScene;
@@ -66,22 +64,10 @@ namespace Foundation
          */
         virtual void ShowWidget(QWidget *widget) const = 0;
 
-        /** This is an overloaded function.
-         *  Shows the proxy widget in the scene.
-         *  @param widget Proxy widget.
-         */
-        virtual void ShowWidget(QGraphicsProxyWidget *widget) const = 0;
-
         /** Hides the widget's proxy widget in the scene.
          *  @param widget Widget.
          */
         virtual void HideWidget(QWidget *widget) const = 0;
-
-        /** This is an overloaded function.
-         *  Hides the proxy widget in the scene.
-         *  @param widget Proxy widget.
-         */
-        virtual void HideWidget(QGraphicsProxyWidget *widget) const = 0;
 
         /** Brings the widget's proxy widget to front in the and sets focus to it.
          *  @param widget Widget.

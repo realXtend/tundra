@@ -2,7 +2,10 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiSceneService.cpp
- *  @brief  
+ *  @brief  Implements UiServiceInterface and provides means of adding widgets to the 
+ *          in-world scene and managing different UI scenes.
+ *          Basically this class is just a wrapper around InworldSceneController
+ *          and UiStateMachine.
  */
 
 #include "StableHeaders.h"
@@ -13,8 +16,7 @@
 
 namespace UiServices
 {
-    UiSceneService::UiSceneService(UiModule *owner) :
-        owner_(owner)
+    UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
     {
     }
 
@@ -24,13 +26,12 @@ namespace UiServices
 
     QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget)
     {
-        //return owner_->GetInworldSceneController()->AddWidgetToScene(widget);
-        return 0;
+        return owner_->GetInworldSceneController()->AddWidgetToScene(widget);
     }
 
     void UiSceneService::AddWidgetToScene(QGraphicsProxyWidget *widget)
     {
-        //owner_->GetInworldSceneController()->AddProxyWidget(widget);
+        owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
@@ -40,7 +41,7 @@ namespace UiServices
 
     void UiSceneService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-        //owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
+        owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
     }
 
     void UiSceneService::ShowWidget(QWidget *widget) const
@@ -48,19 +49,9 @@ namespace UiServices
         owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
 
-    void UiSceneService::ShowWidget(QGraphicsProxyWidget *widget) const
-    {
-        //owner_->GetInworldSceneController()->ShowProxyForWidget(widget);
-    }
-
     void UiSceneService::HideWidget(QWidget *widget) const
     {
         owner_->GetInworldSceneController()->HideProxyForWidget(widget);
-    }
-
-    void UiSceneService::HideWidget(QGraphicsProxyWidget *widget) const
-    {
-        //owner_->GetInworldSceneController()->HideProxyForWidget(widget);
     }
 
     void UiSceneService::BringWidgetToFront(QWidget *widget) const
@@ -70,13 +61,12 @@ namespace UiServices
 
     void UiSceneService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     {
-        //owner_->GetInworldSceneController()->BringProxyToFront(widget);
+        owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
     const QGraphicsScene *UiSceneService::GetScene(const QString &name) const
     {
-        owner_->GetUiStateMachine()->GetScene(name);
-        return 0;
+        return owner_->GetUiStateMachine()->GetScene(name);
     }
 
     void UiSceneService::RegisterScene(const QString &name, QGraphicsScene *scene)

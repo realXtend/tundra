@@ -2,7 +2,10 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiSceneService.h
- *  @brief  
+ *  @brief  Implements UiServiceInterface and provides means of adding widgets to the 
+ *          in-world scene and managing different UI scenes.
+ *          Basically this class is just a wrapper around InworldSceneController
+ *          and UiStateMachine.
  */
 
 #ifndef incl_UiModule_UiSceneService_h
@@ -14,8 +17,10 @@ namespace UiServices
 {
     class UiModule;
 
-    /** Implements UiServiceInterface and provides ...
-     *  
+    /** Implements UiServiceInterface and provides means of adding widgets to the 
+     *  in-world scene and managing different UI scenes.
+     *  Basically this class is just a wrapper around InworldSceneController
+     *  and UiStateMachine.
      */
     class UiSceneService : public Foundation::UiServiceInterface
     {
@@ -47,13 +52,7 @@ namespace UiServices
         void ShowWidget(QWidget *widget) const;
 
         /// UiServiceInterface override.
-        void ShowWidget(QGraphicsProxyWidget *widget) const;
-
-        /// UiServiceInterface override.
         void HideWidget(QWidget *widget) const;
-
-        /// UiServiceInterface override.
-        void HideWidget(QGraphicsProxyWidget *widget) const;
 
         /// UiServiceInterface override.
         void BringWidgetToFront(QWidget *widget) const;
@@ -74,7 +73,7 @@ namespace UiServices
         bool SwitchToScene(const QString &name);
 
     private:
-        /// In-world scene controller.
+        /// Owner UI module.
         UiModule *owner_;
     };
 }

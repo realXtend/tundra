@@ -54,6 +54,8 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     assert(contents_widget_);
     file.close();
 
+    setWindowTitle(tr("Profiler"));
+
     QVBoxLayout *layout = new QVBoxLayout;
     assert(layout);
     layout->addWidget(contents_widget_);

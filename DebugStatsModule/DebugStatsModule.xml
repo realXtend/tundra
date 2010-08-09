@@ -4,5 +4,4 @@
     <dependency>ProtocolModuleTaiga</dependency>
     <dependency>OgreRenderingModule</dependency>
     <dependency>EnvironmentModule</dependency> 
-    <dependency>UiModule</dependency>
 </config>

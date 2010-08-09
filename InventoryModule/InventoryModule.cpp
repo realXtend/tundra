@@ -439,9 +439,9 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-    if (ui_module)
-        ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(wnd);
+    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    if (ui)
+        ui->RemoveWidgetFromScene(wnd);
 
     // If inventory item is modified notify server.
     if (save_changes)
@@ -457,16 +457,23 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::CreateInventoryWindow()
 {
+
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (!ui_module)
+        return;
+
+    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    if (!ui)
         return;
 
     SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
-
+/*
     ui_module->GetInworldSceneController()->AddWidgetToScene(inventoryWindow_,
         UiServices::UiWidgetProperties(TR("InventoryWindow", "Inventory"), UiServices::ModuleWidget));
+*/
+    ui->AddWidgetToScene(inventoryWindow_);
 
     connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
         SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
