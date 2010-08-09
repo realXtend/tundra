@@ -11,6 +11,7 @@
 #include <QUiLoader>
 #include <QFile>
 #include <QDoubleSpinBox>
+#include <QCheckBox>
 
 #include "UiModule.h"
 
@@ -57,6 +58,12 @@ namespace OgreRenderer
         if (!spin || !renderer)
             return;
         spin->setValue(renderer->GetViewDistance());
+        QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
+        if(cbox)
+        {
+            cbox->setChecked(renderer->IsFullScreen());
+            QObject::connect(cbox, SIGNAL(toggled(bool)), this, SLOT(SetFullScreenMode(bool)));
+        }
         QObject::connect(spin, SIGNAL(valueChanged(double)), this, SLOT(ViewDistanceChanged(double)));
     }
     
@@ -67,4 +74,12 @@ namespace OgreRenderer
             return;   
         renderer->SetViewDistance(value);      
     }        
+
+    void RendererSettings::SetFullScreenMode(bool value)
+    {
+         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;   
+        renderer->SetFullScreen(value);   
+    }
 }

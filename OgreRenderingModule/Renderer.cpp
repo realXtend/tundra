@@ -304,6 +304,11 @@ namespace OgreRenderer
             q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
             main_window_->show();
 
+            if(fullscreen)
+            {
+                main_window_->showFullScreen();
+            }
+
             // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering
             renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, fullscreen);
 
@@ -329,9 +334,27 @@ namespace OgreRenderer
             throw Exception("Could not create Ogre rendering window");
     }
 
+    bool Renderer::IsFullScreen()
+    {
+        return main_window_->isFullScreen();
+    }
+
     void Renderer::PostInitialize()
     {
         resource_handler_->PostInitialize();
+    }
+
+    void Renderer::SetFullScreen(bool value)
+    {
+        if(value)
+        {
+            main_window_->showFullScreen();
+        }
+        else
+        {
+            main_window_->showNormal();
+        }
+        
     }
 
     void Renderer::LoadPlugins(const std::string& plugin_filename)
