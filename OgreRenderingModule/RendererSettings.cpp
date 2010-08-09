@@ -8,10 +8,12 @@
 #include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
+
 #include <QUiLoader>
 #include <QFile>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
+#include <QKeyEvent>
 
 #include "UiModule.h"
 
@@ -65,7 +67,30 @@ namespace OgreRenderer
             QObject::connect(cbox, SIGNAL(toggled(bool)), this, SLOT(SetFullScreenMode(bool)));
         }
         QObject::connect(spin, SIGNAL(valueChanged(double)), this, SLOT(ViewDistanceChanged(double)));
+
+        //fullscreen shortcut key
+        input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
+        if(input_context_.get())
+            connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent&)), this, SLOT(KeyPressed(KeyEvent&)));
     }
+
+    void RendererSettings::KeyPressed(KeyEvent& e)
+    {
+        boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+            return;   
+        if(e.HasCtrlModifier() && e.KeyCode() == Qt::Key_F)
+        {
+            renderer->SetFullScreen(!renderer->IsFullScreen());
+            QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
+            if(cbox)
+            {
+                cbox->setChecked(!cbox->isChecked());
+            }
+        }
+    }
+
+
     
     void RendererSettings::ViewDistanceChanged(double value)
     {

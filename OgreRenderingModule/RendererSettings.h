@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include <QObject>
-
+#include "InputServiceInterface.h"
 namespace Foundation
 {
     class Framework;
 }
-
+class KeyEvent;
 namespace OgreRenderer
 {
     //! Widget for rendering settings
@@ -24,8 +24,12 @@ namespace OgreRenderer
         //! toggles fullscreen mode
         void SetFullScreenMode(bool value);
 
+        void KeyPressed(KeyEvent& e);
+
+
     private:
         void InitWindow();
+        InputContextPtr input_context_;
 
         Foundation::Framework* framework_;
 

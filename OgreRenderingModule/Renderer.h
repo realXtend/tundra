@@ -75,6 +75,8 @@ namespace OgreRenderer
         //! Shows world view
         void ShowCurrentWorldView();
 
+
+
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
          */

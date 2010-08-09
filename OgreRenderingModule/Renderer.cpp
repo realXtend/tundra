@@ -22,6 +22,7 @@
 #include "Entity.h"
 #include "MainWindow.h"
 
+
 #include <Ogre.h>
 //#include <OgreRenderQueue.h>
 
@@ -183,6 +184,7 @@ namespace OgreRenderer
             }
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_maximized", maximized);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
+            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "fullscreen", IsFullScreen());
         }
 
         resource_handler_.reset();
@@ -302,15 +304,17 @@ namespace OgreRenderer
             if (maximized)
                 main_window_->showMaximized();
             q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
-            main_window_->show();
+           
 
             if(fullscreen)
             {
                 main_window_->showFullScreen();
             }
+            else
+                main_window_->show();
 
-            // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering
-            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, fullscreen);
+            // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering. Don't tell to go fullscreen, because Qt handles this
+            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, false);
 
             // Create QOgreWorldView that controls ogres window and ui overlay
             q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
@@ -332,7 +336,10 @@ namespace OgreRenderer
         }
         else
             throw Exception("Could not create Ogre rendering window");
+
+
     }
+
 
     bool Renderer::IsFullScreen()
     {
@@ -342,6 +349,7 @@ namespace OgreRenderer
     void Renderer::PostInitialize()
     {
         resource_handler_->PostInitialize();
+        
     }
 
     void Renderer::SetFullScreen(bool value)
