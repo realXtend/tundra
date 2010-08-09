@@ -92,7 +92,7 @@ namespace OgreRenderer
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
 
-        renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
+        
     }
 
     // virtual
@@ -110,6 +110,7 @@ namespace OgreRenderer
         RegisterConsoleCommand(Console::CreateCommand(
                 "RenderStats", "Prints out render statistics.", 
                 Console::Bind(this, &OgreRenderingModule::ConsoleStats)));
+        renderer_settings_ = RendererSettingsPtr(new RendererSettings(framework_));
     }
 
     // virtual
