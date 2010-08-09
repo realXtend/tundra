@@ -122,9 +122,8 @@ void InventoryWindow::changeEvent(QEvent* e)
     if (e->type() == QEvent::LanguageChange)
     {
         QString text = QApplication::translate("Inventory::InventoryWindow", "Inventory");
-        this->setWindowTitle(text);
-        QGraphicsProxyWidget* widget = this->graphicsProxyWidget();
-        widget->setWindowTitle(text);
+        setWindowTitle(text);
+        graphicsProxyWidget()->setWindowTitle(text);
     }
     else
     {
@@ -416,6 +415,8 @@ void InventoryWindow::InitInventoryWindow()
     QFile uiFile("./data/ui/inventory.ui");
     mainWidget_ = loader.load(&uiFile, this);
     uiFile.close();
+
+    setWindowTitle(QApplication::translate("Inventory::InventoryWindow", "Inventory"));
 
     // Layout 
     layout_ = new QVBoxLayout(this);
