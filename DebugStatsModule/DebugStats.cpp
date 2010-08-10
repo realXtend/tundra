@@ -24,10 +24,6 @@
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "NetworkMessages/NetInMessage.h"
 #include "NetworkMessages/NetMessageManager.h"
-//#include "UiModule.h"
-//#include "UiDefines.h"
-//#include "Inworld/View/UiProxyWidget.h"
-//#include "Inworld/InworldSceneController.h"
 #include "Renderer.h"
 #include "ResourceHandler.h"
 #include "OgreTextureResource.h"
@@ -111,11 +107,6 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     if (profilerWindow_)
         return;
 
-/*
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
-        return;
-*/
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return;
@@ -124,18 +115,16 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
     profilerWindow_->setWindowFlags(Qt::Dialog);
 
-/*
-    UiServices::UiWidgetProperties profiler_properties("Profiler", UiServices::ModuleWidget);
+    UiServices::UiWidgetProperties props("Profiler", UiServices::ModuleWidget);
     UiDefines::MenuNodeStyleMap image_path_map;
     QString base_url = "./data/ui/images/menus/"; 
     image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
     image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
     image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
-    profiler_properties.SetMenuNodeStyleMap(image_path_map);
+    props.SetMenuNodeStyleMap(image_path_map);
 
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(profilerWindow_, profiler_properties);
-*/
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, props);
+
     proxy->resize(650, 530);
 
     connect(proxy, SIGNAL(visibleChanged()), SLOT(StartProfiling()));

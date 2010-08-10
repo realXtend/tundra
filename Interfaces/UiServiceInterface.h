@@ -10,6 +10,7 @@
 #define incl_Interfaces_UiServiceInterface_h
 
 #include "ServiceInterface.h"
+#include "UiWidgetProperties.h"
 
 #include <QObject>
 
@@ -48,6 +49,13 @@ namespace Foundation
          *  @param widget Proxy widget.
          */
         virtual void AddWidgetToScene(QGraphicsProxyWidget *widget) = 0;
+
+        /** Temporary function which adds support for current UiModule's UiWidgetProperties
+         *  which are required in order to be able to add widgets to the menu.
+         *  @param widget Widget.
+         *  @param propertries Widget properties.
+         */
+        virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
 
         /** Removes widget from the scene.
          *  @param widget Widget.
