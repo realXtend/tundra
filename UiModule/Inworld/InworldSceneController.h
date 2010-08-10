@@ -36,12 +36,6 @@ namespace UiServices
         ~InworldSceneController();
 
     public slots:
-        //! Adds a Qt Widget to the settings widget as its own tab
-        //! \param widget QWidget to be added to the settings widget
-        //! \param tab_name QString name of the tab shown in widget
-        //! \return trued if add succesfull, false otherwise
-        bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
-
         //! Adds a Qt Widget to the current scene, returns the added QGraphicsProxyWidget.
         /*! Convenience function if you dont want to bother and define your UiWidgetProperties.
          *
@@ -57,28 +51,26 @@ namespace UiServices
         QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget);
 
         //! Adds a Qt proxy widget to the current scene.
-        void  AddWidgetToScene(QGraphicsProxyWidget *widget);
+        void AddWidgetToScene(QGraphicsProxyWidget *widget);
 
         //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
-        //! \param widget QWidget to be added to the scene.
-        //! \param widget_properties Properties for the widget.
-        //! \return UiProxyWidget if succesfull, otherwise 0
+        /*! \param widget QWidget to be added to the scene.
+         *  \param widget_properties Properties for the widget.
+         *  \return UiProxyWidget if succesfull, otherwise 0
+         */
         UiProxyWidget* AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties);
 
         //! Adds a already created UiProxyWidget into the scene.
-        //! Please prefer using AddWidgetToScene() with normal QWidget 
-        //! and properties instead of this directly.
-        //! \param widget Proxy widget.
-        bool AddProxyWidget(UiProxyWidget *proxy_widget);
-
-        //! This is an overloaded function.
-        //! \param widget Proxy widget.
-        bool AddProxyWidget(QGraphicsProxyWidget *proxy_widget);
+        /*! Please prefer using AddWidgetToScene() with normal QWidget and properties instead of this directly.
+         *  \param widget Proxy widget.
+        */
+        bool AddProxyWidget(QGraphicsProxyWidget *widget);
 
         //! Remove a proxy widget from scene if it exist there
-        //! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
-        //! Note: Does not delete the proxy widget, after this is done its safe to delete your QWidget (this will delete the proxy also)
-        //! \param widget Proxy widget.
+        /*! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
+         *  Note: Does not delete the proxy widget, after this is done its safe to delete your QWidget (this will delete the proxy also)
+         *  \param widget Proxy widget.
+        */
         void RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget);
 
         //! This is an overload function.
@@ -86,11 +78,6 @@ namespace UiServices
         void RemoveProxyWidgetFromScene(QWidget *widget);
 
         //! Brings the proxy widget to front in the scene, set focus to it and shows it.
-        //! \param widget Proxy widget.
-        void BringProxyToFront(UiProxyWidget *widget) const;
-
-        //! This is an overloaded function.
-        //! \param widget Proxy widget.
         void BringProxyToFront(QGraphicsProxyWidget *widget) const;
 
         //! This is an overloaded function.
@@ -104,6 +91,16 @@ namespace UiServices
         //! Hides the UiProxyWidget of QWidget in the scene.
         //! \param widget Widget.
         void HideProxyForWidget(QWidget *widget) const;
+
+        //! Adds a Qt Widget to the settings widget as its own tab
+        /*! \param widget QWidget to be added to the settings widget
+         *  \param tab_name QString name of the tab shown in widget
+         *  \return trued if add succesfull, false otherwise
+        */
+        bool AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const;
+
+        //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
+        QObject *GetSettingsObject() const;
 
         //! Get the inworld ui scene
         QGraphicsScene *GetInworldScene() const { return inworld_scene_; }
@@ -120,17 +117,15 @@ namespace UiServices
         //! Get ControlPanelManager pointer
         CoreUi::ControlPanelManager *GetControlPanelManager()  const { return control_panel_manager_; }
 
-        //! Get SettingsWidget QObject pointer to make save/cancel connections outside UiModule
-        QObject *GetSettingsObject() const;
-
-        //Applying new proxy position
+        //! Applies new proxy position
+        //! \param new_rect New scene rectangle.
         void ApplyNewProxyPosition(const QRectF &new_rect);
 
         //Slot triggered by UiProxyWidget ProxyMoved() signal.
-        void ProxyWidgetMoved(UiProxyWidget* proxy_widget, const QPointF &proxy_pos);
+        void ProxyWidgetMoved(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos);
 
         //Slot triggered by UiProxyWidget ProxyUngrabed() signal.
-        void ProxyWidgetUngrabed(UiProxyWidget* proxy_widget, const QPointF &proxy_pos);
+        void ProxyWidgetUngrabed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos);
 
         //Slot triggered by UiProxyWidget Closed() or Visible() signals
         void ProxyClosed();

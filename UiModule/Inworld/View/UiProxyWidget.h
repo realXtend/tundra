@@ -57,8 +57,8 @@ namespace UiServices
         void focusOutEvent(QFocusEvent *focus_event);
         QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-		void moveEvent(QGraphicsSceneMoveEvent * event);
-		void ungrabMouseEvent(QEvent *event);
+        void moveEvent(QGraphicsSceneMoveEvent * event);
+        void ungrabMouseEvent(QEvent *event);
 
     private slots:
         void InitWidgetAndProxy(QWidget *widget);
@@ -75,9 +75,9 @@ namespace UiServices
     signals:
         void Closed();
         void Visible(bool);
-        void BringProxyToFrontRequest(UiProxyWidget*);
-		void ProxyMoved(UiProxyWidget*, QPointF);
-		void ProxyUngrabed(UiProxyWidget*, QPointF);
+        void BringProxyToFrontRequest(QGraphicsProxyWidget*);
+        void ProxyMoved(QGraphicsProxyWidget*, QPointF);
+        void ProxyUngrabed(QGraphicsProxyWidget*, QPointF);
     };
 
 }
