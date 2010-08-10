@@ -6,9 +6,10 @@ namespace RexLogic
 {
     namespace InWorldChat
     {
-        Session::Session() : is_closed_(false)
+        Session::Session(const QString& self_uuid) :
+            is_closed_(false),
+            self_uuid_(self_uuid)
         {
-
         }
 
         Session::~Session()
@@ -54,8 +55,10 @@ namespace RexLogic
 
         bool Session::IsSelfAvatarUUID(QString uuid)
         {
-            /// @todo CHECK
-            return false;
+            if (self_uuid_ == uuid)
+                return true;
+            else
+                return false;
         }
 
         QString Session::AvatarName(QString uuid)
