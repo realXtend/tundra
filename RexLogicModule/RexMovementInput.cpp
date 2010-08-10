@@ -164,9 +164,12 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
     case MouseEvent::MouseMove:
         if (mouse.IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
         {
-           eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
-           if (!framework->Input().IsMouseCursorVisible())
-               mouse.handled = true; // Mouse is in RMB mouselook mode, suppress others from getting the move event.
+           // Now we do not want to go to RMB mouselook mode when our cursor is on widget
+           if ( !framework->Input().IsMouseCursorVisible() )
+           {
+              eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
+              mouse.handled = true;  // Mouse is in RMB mouselook mode, suppress others from getting the move event.
+           }
         }
         else if (mouse.IsLeftButtonDown())
             eventMgr->SendEvent("Input", Input::Events::MOUSEDRAG, &movement);
