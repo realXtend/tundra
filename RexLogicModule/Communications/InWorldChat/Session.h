@@ -14,7 +14,7 @@ namespace RexLogic
         {
             Q_OBJECT
         public:
-            Session();
+            Session(const QString& self_uuid);
             virtual ~Session();
             virtual void SendTextMessage(const QString &text);
 //            virtual ParticipantList Participants() const;
@@ -37,6 +37,8 @@ namespace RexLogic
             virtual void ClearHistory();
 
             bool is_closed_;
+            QString self_uuid_;
+
             QList<TextMessage*> messages_;
         };
 

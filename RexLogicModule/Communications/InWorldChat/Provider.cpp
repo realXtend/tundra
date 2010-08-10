@@ -6,6 +6,9 @@
 #include "RexLogicModule.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+#include "EC_OpenSimPresence.h" // for avatar name
+#include "Entity.h" // for avatar name
+#include "SceneEvents.h"
 
 namespace RexLogic
 {
@@ -30,13 +33,6 @@ namespace RexLogic
 
         bool Provider::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
         {
-            if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
-            {
-                session_ = new InWorldChat::Session();
-                connect(session_, SIGNAL(UserEnteredText(const QString&)), SLOT(SendChatMessgeToServer(const QString&)) );
-                emit SessionAvailable();
-            }
-
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             {
                 if (session_)
@@ -47,6 +43,17 @@ namespace RexLogic
                     session_ = 0;
                 }
                 emit SessionUnavailable();
+            }
+            return false;
+        }
+
+        bool Provider::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+        {
+            if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
+            {
+                session_ = new InWorldChat::Session(OwnAvatarId());
+                connect(session_, SIGNAL(UserEnteredText(const QString&)), SLOT(SendChatMessgeToServer(const QString&)) );
+                emit SessionAvailable();
             }
             return false;
         }
@@ -91,5 +98,24 @@ namespace RexLogic
 
             connection->SendChatFromViewerPacket( std::string(text.toUtf8()) );
         }
+
+        QString Provider::OwnAvatarId()
+        {
+            using namespace Foundation;
+            boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+            if (!world_logic)
+                return "";
+
+            Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+            if (!user_avatar)
+                return "";
+
+            boost::shared_ptr<EC_OpenSimPresence> opensim_presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+            if (!opensim_presence)
+                return "";
+
+            return opensim_presence->agentId.ToQString();
+        }
+
     } // InWorldChat
 } // RexLogic

@@ -41,11 +41,14 @@ namespace RexLogic
             /// Creates and deletes sessions
             virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
+            virtual bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+
         private slots:
             virtual void SendChatMessgeToServer(const QString& text);
 
         private:
             virtual void RegisterToCommunicationsService();
+            virtual QString OwnAvatarId();
 
             Foundation::Framework* framework_;
             QString description_;

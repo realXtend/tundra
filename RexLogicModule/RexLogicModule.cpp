@@ -214,6 +214,10 @@ void RexLogicModule::PostInitialize()
         &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
+
+
 
     // Resource events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
