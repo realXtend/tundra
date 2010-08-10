@@ -19,6 +19,7 @@
 #include <vector>
 #include <list>
 #include <QObject>
+#include <QPointer>
 
 class QGraphicsItem;
 class QGraphicsView;
@@ -77,7 +78,7 @@ public slots:
 private:
     boost::shared_ptr<QtInputService> inputService;
 
-    KeyBindingsConfigWindow *configWindow;
+    QPointer<KeyBindingsConfigWindow> configWindow;
 };
 
 #endif

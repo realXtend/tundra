@@ -17,7 +17,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces RexCommon UiModule)
+use_modules (Core Foundation Interfaces RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -25,7 +25,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (OGRE)
 link_package (QT4)
-link_modules (Core Foundation Interfaces UiModule)
+link_modules (Core Foundation Interfaces)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
@@ -38,7 +38,7 @@ if (MSVC)
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
             if (${src_file} MATCHES "StableHeaders.cpp$")
-                #set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")        
+                #set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
             else()
                 get_filename_component(basename ${src_file} NAME)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "-DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")

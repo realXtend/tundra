@@ -105,6 +105,12 @@ namespace UiServices
             return 0;
         }
 
+        // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
+        // signal to a slot which handles the deletion. This must be done because closing
+        // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
+        if (widget->testAttribute(Qt::WA_DeleteOnClose))
+            connect(proxy, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
+
         return proxy;
     }
 

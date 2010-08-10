@@ -40,6 +40,8 @@ void KeyBindingsConfigWindow::ShowWindow()
     connect(configList, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ConfigListAdjustEditable(QTreeWidgetItem *, int)));
     connect(configList, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ConfigListAdjustEditable(QTreeWidgetItem *, int)));
     PopulateBindingsList();
+
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 void KeyBindingsConfigWindow::CloseWindow()
