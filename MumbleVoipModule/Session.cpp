@@ -289,10 +289,12 @@ namespace MumbleVoip
                     emit ParticipantLeft(p);
                     continue;
                 }
-                if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()))
+                if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()) || p->AvatarUUID().length() == 0)
                 {
                     // For some reason do not have real name for this participant here!
-                    p->SetName( GetAvatarFullName(p->AvatarUUID()) );
+                    QString full_name = GetAvatarFullName(p->AvatarUUID());
+                    if (full_name.length() > 0)
+                        p->SetName( full_name );
                     continue;
                 }
             }

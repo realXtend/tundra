@@ -13,6 +13,7 @@ namespace CommUI
         avatarNameLabel->setText(participant->Name());
         connect(participant_, SIGNAL(StartSpeaking()), SLOT(UpdateStyleSheet()));
         connect(participant_, SIGNAL(StopSpeaking()), SLOT(UpdateStyleSheet()));
+        connect(participant_, SIGNAL(StateChanged()), SLOT(UpdateStyleSheet()));
         connect(muteCheckBox, SIGNAL(clicked()), SLOT(ToggleMute()) );
         connect(participant_, SIGNAL(StateChanged()), SLOT(UpdateStyleSheet()) );
         UpdateStyleSheet();
@@ -41,6 +42,7 @@ namespace CommUI
         {
             thumbnailWidget->setStyleSheet("#thumbnailWidget {border: 0px; background-color: rgbs(0,0,0,0); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat;}");
         }
+        avatarNameLabel->setText(participant_->Name());
     }
 
     VoiceUsersWidget::VoiceUsersWidget(QWidget *parent, Qt::WindowFlags wFlags)
