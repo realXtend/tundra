@@ -2,36 +2,23 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "UiDefines.h"
 
 #include "InworldSceneController.h"
 #include "ControlPanelManager.h"
-
 #include "Common/AnchorLayoutManager.h"
-
 #include "Menus/MenuManager.h"
-
 #include "View/UiProxyWidget.h"
-#include "View/UiWidgetProperties.h"
 #include "View/CommunicationWidget.h"
-
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
 
-#include <QRectF>
-#include <QGraphicsItem>
-#include <QGraphicsLinearLayout>
-#include <QGraphicsWidget>
-#include <QGraphicsView>
-#include <QGraphicsScene>
-
-#include <QObject>
+#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
-#define DOCK_WIDTH            (300)
+#define DOCK_WIDTH          (300)
 #define DIST_FROM_BOTTOM    (200)
-#define DIST_FROM_TOP        (50)
+#define DIST_FROM_TOP       (50)
 
 namespace UiServices
 {
@@ -41,11 +28,11 @@ namespace UiServices
           communication_widget_(0),
           docking_widget_(0)
     {
-        if (!ui_view_)
-            return;
+        assert(ui_view_);
 
         // Store scene pointer
         inworld_scene_ = ui_view_->scene();
+        assert(inworld_scene_);
 
         // Init layout manager with scene
         layout_manager_ = new CoreUi::AnchorLayoutManager(this, inworld_scene_);
@@ -123,10 +110,6 @@ namespace UiServices
 
     bool InworldSceneController::AddProxyWidget(QGraphicsProxyWidget *widget)
     {
-        if (!inworld_scene_)
-            ///\todo Does this ever even happen? Delete?
-            return false;
-
         // Add to scene
         if (widget->isVisible())
             widget->hide();
@@ -166,10 +149,6 @@ namespace UiServices
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-        if (!inworld_scene_)
-            ///\todo Does this ever even happen? Delete?
-            return;
-
         UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
         if (uiproxy)
         {
@@ -185,31 +164,26 @@ namespace UiServices
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QWidget *widget)
     {
-/*
-        UiProxyWidget *proxy_widget = dynamic_cast<UiProxyWidget*>(widget->graphicsProxyWidget());
-        if (proxy_widget)
-            RemoveProxyWidgetFromScene(proxy_widget);
-*/
         RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
     }
 
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const
     {
-        if (!inworld_scene_ || ///\todo Does this first condition  ever even happen? Delete?
-            !inworld_scene_->isActive())
-            return;
-        inworld_scene_->setActiveWindow(widget);
-        inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+        if (inworld_scene_->isActive())
+        {
+            inworld_scene_->setActiveWindow(widget);
+            inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
+        }
     }
 
     void InworldSceneController::BringProxyToFront(QWidget *widget) const
     {
-        if (!inworld_scene_)
-            ///\todo Does ever even happen? Delete?
-            return;
-        ShowProxyForWidget(widget);
-        inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
-        inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+        if (inworld_scene_->isActive())
+        {
+            ShowProxyForWidget(widget);
+            inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
+            inworld_scene_->setFocusItem(widget->graphicsProxyWidget(), Qt::ActiveWindowFocusReason);
+        }
     }
 
     void InworldSceneController::ShowProxyForWidget(QWidget *widget) const
@@ -351,7 +325,6 @@ namespace UiServices
         {
             if (all_docked_proxy_widgets_.contains(proxy_widget))
             {
-                //UiProxyWidget *proxy = all_docked_proxy_widgets_.at(all_docked_proxy_widgets_.indexOf(proxy_widget));
                 QGraphicsProxyWidget *proxy = all_docked_proxy_widgets_.at(all_docked_proxy_widgets_.indexOf(proxy_widget));
                 if (proxy)
                 {

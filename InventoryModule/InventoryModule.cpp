@@ -35,7 +35,7 @@
 #include "ResourceInterface.h"
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
 

@@ -4,9 +4,9 @@
 #include "TexturePreviewEditor.h"
 #include "OgreAssetEditorModule.h"
 
-#include <UiModule.h>
+#include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
 #include "Inventory/InventoryEvents.h"

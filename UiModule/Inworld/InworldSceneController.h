@@ -11,9 +11,6 @@
 #include <QRectF>
 #include <QMap>
 
-class QRectF;
-class QGraphicsLinearLayout;
-
 namespace Foundation
 {
     class Framework;
@@ -21,10 +18,11 @@ namespace Foundation
 
 namespace UiServices
 {
+    class UiWidgetProperties;
+
     class UI_MODULE_API InworldSceneController : public QObject
     {
-        
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         //! Constructor.
@@ -108,8 +106,6 @@ namespace UiServices
         //! Please dont call this if you dont know what you are doing
         //! Set the im proxy to world chat widget for show/hide toggling
         void SetImWidget(UiProxyWidget *im_proxy) const;
-
-        //void SetCommunicationWidget(UiProxyWidget *im_proxy);
 
         //! Set focus to chat line edit
         void SetFocusToChat() const;

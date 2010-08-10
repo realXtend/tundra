@@ -29,7 +29,7 @@
 #include "UiModule.h"
 #include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 

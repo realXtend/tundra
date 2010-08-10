@@ -1,17 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_UiDefines_h
-#define incl_UiModule_UiDefines_h
+#ifndef incl_Interfaces_UiDefines_h
+#define incl_Interfaces_UiDefines_h
 
 #include <QString>
 #include <QMap>
 
 namespace UiDefines
 {
-    enum ConnectionState 
-    { 
-        Connected, 
-        Disconnected, 
+    enum ConnectionState
+    {
+        Connected,
+        Disconnected,
         Failed,
         Kicked
     };
@@ -38,7 +38,7 @@ namespace UiDefines
     };
 
     enum MenuGroup
-    { 
+    {
         NoGroup = 0,
         RootGroup = 1, 
         ServerToolsGroup = 2,

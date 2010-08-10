@@ -91,7 +91,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
