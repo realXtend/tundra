@@ -17,7 +17,7 @@
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 #include "Inworld/Console/UiConsoleManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Inworld/Notifications/InputNotification.h"

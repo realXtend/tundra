@@ -12,9 +12,9 @@
 #include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
-#include <UiModule.h>
+#include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>

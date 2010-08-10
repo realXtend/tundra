@@ -21,9 +21,9 @@
 #include "InputServiceInterface.h"
 #include "OgreRenderingModule.h"
 
-#include <UiModule.h>
+#include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 
 // Ogre renderer -specific.
 #include <OgreManualObject.h>

@@ -22,7 +22,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"

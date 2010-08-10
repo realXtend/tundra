@@ -5,9 +5,8 @@
 #include "AudioSignalLabel.h"
 #include "OgreAssetEditorModule.h"
 
-#include <UiModule.h>
+#include "UiModule.h"
 #include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/View/UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
 #include "SoundServiceInterface.h"

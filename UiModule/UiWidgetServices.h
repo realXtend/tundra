@@ -26,7 +26,7 @@
 
 #include "Inworld/InworldSceneController.h"
 
-#include "Inworld/View/UiWidgetProperties.h"
+#include "UiWidgetProperties.h"
 #include "Inworld/View/UiProxyWidget.h"
 
 #endif
