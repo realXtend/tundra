@@ -13,6 +13,7 @@
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "UiStateMachine.h"
+#include "Inworld/View/UiProxyWidget.h"
 
 namespace UiServices
 {
@@ -32,6 +33,11 @@ namespace UiServices
     void UiSceneService::AddWidgetToScene(QGraphicsProxyWidget *widget)
     {
         owner_->GetInworldSceneController()->AddProxyWidget(widget);
+    }
+
+    QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties)
+    {
+        return dynamic_cast<QGraphicsProxyWidget *>(owner_->GetInworldSceneController()->AddWidgetToScene(widget, properties));
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)

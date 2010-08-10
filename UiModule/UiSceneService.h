@@ -43,6 +43,9 @@ namespace UiServices
         void AddWidgetToScene(QGraphicsProxyWidget *widget);
 
         /// UiServiceInterface override.
+        QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties);
+
+        /// UiServiceInterface override.
         void RemoveWidgetFromScene(QWidget *widget);
 
         /// UiServiceInterface override.
