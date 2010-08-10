@@ -92,8 +92,8 @@ namespace CommunicationUI
         friend_list_ui_->statusEditor->clear();
         foreach (QString status_code, sorted_for_ui)
         {
-            friend_list_ui_->statusEditor->addItem(UiDefines::PresenceStatus::GetIconForStatusCode(status_code),
-                                                   UiDefines::PresenceStatus::GetStatusForStatusCode(status_code));
+            friend_list_ui_->statusEditor->addItem(ImUiDefines::PresenceStatus::GetIconForStatusCode(status_code),
+                                                   ImUiDefines::PresenceStatus::GetStatusForStatusCode(status_code));
         }
     }
 
@@ -120,7 +120,7 @@ namespace CommunicationUI
 
     void FriendListWidget::SetStatus(const QString &status_code)
     {
-        int index = friend_list_ui_->statusEditor->findText(UiDefines::PresenceStatus::GetStatusForStatusCode(status_code));
+        int index = friend_list_ui_->statusEditor->findText(ImUiDefines::PresenceStatus::GetStatusForStatusCode(status_code));
         if (index != -1)
             friend_list_ui_->statusEditor->setCurrentIndex(index);
     }
@@ -128,7 +128,7 @@ namespace CommunicationUI
     void FriendListWidget::StatusChange(const QString &item_string)
     {
         if (item_string != "Set Status Message...")
-            emit StatusChanged(UiDefines::PresenceStatus::GetStatusCodeForStatus(item_string));
+            emit StatusChanged(ImUiDefines::PresenceStatus::GetStatusCodeForStatus(item_string));
     }
 
     void FriendListWidget::StartChatSession()

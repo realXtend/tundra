@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "FriendListItem.h"
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -17,7 +17,7 @@ namespace CommunicationUI
           current_status_(status),
           current_status_message_(status_message)
     {
-        setIcon(UiDefines::PresenceStatus::GetIconForStatusCode(GetStatus()));
+        setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode(GetStatus()));
 
         QString status_string;
         if (current_status_message_.isEmpty() || current_status_message_.isNull())
@@ -37,7 +37,7 @@ namespace CommunicationUI
         if (new_status != GetStatus())
         {
             SetStatus(new_status);
-            setIcon(UiDefines::PresenceStatus::GetIconForStatusCode(GetStatus()));
+            setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode(GetStatus()));
         }
 
         if (new_message != GetStatusMessage())

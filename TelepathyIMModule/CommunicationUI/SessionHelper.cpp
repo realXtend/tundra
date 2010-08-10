@@ -6,7 +6,7 @@
 #include "FriendListWidget.h"
 #include "ChatSessionWidget.h"
 #include "VideoSessionWidget.h"
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 #include "EventHandler.h"
 #include "ConnectionInterface.h"
 #include "ChatSessionParticipantInterface.h"
@@ -68,10 +68,10 @@ namespace UiHelpers
         {
             im_connection_->SetPresenceStatus(status_code);
             presence_status_ = status_code;
-            QPixmap status_pixmap(UiDefines::PresenceStatus::GetImagePathForStatusCode(status_code));
+            QPixmap status_pixmap(ImUiDefines::PresenceStatus::GetImagePathForStatusCode(status_code));
             session_manager_ui_->statusIconLabel->setPixmap(status_pixmap.scaled(24, 24, Qt::KeepAspectRatio));
 
-            if (UiDefines::PresenceStatus::GetStatusCodeForStatus(friend_list_widget_->GetStatus()) != status_code)
+            if (ImUiDefines::PresenceStatus::GetStatusCodeForStatus(friend_list_widget_->GetStatus()) != status_code)
                 friend_list_widget_->SetStatus(status_code);
 
             emit ChangeMenuBarStatus(status_code);

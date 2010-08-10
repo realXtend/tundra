@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "VideoSessionWidget.h"
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 #include "VideoPlaybackWidgetInterface.h"
 #include "ConnectionInterface.h"
 #include "ChatSessionParticipantInterface.h"

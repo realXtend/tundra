@@ -6,7 +6,7 @@
 //#include "FriendHelper.h"
 //#include "SessionHelper.h"
 //#include "FriendListItem.h"
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 #include "ui_FriendListWidget.h"
 
 //#include "interface.h"

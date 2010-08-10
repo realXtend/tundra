@@ -22,7 +22,7 @@ namespace CommunicationUI
 {
     MasterWidget::MasterWidget(Foundation::Framework *framework)
         : QWidget(),
-          ui_state_(UiDefines::UiStates::Disconnected),
+          ui_state_(ImUiDefines::UiStates::Disconnected),
           login_helper_(new UiHelpers::LoginHelper),
           config_helper_(new UiHelpers::ConfigHelper(framework)),
           session_manager_(new UiManagers::SessionManager(this, framework)),
@@ -81,14 +81,14 @@ namespace CommunicationUI
         resize(350, 120);
     }
 
-    void MasterWidget::ChangeContext(UiDefines::UiStates::ConnectionState new_state)
+    void MasterWidget::ChangeContext(ImUiDefines::UiStates::ConnectionState new_state)
     {
-        ui_state_ = (new_state == UiDefines::UiStates::NoStateChange ? ui_state_ : new_state);
+        ui_state_ = (new_state == ImUiDefines::UiStates::NoStateChange ? ui_state_ : new_state);
         current_size_ = CleanSelf();
 
         switch (ui_state_)
         {
-            case UiDefines::UiStates::Disconnected:
+            case ImUiDefines::UiStates::Disconnected:
             {
                 SAFE_DELETE(login_widget_);
                 login_widget_ = new QWidget();
@@ -103,10 +103,10 @@ namespace CommunicationUI
                 
                 connect(login_ui_->connectPushButton, SIGNAL( clicked() ), login_helper_, SLOT( TryLogin() ));
                 connect(login_ui_->presetsComboBox, SIGNAL( currentIndexChanged(int) ), this, SLOT( PresetSelected(int) ));
-                connect(login_helper_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
+                connect(login_helper_, SIGNAL( StateChange(ImUiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(ImUiDefines::UiStates::ConnectionState) ));
                 break;
             }
-            case UiDefines::UiStates::Connecting:
+            case ImUiDefines::UiStates::Connecting:
             {
                 SAFE_DELETE(loading_widget_);
                 loading_widget_ = new QWidget();
@@ -117,7 +117,7 @@ namespace CommunicationUI
                 connect(loading_ui_->cancelPushButton, SIGNAL( clicked() ), login_helper_, SLOT( LoginCanceled() ));
                 break;
             }
-            case UiDefines::UiStates::Connected:
+            case ImUiDefines::UiStates::Connected:
             {
                 config_helper_->SaveLoginData(login_helper_->GetPreviousCredentials());
 
@@ -127,11 +127,11 @@ namespace CommunicationUI
                 layout()->addWidget(session_manager_widget_);
                 to_be_removed_ << "session_manager_ui_";
 
-                connect(session_manager_, SIGNAL( StateChange(UiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(UiDefines::UiStates::ConnectionState) ));
+                connect(session_manager_, SIGNAL( StateChange(ImUiDefines::UiStates::ConnectionState) ), this, SLOT( ChangeContext(ImUiDefines::UiStates::ConnectionState) ));
                 session_manager_->Start(login_helper_->GetPreviousCredentials()["username"], login_helper_->GetConnectionInterface(), event_handler_);
                 break;
             }
-            case UiDefines::UiStates::Exit:
+            case ImUiDefines::UiStates::Exit:
             {
                 hide();
                 return;

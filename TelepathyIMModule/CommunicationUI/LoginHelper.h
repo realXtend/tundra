@@ -3,7 +3,7 @@
 #ifndef incl_Communication_LoginHelper_h
 #define incl_Communication_LoginHelper_h
 
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 #include "ui_LoginWidget.h"
 
 //#include "interface.h"
@@ -50,7 +50,7 @@ namespace UiHelpers
         QString password_;
 
     signals:
-        void StateChange(UiDefines::UiStates::ConnectionState);
+        void StateChange(ImUiDefines::UiStates::ConnectionState);
 
     };
 }

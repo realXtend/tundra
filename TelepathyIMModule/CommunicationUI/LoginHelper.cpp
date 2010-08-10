@@ -94,27 +94,27 @@ namespace UiHelpers
 
         connect(im_connection_, SIGNAL( ConnectionReady(Communication::ConnectionInterface&) ), SLOT( ConnectionEstablished(Communication::ConnectionInterface&) ));
         connect(im_connection_, SIGNAL( ConnectionError(Communication::ConnectionInterface&) ), SLOT( ConnectionFailed(Communication::ConnectionInterface&) ));
-        emit StateChange(UiDefines::UiStates::Connecting);
+        emit StateChange(ImUiDefines::UiStates::Connecting);
     }
 
     void LoginHelper::LoginCanceled()
     {
         error_message_ = "Connecting operation canceled";
         im_connection_->Close();
-        emit StateChange(UiDefines::UiStates::Disconnected);
+        emit StateChange(ImUiDefines::UiStates::Disconnected);
     }
 
     void LoginHelper::ConnectionFailed(Communication::ConnectionInterface &connection_interface)
     {
         error_message_ = "Connecting failed, please check your credentials";
         im_connection_->Close();
-        emit StateChange(UiDefines::UiStates::Disconnected);
+        emit StateChange(ImUiDefines::UiStates::Disconnected);
     }
 
     void LoginHelper::ConnectionEstablished(Communication::ConnectionInterface &connection_interface)
     {
         error_message_ = "";
-        emit StateChange(UiDefines::UiStates::Connected);
+        emit StateChange(ImUiDefines::UiStates::Connected);
     }
 
 }

@@ -11,7 +11,7 @@
 
 #include <QDebug>
 
-namespace UiDefines
+namespace ImUiDefines
 {
     class UiStates : public QObject
     {
