@@ -21,7 +21,7 @@ namespace Foundation
 {
     class UiServiceInterface;
     typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
-    typedef boost::shared_ptr<UiServiceInterface> UiServiceWeakPtr;
+    typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
 
     /** Interface for Naali's user interface ulitizing Qt's QWidgets.
      *  If you want to see your QWidgets external to the main application just call show() for them.
@@ -38,7 +38,7 @@ namespace Foundation
         virtual ~UiServiceInterface() {}
 
     public slots:
-        /** Add widget to scene.
+        /** Adds widget to scene.
          *  @param widget Widget.
          *  @return Proxy widget of the added widget.
          */

@@ -35,11 +35,11 @@
 
 namespace UiServices
 {
-    InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) 
-        : QObject(),
+    InworldSceneController::InworldSceneController(Foundation::Framework *framework, QGraphicsView *ui_view) :
           framework_(framework),
           ui_view_(ui_view),
-          communication_widget_(0)
+          communication_widget_(0),
+          docking_widget_(0)
     {
         if (!ui_view_)
             return;
@@ -79,14 +79,6 @@ namespace UiServices
         SAFE_DELETE(docking_widget_);
     }
 
-    /*************** UI Scene Manager Public Services ***************/
-
-    bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const
-    {
-        control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
-        return true;
-    }
-
     QGraphicsProxyWidget * InworldSceneController::AddWidgetToScene(QWidget *widget)
     {
         /*  QGraphicsProxyWidget maintains symmetry for the following states:
@@ -98,7 +90,10 @@ namespace UiServices
         proxy->setWidget(widget);
 
         if (!AddProxyWidget(proxy))
+        {
+            SAFE_DELETE(proxy);
             return 0;
+        }
 
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
@@ -109,75 +104,62 @@ namespace UiServices
         return proxy;
     }
 
-    void  InworldSceneController::AddWidgetToScene(QGraphicsProxyWidget *widget)
+    void InworldSceneController::AddWidgetToScene(QGraphicsProxyWidget *widget)
     {
         AddProxyWidget(widget);
     }
 
     UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties)
     {
-        UiProxyWidget *proxy_widget = new UiProxyWidget(widget, widget_properties);
-        if (AddProxyWidget(proxy_widget))
-            return proxy_widget;
-        else
+        UiProxyWidget *proxy = new UiProxyWidget(widget, widget_properties);
+        if (!AddProxyWidget(proxy))
+        {
+            SAFE_DELETE(proxy);
             return 0;
+        }
+
+        return proxy;
     }
 
-    bool InworldSceneController::AddProxyWidget(UiProxyWidget *proxy_widget)
+    bool InworldSceneController::AddProxyWidget(QGraphicsProxyWidget *widget)
     {
         if (!inworld_scene_)
-        {
-            SAFE_DELETE(proxy_widget);
+            ///\todo Does this ever even happen? Delete?
             return false;
-        }
 
         // Add to scene
-        if (proxy_widget->isVisible())
-            proxy_widget->hide();
-        inworld_scene_->addItem(proxy_widget);
+        if (widget->isVisible())
+            widget->hide();
+        inworld_scene_->addItem(widget);
 
         // Add to internal control list
-        if (!all_proxy_widgets_in_scene_.contains(proxy_widget))
-            all_proxy_widgets_in_scene_.append(proxy_widget);
+        if (!all_proxy_widgets_in_scene_.contains(widget))
+            all_proxy_widgets_in_scene_.append(widget);
 
-        UiWidgetProperties properties = proxy_widget->GetWidgetProperties();
-        if (properties.IsShownInToolbar())
+        // Compability for the UiProxyWidget class
+        UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
+        if (uiproxy)
         {
-            QString widget_name = properties.GetWidgetName();
-            ///\todo This is awful, get rid of this.
-            if (widget_name == "Inventory")
-                control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(proxy_widget);
-            else if (widget_name == "Avatar Editor")
-                control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(proxy_widget);
-            else
-                menu_manager_->AddMenuItem(properties.GetMenuGroup(), proxy_widget, properties);
+            UiWidgetProperties properties = uiproxy->GetWidgetProperties();
+            if (properties.IsShownInToolbar())
+            {
+                QString widget_name = properties.GetWidgetName();
+                ///\todo This is awful, get rid of this.
+                if (widget_name == "Inventory")
+                    control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
+                else if (widget_name == "Avatar Editor")
+                    control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
+                else
+                    menu_manager_->AddMenuItem(properties.GetMenuGroup(), uiproxy, properties);
+
+                ///\todo Should these be outside if (properties.IsShownInToolbar()) condition?
+                connect(uiproxy, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*) ), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
+                connect(uiproxy, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, QPointF)));
+                connect(uiproxy, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, QPointF)));
+                connect(uiproxy, SIGNAL(Closed()), SLOT(ProxyClosed()));
+                connect(uiproxy, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
+            }
         }
-
-        connect(proxy_widget, SIGNAL(BringProxyToFrontRequest(UiProxyWidget*) ), this, SLOT(BringProxyToFront(UiProxyWidget*)));
-        connect(proxy_widget, SIGNAL(ProxyMoved(UiProxyWidget*, QPointF)), this, SLOT(ProxyWidgetMoved(UiProxyWidget*, QPointF)));
-        connect(proxy_widget, SIGNAL(ProxyUngrabed(UiProxyWidget*, QPointF)), this, SLOT(ProxyWidgetUngrabed(UiProxyWidget*, QPointF)));
-        connect(proxy_widget, SIGNAL(Closed()), this, SLOT(ProxyClosed()));
-        connect(proxy_widget, SIGNAL(Visible(bool)), this, SLOT(ProxyClosed()));
-
-        return true;
-    }
-
-    bool InworldSceneController::AddProxyWidget(QGraphicsProxyWidget *proxy_widget)
-    {
-        if (!inworld_scene_)
-        {
-            SAFE_DELETE(proxy_widget);
-            return false;
-        }
-
-        // Add to scene
-        if (proxy_widget->isVisible())
-            proxy_widget->hide();
-        inworld_scene_->addItem(proxy_widget);
-
-        // Add to internal control list
-        if (!all_proxy_widgets_in_scene_.contains(proxy_widget))
-            all_proxy_widgets_in_scene_.append(proxy_widget);
 
         return true;
     }
@@ -185,6 +167,7 @@ namespace UiServices
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
         if (!inworld_scene_)
+            ///\todo Does this ever even happen? Delete?
             return;
 
         UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
@@ -210,17 +193,10 @@ namespace UiServices
         RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
     }
 
-    void InworldSceneController::BringProxyToFront(UiProxyWidget *widget) const
-    {
-        if (!inworld_scene_ || !inworld_scene_->isActive())
-            return;
-        inworld_scene_->setActiveWindow(widget);
-        inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
-    }
-
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const
     {
-        if (!inworld_scene_ || !inworld_scene_->isActive())
+        if (!inworld_scene_ || ///\todo Does this first condition  ever even happen? Delete?
+            !inworld_scene_->isActive())
             return;
         inworld_scene_->setActiveWindow(widget);
         inworld_scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
@@ -229,6 +205,7 @@ namespace UiServices
     void InworldSceneController::BringProxyToFront(QWidget *widget) const
     {
         if (!inworld_scene_)
+            ///\todo Does ever even happen? Delete?
             return;
         ShowProxyForWidget(widget);
         inworld_scene_->setActiveWindow(widget->graphicsProxyWidget());
@@ -247,6 +224,12 @@ namespace UiServices
             widget->graphicsProxyWidget()->hide();
     }
 
+    bool InworldSceneController::AddSettingsWidget(QWidget *settings_widget, const QString &tab_name) const
+    {
+        control_panel_manager_->GetSettingsWidget()->AddWidget(settings_widget, tab_name);
+        return true;
+    }
+
     QObject *InworldSceneController::GetSettingsObject() const
     {
         return dynamic_cast<QObject *>(control_panel_manager_->GetSettingsWidget());
@@ -259,14 +242,11 @@ namespace UiServices
     }
 
     // Don't touch, please
-
     void InworldSceneController::SetImWidget(UiProxyWidget *im_proxy) const
     {
         if (communication_widget_)
             communication_widget_->UpdateImWidget(im_proxy);
     }
-
-    // Private
 
     void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed) const
     {
@@ -281,7 +261,6 @@ namespace UiServices
         }
     }
 
-    //Apply new proxy position
     void InworldSceneController::ApplyNewProxyPosition(const QRectF &new_rect)
     {
         QPointF left_distance, right_distance;
@@ -341,7 +320,7 @@ namespace UiServices
         DockLineup();
     }
 
-    void InworldSceneController::ProxyWidgetMoved(UiProxyWidget* proxy_widget, const QPointF &proxy_pos)
+    void InworldSceneController::ProxyWidgetMoved(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
     {
         if (proxy_pos.x() + proxy_widget->size().width() > inworld_scene_->width() - DOCK_WIDTH)
         {
@@ -356,7 +335,7 @@ namespace UiServices
         }
     }
 
-    void InworldSceneController::ProxyWidgetUngrabed(UiProxyWidget* proxy_widget, const QPointF &proxy_pos)
+    void InworldSceneController::ProxyWidgetUngrabed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
     {
         bool changes = false;
         if (proxy_pos.x() + proxy_widget->size().width() > inworld_scene_->width() - DOCK_WIDTH)
