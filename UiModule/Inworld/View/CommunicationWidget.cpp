@@ -428,6 +428,11 @@ namespace CoreUi
 
         if (in_world_voice_session_)
         {
+            if (in_world_speak_mode_on_)
+                in_world_voice_session_->EnableAudioSending();
+            else
+                in_world_voice_session_->DisableAudioSending();
+
             SAFE_DELETE(voice_users_widget_);
             voice_users_widget_ = new CommUI::VoiceUsersWidget(0);
             voice_users_widget_->SetSession(in_world_voice_session_);
