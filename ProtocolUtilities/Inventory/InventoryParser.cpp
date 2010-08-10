@@ -129,8 +129,12 @@ boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryParser::Extract
         }
     }
 
+    if ( inventory->GetFirstChildFolderByName("My Inventory") == 0) 
+        throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
+
     if (inventory->GetFirstChildFolderByName("My Inventory")->id != inventoryRootFolderID)
         throw XmlRpcException("Failed to read inventory, inventory-root value folder_id pointed to a nonexisting folder!");
+    
 
     // Insert the detached folders onto the tree view until all folders have been added or there are orphans left
     // that cannot be added, and quit.
