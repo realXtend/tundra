@@ -52,6 +52,8 @@ EcXmlEditorWidget::EcXmlEditorWidget(Foundation::Framework *framework, QWidget *
     hlayout->addWidget(revertButton);
 
     layout->addLayout(hlayout);
+
+    setAttribute(Qt::WA_DeleteOnClose);
 }
 
 EcXmlEditorWidget::~EcXmlEditorWidget()

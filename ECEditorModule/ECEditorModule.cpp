@@ -14,10 +14,8 @@
 #include "SceneManager.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
-#include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
-#include "Inworld/InworldSceneController.h"
 #include "EC_DynamicComponent.h"
+#include "UiServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -127,8 +125,8 @@ namespace ECEditor
         if (editor_window_)
             return;
 
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module)
+        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (!ui)
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
@@ -141,7 +139,7 @@ namespace ECEditor
         map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
         widget_properties.SetMenuNodeStyleMap(map);
 
-        ui_module->GetInworldSceneController()->AddWidgetToScene(editor_window_, widget_properties);
+        ui->AddWidgetToScene(editor_window_, widget_properties);
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
@@ -151,13 +149,13 @@ namespace ECEditor
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module)
+        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (!ui)
             return Console::ResultFailure("Failed to acquire UiModule pointer!");
 
         if (editor_window_)
         {
-            ui_module->GetInworldSceneController()->BringProxyToFront(editor_window_);
+            ui->BringWidgetToFront(editor_window_);
             return Console::ResultSuccess();
         }
         else
@@ -227,20 +225,18 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (entities.empty() || !ui_module)
+        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (entities.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(xmlEditor_,
-                UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
-            connect(proxy, SIGNAL(Closed()), xmlEditor_, SLOT(deleteLater()));
+            ui->AddWidgetToScene(xmlEditor_, UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
         }
 
         xmlEditor_->SetEntity(entities);
-        ui_module->GetInworldSceneController()->BringProxyToFront(xmlEditor_);
+        ui->BringWidgetToFront(xmlEditor_);
     }
 
     void ECEditorModule::CreateXmlEditor(Foundation::ComponentPtr component)
@@ -252,20 +248,18 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<Foundation::ComponentPtr> &components)
     {
-        UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (components.empty() || !ui_module)
+        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (components.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(xmlEditor_,
-                UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
-            connect(proxy, SIGNAL(Closed()), xmlEditor_, SLOT(deleteLater()));
+            ui->AddWidgetToScene(xmlEditor_, UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
         }
 
         xmlEditor_->SetComponent(components);
-        ui_module->GetInworldSceneController()->BringProxyToFront(xmlEditor_);
+        ui->BringWidgetToFront(xmlEditor_);
     }
 }
 
