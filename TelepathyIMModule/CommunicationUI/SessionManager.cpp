@@ -108,17 +108,17 @@ namespace UiManagers
 
         set_status_message->setIcon(QIcon(":images/iconRename.png"));
         available_status->setCheckable(true);
-        available_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("available"));
+        available_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("available"));
         chatty_status->setCheckable(true);
-        chatty_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("chat"));
+        chatty_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("chat"));
         away_status->setCheckable(true);
-        away_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("away"));
+        away_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("away"));
         extended_away_status->setCheckable(true);
-        extended_away_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("xa"));
+        extended_away_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("xa"));
         busy_status->setCheckable(true);
-        busy_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("dnd"));
+        busy_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("dnd"));
         hidden_status->setCheckable(true);
-        hidden_status->setIcon(UiDefines::PresenceStatus::GetIconForStatusCode("hidden"));
+        hidden_status->setIcon(ImUiDefines::PresenceStatus::GetIconForStatusCode("hidden"));
 
         QActionGroup *status_group = new QActionGroup(main_parent_);            
         status_group->addAction(available_status);
@@ -239,7 +239,7 @@ namespace UiManagers
         im_connection_->Close();          
         friend_list_widget_->close(); 
         SAFE_DELETE(friend_list_widget_);
-        emit StateChange(UiDefines::UiStates::Disconnected);
+        emit StateChange(ImUiDefines::UiStates::Disconnected);
     }
 
     void SessionManager::Show3DSoundManager()

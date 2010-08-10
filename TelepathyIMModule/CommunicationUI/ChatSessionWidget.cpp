@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ChatSessionWidget.h"
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 #include "ChatSessionInterface.h"
 #include "ChatSessionParticipantInterface.h"
 #include "ContactInterface.h"
@@ -56,7 +56,7 @@ namespace CommunicationUI
         if (message.GetTimeStamp().toString() == 0 || message.GetOriginator() == 0 || message.GetText() == 0)
             return;
         QString html("<span style='color:#828282;'>[");
-        html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(message.GetTimeStamp()));
+        html.append(ImUiDefines::TimeStampGenerator::FormatTimeStamp(message.GetTimeStamp()));
         html.append("]</span> <span style='color:#2133F0;'>");
         html.append(message.GetOriginator()->GetName());
         html.append("</span><span style='color:black;'>: ");
@@ -72,7 +72,7 @@ namespace CommunicationUI
         chat_session_->SendChatMessage(message);
 
         QString html("<span style='color:#828282;'>[");
-        html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
+        html.append(ImUiDefines::TimeStampGenerator::GenerateTimeStamp());
         html.append("]</span> <span style='color:#C21511;'>");
         html.append(my_name_);
         html.append("</span><span style='color:black;'>: ");
@@ -88,7 +88,7 @@ namespace CommunicationUI
         {
             Communication::ChatMessageInterface *msg = (*itrHistory);
             QString html("<span style='color:#828282;'>[");
-            html.append(UiDefines::TimeStampGenerator::FormatTimeStamp(msg->GetTimeStamp()));
+            html.append(ImUiDefines::TimeStampGenerator::FormatTimeStamp(msg->GetTimeStamp()));
             html.append("]</span> <span style='color:#2133F0;'>");
             html.append(msg->GetOriginator()->GetName());
             //! @todo check if the originator is the current user
@@ -102,7 +102,7 @@ namespace CommunicationUI
     void ChatSessionWidget::ContactStateChanged(const QString &status, const QString &message)
     {
         QString html("<span style='color:#828282;'>[");
-        html.append(UiDefines::TimeStampGenerator::GenerateTimeStamp());
+        html.append(ImUiDefines::TimeStampGenerator::GenerateTimeStamp());
         html.append("] ");
         html.append(his_name_);
         html.append(" changed status to ");

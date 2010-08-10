@@ -3,7 +3,7 @@
 #ifndef incl_Communication_SessionManager_h
 #define incl_Communication_SessionManager_h
 
-#include "UiDefines.h"
+#include "ImUiDefines.h"
 
 #include "EventHandler.h"
 
@@ -86,7 +86,7 @@ namespace UiManagers
         void VideoSessionReceived(Communication::VoiceSessionInterface& voice_session);
 
     signals:
-        void StateChange(UiDefines::UiStates::ConnectionState);
+        void StateChange(ImUiDefines::UiStates::ConnectionState);
         void StatusChange(const QString &);
 
     };

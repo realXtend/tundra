@@ -96,7 +96,7 @@ namespace OpensimIM
     typedef std::vector<ChatMessage*> ChatMessageVector;
 }
 
-namespace UiDefines
+namespace ImUiDefines
 {
     class UiStates;
     class PresenceStatus;
