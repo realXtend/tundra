@@ -461,19 +461,19 @@ void InventoryModule::CreateInventoryWindow()
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (!ui_module)
         return;
-
+/*
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return;
-
+*/
     SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
-/*
+
     ui_module->GetInworldSceneController()->AddWidgetToScene(inventoryWindow_,
         UiServices::UiWidgetProperties(TR("InventoryWindow", "Inventory"), UiServices::ModuleWidget));
-*/
-    ui->AddWidgetToScene(inventoryWindow_);
+
+//    ui->AddWidgetToScene(inventoryWindow_);
 
     connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
         SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
