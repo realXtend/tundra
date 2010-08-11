@@ -663,7 +663,7 @@ namespace ECEditor
             {
                 QtProperty *childProperty = 0;
                 // Get number of elements in attribute array and create for property for each array element.
-                Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant>>*>(*(attributes_.begin()));
+                Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
                 std::vector<QVariant> variantArray = attribute->Get();
                 for(uint i = 0; i < variantArray.size(); i++)
                 {
@@ -686,7 +686,7 @@ namespace ECEditor
     {
         if (listenEditorChangedSignal_)
         {
-            Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant>>*>(*(attributes_.begin()));
+            Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
             std::vector<QVariant> value;
@@ -709,7 +709,7 @@ namespace ECEditor
     {
         if(!useMultiEditor_)
         {
-            Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant>>*>(*(attributes_.begin()));
+            Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
             std::vector<QVariant> value = attribute->Get();
