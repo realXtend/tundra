@@ -29,7 +29,15 @@ public:
     /// Description.
     Foundation::Attribute<std::string> description;
 
+    /// Boolean which indicates that the current name value is defined by the user and should not be set programmatically.
+    Foundation::Attribute<bool> userDefined;
+
 private:
     /// Constructor. Sets name and description to empty strings.
-    EC_Name(Foundation::ModuleInterface *module) : name(this, "name", ""), description(this, "description", "") {}
+    EC_Name(Foundation::ModuleInterface *module) :
+        name(this, "name", ""),
+        description(this, "description", ""),
+        userDefined(this, "user-defined", false)
+    {
+    }
 };

@@ -22,7 +22,8 @@ AttributeInterface::AttributeInterface(ComponentInterface* owner, const char* na
     owner_(owner),
     name_(name),
     change_(AttributeChange::None),
-    null_(false)
+    null_(false),
+    metadata_(0)
 {
     if (owner)
         owner->AddAttribute(this);
