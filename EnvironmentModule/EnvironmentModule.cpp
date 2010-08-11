@@ -90,6 +90,9 @@ namespace Environment
 
             ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
         }
+
+         environment_editor_ = new EnvironmentEditor(this);
+
     }
 
     void EnvironmentModule::PostInitialize()
@@ -129,8 +132,8 @@ namespace Environment
     {
         RESETPROFILER;
         // HACK Initialize editor_widget_ in correct time. 
-        if (environment_editor_ == 0 && terrain_.get() != 0 && water_.get() != 0)
-            environment_editor_ = new EnvironmentEditor(this);
+        //if (environment_editor_ == 0 && terrain_.get() != 0 && water_.get() != 0)
+        //    environment_editor_ = new EnvironmentEditor(this);
 
         if ((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
@@ -159,9 +162,10 @@ namespace Environment
             {
                 if (GetFramework()->GetDefaultWorldScene().get())
                 {
+                    CreateEnvironment();
                     CreateTerrain();
                     CreateWater();
-                    CreateEnvironment();
+                    //CreateEnvironment();
                     CreateSky();
                 }
             }
@@ -174,6 +178,7 @@ namespace Environment
                 ReleaseWater();
                 ReleaseEnvironment();
                 ReleaseSky();
+               
             }
         }
         else if(category_id == input_event_category_)
@@ -521,18 +526,31 @@ namespace Environment
         entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
 
         terrain_->FindCurrentlyActiveTerrain();
+        
+        if ( environment_editor_ != 0 )
+        {
+            environment_editor_->InitTerrainTabWindow();
+            environment_editor_->InitTerrainTextureTabWindow();
+        }
     }
 
     void EnvironmentModule::CreateWater()
     {
         water_ = WaterPtr(new Water(this));
         water_->CreateWaterGeometry();
+        if ( environment_editor_ != 0 )
+            environment_editor_->InitWaterTabWindow();
     }
 
     void EnvironmentModule::CreateEnvironment()
     {
         environment_ = EnvironmentPtr(new Environment(this));
         environment_->CreateEnvironment();
+        if ( environment_editor_ != 0)
+        {
+            environment_editor_->InitAmbientTabWindow();
+            environment_editor_->InitFogTabWindow();
+        }
     }
 
     void EnvironmentModule::CreateSky()
@@ -545,6 +563,9 @@ namespace Environment
 
         if (!GetEnvironmentHandler()->IsCaelum())
             sky_->CreateDefaultSky();
+
+        if ( environment_editor_ != 0 )
+            environment_editor_->InitSkyTabWindow();
     }
 
     void EnvironmentModule::ReleaseTerrain()
