@@ -48,6 +48,7 @@ signals:
 
     /// This signal is emitted when any key is pressed in this context.
     void KeyPressed(KeyEvent &key);
+    void KeyPressed(KeyEvent *key);
     /// This signal is emitted for each application frame when this key is pressed down in this context.
     void KeyDown(KeyEvent &key);
     /// This signal is emitted when any key is released in this context.
