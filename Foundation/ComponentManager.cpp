@@ -87,7 +87,7 @@ namespace Foundation
         else if(typeName == "qvariant")
             attribute = new Attribute<QVariant>(owner, name.c_str());
         else if(typeName == "qvariantarray")
-            attribute = new Attribute<std::vector<QVariant>>(owner, name.c_str());
+            attribute = new Attribute<std::vector<QVariant> >(owner, name.c_str());
         return attribute;
     }
 
