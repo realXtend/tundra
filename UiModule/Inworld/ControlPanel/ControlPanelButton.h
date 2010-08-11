@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_ControlPanelButton_h
 #define incl_UiModule_ControlPanelButton_h
 
-#include "UiDefines.h"
+#include "UiTypes.h"
 
 #include <QGraphicsProxyWidget>
 #include "ui_ControlPanelButton.h"
@@ -16,11 +16,11 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        ControlPanelButton(UiDefines::ControlButtonType type);
+        ControlPanelButton(UiServices::ControlButtonType type);
 
     public slots:
         qreal GetContentWidth();
-        UiDefines::ControlButtonType GetType();
+        UiServices::ControlButtonType GetType();
         void CheckStyle(bool item_visible);
         
     private slots:
@@ -28,11 +28,11 @@ namespace CoreUi
         void Clicked();
 
     signals:
-        void ControlButtonClicked(UiDefines::ControlButtonType);
+        void ControlButtonClicked(UiServices::ControlButtonType);
 
     private:
         QWidget *internal_widget_;
-        UiDefines::ControlButtonType type_;
+        UiServices::ControlButtonType type_;
 
     };
 }

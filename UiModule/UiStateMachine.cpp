@@ -18,7 +18,7 @@ namespace CoreUi
           view_(view),
           current_scene_(view->scene()),
           current_scene_name_(""),
-          connection_state_(UiDefines::Disconnected)
+          connection_state_(UiServices::Disconnected)
     {
         state_ether_ = new QState(this);
         state_inworld_ = new QState(this);
@@ -75,7 +75,7 @@ namespace CoreUi
             next_scene_name_ = "Ether";
         else
         {
-            if (connection_state_ == UiDefines::Connected)
+            if (connection_state_ == UiServices::Connected)
                 next_scene_name_ = "Inworld";
             else
                 next_scene_name_ = "Ether";
@@ -166,7 +166,7 @@ namespace CoreUi
 
     void UiStateMachine::ToggleEther()
     {
-        if (connection_state_ == UiDefines::Connected)
+        if (connection_state_ == UiServices::Connected)
             emit EtherTogglePressed();
     }
 
@@ -235,20 +235,20 @@ namespace CoreUi
             return 0;
     }
 
-    void UiStateMachine::SetConnectionState(UiDefines::ConnectionState new_connection_state)
+    void UiStateMachine::SetConnectionState(UiServices::ConnectionState new_connection_state)
     {
         connection_state_ = new_connection_state;
 
         switch (connection_state_)
         {
-            case UiDefines::Disconnected:
+            case UiServices::Disconnected:
                 SwitchToEtherScene();
                 break;
-            case UiDefines::Connected:
+            case UiServices::Connected:
                 SwitchToInworldScene();
                 break;
-            case UiDefines::Failed:
-                connection_state_ = UiDefines::Disconnected;
+            case UiServices::Failed:
+                connection_state_ = UiServices::Disconnected;
                 break;
             default:
                 return;

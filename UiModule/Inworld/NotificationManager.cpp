@@ -47,11 +47,11 @@ namespace UiServices
         browser_widget_->hide();
         scene_->addItem(browser_widget_);
 
-        CoreUi::ControlPanelButton *button = inworld_scene_controller_->GetControlPanelManager()->GetButtonForType(UiDefines::Notifications);
+        CoreUi::ControlPanelButton *button = inworld_scene_controller_->GetControlPanelManager()->GetButtonForType(Notifications);
         if (button)
         {
             CoreUi::ControlButtonAction *notification_action = new CoreUi::ControlButtonAction(button, browser_widget_, this);
-            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Notifications, notification_action);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(Notifications, notification_action);
             
             connect(notification_action, SIGNAL(toggled(bool)), SLOT(ToggleNotificationBrowser()));
             connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(UpdatePosition(const QRectF &)));
@@ -157,14 +157,14 @@ namespace UiServices
         }
     }
 
-    void NotificationManager::SetConnectionState(UiDefines::ConnectionState connection_state)
+    void NotificationManager::SetConnectionState(UiServices::ConnectionState connection_state)
     {
         switch (connection_state)
         {
-            case UiDefines::Connected:
+            case Connected:
                 break;
 
-            case UiDefines::Disconnected:
+            case Disconnected:
             {
                 foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
                     SAFE_DELETE(notification);

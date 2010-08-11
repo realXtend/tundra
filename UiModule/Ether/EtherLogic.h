@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_EtherLogic_h
 #define incl_UiModule_EtherLogic_h
 
-#include "UiDefines.h"
+#include "UiTypes.h"
 #include "UiModuleFwd.h"
 
 #include <QObject>
@@ -45,7 +45,7 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void SetConnectionState(UiDefines::ConnectionState connection_state);
+            void SetConnectionState(UiServices::ConnectionState connection_state);
 
             View::EtherScene *GetScene()  const { return scene_; }
             EtherSceneController *GetSceneController()  const { return scene_controller_; }
