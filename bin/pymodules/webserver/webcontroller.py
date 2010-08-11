@@ -70,12 +70,16 @@ def save_screenshot():
     rend.Render()
     imgname = "image-%s.png" % time.time()
     r.takeScreenshot(SHOTPATH, imgname)
-    rend.ShowCurrentWorldView()    
-    imgurl = imgname #base is added when the server has a separate http for serving the image
-    return imgurl
+    rend.ShowCurrentWorldView()
+    baseurl = "/"
+    #baseurl = "http://www.playsign.fi:28080/"
+    return baseurl, imgname
 
 class WebController(Controller):                        
     def index(self):
+        return self.serve_file(OWNPATH + "naali.html")
+
+    def hello(self):
         return "Hello World!"
 
     def camcontrol(self, rotate=None, move=None):
@@ -95,9 +99,10 @@ class WebController(Controller):
             pos = p.Position
             pos += Vec(float(move), 0, 0)
             p.Position = pos
-
-        imgurl = save_screenshot()
-
+            
+        baseurl, imgname = save_screenshot()
+        imgurl = baseurl + imgname
+        
         #return "%s, %s" % (p.Position, p.Orientation)
         return relhtml % imgurl
 
@@ -123,7 +128,8 @@ class WebController(Controller):
         #    p.Orientation = ort
 
         #return str(p.Position), str(p.Orientation) #self.render1()
-        imgurl = save_screenshot()
+        baseurl, imgname = save_screenshot()
+        imgurl = baseurl + imgname
 
         pos = p.Position
         ort = p.Orientation
@@ -140,10 +146,12 @@ class WebController(Controller):
                           #ort.scalar(), ort.x(), ort.y(), ort.z(),
                           )
 
-    def renderimg(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
+    def _renderimgurl(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
         camid = r.getCameraId()
         cament = r.getEntity(camid)
         p = cament.placeable
+        orgpos = Vec(0, 0, 0)
+        orgort = Quat(1, 0, 0, 0)
 
         if camposx is not None:
             pos = Vec(*(float(v) for v in [camposx, camposy, camposz]))
@@ -153,13 +161,24 @@ class WebController(Controller):
             ort = Quat(*(float(v) for v in [camortw, camortx, camorty, camortz]))
             p.Orientation = ort
 
-        imgurl = save_screenshot()
-        #return imgurl
-        return self.serve_file(SHOTPATH + imgurl)
+        baseurl, imgname = save_screenshot()
+
+        p.Position = orgpos
+        p.Orientation = orgort
+        return baseurl, imgname
+
+    def renderimgurl(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
+        baseurl, imgname = self._renderimgurl(camposx, camposy, camposz, camortx, camorty, camortz, camortw)
+        return baseurl + imgname        
+
+    def renderimg(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
+        _, imgname = self._renderimgurl(camposx, camposy, camposz, camortx, camorty, camortz, camortw)
+        return self.serve_file(SHOTPATH + imgname)
         
     def render1(self, campos=None, camort=None):
         timestr = datetime.datetime.today().isoformat()
-        imgurl = save_screenshot()
+        baseurl, imgname = save_screenshot()
+        imgurl = baseurl + imgname
         
         return """
         <h1>Realxtend Naali viewer</h1>
