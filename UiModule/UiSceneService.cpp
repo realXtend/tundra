@@ -40,6 +40,23 @@ namespace UiServices
         return dynamic_cast<QGraphicsProxyWidget *>(owner_->GetInworldSceneController()->AddWidgetToScene(widget, properties));
     }
 
+    QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, UiServices::WidgetType type)
+    {
+        // Create widget properties
+        UiWidgetProperties props(widget->windowTitle(), type);
+        UiDefines::MenuNodeStyleMap stylemap;
+        QString base_url = "./data/ui/images/menus/"; 
+        stylemap[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
+        stylemap[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
+        stylemap[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
+        props.SetMenuNodeStyleMap(stylemap);
+
+        // Create proxy and add it to the scene.
+        UiProxyWidget *proxy = new UiProxyWidget(widget, props);
+        owner_->GetInworldSceneController()->AddWidgetToScene(proxy);
+        return dynamic_cast<QGraphicsProxyWidget *>(proxy);
+    }
+
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
     {
         owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
