@@ -1653,9 +1653,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     if (uiproperty.GetWidgetName() == "Object Edit")
     {
         QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::TextNormal] = base_url + "edbutton_OBJEDtxt_normal.png";
-        map[UiDefines::TextHover] = base_url + "edbutton_OBJEDtxt_hover.png";
-        map[UiDefines::TextPressed] = base_url + "edbutton_OBJEDtxt_click.png";
         map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
         map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
         map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
@@ -1665,9 +1662,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     if (uiproperty.GetWidgetName() == "Local Scene")
     {
         QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::TextNormal] = base_url + "edbutton_LSCENEtxt_normal.png";
-        map[UiDefines::TextHover] = base_url + "edbutton_LSCENEtxt_hover.png";
-        map[UiDefines::TextPressed] = base_url + "edbutton_LSCENEtxt_click.png";
         map[UiDefines::IconNormal] = base_url + "edbutton_LSCENE_normal.png";
         map[UiDefines::IconHover] = base_url + "edbutton_LSCENE_hover.png";
         map[UiDefines::IconPressed] = base_url + "edbutton_LSCENE_click.png";
@@ -1676,9 +1670,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     if (uiproperty.GetWidgetName() == "Estate Management")
     {
         QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::TextNormal] = base_url + "edbutton_ESMNGtxt_normal.png";
-        map[UiDefines::TextHover] = base_url + "edbutton_ESMNGtxt_hover.png";
-        map[UiDefines::TextPressed] = base_url + "edbutton_ESMNGtxt_click.png";
         map[UiDefines::IconNormal] = base_url + "edbutton_ESMNG_normal.png";
         map[UiDefines::IconHover] = base_url + "edbutton_ESMNG_hover.png";
         map[UiDefines::IconPressed] = base_url + "edbutton_ESMNG_click.png";

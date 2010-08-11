@@ -53,9 +53,17 @@ namespace Foundation
         /** Temporary function which adds support for current UiModule's UiWidgetProperties
          *  which are required in order to be able to add widgets to the menu.
          *  @param widget Widget.
-         *  @param propertries Widget properties.
+         *  @param properties Widget properties.
          */
         virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
+
+        /** Temporary function which adds support for current UiModule's UiWidgetProperties
+         *  which are required in order to be able to add widgets to the menu.
+         *  @param widget Widget.
+         *  @param type Widget type, see @see UiServices::WidgetType. If the type is ModuleWidget a button is added automatically to the menu.
+         *  @note Remember to set the widget's name/window title using QWidget::setWindowTitle.
+         */
+        virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type) = 0;
 
         /** Removes widget from the scene.
          *  @param widget Widget.
