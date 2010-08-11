@@ -254,9 +254,6 @@ namespace Environment
         // Menu graphics
         UiDefines::MenuNodeStyleMap image_path_map;
         QString base_url = "./data/ui/images/menus/"; 
-        image_path_map[UiDefines::TextNormal] = base_url + "edbutton_ENVEDtxt_normal.png";
-        image_path_map[UiDefines::TextHover] = base_url + "edbutton_ENVEDtxt_hover.png";
-        image_path_map[UiDefines::TextPressed] = base_url + "edbutton_ENVEDtxt_click.png";
         image_path_map[UiDefines::IconNormal] = base_url + "edbutton_ENVED_normal.png";
         image_path_map[UiDefines::IconHover] = base_url + "edbutton_ENVED_hover.png";
         image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";

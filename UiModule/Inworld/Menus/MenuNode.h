@@ -29,7 +29,7 @@ namespace CoreUi
         Q_OBJECT
 
     public:
-        MenuNode(const QString& node_name, const QIcon &icon, UiDefines::MenuNodeStyleMap map, QUuid id = QUuid());
+        MenuNode(const QString& node_name, const QIcon &icon, UiDefines::MenuNodeStyleMap map, const QUuid &id = QUuid());
         ~MenuNode();
 
     public slots:

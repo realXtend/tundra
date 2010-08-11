@@ -29,9 +29,6 @@ namespace UiDefines
 
     enum MenuNodeStyle
     {
-        TextNormal,
-        TextHover,
-        TextPressed,
         IconNormal,
         IconHover,
         IconPressed

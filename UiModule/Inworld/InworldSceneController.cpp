@@ -140,14 +140,13 @@ namespace UiServices
                     control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
                 else
                     menu_manager_->AddMenuItem(properties.GetMenuGroup(), uiproxy, properties);
-
-                ///\todo Should these be outside if (properties.IsShownInToolbar()) condition?
-                connect(uiproxy, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*) ), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
-                connect(uiproxy, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, QPointF)));
-                connect(uiproxy, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, QPointF)));
-                connect(uiproxy, SIGNAL(Closed()), SLOT(ProxyClosed()));
-                connect(uiproxy, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
             }
+
+            connect(uiproxy, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*) ), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
+            connect(uiproxy, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, QPointF)));
+            connect(uiproxy, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, QPointF)));
+            connect(uiproxy, SIGNAL(Closed()), SLOT(ProxyClosed()));
+            connect(uiproxy, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
         }
 
         return true;

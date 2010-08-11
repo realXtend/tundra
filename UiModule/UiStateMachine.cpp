@@ -182,9 +182,9 @@ namespace CoreUi
 
     bool UiStateMachine::UnregisterScene(const QString &name)
     {
-        if (!scene_map_.contains(name))
-            return false;
-        scene_map_.remove(name);
+        if (scene_map_.remove(name) > 0)
+            return true;
+        return false;
     }
 
     bool UiStateMachine::SwitchToScene(const QString &name)
@@ -221,7 +221,7 @@ namespace CoreUi
 
             // Inform anyone who is interested that 
             // we changed the currently viewed scene
-            emit SceneChangedTo(old_scene_name, current_scene_name_);
+            emit SceneChanged(old_scene_name, current_scene_name_);
         }
 
         return true;

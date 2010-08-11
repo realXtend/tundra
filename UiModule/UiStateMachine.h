@@ -96,7 +96,7 @@ namespace CoreUi
     signals:
         void EtherTogglePressed();
         void SceneOutAnimationFinised();
-        void SceneChangedTo(QString old_scene_name, QString new_scene_name);
+        void SceneChanged(const QString &oldName, const QString &newName);
 
     };
 }
