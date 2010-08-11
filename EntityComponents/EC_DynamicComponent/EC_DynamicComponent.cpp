@@ -180,11 +180,11 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
     QVariant value;
     if(index < attributes_.size())
     {
-        Foundation::AttributeVector::const_iterator iter = attributes_.begin();
+        /*Foundation::AttributeVector::const_iterator iter = attributes_.begin();
         for(uint i = 0; i < index; i++)
-            iter++;
+            iter++;*/
 
-        Foundation::AttributeInterface *attribute = (*iter);
+        Foundation::AttributeInterface *attribute = attributes_[index];//(*iter);
         if(!attribute)
             return value;
         Foundation::Attribute<QVariant> *variantAttribute = dynamic_cast<Foundation::Attribute<QVariant>*>(attribute);
@@ -286,10 +286,11 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
 {
     if(index < attributes_.size())
     {
-        Foundation::AttributeVector::const_iterator iter = attributes_.begin();
+        /*Foundation::AttributeVector::const_iterator iter = attributes_.begin();
         for(uint i = 0; i < index; i++)
             iter++;
-        return (*iter)->GetName();
+        return (*iter)->GetName();*/
+        return attributes_[index]->GetName();
     }
     return QString();
 }

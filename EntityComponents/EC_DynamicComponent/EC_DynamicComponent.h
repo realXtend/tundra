@@ -14,6 +14,19 @@ class QDomElement;
 #include <map>
 #include <string>
 
+//! EC_DynamicComponent is a component where user can add or delete attributes in a runtime.
+/*! It's recommend to use attribute names while you set or get your attribute values cause 
+ *  index can change while the dynamic componet's attributes are added or removed. If you want to
+ *  create a new attribute you can use either AddQVariantAttribute or CreateAttribute methods.
+ *  AddQVariantAttribute will create empty QVariant type of attribute and user need to set attribute value
+ *  after the attribute is added to component by using a SetAttribute mehtod. All component's changes should
+ *  be forwarded to all clients and thenfor they should be on sync. When component is deserialized it will
+ *  compare old and a new attribute values and will get difference between those two and use that infomation
+ *  to remove attributes that are not in the new list and add those that are only in new list and only update
+ *  those values that are same in both lists.
+ *  @todo Serialize is now done using a FreeData field that has character limit of 1000. If xml file will get larger
+ *  than that client will not send a new attribute values to the server.
+ */
 class EC_DynamicComponent : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_DynamicComponent);
