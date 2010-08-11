@@ -266,12 +266,15 @@ namespace Environment
 
         editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
 
+        /*
         InitTerrainTabWindow();
         InitTerrainTextureTabWindow();
         InitWaterTabWindow();
         InitSkyTabWindow();
         InitFogTabWindow();
         InitAmbientTabWindow();
+        */
+
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");

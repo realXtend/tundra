@@ -118,6 +118,13 @@ namespace Environment
         //! How many textures terrain is using
         static const int cNumberOfTerrainTextures = 4;
  
+        void InitTerrainTabWindow();
+        void InitTerrainTextureTabWindow();
+        void InitWaterTabWindow();
+        void InitSkyTabWindow();
+        void InitFogTabWindow();
+        void InitAmbientTabWindow();
+
     public slots:
         //! Toggle between Paint2D and Paint3D mode.
         void ToggleTerrainPaintMode();
@@ -250,6 +257,9 @@ namespace Environment
 
         void ChangeLanguage();
 
+
+    
+
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
 
@@ -287,12 +297,7 @@ namespace Environment
 
         //! Create a window for terrain editor.
         void InitEditorWindow();
-        void InitTerrainTabWindow();
-        void InitTerrainTextureTabWindow();
-        void InitWaterTabWindow();
-        void InitSkyTabWindow();
-        void InitFogTabWindow();
-        void InitAmbientTabWindow();
+      
 
         //! Create a new heightmap image that will show heightmap values in grayscale.format.
         void CreateHeightmapImage();
