@@ -39,6 +39,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))
             attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
+        else if(dynamic_cast<const Foundation::Attribute<std::vector<QVariant> > *>(&attribute))
+            attributeEditor = new ECAttributeEditor<std::vector<QVariant> >(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Foundation::AssetReference> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
         return attributeEditor;

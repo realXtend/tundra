@@ -31,6 +31,24 @@ namespace Foundation
 
 namespace ECEditor
 {
+    class AbstractAttributeUiElement
+    {
+    public:
+        AbstractAttributeUiElement(Foundation::AttributeInterface *attribute,
+                                   QtAbstractPropertyBrowser *owner):
+            attribute_(attribute),
+            owner_(owner)
+        {}
+        ~AbstractAttributeUiElement() {}
+
+        virtual void Update() = 0;
+        virtual void Set(const std::string &value) = 0;
+        virtual std::string Get() const = 0;
+    private:
+        Foundation::AttributeInterface *attribute_;
+        QtAbstractPropertyBrowser *owner_;
+    };
+
     //! ECAttributeEditorBase class.
     /*! Abstract base class for attribute editing. User can add editable components using the AddNewComponent method and the component is inculded
      *  inside the object's map. Note! ECAttributeEditor wont update the ui until UpdateEditorUI method is called.
@@ -38,7 +56,7 @@ namespace ECEditor
      *  AttributeInterface and update it's ui. If you are planing to add new attribute type to editor, you should take a look at ECAttributeEditor's template implementation code
      *  to see how other attribute types have been included into the editor.
      *  \todo Remove QtAbstractPropertyBrowser pointer from the attribute editor, this means that manager and factory connections need to 
-     *        be registered in elsewhere eg. inside the ECComponentEditor's addAttribute mehtod.
+     *  be registered in elsewhere eg. inside the ECComponentEditor's addAttribute mehtod.
      *  \ingroup ECEditorModuleClient.
      */
     class ECAttributeEditorBase: public QObject
@@ -76,11 +94,8 @@ namespace ECEditor
         void UpdateEditorUI();
 
     public slots:
-        //! Listens if any of editor's values has been changed and then for editor's attribute values need to be updated.
-        void SetAttribute(QtProperty *property) 
-        {
-            Set(property); 
-        }
+        //! Listens if any of editor's values has been changed and the value change need to forward to the a attribute.
+        void SetAttribute(QtProperty *property){ Set(property); }
         //! Add new attribute to the editor. If attribute has already added do nothing.
         /*! @param attribute Attribute that we want to add to editor.
          */
@@ -264,6 +279,10 @@ namespace ECEditor
     template<> void ECAttributeEditor<QVariant>::Update();
     template<> void ECAttributeEditor<QVariant>::Initialize();
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
+
+    template<> void ECAttributeEditor<std::vector<QVariant>>::Update();
+    template<> void ECAttributeEditor<std::vector<QVariant>>::Initialize();
+    template<> void ECAttributeEditor<std::vector<QVariant>>::Set(QtProperty *property);
 
     template<> void ECAttributeEditor<Foundation::AssetReference>::Update();
     template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize();

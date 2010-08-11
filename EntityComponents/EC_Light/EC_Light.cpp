@@ -35,6 +35,17 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     innerAngleAttr_(this, "light inner angle", 30.0f),
     outerAngleAttr_(this, "light outer angle", 40.0f)
 {
+    static Foundation::AttributeMetadata typeAttrData;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        typeAttrData.enums["Point"]       = LT_Point;
+        typeAttrData.enums["Spot"]        = LT_Spot;
+        typeAttrData.enums["Directional"] = LT_Directional;
+        metadataInitialized = true;
+    }
+    typeAttr_.SetMetadata(&typeAttrData);
+
     boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
     if (!renderer)
