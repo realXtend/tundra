@@ -4,7 +4,7 @@
 #define incl_UiModule_ControlPanelManager_h
 
 #include "UiModuleApi.h"
-#include "UiDefines.h"
+#include "UiTypes.h"
 
 #include <QObject>
 #include <QAction>
@@ -37,8 +37,8 @@ namespace CoreUi
         virtual ~ControlPanelManager();
 
     public slots:
-        void SetHandler(UiDefines::ControlButtonType type, UiServices::UiAction *action);
-        ControlPanelButton *GetButtonForType(UiDefines::ControlButtonType type);
+        void SetHandler(UiServices::ControlButtonType type, UiServices::UiAction *action);
+        ControlPanelButton *GetButtonForType(UiServices::ControlButtonType type);
 
         qreal GetContentHeight();
         qreal GetContentWidth();
@@ -55,7 +55,7 @@ namespace CoreUi
         void CreateBasicControls();
         void UpdateBackdrop();
 
-        void ControlButtonClicked(UiDefines::ControlButtonType type);
+        void ControlButtonClicked(UiServices::ControlButtonType type);
 
         // Internal handling of settings widget
         void ToggleSettingsVisibility(bool visible);
@@ -68,9 +68,9 @@ namespace CoreUi
         BackdropWidget *backdrop_widget_;
 
         QList<ControlPanelButton *> control_buttons_;
-        QMap<UiDefines::ControlButtonType, ControlPanelButton *> backdrop_area_buttons_map_;
+        QMap<UiServices::ControlButtonType, ControlPanelButton *> backdrop_area_buttons_map_;
 
-        QMap<UiDefines::ControlButtonType, UiServices::UiAction *> action_map_;
+        QMap<UiServices::ControlButtonType, UiServices::UiAction *> action_map_;
 
         // Contolled core widgets
         SettingsWidget *settings_widget_;

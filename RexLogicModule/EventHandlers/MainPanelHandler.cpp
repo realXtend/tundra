@@ -27,7 +27,7 @@ MainPanelHandler::MainPanelHandler(RexLogicModule *rex_logic_module) :
         UiServices::UiAction *quit_action = new UiServices::UiAction(this);
         connect(quit_action, SIGNAL(triggered()), SLOT(QuitRequested()));
 
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->SetHandler(UiDefines::Quit, quit_action);
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->SetHandler(UiServices::Quit, quit_action);
     }
 }
 

@@ -1,11 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ControlPanelButton.h"
+#include "UiTypes.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
-    ControlPanelButton::ControlPanelButton(UiDefines::ControlButtonType type) :
+    ControlPanelButton::ControlPanelButton(UiServices::ControlButtonType type) :
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
         type_(type)
@@ -24,7 +29,7 @@ namespace CoreUi
         return internal_widget_->width();
     }
 
-    UiDefines::ControlButtonType ControlPanelButton::GetType()
+    UiServices::ControlButtonType ControlPanelButton::GetType()
     {
         return type_;
     }
@@ -34,21 +39,21 @@ namespace CoreUi
         QString normal_image = "./data/ui/images/menus/";
         switch (type_)
         {
-            case UiDefines::Notifications:
+            case UiServices::Notifications:
                 if (item_visible)
                     normal_image += "uibutton_NOTIF_click.png";
                 else
                     normal_image += "uibutton_NOTIF_normal.png";
                 break;
 
-            case UiDefines::Settings:
+            case UiServices::Settings:
                 if (item_visible)
                     normal_image += "uibutton_SET_click.png";
                 else
                     normal_image += "uibutton_SET_normal.png";
                 break;
 
-            case UiDefines::Teleport:
+            case UiServices::Teleport:
                 if (item_visible)
                     normal_image += "uibutton_MAP_click.png";
                 else
@@ -75,7 +80,7 @@ namespace CoreUi
 
         switch (type_)
         {
-            case UiDefines::Ether:
+            case UiServices::Ether:
             {
                 normal_image += "uibutton_ETHER_normal.png";
                 hover_image += "uibutton_ETHER_hover.png";
@@ -84,7 +89,7 @@ namespace CoreUi
                 internal_widget_->setContentsMargins(0,0,0,0);
                 break;
             }
-            case UiDefines::Build:
+            case UiServices::Build:
             {
                 normal_image += "uibutton_BUILD_normal.png";
                 hover_image += "uibutton_BUILD_hover.png";
@@ -93,7 +98,7 @@ namespace CoreUi
                 internal_widget_->setContentsMargins(0,0,0,0);
                 break;
             }
-            case UiDefines::Quit:
+            case UiServices::Quit:
             {
                 normal_image += "uibutton_QUIT_normal.png";
                 hover_image += "uibutton_QUIT_hover.png";
@@ -102,7 +107,7 @@ namespace CoreUi
                 internal_widget_->setContentsMargins(0,0,10,0);
                 break;
             }
-            case UiDefines::Settings:
+            case UiServices::Settings:
             {
                 normal_image += "uibutton_SET_normal.png";
                 hover_image += "uibutton_SET_hover.png";
@@ -112,7 +117,7 @@ namespace CoreUi
                 internal_widget_->setMaximumSize(62+6,23+5);
                 break;
             }
-            case UiDefines::Notifications:
+            case UiServices::Notifications:
             {
                 normal_image += "uibutton_NOTIF_normal.png";
                 hover_image += "uibutton_NOTIF_hover.png";
@@ -122,7 +127,7 @@ namespace CoreUi
                 internal_widget_->setMaximumSize(52+6,23+5);
                 break;
             }
-            case UiDefines::Teleport:
+            case UiServices::Teleport:
             {
                 normal_image += "uibutton_MAP_normal.png";
                 hover_image += "uibutton_MAP_hover.png";
@@ -135,7 +140,8 @@ namespace CoreUi
             default:
                 return;
         }
-        QString style_normal("QPushButton { background-color: transparent; border: 0px; background-position: top left; background-repeat: no-repeat; background-image: url('" + normal_image + "'); }");
+        QString style_normal("QPushButton { background-color: transparent; border: 0px; background-position: top left;"
+            "background-repeat: no-repeat; background-image: url('" + normal_image + "'); }");
         QString style_hover("QPushButton::hover { background-color: transparent; border: 0px; background-image: url('" + hover_image + "'); }");
         QString style_clicked("QPushButton::pressed { background-color: transparent; border: 0px; background-image: url('" + clicked_image + "'); }");
         actionButton->setStyleSheet(style_normal + style_hover + style_clicked);

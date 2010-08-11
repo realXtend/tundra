@@ -41,9 +41,9 @@ namespace CoreUi
 
         // Settings widget
         settings_widget_ = new SettingsWidget(layout_manager_->GetScene(), this);
-        ControlButtonAction *settings_action = new ControlButtonAction(GetButtonForType(UiDefines::Settings), settings_widget_, this);
+        ControlButtonAction *settings_action = new ControlButtonAction(GetButtonForType(UiServices::Settings), settings_widget_, this);
         
-        SetHandler(UiDefines::Settings, settings_action);
+        SetHandler(UiServices::Settings, settings_action);
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
 
@@ -65,9 +65,9 @@ namespace CoreUi
 
         // Teleport widget
         teleport_widget_ = new TeleportWidget(layout_manager_->GetScene(), this);
-        ControlButtonAction *teleport_action = new ControlButtonAction(GetButtonForType(UiDefines::Teleport), teleport_widget_, this);
+        ControlButtonAction *teleport_action = new ControlButtonAction(GetButtonForType(UiServices::Teleport), teleport_widget_, this);
         
-        SetHandler(UiDefines::Teleport, teleport_action);
+        SetHandler(UiServices::Teleport, teleport_action);
         connect(teleport_action, SIGNAL(toggled(bool)), SLOT(ToggleTeleportVisibility(bool)));
         connect(teleport_widget_, SIGNAL(Hidden()), SLOT(CheckTeleportButtonStyle()));
 
@@ -85,12 +85,12 @@ namespace CoreUi
 
     void ControlPanelManager::CreateBasicControls()
     {
-        QList<UiDefines::ControlButtonType> buttons;
-        buttons << UiDefines::Notifications << UiDefines::Teleport << UiDefines::Settings << UiDefines::Quit << UiDefines::Build << UiDefines::Ether;
+        QList<UiServices::ControlButtonType> buttons;
+        buttons << UiServices::Notifications << UiServices::Teleport << UiServices::Settings << UiServices::Quit << UiServices::Build << UiServices::Ether;
 
         ControlPanelButton *button = 0;
         ControlPanelButton *previous_button = 0;
-        foreach(UiDefines::ControlButtonType button_type, buttons)
+        foreach(UiServices::ControlButtonType button_type, buttons)
         {
             // Create the button and anchor in scene
             button = new ControlPanelButton(button_type); 
@@ -101,10 +101,10 @@ namespace CoreUi
 
             // Add to internal lists
             control_buttons_.append(button);
-            if (button_type == UiDefines::Notifications || button_type == UiDefines::Settings || button_type == UiDefines::Teleport)
+            if (button_type == UiServices::Notifications || button_type == UiServices::Settings || button_type == UiServices::Teleport)
                 backdrop_area_buttons_map_[button_type] = button;
 
-            connect(button, SIGNAL(ControlButtonClicked(UiDefines::ControlButtonType)), SLOT(ControlButtonClicked(UiDefines::ControlButtonType)));
+            connect(button, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
             previous_button = button;
         }
         UpdateBackdrop();
@@ -118,35 +118,35 @@ namespace CoreUi
         backdrop_widget_->SetContentWidth(width);
     }
 
-    void ControlPanelManager::ControlButtonClicked(UiDefines::ControlButtonType type)
+    void ControlPanelManager::ControlButtonClicked(UiServices::ControlButtonType type)
     {
         // Hide others if type is toggle core ui
         switch (type)
         {
-            case UiDefines::Settings:
+            case UiServices::Settings:
             {
-                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Notifications]);
-                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
+                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
+                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
                 if (action_notifications)
                     action_notifications->RequestHide();
                 if (action_teleport)
                     action_teleport->RequestHide();
                 break;
             }
-            case UiDefines::Teleport:
+            case UiServices::Teleport:
             {
-                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Notifications]);
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Settings]);
+                ControlButtonAction *action_notifications = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Notifications]);
+                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
                 if (action_notifications)
                     action_notifications->RequestHide();
                 if (action_settings)
                     action_settings->RequestHide();
                 break;
             }
-            case UiDefines::Notifications:
+            case UiServices::Notifications:
             {
-                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Settings]);
-                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiDefines::Teleport]);
+                ControlButtonAction *action_settings = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Settings]);
+                ControlButtonAction *action_teleport = dynamic_cast<ControlButtonAction*>(action_map_[UiServices::Teleport]);
                 if (action_settings)
                     action_settings->RequestHide();
                 if (action_teleport)
@@ -184,22 +184,22 @@ namespace CoreUi
 
     void ControlPanelManager::CheckSettingsButtonStyle()
     {
-        backdrop_area_buttons_map_[UiDefines::Settings]->CheckStyle(false);
+        backdrop_area_buttons_map_[UiServices::Settings]->CheckStyle(false);
     }
 
     void ControlPanelManager::CheckTeleportButtonStyle()
     {
-        backdrop_area_buttons_map_[UiDefines::Teleport]->CheckStyle(false);
+        backdrop_area_buttons_map_[UiServices::Teleport]->CheckStyle(false);
     }
 
     // Public
 
-    void ControlPanelManager::SetHandler(UiDefines::ControlButtonType type, UiServices::UiAction *action)
+    void ControlPanelManager::SetHandler(UiServices::ControlButtonType type, UiServices::UiAction *action)
     {
         action_map_[type] = action;
     }
 
-    ControlPanelButton *ControlPanelManager::GetButtonForType(UiDefines::ControlButtonType type)
+    ControlPanelButton *ControlPanelManager::GetButtonForType(UiServices::ControlButtonType type)
     {
         if (backdrop_area_buttons_map_.contains(type))
             return backdrop_area_buttons_map_[type];

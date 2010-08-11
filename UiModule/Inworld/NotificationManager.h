@@ -34,7 +34,7 @@ namespace UiServices
 
     public slots:
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
-        void SetConnectionState(UiDefines::ConnectionState connection_state);
+        void SetConnectionState(UiServices::ConnectionState connection_state);
 
     private slots:
         void InitSelf();

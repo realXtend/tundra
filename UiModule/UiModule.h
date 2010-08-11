@@ -8,7 +8,7 @@
 
 #include "UiModuleApi.h"
 #include "UiModuleFwd.h"
-#include "UiDefines.h"
+#include "UiTypes.h"
 
 #include <QObject>
 #include <QMap>
@@ -84,7 +84,7 @@ namespace UiServices
 
     private:
         //! Notify all ui module components of connected/disconnected state
-        void PublishConnectionState(UiDefines::ConnectionState connection_state);
+        void PublishConnectionState(ConnectionState connection_state);
 
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();

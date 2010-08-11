@@ -4,7 +4,7 @@
 #define incl_UiModule_UiStateMachine_h
 
 #include "UiModuleApi.h"
-#include "UiDefines.h"
+#include "UiTypes.h"
 
 #include <QStateMachine>
 #include <QParallelAnimationGroup>
@@ -58,7 +58,7 @@ namespace CoreUi
          */
         const QGraphicsScene *GetScene(const QString &name) const;
 
-        void SetConnectionState(UiDefines::ConnectionState new_connection_state);
+        void SetConnectionState(UiServices::ConnectionState new_connection_state);
         void SetServiceGetter(QObject *service_getter);
 
     private slots:
@@ -86,7 +86,7 @@ namespace CoreUi
         QMap<QString, QGraphicsScene*> scene_map_;
         QMap<QGraphicsScene*, QParallelAnimationGroup*> animations_map_;
 
-        UiDefines::ConnectionState connection_state_;
+        UiServices::ConnectionState connection_state_;
 
         QList<QKeySequence> ether_toggle_seq_list_;
 

@@ -496,30 +496,30 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetConnectionState(UiDefines::ConnectionState connection_state)
+        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state)
         {
             switch (connection_state)
             {
-                case UiDefines::Connected:
+                case UiServices::Connected:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(true);
                     scene_controller_->ShowStatusInformation("Connected");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
-                case UiDefines::Disconnected:
+                case UiServices::Disconnected:
                     UpdateUiPixmaps();
                     scene_controller_->SetConnected(false);
                     scene_->SetConnectionStatus(false);
                     break;
-                case UiDefines::Failed:
+                case UiServices::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Failed to connect");
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
-                case UiDefines::Kicked:
+                case UiServices::Kicked:
                     UpdateUiPixmaps();
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Kicked from server");

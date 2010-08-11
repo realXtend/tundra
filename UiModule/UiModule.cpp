@@ -101,8 +101,8 @@ namespace UiServices
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
-            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Ether, ether_action);
-            inworld_scene_controller_->GetControlPanelManager()->SetHandler(UiDefines::Build, build_action);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(Ether, ether_action);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(Build, build_action);
             LogDebug("Scene Manager service READY");
 
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
@@ -186,17 +186,17 @@ namespace UiServices
             {
                 case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
-                    PublishConnectionState(UiDefines::Failed);
+                    PublishConnectionState(Failed);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
                 {
-                    PublishConnectionState(UiDefines::Disconnected);
+                    PublishConnectionState(Disconnected);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
                 {
-                    PublishConnectionState(UiDefines::Disconnected);
+                    PublishConnectionState(Disconnected);
                     break;
                 }
                 case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
@@ -234,7 +234,7 @@ namespace UiServices
             {
                 case Scene::Events::EVENT_CONTROLLABLE_ENTITY:
                 {
-                    PublishConnectionState(UiDefines::Connected);
+                    PublishConnectionState(Connected);
                     break;
                 }
                 default:
@@ -263,11 +263,11 @@ namespace UiServices
             inworld_scene_controller_->SetFocusToChat();
     }
 
-    void UiModule::PublishConnectionState(UiDefines::ConnectionState connection_state)
+    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state)
     {
         switch (connection_state)
         {
-            case UiDefines::Connected:
+            case Connected:
             {
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
@@ -283,14 +283,14 @@ namespace UiServices
                 }
                 break;
             }
-            case UiDefines::Disconnected:
+            case Disconnected:
             {
                 inworld_notification_manager_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;
             }
-            case UiDefines::Failed:
+            case Failed:
             {
                 ether_logic_->SetConnectionState(connection_state);
                 break;

@@ -8,25 +8,6 @@
 
 namespace UiDefines
 {
-    enum ConnectionState
-    {
-        Connected,
-        Disconnected,
-        Failed,
-        Kicked
-    };
-
-    enum ControlButtonType
-    {
-        Unknown,
-        Ether,
-        Build,
-        Quit,
-        Settings,
-        Notifications,
-        Teleport
-    };
-
     enum MenuNodeStyle
     {
         IconNormal,
