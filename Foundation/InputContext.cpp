@@ -44,6 +44,7 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         emit OnKeyEvent(key);
         // 2. Emit the event type -specific signal for all key codes.
         emit KeyPressed(key);
+        emit KeyPressed(&key);
         // 3. Emit the key code -specific signal for specific event.
         if (keySignal != registeredKeyEventSignals.end())
             keySignal->second->OnKeyPressed(key);
