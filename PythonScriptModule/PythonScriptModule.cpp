@@ -2168,9 +2168,9 @@ namespace PythonScript
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
-            PythonQt::self()->registerClass(&InputContext::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
+            PythonQt::self()->registerClass(&InputContext::staticMetaObject);
 
             pythonqt_inited = true;
             
