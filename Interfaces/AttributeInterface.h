@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   AttributeInterface.h
- *  @brief  Abstract base class and template class for entity-component attributes.
+ *  @brief  Abstract base class, template class and metadata class for entity-component attributes.
  */
 
 #ifndef incl_Interfaces_AttributeInterface_h
@@ -12,9 +12,60 @@
 #include "CoreStringUtils.h"
 #include "AttributeChangeType.h"
 
+#include <map>
+
 namespace Foundation
 {
+    typedef std::map<std::string, int> EnumDescMap_t;
+
     class ComponentInterface;
+
+    //! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
+    /*! possible min and max values mapping of enumeration signatures and values.
+     *
+     *  Usage example (we're assuming that you have attribute "Attribute<float> range" as member variable):
+     *
+     *  EC_Example() : range(this, "example attribute", -1.f);
+     *  {
+     *      static AttributeMetadata metadata("this attribute is used as an example", "-128.3", "256.7")
+     *      range.SetMetadata(&metadata);
+     *  }
+     *
+     */
+    class AttributeMetadata
+    {
+    public:
+        //! Default constructor.
+        AttributeMetadata() {}
+
+        //! Constructor.
+        /*! \param desc Description.
+         *  \param min Minimum value.
+         *  \param max Maximum value.
+         *  \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
+         */
+        AttributeMetadata(const std::string &desc, const std::string &min = "",
+            const std::string &max = "", const EnumDescMap_t &enum_desc= EnumDescMap_t()) {}
+
+        //! Destructor.
+        ~AttributeMetadata() {}
+
+        //! Description.
+        std::string description;
+
+        //! Minimum value.
+        std::string min;
+
+        //! Maximum value.
+        std::string max;
+
+        //! Mapping of enumeration's signatures (in readable form) and actual values.
+        EnumDescMap_t enums;
+
+    private:
+        AttributeMetadata(const AttributeMetadata &);
+        void operator=(const AttributeMetadata &);
+    };
 
     //! Abstract base class for entity-component attributes.
     /*! Concrete attribute classes will be subclassed out of this
@@ -70,6 +121,17 @@ namespace Foundation
         //! Returns the type of the data stored in this attribute.
         virtual std::string TypenameToString() const = 0;
 
+        //! Sets attribute's metadata.
+        /*! \param metadata Metadata.
+         */
+        void SetMetadata(AttributeMetadata *metadata) { metadata_ = metadata; }
+
+        //! Returns attribute's metadata, or null if no metadata exists.
+        AttributeMetadata *GetMetadata() const { return metadata_; }
+
+        //! Returns true if this attribute has metadata set.
+        bool HasMetadata() const { return metadata_ != 0; }
+
     protected:
         //! Notifies owner component that the attribute has changed
         void Changed(AttributeChange::Type change);
@@ -85,6 +147,9 @@ namespace Foundation
 
         //! Null flag. If attribute is null, its value should be fetched from a parent entity
         bool null_;
+
+        //! Possible attribute metadata.
+        AttributeMetadata *metadata_;
     };
 
     typedef std::vector<AttributeInterface*> AttributeVector;
