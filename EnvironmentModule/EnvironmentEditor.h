@@ -177,9 +177,9 @@ namespace Environment
         //! Change state of sky enable check box.
         void ToggleSkyCheckButton(bool enabled);
 
-        void HandleKeyInputEvent(KeyEvent &key);
+        void HandleKeyInputEvent(KeyEvent *key);
 
-        void HandleMouseInputEvent(MouseEvent &mouse);
+        void HandleMouseInputEvent(MouseEvent *mouse);
 
         //! Called when QMouseEvent event is generated inside the TerrainLabel.
         //! ev mouse event pointer.

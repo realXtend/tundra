@@ -22,22 +22,22 @@ RexMovementInput::RexMovementInput(Foundation::Framework *framework_)
     input->SetTakeMouseEventsOverQt(true);
 
     // Listen on both key and mouse input signals.
-    connect(input.get(), SIGNAL(OnKeyEvent(KeyEvent &)), this, SLOT(HandleKeyEvent(KeyEvent &)));
-    connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseEvent(MouseEvent &)));
+    connect(input.get(), SIGNAL(OnKeyEvent(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseEvent(MouseEvent *)));
 }
 
 // Either sends an input event press or release, depending on the key event type.
-void SendPressOrRelease(Foundation::EventManagerPtr eventMgr, const KeyEvent &key, int eventID)
+void SendPressOrRelease(Foundation::EventManagerPtr eventMgr, const KeyEvent *key, int eventID)
 {
     // In the AvatarControllable and CameraControllable framework, each input event id that denotes a press
     // also has a corresponding release event, which has an ID one larger than the press event.
-    if (key.eventType == KeyEvent::KeyPressed)
+    if (key->eventType == KeyEvent::KeyPressed)
         eventMgr->SendEvent("Input", eventID, 0);
-    else if (key.eventType == KeyEvent::KeyReleased)
+    else if (key->eventType == KeyEvent::KeyReleased)
         eventMgr->SendEvent("Input", eventID+1, 0);
 }
 
-void RexMovementInput::HandleKeyEvent(KeyEvent &key)
+void RexMovementInput::HandleKeyEvent(KeyEvent *key)
 {
     // This function handles received input events and translates them to the "traditional"-style
     // Naali input events. New modules should really prefer using an InputContext of their
@@ -64,11 +64,11 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     const QKeySequence zoomOut = inputService.KeyBinding("Avatar.ZoomOut", Qt::Key_Plus | Qt::ControlModifier);
 
     // For the zoom in and out keys, key repeats trigger continuous actions.
-    if ((key.KeyWithModifier() & ~Qt::KeypadModifier) == zoomIn) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_IN_PRESSED);
-    if ((key.KeyWithModifier() & ~Qt::KeypadModifier) == zoomOut) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_OUT_PRESSED);
+    if ((key->KeyWithModifier() & ~Qt::KeypadModifier) == zoomIn) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_IN_PRESSED);
+    if ((key->KeyWithModifier() & ~Qt::KeypadModifier) == zoomOut) SendPressOrRelease(eventMgr, key, Input::Events::ZOOM_OUT_PRESSED);
 
     // For the following keys, we ignore all key presses that are repeats.
-    if (key.eventType == KeyEvent::KeyPressed && key.keyPressCount > 1)
+    if (key->eventType == KeyEvent::KeyPressed && key->keyPressCount > 1)
         return;
 
     const QKeySequence walkForward =   inputService.KeyBinding("Avatar.WalkForward", Qt::Key_W);
@@ -88,32 +88,32 @@ void RexMovementInput::HandleKeyEvent(KeyEvent &key)
     const QKeySequence cameraModeTripod = inputService.KeyBinding("Avatar.TripodCameraMode", Qt::Key_T);
 
     // The following code defines the keyboard actions that are available for the avatar/freelookcamera system.
-    if (key.keyCode == walkForward || key.keyCode == walkForward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_FORWARD_PRESSED);
-    if (key.keyCode == walkBackward || key.keyCode == walkBackward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_BACK_PRESSED);
-    if (key.keyCode == strafeLeft) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_LEFT_PRESSED);
-    if (key.keyCode == strafeRight) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_RIGHT_PRESSED); 
-    if (key.keyCode == rotateLeft)  SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_LEFT_PRESSED); 
-    if (key.keyCode == rotateRight) SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); 
-    if (key.keyCode == up || key.keyCode == up2)   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); 
-    if (key.keyCode == down || key.keyCode == down2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); 
-    if (key.keyCode == flyModeToggle) SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); 
-    if (key.keyCode == cameraModeToggle && key.eventType == KeyEvent::KeyPressed)
+    if (key->keyCode == walkForward || key->keyCode == walkForward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_FORWARD_PRESSED);
+    if (key->keyCode == walkBackward || key->keyCode == walkBackward2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_BACK_PRESSED);
+    if (key->keyCode == strafeLeft) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_LEFT_PRESSED);
+    if (key->keyCode == strafeRight) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_RIGHT_PRESSED); 
+    if (key->keyCode == rotateLeft)  SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_LEFT_PRESSED); 
+    if (key->keyCode == rotateRight) SendPressOrRelease(eventMgr, key, Input::Events::ROTATE_RIGHT_PRESSED); 
+    if (key->keyCode == up || key->keyCode == up2)   SendPressOrRelease(eventMgr, key, Input::Events::MOVE_UP_PRESSED); 
+    if (key->keyCode == down || key->keyCode == down2) SendPressOrRelease(eventMgr, key, Input::Events::MOVE_DOWN_PRESSED); 
+    if (key->keyCode == flyModeToggle) SendPressOrRelease(eventMgr, key, Input::Events::TOGGLE_FLYMODE); 
+    if (key->keyCode == cameraModeToggle && key->eventType == KeyEvent::KeyPressed)
     {
-        if (key.keyCode == Qt::Key_Tab)
-            key.handled = true; // Suppress Qt from moving the focus to a widget.
+        if (key->keyCode == Qt::Key_Tab)
+            key->handled = true; // Suppress Qt from moving the focus to a widget.
         input->ReleaseAllKeys();
         eventMgr->SendEvent("Input", Input::Events::SWITCH_CAMERA_STATE, 0); 
     }
-    if (key.keyCode == cameraModeTripod && key.eventType == KeyEvent::KeyPressed)
+    if (key->keyCode == cameraModeTripod && key->eventType == KeyEvent::KeyPressed)
     {
-        if (key.keyCode == Qt::Key_T)
-            key.handled = true; // Suppress Qt from moving the focus to a widget.
+        if (key->keyCode == Qt::Key_T)
+            key->handled = true; // Suppress Qt from moving the focus to a widget.
         input->ReleaseAllKeys();
 		eventMgr->SendEvent("Input", Input::Events::CAMERA_TRIPOD, 0); 
     }
 }
 
-void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
+void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
 {
     Foundation::EventManagerPtr eventMgr = framework->GetEventManager();
 
@@ -124,20 +124,20 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
     // We pass this event struct forward to Naali event tree in most cases above,
     // so fill it here already.
     Input::Events::Movement movement;
-    movement.x_.abs_ = mouse.x;
-    movement.y_.abs_ = mouse.y;
-    movement.z_.abs_ = mouse.z;
-    movement.x_.rel_ = mouse.relativeX;
-    movement.y_.rel_ = mouse.relativeY;
-    movement.z_.rel_ = mouse.relativeZ;
+    movement.x_.abs_ = mouse->x;
+    movement.y_.abs_ = mouse->y;
+    movement.z_.abs_ = mouse->z;
+    movement.x_.rel_ = mouse->relativeX;
+    movement.y_.rel_ = mouse->relativeY;
+    movement.z_.rel_ = mouse->relativeZ;
 
-    switch(mouse.eventType)
+    switch(mouse->eventType)
     {
     case MouseEvent::MousePressed:
-        if (!mouse.itemUnderMouse)
+        if (!mouse->itemUnderMouse)
         {
             // Left mouse button press produces click events on world objects (prims, mostly)
-            if (mouse.button == MouseEvent::LeftButton)
+            if (mouse->button == MouseEvent::LeftButton)
                 eventMgr->SendEvent("Input", Input::Events::INWORLD_CLICK, &movement);
       
             if(QApplication::keyboardModifiers() == Qt::AltModifier)
@@ -147,31 +147,31 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
 
             // When we start a right mouse button drag, hide the mouse cursor to enter relative mode
             // mouse input.
-            if (mouse.button == MouseEvent::RightButton)
+            if (mouse->button == MouseEvent::RightButton)
                 framework->Input().SetMouseCursorVisible(false);
         }
         break;
     case MouseEvent::MouseReleased:
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
-        if (mouse.button == MouseEvent::RightButton)
+        if (mouse->button == MouseEvent::RightButton)
             framework->Input().SetMouseCursorVisible(true);
         
-        if (mouse.button == MouseEvent::LeftButton)
+        if (mouse->button == MouseEvent::LeftButton)
         {
             eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK_REL, 0);
         }
         break;
     case MouseEvent::MouseMove:
-        if (mouse.IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
+        if (mouse->IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
         {
            // Now we do not want to go to RMB mouselook mode when our cursor is on widget
            if ( !framework->Input().IsMouseCursorVisible() )
            {
               eventMgr->SendEvent("Input", Input::Events::MOUSELOOK, &movement);
-              mouse.handled = true;  // Mouse is in RMB mouselook mode, suppress others from getting the move event.
+              mouse->handled = true;  // Mouse is in RMB mouselook mode, suppress others from getting the move event.
            }
         }
-        else if (mouse.IsLeftButtonDown())
+        else if (mouse->IsLeftButtonDown())
             eventMgr->SendEvent("Input", Input::Events::MOUSEDRAG, &movement);
         else // Neither LMB or RMB down == MOUSEMOVE.
             eventMgr->SendEvent("Input", Input::Events::MOUSEMOVE, &movement);
@@ -181,7 +181,7 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         Input::Events::SingleAxisMovement singleAxis;
         singleAxis.z_.screen_ = 0;
         singleAxis.z_.abs_ = 0;
-        singleAxis.z_.rel_ = mouse.relativeZ;
+        singleAxis.z_.rel_ = mouse->relativeZ;
         eventMgr->SendEvent("Input", Input::Events::SCROLL, &singleAxis);
 
         // Mark this event as handled. Suppresses Qt from getting it. Otherwise mouse-scrolling over an 
@@ -189,8 +189,8 @@ void RexMovementInput::HandleMouseEvent(MouseEvent &mouse)
         ///\todo Due to this, if you have a 2D webview/media url window open, you have to first left-click on it
         /// to give keyboard focus to it, after which the mouse wheel will start scrolling the webview window.
         /// Would be nice to somehow detect which windows are interested in mouse scroll events, and give them priority.
-        if (!mouse.itemUnderMouse)
-            mouse.handled = true; 
+        if (!mouse->itemUnderMouse)
+            mouse->handled = true; 
         break;
     }
     }
