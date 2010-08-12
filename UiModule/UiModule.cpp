@@ -140,7 +140,7 @@ namespace UiServices
 
         input = framework_->Input().RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
-        connect(input.get(), SIGNAL(KeyPressed(KeyEvent &)), this, SLOT(OnKeyPressed(KeyEvent &)));
+        connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
     }
 
     void UiModule::Uninitialize()
@@ -245,10 +245,10 @@ namespace UiServices
         return false;
     }
 
-    void UiModule::OnKeyPressed(KeyEvent &key)
+    void UiModule::OnKeyPressed(KeyEvent *key)
     {
         // We only act on key presses that are not repeats.
-        if (key.eventType != KeyEvent::KeyPressed || key.keyPressCount > 1)
+        if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
             return;
 
         InputServiceInterface &inputService = framework_->Input();
@@ -256,10 +256,10 @@ namespace UiServices
         const QKeySequence toggleEther =   inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
         const QKeySequence toggleWorldChat =  inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
 
-        if (key.keyCode == toggleEther)
+        if (key->keyCode == toggleEther)
             ui_state_machine_->ToggleEther();
 
-        if (key.keyCode == toggleWorldChat)
+        if (key->keyCode == toggleWorldChat)
             inworld_scene_controller_->SetFocusToChat();
     }
 

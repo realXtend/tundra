@@ -96,6 +96,8 @@ class ObjectEdit(Component):
         inputcontext.disconnect('KeyPressed(KeyEvent*)', self.on_keypressed)
         # Connect to key pressed signal from input context
         inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
+
+        inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         
         self.resetManipulators()
         
@@ -139,6 +141,9 @@ class ObjectEdit(Component):
                 self.keypressed = True
                 self.shortcuts[trigger]()
 
+    def on_mousescroll(self, m):
+        if self.windowActive:
+            self.manipulator.showManipulator(self.sels)
         
     def resetValues(self):
         self.left_button_down = False

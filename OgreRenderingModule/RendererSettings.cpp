@@ -71,15 +71,15 @@ namespace OgreRenderer
         //fullscreen shortcut key
         input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
         if(input_context_.get())
-            connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent&)), this, SLOT(KeyPressed(KeyEvent&)));
+            connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
     }
 
-    void RendererSettings::KeyPressed(KeyEvent& e)
+    void RendererSettings::KeyPressed(KeyEvent* e)
     {
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
             return;   
-        if(e.HasCtrlModifier() && e.KeyCode() == Qt::Key_F)
+        if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
         {
             renderer->SetFullScreen(!renderer->IsFullScreen());
             QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
