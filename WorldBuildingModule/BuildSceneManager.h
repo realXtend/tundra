@@ -3,16 +3,14 @@
 #ifndef incl_WorldBuildingModule_BuildSceneManager_h
 #define incl_WorldBuildingModule_BuildSceneManager_h
 
-#include "Foundation.h"
+#include "ForwardDefines.h"
 #include "WorldBuildingServiceInterface.h"
-#include "Entity.h"
 
-#include "UiStateMachine.h"
+#include "WorldObjectView.h"
 #include "BuildingWidget.h"
-#include "UiHelper.h"
+
 #include "PythonHandler.h"
 #include "CameraHandler.h"
-#include "WorldObjectView.h"
 
 #include "ui_ObjectInfoWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
@@ -23,11 +21,27 @@
 class QtAbstractPropertyBrowser;
 class QtProperty;
 
+namespace Ui
+{
+    class BuildinWidget;
+}
+
+namespace CoreUi
+{
+    class UiStateMachine;
+}
+
 namespace WorldBuilding
 {
     class BuildScene;
     class AnchorLayout;
     class PropertyEditorHandler;
+    class WorldObjectView;
+
+    namespace Helpers
+    {
+        class UiHelper;
+    }
 
     typedef CoreUi::UiStateMachine StateMachine;
 
@@ -67,7 +81,7 @@ namespace WorldBuilding
 
     private slots:
         void InitialseScene();
-        void SceneChangedNotification(QString old_scene_name, QString new_scene_name);
+        void SceneChangedNotification(const QString &old_name, const QString &new_name);
         void ObjectSelected(bool selected);
 
         void ModeToggleMove();
@@ -79,7 +93,7 @@ namespace WorldBuilding
 
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
-        StateMachine *GetStateMachine();
+        StateMachine *GetStateMachine() const;
 
     private:
         Foundation::Framework *framework_;

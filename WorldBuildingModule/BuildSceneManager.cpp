@@ -3,17 +3,19 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
-#include "ModuleInterface.h"
 #include "BuildSceneManager.h"
-
-#include <UiModule.h>
-#include <EC_OpenSimPrim.h>
-
 #include "BuildScene.h"
 #include "AnchorLayout.h"
 #include "PropertyEditorHandler.h"
-#include "WorldObjectView.h"
-#include <EC_OgrePlaceable.h>
+#include "BuildingWidget.h"
+#include "UiHelper.h"
+
+#include "ModuleInterface.h"
+#include "UiModule.h"
+#include "UiStateMachine.h"
+#include "EC_OpenSimPrim.h"
+#include "EC_OgrePlaceable.h"
+#include "UiServiceInterface.h"
 
 #include <QPixmap>
 #include <QDebug>
@@ -57,7 +59,8 @@ namespace WorldBuilding
         if (machine)
         {
             machine->RegisterScene(scene_name_, scene_);
-            connect(machine, SIGNAL(SceneChangedTo(QString, QString)), SLOT(SceneChangedNotification(QString, QString)));
+            connect(machine, SIGNAL(SceneChanged(const QString&, const QString &)),
+                SLOT(SceneChangedNotification(const QString&, const QString&)));
         }
 
         // Init info widget
@@ -256,7 +259,7 @@ namespace WorldBuilding
         return python_handler_; 
     }
 
-    StateMachine *BuildSceneManager::GetStateMachine()
+    StateMachine *BuildSceneManager::GetStateMachine() const
     {
         UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
         if (ui_module)
@@ -278,10 +281,10 @@ namespace WorldBuilding
         if (!inworld_state)
             return;
 
-        StateMachine *machine = GetStateMachine();
-        if (machine)
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui)
         {
-            machine->SwitchToScene(scene_name_);
+            ui->SwitchToScene(scene_name_);
 
             object_info_widget_->CheckSize();
             object_manipulations_widget_->CheckSize();
@@ -292,25 +295,23 @@ namespace WorldBuilding
 
     void BuildSceneManager::HideBuildScene()
     {
-        StateMachine *machine = GetStateMachine();
-        if (machine)
-        {
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui)
             if (inworld_state)
-                machine->SwitchToScene("Inworld");
+                ui->SwitchToScene("Inworld");
             else
-                machine->SwitchToScene("Ether");
-        }
+                ui->SwitchToScene("Ether");
     }
 
-    void BuildSceneManager::SceneChangedNotification(QString old_scene_name, QString new_scene_name)
+    void BuildSceneManager::SceneChangedNotification(const QString &old_name, const QString &new_name)
     {
-        if (new_scene_name == scene_name_)
+        if (new_name == scene_name_)
         {
             object_info_widget_->CheckSize();
-            object_manipulations_widget_->CheckSize();         
+            object_manipulations_widget_->CheckSize();
             python_handler_->EmitEditingActivated(true);
         }
-        else if (old_scene_name == scene_name_)
+        else if (old_name == scene_name_)
         {
             ObjectSelected(false);
             python_handler_->EmitEditingActivated(false);
