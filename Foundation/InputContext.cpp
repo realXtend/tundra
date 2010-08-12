@@ -41,9 +41,9 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
     {
     case KeyEvent::KeyPressed:
         // 1. First emit the generic OnKeyEvent signal that receives all event types for all key codes.
-        emit OnKeyEvent(key);
+        emit OnKeyEvent(&key);
         // 2. Emit the event type -specific signal for all key codes.
-        emit KeyPressed(key);
+        emit KeyPressed(&key);
         // 3. Emit the key code -specific signal for specific event.
         if (keySignal != registeredKeyEventSignals.end())
             keySignal->second->OnKeyPressed(key);
@@ -52,8 +52,8 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         if (!IsKeyDownImmediate(key.keyCode))
             break; // If we've received a keydown for a key we haven't gotten a corresponding press for before, ignore this event.
 
-        emit OnKeyEvent(key); // 1.
-        emit KeyDown(key); // 2.
+        emit OnKeyEvent(&key); // 1.
+        emit KeyDown(&key); // 2.
 //        if (keySignal != registeredKeyEventSignals.end())
  //           keySignal->second->OnKeyDown(key); // 3.
         break;
@@ -61,8 +61,8 @@ void InputContext::TriggerKeyEvent(KeyEvent &key)
         if (!IsKeyDownImmediate(key.keyCode))
             break; // If we've received a keydown for a key we haven't gotten a corresponding press for before, ignore this event.
 
-        emit OnKeyEvent(key); // 1.
-        emit KeyReleased(key); // 2.
+        emit OnKeyEvent(&key); // 1.
+        emit KeyReleased(&key); // 2.
         if (keySignal != registeredKeyEventSignals.end())
             keySignal->second->OnKeyReleased(key); // 3.
         break;
@@ -100,27 +100,27 @@ void InputContext::TriggerKeyReleaseEvent(Qt::Key keyCode)
 
 void InputContext::TriggerMouseEvent(MouseEvent &mouse)
 {
-    emit OnMouseEvent(mouse);
+    emit OnMouseEvent(&mouse);
 
     switch(mouse.eventType)
     {
-    case MouseEvent::MouseMove: emit MouseMove(mouse); break;
-    case MouseEvent::MouseScroll: emit MouseScroll(mouse); break;
+    case MouseEvent::MouseMove: emit MouseMove(&mouse); break;
+    case MouseEvent::MouseScroll: emit MouseScroll(&mouse); break;
     case MouseEvent::MousePressed:
         switch(mouse.button)
         {
-        case MouseEvent::LeftButton: emit MouseLeftPressed(mouse); break;
-        case MouseEvent::RightButton: emit MouseRightPressed(mouse); break;
-        case MouseEvent::MiddleButton: emit MouseMiddlePressed(mouse); break;
+        case MouseEvent::LeftButton: emit MouseLeftPressed(&mouse); break;
+        case MouseEvent::RightButton: emit MouseRightPressed(&mouse); break;
+        case MouseEvent::MiddleButton: emit MouseMiddlePressed(&mouse); break;
             ///\todo XButton1 and XButton2 support?
         }
         break;
     case MouseEvent::MouseReleased: 
         switch(mouse.button)
         {
-        case MouseEvent::LeftButton: emit MouseLeftReleased(mouse); break;
-        case MouseEvent::RightButton: emit MouseRightReleased(mouse); break;
-        case MouseEvent::MiddleButton: emit MouseMiddleReleased(mouse); break;
+        case MouseEvent::LeftButton: emit MouseLeftReleased(&mouse); break;
+        case MouseEvent::RightButton: emit MouseRightReleased(&mouse); break;
+        case MouseEvent::MiddleButton: emit MouseMiddleReleased(&mouse); break;
             ///\todo XButton1 and XButton2 support?
         }
         break;

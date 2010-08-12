@@ -110,13 +110,13 @@ namespace WorldBuilding
         ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
     }
 
-    void BuildSceneManager::KeyPressed(KeyEvent &key)
+    void BuildSceneManager::KeyPressed(KeyEvent *key)
     {
-        if (key.IsRepeat())
+        if (key->IsRepeat())
             return;
 
         // Ctrl + B to toggle build scene
-        if (key.HasCtrlModifier() && key.keyCode == Qt::Key_B)
+        if (key->HasCtrlModifier() && key->keyCode == Qt::Key_B)
         {
             ToggleBuildScene();
             return;
@@ -126,38 +126,38 @@ namespace WorldBuilding
             return;
 
         PythonParams::ManipulationMode mode = PythonParams::MANIP_NONE;
-        if (key.HasCtrlModifier())
+        if (key->HasCtrlModifier())
         {
             mode = PythonParams::MANIP_MOVE;
-            if (key.HasAltModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_ROTATE))
+            if (key->HasAltModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_ROTATE))
                 mode = PythonParams::MANIP_SCALE;
-            if (key.HasShiftModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_SCALE))
+            if (key->HasShiftModifier() && (python_handler_->GetCurrentManipulationMode() != PythonParams::MANIP_SCALE))
                 mode = PythonParams::MANIP_ROTATE;
         }
         if (mode != PythonParams::MANIP_NONE)
             ManipModeChanged(mode);
     }
 
-    void BuildSceneManager::KeyReleased(KeyEvent &key)
+    void BuildSceneManager::KeyReleased(KeyEvent *key)
     {
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
-        if (key.IsRepeat())
+        if (key->IsRepeat())
             return;
 
         PythonParams::ManipulationMode mode = PythonParams::MANIP_NONE;
-        if (key.keyCode == Qt::Key_Control && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE))
+        if (key->keyCode == Qt::Key_Control && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_MOVE))
             mode = PythonParams::MANIP_FREEMOVE;
-        if (key.keyCode == Qt::Key_Alt && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE))
+        if (key->keyCode == Qt::Key_Alt && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_SCALE))
         {
-            if (key.HasCtrlModifier())
+            if (key->HasCtrlModifier())
                 mode = PythonParams::MANIP_MOVE;
             else
                 mode = PythonParams::MANIP_FREEMOVE;
         }
-        if (key.keyCode == Qt::Key_Shift && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE))
+        if (key->keyCode == Qt::Key_Shift && (python_handler_->GetCurrentManipulationMode() == PythonParams::MANIP_ROTATE))
         {
-            if (key.HasCtrlModifier())
+            if (key->HasCtrlModifier())
                 mode = PythonParams::MANIP_MOVE;
             else
                 mode = PythonParams::MANIP_FREEMOVE;

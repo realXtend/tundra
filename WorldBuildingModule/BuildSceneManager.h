@@ -44,8 +44,8 @@ namespace WorldBuilding
 
     public slots:
         //! Handle our key context input
-        void KeyPressed(KeyEvent &key);
-        void KeyReleased(KeyEvent &key);
+        void KeyPressed(KeyEvent *key);
+        void KeyReleased(KeyEvent *key);
 
         // Public functions called by WorldBuildingModule
         void ToggleBuildScene();

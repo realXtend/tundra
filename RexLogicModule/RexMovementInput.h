@@ -26,8 +26,8 @@ public:
     explicit RexMovementInput(Foundation::Framework *framework);
 
 public slots:
-    void HandleKeyEvent(KeyEvent &key);
-    void HandleMouseEvent(MouseEvent &mouse);
+    void HandleKeyEvent(KeyEvent *key);
+    void HandleMouseEvent(MouseEvent *mouse);
 
 private:
     Foundation::Framework *framework;
