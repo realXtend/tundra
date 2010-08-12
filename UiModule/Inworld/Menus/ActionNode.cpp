@@ -5,8 +5,7 @@
 
 namespace CoreUi
 {
-    ActionNode::ActionNode(const QString& name, QIcon icon, UiDefines::MenuNodeStyleMap map) :
-        MenuNode(name, icon, map)
+    ActionNode::ActionNode(const QString& name, const QString &icon) : MenuNode(name, icon)
     {
     }
 

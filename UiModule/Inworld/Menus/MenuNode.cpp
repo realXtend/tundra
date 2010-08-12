@@ -13,15 +13,16 @@
 
 namespace CoreUi
 {
-    MenuNode::MenuNode(const QString& node_name, const QIcon &icon, UiDefines::MenuNodeStyleMap map, const QUuid &id):
+    MenuNode::MenuNode(const QString& node_name, const QString &icon, const QUuid &id):
         QGraphicsProxyWidget(0),
         node_name_(node_name),
         widget_(new QWidget),
         original_pos_(pos()),
         expanded_pos_(pos()),
         shrunken_pos_(pos()),
-        icon_(icon),
-        style_to_path_map_(map)
+//        icon_(icon),
+//        style_to_path_map_(map)
+        icon_filepath_(icon)
     {
         setupUi(widget_);
         setWidget(widget_);
@@ -66,14 +67,9 @@ namespace CoreUi
         ChangeStyle(Normal);
         ChangeMoveState(false);
     }
-    
+
     MenuNode::~MenuNode()
     {
-    }
-
-    QUuid MenuNode::GetID() const
-    {
-        return id_;
     }
 
     QPropertyAnimation *MenuNode::CreateResizeAnimation(QString anim_property)
@@ -154,7 +150,7 @@ namespace CoreUi
         ChangeStyle(Pressed);
         QGraphicsProxyWidget::mousePressEvent(press_event);
         press_event->accept();
-        
+
         NodeClicked();
     }
 
@@ -173,6 +169,7 @@ namespace CoreUi
     {
         if (node_name_ != "RootNode")
         {
+/*
             if (style_to_path_map_.count() == 0)
                 return;
 
@@ -180,21 +177,24 @@ namespace CoreUi
             switch (style)
             {
                 case Normal:
-                    icon_image = style_to_path_map_[UiDefines::IconNormal];
+                    icon_image = //style_to_path_map_[UiDefines::IconNormal];
                     break;
                 case Hover:
-                    icon_image = style_to_path_map_[UiDefines::IconHover];
+                    icon_image = //style_to_path_map_[UiDefines::IconHover];
                     break;
                 case Pressed:
-                    icon_image = style_to_path_map_[UiDefines::IconPressed];
+                    icon_image = //style_to_path_map_[UiDefines::IconPressed];
                     break;
             }
-
             iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_image + "'); background-position: top left; background-repeat: no-repeat; }");
+*/
+            iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_filepath_ +
+                "'); background-position: top left; background-repeat: no-repeat; }");
         }
         else
         {
-            QString root_base_style = "background-color: transparent; border-radius:0px; border: 0px; background-position: top left; background-repeat: no-repeat;";
+            QString root_base_style = "background-color: transparent; border-radius:0px; border: 0px;"
+                "background-position: top left; background-repeat: no-repeat;";
             switch (style)
             {
                 case Normal:

@@ -139,7 +139,7 @@ namespace UiServices
                 else if (widget_name == "Avatar Editor")
                     control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
                 else
-                    menu_manager_->AddMenuItem(properties.GetMenuGroup(), uiproxy, properties);
+                    menu_manager_->AddMenuItem(uiproxy, properties);
             }
 
             connect(uiproxy, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*) ), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));

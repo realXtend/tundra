@@ -15,15 +15,13 @@ class QPropertyAnimation;
 
 namespace CoreUi
 {
-    class MenuNode;
-
     class GroupNode : public MenuNode
     {
         Q_OBJECT
 
     public:
         //! Constructor
-        GroupNode(bool root, const QString &name, qreal gap = 0, qreal vgap = 0, UiDefines::MenuNodeStyleMap style_map = UiDefines::MenuNodeStyleMap());
+        GroupNode(bool root, const QString &name, const QString &icon = "", qreal gap = 0, qreal vgap = 0);
 
         //! Destructor.
         ~GroupNode();
@@ -32,7 +30,7 @@ namespace CoreUi
         //! Parent overrides
         void NodeClicked();
         void AddChildNode(MenuNode *node);
-        MenuNode *RemoveChildNode(QUuid child_id);
+        MenuNode *RemoveChildNode(const QUuid &child_id);
 
         //! Getters
         QVector2D GetPosVec() const { return pos_vector_; }
@@ -42,6 +40,9 @@ namespace CoreUi
         bool IsExpanded() const { return is_expanded_; }
         void CalculatePosVec();
         void AdjustNode(QAbstractAnimation::Direction dir);
+
+        /// Sorts the children: groups before actions.
+        void Sort();
 
     private slots:
         QPropertyAnimation* CalculateSizeAnimation(MenuNode *child_node);

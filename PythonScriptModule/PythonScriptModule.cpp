@@ -88,7 +88,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "EC_OgreMovableTextOverlay.h"
 
 #include "UiModule.h"
-#include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/View/UiProxyWidget.h"
 #include "UiWidgetProperties.h"
@@ -1649,32 +1648,14 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
         return NULL;
     }
 
-    UiDefines::MenuNodeStyleMap map;
     if (uiproperty.GetWidgetName() == "Object Edit")
-    {
-        QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
-        uiproperty.SetMenuNodeStyleMap(map);
-    }
-
-    if (uiproperty.GetWidgetName() == "Local Scene")
-    {
-        QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::IconNormal] = base_url + "edbutton_LSCENE_normal.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_LSCENE_hover.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_LSCENE_click.png";
-        uiproperty.SetMenuNodeStyleMap(map);
-    }
-    if (uiproperty.GetWidgetName() == "Estate Management")
-    {
-        QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::IconNormal] = base_url + "edbutton_ESMNG_normal.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_ESMNG_hover.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_ESMNG_click.png";
-        uiproperty.SetMenuNodeStyleMap(map);
-    }
+        uiproperty.SetIcon("./data/ui/images/menus/edbutton_OBJED_normal.png");
+    else if (uiproperty.GetWidgetName() == "Local Scene")
+        uiproperty.SetIcon("./data/ui/images/menus/edbutton_LSCENE_normal.png");
+    else if (uiproperty.GetWidgetName() == "Estate Management")
+        uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
+    else // Use Estate manager icon as default for all the rest for now.
+        uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
 
     UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
     return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);

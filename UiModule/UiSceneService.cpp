@@ -14,6 +14,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "UiStateMachine.h"
 #include "Inworld/View/UiProxyWidget.h"
+#include "Inworld/Menus/MenuManager.h"
 
 namespace UiServices
 {
@@ -44,17 +45,29 @@ namespace UiServices
     {
         // Create widget properties
         UiWidgetProperties props(widget->windowTitle(), type);
-        UiDefines::MenuNodeStyleMap stylemap;
-        QString base_url = "./data/ui/images/menus/"; 
-        stylemap[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
-        stylemap[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
-        stylemap[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
-        props.SetMenuNodeStyleMap(stylemap);
+        props.SetIcon("./data/ui/images/menus/edbutton_MATWIZ_normal.png");
 
         // Create proxy and add it to the scene.
         UiProxyWidget *proxy = new UiProxyWidget(widget, props);
         owner_->GetInworldSceneController()->AddWidgetToScene(proxy);
         return dynamic_cast<QGraphicsProxyWidget *>(proxy);
+    }
+
+    void UiSceneService::AddWidgetToMenu(QWidget *widget, const UiWidgetProperties &properties)
+    {
+        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), properties);
+    }
+
+    void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu)
+    {
+        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(entry, menu, widget->graphicsProxyWidget());
+    }
+
+    void UiSceneService::AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu)
+    {
+        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(entry, menu, widget);
+//        owner_->GetInworldSceneController()->GetControlPanelManager()->GetPersonalWidget()->SetInventoryWidget(uiproxy);
+//        owner_->GetInworldSceneController->GetPersonalWidget()->SetAvatarWidget(uiproxy);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
