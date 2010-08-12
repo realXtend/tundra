@@ -24,7 +24,7 @@ namespace OgreRenderer
         //! toggles fullscreen mode
         void SetFullScreenMode(bool value);
 
-        void KeyPressed(KeyEvent& e);
+        void KeyPressed(KeyEvent* e);
 
 
     private:

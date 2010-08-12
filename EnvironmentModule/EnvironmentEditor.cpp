@@ -1773,8 +1773,8 @@ namespace Environment
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
-        connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent &)), this, SLOT(HandleMouseInputEvent(MouseEvent &)));
-        connect(terrainPaintInputContext.get(), SIGNAL(OnKeyEvent(KeyEvent &)), this, SLOT(HandleKeyInputEvent(KeyEvent &)));
+        connect(terrainPaintInputContext.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseInputEvent(MouseEvent *)));
+        connect(terrainPaintInputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), this, SLOT(HandleKeyInputEvent(KeyEvent *)));
     }
 
     void EnvironmentEditor::ToggleTerrainPaintMode()
@@ -1843,12 +1843,12 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::HandleKeyInputEvent(KeyEvent &key)
+    void EnvironmentEditor::HandleKeyInputEvent(KeyEvent *key)
     {
         // The 'ESC' key cancels terrain height painting, if it is active.
-        if (key.eventType == KeyEvent::KeyPressed && key.keyCode == Qt::Key_Escape && GetTerrainPaintMode() == ACTIVE)
+        if (key->eventType == KeyEvent::KeyPressed && key->keyCode == Qt::Key_Escape && GetTerrainPaintMode() == ACTIVE)
         {
-            key.Suppress();
+            key->Suppress();
 
             CreateHeightmapImage();
             terrain_paint_timer_.stop();
@@ -1861,15 +1861,15 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::HandleMouseInputEvent(MouseEvent &mouse)
+    void EnvironmentEditor::HandleMouseInputEvent(MouseEvent *mouse)
     {
-        if (mouse.IsLeftButtonDown() && !mouse.IsRightButtonDown() && !edit_terrain_active_)
+        if (mouse->IsLeftButtonDown() && !mouse->IsRightButtonDown() && !edit_terrain_active_)
         {
             edit_terrain_active_ = true;
             terrain_paint_timer_.start(250);
         }
 
-        if ((!mouse.IsLeftButtonDown() || mouse.IsRightButtonDown()) && edit_terrain_active_)
+        if ((!mouse->IsLeftButtonDown() || mouse->IsRightButtonDown()) && edit_terrain_active_)
         {
             CreateHeightmapImage();
             terrain_paint_timer_.stop();
@@ -1877,7 +1877,7 @@ namespace Environment
             ReleasePaintMeshOnScene();
         }
 
-        if (mouse.eventType == MouseEvent::MouseMove)
+        if (mouse->eventType == MouseEvent::MouseMove)
         {
             int mapX;
             int mapY;
@@ -1887,15 +1887,15 @@ namespace Environment
             assert(label);
 
             // If we are pointing the mouse over the 2D map image, no need to raycast.
-//            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse.globalX, mouse.globalY));
-            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse.x, mouse.y));
+//            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse->globalX, mouse->globalY));
+            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse->x, mouse->y));
             if (posOnLabel.x() >= 0 && posOnLabel.y() >= 0 && posOnLabel.x() < label->size().width() && posOnLabel.y() < label->size().height())
             {
                 mapX = posOnLabel.x();
                 mapY = posOnLabel.y();
             }
             else
-                RaycastScreenPosToTerrainPos(mouse.x, mouse.y, mapX, mapY);
+                RaycastScreenPosToTerrainPos(mouse->x, mouse->y, mapX, mapY);
 
             // Calling this function also stores the updated terrain edit coordinates as the current coordinates.
             // In Update() loop, if editing is active, the editor position will be updated.

@@ -76,6 +76,8 @@ class Manipulator:
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
             else:
                 self.manipulator.placeable.Orientation = self.MANIPULATORORIENTATION
+
+        self.setManipulatorScale(ents)
             
     def getPivotPos(self, ents):        
         xs = [e.placeable.Position.x() for e in ents]
@@ -130,6 +132,24 @@ class Manipulator:
                     #~ print "arrow got screwed..."
                     self.grabbed_axis = None
                     self.grabbed = False
+
+    def setManipulatorScale(self, ents):
+        if ents is None or len(ents) == 0: 
+                return
+
+        campos = Vector3(r.getCameraPosition())
+        ent = ents[-1]
+        qpos = ent.placeable.Position
+        entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
+        length = (campos-entpos).length
+            
+        v = self.MANIPULATORSCALE
+        factor = length*.1
+        newv = Vec(v) * factor
+        try:
+            self.manipulator.placeable.Scale = newv
+        except AttributeError:
+            pass
                     
     def manipulate(self, ents, movedx, movedy):
         if ents is not None:
@@ -149,7 +169,9 @@ class Manipulator:
             #used in freemoving to get the size of movement right
             amountx = (worldwidth * movedx)
             amounty = (worldheight * movedy)
-            
+
+            self.setManipulatorScale(ents)
+
             if self.usesManipulator and self.grabbed_axis is not None:
                 rightvec = Vector3(r.getCameraRight())
                 upvec = Vector3(r.getCameraUp())

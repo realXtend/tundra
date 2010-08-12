@@ -93,9 +93,11 @@ class ObjectEdit(Component):
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
-        # Removed for ugly printing and does nothing really, enable back when handling types is fixed
-        #inputcontext.disconnect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
-        #inputcontext.connect('KeyPressed(KeyEvent&)', self.inp_on_keyevent)
+        inputcontext.disconnect('KeyPressed(KeyEvent*)', self.on_keypressed)
+        # Connect to key pressed signal from input context
+        inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
+
+        inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         
         self.resetManipulators()
         
@@ -131,8 +133,17 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
             
-    def inp_on_keyevent(self, k):
-        print k, dir(k)
+    def on_keypressed(self, k):
+        trigger = (k.keyCode, k.modifiers)
+        if self.windowActive:
+            # check to see if a shortcut we understand was pressed, if so, trigger it
+            if trigger in self.shortcuts:
+                self.keypressed = True
+                self.shortcuts[trigger]()
+
+    def on_mousescroll(self, m):
+        if self.windowActive:
+            self.manipulator.showManipulator(self.sels)
         
     def resetValues(self):
         self.left_button_down = False
@@ -556,15 +567,6 @@ class ObjectEdit(Component):
                         
                         self.window.update_guivals(ent)
    
-    def on_keydown(self, keycode, keymod):
-        trigger = (keycode, keymod)
-        if self.windowActive:
-            # check to see if a shortcut we understand was pressed, if so, trigger it and consume the event
-            if trigger in self.shortcuts:
-                self.keypressed = True
-                self.shortcuts[trigger]()
-                return True
-        
     def on_inboundnetwork(self, evid, name):
         #return False
         print "editgui got an inbound network event:", id, name

@@ -80,7 +80,7 @@ namespace UiServices
         static const std::string &NameStatic() { return type_name_static_; }
 
     private slots:
-        void OnKeyPressed(KeyEvent &key);
+        void OnKeyPressed(KeyEvent *key);
 
     private:
         //! Notify all ui module components of connected/disconnected state
