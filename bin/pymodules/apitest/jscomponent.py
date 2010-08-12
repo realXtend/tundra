@@ -35,11 +35,17 @@ class JavascriptHandler(DynamiccomponentHandler):
             except AttributeError:
                 pass
             else:
-                ctx['touchable'] = ent.touchable                
+                ctx['touchable'] = ent.touchable
+            try:
+                ent.placeable
+            except:
+                pass
+            else:
+                ctx['placeable'] = ent.placeable
             
             naali.runjs(jscode, ctx)
             print "-- done with js"
-
+            
             self.jsloaded = True
 
     def loadjs(self, srcurl):
