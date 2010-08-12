@@ -77,7 +77,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         
         uism = r.getUiSceneManager()
         uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
-        uiprops.SetMenuGroup(2) #2 is server tools group
+        uiprops.SetMenuGroup("Server Tools")
         uiprops.widget_name_ = "Estate Management"
         
         self.proxywidget = r.createUiProxyWidget(self.gui, uiprops)

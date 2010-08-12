@@ -130,14 +130,8 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
-        UiServices::UiWidgetProperties widget_properties("Entity Components", UiServices::ModuleWidget);
-        
-        UiDefines::MenuNodeStyleMap map;
-        QString base_url = "./data/ui/images/menus/";
-        map[UiDefines::IconNormal] = base_url + "edbutton_OBJED_normal.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_OBJED_hover.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_OBJED_click.png";
-        widget_properties.SetMenuNodeStyleMap(map);
+        UiServices::UiWidgetProperties widget_properties("Entity-Component Editor", UiServices::ModuleWidget,
+            "./data/ui/images/menus/edbutton_OBJED_normal.png");
 
         ui->AddWidgetToScene(editor_window_, widget_properties);
 

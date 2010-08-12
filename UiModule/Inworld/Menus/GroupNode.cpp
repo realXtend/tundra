@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "GroupNode.h"
+#include "ActionNode.h"
 
 #include <math.h>
 
@@ -17,8 +18,8 @@
 
 namespace CoreUi
 {
-    GroupNode::GroupNode(bool root, const QString& name, qreal hgap, qreal vgap, UiDefines::MenuNodeStyleMap style_map) :
-        MenuNode(name, QIcon(), style_map),
+    GroupNode::GroupNode(bool root, const QString& name, const QString &icon, qreal hgap, qreal vgap) :
+        MenuNode(name, icon),
         move_animations_(new QParallelAnimationGroup(this)),
         resize_animations_(new QParallelAnimationGroup(this)),
         adjust_position_animations_(new QParallelAnimationGroup(this)),
@@ -67,15 +68,37 @@ namespace CoreUi
         }
     }
 
+    void GroupNode::Sort()
+    {
+        QList<MenuNode *> groups;
+        QList<MenuNode *> actions;
+        foreach (MenuNode *child, children_)
+        {
+            GroupNode *group = dynamic_cast<GroupNode*>(child);
+            if (group)
+            {
+                group->Sort();
+                groups << group;
+                continue;
+            }
+
+            ActionNode *action = dynamic_cast<ActionNode *>(child);
+            if (action)
+                actions << action;
+        }
+
+        children_.clear();
+        children_.append(groups);
+        children_.append(actions);
+    }
+
     //! Overrides
 
     void GroupNode::NodeClicked()
     {
         // Check if animations are already running
-        if (GetTreeDepth() == 0)
-            if (move_animations_->state() == QAbstractAnimation::Running ||
-                resize_animations_->state() == QAbstractAnimation::Running)
-                return;
+        if (GetTreeDepth() == 0 && (move_animations_->state() == QAbstractAnimation::Running || resize_animations_->state() == QAbstractAnimation::Running))
+            return;
 
         setOpacity(1);
 
@@ -113,7 +136,7 @@ namespace CoreUi
         CalculateChildPositions();
     }
 
-    MenuNode *GroupNode::RemoveChildNode(QUuid child_id)
+    MenuNode *GroupNode::RemoveChildNode(const QUuid &child_id)
     {
         MenuNode *found_node = 0;
         foreach (MenuNode *node, children_)

@@ -65,6 +65,28 @@ namespace Foundation
          */
         virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type) = 0;
 
+        /** Adds widget to menu.
+         *  @param widget Widget.
+         *  @param properties Widget properties.
+         */
+        virtual void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
+
+        /** Adds widget to menu.
+         *  @param widget Widget.
+         *  @param menu Name of the menu entry.
+         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is
+         *  added to the root menu.
+         */
+        virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "") = 0;
+
+        /** This is an overloaded function.
+         *  @param widget Proxy widget.
+         *  @param menu Name of the menu entry.
+         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is
+         *  added to the root menu.
+         */
+        virtual void AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu = "") = 0;
+
         /** Removes widget from the scene.
          *  @param widget Widget.
          */

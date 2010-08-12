@@ -27,7 +27,6 @@
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
 #include "UiModule.h"
-#include "UiDefines.h"
 #include "Inworld/InworldSceneController.h"
 #include "UiWidgetProperties.h"
 
@@ -75,15 +74,8 @@ namespace Environment
 
             UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
 
-            // Menu graphics
-            UiDefines::MenuNodeStyleMap image_path_map;
-            QString base_url = "./data/ui/images/menus/"; 
-            image_path_map[UiDefines::IconNormal] = base_url + "edbutton_POSTPR_normal.png";
-            image_path_map[UiDefines::IconHover] = base_url + "edbutton_POSTPR_hover.png";
-            image_path_map[UiDefines::IconPressed] = base_url + "edbutton_POSTPR_click.png";
-
-            ui_properties.SetMenuNodeStyleMap(image_path_map);
-            ui_properties.SetMenuGroup(UiDefines::WorldToolsGroup);
+            ui_properties.SetIcon("./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            ui_properties.SetMenuGroup("World Tools");
 
             ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
         }

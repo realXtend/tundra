@@ -4,23 +4,20 @@
 #define incl_UiModule_ActionNode_h
 
 #include "MenuNode.h"
-#include "UiDefines.h"
 
 namespace CoreUi
 {
     class ActionNode : public MenuNode
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
-        ActionNode(const QString& name, QIcon icon, UiDefines::MenuNodeStyleMap map);
+        ActionNode(const QString& name, const QString &icon);
         ~ActionNode();
 
     public slots:
         void NodeClicked();
         void AddChildNode(MenuNode *node) {};
-
     };
 }
 

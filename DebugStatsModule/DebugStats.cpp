@@ -115,22 +115,17 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_->move(100, 100);
     profilerWindow_->setWindowFlags(Qt::Dialog);
 
-/*
-    UiServices::UiWidgetProperties props("Profiler", UiServices::ModuleWidget);
-    UiDefines::MenuNodeStyleMap image_path_map;
-    QString base_url = "./data/ui/images/menus/"; 
-    image_path_map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png";
-    image_path_map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png";
-    image_path_map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png";
-    props.SetMenuNodeStyleMap(image_path_map);
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, props);
-*/
+    UiServices::UiWidgetProperties props(tr("Profiler"), UiServices::ModuleWidget, "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+    props.SetMenuGroup("Developer Tools");
 
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, UiServices::ModuleWidget);
+//    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, props);
+//    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, UiServices::ModuleWidget);
 
+    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
     proxy->resize(650, 530);
-
     connect(proxy, SIGNAL(visibleChanged()), SLOT(StartProfiling()));
+
+    ui->AddWidgetToMenu(profilerWindow_, props);
 }
 
 void DebugStatsModule::StartProfiling()

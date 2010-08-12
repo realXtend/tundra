@@ -21,7 +21,7 @@ class ToolBarWindow():
         
         uism = r.getUiSceneManager()
         uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
-        uiprops.SetMenuGroup(2) #2 is server tools group
+        uiprops.SetMenuGroup("Server Tools")
         uiprops.widget_name_ = "Local Scene"
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)

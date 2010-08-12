@@ -249,19 +249,11 @@ namespace Environment
         if (!ui_module.get())
             return;
 
-        UiServices::UiWidgetProperties env_editor_properties(tr("Environment Editor"), UiServices::ModuleWidget);
+        UiServices::UiWidgetProperties properties(tr("Environment Editor"), UiServices::ModuleWidget,
+            "./data/ui/images/menus/edbutton_ENVED_normal");
+        properties.SetMenuGroup("World Tools");
 
-        // Menu graphics
-        UiDefines::MenuNodeStyleMap image_path_map;
-        QString base_url = "./data/ui/images/menus/"; 
-        image_path_map[UiDefines::IconNormal] = base_url + "edbutton_ENVED_normal.png";
-        image_path_map[UiDefines::IconHover] = base_url + "edbutton_ENVED_hover.png";
-        image_path_map[UiDefines::IconPressed] = base_url + "edbutton_ENVED_click.png";
-        
-        env_editor_properties.SetMenuNodeStyleMap(image_path_map);
-        env_editor_properties.SetMenuGroup(UiDefines::WorldToolsGroup);
-
-        editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, env_editor_properties);
+        editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, properties);
 
         /*
         InitTerrainTabWindow();
