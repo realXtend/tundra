@@ -107,7 +107,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     if (profilerWindow_)
         return;
 
-    Foundation::UiServicePtr *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (!ui)
         return;
 
