@@ -10,7 +10,6 @@
 #include <QPointF>
 #include <QMap>
 
-//#include "UiDefines.h"
 #include "ui_MenuNode.h"
 
 #define MOVE_ANIM_LENGTH 350
@@ -19,6 +18,7 @@
 
 class QParallelAnimationGroup;
 class QPropertyAnimation;
+class QLabel;
 
 namespace CoreUi
 {
@@ -29,7 +29,7 @@ namespace CoreUi
         Q_OBJECT
 
     public:
-        MenuNode(const QString& node_name, const QString &icon, const QUuid &id = QUuid());
+        MenuNode(const QString& node_name, const QString &icon, const QUuid &id = QUuid::createUuid());
         ~MenuNode();
 
     public slots:
@@ -88,7 +88,7 @@ namespace CoreUi
         int expanded_width_;
         int center_image_width_;
 
-//        UiDefines::MenuNodeStyleMap style_to_path_map_;
+        QLabel *label_;
         QString icon_filepath_;
         QPropertyAnimation *resize_animation_;
 
