@@ -47,7 +47,7 @@ namespace UiServices
 
         /** UiServiceInterface override.
          *  Creates UiWidgetProperties using QWidget::windowTitle as the widget name and
-         *  /data/ui/images/menus/edbutton_MATWIZ_*.png as the default icons.
+         *  /data/ui/images/menus/edbutton_MATWIZ_normal.png as the default icon.
          */
         QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type);
 

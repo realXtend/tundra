@@ -1,14 +1,20 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "AvatarEditor.h"
 #include "Avatar.h"
 #include "AvatarAppearance.h"
-
-#include "SceneManager.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "RexLogicModule.h"
+
+#include "SceneManager.h"
 #include "QtUtils.h"
+#include "ConfigurationManager.h"
+#include "ModuleManager.h"
+#include "UiServiceInterface.h"
+#include "UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -18,18 +24,13 @@
 #include <QScrollBar>
 #include <QTabWidget>
 #include <QApplication>
+#include <QVBoxLayout>
+#include <QGraphicsProxyWidget>
 
-#include "Inworld/InworldSceneController.h"
-#include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
-#include "UiWidgetProperties.h"
-
-#include "ConfigurationManager.h"
-#include "ModuleManager.h"
+#include "MemoryLeakCheck.h"
 
 namespace RexLogic
 {
-
     AvatarEditor::AvatarEditor(RexLogicModule* rexlogicmodule) :
         rexlogicmodule_(rexlogicmodule),
         avatar_widget_(0)
@@ -44,7 +45,6 @@ namespace RexLogic
     AvatarEditor::~AvatarEditor()
     {
         SAFE_DELETE(avatar_widget_);
-        avatar_editor_proxy_widget_ = 0;
         rexlogicmodule_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
 
@@ -63,31 +63,28 @@ namespace RexLogic
     
     void AvatarEditor::InitEditorWindow()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = rexlogicmodule_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-
-        // If this occurs, we're most probably operating in headless mode.
-        if (ui_module.get() == 0)
+        Foundation::UiServiceInterface *ui = rexlogicmodule_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        if (ui == 0) // If this occurs, we're most probably operating in headless mode.
             return;
 
         QUiLoader loader;
         loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/avatareditor.ui");
-
         if (!file.exists())
         {
             RexLogicModule::LogError("Cannot find avatar editor .ui file.");
             return;
         }
 
-        avatar_widget_ = loader.load(&file); 
+        avatar_widget_ = loader.load(&file, this);
         if (!avatar_widget_)
             return;
 
-        avatar_editor_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(avatar_widget_, UiServices::UiWidgetProperties("Avatar Editor", UiServices::ModuleWidget));
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(avatar_widget_);
+        layout->setContentsMargins(0, 0, 0, 0);
+        setLayout(layout);
 
-        QString translation = QApplication::translate("AvatarEditor", "Avatar Editor");
-        avatar_editor_proxy_widget_->setWindowTitle(translation);
-        
         // Connect signals.
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
@@ -108,8 +105,8 @@ namespace RexLogic
         button = avatar_widget_->findChild<QPushButton *>("but_attachment");
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
-            
-        QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
+
+        ui->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Avatar Editor"), UiServices::ModuleWidget));
     }
 
     void AvatarEditor::RebuildEditView()
@@ -367,6 +364,20 @@ namespace RexLogic
         rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
     }
 
+    void AvatarEditor::changeEvent(QEvent* e)
+    {
+       if (e->type() == QEvent::LanguageChange)
+        {
+            QString text = tr("Avatar Editor");
+            setWindowTitle(text);
+            graphicsProxyWidget()->setWindowTitle(text);
+        }
+        else
+        {
+            QWidget::changeEvent(e);
+        }
+    }
+
     void AvatarEditor::LoadAvatar()
     {
         const std::string filter = "Avatar description file (*.xml);;Avatar mesh (*.mesh)";
@@ -505,14 +516,5 @@ namespace RexLogic
             last_directory_ = dirname;
         }
         return filename; 
-    }
-    
-    void AvatarEditor::ChangeLanguage()
-    {
-        if (!avatar_editor_proxy_widget_)
-            return;
-        
-        QString translation = QApplication::translate("AvatarEditor", "Avatar Editor");
-        avatar_editor_proxy_widget_->setWindowTitle(translation);
     }
 }

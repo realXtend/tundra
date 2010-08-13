@@ -37,7 +37,6 @@ namespace UiServices
         widget->setWindowFlags(widget_properties_.GetWindowStyle());
         widget->setWindowTitle(widget_properties_.GetWidgetName());
         setWidget(widget);
-        setGeometry(QRectF(widget_properties_.GetPosition(), QSizeF(widget->size())));
     }
 
     void UiProxyWidget::InitEffectsAndAnimations()

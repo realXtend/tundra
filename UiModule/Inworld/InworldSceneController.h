@@ -58,7 +58,6 @@ namespace UiServices
          */
         UiProxyWidget* AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties);
 
-
         //! Adds a already created UiProxyWidget into the scene.
         /*! Please prefer using AddWidgetToScene() with normal QWidget and properties instead of this directly.
          *  \param widget Proxy widget.

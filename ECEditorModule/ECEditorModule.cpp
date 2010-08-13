@@ -21,7 +21,7 @@
 
 namespace ECEditor
 {
-    std::string ECEditorModule::name_static_ = "ECEditorModule";
+    std::string ECEditorModule::name_static_ = "ECEditor";
     
     ECEditorModule::ECEditorModule() :
         ModuleInterface(name_static_),
@@ -125,15 +125,16 @@ namespace ECEditor
         if (editor_window_)
             return;
 
-        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
         if (!ui)
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
-        UiServices::UiWidgetProperties widget_properties("Entity-Component Editor", UiServices::ModuleWidget,
+        UiServices::UiWidgetProperties props("Entity-Component Editor", UiServices::ModuleWidget,
             "./data/ui/images/menus/edbutton_OBJED_normal.png");
 
-        ui->AddWidgetToScene(editor_window_, widget_properties);
+        ui->AddWidgetToScene(editor_window_);
+        ui->AddWidgetToMenu(editor_window_, props);
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
