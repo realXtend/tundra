@@ -16,10 +16,7 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
 }
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
+class UiProxyWidget;
 
 namespace CommunicationUI
 {
@@ -85,7 +82,7 @@ namespace Communication
         Console::CommandResult Test(const StringVector &params);
         //! Ui related widgets/controllers
         CommunicationUI::MasterWidget* im_ui_;
-        UiServices::UiProxyWidget *im_ui_proxy_widget_;
+        UiProxyWidget *im_ui_proxy_widget_;
         OpensimIM::ChatController *os_chat_controller_;
 
         CommunicationServiceInterface* communication_service_;
@@ -99,7 +96,7 @@ namespace Communication
 
     private:
         void AddWidgetToUi(const QString &name);
-        void RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget);
+        void RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget);
         //! Type name of the module.
         static std::string type_name_static_;
 

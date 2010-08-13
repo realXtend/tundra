@@ -4,9 +4,9 @@
 #include "DebugOperatorNew.h"
 #include "SessionManager.h"
 
-#include <UiModule.h>
-#include <Inworld/View/UiProxyWidget.h>
-#include <Inworld/InworldSceneController.h>
+#include "UiModule.h"
+#include "UiProxyWidget.h"
+#include "Inworld/InworldSceneController.h"
 
 #include "MasterWidget.h"
 #include "SessionHelper.h"
