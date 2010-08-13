@@ -613,7 +613,7 @@ namespace PythonScript
 
     void PythonScriptModule::RunJavascriptString(const QString &codestr, const QVariantMap &context)
     {
-        Foundation::ScriptServiceInterface *js = framework_->GetService<Foundation::ScriptServiceInterface>();
+        boost::shared_ptr<Foundation::ScriptServiceInterface> js = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_JavascriptScripting).lock();
         if (js)
             js->RunString(codestr, context);
         else

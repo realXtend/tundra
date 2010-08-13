@@ -933,13 +933,14 @@ if 0: #scene, aka. SceneManager
     s = naali.getScene("World")
     print s
 
-if 0: #javascript service
+if 1: #javascript service
     import naali
     from naali import runjs
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
-    runjs('var a = {"a": true, "b": 2};')
-    runjs('print(a.a + ", " + a.b)')
-    runjs('print(JSON.stringify(a))')
+    runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
+    #runjs('var a = {"a": true, "b": 2};')
+    #runjs('print(a.a + ", " + a.b)')
+    #runjs('print(JSON.stringify(a))')
     #runjs('print("1 + 1 == " + 1 + 1)')
     #runjs('print("1 - 1 == " + 1 - 1)')
     print ", done."
