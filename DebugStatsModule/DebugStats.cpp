@@ -113,13 +113,9 @@ void DebugStatsModule::AddProfilerWidgetToUi()
 
     profilerWindow_ = new TimeProfilerWindow(framework_);
     profilerWindow_->move(100, 100);
-    profilerWindow_->setWindowFlags(Qt::Dialog);
 
-    UiServices::UiWidgetProperties props(tr("Profiler"), UiServices::ModuleWidget, "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
+    UiServices::UiWidgetProperties props(tr("Profiler"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
     props.SetMenuGroup("Developer Tools");
-
-//    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, props);
-//    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, UiServices::ModuleWidget);
 
     profilerWindow_->resize(650, 530);
     UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);

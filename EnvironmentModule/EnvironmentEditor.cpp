@@ -246,8 +246,9 @@ namespace Environment
         layout->setContentsMargins(0, 0, 0, 0);
         setLayout(layout);
 
-        UiServices::UiWidgetProperties properties(tr("Environment Editor"), UiServices::ModuleWidget,
-            "./data/ui/images/menus/edbutton_ENVED_normal");
+        setWindowTitle(tr("Environment Editor"));
+
+        UiServices::UiWidgetProperties properties(tr("Environment Editor"), "./data/ui/images/menus/edbutton_ENVED_normal");
         properties.SetMenuGroup("World Tools");
 
         ui->AddWidgetToScene(this);

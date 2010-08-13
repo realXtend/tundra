@@ -168,8 +168,8 @@ namespace UiManagers
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
         {
-            UiServices::UiWidgetProperties widget_properties("Friends List", UiServices::SceneWidget);
-            ui_module->GetInworldSceneController()->AddWidgetToScene(friend_list_widget_, widget_properties);
+            friend_list_widget_->setWindowTitle(tr("Friends List"));
+            ui_module->GetInworldSceneController()->AddWidgetToScene(friend_list_widget_);
         }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),
                 session_helper_, SLOT( SetMyStatus(const QString &) ));

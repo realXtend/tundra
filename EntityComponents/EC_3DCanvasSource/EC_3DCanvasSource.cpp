@@ -11,14 +11,11 @@
 #include "ModuleInterface.h"
 #include "ModuleManager.h"
 #include "Entity.h"
-#include "UiModule.h"
 #include "UiProxyWidget.h"
-#include "Inworld/InworldSceneController.h"
+#include "UiServiceInterface.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
-
-#include <Ogre.h>
 
 #include <QWebView>
 #include <QLineEdit>
@@ -146,11 +143,11 @@ void EC_3DCanvasSource::RepaintCanvas()
     Scene::Entity* entity = GetParentEntity();
     if (!entity)
         return;
-    
+
     Foundation::ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
         return;
-    
+
     EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
     canvas->Start();
 }
@@ -289,20 +286,21 @@ void EC_3DCanvasSource::ChangeLanguage()
 {
     if (widget_)
     {
-        QString translation = QApplication::translate("3DCanvasSource", "3DCanvas Controls");
-        widget_->graphicsProxyWidget()->setWindowTitle(translation);
+        QString title = tr("3DCanvas Controls");
+        widget_->setWindowTitle(title);
+        widget_->graphicsProxyWidget()->setWindowTitle(title);
     }
 }
 
 void EC_3DCanvasSource::CreateWidget()
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
+    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    if (!ui)
     {
-        LogError("Failed to acquire UiModule pointer");
+        LogError("Failed to acquire UI service");
         return;
     }
-    
+
     QUiLoader loader;
     loader.setLanguageChangeEnabled(true);
     QFile file("./data/ui/3dcanvassource.ui");
@@ -316,26 +314,26 @@ void EC_3DCanvasSource::CreateWidget()
         return;
     }
 
-    proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(widget_,
-        UiServices::UiWidgetProperties("MediaURL browser", UiServices::SceneWidget));
-    
-    QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
-    
+    widget_->setWindowTitle(tr("3DCanvas Controls"));
+    proxy_ = ui->AddWidgetToScene(widget_);
+
+    connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
+
     source_edit_ = widget_->findChild<QLineEdit*>("line_source");
     if (source_edit_)
     {
-        QObject::connect(source_edit_, SIGNAL( editingFinished() ), this, SLOT( SourceEdited() ));
+        connect(source_edit_, SIGNAL( editingFinished() ), this, SLOT( SourceEdited() ));
     }
     
     placeholder_widget_ = widget_->findChild<QWidget*>("widget_placeholder");
     
     QPushButton* button = widget_->findChild<QPushButton*>("but_start");
-    if (button) QObject::connect(button, SIGNAL( clicked() ), this, SLOT( StartPressed() ));
+    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( StartPressed() ));
     button = widget_->findChild<QPushButton*>("but_prev");
-    if (button) QObject::connect(button, SIGNAL( clicked() ), this, SLOT( PrevPressed() ));
+    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( PrevPressed() ));
     button = widget_->findChild<QPushButton*>("but_next");
-    if (button) QObject::connect(button, SIGNAL( clicked() ), this, SLOT( NextPressed() ));
+    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( NextPressed() ));
     button = widget_->findChild<QPushButton*>("but_end");
-    if (button) QObject::connect(button, SIGNAL( clicked() ), this, SLOT( EndPressed() ));
+    if (button) connect(button, SIGNAL( clicked() ), this, SLOT( EndPressed() ));
 }
 

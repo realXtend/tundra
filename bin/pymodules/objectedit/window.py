@@ -43,8 +43,8 @@ class ObjectEditWindow:
         
         #if not DEV:
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
-        uiprops.widget_name_ = "Object Edit"
+        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
+        uiprops.name_ = "Object Edit"
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)
 

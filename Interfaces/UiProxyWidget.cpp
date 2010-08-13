@@ -19,23 +19,29 @@
 
 #include "MemoryLeakCheck.h"
 
-UiProxyWidget::UiProxyWidget(QWidget *widget, const UiServices::UiWidgetProperties &properties) :
-    QGraphicsProxyWidget(0, properties.GetWindowStyle()),
-    properties_(properties),
+UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
+    QGraphicsProxyWidget(0, flags),
     show_animation_enabled_(true),
     unfocus_opacity_(1.0),
     animations_(0),
     fade_animation_(0)
 {
-    setObjectName(properties_.GetWidgetName());
+    QString name = "UiProxyWidget";
+    if (!widget->objectName().isEmpty())
+        name.append(":" + widget->objectName());
+    else if (widget->windowTitle().isEmpty())
+        name.append(":" + widget->windowTitle());
+    setObjectName(name);
 
-    // Init proxy widget.
-    //widget->setWindowFlags(properties_.GetWindowStyle());
-    widget->setWindowTitle(properties_.GetWidgetName());
+    ///\todo Do we want to copy flags from proxy to widget? STINKFIST
+//    widget->setWindowFlags(properties_.GetWindowStyle());
+//    widget->setWindowTitle(properties_.GetName());
+
+    // Embed widget to this proxy widget.
     setWidget(widget);
 
     // Init effects and animations
-    if (windowFlags() != Qt::Widget)//properties_.GetWidgetType() != UiServices::CoreLayoutWidget)
+    if (windowFlags() != Qt::Widget)
     {
         QGraphicsDropShadowEffect shadow_effect(this);
         shadow_effect.setBlurRadius(3);
@@ -59,24 +65,26 @@ UiProxyWidget::~UiProxyWidget()
 {
 }
 
-void UiProxyWidget::SetUnfocusedOpacity(int new_opacity)
+void UiProxyWidget::SetUnfocusedOpacity(int opacity)
 {
-    unfocus_opacity_ = new_opacity;
+    unfocus_opacity_ = opacity;
     unfocus_opacity_ /= 100;
     if (isVisible() && !hasFocus())
         setOpacity(unfocus_opacity_);
 }
 
-void UiProxyWidget::SetShowAnimationSpeed(int new_speed)
+void UiProxyWidget::SetShowAnimationSpeed(int speed)
 {
     if (!animations_)
         return;
 
-    if (new_speed == 0)
+    if (speed == 0)
+    {
         show_animation_enabled_ = false;
+    }
     else if (animations_->state() != QAbstractAnimation::Running)
     {
-        fade_animation_->setDuration(new_speed);
+        fade_animation_->setDuration(speed);
         show_animation_enabled_ = true;
     }
 }

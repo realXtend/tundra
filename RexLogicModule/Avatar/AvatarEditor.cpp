@@ -106,8 +106,9 @@ namespace RexLogic
         if (button)
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
 
+        setWindowTitle(tr("Avatar Editor"));
         ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this, UiServices::UiWidgetProperties(tr("Avatar Editor"), UiServices::ModuleWidget));
+        ui->AddWidgetToMenu(this);
     }
 
     void AvatarEditor::RebuildEditView()

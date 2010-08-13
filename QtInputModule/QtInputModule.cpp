@@ -70,7 +70,7 @@ void QtInputModule::ShowBindingsWindow()
 
     configWindow = new KeyBindingsConfigWindow(framework_);
 
-    UiProxyWidget *proxy = ui->AddWidgetToScene(configWindow, UiServices::UiWidgetProperties(tr("Actions"), UiServices::SceneWidget));
+    UiProxyWidget *proxy = ui->AddWidgetToScene(configWindow);
 
     QPushButton *btn = configWindow->findChild<QPushButton*>("pushButtonCancel");
     QObject::connect(btn, SIGNAL(pressed()), this, SLOT(BindingsWindowClosed()));

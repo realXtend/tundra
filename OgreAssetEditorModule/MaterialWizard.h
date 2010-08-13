@@ -123,9 +123,6 @@ namespace Naali
         void ValidateScriptName(const QString &name);
 
     private:
-        /// Initializes the UI.
-        void InitWindow();
-
         /// @return Name of the material script template according to the current parameters,
         /// or null string if no matches for current parameters.
         QString GetCurrentMaterialFilename() const;

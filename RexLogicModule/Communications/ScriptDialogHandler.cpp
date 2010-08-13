@@ -46,13 +46,12 @@ namespace RexLogic
             return;
         }
 
-        QString widget_name = "Message from object";
         ScriptDialogWidget* widget = new ScriptDialogWidget(request);
         dialogs_.append(widget);
         connect(widget, SIGNAL(OnClosed(int, QString)), this, SLOT(OnDialogClosed(int, QString)));
 
-        UiServices::UiWidgetProperties widget_properties(widget_name, UiServices::SceneWidget);
-        ui_module->GetInworldSceneController()->AddWidgetToScene(widget, widget_properties);
+        widget->setWindowTitle(tr("Message from object"));
+        ui_module->GetInworldSceneController()->AddWidgetToScene(widget);
         ui_module->GetInworldSceneController()->ShowProxyForWidget(widget);
     }
 

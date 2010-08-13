@@ -28,7 +28,46 @@ MaterialWizard::MaterialWizard(QWidget *parent) :
     currentOptions_(Material_None),
     scriptName_("")
 {
-    InitWindow();
+    QUiLoader loader;
+    QFile file("./data/ui/materialwizard.ui");
+    if (!file.exists())
+    {
+        OgreAssetEditorModule::LogError("Cannot find Material Wizard .ui file.");
+        return;
+    }
+
+    // Get pointers to widgets.
+    mainWidget_ = loader.load(&file, this);
+    file.close();
+
+    QVBoxLayout *layout = new QVBoxLayout(this);
+    layout->addWidget(mainWidget_);
+    layout->setContentsMargins(0, 0, 0, 0);
+    setLayout(layout);
+
+    // Connect parameter widgets' clicked signal to RefreshWidgets slot.
+    QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
+    QListIterator<QObject *> iter(widgetList);
+    while(iter.hasNext())
+    {
+        QObject *obj = iter.next();
+        if (obj->objectName().indexOf("Param") != -1)
+            QObject::connect(obj, SIGNAL(clicked(bool)), this, SLOT(RefreshWidgets()));
+    }
+
+    QPushButton *buttonCreate = mainWidget_->findChild<QPushButton *>("buttonCreate");
+    QPushButton *buttonCancel = mainWidget_->findChild<QPushButton *>("buttonCancel");
+    QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
+
+    QObject::connect(buttonCreate, SIGNAL(clicked(bool)), this, SLOT(Create()));
+    QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Close()));
+    QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
+
+    buttonCreate->setEnabled(false);
+
+    setWindowTitle(tr("Material Wizard"));
+
+    RefreshWidgets();
 }
 
 MaterialWizard::~MaterialWizard()
@@ -408,48 +447,6 @@ void MaterialWizard::ClearSelections()
 
     QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
     lineEditName->setText("");
-}
-
-void MaterialWizard::InitWindow()
-{
-    QUiLoader loader;
-    QFile file("./data/ui/materialwizard.ui");
-    if (!file.exists())
-    {
-        OgreAssetEditorModule::LogError("Cannot find Material Wizard .ui file.");
-        return;
-    }
-
-    // Get pointers to widgets.
-    mainWidget_ = loader.load(&file, this);
-    file.close();
-
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(mainWidget_);
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
-
-    // Connect parameter widgets' clicked signal to RefreshWidgets slot.
-    QList<QObject *> widgetList = mainWidget_->findChildren<QObject *>();
-    QListIterator<QObject *> iter(widgetList);
-    while(iter.hasNext())
-    {
-        QObject *obj = iter.next();
-        if (obj->objectName().indexOf("Param") != -1)
-            QObject::connect(obj, SIGNAL(clicked(bool)), this, SLOT(RefreshWidgets()));
-    }
-
-    QPushButton *buttonCreate = mainWidget_->findChild<QPushButton *>("buttonCreate");
-    QPushButton *buttonCancel = mainWidget_->findChild<QPushButton *>("buttonCancel");
-    QLineEdit *lineEditName = mainWidget_->findChild<QLineEdit *>("lineEditName");
-
-    QObject::connect(buttonCreate, SIGNAL(clicked(bool)), this, SLOT(Create()));
-    QObject::connect(buttonCancel, SIGNAL(clicked(bool)), this, SLOT(Close()));
-    QObject::connect(lineEditName, SIGNAL(textChanged(const QString &)), this, SLOT(ValidateScriptName(const QString &)));
-
-    buttonCreate->setEnabled(false);
-
-    RefreshWidgets();
 }
 
 QString MaterialWizard::GetCurrentMaterialFilename() const

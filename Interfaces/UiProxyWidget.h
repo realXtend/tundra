@@ -25,22 +25,26 @@ class UiProxyWidget : public QGraphicsProxyWidget
 
 public:
     /** Constructor.
-     *  @param widget The widget which will be embedded to the proxy widget.
+     *  @param  widget The widget which will be embedded to the proxy widget.
+     *  @param  flags Window flags. Qt::Dialog is used as default.
+     *          It creates movable proxy widget which has title bar and frames.
+     *          If you want add widget without title bar and frames, use Qt::Widget.
+     *          For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
      */
-    UiProxyWidget(QWidget *widget, const UiServices::UiWidgetProperties &properties);
+    UiProxyWidget(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// Destructor.
     ~UiProxyWidget();
 
-    /// Get this proxys widget properties
-    /// @return UiWidgetProperties.
-    UiServices::UiWidgetProperties GetWidgetProperties() const { return properties_; }
+    /** Sets opacity for unfocused state.
+     *  @param opacity Opacity value between 0 and 100.
+     */
+    void SetUnfocusedOpacity(int opacity);
 
-    /// Set new opacity
-    void SetUnfocusedOpacity(int new_opacity);
-
-    /// Set new show animation speed
-    void SetShowAnimationSpeed(int new_speed);
+    /** Sets show animation speed
+     *  @param speed Speed in milliseconds.
+     */
+    void SetShowAnimationSpeed(int speed);
 
     /// Brings to front in the scene, sets focus and shows this proxy widget.
     /// @todo Seems that isn't working properly.
@@ -49,6 +53,32 @@ public:
 public slots:
     /// Performs animated hide, if animations are enabled.
     void AnimatedHide();
+
+signals:
+    /// Emitted when the proxy is closed/hidden.
+    void Closed();
+
+    /** Emitted when visibility of the proxy changes.
+     *  @param visible Visiblity.
+     */
+    void Visible(bool visible);
+
+    /** Emitted when visibility of the proxy changes.
+     *  @param visible Visiblity.
+     */
+    void BringProxyToFrontRequest(QGraphicsProxyWidget*);
+
+    /** 
+     *  @param visible
+     *  @param visible
+     */
+    void ProxyMoved(QGraphicsProxyWidget *, const QPointF &);
+
+    /** 
+     *  @param
+     *  @param
+     */
+    void ProxyUngrabbed(QGraphicsProxyWidget *, const QPointF &);
 
 protected:
     /// QGraphicsProxyWidget override.
@@ -76,27 +106,21 @@ protected:
     void ungrabMouseEvent(QEvent *event);
 
 private slots:
+    /// Finishes (hides) proxy widget after animated hide.
     void FinishHide();
 
 private:
-    UiServices::UiWidgetProperties properties_;
+    ///
     QParallelAnimationGroup *animations_;
+
+    ///
     QPropertyAnimation *fade_animation_;
+
+    ///
     qreal unfocus_opacity_;
+
+    ///
     bool show_animation_enabled_;
-
-signals:
-    /// Emitted when the proxy is closed/hidden.
-    void Closed();
-
-    /** Emitted when visibility of the proxy changes.
-     *  @param visible Visiblity.
-     */
-    void Visible(bool visible);
-
-    void BringProxyToFrontRequest(QGraphicsProxyWidget*);
-    void ProxyMoved(QGraphicsProxyWidget*, const QPointF &);
-    void ProxyUngrabbed(QGraphicsProxyWidget*, const QPointF &);
 };
 
 #endif

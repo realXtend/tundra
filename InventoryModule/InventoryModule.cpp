@@ -408,8 +408,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     itemPropertiesWindows_[inventory_id] = wnd;
 
     // Add widget to UI scene
-    UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(
-        wnd, UiServices::UiWidgetProperties("Item Properties", UiServices::SceneWidget));
+    UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(wnd);
     QObject::connect(proxy, SIGNAL(Closed()), wnd, SLOT(Cancel()));
     proxy->show();
     ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
@@ -465,9 +464,9 @@ void InventoryModule::CreateInventoryWindow()
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-
+    UiServices::UiWidgetProperties props(QApplication::translate("InventoryWindow", "Inventory"));
     ui->AddWidgetToScene(inventoryWindow_);
-    ui->AddWidgetToMenu(inventoryWindow_, UiServices::UiWidgetProperties(TR("InventoryWindow", "Inventory"), UiServices::ModuleWidget));
+    ui->AddWidgetToMenu(inventoryWindow_, props);
 
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (ui_module)

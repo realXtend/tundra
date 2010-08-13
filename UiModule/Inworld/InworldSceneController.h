@@ -49,19 +49,19 @@ namespace UiServices
          *          If you want to set some other property/attribute value for the proxy, do it for the proxy
          *          after calling this function.
          */
-        UiProxyWidget *AddWidgetToScene(QWidget *widget);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
         //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
         /*! \param widget QWidget to be added to the scene.
          *  \param widget_properties Properties for the widget.
          *  \return UiProxyWidget if succesfull, otherwise 0
          */
-        UiProxyWidget* AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties);
+//        UiProxyWidget* AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties);
 
         //! Adds a already created UiProxyWidget into the scene.
         /*! Please prefer using AddWidgetToScene() with normal QWidget and properties instead of this directly.
          *  \param widget Proxy widget.
-        */
+         */
         bool AddProxyWidget(UiProxyWidget *widget);
 
         //! 

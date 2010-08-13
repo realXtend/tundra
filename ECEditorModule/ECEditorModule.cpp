@@ -130,8 +130,7 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
-        UiServices::UiWidgetProperties props("Entity-Component Editor", UiServices::ModuleWidget,
-            "./data/ui/images/menus/edbutton_OBJED_normal.png");
+        UiServices::UiWidgetProperties props("Entity-Component Editor", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 
         ui->AddWidgetToScene(editor_window_);
         ui->AddWidgetToMenu(editor_window_, props);
@@ -227,7 +226,7 @@ namespace ECEditor
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            ui->AddWidgetToScene(xmlEditor_, UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
+            ui->AddWidgetToScene(xmlEditor_);
         }
 
         xmlEditor_->SetEntity(entities);
@@ -250,7 +249,7 @@ namespace ECEditor
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            ui->AddWidgetToScene(xmlEditor_, UiServices::UiWidgetProperties(xmlEditor_->windowTitle(), UiServices::SceneWidget));
+            ui->AddWidgetToScene(xmlEditor_);
         }
 
         xmlEditor_->SetComponent(components);

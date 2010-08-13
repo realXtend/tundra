@@ -47,8 +47,8 @@ UploadProgressWindow::UploadProgressWindow(InventoryModule *owner, QWidget *pare
     if (!ui_module.get())
         return;
 
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(
-        this, UiServices::UiWidgetProperties("Upload Progress Window", UiServices::SceneWidget));
+    setWindowTitle(tr("Upload Progress Window"));
+    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
 }
 
 UploadProgressWindow::~UploadProgressWindow()

@@ -89,6 +89,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
+#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
@@ -1577,27 +1578,34 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 //}
 
 PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
-{        
+{
     if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
     {
         //std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
         PythonScript::self()->LogInfo("PythonScript's framework is not present!");
         return NULL;
     }
-    UiServices::WidgetType type;
+    Qt::WindowFlags type;
     if(!PyArg_ParseTuple(args, "i", &type))
     {
         return NULL;
     }
 
-    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("", type);
+    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
     return PythonScriptModule::GetInstance()->WrapQObject(prop);;
 }
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    
+    Foundation::UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    if (!ui)
+    {
+        // If this occurs, we're most probably operating in headless mode.
+        //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
+        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing.");
+        return NULL;
+    }
+
     PyObject* pywidget;
     PyObject* pyuiprops;
 
@@ -1624,23 +1632,18 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 
     QWidget* widget = (QWidget*)widget_ptr;
     UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
-    // If this occurs, we're most probably operating in headless mode.
-    if (ui_module.get() == 0)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing."); //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        return NULL;
-    }
 
-    if (uiproperty.GetWidgetName() == "Object Edit")
+    if (uiproperty.GetName() == "Object Edit")
         uiproperty.SetIcon("./data/ui/images/menus/edbutton_OBJED_normal.png");
-    else if (uiproperty.GetWidgetName() == "Local Scene")
+    else if (uiproperty.GetName() == "Local Scene")
         uiproperty.SetIcon("./data/ui/images/menus/edbutton_LSCENE_normal.png");
-    else if (uiproperty.GetWidgetName() == "Estate Management")
+    else if (uiproperty.GetName() == "Estate Management")
         uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
     else // Use Estate manager icon as default for all the rest for now.
         uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
 
-    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget, uiproperty);
+//    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget, uiproperty);
+    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget);
     return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);
 }
 

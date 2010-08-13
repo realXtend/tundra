@@ -98,11 +98,11 @@ namespace UiHelpers
         }
 
         // Add friend request manager widget to scene
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (ui_module.get())
+        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+        if (ui_module)
         {
-            UiServices::UiWidgetProperties widget_properties("Friend Requests", UiServices::SceneWidget);
-            UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(request_manager_widget_, widget_properties);
+            request_manager_widget_->setWindowTitle(tr("Friend Requests"));
+            UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(request_manager_widget_);
             proxy->show();
         }
     }

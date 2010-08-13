@@ -10,10 +10,11 @@
 
 namespace Environment
 {
-    PostProcessWidget::PostProcessWidget(QVector<QString> &effects) : QWidget(), handler_(0)
+    PostProcessWidget::PostProcessWidget(QVector<QString> &effects) : handler_(0)
     {
         widget_.setupUi(this);
         AddEffects(effects);
+        setWindowTitle(tr("Post-processing"));
     }
 
     PostProcessWidget::~PostProcessWidget()

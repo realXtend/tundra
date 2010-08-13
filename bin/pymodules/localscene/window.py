@@ -20,9 +20,9 @@ class ToolBarWindow():
         height = ui.size.height()
         
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
+        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
         uiprops.SetMenuGroup("Server Tools")
-        uiprops.widget_name_ = "Local Scene"
+        uiprops.name_ = "Local Scene"
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         self.proxywidget = r.createUiProxyWidget(ui, uiprops)
 

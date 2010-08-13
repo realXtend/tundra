@@ -73,12 +73,12 @@ namespace Environment
             if (!ui_module)
                 return;
 
-            UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"), UiServices::ModuleWidget);
-
+            UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"));
             ui_properties.SetIcon("./data/ui/images/menus/edbutton_POSTPR_normal.png");
             ui_properties.SetMenuGroup("World Tools");
 
-            ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_, ui_properties);
+            ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_);
+            ui_module->GetInworldSceneController()->AddWidgetToMenu(postprocess_dialog_, ui_properties);
         }
 
          environment_editor_ = new EnvironmentEditor(this);

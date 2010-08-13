@@ -168,14 +168,13 @@ namespace Communication
 
     void TelepathyIMModule::AddWidgetToUi(const QString &name)
     {
-        //! @todo Define UIServiceInterface...
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (ui_module.get())
+        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+        if (ui_module)
         {
             if (name == "IM")
             {
-                UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);
-                im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
+                im_ui_->setWindowTitle(name);
+                im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_);
                 if (im_ui_proxy_widget_)
                     ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
@@ -184,8 +183,8 @@ namespace Communication
 
     void TelepathyIMModule::RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget)
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (ui_module.get())
+        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+        if (ui_module)
             ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy_widget);
     }
 }

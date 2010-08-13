@@ -26,9 +26,9 @@ namespace UiServices
     {
     }
 
-    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget)
+    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags)
     {
-        return owner_->GetInworldSceneController()->AddWidgetToScene(widget);
+        return owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
     }
 
     void UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
@@ -36,23 +36,15 @@ namespace UiServices
         owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
-    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties)
-    {
-        return owner_->GetInworldSceneController()->AddWidgetToScene(widget, properties);
-    }
-
-    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, UiServices::WidgetType type)
-    {
-        // Create widget properties
-        UiWidgetProperties props(widget->windowTitle(), type);
-        props.SetIcon("./data/ui/images/menus/edbutton_MATWIZ_normal.png");
-
-        return owner_->GetInworldSceneController()->AddWidgetToScene(widget, props);
-    }
-
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const UiWidgetProperties &properties)
     {
         owner_->GetInworldSceneController()->AddWidgetToMenu(widget, properties);
+    }
+
+    void UiSceneService::AddWidgetToMenu(QWidget *widget)
+    {
+        UiWidgetProperties props(widget->windowTitle());
+        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, props);
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu)
@@ -63,8 +55,6 @@ namespace UiServices
     void UiSceneService::AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu)
     {
         owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(entry, menu, widget);
-//        owner_->GetInworldSceneController()->GetControlPanelManager()->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-//        owner_->GetInworldSceneController->GetPersonalWidget()->SetAvatarWidget(uiproxy);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)

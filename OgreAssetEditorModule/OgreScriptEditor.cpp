@@ -81,6 +81,8 @@ OgreScriptEditor::OgreScriptEditor(
 
     lineEditName_->setText(name_);
     buttonSaveAs_->setEnabled(false);
+    
+    setWindowTitle(tr("OGRE Script Editor"));
 }
 
 // virtual
