@@ -30,7 +30,6 @@ namespace UiServices
 {
     class InworldSceneController;
     class NotificationManager;
-    class UiProxyWidget;
     class UiModule;
 }
 

@@ -22,7 +22,7 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        NotificationBaseWidget(int hide_in_msec, QString message);
+        NotificationBaseWidget(int hide_in_msec, const QString &message);
         
     public slots:
         //! Starts the notification timer, called by NotificationManager
@@ -32,15 +32,15 @@ namespace CoreUi
         void Hide();
 
         //! Animates the notification to a new position, called by NotificationManager
-        void AnimateToPosition(QPointF end_pos);
+        void AnimateToPosition(const QPointF &end_pos);
 
         //! Getters
-        bool IsActive()                 { return is_active_; }
-        QString GetMessage()            { return message_; }
-        QString GetResultTitle()        { return result_title_; }
-        QString GetResult()             { return result_; }
-        QWidget *GetContentWidget()     { return content_widget_; }
-        QDateTime GetTimeStamp()        { return timestamp_; }
+        bool IsActive() const { return is_active_; }
+        QString GetMessage() const { return message_; }
+        QString GetResultTitle() const { return result_title_; }
+        QString GetResult() const { return result_; }
+        QWidget *GetContentWidget() const { return content_widget_; }
+        QDateTime GetTimeStamp() const { return timestamp_; }
 
         //! Setters
         void SetActive(bool active);

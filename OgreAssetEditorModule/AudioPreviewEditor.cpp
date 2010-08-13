@@ -6,7 +6,7 @@
 #include "OgreAssetEditorModule.h"
 
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
 #include "SoundServiceInterface.h"
@@ -234,7 +234,7 @@ namespace Naali
         QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
 
         // Add widget to UI via ui services module
-        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Audio: ") + objectName(), UiServices::SceneWidget));
+        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Audio: ") + objectName(), UiServices::SceneWidget));
         QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
         proxy->show();
         ui_module->GetInworldSceneController()->BringProxyToFront(proxy);

@@ -1,13 +1,17 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "MessageNotification.h"
 
 #include <QPlainTextEdit>
 
+#include "MemoryLeakCheck.h"
+
 namespace UiServices
 {
-    MessageNotification::MessageNotification(QString message, int hide_in_msec) :
+    MessageNotification::MessageNotification(const QString &message, int hide_in_msec) :
         CoreUi::NotificationBaseWidget(hide_in_msec, message)
     {
         // Init Ui

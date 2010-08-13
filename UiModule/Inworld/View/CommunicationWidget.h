@@ -10,10 +10,7 @@ class QStackedLayout;
 class QTextBrowser;
 class QGraphicsSceneMouseEvent;
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
+class UiProxyWidget;
 
 namespace Communications
 {
@@ -58,7 +55,7 @@ namespace CoreUi
         enum ViewMode { Normal, History };
 
     public slots:
-        void UpdateImWidget(UiServices::UiProxyWidget *im_proxy);
+        void UpdateImWidget(UiProxyWidget *im_proxy);
         void SetFocusToChat();
         
     protected:
@@ -94,7 +91,7 @@ namespace CoreUi
         QStackedLayout *stacked_layout_;
         QTextBrowser *history_view_text_edit_;
         NormalChatViewWidget *normal_view_widget_;
-        UiServices::UiProxyWidget *im_proxy_;
+        UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
         static bool in_world_speak_mode_on_;
 

@@ -13,7 +13,7 @@
 #include "Framework.h"
 
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
 #include <QUiLoader>

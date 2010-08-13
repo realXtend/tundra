@@ -20,7 +20,7 @@
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "ModuleManager.h"
 #include "UiModule.h"
 

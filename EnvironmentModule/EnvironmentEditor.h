@@ -9,7 +9,6 @@
 
 #include "InputServiceInterface.h"
 
-#include <QObject>
 #include <QPair>
 #include <QTimer>
 #include <QVector>
@@ -42,11 +41,6 @@ namespace Foundation
     class TextureInterface;
 }
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
-
 namespace Environment
 {
     class EnvironmentModule;
@@ -66,7 +60,7 @@ namespace Environment
     //! Fog: Change water/ground fog color and distances (start and end distances).
     //! Light: Change sunlight direction and color and change ambient light color.
     //! \ingroup EnvironmentModuleClient.
-    class EnvironmentEditor: public QObject
+    class EnvironmentEditor: public QWidget
     {
         Q_OBJECT
 
@@ -258,11 +252,11 @@ namespace Environment
         void TimeOfDayOverrideChanged(int state);
         void TimeValueChanged(int new_value);
 
-        void ChangeLanguage();
-
-
         void InitializeTabs();
-    
+
+    protected:
+        /// QWidget override.
+        void changeEvent(QEvent* e);
 
     private:
         Q_DISABLE_COPY(EnvironmentEditor);
@@ -301,7 +295,6 @@ namespace Environment
 
         //! Create a window for terrain editor.
         void InitEditorWindow();
-      
 
         //! Create a new heightmap image that will show heightmap values in grayscale.format.
         void CreateHeightmapImage();
@@ -348,9 +341,6 @@ namespace Environment
         //! Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
         ModifyLandAction action_;
 
-        //! Proxy Widget for ui
-        UiServices::UiProxyWidget *editorProxy_;
-
         QSlider *timeof_day_slider_;
 
         QColorDialog* sun_color_picker_;
@@ -381,7 +371,6 @@ namespace Environment
 
         //! Scene node that will hold spesific paint area mesh object.
         Ogre::SceneNode *manual_paint_node_;
-
     };
 }
 

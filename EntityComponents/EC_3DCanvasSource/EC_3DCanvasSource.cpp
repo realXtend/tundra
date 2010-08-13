@@ -12,7 +12,7 @@
 #include "ModuleManager.h"
 #include "Entity.h"
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 #include "LoggingFunctions.h"
 
@@ -198,10 +198,10 @@ void EC_3DCanvasSource::UpdateWidget()
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
                 content_widget_ = webwidget;
                 
-                QObject::connect(webwidget, SIGNAL(loadFinished( bool )), this, SLOT(RepaintCanvas()));
-                QObject::connect(webwidget, SIGNAL(loadProgress( int )), this, SLOT(RepaintCanvas()));
-                QObject::connect(webwidget, SIGNAL(linkClicked( const QUrl & )), this, SLOT(WebViewLinkClicked( const QUrl & )));
-                QObject::connect(webwidget->page(), SIGNAL(scrollRequested( int, int, const QRect & )), this, SLOT(RepaintCanvas()));
+                connect(webwidget, SIGNAL(loadFinished( bool )), this, SLOT(RepaintCanvas()));
+                connect(webwidget, SIGNAL(loadProgress( int )), this, SLOT(RepaintCanvas()));
+                connect(webwidget, SIGNAL(linkClicked( const QUrl & )), this, SLOT(WebViewLinkClicked( const QUrl & )));
+                connect(webwidget->page(), SIGNAL(scrollRequested( int, int, const QRect & )), this, SLOT(RepaintCanvas()));
             }
             else
             {

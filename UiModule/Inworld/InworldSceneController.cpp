@@ -7,11 +7,11 @@
 #include "ControlPanelManager.h"
 #include "Common/AnchorLayoutManager.h"
 #include "Menus/MenuManager.h"
-#include "View/UiProxyWidget.h"
 #include "View/CommunicationWidget.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
 
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
@@ -66,16 +66,18 @@ namespace UiServices
         SAFE_DELETE(docking_widget_);
     }
 
-    QGraphicsProxyWidget * InworldSceneController::AddWidgetToScene(QWidget *widget)
+    UiProxyWidget *InworldSceneController::AddWidgetToScene(QWidget *widget)
     {
         /*  QGraphicsProxyWidget maintains symmetry for the following states:
          *  state, enabled, visible, geometry, layoutDirection, style, palette,
          *  font, cursor, sizeHint, getContentsMargins and windowTitle
          */
 
-        QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, widget->windowFlags());
-        proxy->setWidget(widget);
+        // Create widget properties
+        UiWidgetProperties props(widget->windowTitle(), SceneWidget);
+        props.SetIcon("./data/ui/images/menus/edbutton_MATWIZ_normal.png");
 
+        UiProxyWidget *proxy = new UiProxyWidget(widget, props);
         if (!AddProxyWidget(proxy))
         {
             SAFE_DELETE(proxy);
@@ -89,11 +91,6 @@ namespace UiServices
             connect(proxy, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
 
         return proxy;
-    }
-
-    void InworldSceneController::AddWidgetToScene(QGraphicsProxyWidget *widget)
-    {
-        AddProxyWidget(widget);
     }
 
     UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties)
@@ -114,7 +111,7 @@ namespace UiServices
         return proxy;
     }
 
-    bool InworldSceneController::AddProxyWidget(QGraphicsProxyWidget *widget)
+    bool InworldSceneController::AddProxyWidget(UiProxyWidget *widget)
     {
         // Add to scene
         if (widget->isVisible())
@@ -131,31 +128,43 @@ namespace UiServices
         if (!all_proxy_widgets_in_scene_.contains(widget))
             all_proxy_widgets_in_scene_.append(widget);
 
-        // Compability for the UiProxyWidget class
-        UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
-        if (uiproxy)
-        {
-            UiWidgetProperties properties = uiproxy->GetWidgetProperties();
-            if (properties.IsShownInToolbar())
-            {
-                QString widget_name = properties.GetWidgetName();
-                ///\todo This is awful, get rid of this.
-                if (widget_name == "Inventory")
-                    control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-                else if (widget_name == "Avatar Editor")
-                    control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
-                else
-                    menu_manager_->AddMenuItem(uiproxy, properties);
-            }
-
-            connect(uiproxy, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*) ), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
-            connect(uiproxy, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, QPointF)));
-            connect(uiproxy, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, QPointF)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, QPointF)));
-            connect(uiproxy, SIGNAL(Closed()), SLOT(ProxyClosed()));
-            connect(uiproxy, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
-        }
+        connect(widget, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*)), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
+        connect(widget, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, const &QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, const QPointF &)));
+        connect(widget, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, const QPointF &)));
+        connect(widget, SIGNAL(Closed()), SLOT(ProxyClosed()));
+        connect(widget, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
 
         return true;
+    }
+
+    void InworldSceneController::AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties)
+    {
+        QString widget_name = properties.GetWidgetName();
+        ///\todo This string comparison is awful, get rid of this.
+        if (widget_name == "Inventory")
+        {
+            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
+            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
+        }
+        else if (widget_name == "Avatar Editor")
+        {
+            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
+            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
+        }
+        else
+            menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), properties);
+    }
+
+    void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const UiServices::UiWidgetProperties &properties)
+    {
+        QString widget_name = properties.GetWidgetName();
+        ///\todo This string comparison is awful, get rid of this.
+        if (widget_name == "Inventory")
+            control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
+        else if (widget_name == "Avatar Editor")
+            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
+        else
+            menu_manager_->AddMenuItem(widget, properties);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
@@ -320,7 +329,7 @@ namespace UiServices
         }
     }
 
-    void InworldSceneController::ProxyWidgetUngrabed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
+    void InworldSceneController::ProxyWidgetUngrabbed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
     {
         bool changes = false;
         if (proxy_pos.x() + proxy_widget->size().width() > inworld_scene_->width() - DOCK_WIDTH)

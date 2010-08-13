@@ -27,7 +27,7 @@ namespace PythonScript
         // init PythonQt, but not Python 'cause PythonScriptModule has already done that.
         PythonQt::init(PythonQt::PythonAlreadyInitialized);
         PythonQt_QtAll::init();
-        //PythonQt::self()->registerClass(&UiServices::UiProxyWidget::staticMetaObject);
+        //PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
         PythonQt::self()->registerClass(&UiServices::UiWidgetProperties::staticMetaObject);
         // get the __main__ python module
         //PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();

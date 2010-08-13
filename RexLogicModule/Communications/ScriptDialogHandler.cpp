@@ -10,7 +10,7 @@
 #include "ModuleManager.h"
 #include "WorldStream.h"
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "Inworld/InworldSceneController.h"
 
 #include "MemoryLeakCheck.h"

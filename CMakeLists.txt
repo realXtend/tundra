@@ -29,7 +29,7 @@ SET (HYDRAX 0)
 SET (WINDOWS_APP 0)
 
 # Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
-SET (DYNAMIC_LOGIN_SCENE 0)
+SET (DYNAMIC_LOGIN_SCENE 1)
 
 # In Visual Studio, use unicode character set
 if (MSVC)

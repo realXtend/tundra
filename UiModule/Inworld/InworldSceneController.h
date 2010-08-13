@@ -16,6 +16,8 @@ namespace Foundation
     class Framework;
 }
 
+class UiProxyWidget;
+
 namespace UiServices
 {
     class UiWidgetProperties;
@@ -42,14 +44,12 @@ namespace UiServices
 
          *  \note   QGraphicsProxyWidget maintains symmetry for the following states:
          *          state, enabled, visible, geometry, layoutDirection, style, palette,
-         *          font, cursor, sizeHint, getContentsMargins and windowTitle. If you want to
-         *          set some other property/attribute value for the proxy, do it for the proxy
+         *          font, cursor, sizeHint, getContentsMargins and windowTitle.
+         *          GetContentsMargins" and windowTitle are synchronized only once when creating the proxy.
+         *          If you want to set some other property/attribute value for the proxy, do it for the proxy
          *          after calling this function.
          */
-        QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget);
-
-        //! Adds a Qt proxy widget to the current scene.
-        void AddWidgetToScene(QGraphicsProxyWidget *widget);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget);
 
         //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
         /*! \param widget QWidget to be added to the scene.
@@ -62,7 +62,20 @@ namespace UiServices
         /*! Please prefer using AddWidgetToScene() with normal QWidget and properties instead of this directly.
          *  \param widget Proxy widget.
         */
-        bool AddProxyWidget(QGraphicsProxyWidget *widget);
+        bool AddProxyWidget(UiProxyWidget *widget);
+
+        //! 
+        /*! 
+         *  \param widget Widget.
+         *  \param properties Widget properties.
+         */
+        void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties);
+
+        /*! This is an overloaded function.
+         *  \param widget Proxy widget.
+         *  \param properties Widget properties.
+         */
+        void AddWidgetToMenu(UiProxyWidget *widget, const UiServices::UiWidgetProperties &properties);
 
         //! Remove a proxy widget from scene if it exist there
         /*! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
@@ -117,13 +130,13 @@ namespace UiServices
         //! \param new_rect New scene rectangle.
         void ApplyNewProxyPosition(const QRectF &new_rect);
 
-        //Slot triggered by UiProxyWidget ProxyMoved() signal.
+        //! 
         void ProxyWidgetMoved(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos);
 
-        //Slot triggered by UiProxyWidget ProxyUngrabed() signal.
-        void ProxyWidgetUngrabed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos);
+        //! 
+        void ProxyWidgetUngrabbed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos);
 
-        //Slot triggered by UiProxyWidget Closed() or Visible() signals
+        //! 
         void ProxyClosed();
 
     private:

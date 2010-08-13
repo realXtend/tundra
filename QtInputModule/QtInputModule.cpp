@@ -7,10 +7,9 @@
 #include "QtInputModule.h"
 #include "KeyBindingsConfigWindow.h"
 #include "ConsoleCommandServiceInterface.h"
-//#include "UiModule.h"
-//#include "Inworld/View/UiProxyWidget.h"
-//#include "Inworld/InworldSceneController.h"
+
 #include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 
 #include <QGraphicsItem>
 #include <QGraphicsView>
@@ -71,7 +70,7 @@ void QtInputModule::ShowBindingsWindow()
 
     configWindow = new KeyBindingsConfigWindow(framework_);
 
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(configWindow, UiServices::UiWidgetProperties("Actions", UiServices::SceneWidget));
+    UiProxyWidget *proxy = ui->AddWidgetToScene(configWindow, UiServices::UiWidgetProperties(tr("Actions"), UiServices::SceneWidget));
 
     QPushButton *btn = configWindow->findChild<QPushButton*>("pushButtonCancel");
     QObject::connect(btn, SIGNAL(pressed()), this, SLOT(BindingsWindowClosed()));

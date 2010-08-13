@@ -5,7 +5,7 @@
 
 #include <QWidget>
 
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "ui_ChangeThemeWidget.h"
 
 namespace CoreUi

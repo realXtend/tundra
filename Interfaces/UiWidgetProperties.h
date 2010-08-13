@@ -41,7 +41,7 @@ namespace UiServices
         //read-write now for the workaround in py for constructors not working there yet
         //Q_PROPERTY(QString widget_name_ READ GetWidgetName)
         Q_PROPERTY(Qt::WindowFlags window_type_ READ GetWindowStyle)
-        Q_PROPERTY(bool show_in_toolbar_ READ IsShownInToolbar)
+//        Q_PROPERTY(bool show_in_toolbar_ READ IsShownInToolbar)
         // READ & WRITE
 //        Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
         Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
@@ -64,16 +64,16 @@ namespace UiServices
             {
             case CoreLayoutWidget:
                 window_type_ = Qt::Widget;
-                show_in_toolbar_ = false;
+//                show_in_toolbar_ = false;
                 break;
             case ModuleWidget:
                 window_type_ = Qt::Dialog;
-                show_in_toolbar_ = true;
+//                show_in_toolbar_ = true;
                 menu_group_ = "Root";
                 break;
             case SceneWidget:
                 window_type_ = Qt::Dialog;
-                show_in_toolbar_ = false;
+//                show_in_toolbar_ = false;
                 break;
             }
         }
@@ -83,7 +83,7 @@ namespace UiServices
             widget_type_(rhs.GetWidgetType()),
             widget_name_(rhs.GetWidgetName()),
             window_type_(rhs.GetWindowStyle()),
-            show_in_toolbar_(rhs.IsShownInToolbar()),
+//            show_in_toolbar_(rhs.IsShownInToolbar()),
             menu_group_(rhs.GetMenuGroup()),
             icon_(rhs.GetIcon())
         {
@@ -98,7 +98,7 @@ namespace UiServices
         const QString GetWidgetName() const { return widget_name_; }
         const Qt::WindowFlags GetWindowStyle() const { return window_type_; }
 //        const QPointF GetPosition() const { return position_; }
-        bool IsShownInToolbar() const { return show_in_toolbar_; }
+//        bool IsShownInToolbar() const { return show_in_toolbar_; }
         QString GetIcon() const { return icon_; }
         QString GetMenuGroup() const { return menu_group_; }
 
@@ -113,7 +113,7 @@ namespace UiServices
         Qt::WindowFlags window_type_;
         QString widget_name_;
 //        QPointF position_;
-        bool show_in_toolbar_;
+//        bool show_in_toolbar_;
         QString icon_;
         QString menu_group_; 
     };

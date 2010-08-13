@@ -28,7 +28,7 @@
 #include "ResourceHandler.h"
 #include "OgreTextureResource.h"
 #include "UiServiceInterface.h"
-
+#include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
 
 #include <utility>
@@ -107,7 +107,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     if (profilerWindow_)
         return;
 
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    Foundation::UiServicePtr *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (!ui)
         return;
 
@@ -121,23 +121,15 @@ void DebugStatsModule::AddProfilerWidgetToUi()
 //    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, props);
 //    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_, UiServices::ModuleWidget);
 
-    QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
-    proxy->resize(650, 530);
-    connect(proxy, SIGNAL(visibleChanged()), SLOT(StartProfiling()));
+    profilerWindow_->resize(650, 530);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
+    connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
     ui->AddWidgetToMenu(profilerWindow_, props);
 }
 
-void DebugStatsModule::StartProfiling()
+void DebugStatsModule::StartProfiling(bool visible)
 {
-    if (!profilerWindow_)
-        return;
-
-    QGraphicsProxyWidget *proxy = dynamic_cast<QGraphicsProxyWidget *>(sender());
-    if (!proxy)
-        return;
-
-    bool visible = proxy->isVisible();
     profilerWindow_->SetVisibility(visible);
     // -1 means start updating currently selected tab
     if (visible)

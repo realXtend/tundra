@@ -34,7 +34,7 @@
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
@@ -408,7 +408,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     itemPropertiesWindows_[inventory_id] = wnd;
 
     // Add widget to UI scene
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(
+    UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(
         wnd, UiServices::UiWidgetProperties("Item Properties", UiServices::SceneWidget));
     QObject::connect(proxy, SIGNAL(Closed()), wnd, SLOT(Cancel()));
     proxy->show();
@@ -457,26 +457,25 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::CreateInventoryWindow()
 {
-
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-    if (!ui_module)
-        return;
-/*
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return;
-*/
+
     SAFE_DELETE(inventoryWindow_);
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    ui_module->GetInworldSceneController()->AddWidgetToScene(inventoryWindow_,
-        UiServices::UiWidgetProperties(TR("InventoryWindow", "Inventory"), UiServices::ModuleWidget));
 
-//    ui->AddWidgetToScene(inventoryWindow_);
+    ui->AddWidgetToScene(inventoryWindow_);
+    ui->AddWidgetToMenu(inventoryWindow_, UiServices::UiWidgetProperties(TR("InventoryWindow", "Inventory"), UiServices::ModuleWidget));
 
-    connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
-        SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
+    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+    if (ui_module)
+    {
+        connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
+            SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
+    }
+
 /*
     if (uploadProgressWindow_)
         SAFE_DELETE(uploadProgressWindow_);

@@ -69,7 +69,8 @@ namespace DebugStats
         void AddProfilerWidgetToUi();
 
         /// Starts profiling if the profiler (proxy) widget is visible.
-        void StartProfiling();
+        /// @param bool visible Visibility.
+        void StartProfiling(bool visible);
 
     private:
         Q_DISABLE_COPY(DebugStatsModule);

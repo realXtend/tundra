@@ -5,7 +5,8 @@
  *  @brief  Interface for Naali modules.
  *          See @ref ModuleArchitecture for details.
  */
-
+ 
+#include "StableHeaders.h"
 #include "Framework.h"
 #include "ModuleInterface.h"
 #include "ServiceManager.h"

@@ -25,21 +25,17 @@ namespace CoreUi
         CheckStyle(false, "inventoryToggle");
     }
 
-    // Public
-
-    void PersonalWidget::SetAvatarWidget(UiServices::UiProxyWidget *avatar_widget)
+    void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
     {
         avatar_widget_ = avatar_widget;
         connect(avatar_widget_, SIGNAL(Visible(bool)), SLOT(AvatarVisibilityChanged(bool)));
     }
 
-    void PersonalWidget::SetInventoryWidget(UiServices::UiProxyWidget *inventory_widget)
+    void PersonalWidget::SetInventoryWidget(UiProxyWidget *inventory_widget)
     {
         inventory_widget_ = inventory_widget;
         connect(inventory_widget_, SIGNAL(Visible(bool)), SLOT(InventoryVisibilityChanged(bool)));
     }
-
-    // Private
 
     void PersonalWidget::AvatarToggle()
     {

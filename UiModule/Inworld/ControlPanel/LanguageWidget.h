@@ -9,7 +9,7 @@
 #include <QMap>
 #include <QListWidgetItem>
 
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "ui_LanguageWidget.h"
 
 namespace CoreUi

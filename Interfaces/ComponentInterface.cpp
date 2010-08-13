@@ -5,6 +5,8 @@
  *  @brief  Base class for all components. Inherit from this class when creating new components.
  */
 
+#include "StableHeaders.h"
+
 #include "ComponentInterface.h"
 #include "AttributeInterface.h"
 
