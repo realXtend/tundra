@@ -146,10 +146,6 @@ void DebugStatsModule::StartProfiling()
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
 {
-/*
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
-*/
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
@@ -157,7 +153,6 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
     // If the window is already created, bring it to front.
     if (profilerWindow_)
     {
-//        ui_module->GetInworldSceneController()->BringProxyToFront(profilerWindow_);
         ui->BringWidgetToFront(profilerWindow_);
         return Console::ResultSuccess();
     }
@@ -167,16 +162,12 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-/*    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
-*/
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
 
     if (participantWindow_)
     {
-//        ui_module->GetInworldSceneController()->BringProxyToFront(participantWindow_);
         ui->BringWidgetToFront(participantWindow_);
         return Console::ResultSuccess();
     }
@@ -184,19 +175,10 @@ Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVecto
     participantWindow_ = new ParticipantWindow(framework_);
     participantWindow_->move(100, 100);
     participantWindow_->setWindowFlags(Qt::Dialog);
-/*
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(participantWindow_,
-        UiServices::UiWidgetProperties(QApplication::translate("ParticipantWindow", "Participants"), UiServices::SceneWidget));
-    QObject::connect(proxy, SIGNAL(Closed()), participantWindow_, SLOT(deleteLater()));
 
-    UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(participantWindow_,
-*/
     QGraphicsProxyWidget *proxy = ui->AddWidgetToScene(participantWindow_);
     ui->BringWidgetToFront(participantWindow_);
-    proxy->show();
-
-//    if (current_world_stream_)
-//        participantWindow_->SetWorldStreamPtr(current_world_stream_);
+//    proxy->show();
 
     return Console::ResultSuccess();
 }

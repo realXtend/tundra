@@ -119,6 +119,12 @@ namespace UiServices
         // Add to scene
         if (widget->isVisible())
             widget->hide();
+
+        // If no position has been set for widget, use default one so that the window's title
+        // bar - or any other critical part, doesn't go outside the view.
+        if (widget->pos() == QPointF())
+            widget->setPos(10.0, 200.0);
+
         inworld_scene_->addItem(widget);
 
         // Add to internal control list

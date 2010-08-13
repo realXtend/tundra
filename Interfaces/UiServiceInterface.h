@@ -68,6 +68,8 @@ namespace Foundation
         /** Adds widget to menu.
          *  @param widget Widget.
          *  @param properties Widget properties.
+         *
+         *  @note Doesn't add the widget to the scene.
          */
         virtual void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
 
@@ -76,6 +78,8 @@ namespace Foundation
          *  @param menu Name of the menu entry.
          *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is
          *  added to the root menu.
+         *
+         *  @note Doesn't add the widget to the scene.
          */
         virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "") = 0;
 

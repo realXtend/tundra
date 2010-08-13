@@ -43,7 +43,7 @@ namespace UiServices
         Q_PROPERTY(Qt::WindowFlags window_type_ READ GetWindowStyle)
         Q_PROPERTY(bool show_in_toolbar_ READ IsShownInToolbar)
         // READ & WRITE
-        Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
+//        Q_PROPERTY(QPointF position_ READ GetPosition WRITE SetPosition)
         Q_PROPERTY(QString widget_name_ READ GetWidgetName WRITE SetWidgetName)
         Q_ENUMS(WidgetType)
 
@@ -57,7 +57,6 @@ namespace UiServices
             const QString &icon = "./data/ui/images/menus/edbutton_LSCENE_normal.png") :
             widget_name_(name),
             widget_type_(type),
-            position_(QPointF(10.0, 200.0)),
             icon_(icon),
             menu_group_("")
         {
@@ -85,7 +84,6 @@ namespace UiServices
             widget_name_(rhs.GetWidgetName()),
             window_type_(rhs.GetWindowStyle()),
             show_in_toolbar_(rhs.IsShownInToolbar()),
-            position_(rhs.GetPosition()),
             menu_group_(rhs.GetMenuGroup()),
             icon_(rhs.GetIcon())
         {
@@ -99,13 +97,13 @@ namespace UiServices
         WidgetType GetWidgetType() const { return widget_type_; }
         const QString GetWidgetName() const { return widget_name_; }
         const Qt::WindowFlags GetWindowStyle() const { return window_type_; }
-        const QPointF GetPosition() const { return position_; }
+//        const QPointF GetPosition() const { return position_; }
         bool IsShownInToolbar() const { return show_in_toolbar_; }
         QString GetIcon() const { return icon_; }
         QString GetMenuGroup() const { return menu_group_; }
 
         //! Setters for properties
-        void SetPosition(const QPointF &position) { position_ = position; }
+//        void SetPosition(const QPointF &position) { position_ = position; }
         void SetWidgetName(const QString &newname) { widget_name_ = newname; }
         void SetMenuGroup(const QString &menu_group) { menu_group_ = menu_group; }
         void SetIcon(const QString &icon) { icon_ = icon; }
@@ -114,7 +112,7 @@ namespace UiServices
         WidgetType widget_type_;
         Qt::WindowFlags window_type_;
         QString widget_name_;
-        QPointF position_;
+//        QPointF position_;
         bool show_in_toolbar_;
         QString icon_;
         QString menu_group_; 
