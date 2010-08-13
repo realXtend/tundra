@@ -13,6 +13,7 @@
 #include <QPair>
 #include <QTimer>
 #include <QVector>
+#include <QWidget>
 
 class QImage;
 class QColor;
@@ -124,6 +125,8 @@ namespace Environment
         void InitSkyTabWindow();
         void InitFogTabWindow();
         void InitAmbientTabWindow();
+    
+        bool Showed() { return editor_widget_->isVisible(); }
 
     public slots:
         //! Toggle between Paint2D and Paint3D mode.
@@ -258,6 +261,7 @@ namespace Environment
         void ChangeLanguage();
 
 
+        void InitializeTabs();
     
 
     private:
@@ -336,6 +340,7 @@ namespace Environment
 
         //! Main widget for editor
         QWidget *editor_widget_;
+        //Editor* editor_widget_;
 
         //! Brush size (small, medium and large).
         BrushSize brush_size_;

@@ -247,6 +247,7 @@ namespace Environment
 
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
+
     };
 }
 
