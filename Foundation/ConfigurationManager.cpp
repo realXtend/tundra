@@ -4,6 +4,8 @@
 #include "ConfigurationManager.h"
 #include "CoreException.h"
 
+#include <QDir>
+#include <QString>
 
 namespace Foundation
 {
@@ -317,10 +319,14 @@ namespace Foundation
                    
 
                     std::string search_group = val_iter->first.first;
-                    
-                    
-                    /// \todo HACK assure that path end has separator.
+                   
+                    QString fileName = QString(file_name_encoding_.c_str()) + QString(search_group.c_str()) + QString(".xml");
+                    QDir dir(filePath.directory_string().c_str());
+                    QString new_configuration_file = dir.filePath(fileName);
 
+                
+/*
+                    /// \todo HACK assure that path end has separator.
                     std::string c = filePath.string().substr(filePath.string().size()-1);
                     if ( c != std::string("/") && c != std::string("\\"))
                     {
@@ -334,7 +340,7 @@ namespace Foundation
                     // END HACK
                     
                     fs::path new_configuration_file = filePath.directory_string() + file_name_encoding_ + search_group + ".xml";
-                    
+*/                    
                     try
                     {
                         pConfiguration = new Poco::Util::XMLConfiguration;
@@ -368,7 +374,8 @@ namespace Foundation
                     }
                   
                     {
-                        std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
+                        //std::fstream stream(new_configuration_file.file_string().c_str(), std::ios::out);
+                        std::fstream stream(new_configuration_file.toStdString().c_str(), std::ios::out);
                         pConfiguration->save(stream);
                     }
                     
