@@ -26,7 +26,7 @@
 #include "AssetInterface.h"
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -75,7 +75,7 @@ void OgreAssetEditorModule::PostInitialize()
             "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         props.SetMenuGroup("World Tools");
 
-        UiServices::UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, props);
+        UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, props);
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
 

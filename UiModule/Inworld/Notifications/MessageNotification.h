@@ -10,12 +10,9 @@ namespace UiServices
 {
     class UI_MODULE_API MessageNotification : public CoreUi::NotificationBaseWidget
     {
-
-    Q_OBJECT
-
+        Q_OBJECT
     public:
-        MessageNotification(QString message, int hide_in_msec = 5000);
-
+        MessageNotification(const QString &message, int hide_in_msec = 5000);
     };
 }
 

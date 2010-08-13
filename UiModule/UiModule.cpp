@@ -16,7 +16,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "Inworld/Console/UiConsoleManager.h"
 #include "Inworld/Notifications/MessageNotification.h"

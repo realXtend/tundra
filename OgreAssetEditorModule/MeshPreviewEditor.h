@@ -3,19 +3,15 @@
 #ifndef incl_OgreAssetEditorModule_MeshPreviewEditor_h
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
-#include <RexTypes.h>
+#include "RexTypes.h"
+#include "InputServiceInterface.h"
+#include "QtInputMouseEvent.h"
+#include "OgreMeshResource.h"
+
 #include <QWidget>
 #include <QLabel>
 #include <QImage>
-#include <UiModule.h>
-#include <QOgreWorldView.h>
-#include "QOgreUIView.h"
-#include <InputServiceInterface.h>
-#include <QtInputMouseEvent.h>
 
-#include "OgreAssetEditorModule.h"
-#include <OgreRenderingModule.h>
-#include "OgreMeshResource.h"
 #include <OgreLight.h>
 
 #include <boost/shared_ptr.hpp>
@@ -23,6 +19,8 @@
 QT_BEGIN_NAMESPACE
 class QPushButton;
 QT_END_NAMESPACE
+
+class UiProxyWidget;
 
 namespace Foundation
 {
@@ -39,6 +37,11 @@ namespace Resource
     }
 }
 
+namespace OgreRenderer
+{
+    class Renderer;
+    typedef boost::shared_ptr<OgreRenderer::Renderer> RendererPtr;
+}
 
 namespace Naali
 {
@@ -74,8 +77,6 @@ namespace Naali
                            QWidget *parent = 0);
         virtual ~MeshPreviewEditor();
 
-     
-
         void HandleResouceReady(Resource::Events::ResourceReady *res);
         void RequestMeshAsset(const QString &asset_id);
         QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
@@ -106,7 +107,7 @@ namespace Naali
         QPushButton *okButton_;
         QString assetId_;
         request_tag_t request_tag_;
-        UiServices::UiProxyWidget *proxy_; 
+        UiProxyWidget *proxy_; 
         QPointF lastPos_;
         int camAlphaAngle_;
         QString mesh_id_;

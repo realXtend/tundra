@@ -11,7 +11,7 @@
 
 namespace CoreUi
 {
-    NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec, QString message) :
+    NotificationBaseWidget::NotificationBaseWidget(int hide_in_msec, const QString &message) :
         QGraphicsProxyWidget(0, Qt::Widget),
         internal_widget_(new QWidget()),
         content_widget_(0),
@@ -117,7 +117,7 @@ namespace CoreUi
         TimedOut();
     }
 
-    void NotificationBaseWidget::AnimateToPosition(QPointF end_pos)
+    void NotificationBaseWidget::AnimateToPosition(const QPointF &end_pos)
     {
         move_animation_->setStartValue(scenePos());
         move_animation_->setEndValue(end_pos);

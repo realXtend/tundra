@@ -11,10 +11,7 @@
 
 #include <QWidget>
 
-namespace UiServices
-{
-    class UiProxyWidget;
-}
+class UiProxyWidget;
 
 QT_BEGIN_NAMESPACE
 class QVBoxLayout;
@@ -57,7 +54,7 @@ namespace Inventory
         QWidget *mainWidget_;
 
         /// Proxy widget.
-        UiServices::UiProxyWidget *proxyWidget_;
+        UiProxyWidget *proxyWidget_;
 
         /// Layout.
         QVBoxLayout *layout_;

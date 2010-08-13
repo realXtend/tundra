@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "AnchorLayoutManager.h"
 
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 
 #include <QGraphicsScene>
 #include <QGraphicsWidget>

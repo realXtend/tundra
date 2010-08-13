@@ -13,7 +13,7 @@
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "UiStateMachine.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "Inworld/Menus/MenuManager.h"
 
 namespace UiServices
@@ -26,36 +26,33 @@ namespace UiServices
     {
     }
 
-    QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget)
+    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget)
     {
         return owner_->GetInworldSceneController()->AddWidgetToScene(widget);
     }
 
-    void UiSceneService::AddWidgetToScene(QGraphicsProxyWidget *widget)
+    void UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
         owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
-    QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties)
+    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties)
     {
-        return dynamic_cast<QGraphicsProxyWidget *>(owner_->GetInworldSceneController()->AddWidgetToScene(widget, properties));
+        return owner_->GetInworldSceneController()->AddWidgetToScene(widget, properties);
     }
 
-    QGraphicsProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, UiServices::WidgetType type)
+    UiProxyWidget *UiSceneService::AddWidgetToScene(QWidget *widget, UiServices::WidgetType type)
     {
         // Create widget properties
         UiWidgetProperties props(widget->windowTitle(), type);
         props.SetIcon("./data/ui/images/menus/edbutton_MATWIZ_normal.png");
 
-        // Create proxy and add it to the scene.
-        UiProxyWidget *proxy = new UiProxyWidget(widget, props);
-        owner_->GetInworldSceneController()->AddWidgetToScene(proxy);
-        return dynamic_cast<QGraphicsProxyWidget *>(proxy);
+        return owner_->GetInworldSceneController()->AddWidgetToScene(widget, props);
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const UiWidgetProperties &properties)
     {
-        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), properties);
+        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, properties);
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu)

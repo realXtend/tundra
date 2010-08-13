@@ -4,7 +4,6 @@
 #include "DebugOperatorNew.h"
 
 #include "ControlPanelManager.h"
-//#include "UiDefines.h"
 
 #include "Common/AnchorLayoutManager.h"
 #include "Common/UiAction.h"
@@ -21,11 +20,12 @@
 #include "Inworld/ControlPanel/ChangeThemeWidget.h"
 
 #include <QAction>
+
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
-    ControlPanelManager::ControlPanelManager(QObject *parent, CoreUi::AnchorLayoutManager *layout_manager) :
+    ControlPanelManager::ControlPanelManager(QObject *parent, AnchorLayoutManager *layout_manager) :
         QObject(parent),
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
@@ -166,9 +166,7 @@ namespace CoreUi
         if (visible)
             settings_widget_->show();
         else
-        {
             settings_widget_->AnimatedHide();
-        }
     }
 
     void ControlPanelManager::ToggleTeleportVisibility(bool visible)
@@ -176,11 +174,8 @@ namespace CoreUi
         if (visible)
             teleport_widget_->show();
         else
-        {
             teleport_widget_->AnimatedHide();
-        }
     }
-
 
     void ControlPanelManager::CheckSettingsButtonStyle()
     {
@@ -199,7 +194,7 @@ namespace CoreUi
         action_map_[type] = action;
     }
 
-    ControlPanelButton *ControlPanelManager::GetButtonForType(UiServices::ControlButtonType type)
+    ControlPanelButton *ControlPanelManager::GetButtonForType(UiServices::ControlButtonType type) const
     {
         if (backdrop_area_buttons_map_.contains(type))
             return backdrop_area_buttons_map_[type];
@@ -207,12 +202,12 @@ namespace CoreUi
             return 0;
     }
 
-    qreal ControlPanelManager::GetContentHeight()
+    qreal ControlPanelManager::GetContentHeight() const
     { 
         return backdrop_widget_->GetContentHeight();
     }
 
-    qreal ControlPanelManager::GetContentWidth() 
+    qreal ControlPanelManager::GetContentWidth() const
     { 
         return backdrop_widget_->GetContentWidth();
     }

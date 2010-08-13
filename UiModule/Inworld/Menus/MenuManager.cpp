@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "MenuManager.h"
 #include "Common/AnchorLayoutManager.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "ActionNode.h"
 #include "GroupNode.h"
 
@@ -171,7 +171,7 @@ namespace CoreUi
         if (!controlled_widget)
             return;
 
-        UiServices::UiProxyWidget *naali_proxy = dynamic_cast<UiServices::UiProxyWidget *>(controlled_widget);
+        UiProxyWidget *naali_proxy = dynamic_cast<UiProxyWidget *>(controlled_widget);
         if (!naali_proxy)
         {
             if (!controlled_widget->isVisible())

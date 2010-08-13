@@ -28,7 +28,9 @@ class ToolBarWindow():
 
         if not uism.AddProxyWidget(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
-            
+
+        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+
         self.inputQueue = queue
         self.endApplication = endApplication
         pass

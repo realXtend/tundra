@@ -5,7 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "ui_PersonalWidget.h"
 
 namespace CoreUi
@@ -19,8 +19,8 @@ namespace CoreUi
         PersonalWidget();
 
     public slots:
-        void SetAvatarWidget(UiServices::UiProxyWidget *avatar_widget);
-        void SetInventoryWidget(UiServices::UiProxyWidget *inventory_widget);
+        void SetAvatarWidget(UiProxyWidget *avatar_widget);
+        void SetInventoryWidget(UiProxyWidget *inventory_widget);
 
     private slots:
         void AvatarToggle();
@@ -32,8 +32,8 @@ namespace CoreUi
 
     private:
         QWidget *internal_widget_;
-        UiServices::UiProxyWidget *avatar_widget_;
-        UiServices::UiProxyWidget *inventory_widget_;
+        UiProxyWidget *avatar_widget_;
+        UiProxyWidget *inventory_widget_;
 
         bool first_show_avatar_;
         bool first_show_inv_;

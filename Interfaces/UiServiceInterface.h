@@ -18,6 +18,8 @@ class QWidget;
 class QGraphicsProxyWidget;
 class QGraphicsScene;
 
+class UiProxyWidget;
+
 namespace Foundation
 {
     class UiServiceInterface;
@@ -43,19 +45,19 @@ namespace Foundation
          *  @param widget Widget.
          *  @return Proxy widget of the added widget.
          */
-        virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget) = 0;
+        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget) = 0;
 
         /** This is an overloaded function.
          *  @param widget Proxy widget.
          */
-        virtual void AddWidgetToScene(QGraphicsProxyWidget *widget) = 0;
+        virtual void AddWidgetToScene(UiProxyWidget *widget) = 0;
 
         /** Temporary function which adds support for current UiModule's UiWidgetProperties
          *  which are required in order to be able to add widgets to the menu.
          *  @param widget Widget.
          *  @param properties Widget properties.
          */
-        virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
+        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
 
         /** Temporary function which adds support for current UiModule's UiWidgetProperties
          *  which are required in order to be able to add widgets to the menu.
@@ -63,7 +65,7 @@ namespace Foundation
          *  @param type Widget type, see @see UiServices::WidgetType. If the type is ModuleWidget a button is added automatically to the menu.
          *  @note Remember to set the widget's name/window title using QWidget::setWindowTitle.
          */
-        virtual QGraphicsProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type) = 0;
+        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type) = 0;
 
         /** Adds widget to menu.
          *  @param widget Widget.

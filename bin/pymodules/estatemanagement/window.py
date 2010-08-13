@@ -81,10 +81,12 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         uiprops.widget_name_ = "Estate Management"
         
         self.proxywidget = r.createUiProxyWidget(self.gui, uiprops)
-        
+
         if not uism.AddProxyWidget(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
-        
+
+        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+
         self.btnLoadEstate = self.gui.findChild("QPushButton", "btnLoadEstate")
         self.listWEI = self.gui.findChild("QListWidget","listWidgetEstateInfo")
         self.listWRU = self.gui.findChild("QListWidget","listWidgetRegionUsers")

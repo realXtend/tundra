@@ -16,7 +16,6 @@ namespace UiServices
     class NotificationManager;
 
     // Scene Widget Classes
-    class UiProxyWidget;
     class UiWidgetProperties;
 
     // Notification Widget Classes

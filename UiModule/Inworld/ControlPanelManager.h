@@ -33,23 +33,23 @@ namespace CoreUi
     Q_OBJECT
 
     public:
-        ControlPanelManager(QObject *parent, CoreUi::AnchorLayoutManager *layout_manager);
+        ControlPanelManager(QObject *parent, AnchorLayoutManager *layout_manager);
         virtual ~ControlPanelManager();
 
     public slots:
         void SetHandler(UiServices::ControlButtonType type, UiServices::UiAction *action);
-        ControlPanelButton *GetButtonForType(UiServices::ControlButtonType type);
+        ControlPanelButton *GetButtonForType(UiServices::ControlButtonType type) const;
 
-        qreal GetContentHeight();
-        qreal GetContentWidth();
+        qreal GetContentHeight() const;
+        qreal GetContentWidth() const;
 
         void SetServiceGetter(QObject *service_getter);
-        SettingsWidget *GetSettingsWidget() { return settings_widget_; }
-        PersonalWidget *GetPersonalWidget() { return personal_widget_; }
-        TeleportWidget *GetTeleportWidget() { return teleport_widget_; }
-        LanguageWidget *GetLanguageWidget() { return language_widget_; }
-        BindingWidget *GeBindingsWidget() { return binding_widget_; }
-        CacheSettingsWidget *GetCacheSettingsWidget() { return cache_settings_widget_; }
+        SettingsWidget *GetSettingsWidget()  const { return settings_widget_; }
+        PersonalWidget *GetPersonalWidget() const { return personal_widget_; }
+        TeleportWidget *GetTeleportWidget() const { return teleport_widget_; }
+        LanguageWidget *GetLanguageWidget() const { return language_widget_; }
+        BindingWidget *GeBindingsWidget() const { return binding_widget_; }
+        CacheSettingsWidget *GetCacheSettingsWidget() const { return cache_settings_widget_; }
 
     private slots:
         void CreateBasicControls();

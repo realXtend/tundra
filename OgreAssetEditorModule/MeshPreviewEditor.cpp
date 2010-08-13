@@ -1,20 +1,21 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Framework.h"
 #include "DebugOperatorNew.h"
+
 #include "MeshPreviewEditor.h"
+#include "OgreAssetEditorModule.h"
 
-
+#include "Renderer.h"
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
 #include "CoreMath.h"
-
+#include "OgreRenderingModule.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -133,14 +134,9 @@ namespace Naali
     {
          boost::shared_ptr<OgreRenderer::OgreRenderingModule> rendering_module = 
             framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock();
-        
         OgreRenderer::RendererPtr renderer = rendering_module->GetRenderer();
-        
-            if (renderer != 0)
-            {
-                request_tag_ = renderer->RequestResource(asset_id.toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
-            }
-        
+        if (renderer != 0)
+            request_tag_ = renderer->RequestResource(asset_id.toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
     }
 
     void MeshPreviewEditor::Update()

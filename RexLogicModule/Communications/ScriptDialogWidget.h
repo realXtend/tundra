@@ -70,7 +70,7 @@ namespace RexLogic
         ScriptDialogRequest request_;
         QString text_value_;
         QLineEdit *text_input_;
-        //UiServices::UiProxyWidget *proxyWidget_;
+        //UiProxyWidget *proxyWidget_;
 
     private slots:
         void OnButtonPressed(QString id);

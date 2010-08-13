@@ -50,7 +50,9 @@ class ObjectEditWindow:
 
         if not uism.AddProxyWidget(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        
+
+        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+
         self.widget = ui
         self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
 

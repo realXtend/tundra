@@ -89,7 +89,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
 #include "EC_OpenSimPresence.h"
@@ -1640,7 +1640,7 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     else // Use Estate manager icon as default for all the rest for now.
         uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
 
-    UiServices::UiProxyWidget* uiproxywidget = new UiServices::UiProxyWidget(widget, uiproperty);
+    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget, uiproperty);
     return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);
 }
 

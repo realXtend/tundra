@@ -5,6 +5,8 @@
  *  @brief  Abstract base class and template class for entity-component attributes.
  */
 
+#include "StableHeaders.h"
+
 #include "AttributeInterface.h"
 #include "ComponentInterface.h"
 #include "AssetInterface.h"

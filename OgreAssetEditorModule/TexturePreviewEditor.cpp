@@ -5,7 +5,7 @@
 #include "OgreAssetEditorModule.h"
 
 #include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
@@ -245,7 +245,7 @@ namespace Naali
         headerLabel_->setText(objectName());
 
         // Add widget to UI via ui services module
-        UiServices::UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Texture: ") + objectName(), UiServices::SceneWidget));
+        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Texture: ") + objectName(), UiServices::SceneWidget));
         QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
         proxy->show();
         ui_module->GetInworldSceneController()->BringProxyToFront(proxy);

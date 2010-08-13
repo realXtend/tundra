@@ -1,8 +1,9 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EnvironmentEditor.h"
 #include "DebugOperatorNew.h"
+
+#include "EnvironmentEditor.h"
 #include "EnvironmentModule.h"
 #include "Entity.h"
 #include "Terrain.h"
@@ -11,27 +12,24 @@
 #include "Sky.h"
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
+
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Inworld/InworldSceneController.h"
-
+#include "OgreMaterialUtils.h"
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "OgreRenderingModule.h"
-
-#include "UiModule.h"
-#include "Inworld/View/UiProxyWidget.h"
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
-// Ogre renderer -specific.
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
 #include <OgreMesh.h>
 #include <OgreEntity.h>
-#include "OgreMaterialUtils.h"
-#include "LoggingFunctions.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -50,26 +48,27 @@
 #include <QComboBox>
 #include <QCheckBox>
 #include <QScrollArea>
-#include <QApplication>
-#include "MemoryLeakCheck.h"
 
+#include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EnvironmentEditor")
 
-namespace Environment 
+#include "MemoryLeakCheck.h"
+
+namespace Environment
 {
     EnvironmentEditor::EnvironmentEditor(EnvironmentModule* environment_module):
-    environment_module_(environment_module),
-    editor_widget_(0),
-    action_(Flatten),
-    brush_size_(Small),
-    terrainPaintMode_(INACTIVE),
-    sky_type_(OgreRenderer::SKYTYPE_NONE),
-    ambient_(false),
-    edit_terrain_active_(false),
-    sun_color_picker_(0),
-    ambient_color_picker_(0),
-    manual_paint_object_(0),
-    manual_paint_node_(0)
+        environment_module_(environment_module),
+        editor_widget_(0),
+        action_(Flatten),
+        brush_size_(Small),
+        terrainPaintMode_(INACTIVE),
+        sky_type_(OgreRenderer::SKYTYPE_NONE),
+        ambient_(false),
+        edit_terrain_active_(false),
+        sun_color_picker_(0),
+        ambient_color_picker_(0),
+        manual_paint_object_(0),
+        manual_paint_node_(0)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
@@ -80,15 +79,10 @@ namespace Environment
         InitEditorWindow();
         mouse_position_[0] = 0;
         mouse_position_[1] = 0;
-    
-        QObject::connect(qApp, SIGNAL(LanguageChanged()), this, SLOT(ChangeLanguage()));
     }
 
     EnvironmentEditor::~EnvironmentEditor()
     {
-        editorProxy_ = 0;
-        //delete editorProxy_;
-        editorProxy_ =0;
         delete sun_color_picker_;
         delete ambient_color_picker_;
         sun_color_picker_ = 0;
@@ -197,16 +191,6 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::ChangeLanguage()
-    {
-        
-        UiServices::UiWidgetProperties properties = editorProxy_->GetWidgetProperties();
-        QString orginal = properties.GetWidgetName();
-        QString translation = QApplication::translate("Environment::EnvironmentEditor", orginal.toStdString().c_str());
-        editorProxy_->setWindowTitle(translation);
-        
-    }
-
     MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(const EC_Terrain &terrain) const
     {
         float min, max;
@@ -240,35 +224,34 @@ namespace Environment
 
     void EnvironmentEditor::InitEditorWindow()
     {
-        assert(environment_module_);
-        QUiLoader loader;
-        // If this is enabled it will generate a memory leak ? ? 
-        //loader.setLanguageChangeEnabled(true);
+        Foundation::UiServiceInterface *ui = environment_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        if (!ui) // If this occurs, we're most probably operating in headless mode.
+            return;
 
+        QUiLoader loader;
+        loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/environment_editor.ui");
         if(!file.exists())
         {
             EnvironmentModule::LogError("Cannot find terrain editor ui file");
             return;
         }
-        
-        //QWidget* wid = loader.load(&file);
-        editor_widget_ = loader.load(&file);
 
-        //editor_widget_ = static_cast<Editor*>(wid);
-            
-        if ( editor_widget_ == 0)
+        editor_widget_ = loader.load(&file, this);
+        if (editor_widget_ == 0)
             return;
 
-        boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module.get())
-            return;
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(editor_widget_);
+        layout->setContentsMargins(0, 0, 0, 0);
+        setLayout(layout);
 
         UiServices::UiWidgetProperties properties(tr("Environment Editor"), UiServices::ModuleWidget,
             "./data/ui/images/menus/edbutton_ENVED_normal");
         properties.SetMenuGroup("World Tools");
 
-        editorProxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(editor_widget_, properties);
+        ui->AddWidgetToScene(this);
+        ui->AddWidgetToMenu(this, properties);
 
         /*
         InitTerrainTabWindow();
@@ -278,7 +261,6 @@ namespace Environment
         InitFogTabWindow();
         InitAmbientTabWindow();
         */
-
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
@@ -296,6 +278,20 @@ namespace Environment
         {
             QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
         }*/
+    }
+
+    void EnvironmentEditor::changeEvent(QEvent* e)
+    {
+       if (e->type() == QEvent::LanguageChange)
+        {
+            QString text = tr("Environment Editor");
+            setWindowTitle(text);
+            graphicsProxyWidget()->setWindowTitle(text);
+        }
+        else
+        {
+            QWidget::changeEvent(e);
+        }
     }
 
     void EnvironmentEditor::InitializeTabs()
