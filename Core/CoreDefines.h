@@ -28,8 +28,5 @@ inline Dst checked_static_cast(Src src)
 /// Use for QObjects
 #define SAFE_DELETE_LATER(p) { if ((p)) (p)->deleteLater(); (p) = 0; }
 
-/// Use for strings that are shown in the UI
-#define TR(context, key) QApplication::translate(context, key)
-
 #endif
 
