@@ -42,38 +42,32 @@ namespace Foundation
 
     public slots:
         /** Adds widget to scene.
-         *  @param widget Widget.
+         *  @param  widget Widget.
+         *  @param  flags Window flags. Qt::Dialog is used as default.
+         *          It creates movable proxy widget which has title bar and frames.
+         *          If you want add widget without title bar and frames, use Qt::Widget.
+         *          For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
          *  @return Proxy widget of the added widget.
          */
-        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget) = 0;
+        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog) = 0;
 
-        /** This is an overloaded function.
+        /** Adds user-created UiProxyWidget to the scene.
          *  @param widget Proxy widget.
          */
         virtual void AddWidgetToScene(UiProxyWidget *widget) = 0;
 
-        /** Temporary function which adds support for current UiModule's UiWidgetProperties
-         *  which are required in order to be able to add widgets to the menu.
-         *  @param widget Widget.
-         *  @param properties Widget properties.
-         */
-        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
-
-        /** Temporary function which adds support for current UiModule's UiWidgetProperties
-         *  which are required in order to be able to add widgets to the menu.
-         *  @param widget Widget.
-         *  @param type Widget type, see @see UiServices::WidgetType. If the type is ModuleWidget a button is added automatically to the menu.
-         *  @note Remember to set the widget's name/window title using QWidget::setWindowTitle.
-         */
-        virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type) = 0;
-
         /** Adds widget to menu.
          *  @param widget Widget.
          *  @param properties Widget properties.
-         *
          *  @note Doesn't add the widget to the scene.
          */
         virtual void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
+
+        /** Adds widget to menu without properties. Generates default properties. Takes name from the window title.
+         *  @param widget Widget.
+         *  @note Doesn't add the widget to the scene.
+         */
+        virtual void AddWidgetToMenu(QWidget *widget) = 0;
 
         /** Adds widget to menu.
          *  @param widget Widget.

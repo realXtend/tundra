@@ -65,6 +65,7 @@ ItemPropertiesWindow::ItemPropertiesWindow(InventoryModule *owner, QWidget *pare
     connect(pushButtonCancel_, SIGNAL(clicked()), this, SLOT(Cancel()));
 
     pushButtonSave_->setEnabled(false);
+    setWindowTitle(tr("Item Properties"));
 }
 
 ItemPropertiesWindow::~ItemPropertiesWindow()

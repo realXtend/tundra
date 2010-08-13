@@ -85,7 +85,7 @@ namespace CoreUi
 
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *controlled_widget, const UiServices::UiWidgetProperties &properties)
     {
-        ActionNode *child_node = new ActionNode(properties.GetWidgetName(), properties.GetIcon());
+        ActionNode *child_node = new ActionNode(properties.GetName(), properties.GetIcon());
         QString category = properties.GetMenuGroup();
         if (category.isEmpty())
         {

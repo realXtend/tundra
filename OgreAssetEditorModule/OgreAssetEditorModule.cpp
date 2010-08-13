@@ -71,11 +71,11 @@ void OgreAssetEditorModule::PostInitialize()
     uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
     if (!uiModule_.expired())
     {
-        UiServices::UiWidgetProperties props("Material Wizard", UiServices::ModuleWidget,
-            "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
+        UiServices::UiWidgetProperties props("Material Wizard", "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         props.SetMenuGroup("World Tools");
 
-        UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_, props);
+        UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_);
+        uiModule_.lock()->GetInworldSceneController()->AddWidgetToMenu(materialWizard_, props);
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
 
@@ -155,8 +155,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     editor->HandleAssetReady(downloaded->asset);
 
                     // Add widget to scene, show and bring to front
-                    uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(
-                        editor, UiServices::UiWidgetProperties("Ogre Script Editor", UiServices::SceneWidget));
+                    uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(editor);
                     uiModule_.lock()->GetInworldSceneController()->ShowProxyForWidget(editor);
                     uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
                 }

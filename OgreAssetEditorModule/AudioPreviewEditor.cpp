@@ -234,8 +234,9 @@ namespace Naali
         QObject::connect(playButton_, SIGNAL(clicked()), this, SLOT(PlaySound()));
 
         // Add widget to UI via ui services module
-        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Audio: ") + objectName(), UiServices::SceneWidget));
-        QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
+        setWindowTitle(tr("Audio: ") + objectName());
+        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
+        connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
         proxy->show();
         ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
     }

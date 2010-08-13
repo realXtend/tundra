@@ -369,13 +369,12 @@ namespace Naali
         setLayout(layout);
         layout->addWidget(mainWidget_);
         layout->setContentsMargins(0, 0, 0, 0);
-  
 
         // Add widget to UI via ui services module
-        proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Mesh: ") + objectName(), UiServices::SceneWidget));
+        setWindowTitle((tr("Mesh: ")) + objectName());
+        
+        proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
         QObject::connect(proxy_, SIGNAL(Closed()), this, SLOT(Closed()));
-       
-     
     }
 
     void MeshPreviewEditor::MouseWheelEvent(QWheelEvent* ev)
@@ -386,10 +385,8 @@ namespace Naali
         
     }
 
-   
     void MeshPreviewEditor::MouseEvent(QMouseEvent* event)
     {
-      
         QPointF pos = event->posF();
 
         if ( event->type() == QEvent::MouseButtonRelease )

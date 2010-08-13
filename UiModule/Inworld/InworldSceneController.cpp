@@ -66,36 +66,14 @@ namespace UiServices
         SAFE_DELETE(docking_widget_);
     }
 
-    UiProxyWidget *InworldSceneController::AddWidgetToScene(QWidget *widget)
+    UiProxyWidget *InworldSceneController::AddWidgetToScene(QWidget *widget,  Qt::WindowFlags flags)
     {
         /*  QGraphicsProxyWidget maintains symmetry for the following states:
          *  state, enabled, visible, geometry, layoutDirection, style, palette,
          *  font, cursor, sizeHint, getContentsMargins and windowTitle
          */
 
-        // Create widget properties
-        UiWidgetProperties props(widget->windowTitle(), SceneWidget);
-        props.SetIcon("./data/ui/images/menus/edbutton_MATWIZ_normal.png");
-
-        UiProxyWidget *proxy = new UiProxyWidget(widget, props);
-        if (!AddProxyWidget(proxy))
-        {
-            SAFE_DELETE(proxy);
-            return 0;
-        }
-
-        // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
-        // signal to a slot which handles the deletion. This must be done because closing
-        // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
-        if (widget->testAttribute(Qt::WA_DeleteOnClose))
-            connect(proxy, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
-
-        return proxy;
-    }
-
-    UiProxyWidget* InworldSceneController::AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties)
-    {
-        UiProxyWidget *proxy = new UiProxyWidget(widget, widget_properties);
+        UiProxyWidget *proxy = new UiProxyWidget(widget, flags);
         if (!AddProxyWidget(proxy))
         {
             SAFE_DELETE(proxy);
@@ -139,7 +117,7 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties)
     {
-        QString widget_name = properties.GetWidgetName();
+        QString widget_name = properties.GetName();
         ///\todo This string comparison is awful, get rid of this.
         if (widget_name == "Inventory")
         {
@@ -157,7 +135,7 @@ namespace UiServices
 
     void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const UiServices::UiWidgetProperties &properties)
     {
-        QString widget_name = properties.GetWidgetName();
+        QString widget_name = properties.GetName();
         ///\todo This string comparison is awful, get rid of this.
         if (widget_name == "Inventory")
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
@@ -172,10 +150,12 @@ namespace UiServices
         UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
         if (uiproxy)
         {
-            ///\todo This is awful, get rid of this.
+            ///\todo This is awful, get rid of this. STINKFIST
+            /*
             QString widget_name = uiproxy->GetWidgetProperties().GetWidgetName();
             if (widget_name != "Inventory" && widget_name != "Avatar Editor")
                 menu_manager_->RemoveMenuItem(uiproxy->GetWidgetProperties().GetMenuGroup(), widget);
+                */
         }
 
         inworld_scene_->removeItem(widget);

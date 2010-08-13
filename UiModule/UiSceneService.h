@@ -37,19 +37,10 @@ namespace UiServices
 
     public slots:
         /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget);
+        UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
         void AddWidgetToScene(UiProxyWidget *widget);
-
-        /// UiServiceInterface override.
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, const UiWidgetProperties &properties);
-
-        /** UiServiceInterface override.
-         *  Creates UiWidgetProperties using QWidget::windowTitle as the widget name and
-         *  /data/ui/images/menus/edbutton_MATWIZ_normal.png as the default icon.
-         */
-        UiProxyWidget *AddWidgetToScene(QWidget *widget, UiServices::WidgetType type);
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const UiWidgetProperties &properties);
@@ -59,6 +50,9 @@ namespace UiServices
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu);
+
+        /// UiServiceInterface override.
+        virtual void AddWidgetToMenu(QWidget *widget);
 
         /// UiServiceInterface override.
         void RemoveWidgetFromScene(QWidget *widget);

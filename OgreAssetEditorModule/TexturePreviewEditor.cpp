@@ -245,7 +245,8 @@ namespace Naali
         headerLabel_->setText(objectName());
 
         // Add widget to UI via ui services module
-        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this, UiServices::UiWidgetProperties(tr("Texture: ") + objectName(), UiServices::SceneWidget));
+        setWindowTitle(tr("Texture: ") + objectName());
+        UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
         QObject::connect(proxy, SIGNAL(Closed()), this, SLOT(Closed()));
         proxy->show();
         ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
