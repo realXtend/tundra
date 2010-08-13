@@ -15,10 +15,10 @@
 #include "WorldStream.h"
 #include "Interfaces/ProtocolModuleInterface.h"
 
-#include <RexLogicModule.h>
-#include <UiModule.h>
-#include <Inworld/InworldSceneController.h>
-#include <Inworld/View/UiProxyWidget.h>
+#include "RexLogicModule.h"
+#include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+#include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -182,7 +182,7 @@ namespace Communication
         }
     }
 
-    void TelepathyIMModule::RemoveProxyWidgetFromUi(UiServices::UiProxyWidget *proxy_widget)
+    void TelepathyIMModule::RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget)
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (ui_module.get())
