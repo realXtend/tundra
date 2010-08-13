@@ -87,10 +87,15 @@ namespace Environment
     EnvironmentEditor::~EnvironmentEditor()
     {
         editorProxy_ = 0;
+        //delete editorProxy_;
+        editorProxy_ =0;
         delete sun_color_picker_;
         delete ambient_color_picker_;
         sun_color_picker_ = 0;
         ambient_color_picker_ = 0;
+        delete editor_widget_;
+        editor_widget_ = 0;
+        
     }
 
     void EnvironmentEditor::CreateHeightmapImage()
@@ -194,11 +199,12 @@ namespace Environment
 
     void EnvironmentEditor::ChangeLanguage()
     {
+        
         UiServices::UiWidgetProperties properties = editorProxy_->GetWidgetProperties();
         QString orginal = properties.GetWidgetName();
         QString translation = QApplication::translate("Environment::EnvironmentEditor", orginal.toStdString().c_str());
         editorProxy_->setWindowTitle(translation);
-    
+        
     }
 
     MinMaxValue EnvironmentEditor::GetMinMaxHeightmapValue(const EC_Terrain &terrain) const
@@ -236,14 +242,23 @@ namespace Environment
     {
         assert(environment_module_);
         QUiLoader loader;
-        loader.setLanguageChangeEnabled(true);
+        // If this is enabled it will generate a memory leak ? ? 
+        //loader.setLanguageChangeEnabled(true);
+
         QFile file("./data/ui/environment_editor.ui");
         if(!file.exists())
         {
             EnvironmentModule::LogError("Cannot find terrain editor ui file");
             return;
         }
+        
+        //QWidget* wid = loader.load(&file);
         editor_widget_ = loader.load(&file);
+
+        //editor_widget_ = static_cast<Editor*>(wid);
+            
+        if ( editor_widget_ == 0)
+            return;
 
         boost::shared_ptr<UiServices::UiModule> ui_module = environment_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         if (!ui_module.get())
@@ -272,11 +287,25 @@ namespace Environment
 
         QObject::connect(&terrain_paint_timer_, SIGNAL(timeout()), this, SLOT(TerrainEditTimerTick()));
 
+       // bool s = QObject::connect(editor_widget_, SIGNAL(open()), this, SLOT(InitializeTabs()));
+       // if ( s == false)
+       //     return;
+
         /*TerrainPtr terrain = environment_module_->GetTerrainHandler();
         if(terrain.get())
         {
             QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
         }*/
+    }
+
+    void EnvironmentEditor::InitializeTabs()
+    {
+        InitTerrainTabWindow();
+        InitTerrainTextureTabWindow();
+        InitWaterTabWindow();
+        InitSkyTabWindow();
+        InitFogTabWindow();
+        InitAmbientTabWindow();
     }
 
     void EnvironmentEditor::InitTerrainTabWindow()
@@ -655,8 +684,7 @@ namespace Environment
                 QObject::connect(sun_direction_z, SIGNAL(valueChanged(double)), this, SLOT(UpdateSunDirection(double)));
 
                 QVector<float> sun_color = environment->GetSunColor();
-              
-                
+             
                 QLabel* label = editor_widget_->findChild<QLabel* >("sun_color_img");
                 if ( label != 0)
                 {
@@ -696,6 +724,7 @@ namespace Environment
                 }
 
                 QVector<float> ambient_light = environment->GetAmbientLight();
+             
                 label = editor_widget_->findChild<QLabel* >("ambient_color_img");
                 
                 if ( label != 0)

@@ -44,7 +44,8 @@ namespace Environment
         resource_event_category_(0),
         scene_event_category_(0),
         framework_event_category_(0),
-        input_event_category_(0)
+        input_event_category_(0),
+        firstTime_(true)
     {
     }
 
@@ -120,9 +121,20 @@ namespace Environment
     void EnvironmentModule::Update(f64 frametime)
     {
         RESETPROFILER;
-        // HACK Initialize editor_widget_ in correct time. 
-        //if (environment_editor_ == 0 && terrain_.get() != 0 && water_.get() != 0)
-        //    environment_editor_ = new EnvironmentEditor(this);
+     
+        // Idea of next lines:  Because of initialisation chain, enviroment editor stays in wrong state after logout/login-process. 
+        // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
+        // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
+        // we will initialise it again. 
+
+        if ( environment_editor_ != 0 && firstTime_ == true )
+        {
+            if ( environment_editor_->Showed())
+            {
+                environment_editor_->InitializeTabs();
+                firstTime_ = false;
+            }
+        }
 
         if ((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
@@ -167,6 +179,7 @@ namespace Environment
                 ReleaseWater();
                 ReleaseEnvironment();
                 ReleaseSky();
+                firstTime_ = true;
                
             }
         }
@@ -521,6 +534,7 @@ namespace Environment
             environment_editor_->InitTerrainTabWindow();
             environment_editor_->InitTerrainTextureTabWindow();
         }
+        
     }
 
     void EnvironmentModule::CreateWater()
@@ -528,18 +542,23 @@ namespace Environment
         water_ = WaterPtr(new Water(this));
         water_->CreateWaterGeometry();
         if ( environment_editor_ != 0 )
-            environment_editor_->InitWaterTabWindow();
+             environment_editor_->InitWaterTabWindow();
     }
 
     void EnvironmentModule::CreateEnvironment()
     {
         environment_ = EnvironmentPtr(new Environment(this));
         environment_->CreateEnvironment();
+        
+        /*
         if ( environment_editor_ != 0)
         {
             environment_editor_->InitAmbientTabWindow();
             environment_editor_->InitFogTabWindow();
         }
+        */
+        
+        
     }
 
     void EnvironmentModule::CreateSky()
@@ -554,7 +573,7 @@ namespace Environment
             sky_->CreateDefaultSky();
 
         if ( environment_editor_ != 0 )
-            environment_editor_->InitSkyTabWindow();
+             environment_editor_->InitSkyTabWindow();
     }
 
     void EnvironmentModule::ReleaseTerrain()

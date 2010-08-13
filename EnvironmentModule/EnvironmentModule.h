@@ -194,6 +194,8 @@ namespace Environment
 
         //! Wait for new terrain heightmap information.
         bool waiting_for_regioninfomessage_;
+
+        bool firstTime_;
     };
 }
 
