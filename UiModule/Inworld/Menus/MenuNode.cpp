@@ -14,45 +14,41 @@
 namespace CoreUi
 {
     MenuNode::MenuNode(const QString& node_name, const QString &icon, const QUuid &id):
-        QGraphicsProxyWidget(0),
         node_name_(node_name),
         widget_(new QWidget),
         original_pos_(pos()),
         expanded_pos_(pos()),
         shrunken_pos_(pos()),
-//        icon_(icon),
-//        style_to_path_map_(map)
-        icon_filepath_(icon)
+        icon_filepath_(icon),
+        id_(id)
     {
         setupUi(widget_);
         setWidget(widget_);
-
-        if (id.isNull())
-            id_ = QUuid::createUuid();
-        else
-            id_ = id;
 
         centerContainer->setMinimumWidth(0);
 
         if (node_name_ != "RootNode")
         {
-            // fall back here for text rendering widgts name if no graphics were provded!
             QWidget *text_widget = centerContainer->findChild<QWidget*>("textWidget");
             if (text_widget)
             {
                 QHBoxLayout *layout = new QHBoxLayout();
-                QLabel *label = new QLabel(node_name_.toUpper());
-                layout->addWidget(label);
+                //label_ = new QLabel(node_name_.toUpper());
+                label_ = new QLabel(node_name_);
+                layout->addWidget(label_);
                 text_widget->setLayout(layout);
 
                 QFont font("facetextrabold", 11, 50, false);
-                font.setCapitalization(QFont::AllUppercase);
+                //font.setCapitalization(QFont::AllUppercase);
                 font.setStyleStrategy(QFont::PreferAntialias);
 
-                label->setFont(font);
-                label->setStyleSheet("background-color: transparent; color: white; text-align: center;");
-                QFontMetrics metric(label->font());
-                center_image_width_ = metric.width(label->text()) + 20;
+                label_->setFont(font);
+                label_->setStyleSheet("background-color: transparent; color: white; text-align: center;");
+                QFontMetrics metric(label_->font());
+                center_image_width_ = metric.width(label_->text()) + 20;
+
+                iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_filepath_ +
+                    "'); background-position: top left; background-repeat: no-repeat; }");
             }
         }
         else
@@ -169,27 +165,37 @@ namespace CoreUi
     {
         if (node_name_ != "RootNode")
         {
-/*
-            if (style_to_path_map_.count() == 0)
-                return;
-
-            QString icon_image;
+            ///\todo Effects for text labels also.
             switch (style)
             {
-                case Normal:
-                    icon_image = //style_to_path_map_[UiDefines::IconNormal];
-                    break;
-                case Hover:
-                    icon_image = //style_to_path_map_[UiDefines::IconHover];
-                    break;
-                case Pressed:
-                    icon_image = //style_to_path_map_[UiDefines::IconPressed];
-                    break;
+            case Normal:
+            {
+                QGraphicsEffect *iconEffect = iconWidget->graphicsEffect();
+//                QGraphicsEffect *textEffect = label_->graphicsEffect();
+                SAFE_DELETE(iconEffect);
+//                SAFE_DELETE(textEffect);
+                update();
+                break;
             }
-            iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_image + "'); background-position: top left; background-repeat: no-repeat; }");
-*/
-            iconWidget->setStyleSheet("QWidget#iconWidget { background-image: url('" + icon_filepath_ +
-                "'); background-position: top left; background-repeat: no-repeat; }");
+            case Hover:
+            {
+                QGraphicsColorizeEffect *hoverEffect = new QGraphicsColorizeEffect;
+                QColor color(255, 255, 255, 100);
+                hoverEffect->setColor(color);
+                iconWidget->setGraphicsEffect(hoverEffect);
+//                label_->setGraphicsEffect(hoverEffect);
+                break;
+            }
+            case Pressed:
+            {
+                QGraphicsColorizeEffect *pressedEffect = new QGraphicsColorizeEffect;
+                QColor color(112, 112, 112, 100);
+                pressedEffect->setColor(color);
+                iconWidget->setGraphicsEffect(pressedEffect);
+//                label_->setGraphicsEffect(pressedEffect);
+                break;
+            }
+            }
         }
         else
         {
