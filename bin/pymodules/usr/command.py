@@ -933,7 +933,7 @@ if 0: #scene, aka. SceneManager
     s = naali.getScene("World")
     print s
 
-if 1: #javascript service
+if 0: #javascript service
     import naali
     from naali import runjs
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
