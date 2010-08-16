@@ -42,17 +42,14 @@ namespace Console
         void QueuePrintRequest(const QString &text);
 
         //! Prints to console
-        void PrintToConsole(QString text);
+        void PrintToConsole(const QString &text);
 
         //! Handle input to the console(called after return pushed)
         void HandleInput();
 
-        //! Sends event to notify console module that UI for console is ready
-        void SendInitializationReadyEvent();
-
     signals:
         //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
-        void PrintOrderRecieved(QString text);
+        void PrintOrderRecieved(const QString &text);
 
         //! TODO: comment
         void CommandIssued(const QString &string);

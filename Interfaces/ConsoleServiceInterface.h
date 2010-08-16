@@ -11,10 +11,9 @@ namespace Console
     //! Interface for debug console service
     /*! Usually it is not necessary to use this service,
         the only really useful function is Print(), but the
-        preferred way to output text to the console is via the
-        log.
+        preferred way to output text to the console is via the log.
 
-        Most functions are not threadsafe.
+        \note Most functions are not threadsafe.
 
         \ingroup Services_group
         \ingroup DebugConsole_group
@@ -46,9 +45,7 @@ namespace Console
         virtual void SetUiInitialized(bool initialized)=0;
 
         //! Returns false if UI is not initialized, true otherwise
-        virtual bool IsUiInitialized()=0;
-
-
+        virtual bool IsUiInitialized() const = 0;
     };
 
     //! smart pointer for console services. \ingroup DebugConsole_group

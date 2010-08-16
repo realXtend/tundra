@@ -35,7 +35,7 @@ namespace Console
         ConsoleManager(const ConsoleManager &other);
 
         //! constructor that takes a parent module
-        ConsoleManager(Foundation::ModuleInterface *parent);
+        explicit ConsoleManager(Foundation::ModuleInterface *parent);
 
     public:
         //! destructor
@@ -50,13 +50,13 @@ namespace Console
         virtual void ExecuteCommand(const std::string &command);
 
         //! Toggle console on/off
-        virtual void ToggleConsole();
+        virtual void ToggleConsole() {}
 
         //! Sets Ui initialized/uninitialized
         virtual void SetUiInitialized(bool initialized);
 
         //! Returns false if UI is not initialized, true otherwise
-        virtual bool IsUiInitialized(){return ui_initialized_;}
+        virtual bool IsUiInitialized() const { return ui_initialized_; }
 
         //! Returns command manager
         CommandManagerPtr GetCommandManager() const {return command_manager_; }
@@ -70,9 +70,6 @@ namespace Console
 
         //! parent module
         Foundation::ModuleInterface *parent_;
-        
-        //! framework
-        Foundation::Framework* framework_;
 
         //! Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;

@@ -65,24 +65,13 @@ namespace Console
 //                this, SLOT( ToggleConsole() ));
 
         // Input field
-        connect(console_ui_->ConsoleInputArea, SIGNAL( returnPressed() ), 
-                this, SLOT( HandleInput() ));
+        connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
 
         // Scene to notify rect changes
-        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &) ),
-                this, SLOT( AdjustToSceneRect(const QRectF &) ));
+        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
 
         // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
-        connect(this, SIGNAL( PrintOrderRecieved(QString) ), 
-                this, SLOT( PrintToConsole(QString) ), 
-                Qt::QueuedConnection);
-    }
-
-    void UiConsoleManager::SendInitializationReadyEvent()
-    {
-        Console::ConsoleEventData *event_data =  new Console::ConsoleEventData("");
-        framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED,
-            Foundation::EventDataPtr(event_data), 1);
+        connect(this, SIGNAL(PrintOrderRecieved(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
     }
 
     void UiConsoleManager::HandleInput()
@@ -98,7 +87,7 @@ namespace Console
         emit PrintOrderRecieved(text);
     }
 
-    void UiConsoleManager::PrintToConsole(QString text)
+    void UiConsoleManager::PrintToConsole(const QString &text)
     {
         QString html = Qt::escape(text);
         StyleString(html);
@@ -107,7 +96,6 @@ namespace Console
 
     void UiConsoleManager::AdjustToSceneRect(const QRectF& rect)
     {
-
         if (visible_)
         {
             QRectF new_size = rect;
@@ -118,7 +106,6 @@ namespace Console
         {
             proxy_widget_->hide();
         }
-        
     }
 
     void UiConsoleManager::ToggleConsole()
@@ -214,5 +201,4 @@ namespace Console
             return;
         }
     }
-
 }

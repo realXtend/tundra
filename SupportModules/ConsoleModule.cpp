@@ -49,9 +49,7 @@ namespace Console
     {
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
-
-        ui_console_manager_->SendInitializationReadyEvent();
-//        KeyEventSignal &keySignal = inputModule->TopLevelInputContext().RegisterKeyEvent(Qt::Key_F1);
+        manager_->SetUiInitialized(!manager_->IsUiInitialized());
     }
 
     // virtual 
@@ -82,23 +80,18 @@ namespace Console
     bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
-
+        ///\todo Now that console UI has been moved from UiModule to ConsoleModule many
+        /// of these console events are silly and just call the module itself. Clean/refactor the events.
         if (consoleEventCategory_ == category_id)
         {
             switch(event_id)
             {
-            case Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED:
-                manager_->SetUiInitialized(!manager_->IsUiInitialized());
-                break;
             case Console::Events::EVENT_CONSOLE_COMMAND_ISSUED:
             {
                 Console::ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData *>(data);
                 manager_->ExecuteCommand(console_data->message);
                 break;
             }
-            case Console::Events::EVENT_CONSOLE_TOGGLE:
-                ui_console_manager_->ToggleConsole();
-                break;
             case Console::Events::EVENT_CONSOLE_PRINT_LINE:
             {
                 ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);

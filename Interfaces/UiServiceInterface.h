@@ -33,7 +33,7 @@ namespace Foundation
         Q_OBJECT
 
     public:
-        /// Default destructor.
+        /// Default constructor.
         UiServiceInterface() {}
 
         /// Destructor.

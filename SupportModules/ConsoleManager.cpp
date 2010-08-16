@@ -17,17 +17,16 @@
 namespace Console
 {
     ConsoleManager::ConsoleManager(Foundation::ModuleInterface *parent) :
+        parent_(parent),
         ui_initialized_(false),
         console_channel_(new ConsoleChannel(this)),
         log_listener_(new LogListener(this))
     {
-        parent_ = parent;
-        framework_ = parent_->GetFramework();
         command_manager_ = CommandManagerPtr(new CommandManager(parent_, this));
-        framework_->AddLogChannel(console_channel_.get());
-        console_category_id_ = framework_->GetEventManager()->RegisterEventCategory("Console");
+        parent_->GetFramework()->AddLogChannel(console_channel_.get());
+        console_category_id_ = parent_->GetFramework()->GetEventManager()->RegisterEventCategory("Console");
 
-        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        Foundation::RenderServiceInterface *renderer = parent_->GetFramework()->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->SubscribeLogListener(log_listener_);
         else
@@ -36,13 +35,13 @@ namespace Console
 
     ConsoleManager::~ConsoleManager()
     {
-        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
+        Foundation::RenderServiceInterface *renderer = parent_->GetFramework()->GetService<Foundation::RenderServiceInterface>();
         if (renderer)
             renderer->UnsubscribeLogListener(log_listener_);
         else
             ConsoleModule::LogWarning("ConsoleManager couldn't acquite renderer service: can't unsubscribe renderer log listener.");
 
-        framework_->RemoveLogChannel(console_channel_.get());
+        parent_->GetFramework()->RemoveLogChannel(console_channel_.get());
     }
 
     __inline void ConsoleManager::Update(f64 frametime)
@@ -55,7 +54,8 @@ namespace Console
         if(ui_initialized_)
         {
             Console::ConsoleEventData* event_data = new Console::ConsoleEventData(text);
-            framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_PRINT_LINE, Foundation::EventDataPtr(event_data));
+            parent_->GetFramework()->GetEventManager()->SendDelayedEvent(console_category_id_,
+                Console::Events::EVENT_CONSOLE_PRINT_LINE, Foundation::EventDataPtr(event_data));
         }
         else
         {
@@ -67,12 +67,6 @@ namespace Console
     {
         if (command_manager_)
             command_manager_->QueueCommand(command);
-    }
-
-    void ConsoleManager::ToggleConsole()
-    {
-        Console::ConsoleEventData event_data("");
-        framework_->GetEventManager()->SendEvent(console_category_id_, Console::Events::EVENT_CONSOLE_TOGGLE, &event_data);
     }
 
     void ConsoleManager::SetUiInitialized(bool initialized)
