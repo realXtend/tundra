@@ -24,9 +24,10 @@
 #include "Inventory/InventoryEvents.h"
 #include "ResourceInterface.h"
 #include "AssetInterface.h"
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
+
+#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -68,14 +69,14 @@ void OgreAssetEditorModule::PostInitialize()
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
-    if (!uiModule_.expired())
+    uiService_ = framework_->GetServiceManager()->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui);
+    if (!uiService_.expired())
     {
         UiServices::UiWidgetProperties props("Material Wizard", "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         props.SetMenuGroup("World Tools");
 
-        UiProxyWidget *proxy  = uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(materialWizard_);
-        uiModule_.lock()->GetInworldSceneController()->AddWidgetToMenu(materialWizard_, props);
+        UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
+        uiService_.lock()->AddWidgetToMenu(materialWizard_, props);
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
 
@@ -109,7 +110,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_OPEN)
         {
             // Inventory item requested for opening. Check if we have editor for its type.
-            if (uiModule_.expired())
+            if (uiService_.expired())
                 return false;
 
             Inventory::InventoryItemOpenEventData *open_item = dynamic_cast<Inventory::InventoryItemOpenEventData *>(data);
@@ -127,7 +128,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
         }
         if (event_id == Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED)
         {
-            if (uiModule_.expired())
+            if (uiService_.expired())
                 return false;
 
             // Asset downloaded, pass asset data to the right editor and bring it to front.
@@ -155,16 +156,16 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     editor->HandleAssetReady(downloaded->asset);
 
                     // Add widget to scene, show and bring to front
-                    uiModule_.lock()->GetInworldSceneController()->AddWidgetToScene(editor);
-                    uiModule_.lock()->GetInworldSceneController()->ShowProxyForWidget(editor);
-                    uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                    uiService_.lock()->AddWidgetToScene(editor);
+                    uiService_.lock()->ShowWidget(editor);
+                    uiService_.lock()->BringWidgetToFront(editor);
                 }
                 else
                 {
                     // Editor already exists, bring it to front.
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
-                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                 }
                 // Surpress this event.
                 downloaded->handled = true; 
@@ -189,7 +190,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
                     {
-                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                         AudioPreviewEditor *audioWidget = qobject_cast<AudioPreviewEditor*>(editor);
                         if(audioWidget)
                             audioWidget->HandleAssetReady(downloaded->asset);
@@ -217,7 +218,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor != 0)
                     {
-                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                         MeshPreviewEditor *editorWidget = qobject_cast<MeshPreviewEditor*>(editor);
                         if(editorWidget)
                             editorWidget->RequestMeshAsset(downloaded->asset->GetId().c_str());
@@ -244,7 +245,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                     // Editor already exists, bring it to front.
                     QWidget *editor = editorManager_->GetEditor(id, at);
                     if (editor)
-                        uiModule_.lock()->GetInworldSceneController()->BringProxyToFront(editor);
+                        uiService_.lock()->BringWidgetToFront(editor);
                 }
 
                 downloaded->handled = true;

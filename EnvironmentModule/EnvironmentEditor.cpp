@@ -15,7 +15,6 @@
 
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "OgreMaterialUtils.h"
 #include "TextureInterface.h"
 #include "TextureServiceInterface.h"

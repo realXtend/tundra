@@ -56,7 +56,10 @@ namespace CoreUi
          *  @param name Name of the scene.
          *  @return Graphic scene with the requested name, or null if not found.
          */
-        const QGraphicsScene *GetScene(const QString &name) const;
+        QGraphicsScene *GetScene(const QString &name) const;
+
+        /// Returns name of the current scene.
+        QString GetCurrentSceneName() const { return current_scene_name_;}
 
         void SetConnectionState(UiServices::ConnectionState new_connection_state);
         void SetServiceGetter(QObject *service_getter);

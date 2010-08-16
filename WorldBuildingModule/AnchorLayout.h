@@ -3,8 +3,6 @@
 #ifndef incl_WorldBuildingModule_AnchorLayout_h
 #define incl_WorldBuildingModule_AnchorLayout_h
 
-#include "UiModuleFwd.h"
-
 #include <QObject>
 #include <QGraphicsAnchorLayout>
 
@@ -25,7 +23,7 @@ namespace WorldBuilding
         virtual ~AnchorLayout();
 
     public slots:
-        QGraphicsScene *GetScene();
+        QGraphicsScene *GetScene() const;
 
         void AddCornerAnchor(QGraphicsLayoutItem *layout_item, Qt::Corner layout_anchor_corner, Qt::Corner widget_anchor_corner);
         void AddSideAnchor(QGraphicsLayoutItem *layout_item, Qt::Orientation orientation);

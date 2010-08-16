@@ -73,7 +73,7 @@ namespace UiServices
         void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
 
         /// UiServiceInterface override.
-        const QGraphicsScene *GetScene(const QString &name) const;
+        QGraphicsScene *GetScene(const QString &name) const;
 
         /// UiServiceInterface override.
         void RegisterScene(const QString &name, QGraphicsScene *scene);

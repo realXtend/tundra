@@ -227,7 +227,7 @@ namespace CoreUi
         return true;
     }
 
-    const QGraphicsScene *UiStateMachine::GetScene(const QString &name) const
+    QGraphicsScene *UiStateMachine::GetScene(const QString &name) const
     {
         if (scene_map_.contains(name))
             return scene_map_[name];

@@ -16,12 +16,8 @@
 
 namespace Foundation
 {
+    class UiServiceInterface;
     class EventDataInterface;
-}
-
-namespace UiServices
-{
-    class UiModule;
 }
 
 namespace Inventory
@@ -73,8 +69,8 @@ namespace Naali
         /// Type name of this module.
         static std::string type_name_static_;
 
-        /// UiModule pointer.
-        boost::weak_ptr<UiServices::UiModule> uiModule_;
+        /// UI service.
+        boost::weak_ptr<Foundation::UiServiceInterface> uiService_;
 
         /// Event manager pointer.
         Foundation::EventManagerPtr eventManager_;

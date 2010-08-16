@@ -93,8 +93,6 @@ namespace WorldBuilding
 
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
-        StateMachine *GetStateMachine() const;
-
     private:
         Foundation::Framework *framework_;
         QString scene_name_;

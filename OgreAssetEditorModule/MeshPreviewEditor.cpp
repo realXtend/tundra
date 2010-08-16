@@ -7,10 +7,8 @@
 #include "OgreAssetEditorModule.h"
 
 #include "Renderer.h"
-#include "UiModule.h"
+#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
-#include "Inworld/InworldSceneController.h"
 #include "ModuleManager.h"
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
@@ -173,15 +171,13 @@ namespace Naali
         if(!img.isNull() && label_ != 0)
             label_->setPixmap(QPixmap::fromImage(img));
         
-    
-        boost::shared_ptr<UiServices::UiModule> ui_module = 
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        
-        if (!ui_module.get())
+
+        Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui)
             return;
 
         proxy_->show();
-        ui_module->GetInworldSceneController()->BringProxyToFront(proxy_);
+        ui->BringWidgetToFront(proxy_);
 
         delete[] pixelData;
         
@@ -319,26 +315,19 @@ namespace Naali
 
     void MeshPreviewEditor::Closed()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module =
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module.get())
-            return;
-
-        ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(this);
+        Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+        ui->RemoveWidgetFromScene(this);
 
         emit Closed(inventoryId_, assetType_);
     }
 
     void MeshPreviewEditor::InitializeEditorWidget()
     {
-        // Get QtModule and create canvas
-        boost::shared_ptr<UiServices::UiModule> ui_module = 
-            framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (!ui_module.get())
+        Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui)
             return;
 
         // Create widget from ui file
-        
         QUiLoader loader;
         QFile file("./data/ui/mesh_preview.ui");
         if (!file.exists())
@@ -372,8 +361,8 @@ namespace Naali
 
         // Add widget to UI via ui services module
         setWindowTitle((tr("Mesh: ")) + objectName());
-        
-        proxy_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
+
+        proxy_ = ui->AddWidgetToScene(this);
         QObject::connect(proxy_, SIGNAL(Closed()), this, SLOT(Closed()));
     }
 

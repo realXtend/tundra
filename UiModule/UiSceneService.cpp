@@ -87,7 +87,7 @@ namespace UiServices
         owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
-    const QGraphicsScene *UiSceneService::GetScene(const QString &name) const
+    QGraphicsScene *UiSceneService::GetScene(const QString &name) const
     {
         return owner_->GetUiStateMachine()->GetScene(name);
     }
@@ -104,7 +104,12 @@ namespace UiServices
 
     bool UiSceneService::SwitchToScene(const QString &name)
     {
-        return owner_->GetUiStateMachine()->SwitchToScene(name);
+        QString oldName = owner_->GetUiStateMachine()->GetCurrentSceneName();
+        bool success = owner_->GetUiStateMachine()->SwitchToScene(name);
+        QString newName = owner_->GetUiStateMachine()->GetCurrentSceneName();
+        if (success)
+            emit SceneChanged(oldName, newName);
+        return success;
     }
 }
 
