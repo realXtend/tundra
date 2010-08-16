@@ -87,11 +87,10 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
+//#include "UiModule.h"
+//#include "Inworld/InworldSceneController.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
@@ -1577,6 +1576,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 //    return can;
 //}
 
+/*
 PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
 {
     if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
@@ -1591,9 +1591,10 @@ PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
-    return PythonScriptModule::GetInstance()->WrapQObject(prop);;
+//    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
+    return PythonScriptModule::GetInstance()->WrapQObject(prop);
 }
+*/
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
@@ -1602,49 +1603,24 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     {
         // If this occurs, we're most probably operating in headless mode.
         //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing.");
+        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
         return NULL;
     }
 
+//    if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
     PyObject* pywidget;
-    PyObject* pyuiprops;
-
-    if(!PyArg_ParseTuple(args, "OO", &pywidget, &pyuiprops))
-    {
+    if (!PyArg_ParseTuple(args, "O", &pywidget))
         return NULL;
-    }
 
     if (!PyObject_TypeCheck(pywidget, &PythonQtInstanceWrapper_Type))
-    {
         return NULL;
-    }
-
-    if (!PyObject_TypeCheck(pyuiprops, &PythonQtInstanceWrapper_Type))
-    {
-        return NULL;
-    }
 
     PythonQtInstanceWrapper* wrapped_widget = (PythonQtInstanceWrapper*)pywidget;
-    PythonQtInstanceWrapper* wrapped_uiproperty = (PythonQtInstanceWrapper*)pyuiprops;
-
     QObject* widget_ptr = wrapped_widget->_obj;
-    QObject* uiproperty_ptr = wrapped_uiproperty->_obj;
-
     QWidget* widget = (QWidget*)widget_ptr;
-    UiServices::UiWidgetProperties uiproperty = *(UiServices::UiWidgetProperties*)uiproperty_ptr;
 
-    if (uiproperty.GetName() == "Object Edit")
-        uiproperty.SetIcon("./data/ui/images/menus/edbutton_OBJED_normal.png");
-    else if (uiproperty.GetName() == "Local Scene")
-        uiproperty.SetIcon("./data/ui/images/menus/edbutton_LSCENE_normal.png");
-    else if (uiproperty.GetName() == "Estate Management")
-        uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
-    else // Use Estate manager icon as default for all the rest for now.
-        uiproperty.SetIcon("./data/ui/images/menus/edbutton_ESMNG_normal.png");
-
-//    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget, uiproperty);
-    UiProxyWidget* uiproxywidget = new UiProxyWidget(widget);
-    return PythonScriptModule::GetInstance()->WrapQObject(uiproxywidget);
+    UiProxyWidget* proxy = new UiProxyWidget(widget);
+    return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
 PyObject* GetPropertyEditor(PyObject *self)
@@ -1661,16 +1637,16 @@ PyObject* GetPropertyEditor(PyObject *self)
 
 PyObject* GetUiSceneManager(PyObject *self)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module = PythonScript::self()->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-
-    // If this occurs, we're most probably operating in headless mode.
-    if (ui_module.get() == 0)
+    Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    if (!ui)
     {
-        PyErr_SetString(PyExc_RuntimeError, "UiModule is missing."); //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
+        // If this occurs, we're most probably operating in headless mode.
+        //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
+        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
         return NULL;
     }
 
-    return PythonScriptModule::GetInstance()->WrapQObject(ui_module->GetInworldSceneController());
+    return PythonScriptModule::GetInstance()->WrapQObject(ui);
 }
 
 PyObject* GetUIView(PyObject *self)
@@ -1686,7 +1662,6 @@ PyObject* GetRexLogic(PyObject *self)
     PyErr_SetString(PyExc_RuntimeError, "RexLogic is missing.");
     return NULL;
 }
-
 
 PyObject* GetServerConnection(PyObject *self)
 {
@@ -2055,16 +2030,15 @@ static PyMethodDef EmbMethods[] = {
     {"getServerConnection", (PyCFunction)GetServerConnection, METH_NOARGS,
     "Gets the server connection."},    
 
-
     {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
     "get property editor"},
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
 
-    {"createUiWidgetProperty", (PyCFunction)CreateUiWidgetProperty, METH_VARARGS, 
-    "creates a new UiWidgetProperty"},
-    
+//    {"createUiWidgetProperty", (PyCFunction)CreateUiWidgetProperty, METH_VARARGS, 
+//    "creates a new UiWidgetProperty"},
+
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
 
@@ -2102,11 +2076,10 @@ namespace PythonScript
     void PythonScriptModule::Initialize()
     {
         if (!engine_)
-        {
             engine_ = PythonScript::PythonEnginePtr(new PythonScript::PythonEngine(framework_));
-        }
+
         engine_->Initialize();
-              
+
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_PythonScripting, engine_);
 
         assert(!pythonScriptModuleInstance_);

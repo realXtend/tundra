@@ -29,7 +29,6 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -74,12 +73,9 @@ namespace Environment
             if (!ui)
                 return;
 
-            UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"));
-            ui_properties.SetIcon("./data/ui/images/menus/edbutton_POSTPR_normal.png");
-            ui_properties.SetMenuGroup("World Tools");
-
             ui->AddWidgetToScene(postprocess_dialog_);
-            ui->AddWidgetToMenu(postprocess_dialog_, ui_properties);
+            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
+                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
         }
 
          environment_editor_ = new EnvironmentEditor(this);

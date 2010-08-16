@@ -23,7 +23,6 @@
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -247,20 +246,8 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 
-        UiServices::UiWidgetProperties properties(tr("Environment Editor"), "./data/ui/images/menus/edbutton_ENVED_normal");
-        properties.SetMenuGroup("World Tools");
-
         ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this, properties);
-
-        /*
-        InitTerrainTabWindow();
-        InitTerrainTextureTabWindow();
-        InitWaterTabWindow();
-        InitSkyTabWindow();
-        InitFogTabWindow();
-        InitAmbientTabWindow();
-        */
+        ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");

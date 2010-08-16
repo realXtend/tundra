@@ -114,14 +114,11 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     profilerWindow_ = new TimeProfilerWindow(framework_);
     profilerWindow_->move(100, 100);
 
-    UiServices::UiWidgetProperties props(tr("Profiler"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
-    props.SetMenuGroup("Developer Tools");
-
     profilerWindow_->resize(650, 530);
     UiProxyWidget *proxy = ui->AddWidgetToScene(profilerWindow_);
     connect(proxy, SIGNAL(Visible(bool)), SLOT(StartProfiling(bool)));
 
-    ui->AddWidgetToMenu(profilerWindow_, props);
+    ui->AddWidgetToMenu(profilerWindow_, tr("Profiler"), tr("Developer Tools"), "./data/ui/images/menus/edbutton_MATWIZ_hover.png");
 }
 
 void DebugStatsModule::StartProfiling(bool visible)

@@ -36,25 +36,19 @@ namespace UiServices
         owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
-    void UiSceneService::AddWidgetToMenu(QWidget *widget, const UiWidgetProperties &properties)
-    {
-        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, properties);
-    }
-
     void UiSceneService::AddWidgetToMenu(QWidget *widget)
     {
-        UiWidgetProperties props(widget->windowTitle());
-        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, props);
+        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, widget->windowTitle(), "", "");
     }
 
-    void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu)
+    void UiSceneService::AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
-        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(entry, menu, widget->graphicsProxyWidget());
+        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
-    void UiSceneService::AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu)
+    void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
-        owner_->GetInworldSceneController()->menu_manager_->AddMenuItem(entry, menu, widget);
+        owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)

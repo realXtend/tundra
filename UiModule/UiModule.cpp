@@ -17,7 +17,6 @@
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/NotificationManager.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Inworld/Notifications/InputNotification.h"
 #include "Inworld/Notifications/QuestionNotification.h"
@@ -64,8 +63,6 @@ namespace UiServices
         SAFE_DELETE(inworld_notification_manager_);
         SAFE_DELETE(ether_logic_);
     }
-
-    /*************** ModuleInterfaceImpl ***************/
 
     void UiModule::Load()
     {

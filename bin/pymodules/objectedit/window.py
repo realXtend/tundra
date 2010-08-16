@@ -43,15 +43,16 @@ class ObjectEditWindow:
         
         #if not DEV:
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
-        uiprops.name_ = "Object Edit"
+        #uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
+        #uiprops.name_ = "Object Edit"
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        self.proxywidget = r.createUiProxyWidget(ui, uiprops)
+        self.proxywidget = r.createUiProxyWidget(ui)
+        self.proxywidget.setWindowTitle("Object Edit")
 
-        if not uism.AddProxyWidget(self.proxywidget):
+        if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
 
-        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+        uism.AddWidgetToMenu(self.proxywidget, "Object Edit", "", "./data/ui/images/menus/edbutton_OBJED_normal.png")
 
         self.widget = ui
         self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
@@ -420,7 +421,7 @@ class ObjectEditWindow:
     def on_exit(self):
         self.proxywidget.hide()
         uism = r.getUiSceneManager()
-        uism.RemoveProxyWidgetFromScene(self.proxywidget)
+        uism.RemoveWidgetFromScene(self.proxywidget)
         
     def objectDeleted(self, ent_id): #XXX not the best way of doing this
         if self.mainTabList.has_key(ent_id):

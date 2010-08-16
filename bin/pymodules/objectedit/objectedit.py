@@ -104,15 +104,15 @@ class ObjectEdit(Component):
         loader = QUiLoader()
         selectionfile = QFile(self.SELECTIONRECT)
         self.selection_rect = loader.load(selectionfile)
-        rectprops = r.createUiWidgetProperty(2)
+        #rectprops = r.createUiWidgetProperty(2)
         #~ print type(rectprops), dir(rectprops)
         #print rectprops.WidgetType
         #uiprops.widget_name_ = "Selection Rect"
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        proxy = r.createUiProxyWidget(self.selection_rect, rectprops)
+        proxy = r.createUiProxyWidget(self.selection_rect)
         uism = r.getUiSceneManager()
-        uism.AddProxyWidget(proxy)
+        uism.AddWidgetToScene(proxy)
         proxy.setWindowFlags(0) #changing it to Qt::Widget
         
         self.selection_rect.setGeometry(0,0,0,0)

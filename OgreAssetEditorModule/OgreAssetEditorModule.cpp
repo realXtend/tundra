@@ -27,7 +27,6 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -72,11 +71,9 @@ void OgreAssetEditorModule::PostInitialize()
     uiService_ = framework_->GetServiceManager()->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui);
     if (!uiService_.expired())
     {
-        UiServices::UiWidgetProperties props("Material Wizard", "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
-        props.SetMenuGroup("World Tools");
-
         UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);
-        uiService_.lock()->AddWidgetToMenu(materialWizard_, props);
+        uiService_.lock()->AddWidgetToMenu(materialWizard_, tr("Material Wizard"), tr("World Tools"),
+            "./data/ui/images/menus/edbutton_MATWIZ_normal.png");
         connect(proxy, SIGNAL(Closed()), materialWizard_, SLOT(Close()));
     }
 
