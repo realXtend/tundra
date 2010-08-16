@@ -40,6 +40,8 @@ endif (HYDRAX)
 
 add_definitions (-DOGRE_MODULE_EXPORTS)
 
+#add_definitions (-DUSE_NVIDIA_PERFUD)
+
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
