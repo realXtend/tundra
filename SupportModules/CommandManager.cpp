@@ -2,10 +2,11 @@
 
 #include "StableHeaders.h"
 
-#include <boost/tokenizer.hpp>
 #include "CommandManager.h"
 #include "ConsoleModule.h"
 #include "Framework.h"
+
+#include <boost/tokenizer.hpp>
 
 bool nocase_compare(const std::string &lhs, const std::string &rhs)
 {
@@ -17,10 +18,10 @@ namespace Console
     typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
     typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-    CommandManager::CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console) : 
-    Console::ConsoleCommandServiceInterface()
-        , parent_ (checked_static_cast< ConsoleModule* >(parent))
-        , console_(console)
+    CommandManager::CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console) :
+        Console::ConsoleCommandServiceInterface(),
+        parent_ (checked_static_cast< ConsoleModule* >(parent)),
+        console_(console)
     {
         RegisterCommand(Console::CreateCommand("Help", "Display available commands", Console::Bind(this, &CommandManager::ConsoleHelp)));
         RegisterCommand(Console::CreateCommand("Exit", "Exit application", Console::Bind(this, &CommandManager::ConsoleExit)));

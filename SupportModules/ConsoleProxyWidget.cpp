@@ -1,17 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "DebugOperatorNew.h"
+
 #include "ConsoleProxyWidget.h"
 
 #include <QWidget>
-#include "MemoryLeakCheck.h"
 
-namespace CoreUi
+namespace Console
 {
-    ConsoleProxyWidget::ConsoleProxyWidget(QWidget *widget)
-        : QGraphicsProxyWidget(0, Qt::Widget),
-          con_relative_height_(0.5)
+    ConsoleProxyWidget::ConsoleProxyWidget(QWidget *widget) :
+        QGraphicsProxyWidget(0, Qt::Widget),
+        con_relative_height_(0.5)
     {
         setWidget(widget);
     }

@@ -102,7 +102,7 @@ namespace UiServices
         QGraphicsView *ui_view_;
 
         //! UiConsoleManager pointer
-        CoreUi::UiConsoleManager* ui_console_manager_;
+//        CoreUi::UiConsoleManager* ui_console_manager_;
 
         //! UiStateMachine pointer
         CoreUi::UiStateMachine *ui_state_machine_;

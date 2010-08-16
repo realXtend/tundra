@@ -2,15 +2,15 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "UiConsoleManager.h"
 #include "ui_ConsoleWidget.h"
 #include "ConsoleProxyWidget.h"
-
 #include "ConsoleEvents.h"
 #include "ConsoleManager.h"
 #include "ConsoleModule.h"
-#include "EventManager.h"
 
+#include "EventManager.h"
 #include "Framework.h"
 
 #include <QGraphicsView>
@@ -20,15 +20,15 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace CoreUi
+namespace Console
 {
-    UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view)
-        : framework_(framework),
-          ui_view_(ui_view),
-          console_ui_(new Ui::ConsoleWidget()),
-          console_widget_(new QWidget()),
-          visible_(false),
-          opacity_(0.8)
+    UiConsoleManager::UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view) :
+        framework_(framework),
+        ui_view_(ui_view),
+        console_ui_(new Ui::ConsoleWidget()),
+        console_widget_(new QWidget()),
+        visible_(false),
+        opacity_(0.8)
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
@@ -81,7 +81,8 @@ namespace CoreUi
     void UiConsoleManager::SendInitializationReadyEvent()
     {
         Console::ConsoleEventData *event_data =  new Console::ConsoleEventData("");
-        framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED, Foundation::EventDataPtr(event_data), 1);
+        framework_->GetEventManager()->SendDelayedEvent(console_category_id_, Console::Events::EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED,
+            Foundation::EventDataPtr(event_data), 1);
     }
 
     void UiConsoleManager::HandleInput()

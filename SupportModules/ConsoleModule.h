@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ConsoleModule_h
-#define incl_ConsoleModule_h
+#ifndef incl_SupportModules_ConsoleModule_h
+#define incl_SupportModules_ConsoleModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
@@ -22,6 +22,8 @@ namespace Foundation
 */
 namespace Console
 {
+    class UiConsoleManager;
+
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
@@ -63,6 +65,9 @@ namespace Console
 
         //! Input event category id.
         event_category_id_t inputEventCategory_;
+
+        //! Console UI manager
+        UiConsoleManager *ui_console_manager_;
     };
 }
 

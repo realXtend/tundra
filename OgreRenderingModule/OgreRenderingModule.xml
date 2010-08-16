@@ -1,3 +1,4 @@
 <config>
     <entry>OgreRenderingModule</entry>
+    <dependency>UiModule</dependency>
 </config>

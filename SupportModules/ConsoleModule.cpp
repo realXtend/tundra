@@ -4,9 +4,11 @@
 
 #include "ConsoleModule.h"
 #include "ConsoleManager.h"
+#include "ConsoleEvents.h"
+#include "UiConsoleManager.h"
+
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
-#include "ConsoleEvents.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "ServiceManager.h"
@@ -17,7 +19,7 @@ namespace Console
 {
     std::string ConsoleModule::type_name_static_ = "Console";
 
-    ConsoleModule::ConsoleModule() : ModuleInterface(type_name_static_)
+    ConsoleModule::ConsoleModule() : ModuleInterface(type_name_static_), ui_console_manager_(0)
     {
     }
 
@@ -37,6 +39,10 @@ namespace Console
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
             checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
+
+        QGraphicsView *ui_view = GetFramework()->GetUIView();
+        if (ui_view)
+            ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
     }
 
     void ConsoleModule::PostInitialize()
@@ -44,16 +50,25 @@ namespace Console
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
 
+        ui_console_manager_->SendInitializationReadyEvent();
 //        KeyEventSignal &keySignal = inputModule->TopLevelInputContext().RegisterKeyEvent(Qt::Key_F1);
+    }
 
-
+    // virtual 
+    void ConsoleModule::Uninitialize()
+    {
+        framework_->GetServiceManager()->UnregisterService(manager_);
+        framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager());
+        SAFE_DELETE(ui_console_manager_);
+        assert (manager_);
+        manager_.reset();
     }
 
     void ConsoleModule::Update(f64 frametime)
     {
         {
             PROFILE(ConsoleModule_Update);
-            assert (manager_);
+            assert(manager_);
             manager_->Update(frametime);
 
             // Read from the global top-level input context for console dropdown event.
@@ -81,6 +96,15 @@ namespace Console
                 manager_->ExecuteCommand(console_data->message);
                 break;
             }
+            case Console::Events::EVENT_CONSOLE_TOGGLE:
+                ui_console_manager_->ToggleConsole();
+                break;
+            case Console::Events::EVENT_CONSOLE_PRINT_LINE:
+            {
+                ConsoleEventData *console_data = dynamic_cast<Console::ConsoleEventData*>(data);
+                ui_console_manager_->QueuePrintRequest(QString(console_data->message.c_str()));
+                break;
+            }
             default:
                 return false;
             }
@@ -88,15 +112,5 @@ namespace Console
             return true;
         }
         return false;
-    }
-
-    // virtual 
-    void ConsoleModule::Uninitialize()
-    {
-        framework_->GetServiceManager()->UnregisterService(manager_);
-        framework_->GetServiceManager()->UnregisterService(checked_static_cast< ConsoleManager* >(manager_.get())->GetCommandManager());
-
-        assert (manager_);
-        manager_.reset();
     }
 }

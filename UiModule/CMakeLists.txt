@@ -41,7 +41,7 @@ AddSourceFolder (Inworld)
 AddSourceFolder (Inworld/View)
 AddSourceFolder (Inworld/Menus)
 AddSourceFolder (Inworld/ControlPanel)
-AddSourceFolder (Inworld/Console)
+#AddSourceFolder (Inworld/Console)
 AddSourceFolder (Inworld/Notifications)
 
 # Qt4 Moc files to "CMake Moc" subgroup
@@ -68,7 +68,7 @@ use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon Protocol
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities)
+link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules)
 link_package (BOOST)
 link_package (QT4)
 link_package (POCO)
