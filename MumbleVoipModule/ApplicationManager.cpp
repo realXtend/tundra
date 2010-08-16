@@ -2,10 +2,11 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #include "ApplicationManager.h"
 #include <QDesktopServices>
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

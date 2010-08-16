@@ -1,6 +1,9 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "Session.h"
-//#include "MemoryLeakCheck.h"
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
@@ -16,6 +19,8 @@
 #include "Participant.h"
 #include "MumbleLibrary.h"
 #include "MumbleVoipModule.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {

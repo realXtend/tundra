@@ -21,8 +21,9 @@
 #include <QUrl>
 #include <celt/celt_types.h>
 #include <celt/celt.h>
-#include "MemoryLeakCheck.h"
 #include <QMetaType>
+
+#include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
