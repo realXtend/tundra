@@ -13,6 +13,7 @@
 #include "Channel.h"
 #include <mumbleclient/user.h>
 #include <mumbleclient/channel.h>
+
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
