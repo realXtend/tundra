@@ -8,11 +8,6 @@
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
 
-namespace Foundation
-{
-    class Framework;
-}
-
 /*! \defgroup DebugConsole_group Debug Console Client Interface
     \copydoc Console
 */
@@ -37,14 +32,8 @@ namespace Console
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
-
         virtual void Update(f64 frametime);
-
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, 
-            Foundation::EventDataInterface* data);
-
-        //! returns framework
-        Foundation::Framework *GetFramework() const { return framework_; }
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
         //! Returns default console
         ConsolePtr GetConsole() const { return manager_; }
@@ -53,6 +42,7 @@ namespace Console
 
         //! returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;

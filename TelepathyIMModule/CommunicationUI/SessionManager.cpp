@@ -2,12 +2,8 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+
 #include "SessionManager.h"
-
-#include "UiModule.h"
-#include "UiProxyWidget.h"
-#include "Inworld/InworldSceneController.h"
-
 #include "MasterWidget.h"
 #include "SessionHelper.h"
 #include "FriendListWidget.h"
@@ -16,6 +12,8 @@
 #include "ConnectionInterface.h"
 #include "ChatSessionInterface.h"
 #include "Framework.h"
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 
 #include <QDebug>
 #include <QMessageBox>
@@ -161,16 +159,16 @@ namespace UiManagers
 
     void SessionManager::CreateFriendListWidget()
     {
+        // Add friend list to scene, no toolbar button
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui)
+            return;
+
         SAFE_DELETE(friend_list_widget_);
         friend_list_widget_ = new CommunicationUI::FriendListWidget(im_connection_, session_helper_, framework_);
+        friend_list_widget_->setWindowTitle(tr("Friends List"));
+        ui->AddWidgetToScene(friend_list_widget_);
 
-        // Add friend list to scene, no toolbar button
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        if (ui_module.get())
-        {
-            friend_list_widget_->setWindowTitle(tr("Friends List"));
-            ui_module->GetInworldSceneController()->AddWidgetToScene(friend_list_widget_);
-        }
         connect(friend_list_widget_, SIGNAL( StatusChanged(const QString &) ),
                 session_helper_, SLOT( SetMyStatus(const QString &) ));
         connect(friend_list_widget_, SIGNAL( NewChatSessionStarted(Communication::ChatSessionInterface *, QString &) ),

@@ -3,31 +3,24 @@
 #ifndef incl_SupportModules_ConsoleEvents_h
 #define incl_SupportModules_ConsoleEvents_h
 
-//#include "StableHeaders.h"
 #include "EventDataInterface.h"
 
 namespace Console
 {
     namespace Events
     {
-        static const event_id_t EVENT_CONSOLE_TOGGLE = 0x01;
-
         static const event_id_t EVENT_CONSOLE_PRINT_LINE = 0x02;
 
         static const event_id_t EVENT_CONSOLE_COMMAND_ISSUED = 0x03;
-
-        static const event_id_t EVENT_CONSOLE_CONSOLE_VIEW_INITIALIZED = 0x04;
     }
 
-    /// Event data interface for Consolemessages
+    /// Event data interface for Console messages
     class ConsoleEventData : public Foundation::EventDataInterface
     {
     public:
-        ConsoleEventData(const std::string string) :
-            message(string) {}
+        ConsoleEventData(const std::string &string) : message(string) {}
         virtual ~ConsoleEventData() {}
         std::string message;
-        
     };
 }
 
