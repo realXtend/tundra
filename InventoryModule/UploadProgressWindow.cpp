@@ -14,7 +14,6 @@
 
 #include "UiModule.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>

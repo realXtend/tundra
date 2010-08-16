@@ -14,7 +14,6 @@
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
 #include "UiServiceInterface.h"
-#include "UiWidgetProperties.h"
 
 #include <QUiLoader>
 #include <QFile>

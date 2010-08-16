@@ -20,8 +20,6 @@ class UiProxyWidget;
 
 namespace UiServices
 {
-    class UiWidgetProperties;
-
     class UI_MODULE_API InworldSceneController : public QObject
     {
         Q_OBJECT
@@ -67,15 +65,19 @@ namespace UiServices
         //! 
         /*! 
          *  \param widget Widget.
-         *  \param properties Widget properties.
+         *  \param 
+         *  \param 
+         *  \param 
          */
-        void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties);
+        void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
         /*! This is an overloaded function.
          *  \param widget Proxy widget.
-         *  \param properties Widget properties.
+         *  \param 
+         *  \param 
+         *  \param 
          */
-        void AddWidgetToMenu(UiProxyWidget *widget, const UiServices::UiWidgetProperties &properties);
+        void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
         //! Remove a proxy widget from scene if it exist there
         /*! Used for removing your widget from scene. The show/hide toggle button will also be removed from the main panel.
@@ -141,8 +143,6 @@ namespace UiServices
 
     private:
         Q_DISABLE_COPY(InworldSceneController);
-
-        friend class UiSceneService;
 
         //! Pointer to main QGraphicsView
         QGraphicsView *ui_view_;

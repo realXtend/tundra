@@ -31,15 +31,19 @@ use_package (OGRE)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (PROPERTYEDITOR)
+
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
-    ProtocolUtilities UiModule ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
-    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
+    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
+
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight
-    ProtocolUtilities UiModule EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent) # OgreRenderingModule)
+    ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent) # OgreRenderingModule)
+
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
@@ -61,7 +65,7 @@ if (MSVC)
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
             if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")        
+                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
             else()
                 get_filename_component(basename ${src_file} NAME)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")

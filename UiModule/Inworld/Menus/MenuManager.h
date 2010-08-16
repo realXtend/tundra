@@ -37,8 +37,7 @@ namespace CoreUi
         ~MenuManager();
 
     public slots:
-        void AddMenuItem(QGraphicsProxyWidget *controlled_widget, const UiServices::UiWidgetProperties &properties);
-        void AddMenuItem(const QString &name, const QString &category, QGraphicsProxyWidget *controlled_widget);
+        void AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon);
 
         void RemoveMenuItem(const QString &category, QGraphicsProxyWidget *controlled_widget);
 

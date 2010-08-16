@@ -20,16 +20,16 @@ class ToolBarWindow():
         height = ui.size.height()
         
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
-        uiprops.SetMenuGroup("Server Tools")
-        uiprops.name_ = "Local Scene"
-        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        self.proxywidget = r.createUiProxyWidget(ui, uiprops)
+        #uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
 
-        if not uism.AddProxyWidget(self.proxywidget):
+        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
+        self.proxywidget = r.createUiProxyWidget(ui)
+        self.proxywidget.setWindowTitle("Local Scene")
+
+        if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+        uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
 
         self.inputQueue = queue
         self.endApplication = endApplication
@@ -43,7 +43,7 @@ class ToolBarWindow():
             
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
-            uism.RemoveProxyWidgetFromScene(self.proxywidget)
+            uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:
             r.logInfo("LocalSceneWindow failure:")

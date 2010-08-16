@@ -10,7 +10,6 @@
 #define incl_Interfaces_UiServiceInterface_h
 
 #include "ServiceInterface.h"
-#include "UiWidgetProperties.h"
 
 #include <QObject>
 
@@ -56,36 +55,33 @@ namespace Foundation
          */
         virtual void AddWidgetToScene(UiProxyWidget *widget) = 0;
 
-        /** Adds widget to menu.
+        /** Adds widget to menu without any spesific properties: adds entry to the root menu,
+         *  takes name from the window title and uses default icon.
          *  @param widget Widget.
-         *  @param properties Widget properties.
-         *  @note Doesn't add the widget to the scene.
-         */
-        virtual void AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties) = 0;
-
-        /** Adds widget to menu without properties. Generates default properties. Takes name from the window title.
-         *  @param widget Widget.
+         *
          *  @note Doesn't add the widget to the scene.
          */
         virtual void AddWidgetToMenu(QWidget *widget) = 0;
 
         /** Adds widget to menu.
          *  @param widget Widget.
-         *  @param menu Name of the menu entry.
-         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is
-         *  added to the root menu.
+         *  @param name Name of the menu entry.
+         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
+         *  @param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
          *
          *  @note Doesn't add the widget to the scene.
          */
-        virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "") = 0;
+        virtual void AddWidgetToMenu(QWidget *widget, const QString &entry, const QString &menu = "", const QString &icon = "") = 0;
 
         /** This is an overloaded function.
          *  @param widget Proxy widget.
-         *  @param menu Name of the menu entry.
-         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is
-         *  added to the root menu.
+         *  @param name Name of the menu entry.
+         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
+         *  @param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
+         *
+         *  @note Doesn't add the widget to the scene.
          */
-        virtual void AddWidgetToMenu(QGraphicsProxyWidget *widget, const QString &entry, const QString &menu = "") = 0;
+        virtual void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu = "", const QString &icon = "") = 0;
 
         /** Removes widget from the scene.
          *  @param widget Widget.

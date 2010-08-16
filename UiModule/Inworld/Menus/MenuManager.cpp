@@ -83,6 +83,7 @@ namespace CoreUi
         Sort();
     }
 
+/*
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *controlled_widget, const UiServices::UiWidgetProperties &properties)
     {
         ActionNode *child_node = new ActionNode(properties.GetName(), properties.GetIcon());
@@ -107,18 +108,16 @@ namespace CoreUi
 
         Sort();
     }
-
-    void MenuManager::AddMenuItem(const QString &name, const QString &category, QGraphicsProxyWidget *controlled_widget)
-    {
-/*
-        UiDefines::MenuNodeStyleMap map;
-        QString base_url = "./data/ui/images/menus/"; 
-        map[UiDefines::IconNormal] = base_url + "edbutton_MATWIZ_normal.png.png";
-        map[UiDefines::IconHover] = base_url + "edbutton_MATWIZ_hover.png.png";
-        map[UiDefines::IconPressed] = base_url + "edbutton_MATWIZ_click.png.png";
 */
-        QString icon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
-        ActionNode *child_node = new ActionNode(name, icon);
+    void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
+    {
+        QString iconPath;
+        if (icon.isEmpty())
+            iconPath = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
+        else
+            iconPath = icon;
+
+        ActionNode *child_node = new ActionNode(name, iconPath);
         if (category.isEmpty())
         {
             category_map_["Root"]->AddChildNode(child_node);
@@ -133,7 +132,7 @@ namespace CoreUi
             category_map_[category]->AddChildNode(child_node);
         }
 
-        controller_map_[child_node->GetID()] = controlled_widget;
+        controller_map_[child_node->GetID()] = widget;
         connect(child_node, SIGNAL(ActionButtonClicked(const QUuid&)), SLOT(ActionNodeClicked(const QUuid&)));
         layout_manager_->AddItemToScene(child_node);
 

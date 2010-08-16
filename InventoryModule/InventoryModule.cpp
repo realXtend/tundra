@@ -35,7 +35,6 @@
 #include "ResourceInterface.h"
 #include "UiModule.h"
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
 
@@ -464,16 +463,13 @@ void InventoryModule::CreateInventoryWindow()
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    UiServices::UiWidgetProperties props(QApplication::translate("InventoryWindow", "Inventory"));
     ui->AddWidgetToScene(inventoryWindow_);
-    ui->AddWidgetToMenu(inventoryWindow_, props);
+    ui->AddWidgetToMenu(inventoryWindow_);
 
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (ui_module)
-    {
         connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
             SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
-    }
 
 /*
     if (uploadProgressWindow_)

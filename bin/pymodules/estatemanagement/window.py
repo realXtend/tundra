@@ -76,16 +76,17 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         IncomingMessagesHandler.__init__(self, queue, self.endMethod)        
         
         uism = r.getUiSceneManager()
-        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
-        uiprops.SetMenuGroup("Server Tools")
-        uiprops.name_ = "Estate Management"
+#        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
+#        uiprops.SetMenuGroup("Server Tools")
+#        uiprops.name_ = "Estate Management"
         
-        self.proxywidget = r.createUiProxyWidget(self.gui, uiprops)
+        self.proxywidget = r.createUiProxyWidget(self.gui)
+        self.proxywidget.setWindowTitle("Estate Management")
 
-        if not uism.AddProxyWidget(self.proxywidget):
+        if not uism.AddWidgetToScene(self.proxywidget):
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
-        uism.AddWidgetToMenu(self.proxywidget, uiprops)
+        uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 
         self.btnLoadEstate = self.gui.findChild("QPushButton", "btnLoadEstate")
         self.listWEI = self.gui.findChild("QListWidget","listWidgetEstateInfo")
@@ -187,7 +188,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
             
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
-            uism.RemoveProxyWidgetFromScene(self.proxywidget)
+            uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:
             r.logInfo("Estate Window failure:")

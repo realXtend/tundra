@@ -50,7 +50,6 @@ namespace CommunicationsService
         //boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         //if (ui_module.get())
         {
-            //UiServices::UiWidgetProperties widget_properties(name, UiServices::SceneWidget);
             //im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_, widget_properties);
             //if (im_ui_proxy_widget_)
             //    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);

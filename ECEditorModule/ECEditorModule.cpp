@@ -130,10 +130,9 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
-        UiServices::UiWidgetProperties props("Entity-Component Editor", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 
         ui->AddWidgetToScene(editor_window_);
-        ui->AddWidgetToMenu(editor_window_, props);
+        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));

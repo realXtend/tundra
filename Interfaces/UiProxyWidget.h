@@ -8,8 +8,6 @@
 #ifndef incl_Interfaces_UiProxyWidget_h
 #define incl_Interfaces_UiProxyWidget_h
 
-#include "UiWidgetProperties.h"
-
 #include <QGraphicsProxyWidget>
 
 class QTimeLine;
@@ -66,19 +64,19 @@ signals:
     /** Emitted when visibility of the proxy changes.
      *  @param visible Visiblity.
      */
-    void BringProxyToFrontRequest(QGraphicsProxyWidget*);
+    void BringProxyToFrontRequest(QGraphicsProxyWidget *widget);
 
-    /** 
-     *  @param visible
-     *  @param visible
+    /** Emitted when proxy widget has moved.
+     *  @param widget Widget.
+     *  @param pos New position.
      */
-    void ProxyMoved(QGraphicsProxyWidget *, const QPointF &);
+    void ProxyMoved(QGraphicsProxyWidget *widget, const QPointF &pos);
 
-    /** 
-     *  @param
-     *  @param
+    /** Emitted when proxy widget has been ungrabbed.
+     *  @param widget
+     *  @param pos New Position.
      */
-    void ProxyUngrabbed(QGraphicsProxyWidget *, const QPointF &);
+    void ProxyUngrabbed(QGraphicsProxyWidget *widget, const QPointF &pos);
 
 protected:
     /// QGraphicsProxyWidget override.
@@ -116,10 +114,10 @@ private:
     ///
     QPropertyAnimation *fade_animation_;
 
-    ///
+    /// Opacity in unfocused state, 0.0-1.0.
     qreal unfocus_opacity_;
 
-    ///
+    /// Is the animated show enabled.
     bool show_animation_enabled_;
 };
 

@@ -12,7 +12,6 @@
 #include "Inworld/ControlPanel/PersonalWidget.h"
 
 #include "UiProxyWidget.h"
-#include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -115,34 +114,32 @@ namespace UiServices
         return true;
     }
 
-    void InworldSceneController::AddWidgetToMenu(QWidget *widget, const UiServices::UiWidgetProperties &properties)
+    void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-        QString widget_name = properties.GetName();
         ///\todo This string comparison is awful, get rid of this.
-        if (widget_name == "Inventory")
+        if (name == "Inventory")
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
         }
-        else if (widget_name == "Avatar Editor")
+        else if (name == "Avatar Editor")
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
         }
         else
-            menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), properties);
+            menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
     }
 
-    void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const UiServices::UiWidgetProperties &properties)
+    void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
-        QString widget_name = properties.GetName();
         ///\todo This string comparison is awful, get rid of this.
-        if (widget_name == "Inventory")
+        if (name== "Inventory")
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
-        else if (widget_name == "Avatar Editor")
+        else if (name== "Avatar Editor")
             control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
         else
-            menu_manager_->AddMenuItem(widget, properties);
+            menu_manager_->AddMenuItem(widget, name, menu, icon);
     }
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
