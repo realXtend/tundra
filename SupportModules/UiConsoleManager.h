@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_UiModule_UiConsoleManager_h
-#define incl_UiModule_UiConsoleManager_h
+#ifndef incl_SupportModules_UiConsoleManager_h
+#define incl_SupportModules_UiConsoleManager_h
 
 #include <QObject>
 #include <QPropertyAnimation>
@@ -22,14 +22,13 @@ namespace Ui
 class QString;
 class QRectF;
 
-namespace CoreUi
+namespace Console
 {
     class ConsoleProxyWidget;
 
     class UiConsoleManager: public QObject
     {
-        
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         UiConsoleManager(Foundation::Framework *framework, QGraphicsView *ui_view);
@@ -47,7 +46,7 @@ namespace CoreUi
 
         //! Handle input to the console(called after return pushed)
         void HandleInput();
-        
+
         //! Sends event to notify console module that UI for console is ready
         void SendInitializationReadyEvent();
 
@@ -95,11 +94,10 @@ namespace CoreUi
 
         // Proxy for our UI
         ConsoleProxyWidget *proxy_widget_;
-        
+
         //! Animation used for sliding effect
         QPropertyAnimation animation_;
-
     };
 }
 
-#endif // incl_UiModule_UiConsoleManager_h
+#endif

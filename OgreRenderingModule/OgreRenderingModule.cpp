@@ -91,8 +91,6 @@ namespace OgreRenderer
         renderer_->Initialize();
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
-
-        
     }
 
     // virtual
@@ -183,7 +181,7 @@ namespace OgreRenderer
     {
         if (renderer_)
         {
-            boost::shared_ptr<Console::ConsoleServiceInterface> console = GetFramework()->GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
+            Console::ConsoleServiceInterface *console = GetFramework()->GetService<Console::ConsoleServiceInterface>();
             if (console)
             {
                 const Ogre::RenderTarget::FrameStats& stats = renderer_->GetCurrentRenderWindow()->getStatistics();
