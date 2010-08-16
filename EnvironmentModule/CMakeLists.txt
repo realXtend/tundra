@@ -43,9 +43,9 @@ use_package (XMLRPC)
 use_package (OGRE)
 use_package (QT4)
 
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities UiModule ProtocolModuleTaiga ProtocolModuleOpenSim) 
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim) 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
-link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities UiModule ProtocolModuleTaiga ProtocolModuleOpenSim)
+link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim)
 
 link_package (BOOST)
 link_package (POCO)

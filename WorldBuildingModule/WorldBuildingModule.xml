@@ -1,5 +1,4 @@
 <config>
-	<entry>WorldBuildingModule</entry>
+    <entry>WorldBuildingModule</entry>
     <dependency>OgreRenderingModule</dependency>
-    <dependency>UiModule</dependency>
 </config>

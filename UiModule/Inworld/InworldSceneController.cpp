@@ -107,8 +107,8 @@ namespace UiServices
             all_proxy_widgets_in_scene_.append(widget);
 
         connect(widget, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*)), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
-        connect(widget, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, const &QPointF)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, const QPointF &)));
-        connect(widget, SIGNAL(ProxyUngrabed(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetUngrabed(QGraphicsProxyWidget*, const QPointF &)));
+        connect(widget, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, const QPointF &)));
+        connect(widget, SIGNAL(ProxyUngrabbed(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetUngrabbed(QGraphicsProxyWidget*, const QPointF &)));
         connect(widget, SIGNAL(Closed()), SLOT(ProxyClosed()));
         connect(widget, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
 

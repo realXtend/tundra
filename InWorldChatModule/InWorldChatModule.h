@@ -35,11 +35,6 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
-namespace UiServices
-{
-    class UiModule;
-}
-
 QT_BEGIN_NAMESPACE
 class QColor;
 class QFile;
@@ -133,9 +128,6 @@ namespace Naali
 
         /// WorldStream pointer
         ProtocolUtilities::WorldStreamPtr currentWorldStream_ ;
-
-        /// UiModule pointer.
-        boost::weak_ptr<UiServices::UiModule> uiModule_;
 
         /// Do we want to show the in-world chat bubbles
         bool showChatBubbles_;

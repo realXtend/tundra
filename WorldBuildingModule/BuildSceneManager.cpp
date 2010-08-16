@@ -11,8 +11,6 @@
 #include "UiHelper.h"
 
 #include "ModuleInterface.h"
-#include "UiModule.h"
-#include "UiStateMachine.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "UiServiceInterface.h"
@@ -54,12 +52,12 @@ namespace WorldBuilding
         scene_ = new BuildScene(this);
         layout_ = new AnchorLayout(this, scene_);
 
-        // Register scene to ui module
-        StateMachine *machine = GetStateMachine();
-        if (machine)
+        // Register scene to ui service
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui)
         {
-            machine->RegisterScene(scene_name_, scene_);
-            connect(machine, SIGNAL(SceneChanged(const QString&, const QString &)),
+            ui->RegisterScene(scene_name_, scene_);
+            connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
                 SLOT(SceneChangedNotification(const QString&, const QString&)));
         }
 
@@ -257,15 +255,6 @@ namespace WorldBuilding
     QObject *BuildSceneManager::GetPythonHandler() const
     {
         return python_handler_; 
-    }
-
-    StateMachine *BuildSceneManager::GetStateMachine() const
-    {
-        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-        if (ui_module)
-            return ui_module->GetUiStateMachine();
-        else
-            return 0;
     }
 
     void BuildSceneManager::ToggleBuildScene()

@@ -4,8 +4,8 @@
  *  @brief  Environment module. Environment module is be responsible for visual environment features like terrain, sky & water.
  */
 
-#ifndef incl_EnvironmentModule_h
-#define incl_EnvironmentModule_h
+#ifndef incl_EnvironmentModule_EnvironmentModule_h
+#define incl_EnvironmentModule_EnvironmentModule_h
 
 #include "EnvironmentModuleApi.h"
 #include "ModuleInterface.h"
@@ -51,7 +51,6 @@ namespace Environment
         void Initialize();
         void PostInitialize();
         void Uninitialize();
-        void SubscribeToNetworkEvents();
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 

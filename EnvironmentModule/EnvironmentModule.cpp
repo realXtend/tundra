@@ -26,8 +26,9 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
+
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 #include "UiWidgetProperties.h"
 
 #include "MemoryLeakCheck.h"
@@ -69,20 +70,19 @@ namespace Environment
             postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
 
             // Add to scene.
-            UiServices::UiModule *ui_module = GetFramework()->GetModule<UiServices::UiModule>();
-            if (!ui_module)
+            Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+            if (!ui)
                 return;
 
             UiServices::UiWidgetProperties ui_properties(QApplication::translate("PostProcessWidget","Post-processing"));
             ui_properties.SetIcon("./data/ui/images/menus/edbutton_POSTPR_normal.png");
             ui_properties.SetMenuGroup("World Tools");
 
-            ui_module->GetInworldSceneController()->AddWidgetToScene(postprocess_dialog_);
-            ui_module->GetInworldSceneController()->AddWidgetToMenu(postprocess_dialog_, ui_properties);
+            ui->AddWidgetToScene(postprocess_dialog_);
+            ui->AddWidgetToMenu(postprocess_dialog_, ui_properties);
         }
 
          environment_editor_ = new EnvironmentEditor(this);
-
     }
 
     void EnvironmentModule::PostInitialize()
@@ -96,12 +96,6 @@ namespace Environment
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-    }
-
-    void EnvironmentModule::SubscribeToNetworkEvents()
-    {
-        network_in_event_category_ = event_manager_->QueryEventCategory("NetworkIn");
-        network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
     }
 
     void EnvironmentModule::Uninitialize()
@@ -227,7 +221,8 @@ namespace Environment
             case Foundation::NETWORKING_REGISTERED:
             {
                 // Begin to listen network events.
-                SubscribeToNetworkEvents();
+                network_in_event_category_ = event_manager_->QueryEventCategory("NetworkIn");
+                network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
                 return false;
             }
             case Foundation::WORLD_STREAM_READY:

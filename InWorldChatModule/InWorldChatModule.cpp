@@ -23,7 +23,6 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "CoreStringUtils.h"
 #include "GenericMessageUtils.h"
-#include "UiModule.h"
 #include "ConfigurationManager.h"
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
@@ -62,8 +61,6 @@ void InWorldChatModule::Load()
 void InWorldChatModule::PostInitialize()
 {
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
-
-    uiModule_ = framework_->GetModuleManager()->GetModule<UiServices::UiModule>();
 
     RegisterConsoleCommand(Console::CreateCommand("bbtest",
         "Adds a billboard to each entity in the scene.",

@@ -118,11 +118,11 @@ namespace Foundation
          */
         virtual void BringWidgetToFront(QGraphicsProxyWidget *widget) const = 0;
 
-        /** Returns scene with the requested name for introspection.
+        /** Returns scene with the requested name.
          *  @param name Name of the scene.
          *  @return Graphic scene with the requested name, or null if not found.
          */
-        virtual const QGraphicsScene *GetScene(const QString &name) const = 0;
+        virtual QGraphicsScene *GetScene(const QString &name) const = 0;
 
         /** Registers new scene.
          *  The instance which creates new scene is also responsible for its deletion.
@@ -144,6 +144,13 @@ namespace Foundation
          *  @return True if the scene existed and was activate ok, false otherwise.
          */
         virtual bool SwitchToScene(const QString &name) = 0;
+
+    signals:
+        /** Emitted when scene is changed.
+         *  @param oldName Name of the old scene.
+         *  @param newName Name of the new scene.
+         */
+        void SceneChanged(const QString &oldName, const QString &newName);
     };
 }
 

@@ -55,7 +55,7 @@ namespace WorldBuilding
 
     // Public
 
-    QGraphicsScene *AnchorLayout::GetScene()
+    QGraphicsScene *AnchorLayout::GetScene() const
     {
         return scene_;
     }
