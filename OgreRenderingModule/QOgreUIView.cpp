@@ -4,6 +4,7 @@
 #include "QOgreUIView.h"
 #include "CoreStringUtils.h"
 #include "KeyBindings.h"
+#include <QDebug>
 
 #ifdef Q_WS_X11
 #include <QX11Info>
@@ -153,6 +154,12 @@ namespace OgreRenderer
         if (top != -1)
             params["top"] = ToString(top);
 
+#ifdef USE_NVIDIA_PERFUD
+        params["useNVPerfHUD"] = "true";
+        params["Rendering Device"] = "NVIDIA PerfHUD";
+#endif
+
+     
         win_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
 
         return win_;

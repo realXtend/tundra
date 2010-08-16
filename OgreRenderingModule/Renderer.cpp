@@ -291,6 +291,14 @@ namespace OgreRenderer
         if (map.find("Floating-point mode") != map.end())
             rendersystem->setConfigOption("Floating-point mode", "Consistent");
 
+        //if ( map.find("useNVPerfHUD") != map.end() )
+        //{
+        //     rendersystem->setConfigOption("useNVPerfHUD", "true");
+            //rendersystem->setConfigOption("Allow NVPerfHUD", "Yes");
+        //}
+
+        //rendersystem->setConfigOption("Rendering Device", "NVIDIA PerfHUD");
+
         // Set the found rendering system
         root_->setRenderSystem(rendersystem);
         // Initialise but dont create rendering window yet
