@@ -543,31 +543,6 @@ namespace PythonScript
 
         //XXX not ported to UImodule / OIS replacement yet
    //     boost::shared_ptr<Input::InputModuleOIS> input = framework_->GetModuleManager()->GetModule<Input::InputModuleOIS>(Foundation::Module::MT_Input).lock();
-   //     if (input)
-   //     {
-   //         //boost::optional<const Input::Events::Movement&> movement = input->PollSlider(Input::Events::MOUSELOOK);
-   //         boost::optional<const Input::Events::Movement&> movement = input->GetMouseMovement();
-   //         if (movement)
-   //         {
-   //             //LogDebug("me sees mouse move too");
-
-   //             //might perhaps wrap that nice pos class later but this is simpler now
-   //             //float x_abs = static_cast<float>(movement->x_.abs_);
-   //             //float y_abs = static_cast<float>(movement->y_.abs_);
-   //             //
-   //             //float x_rel = static_cast<float>(movement->x_.rel_);
-   //             //float y_rel = static_cast<float>(movement->y_.rel_);
-
-   //             int x_abs = movement->x_.abs_;
-   //             int y_abs = movement->y_.abs_;
-   //             int x_rel = movement->x_.rel_;
-   //             int y_rel = movement->y_.rel_;
-
-            //    //was only sending the mouse_movement event if one of the buttons is pressed, XXX change?
-            //    //if (mouse_left_button_down_ || mouse_right_button_down_)
-   //             PyObject_CallMethod(pmmInstance, "MOUSE_MOVEMENT", "iiii", x_abs, y_abs, x_rel, y_rel);                
-            //}
-   //     }
     }
 
     PythonScriptModule* PythonScriptModule::GetInstance()
@@ -2039,8 +2014,6 @@ namespace PythonScript
         //std::string error;
         //modulemanager = engine_->LoadScript("modulemanager", error); //the pymodule loader & event manager
         //modulemanager = modulemanager->GetObject("ModuleManager"); //instanciates
-        mouse_left_button_down_ = false;
-        mouse_right_button_down_ = false;
 
         LogInfo(Name() + " initialized succesfully.");
     }

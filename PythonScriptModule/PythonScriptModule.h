@@ -164,9 +164,6 @@ namespace PythonScript
         //   so reverting to use the Py C API directly, not using the ScriptObject now
         //   for the modulemanager 
         
-        bool mouse_left_button_down_;
-        bool mouse_right_button_down_;
-
         // EventManager to member variable to be accessed from SubscribeNetworkEvents()
         Foundation::EventManagerPtr em_;
 
