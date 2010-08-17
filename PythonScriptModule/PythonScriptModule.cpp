@@ -83,6 +83,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgreCamera.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
@@ -567,6 +568,20 @@ namespace PythonScript
         else
             std::cout << "Renderer module not there?" << std::endl;
 
+        return 0;
+    }
+    
+    OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
+    {
+        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+        if (rexlogic)
+        {
+            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
+            if (camentptr) {
+                OgreRenderer::EC_OgreCamera* camera = camentptr->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+                return camera;
+            }
+        }
         return 0;
     }
 
@@ -1981,6 +1996,7 @@ namespace PythonScript
             mainModule.addObject("_naali", this);
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
