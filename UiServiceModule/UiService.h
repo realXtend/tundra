@@ -2,8 +2,9 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiSceneService.h
- *  @brief  Implements UiServiceInterface and provides means of adding widgets to the 
- *          
+ *  @brief  Light-weight UI service. Implements UiServiceInterface and provides 
+ *          means of embedding Qt widgets to the same scene/canvas as the 3D in-world
+ *          view. Uses only one UI scene for everything.
  */
 
 #ifndef incl_UiServiceModule_UiService_h
@@ -13,8 +14,10 @@
 
 class QGraphicsView;
 
-/** Implements UiServiceInterface and provides means of adding widgets to the 
- *  
+/*
+ *  Light-weight UI service. Implements UiServiceInterface and provides 
+ *  means of embedding Qt widgets to the same scene/canvas as the 3D in-world
+ *  view. Uses only one UI scene for everything.
  */
 class UiService : public Foundation::UiServiceInterface
 {
@@ -80,11 +83,14 @@ public slots:
     bool SwitchToScene(const QString &name) { return false; }
 
 private:
-    //! Pointer to main QGraphicsView
+    /// Main graphics view.
     QGraphicsView *view_;
 
-    //! Pointer to inworld widget scene
+    /// Main graphics scene.
     QGraphicsScene *scene_;
+
+    //! Internal list of proxy widgets in scene.
+    QList<QGraphicsProxyWidget *> widgets_;
 };
 
 #endif

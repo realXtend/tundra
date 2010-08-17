@@ -17,9 +17,8 @@
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Communications/InWorldChat/Provider.h"
-#include "Renderer.h"
 
-#include <QMessageBox>
+//#include <QMessageBox>
 
 namespace RexLogic
 {
@@ -65,9 +64,8 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         if (!event_data)
             return false;
 
-        UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-            ).lock();
-        if (ui_module.get())
+        UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+        if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 joined the world").arg(event_data->fullName.c_str())));
         break;
@@ -78,10 +76,8 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         assert(event_data);
         if (!event_data)
             return false;
-
-        UiModulePtr ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-            ).lock();
-        if (ui_module.get())
+        UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+        if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 logged out").arg(event_data->fullName.c_str())));
         break;
@@ -96,7 +92,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         boost::shared_ptr<OgreRenderer::Renderer> renderer =
             owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (renderer)
-            mainwindow = renderer->GetMainWindow();
+            mainwindow = owner_->GetFramework()->GetMainWindow();
         QMessageBox msgBox(QMessageBox::Warning, QApplication::translate("RexLogic", "Kicked Out"), 
             QApplication::translate("RexLogic", "You were kicked out from the server."), QMessageBox::Ok, mainwindow);
         msgBox.exec();*/
