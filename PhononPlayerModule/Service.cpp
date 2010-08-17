@@ -53,6 +53,7 @@ namespace PlayerService
  
         VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
+//        delete player;
         player->deleteLater();
     }
 
