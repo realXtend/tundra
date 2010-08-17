@@ -378,6 +378,11 @@ if 0: #pythonqt introspec
     #print type(UiWidgetProperties), dir(UiWidgetProperties)
     #print UiWidgetProperties.WidgetType #the enum should be moved to be inside the class XXX
 
+if 0: # EC_OgreCamera
+    import naali
+    cam = naali.getCamera()
+    print dir(cam), cam.className, cam
+
 if 0:
     import naali
     def keypressed(e):
@@ -938,6 +943,8 @@ if 0: #javascript service
     from naali import runjs
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
     runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
+    runjs('print("Some camera!" + x)', {'x': naali.getCamera()})
+    runjs('print("Some camera, using naali :O !" + x.getCamera())', {'x': naali})
     #runjs('var a = {"a": true, "b": 2};')
     #runjs('print(a.a + ", " + a.b)')
     #runjs('print(JSON.stringify(a))')
