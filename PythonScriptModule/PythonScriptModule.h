@@ -35,6 +35,7 @@ class MouseEvent;
 namespace OgreRenderer
 {
     class Renderer;
+    class EC_OgreCamera;
 }
 
 namespace Scene
@@ -76,6 +77,7 @@ namespace PythonScript
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
+        OgreRenderer::EC_OgreCamera* GetCamera() const;
 
     public:
         PythonScriptModule();

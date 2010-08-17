@@ -37,6 +37,7 @@ namespace OgreRenderer
             \param placeable placeable component
          */
         void SetPlaceable(Foundation::ComponentPtr placeable);
+    public slots:
  
         //! sets as active camera in the viewport
         void SetActive();
