@@ -12,7 +12,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace PlayerService
+namespace PhononPlayer
 {
     VideoPlayer::VideoPlayer(const QString &url) : video_widget_(0), error_handled_(false)
     {
@@ -75,4 +75,4 @@ namespace PlayerService
             return;
         }
     }
-}
+} // PhononPlayer

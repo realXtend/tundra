@@ -11,15 +11,15 @@
 
 class QWidget;
 
-namespace Player
+namespace MediaPlayer
 {
     /// Service offer player widget for video content.
     ///
-    class PlayerServiceInterface : public QObject, public Foundation::ServiceInterface 
+    class ServiceInterface : public QObject, public Foundation::ServiceInterface 
     {
         Q_OBJECT
     public:
-        virtual ~PlayerServiceInterface() {};
+        virtual ~ServiceInterface() {};
     public slots:
         virtual bool IsMimeTypeSupported(const QString mime_type) = 0;
 
@@ -28,13 +28,13 @@ namespace Player
         /// widget is created and returned.
         /// @param url url of video content
         /// @return pointer to player widget if success otherwise return 0.
-        virtual QWidget* GetPlayer(const QString &url) = 0;
+        virtual QWidget* GetPlayerWidget(const QString &url) = 0;
 
         /// Delete existing video widget associated with given url.
         /// Be sure that you are not using the player widget after you have called this method.
         /// @param url url of video content
-        virtual void DeletePlayer(const QString &url) = 0;
+        virtual void DeletePlayerWidget(const QString &url) = 0;
     };
-} // Player
+} // MediaPlayer
 
 #endif // incl_Interfaces_PlayerService_h

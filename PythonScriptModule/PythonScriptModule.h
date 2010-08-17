@@ -53,9 +53,9 @@ namespace ProtocolUtilities
     class WorldStream;
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
-namespace Player
+namespace MediaPlayer
 {
-    class PlayerServiceInterface;
+    class ServiceInterface;
 }
 
 typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
@@ -75,7 +75,7 @@ namespace PythonScript
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
-        Player::PlayerServiceInterface* GetPlayerService() const;
+        MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
 
     public:
         PythonScriptModule();

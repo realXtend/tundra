@@ -115,7 +115,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include <propertyeditor.h>
 
 // =========== Note py developers: MemoryLeakCheck must be the last include =========== //
-#include <PlayerService.h>
+#include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "QtInputKeyEvent.h"
@@ -1241,7 +1241,7 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //return QString(cache_path.c_str());
 }
 
-Player::PlayerServiceInterface* PythonScriptModule::GetPlayerService() const
+MediaPlayer::ServiceInterface* PythonScriptModule::GetMediaPlayerService() const
 {
     Foundation::Framework* framework = PythonScript::self()->GetFramework();
     if (!framework)
@@ -1250,7 +1250,7 @@ Player::PlayerServiceInterface* PythonScriptModule::GetPlayerService() const
         return 0;
     }
 
-    Player::PlayerServiceInterface *player_service = framework_->GetService<Player::PlayerServiceInterface>();
+    MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
     if (player_service)
     {
         PythonQt::self()->registerClass(player_service->metaObject());

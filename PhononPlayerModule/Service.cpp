@@ -12,7 +12,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace PlayerService
+namespace PhononPlayer
 {
     Service::Service()
     {
@@ -22,8 +22,7 @@ namespace PlayerService
     {
         foreach(VideoPlayer* player, video_players_)
         {
-            // For now we destroy VideoPlayer objects on python side...
-            // SAFE_DELETE(player);
+            SAFE_DELETE(player);
         }
         video_players_.clear();
     }
@@ -33,7 +32,7 @@ namespace PlayerService
         return Phonon::BackendCapabilities::isMimeTypeAvailable(QString(mime_type));
     }
 
-    QWidget* Service::GetPlayer(const QString &url)
+    QWidget* Service::GetPlayerWidget(const QString &url)
     {
         if (video_players_.contains(url))
             return dynamic_cast<QWidget*>(video_players_[url]);
@@ -46,15 +45,14 @@ namespace PlayerService
         return video_players_[url];
     }
 
-    void Service::DeletePlayer(const QString &url)
+    void Service::DeletePlayerWidget(const QString &url)
     {
         if (!video_players_.contains(url))
             return;
  
         VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
-//        delete player;
-        player->deleteLater();
+        SAFE_DELETE(player);
     }
 
-} // PlayerService
+} // PhononPlayer

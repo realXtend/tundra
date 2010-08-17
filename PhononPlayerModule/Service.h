@@ -3,15 +3,15 @@
 #ifndef incl_PhononPlayer_Service_h
 #define incl_PhononPlayer_Service_h
 
-#include "PlayerService.h"
+#include "MediaPlayerService.h"
 #include <QMap>
 #include <QWidget>
 
-namespace PlayerService
+namespace PhononPlayer
 {
     class VideoPlayer;
 
-    class Service : public Player::PlayerServiceInterface
+    class Service : public MediaPlayer::ServiceInterface
     {
         Q_OBJECT
     public:
@@ -23,13 +23,13 @@ namespace PlayerService
 
     public slots:
         virtual bool IsMimeTypeSupported(const QString mime_type);
-        virtual QWidget* GetPlayer(const QString &url);
-        virtual void DeletePlayer(const QString &url);
+        virtual QWidget* GetPlayerWidget(const QString &url);
+        virtual void DeletePlayerWidget(const QString &url);
 
     private:
         QMap<QString, VideoPlayer*> video_players_;
     };
 
-} // PlayerService
+} // PhononPlayer
 
 #endif // incl_PhononPlayer_Service_h
