@@ -71,7 +71,8 @@ namespace Console
 
             // Read from the global top-level input context for console dropdown event.
             if (framework_->Input().IsKeyPressed(Qt::Key_F1))
-                manager_->ToggleConsole();
+                //manager_->ToggleConsole();
+                ui_console_manager_->ToggleConsole();
         }
         RESETPROFILER;
     }
