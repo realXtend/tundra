@@ -1241,75 +1241,26 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //return QString(cache_path.c_str());
 }
 
-PyObject* IsMimeTypeSupportedForVideoWidget(PyObject* self, PyObject* args)
+Player::PlayerServiceInterface* PythonScriptModule::GetPlayerService() const
 {
-    char* mimetype;
-    if(!PyArg_ParseTuple(args, "s", &mimetype))
-        return 0;   
-
     Foundation::Framework* framework = PythonScript::self()->GetFramework();
-    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-    if (service_manager)
+    if (!framework)
     {
-        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
-        if (player_service)
-        {
-            bool supported = player_service->IsMimeTypeSupported(QString(mimetype));
-            
-            if (supported)
-                Py_RETURN_TRUE;
-            else
-                Py_RETURN_FALSE;
-        }
+        PythonScriptModule::LogCritical("Framework object doesn't exist!");
+        return 0;
     }
-    Py_RETURN_FALSE;
-}
 
-PyObject* CreateVideoWidget(PyObject* self, PyObject* args)
-{
-    char* media_url;
-    if(!PyArg_ParseTuple(args, "s", &media_url))
-        return 0;  
-
-    QString url_string(media_url);
-
-    Foundation::Framework* framework = PythonScript::self()->GetFramework();
-    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-    if (service_manager)
+    Player::PlayerServiceInterface *player_service = framework_->GetService<Player::PlayerServiceInterface>();
+    if (player_service)
     {
-        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
-        if (player_service.get())
-        {
-            QWidget* player = player_service->GetPlayer(url_string);
-            if (player)
-                return PythonScriptModule::GetInstance()->WrapQObject(player);
-            else
-                return 0;
-        }
+        PythonQt::self()->registerClass(player_service->metaObject());
+        return player_service;
     }
+    else
+        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
     return 0;
 }
 
-PyObject* DeleteVideoWidget(PyObject* self, PyObject* args)
-{
-    char* url_string;
-    if(!PyArg_ParseTuple(args, "s", &url_string))
-        return 0;  
-
-    QString url(url_string);
-
-    Foundation::Framework* framework = PythonScript::self()->GetFramework();
-    Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
-    if (service_manager)
-    {
-        boost::shared_ptr<Player::PlayerServiceInterface> player_service = service_manager->GetService<Player::PlayerServiceInterface>(Foundation::Service::ST_Player).lock();
-        if (player_service)
-        {
-            player_service->DeletePlayer(url);
-        }
-    }
-    Py_RETURN_NONE;
-}
 
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)
@@ -2056,15 +2007,6 @@ static PyMethodDef EmbMethods[] = {
     
     {"getApplicationDataDirectory", (PyCFunction)GetApplicationDataDirectory, METH_NOARGS,
     "Get application data directory."},
-
-    {"isMimeTypeSupportedForVideoWidget", (PyCFunction)IsMimeTypeSupportedForVideoWidget, METH_VARARGS, 
-    "Return true if given mimetype is supported by Phon library.  Parameters: media_url"},
-
-    {"createVideoWidget", (PyCFunction)CreateVideoWidget, METH_VARARGS, 
-    "Create Phonon::VideoWidget object with MediaObject according given media url.  Parameters: media_url"},
-
-    {"deleteVideoWidget", (PyCFunction)DeleteVideoWidget, METH_VARARGS, 
-    "Delete Phonon::VideoWidget object. Parameters: widget"},
 
     {NULL, NULL, 0, NULL}
 };

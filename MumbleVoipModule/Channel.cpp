@@ -18,6 +18,14 @@ namespace MumbleVoip
 {
     Channel::Channel(const MumbleClient::Channel* channel) : channel_(channel)
     {
+        QString message = QString("Mumble channel object created for: %1").arg(channel->name.c_str());
+        MumbleVoipModule::LogDebug(message.toStdString());
+    }
+
+    Channel::~Channel()
+    {
+        QString message = QString("Mumble channel object deleted for: %1").arg(channel_->name.c_str());
+        MumbleVoipModule::LogDebug(message.toStdString());
     }
 
     QString Channel::Name() const
