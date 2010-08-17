@@ -8,7 +8,7 @@
 
 #include "MemoryLeakCheck.h" 
 
-namespace PlayerService
+namespace PhononPlayer
 {
     std::string PhononPlayerModule::type_name_static_ = "PhononPlayer";
 
@@ -31,7 +31,7 @@ namespace PlayerService
 
     void PhononPlayerModule::Initialize() 
     {
-        player_service_ = Player::PlayerServicePtr(new PlayerService::Service());
+        player_service_ = MediaPlayer::ServicePtr(new Service());
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Player, player_service_);
     }
@@ -55,7 +55,7 @@ namespace PlayerService
         return false;
     }
 
-} // PlayerService
+} // PhononPlayer
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
@@ -63,7 +63,7 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-using namespace PlayerService;
+using namespace PhononPlayer;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
 POCO_EXPORT_CLASS(PhononPlayerModule)

@@ -17,9 +17,11 @@ class MediaurlView:
         self.__url = PythonQt.QtCore.QUrl(urlstring)
         self.refreshrate = refreshrate
         type = self.__get_mime_type(urlstring)
-        if len(type) > 0 and naali.player_service is not None:
-            if naali.player_service.IsMimeTypeSupported(type):
-                self.playback_widget = naali.player_service.GetPlayer(str(urlstring))
+        self.__media_player_service_used = False
+        if len(type) > 0 and naali.mediaplayerservice is not None:
+            if naali.mediaplayerservice.IsMimeTypeSupported(type):
+                self.playback_widget = naali.mediaplayerservice.GetPlayerWidget(str(urlstring))
+                self.__media_player_service_used = True
                 print(" -- media content is supported.")
                 return
             else:
@@ -31,10 +33,11 @@ class MediaurlView:
     def delete_playback_widget(self):
         if self.playback_widget is None:
             return
-        if type(self.playback_widget).__name__ == 'PlayerService::VideoPlayer':
-            naali.player_service.DeletePlayer(self.__url.toString())
+        if self.__media_player_service_used:
+            # delete phonon bases player widget object
+            naali.mediaplayerservice.DeletePlayerWidget(self.__url.toString())
         else:
-            # VewView object
+            # delete VebView object
             self.playback_widget.delete()
             
     def url(self):

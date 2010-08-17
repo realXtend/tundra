@@ -7,13 +7,13 @@
 #include "ModuleLoggingFunctions.h"
 #include <QObject>
 
-namespace Player
+namespace MediaPlayer
 {
-    class PlayerServiceInterface;
-    typedef boost::shared_ptr<PlayerServiceInterface> PlayerServicePtr; 
+    class ServiceInterface;
+    typedef boost::shared_ptr<ServiceInterface> ServicePtr; 
 }
 
-namespace PlayerService
+namespace PhononPlayer
 {
     /**
      *  Offers PlayerService using Phonon backend.
@@ -42,9 +42,9 @@ namespace PlayerService
         void InitializeConsoleCommands();
         static std::string type_name_static_;
         
-        Player::PlayerServicePtr player_service_;
+        MediaPlayer::ServicePtr player_service_;
     };
 
-} // PlayerService
+} // PhononPlayer
 
 #endif // incl_PhononPlayerModule_h

@@ -6,6 +6,6 @@ from __main__ import _naali
 renderer = _naali.GetRenderer()
 runjs = _naali.RunJavascriptString
 inputcontext = _naali.GetInputContext()
-player_service = _naali.GetPlayerService()
+mediaplayerservice = _naali.GetMediaPlayerService()
 def getScene(name):
     return _naali.GetScene(name)

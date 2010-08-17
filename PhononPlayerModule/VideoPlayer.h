@@ -14,7 +14,7 @@ namespace Phonon
     class VideoWidget;
 }
 
-namespace PlayerService
+namespace PhononPlayer
 {
     /// Render video content in a endless loop.
     class VideoPlayer : public QWidget
@@ -34,6 +34,6 @@ namespace PlayerService
         Phonon::VideoWidget* video_widget_;
         bool error_handled_;
     };
-} // PlayerService
+} // PhononPlayer
 
 #endif // incl_PhononPlayer_VideoPlayer_h
