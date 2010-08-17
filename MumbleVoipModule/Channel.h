@@ -23,6 +23,8 @@ namespace MumbleVoip
         //! @param channel mumbleclient library Channel object 
         Channel(const MumbleClient::Channel* channel);
 
+        virtual ~Channel();
+
         //! @return name of the channel
         QString Name() const;
 

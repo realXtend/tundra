@@ -1,6 +1,7 @@
 import rexviewer as r
 import PythonQt
 import urllib2
+import naali
 
 from circuits import Component
 
@@ -16,19 +17,22 @@ class MediaurlView:
         self.__url = PythonQt.QtCore.QUrl(urlstring)
         self.refreshrate = refreshrate
         type = self.__get_mime_type(urlstring)
-        if len(type) > 0 and r.isMimeTypeSupportedForVideoWidget(type):
-            self.playback_widget = r.createVideoWidget(str(urlstring))
-        else:
-            self.playback_widget = PythonQt.QtWebKit.QWebView()
-            self.playback_widget.load(self.__url)
+        if len(type) > 0 and naali.player_service is not None:
+            if naali.player_service.IsMimeTypeSupported(type):
+                self.playback_widget = naali.player_service.GetPlayer(str(urlstring))
+                print(" -- media content is supported.")
+                return
+            else:
+                print(" -- media content is not supported.")
+        # error -- playback widget cannot be created using player service -> we create a QWebview widget
+        self.playback_widget = PythonQt.QtWebKit.QWebView()
+        self.playback_widget.load(self.__url)
 
     def delete_playback_widget(self):
         if self.playback_widget is None:
             return
         if type(self.playback_widget).__name__ == 'PlayerService::VideoPlayer':
-            # PlayerService::VideoPlayer object
-            #r.deleteVideoWidget(self.__url.toString()) #for now we delete VideoPlayer objects here on python side
-            self.playback_widget.deleteLater()
+            naali.player_service.DeletePlayer(self.__url.toString())
         else:
             # VewView object
             self.playback_widget.delete()
@@ -75,6 +79,7 @@ class MediaURLHandler(Component):
         self.texture2mediaurlview.clear()
 
     def on_exit(self):
+        r.logInfo('MediaURLHandler exiting...')    
         #r.logInfo("Uninitializing MediaURLHandler")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
             if mediaurlview is None:
@@ -82,6 +87,7 @@ class MediaURLHandler(Component):
             mediaurlview.delete_playback_widget()        
         self.texture2mediaurlview.clear()                
         self.texture2mediaurlview = None
+        
         
     def on_genericmessage(self, name, data):
         #print "MediaURLHandler got Generic Message:", name, data
