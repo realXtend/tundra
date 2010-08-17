@@ -128,8 +128,6 @@ namespace PythonScript
 
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr worldstream;
-    private slots:
-        void HandleMouseEvent(MouseEvent *mouse);
 
     private:
         //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);

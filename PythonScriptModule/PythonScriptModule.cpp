@@ -177,7 +177,6 @@ namespace PythonScript
         
         // Create a new input context with a default priority of 100.
         input = framework_->Input().RegisterInputContext("PythonInput", 100);
-        QObject::connect(input.get(), SIGNAL(OnMouseEvent(MouseEvent *)), this, SLOT(HandleMouseEvent(MouseEvent *)));
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
@@ -1080,48 +1079,6 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
             ec_canvas_source->ComponentChanged(AttributeChange::LocalOnly);
         }
     }
-}
-
-void PythonScriptModule::HandleMouseEvent(MouseEvent *mouse)
-{
-    int eventID = 0;
-
-    static const event_id_t LEFT_MOUSECLICK_PRESSED = 43;
-    static const event_id_t LEFT_MOUSECLICK_RELEASED = 44;
-    static const event_id_t RIGHT_MOUSECLICK_PRESSED = 45;
-    static const event_id_t RIGHT_MOUSECLICK_RELEASED = 46;
-
-    switch(mouse->eventType)
-    {
-    case MouseEvent::MouseMove:
-        if (mouse->IsLeftButtonDown())
-        {
-            PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", Input::Events::MOUSEDRAG, mouse->x, mouse->y, mouse->relativeX, mouse->relativeY);
-//            if (!PyObject_CallMethod(pmmInstance, "MOUSE_DRAG_INPUT_EVENT", "iiiii", Input::Events::MOUSEDRAG, mouse->x, mouse->y, mouse->relativeX, mouse->relativeY))
-//                LogWarning("PyObject_CallMethod(MOUSE_DRAG_INPUT_EVENT) failed!");
-            return;
-        }
-        else
-            eventID = Input::Events::MOUSEMOVE;
-        break;
-    case MouseEvent::MouseScroll:
-        break;
-    case MouseEvent::MousePressed:
-        if (mouse->button == MouseEvent::LeftButton) eventID = LEFT_MOUSECLICK_PRESSED;
-        if (mouse->button == MouseEvent::RightButton) eventID = RIGHT_MOUSECLICK_PRESSED;
-        break;
-    case MouseEvent::MouseReleased:
-        if (mouse->button == MouseEvent::LeftButton) eventID = LEFT_MOUSECLICK_RELEASED;
-        if (mouse->button == MouseEvent::RightButton) eventID = RIGHT_MOUSECLICK_RELEASED;
-        break;
-    }
-
-    if (eventID != 0)
-        PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", eventID, mouse->x, mouse->y, mouse->relativeX, mouse->relativeY);
-//        if (!PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", eventID, mouse->x, mouse->y, mouse->relativeX, mouse->relativeY))
-//            LogWarning("PyObject_CallMethod(MOUSE_INPUT_EVENT) failed!");
-
-    ///\todo Don't know when to call the INPUT_EVENT function.
 }
 
 PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)

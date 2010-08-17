@@ -75,13 +75,8 @@ class ObjectEdit(Component):
         self.usingManipulator = False
         self.useLocalTransform = False
         self.cpp_python_handler = None
-        
-        self.mouse_events = {
-            43 : self.LeftMousePressed,
-            44 : self.LeftMouseReleased,
-            45 : self.RightMousePressed,
-            46 : self.RightMouseReleased
-        }
+        self.left_button_down = False
+        self.right_button_down = False
 
         self.shortcuts = {
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
@@ -93,11 +88,16 @@ class ObjectEdit(Component):
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
 
-        inputcontext.disconnect('KeyPressed(KeyEvent*)', self.on_keypressed)
         # Connect to key pressed signal from input context
         inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
 
+        # Connect to mouse events
         inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
+        inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
+        inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
+        inputcontext.connect('MouseRightPressed(MouseEvent*)', self.on_mouserightpressed)
+        inputcontext.connect('MouseRightReleased(MouseEvent*)', self.on_mouserightreleased)
+        inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
         
         self.resetManipulators()
         
@@ -342,15 +342,12 @@ class ObjectEdit(Component):
         ids = self.getSelectedObjectIds()
         self.worldstream.SendObjectDelinkPacket(ids)
         self.deselect_all()
-        
-    def LeftMousePressed(self, mouseinfo):
-        #r.logDebug("LeftMousePressed") #, mouseinfo, mouseinfo.x, mouseinfo.y
-        #r.logDebug("point " + str(mouseinfo.x) + "," + str(mouseinfo.y))
-        
+
+    def on_mouseleftpressed(self, mouseinfo):
+        if not self.windowActive:
+            return
+
         self.dragStarted(mouseinfo) #need to call this to enable working dragging
-        
-#         if self.selection_box is None:
-#             self.selection_box = r.createEntity("Selection.mesh", -10000)
         
         self.left_button_down = True
         
@@ -373,8 +370,6 @@ class ObjectEdit(Component):
         if ent is not None:
             #print "Got entity:", ent, ent.editable
             if not self.manipulator.compareIds(ent.id) and ent.editable: #ent.id != self.selection_box.id and 
-                #if self.sel is not ent: #XXX wrappers are not reused - there may now be multiple wrappers for same entity
-                
                 r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
@@ -404,7 +399,7 @@ class ObjectEdit(Component):
         self.prev_mouse_abs_x = mouse_abs_x
         self.prev_mouse_abs_y = mouse_abs_y
 
-    def LeftMouseReleased(self, mouseinfo):
+    def on_mouseleftreleased(self, mouseinfo):
         self.left_button_down = False
         if self.active: #XXX something here?
             if self.sel_activated and self.dragging:
@@ -452,8 +447,8 @@ class ObjectEdit(Component):
             rectheight *= -1
             
         return rectx, recty, rectwidth, rectheight
-        
-    def RightMousePressed(self, mouseinfo):
+
+    def on_mouserightpressed(self, mouseinfo):
         #r.logInfo("rightmouse down")
         if self.windowActive:
             self.right_button_down = True
@@ -492,37 +487,31 @@ class ObjectEdit(Component):
                     return True
         return False
         
-    def RightMouseReleased(self, mouseinfo):
-        #r.logInfo("rightmouse up")
+    def on_mouserightreleased(self, mouseinfo):
         self.right_button_down = False
-        
-    def on_mouseclick(self, click_id, mouseinfo):
-        if self.windowActive: #XXXnot self.canvas.IsHidden():
-            if self.mouse_events.has_key(click_id):
-                self.mouse_events[click_id](mouseinfo)
-                #~ r.logInfo("on_mouseclick %d %s" % (click_id, self.mouse_events[click_id]))
-        #r.logInfo("on_mouseclick %d" % (click_id))
 
-    def on_mousemove(self, event_id, mouseinfo):
-        """for hilighting manipulator parts when hovering over them"""
-        #print "m"
-        if self.windowActive:# and event_id == :
-            #~ print "m"
-            results = []
-            results = r.rayCast(mouseinfo.x, mouseinfo.y)
-            if results is not None and results[0] != 0:
-                id = results[0]
-                
-                if self.manipulator.compareIds(id):
-                    self.manipulator.highlight(results)
+    def on_mousemove(self, mouseinfo):
+        """Handle mouse move events. When no button is pressed, just check
+        for hilites necessity in manipulators. When a button is pressed, handle
+        drag logic."""
+        if self.windowActive:
+            if self.left_button_down:
+                self.on_mousedrag(mouseinfo)
             else:
-                self.manipulator.resethighlight()
-        
-                
-    def on_mousedrag(self, move_id, mouseinfo):
+                # check for manipulator hilites
+                results = []
+                results = r.rayCast(mouseinfo.x, mouseinfo.y)
+                if results is not None and results[0] != 0:
+                    id = results[0]
+                    
+                    if self.manipulator.compareIds(id):
+                        self.manipulator.highlight(results)
+                else:
+                    self.manipulator.resethighlight()
+
+    def on_mousedrag(self, mouseinfo):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
-        #print "mousedrag:", move_id, mouseinfo
         if self.windowActive:
             width, height = r.getScreenSize()
             
@@ -535,19 +524,15 @@ class ObjectEdit(Component):
             movedy = mouse_abs_y - self.prev_mouse_abs_y
             
             if self.left_button_down:
-                if self.selection_rect_startpos is not None:# and self.active is None:
+                if self.selection_rect_startpos is not None:
                     rectx, recty, rectwidth, rectheight = self.selectionRectDimensions(mouseinfo)
                     self.selection_rect.setGeometry(rectx, recty, rectwidth, rectheight)
                     self.selection_rect.show() #XXX change?
                     
-                    #r.logInfo("The selection rect was at: (" +str(rectx) + ", " +str(recty) + ") and size was: (" +str(rectwidth) +", "+str(rectheight)+")")
                     rect = self.selection_rect.rect #0,0 - x, y
                     rect.translate(mouseinfo.x, mouseinfo.y)
-                    #print rect.left(), rect.top(), rect.right(), rect.bottom()
                     rend = r.getQRenderer()
                     hits = rend.FrustumQuery(rect) #the wish
-                    #hits = r.frustumQuery(rect.left(), rect.top(), rect.right(), rect.bottom()) #current workaround
-                    print hits
 
                 else:
                     if self.duplicateDragStart:
@@ -556,7 +541,6 @@ class ObjectEdit(Component):
                         self.duplicateDragStart = False
                             
                     ent = self.active
-                    #print "on_mousemove + hold:", mouseinfo
                     if ent is not None and self.sel_activated and self.canmove:
                         self.dragging = True
 
