@@ -43,10 +43,10 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
     // Init effects and animations
     if (windowFlags() != Qt::Widget)
     {
-        QGraphicsDropShadowEffect shadow_effect(this);
-        shadow_effect.setBlurRadius(3);
-        shadow_effect.setOffset(3.0, 3.0);
-        setGraphicsEffect(&shadow_effect);
+        QGraphicsDropShadowEffect *shadow_effect = new QGraphicsDropShadowEffect(this);
+        shadow_effect->setBlurRadius(3);
+        shadow_effect->setOffset(3.0, 3.0);
+        setGraphicsEffect(shadow_effect);
 
         animations_ = new QParallelAnimationGroup(this);
         animations_->setDirection(QAbstractAnimation::Forward);

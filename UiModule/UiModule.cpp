@@ -67,7 +67,9 @@ namespace UiServices
     void UiModule::Load()
     {
         //QApplication::setStyle(new UiProxyStyle());
-        // Application take ownership of the new UiDarkBlueStyle
+        // QApplication take ownership of the new UiDarkBlueStyle
+        ///\todo UiDarkBlueStyle seems to be causing many memory leaks.
+        /// Maybe it's not deleted properly by th QApplication?
         QApplication::setStyle(new UiDarkBlueStyle());
         QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
         QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");

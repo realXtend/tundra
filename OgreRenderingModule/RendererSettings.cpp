@@ -5,9 +5,7 @@
 #include "OgreRenderingModule.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
-
 
 #include <QUiLoader>
 #include <QFile>
@@ -16,10 +14,10 @@
 #include <QKeyEvent>
 
 #include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
 
 namespace OgreRenderer
 {
-
     RendererSettings::RendererSettings(Foundation::Framework* framework) :
         framework_(framework),
         settings_widget_(0)
@@ -35,7 +33,6 @@ namespace OgreRenderer
     void RendererSettings::InitWindow()
     {
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-
         // If this occurs, we're most probably operating in headless mode.
         if (ui_module.get() == 0)
             return;
@@ -76,35 +73,29 @@ namespace OgreRenderer
 
     void RendererSettings::KeyPressed(KeyEvent* e)
     {
-        boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
+        Renderer *renderer = framework_->GetService<Renderer>();
         if (!renderer)
-            return;   
+            return;
         if(e->HasCtrlModifier() && e->KeyCode() == Qt::Key_F)
         {
             renderer->SetFullScreen(!renderer->IsFullScreen());
             QCheckBox* cbox = settings_widget_->findChild<QCheckBox*>("fullscreen_toggle");
             if(cbox)
-            {
                 cbox->setChecked(!cbox->isChecked());
-            }
         }
     }
 
-
-    
     void RendererSettings::ViewDistanceChanged(double value)
     {
-        boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer)
-            return;   
-        renderer->SetViewDistance(value);      
-    }        
+        Renderer *renderer = framework_->GetService<Renderer>();
+        if (renderer)
+            renderer->SetViewDistance(value);
+    }
 
     void RendererSettings::SetFullScreenMode(bool value)
     {
-         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
-        if (!renderer)
-            return;   
-        renderer->SetFullScreen(value);   
+         Renderer *renderer = framework_->GetService<Renderer>();
+        if (renderer)
+            renderer->SetFullScreen(value);
     }
 }

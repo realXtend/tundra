@@ -258,8 +258,8 @@ void RexLogicModule::PostInitialize()
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
 
-    UiModulePtr ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (ui_module.get())
+    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+    if (ui_module)
     {
         QObject *notifier = ui_module->GetEtherLoginNotifier();
         if (notifier)
@@ -973,8 +973,7 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 void RexLogicModule::AboutToDeleteWorld()
 {
     // Lets take some screenshots before deleting the scene
-    UiModulePtr ui_module =
-        framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
 
     if (!avatar_ && !ui_module)
         return;

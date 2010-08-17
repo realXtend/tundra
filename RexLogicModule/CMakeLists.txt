@@ -23,7 +23,9 @@ file (GLOB H_FILES *.h)
 file (GLOB UI_FILES EntityComponent/*.ui)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES RexLogicModule.h Avatar/AvatarEditor.h EventHandlers/LoginHandler.h RexMovementInput.h
-    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h EntityComponent/HoveringNameController.h EntityComponent/HoveringButtonsController.h EntityComponent/DetachedWidgetController.h  Environment/Primitive.h Communications/*.h Communications/InWorldChat/*.h)
+    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h EntityComponent/HoveringNameController.h
+    EntityComponent/HoveringButtonsController.h EntityComponent/DetachedWidgetController.h  Environment/Primitive.h
+    Communications/*.h Communications/InWorldChat/*.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)

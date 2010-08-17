@@ -17,11 +17,9 @@
 namespace RexLogic
 {
 
-MainPanelHandler::MainPanelHandler(RexLogicModule *rex_logic_module) :
-    QObject(), rex_logic_module_(rex_logic_module)
+MainPanelHandler::MainPanelHandler(RexLogicModule *rex_logic_module) : rex_logic_module_(rex_logic_module)
 {
-    UiModulePtr ui_module = rex_logic_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>(
-        ).lock();
+    UiModulePtr ui_module = rex_logic_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
     if (ui_module.get())
     {
         UiServices::UiAction *quit_action = new UiServices::UiAction(this);

@@ -495,10 +495,10 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
         mapBlocks.append(block);
     }
 
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
+
     return false;
 }
 
@@ -515,12 +515,10 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
     if (region_name.empty())
         return false;
 
-    // Ui module
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (!ui_module)
         return false;
-            
+
     // Notifier qobject ptr
     QObject *object = ui_module->GetEtherLoginNotifier();
     if (!object)
@@ -558,6 +556,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
             notifier->SetIsTeleporting(true);
         }
     }
+
     return false;
 }
 
