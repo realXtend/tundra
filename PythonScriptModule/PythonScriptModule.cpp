@@ -584,6 +584,18 @@ namespace PythonScript
         }
         return 0;
     }
+    
+    Scene::Entity* PythonScriptModule::GetCameraEntity() const
+    {
+        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+        if (rexlogic)
+        {
+            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
+            if(camentptr)
+                return camentptr.get();
+        }
+        return 0;
+    }
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
