@@ -31,6 +31,16 @@ namespace Foundation
 
 namespace ECEditor
 {
+    typedef unsigned char MetaDataFlag;
+    enum MetaDataFlags
+    {
+        None             = 0,
+        UsingEnums       = 1 << 0,
+        UsingMaxValue    = 1 << 1,
+        UsingMinValue    = 1 << 2,
+        UsingDescription = 1 << 3
+    };
+
     class AbstractAttributeUiElement
     {
     public:
@@ -120,7 +130,7 @@ namespace ECEditor
         }
 
     signals:
-        //! Attribute value has been changed by the editor.
+        //! Attribute value has been changed in the editor.
         void AttributeChanged(const std::string &attributeName);
 
     protected:
@@ -152,6 +162,7 @@ namespace ECEditor
         AttributeList attributes_;
         bool useMultiEditor_;
         AttributeEditorState editorState_;
+        MetaDataFlag metaDataFlag_;
     };
 
     //! ECAttributeEditor template class that initializes each attribute type's visual elements and handle those changes by using AttributeInterface.

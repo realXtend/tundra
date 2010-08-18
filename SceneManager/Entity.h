@@ -174,6 +174,9 @@ namespace Scene
         //! \param name name of the component
         bool HasComponent(const std::string &type_name, const std::string &name) const;
 
+        //! Return entity's shared pointer.
+        EntityPtr GetSharedPtr() const;
+
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 
