@@ -30,7 +30,8 @@ namespace ECEditor
         propertyMgr_(0),
         listenEditorChangedSignal_(false),
         useMultiEditor_(false),
-        editorState_(Uninitialized)
+        editorState_(Uninitialized),
+        metaDataFlag_(0)
     {
         attributeName_ = attribute->GetName();
         attributes_.push_back(attribute);
@@ -181,8 +182,21 @@ namespace ECEditor
             QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
             propertyMgr_ = realPropertyManager;
             factory_ = variantFactory;
-
             rootProperty_ = realPropertyManager->addProperty(QVariant::Double, attributeName_);
+
+            Foundation::AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
+            if(metaData)
+            {
+                if(!metaData->min.empty())
+                    metaDataFlag_ |= UsingMinValue;
+                if(!metaData->max.empty())
+                    metaDataFlag_ |= UsingMaxValue;
+                if((metaDataFlag_ & UsingMinValue) != 0)
+                    realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<Real>(metaData->min));
+                if((metaDataFlag_ & UsingMaxValue) != 0)
+                    realPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<Real>(metaData->max));
+            }
+
             if(rootProperty_)
             {
                 Update();
@@ -259,11 +273,50 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
+            //Check if int need to have min and max value setted and also enum types are presented as a int value.
+            Foundation::AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
+            if(metaData)
+            {
+                if(!metaData->enums.empty())
+                    metaDataFlag_ |= UsingEnums;
+                else
+                {
+                    if(!metaData->min.empty())
+                        metaDataFlag_ |= UsingMinValue;
+                    if(!metaData->max.empty())
+                        metaDataFlag_ |= UsingMaxValue;
+                }
+                if(!metaData->description.empty())
+                    metaDataFlag_ |= UsingDescription;
+            }
+
             QtVariantPropertyManager *intPropertyManager = new QtVariantPropertyManager(this);
             QtVariantEditorFactory *variantFactory = new QtVariantEditorFactory(this);
+            // Check if attribute want to use enums.
+            if((metaDataFlag_ & UsingEnums) != 0)
+            {
+                QtVariantProperty *prop = 0;
+                prop = intPropertyManager->addProperty(QtVariantPropertyManager::enumTypeId(), attributeName_);
+                rootProperty_ = prop;
+                QStringList enumNames;
+                Foundation::EnumDescMap_t::iterator iter = metaData->enums.begin();
+                for(; iter != metaData->enums.end(); iter++)
+                {
+                    QString enumValue = QString::fromStdString(iter->second);
+                    enumNames << enumValue;
+                }
+                prop->setAttribute(QString("enumNames"), enumNames);
+            }
+            else
+            {
+                rootProperty_ = intPropertyManager->addProperty(QVariant::Int, attributeName_);
+                if((metaDataFlag_ & UsingMinValue) != 0)
+                    intPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<int>(metaData->min));
+                if((metaDataFlag_ & UsingMaxValue) != 0)
+                    intPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<int>(metaData->max));
+            }
             propertyMgr_ = intPropertyManager;
             factory_ = variantFactory;
-            rootProperty_ = intPropertyManager->addProperty(QVariant::Int, attributeName_);
             if(rootProperty_)
             {
                 Update();
@@ -281,7 +334,20 @@ namespace ECEditor
     {
         if(listenEditorChangedSignal_)
         {
-            Real newValue = ParseString<int>(property->valueText().toStdString());
+            int newValue = 0;
+            std::string valueString = property->valueText().toStdString();
+            if((metaDataFlag_ & UsingEnums) != 0)
+            {
+                Foundation::AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
+                Foundation::EnumDescMap_t::iterator iter = metaData->enums.begin();
+                for(; iter != metaData->enums.end(); iter++)
+                {
+                    if(valueString == iter->second)
+                        newValue = iter->first;
+                }
+            }
+            else
+                newValue = ParseString<int>(valueString);
             SetValue(newValue);
         }
     }

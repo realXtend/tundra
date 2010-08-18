@@ -39,9 +39,9 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
-        typeAttrData.enums["Point"]       = LT_Point;
-        typeAttrData.enums["Spot"]        = LT_Spot;
-        typeAttrData.enums["Directional"] = LT_Directional;
+        typeAttrData.enums[LT_Point]       = "Point";
+        typeAttrData.enums[LT_Spot]        = "Spot";
+        typeAttrData.enums[LT_Directional] = "Directional";
         metadataInitialized = true;
     }
     typeAttr_.SetMetadata(&typeAttrData);

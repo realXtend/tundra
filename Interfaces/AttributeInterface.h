@@ -16,7 +16,7 @@
 
 namespace Foundation
 {
-    typedef std::map<std::string, int> EnumDescMap_t;
+    typedef std::map<int, std::string> EnumDescMap_t;
 
     class ComponentInterface;
 

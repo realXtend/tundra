@@ -136,6 +136,14 @@ namespace Scene
         return false;
     }
 
+    EntityPtr Entity::GetSharedPtr() const
+    {
+        EntityPtr ptr;
+        if(scene_)
+            ptr = scene_->GetEntity(GetId());
+        return ptr;
+    };
+
     bool Entity::HasComponent(const std::string &type_name, const std::string& name) const
     {
         for(size_t i=0 ; i<components_.size() ; ++i)
