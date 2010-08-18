@@ -146,6 +146,10 @@ public slots:
     /// if that event is going to go to Qt and the higher priority context does not
     /// capture mouse/key events over Qt, but the lover priority context does.
     int Priority() const { return priority; }
+    
+    /// Convenience function to allow for simple
+    /// disconnecting of all signals from Python
+    void disconnectAll() { this->disconnect(); }
 
 private:
     typedef std::map<QKeySequence, KeyEventSignal*> KeyEventSignalMap;

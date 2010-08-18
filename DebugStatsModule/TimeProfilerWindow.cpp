@@ -229,8 +229,46 @@ void TimeProfilerWindow::SetNetworkLogging(int value)
     if (value)
         log << "========== Logging started " << GetLocalTimeString().c_str() << " ==========\n";
     else if (!value)
-        log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
+    {
+     // Dump packages 
+     DumpNetworkSummary(&log);
+     log << "========== Logging ended " << GetLocalTimeString().c_str() << "==========\n";
+    }
 }
+
+void TimeProfilerWindow::DumpNetworkSummary(QTextStream* log)
+{
+    if ( log == 0)
+    {
+        QFile file(logDirectory_.path() + "/networking.txt");
+        if (!file.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Text))
+            return;
+    
+        // ehheh
+        DumpNetworkSummary(log);
+    }
+    else
+    {
+
+        (*log)<<endl;
+        (*log)<<" Summary of network IN packages (name, bytes, count) "<<endl;
+        
+        for ( QMap<QString, NetworkLogData >::iterator iter = mapNetInData_.begin(); iter != mapNetInData_.end(); ++iter)
+        {
+            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
+        }
+        
+        (*log)<<endl;
+        (*log)<<" Summary of network OUT packages (name, bytes, count) "<<endl;
+        
+        for ( QMap<QString, NetworkLogData >::iterator iter = mapNetOutData_.begin(); iter != mapNetOutData_.end(); ++iter)
+        {
+            (*log)<<" "<<iter.key()<<" "<<QString::number(iter.value().bytes)<<" "<<QString::number(iter.value().packages)<<endl;
+        }
+        (*log)<<endl;
+    }
+ }
+
 
 struct ResNameAndSize
 {
@@ -746,7 +784,24 @@ void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *
         if (numWidth < 5)
             log << '\t';
 
-        log << '\t' << msg->GetMessageInfo()->name.c_str();
+       
+        QString name(msg->GetMessageInfo()->name.c_str());
+        log << '\t' << name;
+
+        if ( mapNetInData_.contains(name) )
+        {
+            NetworkLogData& ob = mapNetInData_[name];
+            ob.bytes += msg->GetDataSize();
+            ++ob.packages;
+
+        }
+        else
+        {
+             NetworkLogData ob;
+             ob.bytes = msg->GetDataSize();
+             ob.packages = 0;
+             mapNetInData_.insert(name, ob);
+        }
 
         ///\todo Get MethogName out from GenericMessage
 //        if (msg->GetMessageID() == RexNetMsgGenericMessage)
@@ -774,7 +829,23 @@ void TimeProfilerWindow::LogNetOutMessage(const ProtocolUtilities::NetOutMessage
         if (numWidth < 5)
             log << '\t';
 
-         log << '\t' << msg->GetMessageInfo()->name.c_str();
+        
+        QString name(msg->GetMessageInfo()->name.c_str());
+        log << '\t' << name;
+        
+         if ( mapNetOutData_.contains(name) )
+         {
+            NetworkLogData& ob = mapNetOutData_[name];
+            ob.bytes += msg->BytesFilled();
+            ++ob.packages;
+         }
+         else
+         {
+            NetworkLogData ob;
+            ob.bytes = msg->BytesFilled();
+            ob.packages = 0;
+            mapNetOutData_.insert(name, ob);
+         }
 
         ///\todo Get MethogName out from GenericMessage
 //        if (msg->GetMessageID() == RexNetMsgGenericMessage)

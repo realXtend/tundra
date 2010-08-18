@@ -388,6 +388,7 @@ if 0:
     def keypressed(e):
         print e
     #print dir(naali.inputcontext)
+    #naali.inputcontext.disconnect()
     naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
 
 if 0: #QVector3D
@@ -943,8 +944,9 @@ if 0: #javascript service
     from naali import runjs
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
     runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
-    runjs('print("Some camera!" + x)', {'x': naali.getCamera()})
-    runjs('print("Some camera, using naali :O !" + x.getCamera())', {'x': naali})
+    runjs('print("Some camera! " + x)', {'x': naali.getCamera()})
+    runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
+    runjs('print("Camera Entity " + x)', {'x': naali.getCameraEntity()})
     #runjs('var a = {"a": true, "b": 2};')
     #runjs('print(a.a + ", " + a.b)')
     #runjs('print(JSON.stringify(a))')
