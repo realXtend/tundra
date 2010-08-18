@@ -1,67 +1,52 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include <DebugOperatorNew.h>
+#include "DebugOperatorNew.h"
 #include "LoginHandler.h"
 #include "RexLogicModule.h"
-#include <WorldStream.h>
-#include <ProtocolModuleOpenSim.h>
-#include <OpenSimWorldSession.h>
-#include <RealXtendWorldSession.h>
-#include <ProtocolModuleTaiga.h>
-#include <TaigaWorldSession.h>
-#include <Interfaces/LoginCredentialsInterface.h>
-#include <Login/LoginCredentials.h>
+#include "WorldStream.h"
+#include "ProtocolModuleOpenSim.h"
+#include "OpenSimWorldSession.h"
+#include "RealXtendWorldSession.h"
+#include "ProtocolModuleTaiga.h"
+#include "TaigaWorldSession.h"
+#include "Interfaces/LoginCredentialsInterface.h"
+#include "Login/LoginCredentials.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
 
 #include <QStringList>
 #include <QWebFrame>
-#include <MemoryLeakCheck.h>
+
+#include "MemoryLeakCheck.h"
 
 namespace RexLogic
 {
-    AbstractLoginHandler::AbstractLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module) :
-        framework_(framework),
-        rex_logic_module_(rex_logic_module),
-        credentials_(0),
-        server_entry_point_url_(0)
+    AbstractLoginHandler::AbstractLoginHandler() : credentials_(0), server_entry_point_url_(0)
     {
     }
 
-    QUrl AbstractLoginHandler::ValidateServerUrl(QString urlString)
+    QUrl AbstractLoginHandler::ValidateServerUrl(QString &urlString)
     {
+        ///\todo Move this functions elsewhere.
         QString sceme = urlString.mid(0,7);
         if (sceme != "http://")
         {
             urlString.insert(0, "http://");
-            rex_logic_module_->LogDebug("url scheme http:// was missing from url - Corrected");
+            std::cout << "url scheme http:// was missing from url - Corrected" << std::endl;
         }
         QUrl returnUrl(urlString);
         if (returnUrl.isValid())
             return returnUrl;
         else
         {
-            rex_logic_module_->LogInfo("Invalid login url");
+            std::cout << "Invalid login url" << std::endl;
             return QUrl();
         }
     }
 
-    void AbstractLoginHandler::Logout()
-    {
-        rex_logic_module_->LogoutAndDeleteWorld();
-    }
-
-    void AbstractLoginHandler::Quit()
-    {
-        if (rex_logic_module_->GetServerConnection()->IsConnected())
-            rex_logic_module_->LogoutAndDeleteWorld();
-
-        framework_->Exit();
-    }
-
-    OpenSimLoginHandler::OpenSimLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module) :
-        AbstractLoginHandler(framework, rex_logic_module), opensim_world_session_(0), realxtend_world_session_(0)
+    OpenSimLoginHandler::OpenSimLoginHandler(RexLogicModule *owner) :
+        owner_(owner), opensim_world_session_(0), realxtend_world_session_(0)
     {
     }
 
@@ -74,13 +59,10 @@ namespace RexLogic
 
     void OpenSimLoginHandler::SetLoginNotifier(QObject *notifier)
     {
-        connect(notifier, SIGNAL( StartOsLogin(QMap<QString, QString>) ), 
-                SLOT( ProcessOpenSimLogin(QMap<QString, QString>) ));
-        connect(notifier, SIGNAL( StartRexLogin(QMap<QString, QString>) ), 
-                SLOT( ProcessRealXtendLogin(QMap<QString, QString>) ));
-
-        connect(notifier, SIGNAL( Disconnect() ), SLOT( Logout() ));
-        connect(notifier, SIGNAL( Quit() ), SLOT( Quit() ));
+        connect(notifier, SIGNAL(StartOsLogin(QMap<QString, QString>)), SLOT(ProcessOpenSimLogin(QMap<QString, QString>)));
+        connect(notifier, SIGNAL(StartRexLogin(QMap<QString, QString>)), SLOT(ProcessRealXtendLogin(QMap<QString, QString>)));
+        connect(notifier, SIGNAL(Disconnect()), SLOT(Logout()));
+        connect(notifier, SIGNAL(Quit()), SLOT(Quit()));
     }
 
     void OpenSimLoginHandler::InstantiateWorldSession()
@@ -91,32 +73,33 @@ namespace RexLogic
         ProtocolUtilities::OpenSimCredentials *osCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(credentials_);
         if (osCredentials)
         {
-            rex_logic_module_->GetServerConnection()->UnregisterCurrentProtocolModule();
-            rex_logic_module_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
-            rex_logic_module_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
-            rex_logic_module_->GetServerConnection()->StoreCredentials(osCredentials->GetIdentity().toStdString(),
-                osCredentials->GetPassword().toStdString(), "");
+            ProtocolUtilities::WorldStreamPtr stream = owner_->GetServerConnection();
+            stream->UnregisterCurrentProtocolModule();
+            stream->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
+            stream->SetConnectionType(ProtocolUtilities::DirectConnection);
+            stream->StoreCredentials(osCredentials->GetIdentity().toStdString(), osCredentials->GetPassword().toStdString(), "");
 
-            if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule() )
-            {    
+            if (stream->PrepareCurrentProtocolModule() )
+            {
                 SAFE_DELETE(opensim_world_session_);
                 assert(!opensim_world_session_);
-                opensim_world_session_ = new OpenSimProtocol::OpenSimWorldSession(framework_);
+                opensim_world_session_ = new OpenSimProtocol::OpenSimWorldSession(owner_->GetFramework());
                 success = opensim_world_session_->StartSession(osCredentials, &server_entry_point_url_);
                 if (success)
                 {
                     // Save login credentials to config
-                    if ( framework_->GetConfigManager()->HasKey(std::string("Login"), std::string("server")) )
-                        framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"), std::string("server"), server_entry_point_url_.authority().toStdString());
+                    Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+                    if (mgr->HasKey("Login", "server"))
+                        mgr->SetSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
                     else
-                        framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("server"), server_entry_point_url_.authority().toStdString());
-                    if ( framework_->GetConfigManager()->HasKey(std::string("Login"), std::string("username")) )
-                        framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"), std::string("username"), osCredentials->GetIdentity().toStdString());
+                        mgr->DeclareSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
+                    if (mgr->HasKey("Login", "username"))
+                        mgr->SetSetting<std::string>("Login", "username", osCredentials->GetIdentity().toStdString());
                     else
-                        framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("username"), osCredentials->GetIdentity().toStdString());
+                        mgr->DeclareSetting<std::string>("Login", "username", osCredentials->GetIdentity().toStdString());
                 }
                 else
-                    errorMessage = QString(opensim_world_session_->GetConnectionThreadState()->errorMessage.c_str());
+                    errorMessage = opensim_world_session_->GetConnectionThreadState()->errorMessage.c_str();
             }
         }
         else
@@ -125,42 +108,38 @@ namespace RexLogic
             ProtocolUtilities::RealXtendCredentials *rexCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(credentials_);
             if (rexCredentials)
             {
-                rex_logic_module_->GetServerConnection()->UnregisterCurrentProtocolModule();
-                rex_logic_module_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
-                rex_logic_module_->GetServerConnection()->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
-                rex_logic_module_->GetServerConnection()->StoreCredentials(rexCredentials->GetIdentity().toStdString(),
+                WorldStreamPtr stream = owner_->GetServerConnection();
+                stream->UnregisterCurrentProtocolModule();
+                stream->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
+                stream->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
+                stream->StoreCredentials(rexCredentials->GetIdentity().toStdString(),
                 rexCredentials->GetPassword().toStdString(), rexCredentials->GetAuthenticationUrl().toString().toStdString());
 
-                if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule() )
-                {    
+                if (stream->PrepareCurrentProtocolModule() )
+                {
                     SAFE_DELETE(realxtend_world_session_);
                     assert(!realxtend_world_session_);
-                    realxtend_world_session_ = new OpenSimProtocol::RealXtendWorldSession(framework_);
+                    realxtend_world_session_ = new OpenSimProtocol::RealXtendWorldSession(owner_->GetFramework());
                     success = realxtend_world_session_->StartSession(rexCredentials, &server_entry_point_url_);
                     if (success)
                     { 
                         // Save login credentials to config
-                        if ( framework_->GetConfigManager()->HasKey(std::string("Login"), std::string("rex_server")) )
-                            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"), std::string("rex_server"),
-                                server_entry_point_url_.authority().toStdString());
+                        Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+                        if (mgr->HasKey("Login", "rex_server"))
+                            mgr->SetSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
                         else
-                            framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("rex_server"),
-                                server_entry_point_url_.authority().toStdString());
-                        if (framework_->GetConfigManager()->HasKey(std::string("Login"), std::string("auth_server")) )
-                            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"), std::string("auth_server"),
-                                rexCredentials->GetAuthenticationUrl().authority().toStdString());
+                            mgr->DeclareSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
+                        if (mgr->HasKey("Login", "auth_server"))
+                            mgr->SetSetting<std::string>("Login", "auth_server", rexCredentials->GetAuthenticationUrl().authority().toStdString());
                         else
-                            framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("auth_server"),
-                                rexCredentials->GetAuthenticationUrl().host().toStdString());
-                        if (framework_->GetConfigManager()->HasKey(std::string("Login"), std::string("auth_name")) )
-                            framework_->GetConfigManager()->SetSetting<std::string>(std::string("Login"), std::string("auth_name"),
-                                rexCredentials->GetIdentity().toStdString());
+                            mgr->DeclareSetting<std::string>("Login", "auth_server", rexCredentials->GetAuthenticationUrl().host().toStdString());
+                        if (mgr->HasKey("Login", "auth_name"))
+                            mgr->SetSetting<std::string>("Login", "auth_name", rexCredentials->GetIdentity().toStdString());
                         else
-                            framework_->GetConfigManager()->DeclareSetting<std::string>(std::string("Login"), std::string("auth_name"),
-                                rexCredentials->GetIdentity().toStdString());
+                            mgr->DeclareSetting<std::string>("Login", "auth_name", rexCredentials->GetIdentity().toStdString());
                     }
                     else
-                        errorMessage = QString(realxtend_world_session_->GetConnectionThreadState()->errorMessage.c_str());
+                        errorMessage = realxtend_world_session_->GetConnectionThreadState()->errorMessage.c_str();
                 }
             }
         }
@@ -183,10 +162,8 @@ namespace RexLogic
 
                 QString startLocation = map["StartLocation"];
                 if (!startLocation.isEmpty())
-                {
                     osCredentials->SetStartLocation(startLocation);
-                }
-				
+
                 server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
                 if (server_entry_point_url_.isValid())
                 {
@@ -197,7 +174,7 @@ namespace RexLogic
             }
             else
             {
-                rex_logic_module_->LogInfo("Username was not in form firstname lastname, could not perform login");
+                owner_->LogInfo("Username was not in form firstname lastname, could not perform login");
             }
         }
     }
@@ -215,11 +192,9 @@ namespace RexLogic
 
             QString startLocation = map["StartLocation"];
             if (!startLocation.isEmpty())
-            {
                 rexCredentials->SetStartLocation(startLocation);
-            }
 
-			server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
+            server_entry_point_url_ = ValidateServerUrl(map["WorldAddress"]);
             if (server_entry_point_url_.isValid())
             {
                 Logout();
@@ -229,8 +204,21 @@ namespace RexLogic
         }
     }
 
-    TaigaLoginHandler::TaigaLoginHandler(Foundation::Framework *framework, RexLogicModule *rex_logic_module)
-        : AbstractLoginHandler(framework, rex_logic_module), taiga_world_session_(0)
+    void OpenSimLoginHandler::Logout()
+    {
+        owner_->LogoutAndDeleteWorld();
+    }
+
+    void OpenSimLoginHandler::Quit()
+    {
+        if (owner_->GetServerConnection()->IsConnected())
+            owner_->LogoutAndDeleteWorld();
+
+        owner_->GetFramework()->Exit();
+    }
+
+    TaigaLoginHandler::TaigaLoginHandler(RexLogicModule *owner) :
+        owner_(owner), taiga_world_session_(0)
     {
         credentials_ = new ProtocolUtilities::TaigaCredentials();
     }
@@ -243,10 +231,8 @@ namespace RexLogic
 
     void TaigaLoginHandler::SetLoginNotifier(QObject *notifier)
     {
-        connect(notifier, SIGNAL( StartTaigaLogin(QWebFrame *) ),
-                SLOT( ProcessWebLogin(QWebFrame *) ));
-        connect(notifier, SIGNAL( StartTaigaLogin(QString) ),
-                SLOT( ProcessWebLogin(QString) ));
+        connect(notifier, SIGNAL(StartTaigaLogin(QWebFrame *)), SLOT( ProcessWebLogin(QWebFrame *)));
+        connect(notifier, SIGNAL(StartTaigaLogin(QString)), SLOT(ProcessWebLogin(QString)));
     }
 
     void TaigaLoginHandler::InstantiateWorldSession()
@@ -254,21 +240,21 @@ namespace RexLogic
         bool success = false;
         QString errorMessage = "";
 
-        rex_logic_module_->GetServerConnection()->UnregisterCurrentProtocolModule();
-        rex_logic_module_->GetServerConnection()->SetCurrentProtocolType(ProtocolUtilities::Taiga);
-        rex_logic_module_->GetServerConnection()->SetConnectionType(ProtocolUtilities::DirectConnection);
+        ProtocolUtilities::WorldStreamPtr stream = owner_->GetServerConnection();
+        stream->UnregisterCurrentProtocolModule();
+        stream->SetCurrentProtocolType(ProtocolUtilities::Taiga);
+        stream->SetConnectionType(ProtocolUtilities::DirectConnection);
         ProtocolUtilities::TaigaCredentials *tgCredentials = dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials_);
         if (tgCredentials)
-        {
-            rex_logic_module_->GetServerConnection()->StoreCredentials(tgCredentials->GetIdentity().toStdString(), "", "");
-        }
-        if (rex_logic_module_->GetServerConnection()->PrepareCurrentProtocolModule())
+            stream->StoreCredentials(tgCredentials->GetIdentity().toStdString(), "", "");
+
+        if (stream->PrepareCurrentProtocolModule())
         {
             SAFE_DELETE(taiga_world_session_);
-            taiga_world_session_ = new TaigaProtocol::TaigaWorldSession(framework_);
+            taiga_world_session_ = new TaigaProtocol::TaigaWorldSession(owner_->GetFramework());
             success = taiga_world_session_->StartSession(credentials_, &server_entry_point_url_);
             if (!success)
-                errorMessage = QString(taiga_world_session_->GetConnectionThreadState()->errorMessage.c_str());
+                errorMessage = taiga_world_session_->GetConnectionThreadState()->errorMessage.c_str();
         }
     }
 
@@ -317,4 +303,16 @@ namespace RexLogic
         }
     }
 
+    void TaigaLoginHandler::Logout()
+    {
+        owner_->LogoutAndDeleteWorld();
+    }
+
+    void TaigaLoginHandler::Quit()
+    {
+        if (owner_->GetServerConnection()->IsConnected())
+            owner_->LogoutAndDeleteWorld();
+
+        owner_->GetFramework()->Exit();
+    }
 }

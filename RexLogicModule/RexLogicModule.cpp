@@ -262,8 +262,8 @@ void RexLogicModule::PostInitialize()
 
     // Create login handlers, get login notifier from ether and pass
     // that into rexlogic login handlers for slots/signals setup
-    os_login_handler_ = new OpenSimLoginHandler(framework_, this);
-    taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
+    os_login_handler_ = new OpenSimLoginHandler(this);
+    taiga_login_handler_ = new TaigaLoginHandler(this);
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (ui_module)
