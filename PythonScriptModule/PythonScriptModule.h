@@ -78,6 +78,7 @@ namespace PythonScript
         InputContext* GetInputContext() const { return input.get(); }
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
         OgreRenderer::EC_OgreCamera* GetCamera() const;
+        Scene::Entity* GetCameraEntity() const;
 
     public:
         PythonScriptModule();

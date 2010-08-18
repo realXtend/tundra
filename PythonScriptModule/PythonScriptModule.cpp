@@ -584,6 +584,18 @@ namespace PythonScript
         }
         return 0;
     }
+    
+    Scene::Entity* PythonScriptModule::GetCameraEntity() const
+    {
+        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+        if (rexlogic)
+        {
+            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
+            if(camentptr)
+                return camentptr.get();
+        }
+        return 0;
+    }
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
@@ -1547,6 +1559,13 @@ PyObject* GetUiSceneManager(PyObject *self)
     return PythonScriptModule::GetInstance()->WrapQObject(ui);
 }
 
+PyObject* DisconnectUIViewSignals(PyObject *self)
+{
+    QGraphicsView *view = PythonScript::self()->GetFramework()->GetUIView();
+    view->disconnect();
+    Py_RETURN_NONE;
+}
+
 PyObject* GetUIView(PyObject *self)
 {
     return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->GetFramework()->GetUIView());
@@ -1900,6 +1919,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
+    
+    {"disconnectUiViewSignals", (PyCFunction)DisconnectUIViewSignals, METH_NOARGS,
+    "Disconnects all signals from uiview (temporary HACK)"},
 
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},

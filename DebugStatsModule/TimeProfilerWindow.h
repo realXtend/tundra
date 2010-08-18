@@ -10,7 +10,8 @@
 #include <QWidget>
 #include <QTimer>
 #include <QDir>
-
+#include <QMap>
+#include <QString>
 #include <Ogre.h>
 
 class QTreeWidget;
@@ -100,6 +101,20 @@ namespace DebugStats
         void GetVerticesAndTrianglesFromMesh(Ogre::Mesh* mesh, uint& vertices, uint& triangles);
         void GetMaterialsFromEntity(Ogre::Entity* entity, std::set<Ogre::Material*>& dest);
         void GetTexturesFromMaterials(const std::set<Ogre::Material*>& materials, std::set<Ogre::Texture*>& dest);
+        
+        void DumpNetworkSummary(QTextStream* log = 0);
+        
+        struct NetworkLogData
+         {
+            NetworkLogData() : bytes(0), packages(0) {}
+
+            unsigned int bytes;
+            unsigned int packages;
+        };
+        
+        QMap<QString, NetworkLogData > mapNetInData_;
+        QMap<QString, NetworkLogData > mapNetOutData_;
+
 
         Foundation::Framework *framework_;
         int frame_time_update_x_pos_;
