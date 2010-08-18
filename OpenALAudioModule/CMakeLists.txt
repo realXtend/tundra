@@ -32,17 +32,30 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 add_definitions (-DOPENAL_MODULE_EXPORTS)
 
+if (UISERVICE_TEST)
+    add_definitions (-DUISERVICE_TEST)
+endif ()
+
 use_package (BOOST)
 use_package (POCO)
 use_package (OPENAL)
 use_package (OGG)
 use_package (QT4)
 use_package (VORBIS)
-use_modules (Core Foundation Interfaces RexCommon AssetModule UiModule)
+use_modules (Core Foundation Interfaces RexCommon AssetModule)
+
+if (NOT UISERVICE_TEST)
+    use_modules (UiModule)
+endif ()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon UiModule)
+link_modules (Core Foundation Interfaces RexCommon)
+
+if (NOT UISERVICE_TEST)
+    link_modules (UiModule)
+endif ()
+
 link_package (BOOST)
 link_package (POCO)
 link_package (OPENAL)
@@ -52,7 +65,7 @@ link_package (VORBIS)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
-	add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
 endforeach (XML_FILE)
 
 # MSVC -specific settings for preprocessor and PCH use
@@ -61,7 +74,7 @@ if (MSVC)
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
             if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")        
+                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
             else()
                 get_filename_component(basename ${src_file} NAME)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")

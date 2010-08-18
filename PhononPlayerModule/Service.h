@@ -22,7 +22,7 @@ namespace PhononPlayer
         virtual ~Service();
 
     public slots:
-        virtual bool IsMimeTypeSupported(const QString mime_type);
+        virtual bool IsMimeTypeSupported(const QString &mime_type);
         virtual QWidget* GetPlayerWidget(const QString &url);
         virtual void DeletePlayerWidget(const QString &url);
 

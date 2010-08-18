@@ -13,8 +13,10 @@
 #include <QCheckBox>
 #include <QKeyEvent>
 
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
+#endif
 
 namespace OgreRenderer
 {
@@ -32,6 +34,7 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
+#ifndef UISERVICE_TEST
         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
         // If this occurs, we're most probably operating in headless mode.
         if (ui_module.get() == 0)
@@ -69,6 +72,7 @@ namespace OgreRenderer
         input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
         if(input_context_.get())
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
+#endif
     }
 
     void RendererSettings::KeyPressed(KeyEvent* e)

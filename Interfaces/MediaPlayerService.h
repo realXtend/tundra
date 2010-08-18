@@ -5,10 +5,10 @@
 #define incl_Interfaces_PlayerService_h
 
 #include "ServiceInterface.h"
-// todo: Make these forward declarations if possible
-#include <QObject>
-#include <QString>
 
+#include <QObject>
+
+class QString;
 class QWidget;
 
 namespace MediaPlayer
@@ -21,7 +21,7 @@ namespace MediaPlayer
     public:
         virtual ~ServiceInterface() {};
     public slots:
-        virtual bool IsMimeTypeSupported(const QString mime_type) = 0;
+        virtual bool IsMimeTypeSupported(const QString &mime_type) = 0;
 
         /// Gives player widget playing given media in eternal loop.
         /// If player is asked more than once for same url only one instance of player 

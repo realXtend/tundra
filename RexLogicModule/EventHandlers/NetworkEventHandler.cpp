@@ -25,6 +25,8 @@
 #include "Entity.h"
 #include "ModuleManager.h"
 #include "EventManager.h"
+
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
@@ -32,6 +34,8 @@
 #include "Inworld/ControlPanelManager.h"
 #include "Inworld/Notifications/QuestionNotification.h"
 #include "Ether/EtherLoginNotifier.h"
+#endif
+
 #include "ServiceManager.h"
 #include "SoundServiceInterface.h"
 #include "AssetServiceInterface.h"
@@ -223,13 +227,12 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
 
     const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
     owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
-
+#ifndef UISERVICE_TEST
     // Tell teleportWidget current region name
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(QString(owner_->GetServerConnection()->GetSimName().c_str()));
-
+#endif
     return false;
 }
 
@@ -494,11 +497,11 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
         block.mapImageID = msg.ReadUUID();
         mapBlocks.append(block);
     }
-
+#ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
         ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetMapBlocks(mapBlocks);
-
+#endif
     return false;
 }
 
@@ -515,6 +518,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
     if (region_name.empty())
         return false;
 
+#ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (!ui_module)
         return false;
@@ -556,7 +560,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
             notifier->SetIsTeleporting(true);
         }
     }
-
+#endif
     return false;
 }
 

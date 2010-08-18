@@ -13,11 +13,12 @@
 #include <QFile>
 #include <QAbstractSlider>
 
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
+#endif
 
 namespace OpenALAudio
 {
-
     SoundSettings::SoundSettings(Foundation::Framework* framework) :
         framework_(framework),
         settings_widget_(0)
@@ -32,10 +33,9 @@ namespace OpenALAudio
 
     void SoundSettings::InitWindow()
     {
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-
-        // If this occurs, we're most probably operating in headless mode.
-        if (ui_module.get() == 0)
+#ifndef UISERVICE_TEST
+        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
+        if (!ui_module)
             return;
 
         QUiLoader loader;
@@ -53,9 +53,9 @@ namespace OpenALAudio
 
         ui_module->GetInworldSceneController()->AddSettingsWidget(settings_widget_, "Sound");
 
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;     
+        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        if (!soundsystem)
+            return;
         QAbstractSlider* slider = settings_widget_->findChild<QAbstractSlider*>("slider_master");
         if (slider)
         {
@@ -80,37 +80,34 @@ namespace OpenALAudio
             slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Voice) * 100);
             QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(VoiceGainChanged(int)));
         }
+#endif
     }
-    
+
     void SoundSettings::MasterGainChanged(int value)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;
-        soundsystem->SetMasterGain(value / 100.0);
+        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        if (soundsystem)
+            soundsystem->SetMasterGain(value / 100.0);
     }
 
     void SoundSettings::TriggeredGainChanged(int value)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;
-        soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Triggered, value / 100.0);
+        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        if (soundsystem)
+            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Triggered, value / 100.0);
     }
 
     void SoundSettings::AmbientGainChanged(int value)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;
-        soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Ambient, value / 100.0);
+        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        if (soundsystem)
+            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Ambient, value / 100.0);
     }
     
     void SoundSettings::VoiceGainChanged(int value)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!soundsystem.get())
-            return;
-        soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Voice, value / 100.0);
+        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        if (soundsystem)
+            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Voice, value / 100.0);
     }
 }

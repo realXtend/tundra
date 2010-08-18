@@ -8,11 +8,15 @@
 #include "StableHeaders.h"
 #include "UploadProgressWindow.h"
 #include "InventoryModule.h"
+
 #include "ModuleManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
+#include "Inworld/InworldSceneController.h"
+#endif
+
 #include "UiProxyWidget.h"
 
 #include <QUiLoader>
@@ -41,13 +45,14 @@ UploadProgressWindow::UploadProgressWindow(InventoryModule *owner, QWidget *pare
     progressBar_ = mainWidget_->findChild<QProgressBar *>("progressBar");
     labelFileNumber_ = mainWidget_->findChild<QLabel *>("labelFileNumber");
 
-    // Add widget to UI via ui services module
-    boost::shared_ptr<UiServices::UiModule> ui_module = owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
-        return;
-
     setWindowTitle(tr("Upload Progress Window"));
-    proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
+
+#ifndef UISERVICE_TEST
+    // Add widget to UI via ui services module
+    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+    if (ui_module)
+        proxyWidget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(this);
+#endif
 }
 
 UploadProgressWindow::~UploadProgressWindow()
@@ -60,15 +65,16 @@ UploadProgressWindow::~UploadProgressWindow()
 
 void UploadProgressWindow::OpenUploadProgress(size_t file_count)
 {
-    boost::shared_ptr<UiServices::UiModule> ui_module =
-        owner_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (!ui_module.get())
+#ifndef UISERVICE_TEST
+    UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
+    if (!ui_module)
         return;
 
     progressBar_->setRange(0, file_count);
     progressBar_->setValue(uploadCount_);
     proxyWidget_->show();
     ui_module->GetInworldSceneController()->BringProxyToFront(proxyWidget_);
+#endif
 }
 
 void UploadProgressWindow::UploadStarted(const QString &filename)

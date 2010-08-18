@@ -13,9 +13,12 @@
 #include "InventoryTreeView.h"
 #include "InventoryAsset.h"
 
+#ifndef UISERVICE_TEST
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
 #include "Inworld/Notifications/ProgressNotification.h"
+#endif
+
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("InventoryWindow")
@@ -359,11 +362,13 @@ void InventoryWindow::OpenDownloadProgess(const QString &asset_id, const QString
     msgBox->show();
 */
 
+#ifndef UISERVICE_TEST
     ///\todo Find a way to update the download process if possible
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Downloading " + name + " from inventory", progress_controller));
     progress_controller->Start(11);
     notification_progress_map_[asset_id] = progress_controller;
+#endif
 }
 
 void InventoryWindow::AbortDownload(const QString &asset_id)
@@ -378,34 +383,42 @@ void InventoryWindow::FinishProgessNotification(const QString &id)
     if (msgBox)
         delete msgBox;
 */
+#ifndef UISERVICE_TEST
     if (notification_progress_map_.contains(id))
     {
         notification_progress_map_[id]->Finish();
         notification_progress_map_.remove(id);
     }
+#endif
 }
 
 void InventoryWindow::UploadStarted(const QString &filename)
 {
-    /// No way to have any real upload progress info with current current HTTP upload path.
+#ifndef UISERVICE_TEST
+    // No way to have any real upload progress info with current current HTTP upload path.
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
     progress_controller->Start(13);
     notification_progress_map_[filename] = progress_controller;
+#endif
 }
 
 void InventoryWindow::UploadFailed(const QString &filename, const QString &reason)
 {
+#ifndef UISERVICE_TEST
     if (notification_progress_map_.contains(filename))
     {
         notification_progress_map_[filename]->FailWithReason(reason);
         notification_progress_map_.remove(filename);
     }
+#endif
 }
 
 void InventoryWindow::CreateNotification(QString message, int hide_time)
 {
+#ifndef UISERVICE_TEST
     emit Notification(new UiServices::MessageNotification(message, hide_time));
+#endif
 }
 
 void InventoryWindow::InitInventoryWindow()

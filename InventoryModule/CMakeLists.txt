@@ -31,6 +31,10 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 
 add_definitions (-DINVENTORY_MODULE_EXPORTS)
 
+if (UISERVICE_TEST)
+    add_definitions (-DUISERVICE_TEST)
+endif ()
+
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)
@@ -40,11 +44,15 @@ use_package (OGRE)
 use_package (QT4)
 use_package (PYTHON)
 use_package (PYTHON_QT)
-use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule HttpUtilities AssetModule)
+
+use_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities AssetModule)
+
+if (NOT UISERVICE_TEST)
+    use_modules (UiModule)
+endif ()
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS})
 
-link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities UiModule HttpUtilities)
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
@@ -53,6 +61,12 @@ link_package (OPENJPEG)
 link_package (OGRE)
 link_package (QT4)
 link_package (PYTHON_QT)
+
+link_modules (Core Foundation Interfaces RexCommon ProtocolUtilities HttpUtilities)
+
+if (NOT UISERVICE_TEST)
+    link_modules (UiModule)
+endif ()
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

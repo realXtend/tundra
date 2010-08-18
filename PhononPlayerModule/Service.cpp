@@ -27,9 +27,9 @@ namespace PhononPlayer
         video_players_.clear();
     }
 
-    bool Service::IsMimeTypeSupported(const QString mime_type)
+    bool Service::IsMimeTypeSupported(const QString &mime_type)
     {
-        return Phonon::BackendCapabilities::isMimeTypeAvailable(QString(mime_type));
+        return Phonon::BackendCapabilities::isMimeTypeAvailable(mime_type);
     }
 
     QWidget* Service::GetPlayerWidget(const QString &url)

@@ -7,26 +7,29 @@
 #include "ModuleManager.h"
 #include "Framework.h"
 #include "WorldStream.h"
+
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
 #include "Common/UiAction.h"
-
-#include <boost/shared_ptr.hpp>
+#endif
 
 namespace RexLogic
 {
 
-MainPanelHandler::MainPanelHandler(RexLogicModule *rex_logic_module) : rex_logic_module_(rex_logic_module)
+MainPanelHandler::MainPanelHandler(RexLogicModule *rexlogic) : rexlogic_(rexlogic)
 {
-    UiModulePtr ui_module = rex_logic_module_->GetFramework()->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-    if (ui_module.get())
+#ifndef UISERVICE_TEST
+    UiServices::UiModule *ui_module = rexlogic_->GetFramework()->GetModule<UiServices::UiModule>();
+    if (ui_module)
     {
         UiServices::UiAction *quit_action = new UiServices::UiAction(this);
         connect(quit_action, SIGNAL(triggered()), SLOT(QuitRequested()));
 
         ui_module->GetInworldSceneController()->GetControlPanelManager()->SetHandler(UiServices::Quit, quit_action);
     }
+#endif
 }
 
 MainPanelHandler::~MainPanelHandler()
@@ -35,14 +38,14 @@ MainPanelHandler::~MainPanelHandler()
 
 void MainPanelHandler::LogoutRequested()
 {
-    rex_logic_module_->LogoutAndDeleteWorld();
+    rexlogic_->LogoutAndDeleteWorld();
 }
 
 void MainPanelHandler::QuitRequested()
 {
-    if (rex_logic_module_->GetServerConnection()->IsConnected())
-        rex_logic_module_->LogoutAndDeleteWorld();
-    rex_logic_module_->GetFramework()->Exit();
+    if (rexlogic_->GetServerConnection()->IsConnected())
+        rexlogic_->LogoutAndDeleteWorld();
+    rexlogic_->GetFramework()->Exit();
 }
 
 }

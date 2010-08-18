@@ -8,16 +8,19 @@
 #include "StableHeaders.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "RexLogicModule.h"
+#include "Communications/InWorldChat/Provider.h"
+
 #include "NetworkEvents.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "WorldStream.h"
+
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
 #include "Inworld/NotificationManager.h"
 #include "Inworld/Notifications/MessageNotification.h"
-#include "Communications/InWorldChat/Provider.h"
-
+#endif
 //#include <QMessageBox>
 
 namespace RexLogic
@@ -63,11 +66,12 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         assert(event_data);
         if (!event_data)
             return false;
-
+#ifndef UISERVICE_TEST
         UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
         if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 joined the world").arg(event_data->fullName.c_str())));
+#endif
         break;
     }
     case ProtocolUtilities::Events::EVENT_USER_DISCONNECTED:
@@ -76,10 +80,12 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         assert(event_data);
         if (!event_data)
             return false;
+#ifndef UISERVICE_TEST
         UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
         if (ui_module)
             ui_module->GetNotificationManager()->ShowNotification(new UiServices::MessageNotification(
                 QString("%1 logged out").arg(event_data->fullName.c_str())));
+#endif
         break;
     }
     case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:

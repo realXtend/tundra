@@ -18,7 +18,6 @@
 #include "InventoryAsset.h"
 #include "ItemPropertiesWindow.h"
 #include "InventoryService.h"
-#include "UiServiceInterface.h"
 
 #include "Framework.h"
 #include "EventManager.h"
@@ -33,10 +32,14 @@
 #include "AssetServiceInterface.h"
 #include "AssetEvents.h"
 #include "ResourceInterface.h"
-#include "UiModule.h"
+#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+
+#ifndef UISERVICE_TEST
+#include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/NotificationManager.h"
+#endif
 
 #include <QStringList>
 #include <QVector>
@@ -384,8 +387,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-    if (!ui_module)
+    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    if (!ui)
         return;
 
     // Check that item properties window for this item doesn't already exists.
@@ -393,7 +396,7 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     QMap<QString, ItemPropertiesWindow *>::iterator it = itemPropertiesWindows_.find(inventory_id);
     if (it != itemPropertiesWindows_.end())
     {
-        ui_module->GetInworldSceneController()->BringProxyToFront(it.value());
+        ui->BringWidgetToFront(it.value());
         return;
     }
 
@@ -407,10 +410,10 @@ void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
     itemPropertiesWindows_[inventory_id] = wnd;
 
     // Add widget to UI scene
-    UiProxyWidget *proxy = ui_module->GetInworldSceneController()->AddWidgetToScene(wnd);
+    UiProxyWidget *proxy = ui->AddWidgetToScene(wnd);
     QObject::connect(proxy, SIGNAL(Closed()), wnd, SLOT(Cancel()));
     proxy->show();
-    ui_module->GetInworldSceneController()->BringProxyToFront(proxy);
+    ui->BringWidgetToFront(proxy);
 
     if (inventoryType_ == IDMT_OpenSim)
     {
@@ -455,7 +458,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::CreateInventoryWindow()
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (!ui)
         return;
 
@@ -466,11 +469,12 @@ void InventoryModule::CreateInventoryWindow()
     ui->AddWidgetToScene(inventoryWindow_);
     ui->AddWidgetToMenu(inventoryWindow_);
 
+#ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (ui_module)
         connect(inventoryWindow_, SIGNAL(Notification(CoreUi::NotificationBaseWidget *)), ui_module->GetNotificationManager(),
             SLOT(ShowNotification(CoreUi::NotificationBaseWidget *)));
-
+#endif
 /*
     if (uploadProgressWindow_)
         SAFE_DELETE(uploadProgressWindow_);

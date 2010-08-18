@@ -457,13 +457,13 @@
                <bool>true</bool>
               </property>
               <property name="plainText">
-               <string>You are now using realXtends virtual world viewer called Naali. Next step is to get you into a world and for this we provide three types of login methods. 
+               <string>You are now using realXtend's virtual world viewer called Naali. The Next step is to get you into a world and for this we provide three types of login methods. 
 
-OpenSim login requires you to have a existing account created into the server. Just insert your Firstname Last of the account to Username field, password and world address.
+OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
 
-realXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, basically this means the OpenSim server must be running our ModreX server component.
+RealXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, in other words the OpenSim server must be running with the ModreX server component.
 
-Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from above and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. And of course you can type the login url of the server to the Naali web browser manually. Web based authentications give you the possibility to login with your OpenID, Google and Yahoo accounts.</string>
+Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from the left top corner and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. Naturally you can just type the login URL of the server to the Naali web browser manually. Web-based authentication gives you the possibility to login with your OpenID, Google and Yahoo accounts.</string>
               </property>
               <property name="textInteractionFlags">
                <set>Qt::NoTextInteraction</set>
