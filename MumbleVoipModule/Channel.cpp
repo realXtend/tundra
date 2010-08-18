@@ -20,11 +20,14 @@ namespace MumbleVoip
     {
         QString message = QString("Mumble channel object created for: %1").arg(channel->name.c_str());
         MumbleVoipModule::LogDebug(message.toStdString());
+        channel_name_ = channel_->name.c_str();
     }
 
     Channel::~Channel()
     {
-        QString message = QString("Mumble channel object deleted for: %1").arg(channel_->name.c_str());
+        // @note channel_ pointer is not safe to use because it might have been uninitialized
+        // by mumble client library at this point
+        QString message = QString("Mumble channel object deleted for: %1").arg(channel_name_);
         MumbleVoipModule::LogDebug(message.toStdString());
     }
 
