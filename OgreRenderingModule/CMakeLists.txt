@@ -4,6 +4,11 @@ macro (MocFolder)
     source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
 endmacro (MocFolder)
 
+macro (UiFolder)
+    file (GLOB GENERATED_UI_H ui_*.h)
+    source_group ("Generated UI" FILES ${GENERATED_UI_H})
+endmacro (UiFolder)
+
 ###########################################################
 
 # Define target name and output directory
@@ -12,16 +17,18 @@ init_target (OgreRenderingModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
+file (GLOB UI_FILES *.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h Renderer.h)
+file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h Renderer.h CAVESettingsWidget.h CAVEManager.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
+#UiFolder ()
 
 # Build parameters required by Qt - define files for moc prepass, process resource and ui files.
+QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
-#QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 #QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)

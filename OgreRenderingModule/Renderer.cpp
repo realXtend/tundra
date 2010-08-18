@@ -133,6 +133,7 @@ namespace OgreRenderer
         q_ogre_ui_view_(0),
         last_width_(0),
         last_height_(0),
+        cave_manager_(this),
         resized_dirty_(0),
         view_distance_(500.0),
         shadowquality_(Shadows_High),
@@ -373,6 +374,7 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
+        cave_manager_.InitializeUi();
         resource_handler_->PostInitialize();
         
     }
