@@ -237,7 +237,7 @@ namespace Ether
 
         void ActionProxyWidget::AnimationsComplete()
         {
-            if (visibility_animation_->state() == QAbstractAnimation::Backward)
+            if (visibility_animation_->direction() == QAbstractAnimation::Backward)
                 hide();
         }
 
