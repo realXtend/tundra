@@ -710,6 +710,9 @@ class ObjectEdit(Component):
     def on_exit(self):
         r.logInfo("Object Edit exiting...")
 
+        # Connect to key pressed signal from input context
+        inputcontext.disconnectAll()
+
         self.deselect_all()
         self.window.on_exit()  
 

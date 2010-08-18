@@ -29,11 +29,10 @@ class KeyCommander(Component):
             }
             #r.MoveForwardPressed: self.overrideForwardWalking #overrides the moveforward event
 
-        inputcontext.disconnect('KeyPressed(KeyEvent*)', self.on_keypressed)
         inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
         #XXX a temp hack to have restart work in login screen / ether too
         uiview = r.getUiView()
-        uiview.connect("PythonRestartRequest()", self.restart_modulemanager)
+        uiview.connect('PythonRestartRequest()', self.restart_modulemanager)
         
     # handle KeyPressed event from naali.inputcontext
     def on_keypressed(self, key):
@@ -42,6 +41,12 @@ class KeyCommander(Component):
             return self.inputmap[keyb]()
         else:
             return False
+
+    def on_exit(self):
+        r.logInfo("Key Commands exiting...")
+        inputcontext.disconnectAll()
+        r.disconnectUiViewSignals()
+        r.logInfo("    ... done exiting Key Commands")
     
     #uncomment this for raycasting tests
     #~ def on_mousemove(self, mouseinfo):
