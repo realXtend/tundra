@@ -22,7 +22,7 @@ namespace PhononPlayer
     {
         foreach(VideoPlayer* player, video_players_)
         {
-            SAFE_DELETE(player);
+            player->deleteLater();
         }
         video_players_.clear();
     }
@@ -52,7 +52,7 @@ namespace PhononPlayer
  
         VideoPlayer* player = video_players_[url];
         video_players_.remove(url);
-        SAFE_DELETE(player);
+        player->deleteLater();
     }
 
 } // PhononPlayer
