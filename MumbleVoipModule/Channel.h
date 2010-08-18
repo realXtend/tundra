@@ -39,6 +39,7 @@ namespace MumbleVoip
 
     private:
         const MumbleClient::Channel* channel_;
+        QString channel_name_;
     };
 
 }// namespace MumbleVoip
