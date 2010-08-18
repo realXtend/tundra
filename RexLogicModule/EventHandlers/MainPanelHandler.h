@@ -14,7 +14,7 @@ namespace RexLogic
         Q_OBJECT
 
     public:
-        explicit MainPanelHandler(RexLogicModule *logic_module);
+        explicit MainPanelHandler(RexLogicModule *rexlogic);
         ~MainPanelHandler();
 
     public slots:
@@ -22,7 +22,7 @@ namespace RexLogic
         void QuitRequested();
 
     private:
-        RexLogicModule *rex_logic_module_;
+        RexLogicModule *rexlogic_;
     };
 }
 

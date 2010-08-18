@@ -61,7 +61,9 @@
 #include "InputServiceInterface.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
+#ifndef UISERVICE_TEST
 #include "UiModule.h"
+#endif
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
@@ -262,7 +264,7 @@ void RexLogicModule::PostInitialize()
     // that into rexlogic login handlers for slots/signals setup
     os_login_handler_ = new OpenSimLoginHandler(framework_, this);
     taiga_login_handler_ = new TaigaLoginHandler(framework_, this);
-
+#ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
     if (ui_module)
     {
@@ -273,7 +275,7 @@ void RexLogicModule::PostInitialize()
             taiga_login_handler_->SetLoginNotifier(notifier);
         }
     }
-
+#endif
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -979,6 +981,7 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 
 void RexLogicModule::AboutToDeleteWorld()
 {
+#ifndef UISERVICE_TEST
     // Lets take some screenshots before deleting the scene
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
 
@@ -1037,6 +1040,7 @@ void RexLogicModule::AboutToDeleteWorld()
                 avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
         }
     }
+#endif
 }
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)

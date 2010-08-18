@@ -36,6 +36,7 @@ namespace Console
         proxy_widget_->setMinimumHeight(0);
         proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
         proxy_widget_->setOpacity(opacity_);
+        proxy_widget_->setZValue(100);
         ui_view_->scene()->addItem(proxy_widget_);
 
         SetupAnimation();

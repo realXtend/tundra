@@ -46,7 +46,6 @@ namespace UiServices
 
     UiModule::UiModule() :
         Foundation::ModuleInterface(type_name_static_),
-        event_query_categories_(QStringList()),
         ui_state_machine_(0),
         service_getter_(0),
         inworld_scene_controller_(0),

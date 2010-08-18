@@ -76,6 +76,14 @@ if (HYDRAX)
     configure_hydrax ()
 endif (HYDRAX)
 
+# UiServiceModule is an experimental light-weight UI module 
+# which can be used as a substitute for UiModule.
+# If you want to test UiServiceModule, uncomment the following line.
+# The define also enables LoginScreenModule which is an experimental module 
+# for abstracting the login screen / main menu from the main application:
+# currently this functionality resides in RexLogicModule and UiModule.
+SET (UISERVICE_TEST 0)
+
 # Add all the subprojects in the rex viewer.
 
 # The following are the core modules that are 
@@ -91,11 +99,13 @@ add_subdirectory (Application)
 add_subdirectory (RexLogicModule)
 add_subdirectory (SupportModules)
 add_subdirectory (AssetModule)
-add_subdirectory (UiModule)
 add_subdirectory (HttpUtilities)
 add_subdirectory (RpcUtilities)
 add_subdirectory (ProtocolUtilities)
 add_subdirectory (EnvironmentModule)
+if (NOT UISERVICE_TEST)
+    add_subdirectory (UiModule)
+endif ()
 
 # The following are not really core modules,
 # but you can't do anything practical without
@@ -104,6 +114,11 @@ add_subdirectory (QtInputModule)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
+
+if (UISERVICE_TEST)
+    add_subdirectory (UiServiceModule)
+    add_subdirectory (LoginScreenModule)
+endif ()
 
 # The following are optional, but contain 
 # commonly used functionality.

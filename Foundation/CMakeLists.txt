@@ -13,9 +13,6 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 QT4_WRAP_UI(UI_SRCS ${UI_FILES})
 QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
-
-add_definitions (-DUSE_QT)
-
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
