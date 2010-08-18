@@ -25,7 +25,7 @@ file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES RexLogicModule.h Avatar/AvatarEditor.h EventHandlers/LoginHandler.h RexMovementInput.h
     EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h EntityComponent/HoveringNameController.h
     EntityComponent/HoveringButtonsController.h EntityComponent/DetachedWidgetController.h  Environment/Primitive.h
-    Communications/*.h Communications/InWorldChat/*.h)
+    Communications/*.h Communications/InWorldChat/*.h EntityComponent/EC_Mesh.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
