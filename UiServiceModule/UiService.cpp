@@ -109,3 +109,9 @@ void UiService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     scene_->setFocusItem(widget, Qt::ActiveWindowFocusReason);
 }
 
+void UiService::DeleteCallingWidgetOnClose()
+{
+    QGraphicsProxyWidget *proxy = dynamic_cast<QGraphicsProxyWidget *>(sender());
+    if (proxy && !proxy->isVisible())
+        proxy->deleteLater();
+}
