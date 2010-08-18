@@ -1,4 +1,4 @@
 <config>
-    <entry>LoginModule</entry>
+    <entry>LoginScreenModule</entry>
     <dependency>UiServiceModule</dependency>
 </config>

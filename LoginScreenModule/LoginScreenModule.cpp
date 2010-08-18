@@ -35,11 +35,6 @@ void LoginScreenModule::PreInitialize()
 
 void LoginScreenModule::Initialize()
 {
-/*
-    assert(GetFramework()->GetUIView());
-    service_ = UiServicePtr(new UiService(GetFramework()->GetUIView()));
-    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, service_);
-*/
 }
 
 void LoginScreenModule::PostInitialize()
@@ -62,10 +57,6 @@ void LoginScreenModule::PostInitialize()
 
 void LoginScreenModule::Uninitialize()
 {
-/*
-    framework_->GetServiceManager()->UnregisterService(service_);
-    service_.reset();
-*/
 }
 
 void LoginScreenModule::Update(f64 frametime)
@@ -101,9 +92,7 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
         return;
 
-    InputServiceInterface &inputService = framework_->Input();
-
-    const QKeySequence &toggleMenu = inputService.KeyBinding("LoginMenu.ToggleLoginMenu", Qt::Key_Escape);
+    const QKeySequence &toggleMenu = framework_->Input().KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
         // if (connected)
