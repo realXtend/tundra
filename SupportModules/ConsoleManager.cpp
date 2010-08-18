@@ -30,7 +30,7 @@ namespace Console
         if (renderer)
             renderer->SubscribeLogListener(log_listener_);
         else
-            ConsoleModule::LogWarning("ConsoleManager couldn't acquite renderer service: can't subscribe to renderer log listener.");
+            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't subscribe to renderer log listener.");
     }
 
     ConsoleManager::~ConsoleManager()
@@ -39,7 +39,7 @@ namespace Console
         if (renderer)
             renderer->UnsubscribeLogListener(log_listener_);
         else
-            ConsoleModule::LogWarning("ConsoleManager couldn't acquite renderer service: can't unsubscribe renderer log listener.");
+            ConsoleModule::LogWarning("ConsoleManager couldn't acquire renderer service: can't unsubscribe renderer log listener.");
 
         parent_->GetFramework()->RemoveLogChannel(console_channel_.get());
     }
