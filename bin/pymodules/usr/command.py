@@ -388,6 +388,7 @@ if 0:
     def keypressed(e):
         print e
     #print dir(naali.inputcontext)
+    #naali.inputcontext.disconnect()
     naali.inputcontext.connect('OnKeyEvent(KeyEvent&)', keypressed)
 
 if 0: #QVector3D
