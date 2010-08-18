@@ -6,7 +6,6 @@
 #include "SoundServiceInterface.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "Inworld/InworldSceneController.h"
 #include "Framework.h"
 
 #include <QUiLoader>
@@ -14,6 +13,7 @@
 #include <QAbstractSlider>
 
 #ifndef UISERVICE_TEST
+#include "Inworld/InworldSceneController.h"
 #include "UiModule.h"
 #endif
 
