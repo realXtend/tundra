@@ -387,7 +387,7 @@ endmacro (configure_openssl)
 macro (configure_protobuf)
     sagase_configure_package(PROTOBUF
         NAMES google protobuf
-        COMPONENTS libprotobuf
+        COMPONENTS protobuf libprotobuf
         PREFIXES ${ENV_NAALI_DEP_PATH}/protobuf)
     # Force include dir and libraries on MSVC
     if (MSVC)
