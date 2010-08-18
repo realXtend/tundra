@@ -41,19 +41,6 @@ else:
     window = reload(window)
     manipulator = reload(manipulator)
     
-#NOTE: these are not ported yet after using OIS was dropped, so don't work
-OIS_KEY_ALT = 256
-OIS_KEY_CTRL = 16
-OIS_KEY_M = 50
-OIS_KEY_S = 31
-OIS_KEY_R = 19
-OIS_KEY_U = 22
-OIS_KEY_D = 32
-OIS_KEY_Z = 44
-OIS_KEY_ESC = 1
-OIS_KEY_DEL = 211
-
- 
 class ObjectEdit(Component):
     EVENTHANDLED = False
  
