@@ -1,0 +1,4 @@
+<config>
+    <entry>LoginModule</entry>
+    <dependency>UiServiceModule</dependency>
+</config>
