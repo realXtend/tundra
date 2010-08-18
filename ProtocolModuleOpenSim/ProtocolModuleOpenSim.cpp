@@ -174,7 +174,11 @@ namespace OpenSimProtocol
             // Send event indicating a succesfull connection
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_, "", loginWorker_.GetClientParameters().gridUrl);
             auth_data.inventorySkeleton = loginWorker_.GetClientParameters().inventory;
-
+            if (authenticationType_ == ProtocolUtilities::AT_RealXtend)
+                auth_data.type = ProtocolUtilities::AT_RealXtend;
+            else
+                auth_data.type = ProtocolUtilities::AT_OpenSim;
+                
             // Fill in webdav information if exists
             if (loginWorker_.GetClientParameters().webdavInventoryUrl != "")
             {

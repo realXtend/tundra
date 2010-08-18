@@ -173,7 +173,8 @@ namespace TaigaProtocol
             // Send event indicating a succesfull connection.
             ProtocolUtilities::AuthenticationEventData auth_data(authenticationType_);
             auth_data.inventorySkeleton = GetClientParameters().inventory;
-
+            auth_data.type = ProtocolUtilities::AT_OpenSim;
+            
             // Fill in webdav information if exists
             if (loginWorker_.GetClientParameters().webdavInventoryUrl != "")
             {

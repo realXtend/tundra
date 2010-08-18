@@ -549,6 +549,11 @@ namespace ProtocolUtilities
         /// Unregisters the eventmanager from current Protocol Module
         void UnregisterCurrentProtocolModule();
 
+        /// Set authentication type
+        const void SetAuthenticationType(AuthenticationType authentication_type) { authentication_type_ = authentication_type; }
+        
+        const AuthenticationType GetAuthenticationType() { return authentication_type_; }
+
     private:
         Q_DISABLE_COPY(WorldStream);
 
@@ -596,6 +601,9 @@ namespace ProtocolUtilities
 
         /// Type of the connection.
         ConnectionType connection_type_;
+        
+        /// Type of the authentication to this stream
+        AuthenticationType authentication_type_;
 
         /// last password used for easy avatar export, probably a bit evil
         std::string password_;
