@@ -40,6 +40,11 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
     {
     case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
     {
+        // Set auth data to the current world stream
+        ProtocolUtilities::AuthenticationEventData *inbound_event_data = checked_static_cast<ProtocolUtilities::AuthenticationEventData*>(data);
+        if (inbound_event_data)
+            owner_->GetServerConnection()->SetAuthenticationType(inbound_event_data->type);
+            
         // The client has connected to the server. Create a new scene for that.
         owner_->CreateNewActiveScene("World");
         // Send WorldStream as internal event
@@ -50,6 +55,9 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
     }
     case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
     {
+        // Reset the authentication type
+        owner_->GetServerConnection()->SetAuthenticationType(ProtocolUtilities::AT_Unknown);
+        
         // Might be user quitting or server dropping connection.
         // This event occurs when OpenSimProtocolModule has already closed connection. 
         // Make sure the rexlogic also thinks connection is closed.

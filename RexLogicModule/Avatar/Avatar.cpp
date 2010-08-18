@@ -746,10 +746,10 @@ namespace RexLogic
         }
         
         // Legacy avatar
-        if (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection)
+        if (conn->GetAuthenticationType() == ProtocolUtilities::AT_RealXtend)
             avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
         // Webdav avatar
-        else if (conn->GetConnectionType() == ProtocolUtilities::AT_Taiga)
+        else if (conn->GetAuthenticationType() == ProtocolUtilities::AT_Taiga)
             avatar_appearance_.WebDavExportAvatar(entity);
         // Inventory avatar
         else
