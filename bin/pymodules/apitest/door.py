@@ -8,8 +8,8 @@ import rexviewer as r
 
 from componenthandler import DynamiccomponentHandler
 
-OPENPOS = Vec(127, 128, 30)
-CLOSEPOS = Vec(127, 127, 30)
+OPENPOS = Vec(101.862, 82.6978, 24.9221)
+CLOSEPOS = Vec(99.65, 82.6978, 24.9221)
 
 #opened = AttributeBoolean()
 #locked = AttributeBoolean()
@@ -43,6 +43,7 @@ class DoorHandler(DynamiccomponentHandler):
     inworld_inited = False #a cheap hackish substitute for some initing system
 
     def onChanged(self):
+        print "door data changed"
         ent = r.getEntity(self.comp.GetParentEntityId())
 
         if not self.inworld_inited:
@@ -63,21 +64,16 @@ class DoorHandler(DynamiccomponentHandler):
             print "Door DynamicComponent handler registering to GUI"
             self.registergui()
 
-        data = self.comp.GetAttribute()
-        print "GetAttr got:", data
-        try:
-            self.door = json.loads(data) #, object_hook = as_door)
-        except ValueError:
-            print "not valid door data in attr json - using default DoorState"            
-            self.door = doorinit #DoorState()
+        opened = self.opened
+        locked = self.locked
 
-        newpos = OPENPOS if self.door['opened'] else CLOSEPOS
+        newpos = OPENPOS if opened else CLOSEPOS
         ent.placeable.Position = newpos        
-        print self.door, ent.placeable.Position
+        print opened, type(opened), ent.placeable.Position
 
-        self.openbut.text = "Close" if self.door['opened'] else "Open"
-        self.lockbut.text = "Unlock" if self.door['locked'] else "Lock"
-        if self.door['locked'] and not self.door['opened']:
+        self.openbut.text = "Close" if opened else "Open"
+        self.lockbut.text = "Unlock" if locked else "Lock"
+        if locked and not opened:
             self.openbut.enabled = False
         else:
             self.openbut.enabled = True
@@ -105,23 +101,40 @@ class DoorHandler(DynamiccomponentHandler):
         self.widget = group
         self.forcepos = None
 
+        group.show() #as a temp workaround as naali ui system is borked XXX
+
+    def get_opened(self):
+        if self.comp is not None:
+            return self.comp.GetAttribute("opened")
+        else:
+            return None
+    def set_opened(self, newval):
+        self.comp.SetAttribute("opened", newval)
+        self.comp.onChanged()
+    opened = property(get_opened, set_opened)
+
+    def get_locked(self):
+        if self.comp is not None:
+            return self.comp.GetAttribute("locked")
+        else:
+            return None
+    def set_locked(self, newval):
+        self.comp.SetAttribute("locked", newval)
+        self.comp.onChanged()
+    locked = property(get_locked, set_locked)
+
     def open(self):
         print "open"
-        #was when abusing float as a bool:
-        #oldval = self.door.opened #comp.GetAttribute()
-        #newval = 0 if oldval else 1
-        #self.comp.SetAttribute(newval)
 
-        if self.door['opened'] or not self.door['locked']:
-            self.door['opened'] = not self.door['opened']
-            self.sync()
+        if self.opened or not self.locked:
+            self.opened = not self.opened
+            print self.opened
         else:
             print "Can't open a locked door!"
 
     def lock(self):
         #\todo if has key
-        self.door['locked'] = not self.door['locked']
-        self.sync()
+        self.locked = not self.locked
 
     def hover(self):
         import PythonQt
@@ -130,16 +143,10 @@ class DoorHandler(DynamiccomponentHandler):
         cursor = gui.QCursor()
         #print cursor, cursor.shape()
 
-        ctype = 1 if self.door['opened'] else 2
+        ctype = 1 if self.opened else 2
 
         cursor.setShape(ctype)    
         qapp.setOverrideCursor(cursor)
-
-    def sync(self):
-        if self.comp is not None:
-            newdata = json.dumps(self.door) #, cls=DoorEncoder)
-            print "setting Door data to:", newdata
-            self.comp.SetAttribute(newdata)
 
     def update(self, t):
         if self.forcepos is not None:
