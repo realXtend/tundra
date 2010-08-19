@@ -236,7 +236,7 @@ namespace MumbleVoip
             return;
         }
         celt_encoder_ctl(celt_encoder_, CELT_SET_PREDICTION(0));
-	    celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(AudioQuality()));
+	    celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(BitrateForDecoder()));
 
         celt_decoder_ = CreateCELTDecoder();
 
@@ -347,6 +347,7 @@ namespace MumbleVoip
     void Connection::SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position)
     {
         QMutexLocker locker(&mutex_encode_queue_);
+
         lock_state_.lockForRead();
         if (state_ != STATE_OPEN)
         {
@@ -367,7 +368,7 @@ namespace MumbleVoip
         {
             PCMAudioFrame* audio_frame = encode_queue_.takeFirst();
 
-            int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(AudioQuality() / (100 * 8), 127));
+            int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(BitrateForDecoder() / (100 * 8), 127));
             packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
             assert(len < ENCODE_BUFFER_SIZE_);
 
@@ -490,6 +491,7 @@ namespace MumbleVoip
 
         mutex_raw_udp_tunnel_.unlock();
 		QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
+
         lock_state_.lockForRead();
         if (state_ != STATE_OPEN)
         {
@@ -680,7 +682,7 @@ namespace MumbleVoip
                 }
                 else
                 {
-                    MumbleVoipModule::LogWarning("Audio packet dropped: user locket");
+                    MumbleVoipModule::LogWarning("Audio packet dropped: user object locked");
                 }
             }
             break;
@@ -713,10 +715,10 @@ namespace MumbleVoip
         encoding_quality_ = quality;
     }
     
-    int Connection::AudioQuality()
+    int Connection::BitrateForDecoder()
     {
         QMutexLocker locker(&mutex_encoding_quality_);
-        return static_cast<int>(encoding_quality_*(AUDIO_QUALITY_MAX_ - AUDIO_QUALITY_MIN_) + AUDIO_QUALITY_MIN_);
+        return static_cast<int>(encoding_quality_*(AUDIO_BITRATE_MAX_ - AUDIO_BITRATE_MIN_) + AUDIO_BITRATE_MIN_);
     }
 
     void Connection::UpdateUserStates()

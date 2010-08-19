@@ -157,15 +157,15 @@ namespace MumbleVoip
 
     private:
         static const int MUMBLE_DEFAULT_PORT_ = 64738;
-        static const int AUDIO_QUALITY_MAX_ = 90000; 
-        static const int AUDIO_QUALITY_MIN_ = 32000; 
+        static const int AUDIO_BITRATE_MAX_ = 90000; 
+        static const int AUDIO_BITRATE_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
         static const int USER_STATE_CHECK_TIME_MS = 1000;
 
         void InitializeCELT();
         void UninitializeCELT();
         CELTDecoder* CreateCELTDecoder();
-        int AudioQuality();
+        int BitrateForDecoder();
 
         State state_;
         QString reason_;
@@ -196,28 +196,29 @@ namespace MumbleVoip
         QMutex mutex_users_;
         QMutex mutex_client_;
         QReadWriteLock lock_state_;
-//        QMutex mutex_celt_decoder_;
         
     signals:
         void StateChanged(State state);
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
-        //! emited when user left from server
+
+        /// emited when user left from server
         void UserLeftFromServer(User* user);
-        //! emited when user join to server
+        /// emited when user join to server
         void UserJoinedToServer(User* user);
+
 //        void UserJoinedToChannel(User* user);
+
         void ChannelAdded(Channel* channel); 
         void ChannelRemoved(Channel* channel);
 
         // private
         void UserObjectCreated(User*);
         void CELTFrameReceived(int session, unsigned char*data, int size);
-//        void UserPositionUpdated(User* user, Vector3df position)
     };
 
 } // namespace MumbleVoip
 
-//Q_DECLARE_METATYPE(MumbleClient::User)
+//Q_DECLARE_METATYPE(MumbleClient::User) // not needed
 
 #endif // incl_MumbleVoipModule_Connection_h
