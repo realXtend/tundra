@@ -371,14 +371,13 @@ namespace MumbleVoip
         if (encode_queue_.size() < FRAMES_PER_PACKET)
             return;
 
-        std::deque<std::string> packet_list; //! @todo SPEED OPTIMIZATION: reuse memory
-
         for (int i = 0; i < FRAMES_PER_PACKET; ++i)
         {
             PCMAudioFrame* audio_frame = encode_queue_.takeFirst();
 
             int32_t len = celt_encode(celt_encoder_, reinterpret_cast<short *>(audio_frame->DataPtr()), NULL, encode_buffer_, std::min(BitrateForDecoder() / (100 * 8), 127));
-            packet_list.push_back(std::string(reinterpret_cast<char *>(encode_buffer_), len));
+            memcpy(encoded_frame_data_[i], encode_buffer_, len);
+            encoded_frame_length_[i] = len;
             assert(len < ENCODE_BUFFER_SIZE_);
 
             delete audio_frame;
@@ -393,20 +392,14 @@ namespace MumbleVoip
 
 	    for (int i = 0; i < FRAMES_PER_PACKET; ++i)
         {
-		    if (packet_list.empty())
-                break;
-
-		    const std::string& s = packet_list.front();
-
-		    unsigned char head = s.size();
+		    unsigned char head = encoded_frame_length_[i];
 		    // Add 0x80 to all but the last frame
 		    if (i < FRAMES_PER_PACKET - 1)
 			    head |= 0x80;
 
 		    data_stream.append(head);
-		    data_stream.append(s);
+            data_stream.append(encoded_frame_data_[i], encoded_frame_length_[i]);
 
-		    packet_list.pop_front();
             frame_sequence_++;
 	    }
         if (send_position_)
