@@ -161,6 +161,10 @@ namespace MumbleVoip
         static const int AUDIO_BITRATE_MIN_ = 32000; 
         static const int ENCODE_BUFFER_SIZE_ = 4000;
         static const int USER_STATE_CHECK_TIME_MS = 1000;
+        static const int FRAME_BUFFER_SIZE = 256;
+
+        char encoded_frame_data_[FRAMES_PER_PACKET][FRAME_BUFFER_SIZE];
+        int encoded_frame_length_[FRAMES_PER_PACKET];
 
         void InitializeCELT();
         void UninitializeCELT();
