@@ -310,9 +310,19 @@ namespace MumbleVoip
     AudioPacket Connection::GetAudioPacket()
     {
         QMutexLocker userlist_locker(&mutex_users_);
+        if (users_.size() == 0)
+            return AudioPacket(0,0);
 
-        foreach(User* user, users_)
+        QList<User*> user_list = users_.values();
+
+        static int first_index = 0; // We want to give fair selection method for user objects 
+        first_index = (first_index + 1) % user_list.size();
+
+        for (int i = 0; i < user_list.size(); ++i)
         {
+            int index = (first_index + i) % user_list.size();
+            User* user = user_list[index];
+
             if (!user->tryLock())
                 continue;
 
@@ -322,7 +332,6 @@ namespace MumbleVoip
                 user->unlock();
                 return AudioPacket(user, frame);
             }
-
             user->unlock();
         }
 
