@@ -43,6 +43,7 @@ class ToolBarWindow():
             
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
+            uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:

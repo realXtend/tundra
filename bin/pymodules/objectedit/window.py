@@ -421,6 +421,7 @@ class ObjectEditWindow:
     def on_exit(self):
         self.proxywidget.hide()
         uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromMenu(self.proxywidget)
         uism.RemoveWidgetFromScene(self.proxywidget)
         
     def objectDeleted(self, ent_id): #XXX not the best way of doing this
