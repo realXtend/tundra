@@ -16,8 +16,6 @@
 namespace Ogre
 {
     class Entity;
-    class Mesh;
-    //class Node;
     class SceneNode;
 }
 
@@ -80,18 +78,12 @@ private:
      *  @return requset tag, null if the resource was not found.
      */
     request_tag_t RequestResource(const std::string& id, const std::string& type);
-    //! handles mesh ready event.
-    void HandleMeshReady(Foundation::ResourcePtr res);
-    //! handles material ready event.
-    void HandleMaterialReady(uint index, Foundation::ResourcePtr res);
     
     //! Checks if component's and entity's materials differ from each other
     /*! so that we can ensure that material resources are only requested when materials have actually changed.
      *! @return Return true if materials differ from each other.
      */
     bool HasMaterialsChanged() const;
-    //! Search if component is holding EC_OgrePlacable component.
-    void FindPlaceableComponent();
     //! Attach a new entity to scene node that world scene owns.
     void AttachEntity();
     //! Detach entity from the scene node.
@@ -104,11 +96,8 @@ private:
     AssetRequestTags requestTags_;
     typedef std::vector<request_tag_t> AssetRequestArray;
     AssetRequestArray materialRequestTags_;
-    //! Ogre mesh entity
     Ogre::Entity* entity_;
-    //! adjustment scene node (scaling/offset/orientation modifications)
     Ogre::SceneNode* node_;
-    //! Has mesh attach to a scene.
     bool attached_;
 };
 
