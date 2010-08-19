@@ -139,17 +139,26 @@ namespace CoreUi
         Sort();
     }
 
-    void MenuManager::RemoveMenuItem(const QString &category, QGraphicsProxyWidget *controlled_widget)
+    void MenuManager::RemoveMenuItem(QGraphicsProxyWidget *controlled_widget)
     {
         QUuid remove_id = controller_map_.key(controlled_widget);
         if (remove_id.isNull())
             return;
-
+/*
         MenuNode *recovered_node = 0;
         if (category_map_.contains(category))
             recovered_node =  category_map_[category]->RemoveChildNode(remove_id);
         else
             return;
+*/
+        MenuNode *recovered_node = 0;
+        QMapIterator<QString, GroupNode*> it(category_map_);
+        while(it.hasNext())
+        {
+            recovered_node = it.next().value()->RemoveChildNode(remove_id);
+            if (recovered_node)
+                break;
+        }
 
         if (recovered_node)
         {

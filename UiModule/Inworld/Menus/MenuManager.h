@@ -3,19 +3,12 @@
 #ifndef incl_UiModule_MenuManager_h
 #define incl_UiModule_MenuManager_h
 
-//#include "UiDefines.h"
-
 #include <QObject>
 #include <QMap>
 #include <QUuid>
 
 class QGraphicsProxyWidget;
 class QParallelAnimationGroup;
-
-namespace UiServices
-{
-    class UiWidgetProperties;
-}
 
 namespace CoreUi
 {
@@ -37,9 +30,18 @@ namespace CoreUi
         ~MenuManager();
 
     public slots:
+        /** Adds new menu item.
+         *  @param widget Controlled widget.
+         *  @param name Name of the menu entry.
+         *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
+         *  @param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
+         */
         void AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon);
 
-        void RemoveMenuItem(const QString &category, QGraphicsProxyWidget *controlled_widget);
+        /** Removes menu item.
+         *  @param widget Controlled widget.
+         */
+        void RemoveMenuItem(QGraphicsProxyWidget *controlled_widget);
 
     private slots:
         void AddMenuGroup(const QString &name, const QString &icon = "", qreal hgap = 5.0, qreal vgap = 5.0);

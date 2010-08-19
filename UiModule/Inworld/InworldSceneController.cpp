@@ -94,9 +94,9 @@ namespace UiServices
         if (widget->isVisible())
             widget->hide();
 
-        // If no position has been set for widget, use default one so that the window's title
+        // If no position has been set for Qt::Dialog widget, use default one so that the window's title
         // bar - or any other critical part, doesn't go outside the view.
-        if (widget->pos() == QPointF())
+        if ((widget->windowFlags() & Qt::Dialog) && widget->pos() == QPointF())
             widget->setPos(10.0, 200.0);
 
         inworld_scene_->addItem(widget);
@@ -144,17 +144,6 @@ namespace UiServices
 
     void InworldSceneController::RemoveProxyWidgetFromScene(QGraphicsProxyWidget *widget)
     {
-        UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget);
-        if (uiproxy)
-        {
-            ///\todo This is awful, get rid of this. STINKFIST
-            /*
-            QString widget_name = uiproxy->GetWidgetProperties().GetWidgetName();
-            if (widget_name != "Inventory" && widget_name != "Avatar Editor")
-                menu_manager_->RemoveMenuItem(uiproxy->GetWidgetProperties().GetMenuGroup(), widget);
-                */
-        }
-
         inworld_scene_->removeItem(widget);
         all_proxy_widgets_in_scene_.removeOne(widget);
     }
@@ -162,6 +151,11 @@ namespace UiServices
     void InworldSceneController::RemoveProxyWidgetFromScene(QWidget *widget)
     {
         RemoveProxyWidgetFromScene(widget->graphicsProxyWidget());
+    }
+
+    void InworldSceneController::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
+    {
+        menu_manager_->RemoveMenuItem(widget);
     }
 
     void InworldSceneController::BringProxyToFront(QGraphicsProxyWidget *widget) const
