@@ -40,7 +40,7 @@ namespace UiServices
         UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
-        void AddWidgetToScene(UiProxyWidget *widget);
+        bool AddWidgetToScene(UiProxyWidget *widget);
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
