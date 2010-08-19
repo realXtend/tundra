@@ -101,7 +101,13 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
     {
     case RexTypes::RexAT_Mesh:
     {
-        HandleMeshReady(res);
+        if (!res)
+            return false;
+        if (res->GetType() != OgreRenderer::OgreMeshResource::GetTypeStatic())
+            return false;
+        OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
+        SetMesh(meshResource->GetId());
+        //HandleMeshReady(res);
         break;
     }
     case RexTypes::RexAT_MaterialScript:
@@ -118,7 +124,11 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
         }
         if(found)
         {
-            HandleMaterialReady(index, res);
+            //HandleMaterialReady(index, res);
+            if (!res || index > meshMaterial_.Get().size()) 
+                return false;
+            OgreRenderer::OgreMaterialResource* materialResource = checked_static_cast<OgreRenderer::OgreMaterialResource*>(res.get());
+            SetMaterial(index, materialResource->GetMaterial()->getName());
             materialRequestTags_[index] = 0;
         }
         break;
@@ -138,11 +148,6 @@ void EC_Mesh::SetMesh(const std::string &name, bool clone)
 {
     if(renderer_.expired() || name == "" || !node_)
         return;
-
-    //If entity is containing exatly the same mesh as before, no need to reload it.
-    if(entity_)
-        if(entity_->getName() == name)
-            return;
 
     RemoveMesh();
     OgreRenderer::Renderer *renderer = renderer_.lock().get();
@@ -222,7 +227,9 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
     }
     try
     {
-        entity_->getSubEntity(index)->setMaterialName(material_name);
+        Ogre::SubEntity *sub = entity_->getSubEntity(index);
+        if(sub)
+            sub->setMaterialName(material_name);
     }
     catch (Ogre::Exception& e)
     {
@@ -253,10 +260,12 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    FindPlaceableComponent();
     disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
     connect(GetParentEntity()->GetScene(), SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
             this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
+    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    if(!placeable_)
+        LogError("Component need to have a EC_OgrePlaceable component so that mesh can be attach into the world.");
 }
 
 void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
@@ -267,6 +276,11 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
     request_tag_t tag = 0;
     if(meshResouceId_.GetName() == attrName)
     {
+        //Ensure that mesh is requested only when it's has actualy changed.
+        if(entity_)
+            if(entity_->getMesh()->getName() == meshResouceId_.Get())
+                return;
+
         tag = RequestResource(meshResouceId_.Get(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
             requestTags_.insert(tag);
@@ -280,8 +294,8 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
         materialRequestTags_.resize(materials.size(), 0);
         for(uint i = 0; i < materials.size(); i++)
         {
-            if(materialRequestTags_[i] != 0)
-                continue;
+            //if(materialRequestTags_[i] != 0)
+            //    continue;
             // We insert material tag in two locations cause we need to beaware of what is the material's index.
             tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
             if(tag)
@@ -317,32 +331,6 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     }
 
     return tag;
-}
-
-void EC_Mesh::HandleMeshReady(Foundation::ResourcePtr res)
-{
-    if (!res)
-        return;
-    if (res->GetType() != OgreRenderer::OgreMeshResource::GetTypeStatic())
-        return;
-    OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
-    SetMesh(meshResource->GetId());
-}
-
-void EC_Mesh::HandleMaterialReady(uint index, Foundation::ResourcePtr res)
-{
-    if (!res || index > meshMaterial_.Get().size()) 
-        return;
-    OgreRenderer::OgreMaterialResource* materialResource = checked_static_cast<OgreRenderer::OgreMaterialResource*>(res.get());
-    SetMaterial(index, materialResource->GetMaterial()->getName());
-}
-
-void EC_Mesh::FindPlaceableComponent()
-{
-    if(placeable_)
-        return;
-
-    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
 }
 
 void EC_Mesh::AttachEntity()
