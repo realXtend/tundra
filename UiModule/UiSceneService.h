@@ -49,7 +49,13 @@ namespace UiServices
         void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
         /// UiServiceInterface override.
-        virtual void AddWidgetToMenu(QWidget *widget);
+        void AddWidgetToMenu(QWidget *widget);
+
+        /// UiServiceInterface override.
+        void RemoveWidgetFromMenu(QWidget *widget);
+
+        /// UiServiceInterface override.
+        void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
 
         /// UiServiceInterface override.
         void RemoveWidgetFromScene(QWidget *widget);

@@ -51,6 +51,16 @@ namespace UiServices
         owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
     }
 
+    void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
+    {
+        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->graphicsProxyWidget());
+    }
+
+    void UiSceneService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
+    {
+        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
+    }
+
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
     {
         owner_->GetInworldSceneController()->RemoveProxyWidgetFromScene(widget);
