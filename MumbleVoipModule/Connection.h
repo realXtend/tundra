@@ -9,6 +9,7 @@
 #include <QMap>
 #include <QPair>
 #include <QTimer>
+#include <QReadWriteLock>
 #include "Core.h"
 #include "MumbleDefines.h"
 
@@ -166,8 +167,6 @@ namespace MumbleVoip
         CELTDecoder* CreateCELTDecoder();
         int AudioQuality();
 
-        bool CheckState(QList<State> allowed_states); // testing
-
         State state_;
         QString reason_;
         MumbleClient::MumbleClient* client_;
@@ -195,8 +194,8 @@ namespace MumbleVoip
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_users_;
-        QMutex mutex_state_;
         QMutex mutex_client_;
+        QReadWriteLock lock_state_;
 //        QMutex mutex_celt_decoder_;
         
     signals:
