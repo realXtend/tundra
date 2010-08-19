@@ -59,15 +59,15 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 0: #test avatartracking, works :)
-    av_entid = 2628869553
+if 1: #test avatartracking, works :)
+    av_entid = r.getUserAvatarId()
     print "<:::",
     try:
         a = r.getEntity(av_entid)
     except:
         print "could find the avatar with the given id", av_entid
     else:
-        print "Avatar pos:", a.pos,
+        print "Avatar pos:", a.placeable.Position
         print ":::>"
         """
         perhaps some local script could track movement?
@@ -1369,6 +1369,14 @@ if 0: #test adding a dynamiccomponent
         "locked": false, 
         "opened": true
         }""")
+
+if 1: #the new DynamicComponent with individual attrs etc
+    doorid = 2185799489
+    e = r.getEntity(doorid)
+    dc = e.getDynamicComponent("door")
+    a = dc.GetAttribute("opened")
+    print a, type(a)
+    dc.SetAttribute("opened", True)
 
 if 0: #animation control
     avid = r.getUserAvatarId()

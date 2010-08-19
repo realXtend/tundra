@@ -68,9 +68,46 @@ namespace PythonScript
         Py_RETURN_NONE;
     }
 
+    static PyObject* Entity_GetDynamicComponent(PyEntity* self, PyObject* args)
+    {
+        const char* dcname;
+
+        if(!PyArg_ParseTuple(args, "s", &dcname))
+        {
+            PyErr_SetString(PyExc_ValueError, "getDynamicComponent expects the component identifier as a string");
+            return NULL;
+        }
+        
+        PythonScriptModule *owner = PythonScriptModule::GetInstance();
+        Scene::ScenePtr scene = owner->GetScenePtr();
+        if (!scene)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+            return NULL;
+        }
+
+        Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
+        //XXX \todo could check if the entity is still there, in case it's deleted and py is still having a wrapper for it
+
+        const Foundation::ComponentInterfacePtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent", dcname);
+        EC_DynamicComponent* dynamic_component = 0;
+        if (dynamic_component_ptr)
+        {
+            dynamic_component = checked_static_cast<EC_DynamicComponent *>(dynamic_component_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(dynamic_component);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a dynamic component with the given name:"); // " + dcname);
+            return NULL;
+        }
+    }
+
     static PyMethodDef entity_methods[] = {
         {"createComponent", (PyCFunction)Entity_CreateComponent, METH_VARARGS,
-         "Create a new component for this entity. The type constant is given as string"},
+         "Create a new component for this entity. The type constant is given as a string"},
+        {"getDynamicComponent", (PyCFunction)Entity_GetDynamicComponent, METH_VARARGS,
+         "Gets a DynamicComponent with a certain name from this entity. The name is given as a string"},
         {NULL}  /* Sentinel */
     };    
 

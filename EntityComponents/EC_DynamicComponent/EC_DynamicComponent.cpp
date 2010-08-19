@@ -220,9 +220,19 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
         return value;
     Foundation::Attribute<QVariant> *variantAttribute = dynamic_cast<Foundation::Attribute<QVariant>*>(attribute);
     //In case the attribute is not QVariant type then return QVariant value as string.
+
     if(!variantAttribute)
     {
-        value = QVariant(attribute->ToString().c_str());
+        //except if it's a bool, make a qvariant of that .. as a test
+        Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
+        if(boolAttribute)
+        {
+            value = QVariant(boolAttribute->Get());
+        }
+        else
+        {
+            value = QVariant(attribute->ToString().c_str());
+        }
         return value;
     }
 
@@ -244,7 +254,19 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
         Foundation::Attribute<QVariant> *variantAttribute = dynamic_cast<Foundation::Attribute<QVariant>*>(attribute);
         if(!variantAttribute)
         {
-            attribute->FromString(value.toString().toStdString(), change);
+            //except if it's a bool, get the value from the qvariant .. as a test
+            Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
+            if(boolAttribute)
+            {
+                if (value.type() == QVariant::Bool)
+                {
+                    variantAttribute->Set(value, change);
+                }
+            }
+            else
+            {
+                attribute->FromString(value.toString().toStdString(), change);
+            }
             return;
         }
 
