@@ -64,6 +64,7 @@ class ObjectEdit(Component):
         self.cpp_python_handler = None
         self.left_button_down = False
         self.right_button_down = False
+        self.keypressed = False
 
         self.shortcuts = {
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
@@ -123,6 +124,8 @@ class ObjectEdit(Component):
     def on_keypressed(self, k):
         trigger = (k.keyCode, k.modifiers)
         if self.windowActive:
+            # update manipulator for constant size
+            self.manipulator.showManipulator(self.sels)
             # check to see if a shortcut we understand was pressed, if so, trigger it
             if trigger in self.shortcuts:
                 self.keypressed = True
