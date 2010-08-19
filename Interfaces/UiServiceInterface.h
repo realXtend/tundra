@@ -45,7 +45,7 @@ namespace Foundation
          *  @param  flags Window flags. Qt::Dialog is used as default.
          *          It creates movable proxy widget which has title bar and frames.
          *          If you want add widget without title bar and frames, use Qt::Widget.
-         *          For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
+         *          For further information, see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
          *  @return Proxy widget of the added widget.
          */
         virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog) = 0;
@@ -92,6 +92,16 @@ namespace Foundation
          *  @param widget Proxy widget.
          */
         virtual void RemoveWidgetFromScene(QGraphicsProxyWidget *widget) = 0;
+
+        /** Removes widget from menu.
+         *  @param widget The controlled widget.
+         */
+        virtual void RemoveWidgetFromMenu(QWidget *widget) = 0;
+
+        /** This is an overloaded function.
+         *  @param widget The controlled widget.
+         */
+        virtual void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget) = 0;
 
         /** Shows the widget's proxy widget in the scene.
          *  @param widget Widget.
