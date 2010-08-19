@@ -31,9 +31,9 @@ namespace UiServices
         return owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
     }
 
-    void UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
+    bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
-        owner_->GetInworldSceneController()->AddProxyWidget(widget);
+        return owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget)

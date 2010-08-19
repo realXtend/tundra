@@ -9,7 +9,6 @@
 
 namespace WorldMap
 {
-
     ImageItem::ImageItem(const QPixmap &pixmap, QGraphicsItem *parent,
                          QGraphicsScene *scene)                        
                          : QGraphicsPixmapItem(pixmap, parent, scene), 
@@ -19,12 +18,8 @@ namespace WorldMap
     {
         scene_ = scene;
         my_avatar_ = false;
-
         text_ = new QGraphicsTextItem(parent, scene_);
-        scene_->addItem(text_);
-
         default_image_ = pixmap;
-
         setAcceptsHoverEvents(true);
     }
 
@@ -37,8 +32,7 @@ namespace WorldMap
         text_->setHtml(QString(avatar_name_));
         text_->setPos(position_x_ + 11, position_y_ - 10);
         text_->show();
-        setPixmap(hover_image_);
-        
+        setPixmap(hover_image_); 
     }
 
     void ImageItem::hoverLeaveEvent(QGraphicsSceneHoverEvent *)
