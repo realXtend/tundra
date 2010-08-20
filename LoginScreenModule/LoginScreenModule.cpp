@@ -52,8 +52,8 @@ void LoginScreenModule::PostInitialize()
     if (ui)
     {
         window_ = new LoginWidget(0, QMap<QString, QString>());
-        //window_->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-        //window_->setWindowState(Qt::WindowMaximized);
+        window_->setWindowState(Qt::WindowFullScreen);
+
         UiProxyWidget *proxy = ui->AddWidgetToScene(window_, Qt::Widget);
         proxy->setPos(0,0);
         proxy->show();
