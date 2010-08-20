@@ -34,7 +34,11 @@ INTERVAL = 0.2
 
 class AnimationSync(DynamiccomponentHandler):
     GUINAME = "Animation Sync"
+    COMPNAME = "animsync"
 
+    def __init__(self):
+        DynamiccomponentHandler.__init__(self)
+        self.inworld_inited = False #a cheap hackish substitute for some initing system
     def initgui(self):
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.widget.connect('valueChanged(int)', self.sliderChanged)
@@ -44,22 +48,32 @@ class AnimationSync(DynamiccomponentHandler):
         
     #json serialization to port to work with how DC works now with door.py & door.js
     def sliderChanged(self, guival):
-        #print guival
+        print guival
         comp = self.comp
         if comp is not None:
             now = time.time()
             if self.prev_sync + INTERVAL < now:
-                #was with the float attr:
-                #comp.SetAttribute(val / 100)
-                self.setval(guival / 100)
+                comp.SetAttribute("timepos", str(guival / 100))
+                self.onChanged() #XXX emit the actual signal, when possible
                 self.prev_sync = now
 
     def onChanged(self):
-        d = self.getdata()
-        if 'animpos' in d:
-            v = d['animpos']
-        else: #no data for this handler
-            return
+        v = float(self.comp.GetAttribute('timepos'))
+        print v
+
+        #copy-paste from door.py which also had a onClick handler
+        if not self.inworld_inited:
+            ent = r.getEntity(self.comp.GetParentEntityId())
+            try:
+                t = ent.touchable
+            except AttributeError:
+                print "no touchable in door? it doesn't persist yet? adding..", ent.id
+                print ent.createComponent("EC_Touchable")
+                t = ent.touchable
+            else:
+                print "touchable pre-existed in animated character for animsync."
+            t.connect('Clicked()', self.showgui)
+            self.inworld_inited = True        
 
         if self.proxywidget is None and self.widget is not None:
             #if self.widget is None:
@@ -84,6 +98,9 @@ class AnimationSync(DynamiccomponentHandler):
             
         else:
             print "- don't know what :o"
+
+    def showgui(self):
+        self.proxywidget.show()
     
     #failed in the attempt to hide the tool when go out of scenes that have animsync - something of the widget stays there, so get error prints QPainter::end: Painter not active, aborted
     #def on_logout(self, idt):
