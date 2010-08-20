@@ -19,7 +19,9 @@
 
 namespace OpenALAudio
 {
-    SoundSettings::SoundSettings(Foundation::Framework* framework) : framework_(framework)
+    SoundSettings::SoundSettings(Foundation::Framework* framework) :
+        framework_(framework),
+        settings_widget_(0)
     {
         Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
         if (!ui)
@@ -34,43 +36,44 @@ namespace OpenALAudio
             return;
         }
 
-        QWidget *settings_widget = loader.load(&file); 
-        if (!settings_widget)
+        settings_widget_ = loader.load(&file); 
+        if (!settings_widget_)
             return;
 
-        ui->AddSettingsWidget(settings_widget, "Sound");
+        ui->AddSettingsWidget(settings_widget_, "Sound");
 
         Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
         if (!soundsystem)
             return;
-        QAbstractSlider* slider = settings_widget->findChild<QAbstractSlider*>("slider_master");
+        QAbstractSlider* slider = settings_widget_->findChild<QAbstractSlider*>("slider_master");
         if (slider)
         {
             slider->setValue(soundsystem->GetMasterGain() * 100);
-            QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MasterGainChanged(int)));
+            connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MasterGainChanged(int)));
         }
-        slider = settings_widget->findChild<QAbstractSlider*>("slider_triggered");
+        slider = settings_widget_->findChild<QAbstractSlider*>("slider_triggered");
         if (slider)
         {
             slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Triggered) * 100);
-            QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(TriggeredGainChanged(int)));
+            connect(slider, SIGNAL(valueChanged(int)), this, SLOT(TriggeredGainChanged(int)));
         }
-        slider = settings_widget->findChild<QAbstractSlider*>("slider_ambient");
+        slider = settings_widget_->findChild<QAbstractSlider*>("slider_ambient");
         if (slider)
         {
             slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Ambient) * 100);
-            QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(AmbientGainChanged(int)));
+            connect(slider, SIGNAL(valueChanged(int)), this, SLOT(AmbientGainChanged(int)));
         }
-        slider = settings_widget->findChild<QAbstractSlider*>("slider_voice");
+        slider = settings_widget_->findChild<QAbstractSlider*>("slider_voice");
         if (slider)
         {
             slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Voice) * 100);
-            QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(VoiceGainChanged(int)));
+            connect(slider, SIGNAL(valueChanged(int)), this, SLOT(VoiceGainChanged(int)));
         }
     }
 
     SoundSettings::~SoundSettings()
     {
+        SAFE_DELETE(settings_widget_);
     }
 
     void SoundSettings::MasterGainChanged(int value)

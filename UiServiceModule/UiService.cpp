@@ -44,10 +44,10 @@ UiProxyWidget *UiService::AddWidgetToScene(QWidget *widget, Qt::WindowFlags flag
         return proxy;
 }
 
-void UiService::AddWidgetToScene(UiProxyWidget *widget)
+bool UiService::AddWidgetToScene(UiProxyWidget *widget)
 {
     if (widgets_.contains(widget))
-        return;
+        return false;
 
     widgets_.append(widget);
 
@@ -60,6 +60,7 @@ void UiService::AddWidgetToScene(UiProxyWidget *widget)
         widget->setPos(10.0, 200.0);
 
     scene_->addItem(widget);
+    return true;
 }
 
 void UiService::AddWidgetToMenu(QWidget *widget)
