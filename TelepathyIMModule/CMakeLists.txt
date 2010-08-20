@@ -83,8 +83,7 @@ use_package (TELEPATHY_GLIB)
 use_package (TELEPATHY_FARSIGHT)
 use_package (GSTREAMER)
 use_package (FARSIGHT2)
-use_modules (TelepathyIMModule Core Foundation SceneManager Interfaces RexCommon UiModule RexLogicModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga OgreRenderingModule EntityComponents/EC_OpenSimPresence)
+use_modules (TelepathyIMModule Core Foundation SceneManager Interfaces RexCommon UiModule ProtocolUtilities EntityComponents/EC_OpenSimPresence)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -100,8 +99,7 @@ link_package (CURL)
 link_package (XMLRPC)
 link_package (GSTREAMER)
 link_package (FARSIGHT2)
-link_modules (Core Foundation SceneManager Interfaces RexCommon UiModule RexLogicModule ProtocolUtilities
-    ProtocolModuleOpenSim ProtocolModuleTaiga OgreRenderingModule EC_OpenSimPresence)
+link_modules (Core Foundation SceneManager Interfaces RexCommon UiModule ProtocolUtilities EC_OpenSimPresence)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
@@ -114,7 +112,7 @@ if (MSVC)
     # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
     foreach(src_file ${CPP_FILES})
             if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")        
+                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
             else()
                 get_filename_component(basename ${src_file} NAME)
                 set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
