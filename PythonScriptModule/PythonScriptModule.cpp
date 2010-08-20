@@ -1305,11 +1305,11 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
     entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
     
-    StringVector defaultcomponents;
-    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+    QStringList defaultcomponents;
+    defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    //defaultcomponents.append(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+    defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    //defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 

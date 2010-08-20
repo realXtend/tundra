@@ -56,7 +56,7 @@ namespace OgreRenderer
     {
         if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
         {
-            OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + TypeNameStatic());
+            OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + TypeNameStatic().toStdString());
             return;
         }
         DetachNode();

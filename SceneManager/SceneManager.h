@@ -9,6 +9,7 @@
 #include "ComponentInterface.h"
 #include <QObject>
 #include <qvariant.h>
+#include <QStringList>
 
 namespace Foundation
 {
@@ -89,7 +90,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const StringVector &components = StringVector(),
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList(),
              AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns entity with the specified id
@@ -129,7 +130,7 @@ namespace Scene
 
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
-        EntityList GetEntitiesWithComponent(const std::string &type_name);
+        EntityList GetEntitiesWithComponent(const QString &type_name);
 
         //! Emit a notification of a component's attributes changing. Called by the components themselves
         /*! \param comp Component pointer

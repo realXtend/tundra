@@ -151,9 +151,9 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::DeleteComponent(const std::string &componentType, const std::string &name)
+    void ECEditorWindow::DeleteComponent(const QString &componentType, const QString &name)
     {
-        if(componentType.empty())
+        if(componentType.isEmpty())
             return;
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
@@ -182,16 +182,16 @@ namespace ECEditor
         for (uint i = 0; i < entities.size(); ++i)
         {
             Foundation::ComponentInterfacePtr comp;
-            comp = entities[i]->GetComponent(typeName.toStdString(), name.toStdString());
+            comp = entities[i]->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
                 continue;
             // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
             // is problematic with current API
             if(!name.isEmpty())
-                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString(), name.toStdString());
+                comp = framework_->GetComponentManager()->CreateComponent(typeName, name);
             else
-                comp = framework_->GetComponentManager()->CreateComponent(typeName.toStdString()); 
+                comp = framework_->GetComponentManager()->CreateComponent(typeName); 
             if (comp)
                 entities[i]->AddComponent(comp, AttributeChange::Local);
         }
@@ -420,7 +420,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType);
+            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
             if(component)
                 emit EditComponentXml(component);
         }
@@ -553,7 +553,7 @@ namespace ECEditor
         Foundation::ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
         while (i != factories.end())
         {
-            components << i->first.c_str();
+            components.append(i->first); //<< i->first.c_str();
             ++i;
         }
 

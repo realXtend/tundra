@@ -123,7 +123,7 @@ namespace RexLogic
         //=============== WorldLogicInterface API ===============/
         Scene::EntityPtr GetUserAvatarEntity() const;
         Scene::EntityPtr GetCameraEntity() const;
-        Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const;
+        Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const;
 
         //=============== RexLogicModule API ===============/
 

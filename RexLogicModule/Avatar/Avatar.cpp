@@ -96,18 +96,18 @@ namespace RexLogic
         if (!scene || !owner_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
             return Scene::EntityPtr();
 
-        StringVector defaultcomponents;
-        defaultcomponents.push_back(EC_OpenSimPresence::TypeNameStatic());
-        defaultcomponents.push_back(EC_OpenSimAvatar::TypeNameStatic());
-        defaultcomponents.push_back(EC_NetworkPosition::TypeNameStatic());
-        defaultcomponents.push_back(EC_AvatarAppearance::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        QStringList defaultcomponents;
+        defaultcomponents.append(EC_OpenSimPresence::TypeNameStatic());
+        defaultcomponents.append(EC_OpenSimAvatar::TypeNameStatic());
+        defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
+        defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
+        defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
         //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
-        defaultcomponents.push_back(EC_HoveringWidget::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+        defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
+        defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
         // Note: we assume the avatar is created because of a message from network
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::Network);

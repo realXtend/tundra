@@ -34,8 +34,8 @@ namespace ECEditor
         std::vector<Foundation::ComponentWeakPtr> components_;
         ECComponentEditor *editor_;
         QTreeWidgetItem *browserListItem_;
-        std::string name_;
-        std::string typeName_;
+        QString name_;
+        QString typeName_;
         bool isDynamic_;
 
         ComponentGroup(Foundation::ComponentInterfacePtr component = Foundation::ComponentInterfacePtr(),

@@ -76,13 +76,13 @@ namespace Foundation
         framework->GetComponentManager()->UnregisterFactory(TypeNameStatic());              \
     }                                                                                       \
                                                                                             \
-    static const std::string &TypeNameStatic()                                              \
+    static const QString &TypeNameStatic()                                              \
     {                                                                                       \
-        static const std::string name(#component);                                          \
+        static const QString name(#component);                                          \
         return name;                                                                        \
     }                                                                                       \
                                                                                             \
-    virtual const std::string &TypeName() const                                             \
+    virtual const QString &TypeName() const                                                 \
     {                                                                                       \
         return component::TypeNameStatic();                                                 \
     }                                                                                       \
