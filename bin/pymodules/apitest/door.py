@@ -101,7 +101,7 @@ class DoorHandler(DynamiccomponentHandler):
             return None
     def set_opened(self, newval):
         self.comp.SetAttribute("opened", newval)
-        self.onChanged() #XXX emit the actual signal, when possible
+        self.comp.OnChanged()
     opened = property(get_opened, set_opened)
 
     def get_locked(self):
@@ -111,7 +111,7 @@ class DoorHandler(DynamiccomponentHandler):
             return None
     def set_locked(self, newval):
         self.comp.SetAttribute("locked", newval)
-        self.onChanged() #XXX emit the actual signal, when possible
+        self.comp.OnChanged()
     locked = property(get_locked, set_locked)
 
     def open(self):
