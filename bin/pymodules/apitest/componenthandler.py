@@ -40,12 +40,13 @@ class DynamiccomponentHandler(circuits.BaseComponent):
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
             print "comp Name:", comp.Name
-            if self.comp is None: #XXX check that the component name is of interest
-                comp.connect("OnChanged()", self.onChanged)
-                self.comp = comp
-                print "DYNAMIC COMPONENT FOUND", self.comp
-            else:
-                print "ANOTHER DynamicComponent found - only one supported now, ignoring", entity, comp
+            if comp.Name == self.COMPNAME:
+                if self.comp is None:
+                    comp.connect("OnChanged()", self.onChanged)
+                    self.comp = comp
+                    print "DYNAMIC COMPONENT FOUND", self.comp, self.comp.Name
+                else:
+                    print "ANOTHER DynamicComponent of the given type found - only one supported now, ignoring", entity, comp, comp.Name
 
     @circuits.handler("on_logout")
     def on_logout(self, idt):

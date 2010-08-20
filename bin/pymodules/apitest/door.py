@@ -40,6 +40,7 @@ not here anymore to not mess the currently shared data with other comps"""
 
 class DoorHandler(DynamiccomponentHandler):
     GUINAME = "Door Handler"
+    COMPNAME = "door" #the DC name identifier string that this handler looks for
     inworld_inited = False #a cheap hackish substitute for some initing system
 
     def onChanged(self):
@@ -101,7 +102,7 @@ class DoorHandler(DynamiccomponentHandler):
         self.widget = group
         self.forcepos = None
 
-        group.show() #as a temp workaround as naali ui system is borked XXX
+        #group.show() #as a temp workaround as naali ui system is borked XXX
 
     def get_opened(self):
         if self.comp is not None:
