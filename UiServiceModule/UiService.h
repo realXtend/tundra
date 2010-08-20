@@ -37,7 +37,7 @@ public slots:
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// UiServiceInterface override.
-    void AddWidgetToScene(UiProxyWidget *widget);
+    bool AddWidgetToScene(UiProxyWidget *widget);
 
     /// UiServiceInterface override.
     void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
@@ -71,6 +71,10 @@ public slots:
 
     /// UiServiceInterface override.
     void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
+
+    /// UiServiceInterface override.
+    /// Does nothing.
+    bool AddSettingsWidget(QWidget *widget, const QString &name) const { return false; }
 
     /// UiServiceInterface override.
     /// Returns the only UI scene we have.

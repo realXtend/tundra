@@ -1,8 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   
- *  @brief  
+ *  @file   LoginWidget.cpp
+ *  @brief  Simple login widget for OpenSim and realXend authentication methods.
  */
 
 #include "StableHeaders.h"
@@ -57,7 +57,7 @@ QMap<QString, QString> LoginWidget::GetLoginInfo() const
     else
         info["avatartype"] = "opensim";
 
-    return ui_data_map;
+    return info;
 }
 
 void LoginWidget::ParseInputAndConnect()

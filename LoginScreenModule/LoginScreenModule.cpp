@@ -13,6 +13,7 @@
 
 #include "UiServiceInterface.h"
 #include "InputServiceInterface.h"
+#include "LoginServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "../ProtocolUtilities/NetworkEvents.h"
@@ -21,7 +22,11 @@
 
 std::string LoginScreenModule::type_name_static_ = "LoginScreen";
 
-LoginScreenModule::LoginScreenModule() : ModuleInterface(type_name_static_), window_(0)
+LoginScreenModule::LoginScreenModule() :
+    ModuleInterface(type_name_static_),
+    window_(0),
+    framework_category_(0),
+    network_category_(0)
 {
 }
 
@@ -41,7 +46,7 @@ void LoginScreenModule::PostInitialize()
 {
     input_ = framework_->Input().RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
-    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
+//    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
 
     Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (ui)
@@ -53,17 +58,20 @@ void LoginScreenModule::PostInitialize()
         proxy->setPos(0,0);
         proxy->show();
 
-        Foundation::LoginServiceInterface *loginHandler = framework_->GetService<Foundation::LoginServiceInterface>();
-        if (loginHandler)
+        Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
+        if (login)
         {
-            connect(window_, SIGNAL(ConnectOpenSim(const map<QString, QString> &)), loginHandler, SLOT(ProcessLoginData(const map<QString, QString> &)));
-            connect(window_, SIGNAL(ConnectRealXtend(const map<QString, QString> &)), loginHandler, SLOT(ProcessLoginData(const map<QString, QString> &)));
-            
-            connect(loginHandler, SIGNAL(LoginStarted()), window_, SLOT(StatusUpdate(true, const QString &)));
-            connect(loginHandler, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StatusUpdate(false, QString &)));
-            connect(loginHandler, SIGNAL(LoginSuccessful()), window_, SLOT(test()));
+            connect(window_, SIGNAL(ConnectOpenSim(const QMap<QString, QString> &)),
+                login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
+            connect(window_, SIGNAL(ConnectRealXtend(const QMap<QString, QString> &)),
+                login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
+//            connect(login, SIGNAL(LoginStarted()), window_, SLOT(StatusUpdate(true, const QString &)));
+//            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StatusUpdate(false, QString &)));
+//            connect(login, SIGNAL(LoginSuccessful()), window_, SLOT(test()));
         }
     }
+
+    framework_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 }
 
 void LoginScreenModule::Uninitialize()
@@ -80,17 +88,24 @@ void LoginScreenModule::Update(f64 frametime)
 // virtual
 bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    if (framework_->GetEventManager()->QueryEventCategory("NetworkState"))
+    if (category_id == framework_category_ && event_id == Foundation::NETWORKING_REGISTERED)
+    {
+        network_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+    }
+    else if(category_id == network_category_)
     {
         using namespace ProtocolUtilities::Events;
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
         switch(event_id)
         {
         case EVENT_SERVER_CONNECTED:
-            // hide login screen
+            if (ui && window_)
+                ui->HideWidget(window_);
             break;
         case EVENT_USER_KICKED_OUT:
         case EVENT_SERVER_DISCONNECTED:
-            // show login screen
+            if (ui && window_)
+                ui->ShowWidget(window_);
             break;
         case EVENT_CONNECTION_FAILED:
             break;

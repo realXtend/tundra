@@ -57,6 +57,7 @@ namespace OpenALAudio
     {
         framework_->GetServiceManager()->UnregisterService(soundsystem_);
         soundsystem_.reset();
+        soundsettings_.reset();
     }
 
     void OpenALAudioModule::Update(f64 frametime)

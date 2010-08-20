@@ -1225,7 +1225,9 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     if (params.size() > 2)
         server = params[2];
 
-    //! REMOVE
+    StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
+
+    return Console::ResultSuccess();
     //bool success = world_stream_->ConnectToServer(name, passwd, server);
 
     // overwrite the password so it won't stay in-memory
@@ -1235,7 +1237,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     //    return Console::ResultSuccess();
     //else
     //    return Console::ResultFailure("Failed to connect to server.");
-    return Console::ResultFailure("Cannot login from console no more");
+    //return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)

@@ -7,6 +7,8 @@ namespace Foundation
     class Framework;
 }
 
+class QWidget;
+
 namespace OpenALAudio
 {
     //! Sound settings editing window. Owned by OpenALAudioModule.
@@ -26,5 +28,6 @@ namespace OpenALAudio
 
     private:
         Foundation::Framework* framework_;
+        QWidget *settings_widget_;
     };
 }
