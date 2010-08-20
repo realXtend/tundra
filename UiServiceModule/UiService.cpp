@@ -54,9 +54,9 @@ void UiService::AddWidgetToScene(UiProxyWidget *widget)
     if (widget->isVisible())
         widget->hide();
 
-    // If no position has been set for widget, use default one so that the window's title
+    // If no position has been set for Qt::Dialog widget, use default one so that the window's title
     // bar - or any other critical part, doesn't go outside the view.
-    if (widget->pos() == QPointF())
+    if ((widget->windowFlags() & Qt::Dialog) && widget->pos() == QPointF())
         widget->setPos(10.0, 200.0);
 
     scene_->addItem(widget);
@@ -84,6 +84,14 @@ void UiService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
 {
     scene_->removeItem(widget);
     widgets_.removeOne(widget);
+}
+
+void UiService::RemoveWidgetFromMenu(QWidget *widget)
+{
+}
+
+void UiService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
+{
 }
 
 void UiService::ShowWidget(QWidget *widget) const

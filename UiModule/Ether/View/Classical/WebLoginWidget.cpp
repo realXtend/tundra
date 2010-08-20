@@ -10,8 +10,9 @@
 #include <QUrl>
 #include <QNetworkCookie>
 
-#include "MemoryLeakCheck.h"
 #include "NetworkAccessManager.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
@@ -68,7 +69,7 @@ namespace CoreUi
 
             webView->page()->networkAccessManager()->setCookieJar( permanentCookieStore);
 
-            connect(newManager, SIGNAL( WebLoginUrlRecived(QUrl) ), this, SLOT( LoadUrl(QUrl) ));
+            connect(newManager, SIGNAL( WebLoginUrlReceived(const QUrl &) ), this, SLOT( LoadUrl(const QUrl &) ));
 
             // Buttons
             connect(pushButton_Back, SIGNAL( clicked() ), webView, SLOT( back() ));
@@ -137,12 +138,12 @@ namespace CoreUi
                     pos2 = returnValue.indexOf(QString("?"), 0);
                     entry_point_url = returnValue.mid(pos1, pos2-pos1);
                     //emit WebLoginInfoRecieved(webView->page()->mainFrame());
-                    emit WebLoginUrlRecived(entry_point_url);
+                    emit WebLoginUrlReceived(entry_point_url);
                 }
             }
         }
 
-        void WebLoginWidget::LoadUrl(QUrl url)
+        void WebLoginWidget::LoadUrl(const QUrl &url)
         {
             if (url.scheme() == "cablebeach")
             {
@@ -150,7 +151,7 @@ namespace CoreUi
                 QString urlString = url.toString().replace("cablebeach://", "");
                 if (urlString.startsWith("http//"))
                     urlString = urlString.replace("http//", "http://");
-                emit WebLoginUrlRecived(urlString);
+                emit WebLoginUrlReceived(urlString);
             }
         }
     }

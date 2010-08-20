@@ -27,7 +27,7 @@ class ToolBarWindow():
         self.proxywidget.setWindowTitle("Local Scene")
 
         if not uism.AddWidgetToScene(self.proxywidget):
-            r.logInfo("Adding the ProxyWidget to the bar failed.")
+            r.logInfo("Adding ProxyWidget failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
 

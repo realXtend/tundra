@@ -136,7 +136,7 @@ add_subdirectory (EntityComponents/EC_OpenSimPresence)  # declared by RexLogicMo
 add_subdirectory (EntityComponents/EC_OpenSimPrim)      # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_Touchable)        # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_3DCanvas)         # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_3DCanvasSource)   # declared by RexLogicModule    
+add_subdirectory (EntityComponents/EC_3DCanvasSource)   # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_Ruler)            # declared by RexLogicModule
 
 # If the custom optional modules configuration file does not yet

@@ -69,14 +69,11 @@ namespace RexLogic
     class Primitive;
     class AvatarControllable;
     class CameraControllable;
-    class OpenSimLoginHandler;
-    class TaigaLoginHandler;
     class MainPanelHandler;
     class WorldInputLogic;
-    namespace InWorldChat
-    {
-        class Provider;
-    }
+    class LoginHandler;
+    namespace InWorldChat { class Provider; }
+
     //! @todo remove when can.
     class ComponentResourceHandler;
 
@@ -398,12 +395,6 @@ namespace RexLogic
         //! current camera state
         CameraState camera_state_;
 
-        //! OpenSim login handler
-        OpenSimLoginHandler *os_login_handler_;
-
-        //! Taiga login handler
-        TaigaLoginHandler *taiga_login_handler_;
-
         //! MainPanel handler
         MainPanelHandler *main_panel_handler_;
 
@@ -411,6 +402,9 @@ namespace RexLogic
 
         //! @todo remove this while can.
         ComponentResourceHandlerPtr component_res_handler_;
+
+        //! Login service.
+        boost::shared_ptr<LoginHandler> login_service_;
     };
 }
 

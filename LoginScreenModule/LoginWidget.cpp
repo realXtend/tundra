@@ -46,16 +46,16 @@ void LoginWidget::InitWidget(const QMap<QString,QString> &stored_login_data)
 
 QMap<QString, QString> LoginWidget::GetLoginInfo() const
 {
-    QMap<QString, QString> ui_data_map;
-    ui_data_map["account"] = lineEdit_Username->text();
-    ui_data_map["password"] = lineEdit_Password->text();
-    ui_data_map["loginurl"] = lineEdit_WorldAddress->text();
-    ui_data_map["startlocation"] = lineEdit_StartLocation->text();
+    QMap<QString, QString> info;
+    info["account"] = lineEdit_Username->text();
+    info["password"] = lineEdit_Password->text();
+    info["loginurl"] = lineEdit_WorldAddress->text();
+    info["startlocation"] = lineEdit_StartLocation->text();
 
     if (lineEdit_Username->text().contains('@'))
-        ui_data_map["avatartype"] = "realxtend";
+        info["avatartype"] = "realxtend";
     else
-        ui_data_map["avatartype"] = "opensim";
+        info["avatartype"] = "opensim";
 
     return ui_data_map;
 }
@@ -67,19 +67,15 @@ void LoginWidget::ParseInputAndConnect()
 
     QMap<QString, QString> map;
     map["WorldAddress"] = lineEdit_WorldAddress->text();
-    map["Username"] = lineEdit_Username->text();
+    map["Username"] = lineEdit_Username->text().trimmed();
     map["Password"] = lineEdit_Password->text();
     map["StartLocation"] = lineEdit_StartLocation->text();
 
-    if (1/*os*/)
-    {
-        if (map["Username"].count(" ") == 1 && !map["Username"].endsWith(" "))
-            emit ConnectOpenSim(map);
-    }
-    else if (0/*rex*/)
+    if (lineEdit_Username->text().contains('@'))
     {
         if (map["Username"].count("@") == 1 && map["Username"].count(" ") == 0)
         {
+            map["AvatarType"] = "RealXtend";
             QString username_input = map["Username"];
             int at_index = username_input.indexOf("@");
             QString rex_username = username_input.midRef(0, at_index).toString();
@@ -88,6 +84,14 @@ void LoginWidget::ParseInputAndConnect()
             map["Username"] = rex_username;
             map["AuthenticationAddress"] = rex_auth_address;
             emit ConnectRealXtend(map);
+        }
+    }
+    else
+    {
+        if (map["Username"].count(" ") == 1)
+        {
+            map["AvatarType"] = "OpenSim";
+            emit ConnectOpenSim(map);
         }
     }
 

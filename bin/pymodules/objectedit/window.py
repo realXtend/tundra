@@ -50,7 +50,7 @@ class ObjectEditWindow:
         self.proxywidget.setWindowTitle("Object Edit")
 
         if not uism.AddWidgetToScene(self.proxywidget):
-            print "Adding the ProxyWidget to the bar failed."
+            r.logInfo("Adding ProxyWidget failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Object Edit", "", "./data/ui/images/menus/edbutton_OBJED_normal.png")
 

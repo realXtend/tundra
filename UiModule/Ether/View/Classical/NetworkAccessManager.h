@@ -20,7 +20,7 @@ namespace CoreUi
             QNetworkReply *createRequest(Operation operation, const QNetworkRequest &request, QIODevice *device);
 
         signals:
-            void WebLoginUrlRecived(QUrl);
+            void WebLoginUrlReceived(const QUrl &);
 
         };
     }
