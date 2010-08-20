@@ -41,10 +41,10 @@ namespace Ether
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
             
-            void EmitOpenSimLogin(QMap<QString, QString> info_map);
-            void EmitRealXtendLogin(QMap<QString, QString> info_map);
+            void EmitOpenSimLogin(const QMap<QString, QString> &info_map);
+            void EmitRealXtendLogin(const QMap<QString, QString> &info_map);
             void EmitTaigaLogin(QWebFrame *web_frame);
-            void EmitTaigaLogin(QString url);
+            void EmitTaigaLogin(const QString &url);
             
             void EmitDisconnectRequest();
             void ExitApplication();
@@ -61,10 +61,10 @@ namespace Ether
             QString region_name_;
 
         signals:
-            void StartOsLogin(QMap<QString, QString> info_map);
-            void StartRexLogin(QMap<QString, QString> info_map);
+            void StartOsLogin(const QMap<QString, QString> &info_map);
+            void StartRexLogin(const QMap<QString, QString> &info_map);
             void StartTaigaLogin(QWebFrame *web_frame);
-            void StartTaigaLogin(QString url);
+            void StartTaigaLogin(const QString &url);
             void Disconnect();
             void Quit();
         };

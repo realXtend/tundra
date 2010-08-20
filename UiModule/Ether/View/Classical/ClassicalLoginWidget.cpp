@@ -1,12 +1,16 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
+
 #include "ClassicalLoginWidget.h"
 #include "WebLoginWidget.h"
 #include "TraditionalLoginWidget.h"
 
 #include "Ether/EtherLoginNotifier.h"
 #include "ui_ClassicalLoginWidget.h"
+
+#include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
@@ -24,14 +28,12 @@ namespace CoreUi
             tabWidget->addTab(traditional_widget_, " Login");
             tabWidget->addTab(web_login_, " Weblogin");
 
-            connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ),
-                    login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
-            connect(web_login_, SIGNAL( WebLoginUrlRecived(QString) ),
-                    login_notifier, SLOT( EmitTaigaLogin(QString) ));
-            connect(traditional_widget_, SIGNAL( ConnectOpenSim(QMap<QString, QString>) ),
-                    login_notifier, SLOT( EmitOpenSimLogin(QMap<QString, QString>) ));
-            connect(traditional_widget_, SIGNAL( ConnectRealXtend(QMap<QString, QString>) ),
-                    login_notifier, SLOT( EmitRealXtendLogin(QMap<QString, QString>) ));
+            connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ), login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
+            connect(web_login_, SIGNAL( WebLoginUrlReceived(const QString &) ), login_notifier, SLOT( EmitTaigaLogin(const QString &) ));
+            connect(traditional_widget_, SIGNAL( ConnectOpenSim(const QMap<QString, QString> &) ),
+                login_notifier, SLOT( EmitOpenSimLogin(const QMap<QString, QString> &) ));
+            connect(traditional_widget_, SIGNAL( ConnectRealXtend(const QMap<QString, QString> &) ),
+                login_notifier, SLOT( EmitRealXtendLogin(const QMap<QString, QString> &) ));
         }
 
         ClassicalLoginWidget::~ClassicalLoginWidget()

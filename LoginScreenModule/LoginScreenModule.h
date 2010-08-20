@@ -57,7 +57,7 @@ private:
     static std::string type_name_static_;
 
     /// Login window.
-    class LoginWidget *window_;
+    LoginWidget *window_;
 
     /// Login window.
     boost::shared_ptr<InputContext> input_;

@@ -5,7 +5,6 @@
 
 #include <QObject>
 #include <QPropertyAnimation>
-#include <QGraphicsView>
 
 #include "CoreTypes.h"
 
@@ -21,6 +20,7 @@ namespace Ui
 
 class QString;
 class QRectF;
+class QGraphicsView;
 
 namespace Console
 {
@@ -49,18 +49,12 @@ namespace Console
 
     signals:
         //! This emit is Qt::QueuedConnection type to avoid issues when printing from threads
-        void PrintOrderRecieved(const QString &text);
+        void PrintOrderReceived(const QString &text);
 
         //! TODO: comment
         void CommandIssued(const QString &string);
 
     private slots:
-        //! Configure the scrolling animation of the console
-        void SetupAnimation();
-
-        //! Connect internal signals
-        void ConnectSignals();
-
         //! Resize the console to fit scene
         void AdjustToSceneRect(const QRectF &);
 

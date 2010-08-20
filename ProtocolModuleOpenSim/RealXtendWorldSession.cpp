@@ -10,7 +10,7 @@
 namespace OpenSimProtocol
 {
     RealXtendWorldSession::RealXtendWorldSession(Foundation::Framework *framework) :
-        framework_(framework), credentials_(0), serverEntryPointUrl_(0)
+        framework_(framework), credentials_(ProtocolUtilities::AT_RealXtend)
     {
         networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
     }
@@ -19,27 +19,25 @@ namespace OpenSimProtocol
     {
     }
 
-    bool RealXtendWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
+    bool RealXtendWorldSession::StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl)
     {
         bool success = false;
-        ProtocolUtilities::RealXtendCredentials *testCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(credentials);
-        if (testCredentials)
+        if (credentials.GetType() == ProtocolUtilities::AT_RealXtend)
         {
             // Set Url and Credentials
-            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl->toString(), WorldSessionInterface::OpenSimServer);
-            serverEntryPointUrl = &serverEntryPointUrl_;
-            credentials_ = testCredentials;
-            credentials_->SetAuthenticationUrl( ValidateUrl(credentials_->GetAuthenticationUrl().toString(), WorldSessionInterface::RealXtendAuthenticationServer) );
+            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl.toString(), WorldSessionInterface::OpenSimServer);
+            credentials_ = credentials;
+            credentials_.SetAuthenticationUrl( ValidateUrl(credentials_.GetAuthenticationUrl().toString(), WorldSessionInterface::RealXtendAuthenticationServer) );
 
             // Try do RealXtend auth based login with ProtocolModuleOpenSim
             success = LoginToServer(
-                credentials_->GetPassword(),
+                credentials_.GetPassword(),
                 serverEntryPointUrl_.host(),
                 QString::number(serverEntryPointUrl_.port()),
-                credentials_->GetAuthenticationUrl().host(),
-                QString::number(credentials_->GetAuthenticationUrl().port()),
-                credentials_->GetIdentity(),
-                credentials_->GetStartLocation(),
+                credentials_.GetAuthenticationUrl().host(),
+                QString::number(credentials_.GetAuthenticationUrl().port()),
+                credentials_.GetIdentity(),
+                credentials_.GetStartLocation(),
                 GetConnectionThreadState());
         }
         else
@@ -122,7 +120,7 @@ namespace OpenSimProtocol
         }
     }
 
-    ProtocolUtilities::LoginCredentialsInterface* RealXtendWorldSession::GetCredentials() const
+    LoginCredentials RealXtendWorldSession::GetCredentials() const
     {
         return credentials_;
     }
@@ -136,13 +134,12 @@ namespace OpenSimProtocol
     {
     }
 
-    void RealXtendWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
+    void RealXtendWorldSession::SetCredentials(const LoginCredentials &credentials)
     {
-        ProtocolUtilities::RealXtendCredentials *testCredentials = dynamic_cast<ProtocolUtilities::RealXtendCredentials *>(newCredentials);
-        if (testCredentials)
-            credentials_ = testCredentials;
+        if (credentials.GetType() == ProtocolUtilities::AT_RealXtend)
+            credentials_ = credentials;
         else
-            ProtocolModuleOpenSim::LogInfo("Could not set credentials, invalid type. Must be RealXtendCredentials for RealXtendWorldSession");
+            ProtocolModuleOpenSim::LogInfo("Could not set credentials, invalid type. Must be RealXtend for RealXtendWorldSession");
     }
 
     void RealXtendWorldSession::SetServerEntryPointUrl(const QUrl &newUrl)

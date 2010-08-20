@@ -33,6 +33,8 @@ public:
     QString GetStartLocation() const { return startLocation_; }
     QUrl GetAuthenticationUrl() { return authenticationUrl_; }
 
+    void SetType(ProtocolUtilities::AuthenticationType type) { type_ = type; }
+    void SetIdentity(const QString &identity) { identity_ = identity; }
     void SetFirstName(const QString &firstName) { firstName_= firstName; }
     void SetLastName(const QString &lastName) { lastName_= lastName; }
     void SetPassword(const QString &password) { password_= password; }

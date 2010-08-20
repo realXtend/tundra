@@ -55,6 +55,12 @@ public slots:
     void RemoveWidgetFromScene(QGraphicsProxyWidget *widget);
 
     /// UiServiceInterface override.
+    void RemoveWidgetFromMenu(QWidget *widget);
+
+    /// UiServiceInterface override.
+    void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
+
+    /// UiServiceInterface override.
     void ShowWidget(QWidget *widget) const;
 
     /// UiServiceInterface override.
