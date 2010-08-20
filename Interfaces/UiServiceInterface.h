@@ -124,6 +124,13 @@ namespace Foundation
          */
         virtual void BringWidgetToFront(QGraphicsProxyWidget *widget) const = 0;
 
+        /** Adds a setting widget the UI's main settings widget (if applicable).
+         *  @param widget Settings widget.
+         *  @param name Preferred name widget
+         *  @return true if widget was added successfully, false otherwise.
+         */
+        virtual bool AddSettingsWidget(QWidget *widget, const QString &name) const = 0;
+
         /** Returns scene with the requested name.
          *  @param name Name of the scene.
          *  @return Graphic scene with the requested name, or null if not found.

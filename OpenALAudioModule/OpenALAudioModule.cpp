@@ -41,9 +41,6 @@ namespace OpenALAudio
         if (!soundsystem_->IsInitialized())
             return;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
-
-        // Sound settings depends on the sound service, so init it last
-        soundsettings_ = SoundSettingsPtr(new SoundSettings(framework_));
     }
 
     void OpenALAudioModule::PostInitialize()
@@ -51,6 +48,9 @@ namespace OpenALAudio
         Foundation::EventManagerPtr event_manager = framework_->GetEventManager();
         asset_event_category_ = event_manager->QueryEventCategory("Asset");
         task_event_category_ = event_manager->QueryEventCategory("Task");
+
+        // Sound settings depends on the sound service, so init it last
+        soundsettings_ = SoundSettingsPtr(new SoundSettings(framework_));
     }
 
     void OpenALAudioModule::Uninitialize()

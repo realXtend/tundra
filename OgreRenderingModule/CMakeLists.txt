@@ -40,21 +40,13 @@ endif (HYDRAX)
 
 add_definitions (-DOGRE_MODULE_EXPORTS)
 
-#add_definitions (-DUSE_NVIDIA_PERFUD)
-
-if (UISERVICE_TEST)
-    add_definitions (-DUISERVICE_TEST)
-endif ()
+#add_definitions (-DUSE_NVIDIA_PERFHUD)
 
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon)
-
-if (NOT UISERVICE_TEST)
-    use_modules (UiModule)
-endif ()
 
 if (CAELUM)
     use_package (CAELUM)
@@ -71,10 +63,6 @@ link_package (POCO)
 link_package (OGRE)
 link_package (QT4)
 link_modules (Core Foundation Interfaces SceneManager RexCommon)
-
-if (NOT UISERVICE_TEST)
-    link_modules (UiModule)
-endif ()
 
 if (CAELUM)
     link_package (CAELUM)
