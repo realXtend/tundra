@@ -1,5 +1,6 @@
 <config>
     <entry>TelepathyIMModule</entry>
     <dependency>UiModule</dependency>
+    <dependency>OgreRenderingModule</dependency>
     <dependency_dir>gstreamer\bin</dependency_dir>
 </config>
