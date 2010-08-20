@@ -124,8 +124,8 @@ namespace Communication
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
-                //! Remove RexLogicModule dependency. Get WorldStream from WORLD_STREAM_READY event.
 /*
+                // Get WorldStream from WORLD_STREAM_READY event, not from RexLogicModule!
                 boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module =
                     framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>().lock()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
                 if (current_protocol_module.lock().get())
