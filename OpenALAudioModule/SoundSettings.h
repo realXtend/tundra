@@ -25,12 +25,6 @@ namespace OpenALAudio
         void VoiceGainChanged(int value);
 
     private:
-        void InitWindow();
-
         Foundation::Framework* framework_;
-
-        //! Widget for sound settings
-        QWidget *settings_widget_;
-
     };
 }

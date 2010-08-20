@@ -154,14 +154,12 @@ namespace OgreRenderer
         if (top != -1)
             params["top"] = ToString(top);
 
-#ifdef USE_NVIDIA_PERFUD
+#ifdef USE_NVIDIA_PERFHUD
         params["useNVPerfHUD"] = "true";
         params["Rendering Device"] = "NVIDIA PerfHUD";
 #endif
 
-     
         win_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
-
         return win_;
     }
 

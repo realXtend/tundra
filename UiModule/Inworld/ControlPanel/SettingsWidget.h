@@ -24,7 +24,7 @@ namespace CoreUi
         SettingsWidget(QGraphicsScene *scene, ControlPanelManager *conrol_panel_manager);
 
     public slots:
-        void AddWidget(QWidget *widget, const QString &tab_name);
+        void AddWidget(QWidget *widget, const QString &tab_name) const;
         void AnimatedHide();
 
     protected:

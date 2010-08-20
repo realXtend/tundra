@@ -91,6 +91,11 @@ namespace UiServices
         owner_->GetInworldSceneController()->BringProxyToFront(widget);
     }
 
+    bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
+    {
+        return owner_->GetInworldSceneController()->AddSettingsWidget(widget, name);
+    }
+
     QGraphicsScene *UiSceneService::GetScene(const QString &name) const
     {
         return owner_->GetUiStateMachine()->GetScene(name);
