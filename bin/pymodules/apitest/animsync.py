@@ -54,7 +54,7 @@ class AnimationSync(DynamiccomponentHandler):
             now = time.time()
             if self.prev_sync + INTERVAL < now:
                 comp.SetAttribute("timepos", str(guival / 100))
-                self.onChanged() #XXX emit the actual signal, when possible
+                comp.OnChanged() #XXX change to OnAttributeChanged when possible
                 self.prev_sync = now
 
     def onChanged(self):
