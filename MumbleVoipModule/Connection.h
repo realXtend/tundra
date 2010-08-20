@@ -197,9 +197,9 @@ namespace MumbleVoip
         QMutex mutex_encode_queue_;
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
-        QMutex mutex_users_;
         QMutex mutex_client_;
         QReadWriteLock lock_state_;
+        QReadWriteLock lock_users_;
         
     signals:
         void StateChanged(State state);

@@ -156,11 +156,12 @@ namespace MumbleVoip
             SAFE_DELETE(c);
         }
 
-        QMutexLocker locker4(&mutex_users_);
+        lock_users_.lockForWrite();
         foreach(User* u, users_)
         {
             SAFE_DELETE(u);
         }
+        lock_users_.unlock();
 
         lock_state_.lockForRead();
         if (state_ != STATE_ERROR)
@@ -309,13 +310,16 @@ namespace MumbleVoip
 
     AudioPacket Connection::GetAudioPacket()
     {
-        QMutexLocker userlist_locker(&mutex_users_);
+        lock_users_.lockForRead();
         if (users_.size() == 0)
+        {
+            lock_users_.unlock();
             return AudioPacket(0,0);
+        }
 
         QList<User*> user_list = users_.values();
 
-        static int first_index = 0; // We want to give fair selection method for user objects 
+        static int first_index = 0; // We want to give fair selection method for all user objects 
         first_index = (first_index + 1) % user_list.size();
 
         for (int i = 0; i < user_list.size(); ++i)
@@ -329,12 +333,15 @@ namespace MumbleVoip
             PCMAudioFrame* frame = user->GetAudioFrame();
             if (frame)
             {
+                first_index = i; // we want start next round from one user after this one
                 user->unlock();
+                lock_users_.unlock();
                 return AudioPacket(user, frame);
             }
             user->unlock();
         }
 
+        lock_users_.unlock();
         return AudioPacket(0,0);
     }
 
@@ -562,15 +569,18 @@ namespace MumbleVoip
 
             // position update is not required for every audio packet so we can skip
             // this if users_ is locked
-            if (mutex_users_.tryLock())
+            if (lock_users_.tryLockForRead())
             {
                 User* user = users_[session];
                 if (user)
                 {
-                    QMutexLocker user_locker(user);
-                    user->UpdatePosition(position);
+                    if (user->tryLock())
+                    {
+                        user->UpdatePosition(position);
+                        user->unlock();
+                    }
                 }
-                mutex_users_.unlock();
+                lock_users_.unlock();
             }
         }
     }
@@ -593,9 +603,10 @@ namespace MumbleVoip
 
     void Connection::AddToUserList(User* user)
     {
-        QMutexLocker locker(&mutex_users_);
-
+        lock_users_.lockForWrite();
         users_[user->Session()] = user;
+        lock_users_.unlock();
+
         QString message = QString("User '%1' joined.").arg(user->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         emit UserJoinedToServer(user);
@@ -603,12 +614,13 @@ namespace MumbleVoip
 
     void Connection::MarkUserLeft(const MumbleClient::User& mumble_user)
     {
-        QMutexLocker locker(&mutex_users_);
+        lock_users_.lockForWrite();
 
         if (!users_.contains(mumble_user.session))
         {
             QString message = QString("Unknow user '%1' Left.").arg(QString(mumble_user.name.c_str()));
             MumbleVoipModule::LogWarning(message.toStdString());
+            lock_users_.unlock();
             return;
         }
 
@@ -618,6 +630,7 @@ namespace MumbleVoip
         QString message = QString("User '%1' Left.").arg(user->Name());
         MumbleVoipModule::LogDebug(message.toStdString());
         user->SetLeft();
+        lock_users_.unlock();
         emit UserLeftFromServer(user);
     }
 
@@ -659,9 +672,10 @@ namespace MumbleVoip
 
     void Connection::HandleIncomingCELTFrame(int session, unsigned char* data, int size)
     {
-		mutex_users_.lock();
+        lock_users_.lockForRead();
         User* user = users_[session];
-		mutex_users_.unlock();
+        lock_users_.unlock();
+
         if (!user)
         {
             QString message = QString("Audio frame from unknown user: %1").arg(session);
@@ -725,7 +739,7 @@ namespace MumbleVoip
 
     void Connection::UpdateUserStates()
     {
-        QMutexLocker locker(&mutex_users_);
+        lock_users_.lockForRead();
         foreach(User* user, users_)
         {
             QMutexLocker user_locker(user);
@@ -733,6 +747,7 @@ namespace MumbleVoip
             Channel* channel = ChannelById(user->CurrentChannelID());
             user->SetChannel(channel);
         }
+        lock_users_.unlock();
     }
 
 } // namespace MumbleVoip 
