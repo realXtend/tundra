@@ -4,6 +4,7 @@ import naali
 
 class DynamiccomponentHandler(circuits.BaseComponent):
     GUINAME = "DynamicComponent handler"
+    ADDMENU = False
 
     def __init__(self):
         self.comp = None
@@ -22,7 +23,8 @@ class DynamiccomponentHandler(circuits.BaseComponent):
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
             print "Adding the ProxyWidget to the bar failed."
-        uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
+        if self.ADDMENU:
+            uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
