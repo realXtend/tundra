@@ -41,14 +41,14 @@ Framework* ComponentInterface::GetFramework() const
         return 0;
 }
 
-void ComponentInterface::SetName(const std::string& name)
+void ComponentInterface::SetName(const QString& name)
 {
     // no point to send a signal if name have stayed same as before.
     if(name_ == name)
         return;
 
     name_ = name;
-    emit OnComponentNameChanged(name);
+    emit OnComponentNameChanged(name.toStdString());
 }
 
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
@@ -73,9 +73,9 @@ AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) co
 QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
 {
     QDomElement comp_element = doc.createElement("component");
-    comp_element.setAttribute("type", QString::fromStdString(TypeName()));
-    if (!name_.empty())
-        comp_element.setAttribute("name", QString::fromStdString(name_));
+    comp_element.setAttribute("type", TypeName());
+    if (!name_.toStdString().empty()) //\todo convert to use qstring empty XXX
+        comp_element.setAttribute("name", name_);
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -104,10 +104,10 @@ void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_ele
 
 bool ComponentInterface::BeginDeserialization(QDomElement& comp_element)
 {
-    std::string type = comp_element.attribute("type").toStdString();
+    QString type = comp_element.attribute("type");
     if (type == TypeName())
     {
-        SetName(comp_element.attribute("name").toStdString());
+        SetName(comp_element.attribute("name"));
         return true;
     }
     return false;

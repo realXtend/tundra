@@ -470,7 +470,7 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
     return camera_entity_.lock();
 }
 
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const std::string &component) const
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
     if (!activeScene_)
         return Scene::EntityPtr();

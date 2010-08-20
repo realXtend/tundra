@@ -43,16 +43,6 @@ class AnimationSync(DynamiccomponentHandler):
         self.prev_sync = 0
         
     #json serialization to port to work with how DC works now with door.py & door.js
-    def getdata(self):
-        data = self.comp.GetAttribute()
-        d = json.loads(data)
-        return d
-    
-    def setval(self, val):
-        d = self.getdata()
-        d['animpos'] = val
-        self.comp.SetAttribute(json.dumps(d))
-        
     def sliderChanged(self, guival):
         #print guival
         comp = self.comp

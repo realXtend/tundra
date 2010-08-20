@@ -30,7 +30,7 @@ namespace Foundation
         typedef std::map< std::string, ComponentList > ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
-        typedef std::map<std::string, ComponentFactoryInterfacePtr> ComponentFactoryMap;
+        typedef std::map<QString, ComponentFactoryInterfacePtr> ComponentFactoryMap;
 
         //! default constructor
         ComponentManager(Framework *framework);// : framework_(framework) {}
@@ -39,14 +39,14 @@ namespace Foundation
         ~ComponentManager() { }
 
         //! register factory for the component
-        void RegisterFactory(const std::string &component, const ComponentFactoryInterfacePtr &factory)
+        void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory)
         {
             assert(factories_.find(component) == factories_.end());
             factories_[component] = factory;
         }
 
         //! Unregister the component. Removes the factory.
-        void UnregisterFactory(const std::string &component)
+        void UnregisterFactory(const QString &component)
         {
             ComponentFactoryMap::iterator iter = factories_.find(component);
             assert(iter != factories_.end());
@@ -58,7 +58,7 @@ namespace Foundation
             \param type_name name of the component type
             \return true if component can be created, false otherwise
         */
-        bool CanCreate(const std::string &type_name);
+        bool CanCreate(const QString &type_name);
 
         //! Create a new component
         /*!
@@ -66,7 +66,7 @@ namespace Foundation
 
             \param type_name type of the component to create
         */
-        ComponentPtr CreateComponent(const std::string &type_name);
+        ComponentPtr CreateComponent(const QString &type_name);
 
         //! Create a new component
         /*!
@@ -75,7 +75,7 @@ namespace Foundation
             \param type_name type of the component to create
             \param name name of the component to create
         */
-        ComponentPtr CreateComponent(const std::string &type_name, const std::string &name);
+        ComponentPtr CreateComponent(const QString &type_name, const QString &name);
 
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);

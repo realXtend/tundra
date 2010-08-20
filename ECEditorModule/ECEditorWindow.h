@@ -69,7 +69,7 @@ namespace ECEditor
         void DeleteEntitiesFromList();
 
         //! Remove coponent from entity and refresh property browser.
-        void DeleteComponent(const std::string &componentType, const std::string &name);
+        void DeleteComponent(const QString &componentType, const QString &name);
 
         /// Open a dialog window that will get information from the user what type of compoent he/she wants to create.
         void CreateComponent();

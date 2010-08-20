@@ -39,7 +39,8 @@ class DynamiccomponentHandler(circuits.BaseComponent):
         #print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
-            if self.comp is None:
+            print "comp Name:", comp.Name
+            if self.comp is None: #XXX check that the component name is of interest
                 comp.connect("OnChanged()", self.onChanged)
                 self.comp = comp
                 print "DYNAMIC COMPONENT FOUND", self.comp
