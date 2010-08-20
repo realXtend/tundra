@@ -15,10 +15,11 @@
 #include "WorldStream.h"
 #include "Interfaces/ProtocolModuleInterface.h"
 
-#include "RexLogicModule.h"
+//#include "RexLogicModule.h"
 #include "UiModule.h"
 #include "Inworld/InworldSceneController.h"
 #include "UiProxyWidget.h"
+#include "UiServiceInterface.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -66,7 +67,7 @@ namespace Communication
             return;
         }
         
-        connect(communication_service_, SIGNAL( NewProtocolSupported(QString &) ), 
+        connect(communication_service_, SIGNAL( NewProtocolSupported(QString &) ),
                 SLOT( OnNewProtocol(QString &) ));
         connect(communication_service_, SIGNAL( ProtocolSupportEnded(QString &) ), 
                 SLOT( OnProtocolSupportEnded(QString &) ));
@@ -95,6 +96,9 @@ namespace Communication
                 LogInfo( message.toStdString() );
             }
         }
+
+        im_ui_ = new CommunicationUI::MasterWidget(framework_);
+        AddWidgetToUi("IM");
     }
 
     void TelepathyIMModule::Uninitialize()
@@ -121,13 +125,15 @@ namespace Communication
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_CONNECTED)
             {
                 //! Remove RexLogicModule dependency. Get WorldStream from WORLD_STREAM_READY event.
+/*
                 boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> current_protocol_module =
                     framework_->GetModuleManager()->GetModule<RexLogic::RexLogicModule>().lock()->GetServerConnection()->GetCurrentProtocolModuleWeakPointer();
                 if (current_protocol_module.lock().get())
                 {
-                    ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
+//                    ProtocolUtilities::ClientParameters client_params = current_protocol_module.lock()->GetClientParameters();
 //                    os_chat_controller_ = new OpensimIM::ChatController(client_params);
                 }
+*/
             } 
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED || event_id == ProtocolUtilities::Events::EVENT_CONNECTION_FAILED)
             {
@@ -169,23 +175,24 @@ namespace Communication
     void TelepathyIMModule::AddWidgetToUi(const QString &name)
     {
         UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-        if (ui_module)
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui_module && ui)
         {
             if (name == "IM")
             {
                 im_ui_->setWindowTitle(name);
-                im_ui_proxy_widget_ = ui_module->GetInworldSceneController()->AddWidgetToScene(im_ui_);
-                if (im_ui_proxy_widget_)
-                    ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
+                im_ui_proxy_widget_ = ui->AddWidgetToScene(im_ui_);
+                im_ui_proxy_widget_->hide();
+                ui_module->GetInworldSceneController()->SetImWidget(im_ui_proxy_widget_);
             }
         }
     }
 
     void TelepathyIMModule::RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget)
     {
-        UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-        if (ui_module)
-            ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(proxy_widget);
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui)
+            ui->RemoveWidgetFromScene(proxy_widget);
     }
 }
 
