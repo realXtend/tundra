@@ -6,7 +6,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h
-    ECBrowser.h EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h
+    ECBrowser.h EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h
     ECComponentEditor.h LineEditPropertyFactory.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
@@ -25,7 +25,7 @@ use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities EntityComponents/EC_DynamicComponent)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -34,7 +34,7 @@ link_package (POCO)
 link_package (QT4)
 link_package (OGRE)
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules EC_DynamicComponent)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules EC_DynamicComponent)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

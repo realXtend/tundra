@@ -786,9 +786,12 @@ namespace ECEditor
                 UnInitialize();
                 Initialize();
             }
-            for(uint i = 0; i < value.size(); i++)
+            if(value.size() <= children.size())
             {
-                stringManager->setValue(children[i], value[i].toString());
+                for(uint i = 0; i < value.size(); i++)
+                {
+                    stringManager->setValue(children[i], value[i].toString());
+                }
             }
         }
         else
