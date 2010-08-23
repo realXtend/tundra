@@ -81,12 +81,9 @@ namespace MumbleVoip
         received_voice_packet_count_++;
         if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
         {
-            foreach(PCMAudioFrame* frame, playback_queue_)
-            {
-                delete frame;
-                voice_packet_drop_count_++;
-            }
-            playback_queue_.clear();
+            delete frame;
+            voice_packet_drop_count_++;
+            return;
         }
 
         playback_queue_.push_back(frame);

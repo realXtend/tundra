@@ -331,16 +331,14 @@ namespace MumbleVoip
                 continue;
 
             PCMAudioFrame* frame = user->GetAudioFrame();
+            user->unlock();
             if (frame)
             {
                 first_index = i; // we want start next round from one user after this one
-                user->unlock();
                 lock_users_.unlock();
                 return AudioPacket(user, frame);
             }
-            user->unlock();
         }
-
         lock_users_.unlock();
         return AudioPacket(0,0);
     }
@@ -501,13 +499,17 @@ namespace MumbleVoip
         mutex_raw_udp_tunnel_.unlock();
 		QMutexLocker raw_udp_tunnel_locker(&mutex_raw_udp_tunnel_);
 
-        lock_state_.lockForRead();
-        if (state_ != STATE_OPEN)
+        if (lock_state_.tryLockForRead(10))
         {
+            if (state_ != STATE_OPEN)
+            {
+                lock_state_.unlock();
+                return;
+            }
             lock_state_.unlock();
-            return;
         }
-        lock_state_.unlock();
+        else
+            return;
 
         PacketDataStream data_stream = PacketDataStream((char*)buffer, length);
         bool valid = data_stream.isValid();

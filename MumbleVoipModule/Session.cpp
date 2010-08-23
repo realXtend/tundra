@@ -487,6 +487,8 @@ namespace MumbleVoip
 				}
 				if (!source_muted)
 					PlaybackAudioFrame(packet.first, packet.second);
+                else
+                    delete packet.second;
             }
         }
 
