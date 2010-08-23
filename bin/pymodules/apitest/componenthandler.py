@@ -2,29 +2,21 @@ import circuits
 import rexviewer as r
 import naali
 
-class DynamiccomponentHandler(circuits.BaseComponent):
-    GUINAME = "DynamicComponent handler"
-    ADDMENU = False
+"""a register of component handlers, by type"""
+handlertypes = {}
+def register(compname, handlertype):
+    handlertypes[compname] = handlertype
 
-    def __init__(self):
-        self.comp = None
+import animsync
+register(animsync.COMPNAME, animsync.AnimationSync)
 
-        circuits.BaseComponent.__init__(self)
-        self.widget = None
-        self.proxywidget = None
-        self.initgui()
+import door
+register(door.COMPNAME, door.DoorHandler)
 
-    def initgui(self):
-        pass #overridden in subclasses
-
-    def registergui(self):
-        uism = r.getUiSceneManager()
-        self.proxywidget = r.createUiProxyWidget(self.widget)
-        self.proxywidget.setWindowTitle(self.GUINAME)
-        if not uism.AddWidgetToScene(self.proxywidget):
-            print "Adding the ProxyWidget to the bar failed."
-        if self.ADDMENU:
-            uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
+class ComponenthandlerRegistry(circuits.BaseComponent):
+    #def __init__(self):
+    #    circuits.BaseComponent.__init__(self)
+    #    self.handlerinstances = []
 
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
@@ -42,26 +34,6 @@ class DynamiccomponentHandler(circuits.BaseComponent):
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
             print "comp Name:", comp.Name
-            if comp.Name == self.COMPNAME:
-                if self.comp is None:
-                    comp.connect("OnChanged()", self.onChanged)
-                    self.comp = comp
-                    print "DYNAMIC COMPONENT FOUND", self.comp, self.comp.Name
-                else:
-                    print "ANOTHER DynamicComponent of the given type found - only one supported now, ignoring", entity, comp, comp.Name
-
-    @circuits.handler("on_logout")
-    def on_logout(self, idt):
-        if self.comp is not None:
-            try:
-                self.comp.disconnect("OnChanged()", self.onChanged)
-            finally: #disconnect fails if the entity had been deleted
-                self.comp = None
-
-    @circuits.handler("on_exit")
-    def on_exit(self):
-        if self.proxywidget is not None:
-            uism = r.getUiSceneManager()
-            uism.RemoveWidgetFromScene(self.proxywidget)
-
-
+            if comp.Name in handlertypes:
+                handlertypes[comp.Name](entity, comp, changetype)
+                #self.handlerinstances.append(h)
