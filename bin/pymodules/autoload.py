@@ -28,7 +28,7 @@ modulenames = [
     ("objectedit.objectedit", "ObjectEdit"),
     ("estatemanagement.estatemanagement", "EstateManagement"),
     ("apitest.componenthandler", "ComponenthandlerRegistry"),
-    #("apitest.animsync", "AnimationSync"),
+    #("apitest.animsync", "AnimationSync"), #these are loadeed in that Registry now
     #("apitest.door", "DoorHandler"),
     #("apitest.jscomponent", "JavascriptHandler")
     ]
