@@ -1288,6 +1288,24 @@ if 0:
     if mesh is not None:
         print "swoot"
 
+if 0:
+    avid = r.getUserAvatarId()
+    e = r.getEntity(avid)
+    try:
+        e.sound
+    except AttributeError:
+        print e.createComponent("EC_AttachedSound")
+        print "created a new Sound component"
+
+    s = e.sound
+    print type(s), s
+
+    e.removeSound(s)
+    try:
+        e.sound
+    except AttributeError:
+        print "sound removed successfully"
+
 if 0: #create a new component, hilight
     avid = r.getUserAvatarId()
     e = r.getEntity(avid)
