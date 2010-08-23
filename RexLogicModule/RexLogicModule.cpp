@@ -47,7 +47,6 @@
 #include "CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
 
-
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
@@ -61,9 +60,6 @@
 #include "InputServiceInterface.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
-#ifndef UISERVICE_TEST
-#include "UiModule.h"
-#endif
 #include "Renderer.h"
 #include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
@@ -74,6 +70,9 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
+#ifndef UISERVICE_TEST
+#include "UiModule.h"
+#endif
 
 // External EC's
 #include "EC_Highlight.h"
@@ -115,8 +114,6 @@ RexLogicModule::RexLogicModule() :
     scene_handler_(0),
     network_state_handler_(0),
     framework_handler_(0),
-    os_login_handler_(0),
-    taiga_login_handler_(0),
     main_panel_handler_(0)
 {
 }
@@ -186,6 +183,10 @@ void RexLogicModule::Initialize()
     boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldLogic, service);
+
+    // Register login service.
+    login_service_ = boost::shared_ptr<LoginHandler>(new LoginHandler(this));
+    framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
 }
 
 // virtual
@@ -224,8 +225,6 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
 
-
-
     // Resource events
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
     event_handlers_[eventcategoryid].push_back(
@@ -260,22 +259,6 @@ void RexLogicModule::PostInitialize()
 
     send_input_state_ = true;
 
-    // Create login handlers, get login notifier from ether and pass
-    // that into rexlogic login handlers for slots/signals setup
-    os_login_handler_ = new OpenSimLoginHandler(this);
-    taiga_login_handler_ = new TaigaLoginHandler(this);
-#ifndef UISERVICE_TEST
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-    if (ui_module)
-    {
-        QObject *notifier = ui_module->GetEtherLoginNotifier();
-        if (notifier)
-        {
-            os_login_handler_->SetLoginNotifier(notifier);
-            taiga_login_handler_->SetLoginNotifier(notifier);
-        }
-    }
-#endif
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -369,13 +352,16 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(scene_handler_);
     SAFE_DELETE(network_state_handler_);
     SAFE_DELETE(framework_handler_);
-    SAFE_DELETE(os_login_handler_);
-    SAFE_DELETE(taiga_login_handler_);
     SAFE_DELETE(main_panel_handler_);
 
+    // Unregister world logic service.
     boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
     boost::weak_ptr<WorldLogicInterface> service = boost::dynamic_pointer_cast<WorldLogicInterface>(rexlogic);
     framework_->GetServiceManager()->UnregisterService(service);
+
+    // Unregister login service.
+    framework_->GetServiceManager()->UnregisterService(login_service_);
+    login_service_.reset();
 }
 
 #ifdef _DEBUG
@@ -484,7 +470,7 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
     return camera_entity_.lock();
 }
 
-Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const std::string &component) const
+Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
     if (!activeScene_)
         return Scene::EntityPtr();
@@ -800,12 +786,12 @@ void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QString &password, const QString &serverAddressWithPort)
 {
     QMap<QString, QString> map;
-    map["AuthType"] = "OpenSim";
+    map["AvatarType"] = "OpenSim";
     map["Username"] = firstAndLast;
     map["Password"] = password;
     map["WorldAddress"] = serverAddressWithPort;
 
-    os_login_handler_->ProcessOpenSimLogin(map);
+    login_service_->ProcessLoginData(map);
 }
 
 void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
@@ -1239,7 +1225,9 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     if (params.size() > 2)
         server = params[2];
 
-    //! REMOVE
+    StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
+
+    return Console::ResultSuccess();
     //bool success = world_stream_->ConnectToServer(name, passwd, server);
 
     // overwrite the password so it won't stay in-memory
@@ -1249,7 +1237,7 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     //    return Console::ResultSuccess();
     //else
     //    return Console::ResultFailure("Failed to connect to server.");
-    return Console::ResultFailure("Cannot login from console no more");
+    //return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)

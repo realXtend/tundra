@@ -6,43 +6,35 @@ from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton
 
 import rexviewer as r
 
+import circuits #for @handler
 from componenthandler import DynamiccomponentHandler
 
-OPENPOS = Vec(127, 128, 30)
-CLOSEPOS = Vec(127, 127, 30)
+#should be in the EC data
+OPENPOS = Vec(101.862, 82.6978, 24.9221)
+CLOSEPOS = Vec(99.65, 82.6978, 24.9221)
 
-#opened = AttributeBoolean()
-#locked = AttributeBoolean()
-
-"""had the door as a class with json serialization first
-- works, but unnecessarily complex, 'cause it's now just two bools
-class DoorState:
-    def __init__(self, opened=False, locked=True):
-        self.opened = opened
-        self.locked = locked
-
-    def __str__(self):
-        return "%s - %s" % (self.opened, self.locked)
-
-class DoorEncoder(json.JSONEncoder):
-    def default(self, obj):
-        if isinstance(obj, DoorState):
-            return {'opened': obj.opened, 'locked': obj.locked}
-        return json.JSONEncoder.default(self, obj)
-def as_door(dct):
-    return DoorState(dct['opened'], dct['locked'])
-"""
-
-"""the synched attribute data - this is initial state if none comes from server
-not here anymore to not mess the currently shared data with other comps"""
-#doorinit = {'opened': False,
-#            'locked': True}
+"""for changing the cursor on hover"""
+import PythonQt
+qapp = PythonQt.Qt.QApplication.instance()
+import PythonQt.QtGui as gui
+cursor = gui.QCursor()
+#print cursor, cursor.shape()
+def setcursor(ctype):
+    cursor.setShape(ctype)    
+    qapp.setOverrideCursor(cursor)
 
 class DoorHandler(DynamiccomponentHandler):
     GUINAME = "Door Handler"
-    inworld_inited = False #a cheap hackish substitute for some initing system
+    COMPNAME = "door" #the DC name identifier string that this handler looks for
+    ADDMENU = True
+
+    def __init__(self):
+        DynamiccomponentHandler.__init__(self)
+        self.inworld_inited = False #a cheap hackish substitute for some initing system
+        self.hovering = 0
 
     def onChanged(self):
+        print "door data changed"
         ent = r.getEntity(self.comp.GetParentEntityId())
 
         if not self.inworld_inited:
@@ -63,21 +55,16 @@ class DoorHandler(DynamiccomponentHandler):
             print "Door DynamicComponent handler registering to GUI"
             self.registergui()
 
-        data = self.comp.GetAttribute()
-        print "GetAttr got:", data
-        try:
-            self.door = json.loads(data) #, object_hook = as_door)
-        except ValueError:
-            print "not valid door data in attr json - using default DoorState"            
-            self.door = doorinit #DoorState()
+        opened = self.opened
+        locked = self.locked
 
-        newpos = OPENPOS if self.door['opened'] else CLOSEPOS
+        newpos = OPENPOS if opened else CLOSEPOS
         ent.placeable.Position = newpos        
-        print self.door, ent.placeable.Position
+        print opened, type(opened), ent.placeable.Position
 
-        self.openbut.text = "Close" if self.door['opened'] else "Open"
-        self.lockbut.text = "Unlock" if self.door['locked'] else "Lock"
-        if self.door['locked'] and not self.door['opened']:
+        self.openbut.text = "Close" if opened else "Open"
+        self.lockbut.text = "Unlock" if locked else "Lock"
+        if locked and not opened:
             self.openbut.enabled = False
         else:
             self.openbut.enabled = True
@@ -105,43 +92,54 @@ class DoorHandler(DynamiccomponentHandler):
         self.widget = group
         self.forcepos = None
 
+        #group.show() #as a temp workaround as naali ui system is borked XXX
+
+    def get_opened(self):
+        if self.comp is not None:
+            return self.comp.GetAttribute("opened")
+        else:
+            return None
+    def set_opened(self, newval):
+        self.comp.SetAttribute("opened", newval)
+        self.comp.OnChanged()
+    opened = property(get_opened, set_opened)
+
+    def get_locked(self):
+        if self.comp is not None:
+            return self.comp.GetAttribute("locked")
+        else:
+            return None
+    def set_locked(self, newval):
+        self.comp.SetAttribute("locked", newval)
+        self.comp.OnChanged()
+    locked = property(get_locked, set_locked)
+
     def open(self):
         print "open"
-        #was when abusing float as a bool:
-        #oldval = self.door.opened #comp.GetAttribute()
-        #newval = 0 if oldval else 1
-        #self.comp.SetAttribute(newval)
 
-        if self.door['opened'] or not self.door['locked']:
-            self.door['opened'] = not self.door['opened']
-            self.sync()
+        if self.opened or not self.locked:
+            self.opened = not self.opened
+            print self.opened
         else:
             print "Can't open a locked door!"
 
     def lock(self):
         #\todo if has key
-        self.door['locked'] = not self.door['locked']
-        self.sync()
+        self.locked = not self.locked
 
     def hover(self):
-        import PythonQt
-        qapp = PythonQt.Qt.QApplication.instance()
-        import PythonQt.QtGui as gui
-        cursor = gui.QCursor()
-        #print cursor, cursor.shape()
+        #XXX add locked check too
+        ctype = 1 if self.opened else 2
+        setcursor(ctype)
+        self.hovering = 10 #a dirty hack to do onMouseExit (this is onMouseOver). not 100% reliable it seems XXX
 
-        ctype = 1 if self.door['opened'] else 2
-
-        cursor.setShape(ctype)    
-        qapp.setOverrideCursor(cursor)
-
-    def sync(self):
-        if self.comp is not None:
-            newdata = json.dumps(self.door) #, cls=DoorEncoder)
-            print "setting Door data to:", newdata
-            self.comp.SetAttribute(newdata)
-
+    @circuits.handler("update")
     def update(self, t):
         if self.forcepos is not None:
             ent = r.getEntity(self.comp.GetParentEntityId())
             ent.placeable.Position = self.forcepos
+
+        if self.hovering > 0:
+            self.hovering -= 1
+            if self.hovering == 0:
+                setcursor(0)

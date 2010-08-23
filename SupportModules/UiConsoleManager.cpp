@@ -39,8 +39,18 @@ namespace Console
         proxy_widget_->setZValue(100);
         ui_view_->scene()->addItem(proxy_widget_);
 
-        SetupAnimation();
-        ConnectSignals();
+        animation_.setTargetObject(proxy_widget_);
+        animation_.setPropertyName("geometry");
+        animation_.setDuration(300);
+
+        // Proxy show/hide toggle
+//        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), this, SLOT( ToggleConsole() ));
+        // Input field
+        connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
+        // Scene to notify rect changes
+        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+        // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
+        connect(this, SIGNAL(PrintOrderReceived(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
 
         // Init event categories
         console_category_id_ = framework_->GetEventManager()->QueryEventCategory("Console");
@@ -50,29 +60,6 @@ namespace Console
     {
         SAFE_DELETE(console_ui_);
         SAFE_DELETE(console_widget_);
-    }
-
-    void UiConsoleManager::SetupAnimation()
-    {
-        animation_.setTargetObject(proxy_widget_);
-        animation_.setPropertyName("geometry");
-        animation_.setDuration(300);
-    }
-
-    void UiConsoleManager::ConnectSignals()
-    {
-        // Proxy show/hide toggle
-//        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), 
-//                this, SLOT( ToggleConsole() ));
-
-        // Input field
-        connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
-
-        // Scene to notify rect changes
-        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
-
-        // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
-        connect(this, SIGNAL(PrintOrderRecieved(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
     }
 
     void UiConsoleManager::HandleInput()
@@ -85,7 +72,7 @@ namespace Console
 
     void UiConsoleManager::QueuePrintRequest(const QString &text)
     {
-        emit PrintOrderRecieved(text);
+        emit PrintOrderReceived(text);
     }
 
     void UiConsoleManager::PrintToConsole(const QString &text)

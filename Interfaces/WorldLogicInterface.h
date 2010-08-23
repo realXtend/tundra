@@ -11,6 +11,7 @@
 #define incl_Interfaces_WorldLogicInterface_h
 
 #include "ForwardDefines.h"
+ #include <QString>
 
 namespace Foundation
 {
@@ -32,7 +33,7 @@ namespace Foundation
         /// Returns entity with certain entity component in it or null if not found.
         /// @param entity_id Entity ID.
         /// @param component Type name of the component.
-        virtual Scene::EntityPtr GetEntityWithComponent(uint entity_id, const std::string &component) const = 0;
+        virtual Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const = 0;
 
         // 
     };

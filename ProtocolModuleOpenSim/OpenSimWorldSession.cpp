@@ -9,8 +9,8 @@
 
 namespace OpenSimProtocol
 {
-    OpenSimWorldSession::OpenSimWorldSession(Foundation::Framework *framework)
-        : framework_(framework), credentials_(0), serverEntryPointUrl_(0)
+    OpenSimWorldSession::OpenSimWorldSession(Foundation::Framework *framework) :
+        framework_(framework), credentials_(ProtocolUtilities::AT_OpenSim)
     {
         networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
     }
@@ -19,25 +19,23 @@ namespace OpenSimProtocol
     {
     }
 
-    bool OpenSimWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
+    bool OpenSimWorldSession::StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl)
     {
         bool success = false;
-        ProtocolUtilities::OpenSimCredentials *testCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(credentials);
-        if (testCredentials)
+        if (credentials.GetType() == ProtocolUtilities::AT_OpenSim)
         {
             // Set Url and Credentials
-            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl->toString(), WorldSessionInterface::OpenSimServer);
-            serverEntryPointUrl = &serverEntryPointUrl_;
-            credentials_ = testCredentials;
+            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl.toString(), WorldSessionInterface::OpenSimServer);
+            credentials_ = credentials;
 
             // Try do OpenSim login with ProtocolModuleOpenSim
             success = LoginToServer(
-                credentials_->GetFirstName(),
-                credentials_->GetLastName(), 
-                credentials_->GetPassword(), 
-                serverEntryPointUrl_.toString(), 
-                QString::number(serverEntryPointUrl_.port()), 
-                credentials_->GetStartLocation(),
+                credentials_.GetFirstName(),
+                credentials_.GetLastName(),
+                credentials_.GetPassword(),
+                serverEntryPointUrl_.toString(),
+                QString::number(serverEntryPointUrl_.port()),
+                credentials_.GetStartLocation(),
                 GetConnectionThreadState());
         }
         else
@@ -119,7 +117,7 @@ namespace OpenSimProtocol
         }
     }
 
-    ProtocolUtilities::LoginCredentialsInterface* OpenSimWorldSession::GetCredentials() const
+    LoginCredentials OpenSimWorldSession::GetCredentials() const
     {
         return credentials_;
     }
@@ -133,13 +131,12 @@ namespace OpenSimProtocol
     {
     }
 
-    void OpenSimWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
+    void OpenSimWorldSession::SetCredentials(const LoginCredentials &credentials)
     {
-        ProtocolUtilities::OpenSimCredentials *testCredentials = dynamic_cast<ProtocolUtilities::OpenSimCredentials *>(newCredentials);
-        if (testCredentials)
-            credentials_ = testCredentials;
+        if (credentials.GetType() == ProtocolUtilities::AT_OpenSim)
+            credentials_ = credentials;
         else
-            ProtocolModuleOpenSim::LogInfo("Could not set credentials, invalid type. Must be OpenSimCredentials for OpenSimWorldSession");
+            ProtocolModuleOpenSim::LogInfo("Could not set credentials, invalid type. Must be OpenSim for OpenSimWorldSession");
     }
 
     void OpenSimWorldSession::SetServerEntryPointUrl(const QUrl &newUrl)

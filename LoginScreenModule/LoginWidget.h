@@ -1,8 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   
- *  @brief  
+ *  @file   LoginWidget.h
+ *  @brief  Simple login widget for OpenSim and realXend authentication methods.
  */
 
 #ifndef incl_LoginModule_LoginWidget_h
@@ -12,6 +12,7 @@
 
 #include <QTimer>
 
+/// Simple login widget for OpenSim and realXend authentication methods.
 class LoginWidget : public QWidget, private Ui::LoginWidget
 {
     Q_OBJECT
@@ -34,7 +35,7 @@ private:
 
 signals:
     void ConnectOpenSim(const QMap<QString, QString> &login_data);
-    void ConnectRealXtend(QMap<QString, QString> &login_data);
+    void ConnectRealXtend(const QMap<QString, QString> &login_data);
     void ConnectingUiUpdate(const QString &message);
 };
 

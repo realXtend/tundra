@@ -45,32 +45,11 @@ namespace CoreUi
         QString hack_icon;
         QString base_url = "./data/ui/images/menus/";
         if (name == "Server Tools")
-        {
-        /*
-            style_map[UiDefines::IconNormal] = base_url + "edbutton_SRVRTOOLS_icon.png";
-            style_map[UiDefines::IconHover] = base_url + "edbutton_SRVRTOOLS_icon.png";
-            style_map[UiDefines::IconPressed] = base_url + "edbutton_SRVRTOOLS_icon.png";
-        */
             hack_icon = base_url + "edbutton_SRVRTOOLS_icon.png";
-        }
         else if (name == "World Tools")
-        {
-        /*
-            style_map[UiDefines::IconNormal] = base_url + "edbutton_WRLDTOOLS_icon.png";
-            style_map[UiDefines::IconHover] = base_url + "edbutton_WRLDTOOLS_icon.png";
-            style_map[UiDefines::IconPressed] = base_url + "edbutton_WRLDTOOLS_icon.png";
-        */
             hack_icon = base_url + "edbutton_WRLDTOOLS_icon.png";
-        }
         else
-        {
-        /*
-            style_map[UiDefines::IconNormal] = base_url + "edbutton_WRLDTOOLS_icon.png";
-            style_map[UiDefines::IconHover] = base_url + "edbutton_WRLDTOOLS_icon.png";
-            style_map[UiDefines::IconPressed] = base_url + "edbutton_WRLDTOOLS_icon.png";
-        */
             hack_icon = base_url + "edbutton_WRLDTOOLS_icon.png";
-        }
 
         GroupNode *group_node = new GroupNode(false, name, hack_icon, hgap, vgap);
         root_menu_->AddChildNode(group_node);
@@ -83,32 +62,6 @@ namespace CoreUi
         Sort();
     }
 
-/*
-    void MenuManager::AddMenuItem(QGraphicsProxyWidget *controlled_widget, const UiServices::UiWidgetProperties &properties)
-    {
-        ActionNode *child_node = new ActionNode(properties.GetName(), properties.GetIcon());
-        QString category = properties.GetMenuGroup();
-        if (category.isEmpty())
-        {
-            category_map_["Root"]->AddChildNode(child_node);
-        }
-        else if (category_map_.contains(category))
-        {
-            category_map_[category]->AddChildNode(child_node);
-        }
-        else
-        {
-            AddMenuGroup(category);
-            category_map_[category]->AddChildNode(child_node);
-        }
-
-        controller_map_[child_node->GetID()] = controlled_widget;
-        connect(child_node, SIGNAL(ActionButtonClicked(const QUuid&)), SLOT(ActionNodeClicked(const QUuid&)));
-        layout_manager_->AddItemToScene(child_node);
-
-        Sort();
-    }
-*/
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
     {
         QString iconPath;
@@ -139,17 +92,26 @@ namespace CoreUi
         Sort();
     }
 
-    void MenuManager::RemoveMenuItem(const QString &category, QGraphicsProxyWidget *controlled_widget)
+    void MenuManager::RemoveMenuItem(QGraphicsProxyWidget *controlled_widget)
     {
         QUuid remove_id = controller_map_.key(controlled_widget);
         if (remove_id.isNull())
             return;
-
+/*
         MenuNode *recovered_node = 0;
         if (category_map_.contains(category))
             recovered_node =  category_map_[category]->RemoveChildNode(remove_id);
         else
             return;
+*/
+        MenuNode *recovered_node = 0;
+        QMapIterator<QString, GroupNode*> it(category_map_);
+        while(it.hasNext())
+        {
+            recovered_node = it.next().value()->RemoveChildNode(remove_id);
+            if (recovered_node)
+                break;
+        }
 
         if (recovered_node)
         {

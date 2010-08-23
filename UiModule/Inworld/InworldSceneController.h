@@ -49,33 +49,29 @@ namespace UiServices
          */
         UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
-        //! Adds a Qt Widget to the current scene with Naali widget properties, returns the added QGraphicsProxyWidget
-        /*! \param widget QWidget to be added to the scene.
-         *  \param widget_properties Properties for the widget.
-         *  \return UiProxyWidget if succesfull, otherwise 0
-         */
-//        UiProxyWidget* AddWidgetToScene(QWidget *widget, const UiWidgetProperties &widget_properties);
-
         //! Adds a already created UiProxyWidget into the scene.
         /*! Please prefer using AddWidgetToScene() with normal QWidget and properties instead of this directly.
          *  \param widget Proxy widget.
          */
         bool AddProxyWidget(UiProxyWidget *widget);
 
-        //! 
-        /*! 
-         *  \param widget Widget.
-         *  \param 
-         *  \param 
-         *  \param 
+        //! Adds widget to menu.
+        /*! \param widget Widget.
+         *  \param name Name of the menu entry.
+         *  \param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
+         *  \param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
+         *
+         *  \note Doesn't add the widget to the scene.
          */
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
-        /*! This is an overloaded function.
-         *  \param widget Proxy widget.
-         *  \param 
-         *  \param 
-         *  \param 
+        //! This is an overloaded function.
+        /*! \param widget Widget.
+         *  \param name Name of the menu entry.
+         *  \param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
+         *  \param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
+         *
+         *  \note Doesn't add the widget to the scene.
          */
         void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
@@ -89,6 +85,11 @@ namespace UiServices
         //! This is an overload function.
         //! \param widget Widget.
         void RemoveProxyWidgetFromScene(QWidget *widget);
+
+        /** Removes widget from menu.
+         *  @param widget The controlled widget.
+         */
+        void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
 
         //! Brings the proxy widget to front in the scene, set focus to it and shows it.
         void BringProxyToFront(QGraphicsProxyWidget *widget) const;

@@ -94,7 +94,7 @@ namespace ECEditor
                 continue;
             attributeEditors_[attributes[i]->GetName()] = attributeEditor;
             attributeEditor->UpdateEditorUI();
-            groupProperty_->setToolTip(QString::fromStdString("Component type is " + component->TypeName()));
+            groupProperty_->setToolTip("Component type is " + component->TypeName());
             groupProperty_->addSubProperty(attributeEditor->GetProperty());
 
             QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
@@ -105,11 +105,11 @@ namespace ECEditor
     {
         if(!groupProperty_ || !components_.size())
             return;
-        std::string componentName = typeName_;
+        std::string componentName = typeName_.toStdString(); //\todo remove the back&forth string conversions XXX
         ReplaceSubstringInplace(componentName, "EC_", "");
         QString groupPropertyName = componentName.c_str();
-        if(!name_.empty())
-            groupPropertyName += QString::fromStdString(" (" + name_ + ") ");
+        if(!name_.isEmpty())
+            groupPropertyName += " (" + name_ + ") ";
         if(components_.size() > 1)
             groupPropertyName += QString(" (%1 components)").arg(components_.size());
         groupProperty_->setPropertyName(groupPropertyName);

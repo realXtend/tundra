@@ -103,6 +103,8 @@ void InventoryModule::PostInitialize()
     frameworkEventCategory_ = eventManager_->QueryEventCategory("Framework");
     assetEventCategory_ = eventManager_->QueryEventCategory("Asset");
     resourceEventCategory_ = eventManager_->QueryEventCategory("Resource");
+
+    CreateInventoryWindow();
 }
 
 void InventoryModule::Uninitialize()
@@ -136,8 +138,6 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             assert(auth);
             if (!auth)
                 return false;
-
-            CreateInventoryWindow();
 
             switch(auth->type)
             {
@@ -232,13 +232,14 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
         {
             // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
-            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-            if (ui)
+            //Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            //if (ui)
             {
                 if (inventoryWindow_)
                 {
-                    ui->RemoveWidgetFromScene(inventoryWindow_);
-                    SAFE_DELETE_LATER(inventoryWindow_);
+                    inventoryWindow_->ResetInventoryTreeModel();
+                    //ui->RemoveWidgetFromScene(inventoryWindow_);
+                    //SAFE_DELETE_LATER(inventoryWindow_);
                 }
 /*
                 if (uploadProgressWindow_)

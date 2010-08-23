@@ -13,6 +13,7 @@
 #include "UiServiceInterface.h"
 
 class QGraphicsView;
+class QRectF;
 
 /*
  *  Light-weight UI service. Implements UiServiceInterface and provides 
@@ -25,7 +26,7 @@ class UiService : public Foundation::UiServiceInterface
 
 public:
     /** Constuctor.
-     *  @param scene The main graphics view.
+     *  @param view The main graphics view.
      */
     explicit UiService(QGraphicsView *view);
 
@@ -33,11 +34,14 @@ public:
     ~UiService();
 
 public slots:
-    /// UiServiceInterface override.
+    /** UiServiceInterface override.
+     *  @note If you want to add full screen widget that is resized automatically to fit the screen 
+     *  when scene rect changes, remember to set Qt::FullScreen window state for the widget.
+     */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// UiServiceInterface override.
-    void AddWidgetToScene(UiProxyWidget *widget);
+    bool AddWidgetToScene(UiProxyWidget *widget);
 
     /// UiServiceInterface override.
     void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
@@ -55,6 +59,12 @@ public slots:
     void RemoveWidgetFromScene(QGraphicsProxyWidget *widget);
 
     /// UiServiceInterface override.
+    void RemoveWidgetFromMenu(QWidget *widget);
+
+    /// UiServiceInterface override.
+    void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
+
+    /// UiServiceInterface override.
     void ShowWidget(QWidget *widget) const;
 
     /// UiServiceInterface override.
@@ -65,6 +75,10 @@ public slots:
 
     /// UiServiceInterface override.
     void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
+
+    /// UiServiceInterface override.
+    /// Does nothing.
+    bool AddSettingsWidget(QWidget *widget, const QString &name) const { return false; }
 
     /// UiServiceInterface override.
     /// Returns the only UI scene we have.
@@ -89,10 +103,19 @@ private:
     /// Main graphics scene.
     QGraphicsScene *scene_;
 
-    //! Internal list of proxy widgets in scene.
+    /// Internal list of proxy widgets in scene.
     QList<QGraphicsProxyWidget *> widgets_;
 
+    /// List of full screen widgets (Qt::WindowState::FullScreen on when embedded to the screen) in scene.
+    QList<QGraphicsProxyWidget *> fullScreenWidgets_;
+
 private slots:
+    /** Performs different operations for proxy widgets when scene rect is changed, f.ex. resizes
+    *   full screen widgets to fit the screen.
+     *  @param rect New scene rect.
+     */
+    void SceneRectChanged(const QRectF &rect);
+
     /** Deletes widget and the corresponding proxy widget if widget has WA_DeleteOnClose on.
      *  The caller of this slot is retrieved by using QObject::sender().
      */

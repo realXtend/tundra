@@ -6,6 +6,7 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "Framework.h"
+#include "UiServiceInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -15,11 +16,6 @@
 #include <QLabel>
 #include <QKeyEvent>
 #include <QApplication>
-
-#ifndef UISERVICE_TEST
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
-#endif
 
 namespace OgreRenderer
 {
@@ -37,10 +33,8 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-#ifndef UISERVICE_TEST
-        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-        // If this occurs, we're most probably operating in headless mode.
-        if (ui_module.get() == 0)
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui)
             return;
 
         QUiLoader loader;
@@ -56,7 +50,7 @@ namespace OgreRenderer
         if (!settings_widget_)
             return;
 
-        ui_module->GetInworldSceneController()->AddSettingsWidget(settings_widget_, "Rendering");
+        ui->AddSettingsWidget(settings_widget_, "Rendering");
 
         QDoubleSpinBox* spin = settings_widget_->findChild<QDoubleSpinBox*>("spinbox_viewdistance");
         boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -82,7 +76,6 @@ namespace OgreRenderer
         input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
         if(input_context_.get())
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
-#endif
     }
 
     void RendererSettings::KeyPressed(KeyEvent* e)

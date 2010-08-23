@@ -27,12 +27,12 @@ namespace Foundation
         attributeTypes_.push_back("qvariantarray");
     }
 
-    bool ComponentManager::CanCreate(const std::string &type_name)
+    bool ComponentManager::CanCreate(const QString &type_name)
     {
         return (factories_.find(type_name) != factories_.end());
     }
 
-    ComponentInterfacePtr ComponentManager::CreateComponent(const std::string &type_name)
+    ComponentInterfacePtr ComponentManager::CreateComponent(const QString &type_name)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
@@ -42,7 +42,7 @@ namespace Foundation
         return component;
     }
 
-    ComponentPtr ComponentManager::CreateComponent(const std::string &type_name, const std::string &name)
+    ComponentPtr ComponentManager::CreateComponent(const QString &type_name, const QString &name)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())

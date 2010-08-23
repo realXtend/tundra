@@ -24,7 +24,7 @@ namespace CoreUi
 
             if (operation == GetOperation)
             {
-                emit WebLoginUrlRecived(request.url());
+                emit WebLoginUrlReceived(request.url());
                 return new CablebeachReply(request.url());
             }
             else

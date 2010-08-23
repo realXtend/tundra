@@ -135,6 +135,13 @@ namespace OgreRenderer
 
                 return false;
             }
+            if(!tempmat->getNumTechniques())
+            {
+                OgreRenderingModule::LogWarning("Failed to create an Ogre material from material asset "  +
+                    source->GetId());
+
+                return false;
+            }
                         
             ogre_material_ = tempmat->clone(id_);
             tempmat.setNull();
@@ -144,7 +151,6 @@ namespace OgreRenderer
             //! @todo check shadow quality mode and add the extra maps only if necessary
             if(ogre_material_->getReceiveShadows())
             {
-                //! @todo will cause crash if material was not propertly loaded. Using jack.material caused a crash.
                 Ogre::Technique *tech = ogre_material_->getTechnique(0);
                 if(tech)
                 {

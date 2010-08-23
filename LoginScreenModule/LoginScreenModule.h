@@ -57,11 +57,14 @@ private:
     static std::string type_name_static_;
 
     /// Login window.
-    class LoginWidget *window_;
+    LoginWidget *window_;
 
     /// Login window.
     boost::shared_ptr<InputContext> input_;
 
+    event_category_id_t framework_category_;
+
+    event_category_id_t network_category_;
 private slots:
     /// Handles key event.
     void HandleKeyEvent(KeyEvent *key);

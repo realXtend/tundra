@@ -22,6 +22,11 @@ void ComponentResourceHandler::HandleResourceEvent(event_id_t event_id, Foundati
         OgreRenderer::OgreMeshResource* res = checked_static_cast<OgreRenderer::OgreMeshResource*>(event_data->resource_.get());*/
 
         Scene::SceneManager *scene = framework_->GetDefaultWorldScene().get();
+
+        // Crashes to null scene ptr when disconnecting while resources are still loading
+        if (!scene)
+            return;
+
         Scene::EntityList entities = scene->GetEntitiesWithComponent("EC_Mesh");
         Scene::EntityList::iterator iter = entities.begin();
         for(;iter != entities.end(); iter++)

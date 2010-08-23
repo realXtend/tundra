@@ -9,15 +9,9 @@ namespace CoreUi
 {
     namespace Classical
     {
-        TraditionalLoginWidget::TraditionalLoginWidget(QWidget *parent, QMap<QString,QString> stored_login_data) :
-            QWidget(parent),
+        TraditionalLoginWidget::TraditionalLoginWidget(QWidget *p, const QMap<QString,QString> &stored_login_data) :
+            QWidget(p),
             progress_timer_(new QTimer(this))
-        {
-            InitWidget(stored_login_data);
-            connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
-        }
-
-        void TraditionalLoginWidget::InitWidget(QMap<QString,QString> stored_login_data)
         {
             setupUi(this);
 
@@ -26,10 +20,10 @@ namespace CoreUi
             demoWorldLabel->hide();
             progressBar->hide();
 
-            connect(pushButton_Connect, SIGNAL( clicked() ), this, SLOT( ParseInputAndConnect() ));
-            connect(pushButton_ReturnToEther, SIGNAL( clicked() ), parent(), SLOT( hide() ));
-            connect(pushButton_Exit, SIGNAL( clicked() ), parent(), SLOT( AppExitRequest() ));
+            connect(pushButton_ReturnToEther, SIGNAL( clicked() ), p, SLOT( hide() ));
+            connect(pushButton_Exit, SIGNAL( clicked() ), p, SLOT( AppExitRequest() ));
 
+            connect(pushButton_Connect, SIGNAL( clicked() ), this, SLOT( ParseInputAndConnect() ));
             connect(lineEdit_WorldAddress, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
             connect(lineEdit_StartLocation, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
             connect(lineEdit_Username, SIGNAL( returnPressed() ), this, SLOT( ParseInputAndConnect() ));
@@ -46,6 +40,8 @@ namespace CoreUi
             lineEdit_Password->setText(stored_login_data["password"]);
             lineEdit_WorldAddress->setText(stored_login_data["loginurl"]);
             lineEdit_StartLocation->setText(stored_login_data["startlocation"]);
+
+            connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
         }
 
         void TraditionalLoginWidget::RemoveEtherButton()
@@ -53,7 +49,7 @@ namespace CoreUi
             pushButton_ReturnToEther->hide();
         }
 
-        QMap<QString, QString> TraditionalLoginWidget::GetLoginInfo()
+        QMap<QString, QString> TraditionalLoginWidget::GetLoginInfo() const
         {
             QMap<QString, QString> ui_data_map;
             ui_data_map["account"] = lineEdit_Username->text();
@@ -77,13 +73,16 @@ namespace CoreUi
             QMap<QString, QString> map;
             map["WorldAddress"] = lineEdit_WorldAddress->text();
             map["Username"] = lineEdit_Username->text();
-            map["Password"] = lineEdit_Password->text();			
+            map["Password"] = lineEdit_Password->text();
             map["StartLocation"] = lineEdit_StartLocation->text();
 
             if (radioButton_OpenSim->isChecked() == true)
             {
                 if (map["Username"].count(" ") == 1 && !map["Username"].endsWith(" "))
+                {
+                    map["AvatarType"] = "OpenSim";
                     emit ConnectOpenSim(map);
+                }
             }
             else if (radioButton_realXtend->isChecked() == true)
             {
@@ -94,6 +93,7 @@ namespace CoreUi
                     QString rex_username = username_input.midRef(0, at_index).toString();
                     QString rex_auth_address = username_input.midRef(at_index+1).toString();
 
+                    map["AvatarType"] = "RealXtend";
                     map["Username"] = rex_username;
                     map["AuthenticationAddress"] = rex_auth_address;
                     emit ConnectRealXtend(map);
@@ -102,7 +102,7 @@ namespace CoreUi
             StatusUpdate(true, QString("Connecting to %1 with %2").arg(map["WorldAddress"], map["Username"]));
         }
 
-        void TraditionalLoginWidget::StatusUpdate(bool connecting, QString message)
+        void TraditionalLoginWidget::StatusUpdate(bool connecting, const QString &message)
         {
             if (connecting)
             {

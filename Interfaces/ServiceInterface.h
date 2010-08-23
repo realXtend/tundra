@@ -30,6 +30,8 @@ namespace Foundation
             int can be used as service type. For details, see \ref creating_services.
 
             \ingroup Services_group
+
+            \todo Get rid of this as we did with module enumeration. Low priority.
         */
         enum Type 
         {
@@ -49,6 +51,7 @@ namespace Foundation
             ST_UiSettings,
             ST_Player,
             ST_WorldBuilding,
+            ST_Login,
             ST_Unknown
         };
     }

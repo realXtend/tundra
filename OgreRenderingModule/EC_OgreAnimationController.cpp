@@ -22,7 +22,7 @@ namespace OgreRenderer
     {           
         if ((mesh_entity.get()) && (!dynamic_cast<EC_OgreMesh*>(mesh_entity.get())))
         {
-            OgreRenderingModule::LogError("Attempted to set mesh entity which is not " + EC_OgreMesh::TypeNameStatic());
+            OgreRenderingModule::LogError("Attempted to set mesh entity which is not " + EC_OgreMesh::TypeNameStatic().toStdString());
             return;
         }
         
