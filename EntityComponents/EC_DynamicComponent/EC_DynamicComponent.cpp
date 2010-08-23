@@ -228,12 +228,22 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
         if(boolAttribute)
         {
             value = QVariant(boolAttribute->Get());
+            return value;
         }
+
+        //do this trick for real/floats too
+        Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
+        if(realAttribute)
+        {
+            value = QVariant(realAttribute->Get());
+            return value;
+        }
+
         else
         {
             value = QVariant(attribute->ToString().c_str());
+            return value;
         }
-        return value;
     }
 
     return variantAttribute->Get();
@@ -263,6 +273,16 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
                     variantAttribute->Set(value, change);
                 }
             }
+            //and for real/floats..
+            Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
+            if(realAttribute)
+            {
+                if (value.type() == QVariant::Double)
+                {
+                    variantAttribute->Set(value, change);
+                }
+            }
+
             else
             {
                 attribute->FromString(value.toString().toStdString(), change);
