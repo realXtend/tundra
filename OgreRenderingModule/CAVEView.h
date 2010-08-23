@@ -23,6 +23,9 @@ namespace OgreRenderer
         void Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
         void ResizeWindow(int width, int height);
 
+        //Assumes that the renderwindow and camera_ have been initialized
+        void ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
+
     protected:
         void resizeEvent(QResizeEvent *e);
         void keyPressEvent(QKeyEvent *e);
