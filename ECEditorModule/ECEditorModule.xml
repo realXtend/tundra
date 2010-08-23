@@ -1,3 +1,4 @@
 <config>
     <entry>ECEditorModule</entry>
+    <dependency>OgreRenderingModule</dependency>
 </config>
