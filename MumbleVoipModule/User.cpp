@@ -81,7 +81,7 @@ namespace MumbleVoip
         received_voice_packet_count_++;
         // Buffer overflow handling: We drop the oldest packet in the buffer
         if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
-            SAFE_DELETE(GetAudioFrame());
+            delete(GetAudioFrame());
 
         playback_queue_.push_back(frame);
         last_audio_frame_time_.restart();
