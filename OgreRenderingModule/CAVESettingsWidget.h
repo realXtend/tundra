@@ -5,7 +5,7 @@
 
 #include <QWidget>
 #include "ui_CaveSettings.h"
-
+#include "CAVEViewSettings.h"
 namespace Foundation
 {
     class Framework;
@@ -21,12 +21,18 @@ namespace OgreRenderer
 
     signals:
         void ToggleCAVE(bool);
+        void NewCAVEViewRequested(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
 
     public slots:
         void CAVEButtonToggled(bool v);
+        void AddNewCAVEView();
 
     private:
+        
         Foundation::Framework* framework_;
+        CAVEViewSettings settings_dialog_;
+        int next_view_num_;
+        QString view_prefix_;
 
     };
 

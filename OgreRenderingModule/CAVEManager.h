@@ -6,7 +6,10 @@
 #include "Foundation.h"
 #include <QMap>
 
-
+namespace Ogre
+{
+    class Vector3;
+}
 namespace OgreRenderer
 {
     class Renderer;
@@ -18,8 +21,6 @@ namespace OgreRenderer
         public:
             CAVEManager(Renderer* r);
             virtual ~CAVEManager();
-            
-            void ConstructVCAVE();
 
             void DisableCAVE();
             void EnableCAVE();
@@ -27,10 +28,12 @@ namespace OgreRenderer
         public slots:
             void InitializeUi();
             void CAVEToggled(bool val);
+            void AddView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
+            void AddView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
 
         private:
-            void AddView(const QString& name, qreal window_width, qreal window_height, qreal leftangle, qreal rightangle, qreal topangle, qreal bottomangle, qreal yaw, qreal aspect_ratio);
-            void AddView(const QString& name);
+
+            bool enabled_;
             Renderer* renderer_;
             QMap<QString, CAVEView*> view_map_;
             CAVESettingsWidget* settings_widget_;

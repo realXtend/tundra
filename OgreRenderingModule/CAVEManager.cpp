@@ -11,7 +11,8 @@ namespace OgreRenderer
 {
 
     CAVEManager::CAVEManager(Renderer* r)
-        :renderer_(r),
+        :enabled_(false),
+        renderer_(r),
         settings_widget_(0)
     {
         
@@ -21,17 +22,27 @@ namespace OgreRenderer
     {
         settings_widget_ = new CAVESettingsWidget(renderer_->GetFramework());
         QObject::connect(settings_widget_, SIGNAL(ToggleCAVE(bool)),this, SLOT(CAVEToggled(bool)) );
+        QObject::connect(settings_widget_, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddView(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)));
     }
     CAVEManager::~CAVEManager()
     {
+        if(!view_map_.empty())
+        {
+            foreach(CAVEView* view, view_map_.values())
+            {
+                delete view;
+            }
+
+        }
+        view_map_.clear();
 
     }
 
     void CAVEManager::CAVEToggled(bool val)
     {
+        enabled_=val;
         if(val)
         {
-            ConstructVCAVE();
             EnableCAVE();
         }
         else
@@ -39,15 +50,34 @@ namespace OgreRenderer
             DisableCAVE();
         }
     }
-    void CAVEManager::AddView(const QString& name, qreal window_width, qreal window_height, qreal leftangle, qreal rightangle, qreal topangle, qreal bottomangle, qreal yaw, qreal aspect_ratio)
+    void CAVEManager::AddView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-        CAVEView* view = new CAVEView(renderer_);
-        //view->Initialize(name, window_width, window_height, leftangle, rightangle, topangle, bottomangle, yaw, aspect_ratio);
-        view_map_[name] = view;
+        if(!view_map_.contains(name))
+        {
+            CAVEView* view = new CAVEView(renderer_);
+            view->Initialize(name, window_width, window_height, top_left, bottom_left, bottom_right, eye_pos);
+        
+            view_map_[name] = view;
+            if(enabled_)
+                view->show();
+            else
+                view->hide();
+        }
     }
 
-    void CAVEManager::AddView(const QString& name)
+    void CAVEManager::AddView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
+        
+        if(!view_map_.contains(name))
+        {
+            CAVEView* view = new CAVEView(renderer_);
+            view->Initialize(name, top_left, bottom_left, bottom_right, eye_pos);
+            view_map_[name] = view;
+            if(enabled_)
+                view->show();
+            else
+                view->hide();
+        }
 
     }
 
@@ -57,12 +87,11 @@ namespace OgreRenderer
         {
             foreach(CAVEView* view, view_map_.values())
             {
-                delete view;
+                view->hide();
                 
             }
 
         }
-        view_map_.clear();
     }
 
     void CAVEManager::EnableCAVE()
@@ -77,25 +106,4 @@ namespace OgreRenderer
         }
     }
     
-    void CAVEManager::ConstructVCAVE()
-    {
-        {
-        CAVEView* view = new CAVEView(renderer_);
-        Ogre::Vector3 eye(0,2,0);
-        Ogre::Vector3 top_left(0,2,-4);
-        Ogre::Vector3 bottom_left(0,0,-4);
-        Ogre::Vector3 bottom_right(4,0,-3);
-        view->Initialize("Test1",top_left,bottom_left,bottom_right,eye);
-        view_map_["Test1"] = view;
-        }
-        {
-        CAVEView* view = new CAVEView(renderer_);
-        Ogre::Vector3 eye(0,2,0);
-        Ogre::Vector3 top_left(-4,2,-3);
-        Ogre::Vector3 bottom_left(-4,0,-3);
-        Ogre::Vector3 bottom_right(0,0,-4);
-        view->Initialize("Test2",top_left,bottom_left,bottom_right,eye);
-        view_map_["Test2"] = view;
-        }
-    }
 }

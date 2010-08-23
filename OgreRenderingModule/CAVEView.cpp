@@ -48,30 +48,12 @@ namespace OgreRenderer
 
     }
 
-
-    
-    void CAVEView::Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
+    void CAVEView::ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
+
         assert(renderer_);
-        this->setGeometry(20,20,window_width,window_height);
-        Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
-        std::string std_name = name.toStdString();
-        CreateRenderWindow(std_name, window_width, window_height,0,0,false);
-        camera_ = new Ogre::Camera(std_name + "_camera", renderer_->GetSceneManager());        
-        render_window_->addViewport(camera_);
-        camera_->getViewport()->setOverlaysEnabled(false);
-
-
-        //setup the camera
-        camera_->setCustomProjectionMatrix(false);
-        camera_->setNearClipDistance(original_cam->getNearClipDistance());
-        camera_->setFarClipDistance(original_cam->getFarClipDistance());
-        
-        Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(original_cam->getParentNode());
-        if(node)
-        {
-            node->attachObject(camera_);
-        }
+        assert(camera_);
+        assert(render_window_);
 
         qreal pi = Ogre::Math::PI;
 
@@ -115,7 +97,35 @@ namespace OgreRenderer
         transl.makeTrans(-eye_pos);
         proj_mat = proj_mat*change_base*transl;
         camera_->setCustomProjectionMatrix(true, proj_mat);
+        
+    }
 
+    
+    void CAVEView::Initialize(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
+    {
+        assert(renderer_);
+        this->setGeometry(20,20,window_width,window_height);
+        Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
+        std::string std_name = name.toStdString();
+        CreateRenderWindow(std_name, window_width, window_height,0,0,false);
+        camera_ = new Ogre::Camera(std_name + "_camera", renderer_->GetSceneManager());        
+        render_window_->addViewport(camera_);
+        camera_->getViewport()->setOverlaysEnabled(false);
+
+
+        //setup the camera
+        camera_->setCustomProjectionMatrix(false);
+        camera_->setNearClipDistance(original_cam->getNearClipDistance());
+        camera_->setFarClipDistance(original_cam->getFarClipDistance());
+        
+        Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(original_cam->getParentNode());
+        if(node)
+        {
+            node->attachObject(camera_);
+        }
+
+       
+        ReCalculateProjection(top_left, bottom_left, bottom_right, eye_pos);
 
     }
 
