@@ -11,6 +11,7 @@
 #include "ECEditorWindow.h"
 #include "ECEditorModule.h"
 #include "ECBrowser.h"
+#include "EntityPlacer.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -18,6 +19,7 @@
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
+#include "EC_OgrePlaceable.h"
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -134,6 +136,7 @@ namespace ECEditor
     {
         if (entity_list_)
             entity_list_->clear();
+        RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::DeleteEntitiesFromList()
@@ -210,6 +213,8 @@ namespace ECEditor
 
     void ECEditorWindow::CopyEntity()
     {
+        //! @todo will only take a copy of first entity of the selection. 
+        //! should we support multi entity copy and paste functionality.
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         QClipboard *clipboard = QApplication::clipboard();
         QDomDocument temp_doc;
@@ -237,8 +242,12 @@ namespace ECEditor
 
     void ECEditorWindow::PasteEntity()
     {
-        //! \todo unsecure way to get scene pointer replace this with better option.
-        Scene::ScenePtr scene = framework_->GetScene("World");
+        // Dont allow paste operation if we are placing previosly pasted object to a scene.
+        if(findChild<QObject*>("EntityPlacer"))
+            return;
+        // First we need to check if component is holding EC_OgrePlacable component to tell where entity should be located at.
+        //! \todo local only server wont save those objects.
+        Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         assert(scene.get());
         if(!scene.get())
             return;
@@ -259,27 +268,41 @@ namespace ECEditor
                 ECEditorModule::LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
                 return;
             }
-            Scene::EntityPtr newEntity = scene->CreateEntity();
-            assert(newEntity.get());
-            if(!newEntity.get())
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+            assert(entity.get());
+            if(!entity.get())
                 return;
 
+            bool hasPlaceable = false;
             Scene::Entity::ComponentVector components = originalEntity->GetComponentVector();
             for(uint i = 0; i < components.size(); i++)
             {
-                Foundation::ComponentInterfacePtr component = newEntity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
-                if(component->IsSerializable())
+                // If the entity is holding placeable component we can place it into the scene.
+                if(components[i]->TypeName() == "EC_OgrePlaceable")
                 {
+                    hasPlaceable = true;
+                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                }
+                // Ignore all nonserializable components.
+                if(components[i]->IsSerializable())
+                {
+                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                     Foundation::AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        Foundation::AttributeInterface *attriubte = component->GetAttribute(attributes[i]->GetNameString());
-                        if(attriubte)
-                            attriubte->FromString(attributes[i]->ToString(), AttributeChange::Local);
+                        Foundation::AttributeInterface *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        if(attribute)
+                            attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
                     }
+                    component->ComponentChanged(AttributeChange::Local); 
                 }
-                component->ComponentChanged(AttributeChange::Local);
             }
+            if(hasPlaceable)
+            {
+                EntityPlacer *entityPlacer = new EntityPlacer(framework_, entity->GetId(), this);
+                entityPlacer->setObjectName("EntityPlacer");
+            }
+            AddEntity(entity->GetId());
         }
     }
 
@@ -303,7 +326,10 @@ namespace ECEditor
 
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
+        {
+            browser_->clear();
             return;
+        }
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         // If any of enities was not selected clear the browser window.

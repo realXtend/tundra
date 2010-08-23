@@ -76,6 +76,7 @@ namespace ECEditor
             SAFE_DELETE(componentGroups_.back())
             componentGroups_.pop_back();
         }
+        selectedEntities_.clear();
         QtTreePropertyBrowser::clear();
     }
 
@@ -296,7 +297,7 @@ namespace ECEditor
             {
                 if(!(*iter)->components_.size())
                     return;
-                // Just take a first component from the componentgroup and copy its attributes to xml. 
+                // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
                 // Note! wont take account that other components might have different values in their attributes
                 Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
