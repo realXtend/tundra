@@ -28,27 +28,31 @@ import json
 import PythonQt
 from PythonQt import QtGui, QtCore
 
-from componenthandler import DynamiccomponentHandler
-
 INTERVAL = 0.2
 
-class AnimationSync(DynamiccomponentHandler):
+class AnimationSync:
     GUINAME = "Animation Sync"
-    COMPNAME = "animsync"
 
-    def __init__(self):
-        DynamiccomponentHandler.__init__(self)
+    def __init__(self, entity, comp, changetype):
+        comp.connect("OnChanged()", self.onChanged)
+        self.comp = comp
         self.inworld_inited = False #a cheap hackish substitute for some initing system
-    def initgui(self):
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.widget.connect('valueChanged(int)', self.sliderChanged)
+
+        #naali proxywidget boilerplate
+        uism = r.getUiSceneManager()
+        self.proxywidget = r.createUiProxyWidget(self.widget)
+        self.proxywidget.setWindowTitle(self.GUINAME)
+        if not uism.AddWidgetToScene(self.proxywidget):
+            print "Adding the ProxyWidget to the bar failed."
+        #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
         #to not flood the network
         self.prev_sync = 0
         
     #json serialization to port to work with how DC works now with door.py & door.js
     def sliderChanged(self, guival):
-        print guival
         comp = self.comp
         if comp is not None:
             now = time.time()
@@ -59,7 +63,6 @@ class AnimationSync(DynamiccomponentHandler):
 
     def onChanged(self):
         v = self.comp.GetAttribute('timepos')
-        print v
 
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
@@ -67,7 +70,7 @@ class AnimationSync(DynamiccomponentHandler):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in door? it doesn't persist yet? adding..", ent.id
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
                 print ent.createComponent("EC_Touchable")
                 t = ent.touchable
             else:
@@ -101,6 +104,10 @@ class AnimationSync(DynamiccomponentHandler):
 
     def showgui(self):
         self.proxywidget.show()
+
+COMPNAME = "animsync"
+#now done in componenthandler 'cause this is not a circuits component / naali module
+#componenthandler.register(COMPNAME, AnimationSync)
     
     #failed in the attempt to hide the tool when go out of scenes that have animsync - something of the widget stays there, so get error prints QPainter::end: Painter not active, aborted
     #def on_logout(self, idt):
@@ -122,3 +129,29 @@ class AnimationSync(DynamiccomponentHandler):
 #                comp.SetAttribute(pos.x())
                #d.ComponentChanged(1) #Foundation::ChangeType::Local - not a qenum yet
             #print d.GetAttribute()
+
+"""
+gui stuff that used to be here when this was a baseclass
+    @circuits.handler("on_logout")
+    def on_logout(self, idt):
+        if self.comp is not None:
+            try:
+                self.comp.disconnect("OnChanged()", self.onChanged)
+            finally: #disconnect fails if the entity had been deleted
+                self.comp = None
+
+    @circuits.handler("on_exit")
+    def on_exit(self):
+        if self.proxywidget is not None:
+            uism = r.getUiSceneManager()
+            uism.RemoveWidgetFromScene(self.proxywidget)
+
+        self.widget = None
+        self.proxywidget = None
+        self.initgui()
+
+    def initgui(self):
+        pass #overridden in subclasses
+
+    def registergui(self):
+"""
