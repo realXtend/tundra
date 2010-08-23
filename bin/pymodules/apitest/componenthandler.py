@@ -10,6 +10,9 @@ def register(compname, handlertype):
 import animsync
 register(animsync.COMPNAME, animsync.AnimationSync)
 
+import door
+register(door.COMPNAME, door.DoorHandler)
+
 class ComponenthandlerRegistry(circuits.BaseComponent):
     #def __init__(self):
     #    circuits.BaseComponent.__init__(self)

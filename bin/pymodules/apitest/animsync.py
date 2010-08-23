@@ -23,7 +23,6 @@ so perhaps these merge somehow.
 from __future__ import division
 import time
 import rexviewer as r
-import json
 
 import PythonQt
 from PythonQt import QtGui, QtCore

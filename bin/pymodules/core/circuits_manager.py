@@ -49,6 +49,10 @@ class ComponentRunner:
         r.restart = False
         self.start()
         r.manager = self
+
+    def register(self, component):
+        """for non-autoloaded components to register. now used in apitest/door.py dynamiccomponent handler instances"""
+        self.m += component
         
     def start(self):
         # Create a new circuits Manager
