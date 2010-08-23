@@ -2,7 +2,9 @@ import rexviewer as r
 from PythonQt.QtGui import QLineEdit
 
 PRIMTYPES_REVERSED = {
-    "Material": "45", 
+    "Material": "45",
+    "Wav": "17",
+    "Ogg": "1",
     "Texture": "0"
 }
 
@@ -130,3 +132,12 @@ def applymesh(ent, meshuuid):
         ent.mesh.SetMesh(meshuuid)        
     r.sendRexPrimData(ent.id)
     #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
+
+def applyaudio(ent, audiouuid):
+    try:
+        ent.sound
+    except AttributeError:
+        ent.prim.MeshID = audiouuid #new
+    else:
+        ent.audio.SetMesh(audiouuid)        
+    r.sendRexPrimData(ent.id)
