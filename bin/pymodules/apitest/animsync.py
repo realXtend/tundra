@@ -53,12 +53,12 @@ class AnimationSync(DynamiccomponentHandler):
         if comp is not None:
             now = time.time()
             if self.prev_sync + INTERVAL < now:
-                comp.SetAttribute("timepos", str(guival / 100))
+                comp.SetAttribute("timepos", guival / 100)
                 comp.OnChanged() #XXX change to OnAttributeChanged when possible
                 self.prev_sync = now
 
     def onChanged(self):
-        v = float(self.comp.GetAttribute('timepos'))
+        v = self.comp.GetAttribute('timepos')
         print v
 
         #copy-paste from door.py which also had a onClick handler
