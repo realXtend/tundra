@@ -10,8 +10,8 @@
 
 namespace TaigaProtocol
 {
-    TaigaWorldSession::TaigaWorldSession(Foundation::Framework *framework)
-        : framework_(framework), credentials_(0), serverEntryPointUrl_(0)
+    TaigaWorldSession::TaigaWorldSession(Foundation::Framework *framework) :
+        framework_(framework), credentials_(ProtocolUtilities::AT_Taiga)
     {
         networkTaiga_ = framework_->GetModuleManager()->GetModule<TaigaProtocol::ProtocolModuleTaiga>();
     }
@@ -20,23 +20,21 @@ namespace TaigaProtocol
     {
     }
 
-    bool TaigaWorldSession::StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl)
+    bool TaigaWorldSession::StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl)
     {
         bool success = false;
-        ProtocolUtilities::TaigaCredentials *testCredentials = dynamic_cast<ProtocolUtilities::TaigaCredentials *>(credentials);
-        if (testCredentials)
+        if (credentials.GetType() == ProtocolUtilities::AT_Taiga)
         {
             // Set Url and Credentials
-            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl->toString(), WorldSessionInterface::OpenSimServer);
-            serverEntryPointUrl = &serverEntryPointUrl_;
-            credentials_ = testCredentials;
+            serverEntryPointUrl_ = ValidateUrl(serverEntryPointUrl.toString(), WorldSessionInterface::OpenSimServer);
+            credentials_ = credentials;
 
             success = LoginToServer(serverEntryPointUrl_.toString(), QString::number(serverEntryPointUrl_.port()),
-                credentials_->GetIdentity(), GetConnectionThreadState());
+                credentials_.GetIdentity(), GetConnectionThreadState());
         }
         else
         {
-            ProtocolModuleTaiga::LogInfo("Invalid credential type, must be TaigaCredentials for TaigaWorldSession");
+            ProtocolModuleTaiga::LogInfo("Invalid credential type, must be Taiga for TaigaWorldSession");
             success = false;
         }
 
@@ -83,7 +81,7 @@ namespace TaigaProtocol
         }
     }
 
-    ProtocolUtilities::LoginCredentialsInterface* TaigaWorldSession::GetCredentials() const
+    LoginCredentials TaigaWorldSession::GetCredentials() const
     {
         return credentials_;
     }
@@ -98,11 +96,10 @@ namespace TaigaProtocol
 
     }
 
-    void TaigaWorldSession::SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials)
+    void TaigaWorldSession::SetCredentials(const LoginCredentials &credentials)
     {
-        ProtocolUtilities::TaigaCredentials *testCredentials = dynamic_cast<ProtocolUtilities::TaigaCredentials *>(newCredentials);
-        if (testCredentials)
-            credentials_ = testCredentials;
+        if (credentials.GetType() == ProtocolUtilities::AT_Taiga)
+            credentials_ = credentials;
         else
             ProtocolModuleTaiga::LogInfo("Could not set credentials, invalid type. Must be Taiga Credentials for TaigaWorldSession");
     }

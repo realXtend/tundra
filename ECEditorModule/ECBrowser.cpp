@@ -272,7 +272,7 @@ namespace ECEditor
                 Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
                 {
-                    emit ShowXmlEditorForComponent(pointer.lock()->TypeName());
+                    emit ShowXmlEditorForComponent(pointer.lock()->TypeName().toStdString());
                     break;
                 }
             }
@@ -323,8 +323,8 @@ namespace ECEditor
             while(iter != selectedEntities_.end())
             {
                 Foundation::ComponentInterfacePtr component;
-                std::string type = comp_elem.attribute("type").toStdString();
-                std::string name = comp_elem.attribute("name").toStdString();
+                QString type = comp_elem.attribute("type");
+                QString name = comp_elem.attribute("name");
                 if(!(*iter)->HasComponent(type, name))
                 {
                     component = framework_->GetComponentManager()->CreateComponent(type, name);
@@ -527,7 +527,6 @@ namespace ECEditor
             return;
         }
 
-        std::string typeName = comp->TypeName();
         QSet<QTreeWidgetItem*> oldList;
         QSet<QTreeWidgetItem*> newList;
 

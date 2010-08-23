@@ -31,9 +31,9 @@ namespace UiServices
         return owner_->GetInworldSceneController()->AddWidgetToScene(widget, flags);
     }
 
-    void UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
+    bool UiSceneService::AddWidgetToScene(UiProxyWidget *widget)
     {
-        owner_->GetInworldSceneController()->AddProxyWidget(widget);
+        return owner_->GetInworldSceneController()->AddProxyWidget(widget);
     }
 
     void UiSceneService::AddWidgetToMenu(QWidget *widget)
@@ -49,6 +49,16 @@ namespace UiServices
     void UiSceneService::AddWidgetToMenu(UiProxyWidget *widget, const QString &entry, const QString &menu, const QString &icon)
     {
         owner_->GetInworldSceneController()->AddWidgetToMenu(widget, entry, menu, icon);
+    }
+
+    void UiSceneService::RemoveWidgetFromMenu(QWidget *widget)
+    {
+        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget->graphicsProxyWidget());
+    }
+
+    void UiSceneService::RemoveWidgetFromMenu(QGraphicsProxyWidget *widget)
+    {
+        owner_->GetInworldSceneController()->RemoveWidgetFromMenu(widget);
     }
 
     void UiSceneService::RemoveWidgetFromScene(QWidget *widget)
@@ -79,6 +89,11 @@ namespace UiServices
     void UiSceneService::BringWidgetToFront(QGraphicsProxyWidget *widget) const
     {
         owner_->GetInworldSceneController()->BringProxyToFront(widget);
+    }
+
+    bool UiSceneService::AddSettingsWidget(QWidget *widget, const QString &name) const
+    {
+        return owner_->GetInworldSceneController()->AddSettingsWidget(widget, name);
     }
 
     QGraphicsScene *UiSceneService::GetScene(const QString &name) const

@@ -23,6 +23,8 @@ else:
 
 PRIMTYPES = {
     "45": "Material",
+    "17": "Wav",
+    "1": "Ogg",
     "0": "Texture"
 }
 
@@ -50,7 +52,7 @@ class ObjectEditWindow:
         self.proxywidget.setWindowTitle("Object Edit")
 
         if not uism.AddWidgetToScene(self.proxywidget):
-            print "Adding the ProxyWidget to the bar failed."
+            r.logInfo("Adding ProxyWidget failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Object Edit", "", "./data/ui/images/menus/edbutton_OBJED_normal.png")
 
@@ -421,6 +423,7 @@ class ObjectEditWindow:
     def on_exit(self):
         self.proxywidget.hide()
         uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromMenu(self.proxywidget)
         uism.RemoveWidgetFromScene(self.proxywidget)
         
     def objectDeleted(self, ent_id): #XXX not the best way of doing this

@@ -3,7 +3,7 @@
 #ifndef incl_ProtocolUtilities_TaigaWorldSession_h
 #define incl_ProtocolUtilities_TaigaWorldSession_h
 
-#include "Login/LoginCredentials.h"
+#include "LoginCredentials.h"
 
 #include "ProtocolModuleTaigaApi.h"
 #include "Interfaces/WorldSessionInterface.h"
@@ -24,7 +24,7 @@ namespace TaigaProtocol
         virtual ~TaigaWorldSession(void);
 
         //! WorldSessionInterface override
-        bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
 
         //! WorldSessionInterface override
         bool LoginToServer(const QString& address,
@@ -36,7 +36,7 @@ namespace TaigaProtocol
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
         //! WorldSessionInterface override
-        ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;
+        LoginCredentials GetCredentials() const;
 
         //! WorldSessionInterface override
         QUrl GetServerEntryPointUrl() const;
@@ -45,7 +45,7 @@ namespace TaigaProtocol
         void GetWorldStream() const;
 
         //! WorldSessionInterface override
-        void SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials);
+        void SetCredentials(const LoginCredentials &credentials);
 
         //! WorldSessionInterface override
         void SetServerEntryPointUrl(const QUrl &newUrl);
@@ -53,7 +53,7 @@ namespace TaigaProtocol
     private:
         Q_DISABLE_COPY(TaigaWorldSession)
 
-        ProtocolUtilities::TaigaCredentials *credentials_;
+        LoginCredentials credentials_;
         QUrl serverEntryPointUrl_;
 
         //! Pointer to framework

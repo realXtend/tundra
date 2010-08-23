@@ -3,7 +3,7 @@
 #ifndef incl_Protocol_RealXtendWorldSession_h
 #define incl_Protocol_RealXtendWorldSession_h
 
-#include "Login/LoginCredentials.h"
+#include "LoginCredentials.h"
 
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"
@@ -24,7 +24,7 @@ namespace OpenSimProtocol
         /* INHERITED FUNCTIONS FROM WorldSessionInterface */
 
         //! Login function
-        bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
 
         /**
          * Logs in to a reX server using the authentication procedure.
@@ -53,16 +53,16 @@ namespace OpenSimProtocol
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
         //! Get login credentials
-        ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;
+        LoginCredentials GetCredentials() const;
 
         //! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
         QUrl GetServerEntryPointUrl() const;
-        
+
         //! Get created WorldStream: void -> WorldStreamInterface when implemented
         void GetWorldStream() const;
 
         //! Set login credentials
-        void SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials);
+        void SetCredentials(const LoginCredentials &credentials);
 
         //! Set server entry point url
         void SetServerEntryPointUrl(const QUrl &newUrl);
@@ -70,7 +70,8 @@ namespace OpenSimProtocol
     private:
         Q_DISABLE_COPY(RealXtendWorldSession)
 
-        ProtocolUtilities::RealXtendCredentials *credentials_;
+        LoginCredentials credentials_;
+
         QUrl serverEntryPointUrl_;
 
         //! Pointer to framework
@@ -78,7 +79,6 @@ namespace OpenSimProtocol
 
         //! Pointer to the opensim network interface.
         boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> networkOpensim_;
-
     };
 }
 

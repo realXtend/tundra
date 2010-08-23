@@ -21,11 +21,10 @@ init_target (ProtocolUtilities)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES Interfaces/WorldSessionInterface.h WorldStream.h Login/LoginCredentials.h OpenSim/GridInfoHelper.h)
+file (GLOB MOC_FILES Interfaces/WorldSessionInterface.h WorldStream.h LoginCredentials.h OpenSim/GridInfoHelper.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Interfaces)
-AddSourceFolder (Login)
 AddSourceFolder (OpenSim)
 AddSourceFolder (RealXtend)
 AddSourceFolder (Taiga)

@@ -26,7 +26,8 @@ class IncomingMessagesHandler():
             
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
-            uism.RemoveProxyWidgetFromScene(self.proxywidget)
+            uism.RemoveWidgetFromMenu(self.proxywidget)
+            uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:
             r.logInfo("LocalSceneWindow failure:")
@@ -84,7 +85,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.proxywidget.setWindowTitle("Estate Management")
 
         if not uism.AddWidgetToScene(self.proxywidget):
-            r.logInfo("Adding the ProxyWidget to the bar failed.")
+            r.logInfo("Adding ProxyWidget failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Estate Management", "Server Tools", "./data/ui/images/menus/edbutton_ESMNG_normal.png")
 
@@ -188,6 +189,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
             
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
+            uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True
         except:

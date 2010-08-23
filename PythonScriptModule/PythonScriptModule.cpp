@@ -78,6 +78,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "Environment/PrimGeometryUtils.h"
 #include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
@@ -1305,11 +1306,11 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 
     entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
     
-    StringVector defaultcomponents;
-    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-    //defaultcomponents.push_back(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+    QStringList defaultcomponents;
+    defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    //defaultcomponents.append(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+    defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    //defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
@@ -2019,6 +2020,7 @@ namespace PythonScript
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
+            PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);

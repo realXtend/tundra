@@ -43,6 +43,7 @@ namespace Foundation
         friend class AttributeInterface;
 
         Q_OBJECT
+        Q_PROPERTY(QString Name READ Name)        
 
     public:
         //! Default constuctor.
@@ -55,16 +56,16 @@ namespace Foundation
         virtual ~ComponentInterface();
 
         //! Returns type name of the component.
-        virtual const std::string &TypeName() const = 0;
+        virtual const QString &TypeName() const = 0;
 
         //! Returns the framework pointer.
         Framework* GetFramework() const;
 
         //! Returns name of the component.
-        const std::string& Name() const { return name_; }
+        const QString Name() const { return name_; }
 
         //! Sets name of the component.
-        void SetName(const std::string& name);
+        void SetName(const QString& name);
 
         //! Sets parent entity for this component.
         void SetParentEntity(Scene::Entity* entity);
@@ -170,7 +171,7 @@ namespace Foundation
         Scene::Entity* parent_entity_;
 
         //! Name for further identification of EC. By default empty
-        std::string name_;
+        QString name_;
 
         //! Attribute list for introspection/reflection
         AttributeVector attributes_;

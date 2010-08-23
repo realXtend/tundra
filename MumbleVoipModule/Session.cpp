@@ -470,23 +470,25 @@ namespace MumbleVoip
             if (!audio_receiving_enabled_)
 				return;
 
-            for(;;)
+            for(;;) // until we have 'em all
             {
                 AudioPacket packet = connection_->GetAudioPacket();
                 if (packet.second == 0)
-                    break; // nothing to play anymore
+                    break; // there was nothing to play
 
-				bool muted = false;
+				bool source_muted = false;
 				foreach(Participant* participant, participants_)
 				{
 					if (participant->UserPtr() == packet.first && participant->IsMuted())
 					{
-						muted = true;
+						source_muted = true;
 						break;
 					}
 				}
-				if (!muted)
+				if (!source_muted)
 					PlaybackAudioFrame(packet.first, packet.second);
+                else
+                    delete packet.second;
             }
         }
 

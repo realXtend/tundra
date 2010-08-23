@@ -47,7 +47,7 @@ namespace CoreUi
 
     // Public
 
-    void SettingsWidget::AddWidget(QWidget *widget, const QString &tab_name)
+    void SettingsWidget::AddWidget(QWidget *widget, const QString &tab_name) const
     {
         settingsTabWidget->addTab(widget, tab_name);
     }
@@ -55,7 +55,7 @@ namespace CoreUi
     void SettingsWidget::AnimatedHide()
     {
         visibility_animation_->setDirection(QAbstractAnimation::Backward);
-        visibility_animation_->start();        
+        visibility_animation_->start();
     }
 
     // Protected

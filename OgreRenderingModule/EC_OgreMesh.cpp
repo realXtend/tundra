@@ -45,7 +45,7 @@ namespace OgreRenderer
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {
-            OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::TypeNameStatic());
+            OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::TypeNameStatic().toStdString());
             return;
         }
         

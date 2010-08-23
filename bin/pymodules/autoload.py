@@ -27,8 +27,8 @@ modulenames = [
     ("localscene.localscene", "LocalScene"),
     ("objectedit.objectedit", "ObjectEdit"),
     ("estatemanagement.estatemanagement", "EstateManagement"),
-    ("apitest.attrsync", "AnimationSync"),
-    #("apitest.door", "DoorHandler"),
+    ("apitest.animsync", "AnimationSync"),
+    ("apitest.door", "DoorHandler"),
     #("apitest.jscomponent", "JavascriptHandler")
     ]
 

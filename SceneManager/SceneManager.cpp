@@ -30,7 +30,7 @@ namespace Scene
         entities_.clear();
     }
     
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const StringVector &components, AttributeChange::Type change)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -49,7 +49,7 @@ namespace Scene
 
         Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid, this));
         for (size_t i=0 ; i<components.size() ; ++i)
-            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i]));
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i])); //change the param to a qstringlist or so \todo XXX
 
         entities_[entity->GetId()] = entity;
 
@@ -101,7 +101,7 @@ namespace Scene
         }
     }
 
-    EntityList SceneManager::GetEntitiesWithComponent(const std::string &type_name)
+    EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name)
     {
         std::list<EntityPtr> entities;
         EntityMap::const_iterator it = entities_.begin();
@@ -153,7 +153,7 @@ namespace Scene
 
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name)
     {
-        EntityList list = GetEntitiesWithComponent(type_name.toStdString());
+        EntityList list = GetEntitiesWithComponent(type_name);
         QVariantList ids;
         EntityList::iterator iter;
 

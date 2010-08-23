@@ -107,13 +107,13 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     if (!scene)
         return Scene::EntityPtr();
 
-    StringVector defaultcomponents;
-    defaultcomponents.push_back(EC_OpenSimPrim::TypeNameStatic());
-    defaultcomponents.push_back(EC_NetworkPosition::TypeNameStatic());
-    defaultcomponents.push_back(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    QStringList defaultcomponents;
+    defaultcomponents.append(EC_OpenSimPrim::TypeNameStatic());
+    defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
+    defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid,defaultcomponents,AttributeChange::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::Network); 
 
     return entity;
 }
@@ -2092,7 +2092,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
-            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(QString::fromStdString(type_name), QString::fromStdString(name)); //\todo just convert to use qstring all over here, not convert back & forth XXX
             if (new_comp)
             {
                 new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
@@ -2114,7 +2114,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             bool found = false;
             for (uint j = 0; j < type_names.size(); ++j)
             {
-                if (type_names[j] == all_components[i]->TypeName() && names[j] == all_components[i]->Name())
+                if (type_names[j] == all_components[i]->TypeName().toStdString() && names[j] == all_components[i]->Name().toStdString())
                 {
                     found = true;
                     break;

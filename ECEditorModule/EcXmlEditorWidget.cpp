@@ -212,8 +212,8 @@ void EcXmlEditorWidget::Save()
                 QDomElement comp_elem = entity_elem.firstChildElement("component");
                 while (!comp_elem.isNull())
                 {
-                    Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type").toStdString(),
-                                                                                  comp_elem.attribute("name").toStdString());
+                    Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type"),
+                                                                                  comp_elem.attribute("name"));
                     if (comp)
                     {
                         comp->DeserializeFrom(comp_elem, AttributeChange::Local);

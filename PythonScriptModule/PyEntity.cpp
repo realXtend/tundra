@@ -15,6 +15,7 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include "EntityComponent/EC_AttachedSound.h"
 #include "EC_Highlight.h"
 #include "EC_Touchable.h"
 #include "EC_OpenSimPrim.h"
@@ -67,10 +68,83 @@ namespace PythonScript
 
         Py_RETURN_NONE;
     }
+    
+    static PyObject* Entity_RemoveSoundComponent(PyEntity* self, PyObject* args)
+    {
+        PyObject *pyobComponent = NULL;
+
+        if(!PyArg_ParseTuple(args, "O", &pyobComponent))
+        {
+            PyErr_SetString(PyExc_ValueError, "removeComponent expects a python object");
+            return NULL;
+        }
+        if (!PyObject_TypeCheck(pyobComponent, &PythonQtInstanceWrapper_Type))
+        {
+            PyErr_SetString(PyExc_ValueError, "argument should be wrapped by PythonQt");
+            return NULL;
+        }
+        PythonQtInstanceWrapper* wrappedAttachedSound= (PythonQtInstanceWrapper*)pyobComponent;
+        QObject* qobject_ptr = wrappedAttachedSound->_obj;
+        RexLogic::EC_AttachedSound* component_soundptr = (RexLogic::EC_AttachedSound*)qobject_ptr;
+        
+        PythonScriptModule *owner = PythonScriptModule::GetInstance();
+        Scene::ScenePtr scene = owner->GetScenePtr();
+        if (!scene)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+            return NULL;
+        }
+
+        Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
+        Foundation::ComponentInterfacePtr component_ptr = entity->GetComponent(component_soundptr->TypeName(), component_soundptr->Name());
+
+        entity->RemoveComponent(component_ptr);
+
+        Py_RETURN_NONE;
+    }
+
+    static PyObject* Entity_GetDynamicComponent(PyEntity* self, PyObject* args)
+    {
+        const char* dcname;
+
+        if(!PyArg_ParseTuple(args, "s", &dcname))
+        {
+            PyErr_SetString(PyExc_ValueError, "getDynamicComponent expects the component identifier as a string");
+            return NULL;
+        }
+        
+        PythonScriptModule *owner = PythonScriptModule::GetInstance();
+        Scene::ScenePtr scene = owner->GetScenePtr();
+        if (!scene)
+        {
+            PyErr_SetString(PyExc_RuntimeError, "default scene not there when trying to use an entity.");
+            return NULL;
+        }
+
+        Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
+        //XXX \todo could check if the entity is still there, in case it's deleted and py is still having a wrapper for it
+
+        const Foundation::ComponentInterfacePtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent", dcname);
+        EC_DynamicComponent* dynamic_component = 0;
+        if (dynamic_component_ptr)
+        {
+            dynamic_component = checked_static_cast<EC_DynamicComponent *>(dynamic_component_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(dynamic_component);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a dynamic component with the given name:"); // " + dcname);
+            return NULL;
+        }
+    }
 
     static PyMethodDef entity_methods[] = {
         {"createComponent", (PyCFunction)Entity_CreateComponent, METH_VARARGS,
-         "Create a new component for this entity. The type constant is given as string"},
+         "Create a new component for this entity. The type constant is given as a string"},
+        {"getDynamicComponent", (PyCFunction)Entity_GetDynamicComponent, METH_VARARGS,
+         "Gets a DynamicComponent with a certain name from this entity. The name is given as a string"},
+        {"removeSound", (PyCFunction)Entity_RemoveSoundComponent, METH_VARARGS,
+         "Remove a component for this entity."},
         {NULL}  /* Sentinel */
     };    
 
@@ -255,6 +329,18 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
             Py_RETURN_FALSE;
         else
             Py_RETURN_TRUE;
+    }
+    
+    else if (s_name.compare("sound") == 0)
+    {
+        Foundation::ComponentPtr component_soundptr = entity->GetComponent(RexLogic::EC_AttachedSound::TypeNameStatic());
+        if (!component_soundptr)
+        {
+             PyErr_SetString(PyExc_AttributeError, "Entity doesn't have a sound component.");
+             return NULL;
+        }
+        RexLogic::EC_AttachedSound* sound= checked_static_cast<RexLogic::EC_AttachedSound*>(component_soundptr.get());
+        return PythonScriptModule::GetInstance()->WrapQObject(sound);
     }
 
     else if (s_name.compare("text") == 0)

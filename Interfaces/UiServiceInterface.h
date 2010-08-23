@@ -45,7 +45,7 @@ namespace Foundation
          *  @param  flags Window flags. Qt::Dialog is used as default.
          *          It creates movable proxy widget which has title bar and frames.
          *          If you want add widget without title bar and frames, use Qt::Widget.
-         *          For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
+         *          For further information, see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
          *  @return Proxy widget of the added widget.
          */
         virtual UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog) = 0;
@@ -53,7 +53,7 @@ namespace Foundation
         /** Adds user-created UiProxyWidget to the scene.
          *  @param widget Proxy widget.
          */
-        virtual void AddWidgetToScene(UiProxyWidget *widget) = 0;
+        virtual bool AddWidgetToScene(UiProxyWidget *widget) = 0;
 
         /** Adds widget to menu without any spesific properties: adds entry to the root menu,
          *  takes name from the window title and uses default icon.
@@ -93,6 +93,16 @@ namespace Foundation
          */
         virtual void RemoveWidgetFromScene(QGraphicsProxyWidget *widget) = 0;
 
+        /** Removes widget from menu.
+         *  @param widget The controlled widget.
+         */
+        virtual void RemoveWidgetFromMenu(QWidget *widget) = 0;
+
+        /** This is an overloaded function.
+         *  @param widget The controlled widget.
+         */
+        virtual void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget) = 0;
+
         /** Shows the widget's proxy widget in the scene.
          *  @param widget Widget.
          */
@@ -113,6 +123,13 @@ namespace Foundation
          *  @param widget Proxy widget.
          */
         virtual void BringWidgetToFront(QGraphicsProxyWidget *widget) const = 0;
+
+        /** Adds a setting widget the UI's main settings widget (if applicable).
+         *  @param widget Settings widget.
+         *  @param name Preferred name widget
+         *  @return true if widget was added successfully, false otherwise.
+         */
+        virtual bool AddSettingsWidget(QWidget *widget, const QString &name) const = 0;
 
         /** Returns scene with the requested name.
          *  @param name Name of the scene.

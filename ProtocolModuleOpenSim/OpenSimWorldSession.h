@@ -3,7 +3,7 @@
 #ifndef incl_Protocol_OpenSimWorldSession_h
 #define incl_Protocol_OpenSimWorldSession_h
 
-#include "Login/LoginCredentials.h"
+#include "LoginCredentials.h"
 
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"
@@ -24,7 +24,7 @@ namespace OpenSimProtocol
         /* INHERITED FUNCTIONS FROM WorldSessionInterface */
 
         //! Login function
-        bool StartSession(ProtocolUtilities::LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl);
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
         
         /**
          * Logs in to a reX server without the authentication procedure.
@@ -49,7 +49,7 @@ namespace OpenSimProtocol
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
         //! Get login credentials
-        ProtocolUtilities::LoginCredentialsInterface* GetCredentials() const;
+        LoginCredentials GetCredentials() const;
 
         //! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
         QUrl GetServerEntryPointUrl() const;
@@ -58,7 +58,7 @@ namespace OpenSimProtocol
         void GetWorldStream() const;
 
         //! Set login credentials
-        void SetCredentials(ProtocolUtilities::LoginCredentialsInterface *newCredentials);
+        void SetCredentials(const LoginCredentials &credentials);
 
         //! Set server entry point url
         void SetServerEntryPointUrl(const QUrl &newUrl);
@@ -66,7 +66,7 @@ namespace OpenSimProtocol
     private:
         Q_DISABLE_COPY(OpenSimWorldSession)
 
-        ProtocolUtilities::OpenSimCredentials *credentials_;
+        LoginCredentials credentials_;
         QUrl serverEntryPointUrl_;
 
         //! Pointer to framework

@@ -40,7 +40,7 @@ namespace UiServices
         UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
         /// UiServiceInterface override.
-        void AddWidgetToScene(UiProxyWidget *widget);
+        bool AddWidgetToScene(UiProxyWidget *widget);
 
         /// UiServiceInterface override.
         void AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon);
@@ -49,7 +49,13 @@ namespace UiServices
         void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
         /// UiServiceInterface override.
-        virtual void AddWidgetToMenu(QWidget *widget);
+        void AddWidgetToMenu(QWidget *widget);
+
+        /// UiServiceInterface override.
+        void RemoveWidgetFromMenu(QWidget *widget);
+
+        /// UiServiceInterface override.
+        void RemoveWidgetFromMenu(QGraphicsProxyWidget *widget);
 
         /// UiServiceInterface override.
         void RemoveWidgetFromScene(QWidget *widget);
@@ -68,6 +74,9 @@ namespace UiServices
 
         /// UiServiceInterface override.
         void BringWidgetToFront(QGraphicsProxyWidget *widget) const;
+
+        /// UiServiceInterface override.
+        bool AddSettingsWidget(QWidget *widget, const QString &name) const;
 
         /// UiServiceInterface override.
         QGraphicsScene *GetScene(const QString &name) const;

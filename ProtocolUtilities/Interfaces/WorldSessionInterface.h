@@ -3,7 +3,7 @@
 #ifndef incl_ProtocolUtilities_WorldSessionInterface_h
 #define incl_ProtocolUtilities_WorldSessionInterface_h
 
-#include "LoginCredentialsInterface.h"
+#include "LoginCredentials.h"
 #include "NetworkEvents.h"
 
 #include <QObject>
@@ -25,13 +25,13 @@ namespace ProtocolUtilities
         };
 
         //! Performs login, should later return WorldStream etc (CAPS?)
-        virtual bool StartSession(LoginCredentialsInterface *credentials, QUrl *serverEntryPointUrl) = 0;
+        virtual bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl) = 0;
 
         //! Make Url validation according to type
         virtual QUrl ValidateUrl(const QString &urlString, const UrlType urlType) = 0;
 
         //! Get login credentials
-        virtual LoginCredentialsInterface* GetCredentials() const = 0;
+        virtual LoginCredentials GetCredentials() const = 0;
 
         //! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
         virtual QUrl GetServerEntryPointUrl() const = 0;
@@ -43,7 +43,7 @@ namespace ProtocolUtilities
         virtual ProtocolUtilities::ConnectionThreadState *GetConnectionThreadState() { return &threadState_; }
 
         //! Set login credentials
-        virtual void SetCredentials(LoginCredentialsInterface *newCredentials) = 0;
+        virtual void SetCredentials(const LoginCredentials &credentials) = 0;
 
         //! Set server entry point url
         virtual void SetServerEntryPointUrl(const QUrl &newUrl) = 0;

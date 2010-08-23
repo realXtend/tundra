@@ -95,8 +95,8 @@ namespace ECEditor
         QtProperty                  *groupProperty_;
         QtGroupPropertyManager      *groupPropertyManager_;
         QtAbstractPropertyBrowser   *propertyBrowser_;
-        std::string                 typeName_;
-        std::string                 name_;
+        QString                     typeName_;
+        QString                     name_;
     };
 }
 

@@ -94,7 +94,7 @@ namespace Scene
 
             \param type_name type of the component
         */
-        Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name) const;
+        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name) const;
 
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -105,7 +105,7 @@ namespace Scene
 
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component
-        ComponentVector GetComponents(const std::string &type_name) const
+        ComponentVector GetComponents(const QString &type_name) const
         {
             ComponentVector ret;
             for(size_t i = 0; i < components_.size() ; ++i)
@@ -119,15 +119,15 @@ namespace Scene
             \param type_name type of the component
             \param name name of the component
         */
-        Foundation::ComponentInterfacePtr GetComponent(const std::string &type_name, const std::string& name) const;
+        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
 
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
             \param change Change type for network replication, in case component has to be created
         */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const std::string &type_name, const std::string &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -160,19 +160,19 @@ namespace Scene
             \param name name of the component
         */
         template <class T>
-        boost::shared_ptr<T> GetComponent(const std::string& name) const
+        boost::shared_ptr<T> GetComponent(const QString& name) const
         {
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
 
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name Type of the component.
-        bool HasComponent(const std::string &type_name) const;
+        bool HasComponent(const QString &type_name) const;
 
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name type of the component
         //! \param name name of the component
-        bool HasComponent(const std::string &type_name, const std::string &name) const;
+        bool HasComponent(const QString &type_name, const QString &name) const;
 
         //! Return entity's shared pointer.
         EntityPtr GetSharedPtr() const;
