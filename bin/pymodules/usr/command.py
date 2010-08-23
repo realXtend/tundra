@@ -1389,12 +1389,16 @@ if 0: #test adding a dynamiccomponent
         }""")
 
 if 0: #the new DynamicComponent with individual attrs etc
-    doorid = 2185799489
+    doorid = 1948506985
     e = r.getEntity(doorid)
     dc = e.getDynamicComponent("door")
     a = dc.GetAttribute("opened")
     print a, type(a)
     dc.SetAttribute("opened", True)
+    dc.OnChanged()
+
+    jssrc = dc.GetAttribute("js_src")
+    print jssrc
 
 if 0: #animation control
     avid = r.getUserAvatarId()
