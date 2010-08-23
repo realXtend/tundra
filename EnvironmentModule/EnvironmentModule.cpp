@@ -61,6 +61,20 @@ namespace Environment
 
     void EnvironmentModule::Initialize()
     {
+    }
+
+    void EnvironmentModule::PostInitialize()
+    {
+        event_manager_ = framework_->GetEventManager();
+        
+        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
+        event_manager_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 99);
+
+        resource_event_category_ = event_manager_->QueryEventCategory("Resource");
+        scene_event_category_ = event_manager_->QueryEventCategory("Scene");
+        framework_event_category_ = event_manager_->QueryEventCategory("Framework");
+        input_event_category_ = event_manager_->QueryEventCategory("Input");
+
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
@@ -79,19 +93,6 @@ namespace Environment
         }
 
          environment_editor_ = new EnvironmentEditor(this);
-    }
-
-    void EnvironmentModule::PostInitialize()
-    {
-        event_manager_ = framework_->GetEventManager();
-        
-        // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
-        event_manager_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 99);
-
-        resource_event_category_ = event_manager_->QueryEventCategory("Resource");
-        scene_event_category_ = event_manager_->QueryEventCategory("Scene");
-        framework_event_category_ = event_manager_->QueryEventCategory("Framework");
-        input_event_category_ = event_manager_->QueryEventCategory("Input");
     }
 
     void EnvironmentModule::Uninitialize()
