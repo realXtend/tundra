@@ -38,6 +38,13 @@ class QWidget;
 
 namespace OgreRenderer
 {
+    enum ShadowQuality
+    {
+        Shadows_Off = 0,
+        Shadows_Low,
+        Shadows_High // PSSM, Direct3D only
+    };
+    
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
@@ -243,6 +250,12 @@ namespace OgreRenderer
         /// Used to perform alpha-keying based input.
         QImage &GetBackBuffer() { return backBuffer; }
 
+        //! Returns shadow quality
+        ShadowQuality GetShadowQuality() { return shadowquality_; }
+        
+        //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
+        void SetShadowQuality(ShadowQuality newquality);
+        
     public slots:
         //! Toggles fullscreen
         void SetFullScreen(bool value);
@@ -264,6 +277,9 @@ namespace OgreRenderer
 
         //! Creates scenemanager & camera
         void SetupScene();
+
+        //! Initializes shadows. Called by SetupScene().
+        void InitShadows();
 
         //! Successfully initialized flag
         bool initialized_;
@@ -354,6 +370,12 @@ namespace OgreRenderer
         
         //! Visible entities
         std::set<entity_id_t> visible_entities_;
+        
+        //! Shadow quality
+        ShadowQuality shadowquality_;
+        
+        //! Soft shadow gaussian listeners
+        std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
     };
 }
 

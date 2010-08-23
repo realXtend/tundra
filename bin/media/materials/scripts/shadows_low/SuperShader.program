@@ -1,0 +1,1359 @@
+vertex_program rex/DiffVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING 
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffVColVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DVERTEX_COLOR
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffVColFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DVERTEX_COLOR
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DDIFFUSE_ALPHA
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DDIFFUSE_ALPHA
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffaVColVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DDIFFUSE_ALPHA -DVERTEX_COLOR
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffaVColFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DDIFFUSE_ALPHA -DVERTEX_COLOR
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffAlphamaskVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DALPHA_MASKING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffAlphamaskFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DALPHA_MASKING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffAnimVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DANIM_TEXTURES
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffAnimFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DANIM_TEXTURES
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffShadowVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffShadowFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffShadowVColVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DVERTEX_COLOR
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffShadowVColFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DVERTEX_COLOR
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+
+vertex_program rex/DiffSpecflatNormalShadowLumVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecflatNormalShadowLumFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecflatShadowVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecflatShadowFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_LIGHTING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+		
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapNormalShadowLumVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapNormalShadowLumFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapNormalShadowVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapNormalShadowFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapNormalVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+	}
+}
+
+fragment_program rex/DiffSpecmapNormalFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour	
+    }
+}
+
+vertex_program rex/DiffSpecmapNormalShadowLumOpaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapNormalShadowLumOpaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapNormalOpaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffSpecmapNormalOpaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour	
+    }
+}
+
+vertex_program rex/DiffSpecmapShadowLumOpaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapShadowLumOpaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapShadowLumVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapShadowLumFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DLUMINANCE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapShadowOpaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapShadowOpaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DOPACITY_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapShadowVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapShadowFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffSpecmapVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffSpecmapFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSPECULAR_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffSpecmapReflVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DREFLECTION_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffSpecmapReflFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DREFLECTION_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffSpecmapShadowReflVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DREFLECTION_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffSpecmapShadowReflFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DSPECULAR_MAPPING -DREFLECTION_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffReflAlphaVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DREFLECTION_MAPPING -DSOLID_ALPHA
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto camPos camera_position
+		
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffReflAlphaFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DREFLECTION_MAPPING -DSOLID_ALPHA
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffShadowLightmapVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DLIGHT_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffShadowLightmapFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DLIGHT_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffNormalShadowLightmapVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DLIGHT_MAPPING -DNORMAL_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffNormalShadowLightmapFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DSHADOW_MAPPING -DLIGHT_MAPPING -DNORMAL_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffNormalShadowVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+
+		// Shadow mapping parameters.
+		param_named_auto lightViewProj0 texture_worldviewproj_matrix
+	}
+}
+
+fragment_program rex/DiffNormalShadowFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DSHADOW_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+				
+		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
+		param_named shadowMapParams float4 1000.0 0.006 0.02 0.03
+
+		param_named invShadowmapSize float 0.000488281
+    }
+}
+
+vertex_program rex/DiffNormalVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffNormalFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+		param_named_auto ambientLight ambient_light_colour
+    }
+}
+
+vertex_program rex/DiffNormalLightmapVP cg
+{
+	source SuperShader.cg
+    entry_point mainVS
+   	profiles vs_3_0 arbvp1
+   	compile_arguments -DLIGHT_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+	{
+	    param_named_auto worldViewProjMatrix worldviewproj_matrix
+	    param_named_auto worldMatrix world_matrix
+	    param_named_auto inverseWorldMatrix inverse_world_matrix
+
+		param_named_auto sunLightDir light_position 0
+
+		param_named_auto lightPos0 light_position 1
+		param_named_auto lightPos1 light_position 2
+		
+		param_named_auto lightAtt0 light_attenuation 1
+		param_named_auto lightAtt1 light_attenuation 2
+
+		param_named_auto fogParams fog_params
+		param_named_auto fogColor fog_colour
+	}
+}
+
+fragment_program rex/DiffNormalLightmapFP cg
+{
+	source SuperShader.cg
+    entry_point mainPS
+    profiles ps_3_0 arbfp1
+   	compile_arguments -DLIGHT_MAPPING -DDIFFUSE_MAPPING -DNORMAL_MAPPING
+
+	default_params
+    {
+		param_named_auto sunLightCol light_diffuse_colour 0
+
+		param_named_auto lightCol0 light_diffuse_colour 1
+		param_named_auto lightCol1 light_diffuse_colour 2
+
+	}
+}

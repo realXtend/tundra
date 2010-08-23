@@ -31,6 +31,10 @@
         <source>Save</source>
         <translation>Tallenna</translation>
     </message>
+    <message>
+        <source>Save Local Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>BackdropWidget</name>
@@ -240,72 +244,13 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
-    <name>ChatSessionWidget</name>
+    <name>ChangeTheme</name>
     <message>
-        <source>ChatSessionWidget</source>
+        <source>Sound Settings</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QLineEdit {
-	min-height: 20px;
-	border: 0px;
-	border-top: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-}
-
-QPlainTextEdit {
-	border: 0px;
-}
-
-QPushButton {
-	font-size: 10px;
-	color: rgb(0,0,0);
-	padding: 0px;
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: rgb(255, 255, 255);
-}
-
-QPushButton:hover {
-	font-size: 10px;
-	color: rgb(0,0,0);
-	padding: 0px;
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
-}
-
-QPushButton::pressed {
-	color: rgb(0,0,0);
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: rgb(207, 207, 207);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Close</source>
+        <source>Change theme</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -463,7 +408,7 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>ECEditor::AttributeBrowser</name>
+    <name>ECEditor::ECBrowser</name>
     <message>
         <source>Copy</source>
         <translation type="unfinished"></translation>
@@ -477,12 +422,39 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Delete</source>
+        <translation type="unfinished">Poista</translation>
+    </message>
+    <message>
+        <source>Add new attribute</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Add new component</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Delete component</source>
+        <source>Give attribute type</source>
         <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Typename:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Give attribute name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ECEditor::ECEditorModule</name>
+    <message>
+        <source>Entity-component Editor</source>
+        <translation type="unfinished">Entiteetti-komponenttieditori</translation>
     </message>
 </context>
 <context>
@@ -508,16 +480,27 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>ECEditor</source>
-        <comment>Entity-component Editor</comment>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Show entities</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Hide entities</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Set component name (optional)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Name:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Copy</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Paste</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -541,6 +524,17 @@ QPushButton::pressed {
     <message>
         <source>Environment Editor</source>
         <translation>Ympäristön muokkaus</translation>
+    </message>
+    <message>
+        <source>World Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Environment::PostProcessWidget</name>
+    <message>
+        <source>Post-processing</source>
+        <translation type="unfinished">Jälkikäsittely</translation>
     </message>
 </context>
 <context>
@@ -603,7 +597,7 @@ QPushButton::pressed {
     </message>
     <message>
         <source>3D Paint</source>
-        <translation>3D Piirto</translation>
+        <translation type="obsolete">3D Piirto</translation>
     </message>
     <message>
         <source>Update</source>
@@ -772,6 +766,10 @@ QPushButton::pressed {
     <message>
         <source>Ambient light color</source>
         <translation>Ambient valon väri</translation>
+    </message>
+    <message>
+        <source>Terrain paint</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1040,10 +1038,6 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Data in flight:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Avg. packet size out:</source>
         <translation type="unfinished"></translation>
     </message>
@@ -1239,44 +1233,111 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Arrange by:</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>FrienListWidget</name>
-    <message>
-        <source>Friends List</source>
+        <source>Action name</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QPushButton {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-}
-
-QPushButton:hover {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-	color: rgb(51, 98, 255);
-}
-
-QPushButton::pressed {
-	border: 0px;
-	background-color: rgba(255, 255, 255, 0);
-	color: rgb(74, 122, 255);
-}</source>
+        <source>Shortcut</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>x new friend request</source>
+        <source>OK</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QListView::item {
-     min-height: 30px;
- }
-</source>
+        <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Apply</source>
+        <translation type="unfinished">Aseta</translation>
+    </message>
+    <message>
+        <source>Logger threshold:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data in flight (packets):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Smoothened RTT:</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Data in flight (bytes):</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Log network traffic to file</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Scene Complexity</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Dump stats to file scenestats.txt</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Rendertargets</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Height</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Depth</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Viewports</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Batches</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Triangles</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FPS last</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FPS avg</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FPS best</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FPS worst</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Best frametime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Worst frametime</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>More info</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1295,14 +1356,6 @@ QPushButton::pressed {
     </message>
     <message>
         <source>John Doe</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Inventory::InventoryModule</name>
-    <message>
-        <source>Inventory::InventoryWindow</source>
-        <comment>Inventory</comment>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1372,6 +1425,24 @@ QPushButton::pressed {
         <source>Inventory</source>
         <translation>Inventaario</translation>
     </message>
+    <message>
+        <source>Copies asset reference to clipboard</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Inventory::ItemPropertiesWindow</name>
+    <message>
+        <source>Item Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Inventory::UploadProgressWindow</name>
+    <message>
+        <source>Upload Progress Window</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ItemProperties</name>
@@ -1436,17 +1507,6 @@ QPushButton::pressed {
     </message>
 </context>
 <context>
-    <name>LoadingWidget</name>
-    <message>
-        <source>Connecting...</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>LoginControllerWidget</name>
     <message>
         <source>Login Controller</source>
@@ -1457,40 +1517,11 @@ QPushButton::pressed {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>QLabel#messageLabel {
-	color: rgb(255, 255, 255);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Message</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>color: rgb(230,230,230);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Autohide in 5</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>/* QPUSHBUTTON */
-
-QPushButton {
-	color: rgb(255, 255, 255);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid black;
-	border-color: rgba(0, 0, 0, 100);
-	border-radius: 10px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 10), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(207, 207, 207, 150), stop:1 rgba(0, 0, 0, 35));
-}</source>
         <translation type="unfinished"></translation>
     </message>
     <message>
@@ -1499,49 +1530,6 @@ QPushButton:hover {
     </message>
     <message>
         <source>temp</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>LoginWidget</name>
-    <message>
-        <source>IM Login</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Provide your IM credentials</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Username</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Password</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Server</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Presets</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Last stored credentials</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Google account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Facebook account</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connect</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1682,10 +1670,35 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
+    <name>Naali::MaterialWizard</name>
+    <message>
+        <source>Material Wizard</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>Naali::MeshPreviewEditor</name>
     <message>
         <source>Mesh: </source>
         <translation>3D Malli: </translation>
+    </message>
+</context>
+<context>
+    <name>Naali::OgreAssetEditorModule</name>
+    <message>
+        <source>Material Wizard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>World Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Naali::OgreScriptEditor</name>
+    <message>
+        <source>OGRE Script Editor</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1821,6 +1834,84 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
+    <name>ObjectInfoWidget</name>
+    <message>
+        <source>ObjectInfoWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Hit Esc or Ctrl+B to exit build mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No Selected Objects</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Server ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>-</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Local ID</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>ObjectManipulationsWidget</name>
+    <message>
+        <source>ObjectManipulationsWidget</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Editing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>New Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Clone Object</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Move To Trash</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>MOVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ROTATE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>SCALE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message utf8="true">
+        <source>0 °</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>OgreScriptEditor</name>
     <message>
         <source>Name</source>
@@ -1836,13 +1927,6 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
-    <name>OpenSimChatWidget</name>
-    <message>
-        <source>OpenSimChatWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>PersonalWidget</name>
     <message>
         <source>PersonalWidget</source>
@@ -1854,6 +1938,17 @@ Pituus: %1 sec</translation>
     <message>
         <source>Post-processing</source>
         <translation>Jälkikäsittely</translation>
+    </message>
+</context>
+<context>
+    <name>QObject</name>
+    <message>
+        <source>Post-processing</source>
+        <translation type="unfinished">Jälkikäsittely</translation>
+    </message>
+    <message>
+        <source>World Tools</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1881,23 +1976,32 @@ Pituus: %1 sec</translation>
         <source>View Distance</source>
         <translation type="unfinished"></translation>
     </message>
-</context>
-<context>
-    <name>RequestManagerWidget</name>
     <message>
-        <source>Pending Friend Requests</source>
+        <source>Fullscreen</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Shadows</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Off</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Low</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>High</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
-    <name>RexLogic</name>
+    <name>RexLogic::AvatarEditor</name>
     <message>
-        <source>Kicked Out</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You were kicked out from the server.</source>
-        <translation type="unfinished"></translation>
+        <source>Avatar Editor</source>
+        <translation type="unfinished">Hahmon muokkaus</translation>
     </message>
 </context>
 <context>
@@ -1920,6 +2024,13 @@ Pituus: %1 sec</translation>
     </message>
 </context>
 <context>
+    <name>ScriptDialogHandler</name>
+    <message>
+        <source>Message from object</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>SelectionWidget</name>
     <message>
         <source>Post Processing</source>
@@ -1928,63 +2039,6 @@ Pituus: %1 sec</translation>
     <message>
         <source>Toggle postprocessing effects</source>
         <translation>Aseta jälkikäsittely</translation>
-    </message>
-</context>
-<context>
-    <name>SessionManagerWidget</name>
-    <message>
-        <source>IM</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Question label</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>OK</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Cancel</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>username@server.com</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>status message</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>QWidget {
-	background-color: #f4f4f4;
-}
-
-QLabel {
-	color: rgb(0, 0, 0);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>color: rgb(69, 159, 255);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Hello and Welcome to Naali Communications Widget!</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>You can find all important functionality from the menu that is located at the top of this window.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>To start click the Show Friend List button. There you can start chat,  video or audio sessions with your friends.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>  Connected</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -2033,6 +2087,10 @@ QLabel {
         <source>Unfocused Window Opacity</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Setting will take effect after viewer restart.</source>
+        <translation type="unfinished">Asetus tulee voimaan ohjelman uudelleenkäynnistyksen jälkeen.</translation>
+    </message>
 </context>
 <context>
     <name>SoundSettings</name>
@@ -2058,29 +2116,6 @@ QLabel {
     </message>
 </context>
 <context>
-    <name>SpatialVoiceConfigureWidget</name>
-    <message>
-        <source>3D Voice Configuration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Select avatar and start tracking</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Update Avatar List</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Start Tracking</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Stop Tracking</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
     <name>TeleportWidget</name>
     <message>
         <source>Settings Widget</source>
@@ -2091,7 +2126,15 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>Cancel</source>
+        <source>Teleport to region</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>or type region name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2138,16 +2181,6 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You are now using realXtends virtual world viewer called Naali. Next step is to get you into a world and for this we provide three types of login methods. 
-
-OpenSim login requires you to have a existing account created into the server. Just insert your Firstname Last of the account to Username field, password and world address.
-
-realXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, basically this means the OpenSim server must be running our ModreX server component.
-
-Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from above and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. And of course you can type the login url of the server to the Naali web browser manually. Web based authentications give you the possibility to login with your OpenID, Google and Yahoo accounts.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
         <source>Connect</source>
         <translation type="unfinished"></translation>
     </message>
@@ -2163,42 +2196,19 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
         <source>Start location</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>You are now using realXtend&apos;s virtual world viewer called Naali. The Next step is to get you into a world and for this we provide three types of login methods. 
+
+OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
+
+RealXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, in other words the OpenSim server must be running with the ModreX server component.
+
+Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from the left top corner and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. Naturally you can just type the login URL of the server to the Naali web browser manually. Web-based authentication gives you the possibility to login with your OpenID, Google and Yahoo accounts.</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>UICanvasTestEdit</name>
-    <message>
-        <source>/* Containers */
-
-QWidget#UICanvasTestEdit {
-		background-color: qconicalgradient(cx:0, cy:1, angle:277.2, stop:0.267045 rgba(0, 169, 255, 255), stop:0.465909 rgba(0, 0, 0, 255));
-}
-
-QLabel {
-	color: rgb(255,255,255);
-}
-
-/* QPUSHBUTTON */
-
-QPushButton {
-	color: rgb(0, 0, 0);
-	min-width: 60px;
-	font-size: 12px;
-	border: 1px solid;
-	border-color: rgb(48, 48, 48);
-	border-radius: 8px;
-	border-top-left-radius: 0px;
-	border-bottom-right-radius: 0px;
-	padding: 2px 5px;
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 0, 0, 50), stop:1 rgba(207, 207, 207, 100));
-}
-
-QPushButton:hover {
-	border-color: rgba(0, 0, 0, 255);
-	color: rgb(0,0,0);
-	background-color: qlineargradient(spread:pad, x1:0.488636, y1:0.273, x2:0.511, y2:1, stop:0 rgba(0, 169, 255, 255), stop:1 rgba(0, 0, 0, 50));
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
     <message>
         <source>Selected object</source>
         <translation type="unfinished"></translation>
@@ -2228,132 +2238,6 @@ QPushButton:hover {
     </message>
     <message>
         <source>Uploading file </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VideoSessionControlsWidget</name>
-    <message>
-        <source>VideoSessionControlsWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>QWidget#VideoSessionControls {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0,0,0);
-}
-
-QCheckBox {
-	spacing: 3px;
-}
-
-QCheckBox::indicator {
-	width: 16px;
-	height: 16px;
-}
-
-QCheckBox::indicator:checked {
-	image: url(:images/iconGreen.png);
-}
-
-QCheckBox::indicator:unchecked {
-	image: url(:images/iconRed.png);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Video</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>VideoSessionWidget</name>
-    <message>
-        <source>VideoSessionWidget</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>
-QWidget#MainFrame {
-	background-color: rgb(255, 255, 255);
-	color: rgb(0,0,0);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>color: rgb(0,0,0);</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Connection:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>-</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Audio:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Video:</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>QPushButton {
-	font-size: 10px;
-	color: rgb(0,0,0);
-	padding: 0px;
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: rgb(255, 255, 255);
-}
-
-QPushButton:hover {
-	font-size: 10px;
-	color: rgb(0,0,0);
-	padding: 0px;
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 255), stop:0.295455 rgba(209, 215, 221, 255), stop:0.744318 rgba(178, 183, 196, 255), stop:1 rgba(222, 227, 236, 255));
-}
-
-QPushButton::pressed {
-	color: rgb(0,0,0);
-	padding-right: 3px;
-	padding-left: 3px;
-	min-height: 20px;
-	max-height: 20px;
-	border: 0px;
-	border-color: rgba(0, 0, 0, 0);
-	border-top: 1px solid rgb(69, 159, 255);
-	border-left: 1px solid rgb(69, 159, 255);
-	border-radius: 0px;
-	background-color: rgb(207, 207, 207);
-}</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Close</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2434,17 +2318,6 @@ QPushButton::pressed {
     </message>
     <message>
         <source>Ok</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>QDialog#main{
-	background-color: qlineargradient(spread:pad, x1:0.006, y1:0, x2:0, y2:1, stop:0.142045 rgba(229, 234, 243, 50), stop:0.295455 rgba(209, 215, 221, 150), stop:0.65 rgba(179, 183, 196, 150), stop:1 rgba(222, 227, 236, 100));
-	padding: 5px;
-}
-
-QLabel {
-	padding-bottom: 3px;
-}</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

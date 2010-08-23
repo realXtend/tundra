@@ -85,8 +85,10 @@ uniform sampler2D lightMap;
 #ifdef SHADOW_MAPPING
 
 uniform sampler2D shadowMap0;
+#ifdef PSSM_SHADOWS
 uniform sampler2D shadowMap1;
 uniform sampler2D shadowMap2;
+#endif
 #endif
 #ifdef LUMINANCE_MAPPING
 uniform sampler2D luminanceMap;

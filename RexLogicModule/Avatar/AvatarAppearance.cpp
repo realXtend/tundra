@@ -1684,6 +1684,25 @@ namespace RexLogic
         std::string clonename = renderer->GetUniqueObjectName();
         clone = ogre_mat->clone(clonename);
         
+        // Now remove unsupported techniques before exporting, or we will crash inside OGRE
+        // This has, however, the side-effect that after exporting, the technique will not show for anyone!
+        // (ie. for even those with better hardware)
+        for (unsigned i = 0; i < clone->getNumTechniques(); ++i)
+        {
+            Ogre::Technique* tech = clone->getTechnique(i);
+            if (tech)
+            {
+                if (!tech->isSupported())
+                {
+                    clone->removeTechnique(i);
+                    --i;
+                }
+            }
+        }
+        // If number of techniques happened to drop to zero, just return
+        if (!clone->getNumTechniques())
+            return false;
+
         // Now ensure that the material has correct texture names
         // With non-local assets, we will get errors to Ogre log, but it does not really matter
         Ogre::Material::TechniqueIterator iter = clone->getTechniqueIterator();

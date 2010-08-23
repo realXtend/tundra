@@ -11,7 +11,8 @@
 	- if LUMINANCE_MAPPING is defined, a grayscale luminance map is sampled to add to diffuse light accumulation.
 	- if OPACITY_MAPPING is defined, the output alpha is taken from a grayscale opacity map, otherwise it is 1.0
 	- Fogging is always enabled.
-	
+	- if PSSM_SHADOWS is defined, the shadow code will generate 3 shadow texture coordinates and sample from 3 shadow maps based on depth. Otherwise 1
+
 	- When writing the .material files it is important that the texture_units are presented in the following order:
 	    diffuse, specular, normal, shadow, luminance, opacity
 	  Each of these correspond to a #define (i.e. diffuse <-> DIFFUSE_MAPPING) Make sure that you specify exactly those texture_units
@@ -31,7 +32,7 @@
 #endif
 
 
-vs_3_0 void mainVS
+void mainVS
 (
 	in float4 pos : POSITION,
 	in float3 normal : NORMAL,
@@ -60,10 +61,11 @@ vs_3_0 void mainVS
 	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
 	out float4 oLightDir[cNumPerPixelLights]
 #ifdef SHADOW_MAPPING
-	,out float4 oShadowTex0 
-	,out float4 oShadowTex1 
-	,out float4 oShadowTex2 
-	
+	,out float4 oShadowTex0      
+#ifdef PSSM_SHADOWS
+	,out float4 oShadowTex1
+	,out float4 oShadowTex2
+#endif
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -114,20 +116,22 @@ vs_3_0 void mainVS
 	oFog = ComputeFog(oPos.z);
 	
 #ifdef SHADOW_MAPPING
-	
-
+	oTex.z = oPos.z;
 	// Calculate shadow map coord
 	oShadowTex0 = mul(lightViewProj0, pos);
-	oTex.z = oPos.z;
+#ifdef PSSM_SHADOWS
 	oShadowTex1 = mul(lightViewProj1, pos);
 	oShadowTex2 = mul(lightViewProj2, pos);
+#endif
+#endif
+
 #endif
 }
 
 
 
 
-ps_3_0 void mainPS(
+void mainPS(
 #ifdef VERTEX_COLOR
     in float4 color : COLOR,
 #endif
@@ -144,9 +148,11 @@ ps_3_0 void mainPS(
 	in float4 lightDir[cNumPerPixelLights], // in tangent space
 #ifdef SHADOW_MAPPING
 	in float4 shadowTex0,
+#ifdef PSSM_SHADOWS
 	in float4 shadowTex1,
 	in float4 shadowTex2,
-	
+#endif
+
 #endif
 
 #if !defined(NORMAL_MAPPING)
@@ -199,14 +205,15 @@ ps_3_0 void mainPS(
 		{
 //			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
 //			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
-			
 
+
+#ifdef PSSM_SHADOWS
 			if (tex.z <= 3.5f)
 			{
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize0.x, tex.z);
+				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, tex.z);
 				#endif
 
 			}
@@ -215,7 +222,7 @@ ps_3_0 void mainPS(
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap1, shadowTex1);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize1.x, tex.z);
+				lightness = SampleShadowMap4TapPCF(shadowMap1, shadowTex1, invShadowmapSize, tex.z);
 				#endif
 			}
 			else
@@ -223,232 +230,17 @@ ps_3_0 void mainPS(
 				#ifdef LOWEND_SHADOWS
 				lightness = SampleShadowMap1TapPCF(shadowMap2, shadowTex2);
 				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize2.x, tex.z);
+				lightness = SampleShadowMap4TapPCF(shadowMap2, shadowTex2, invShadowmapSize, tex.z);
 				#endif
 
 			}
-
-		}
-			
-			
-#endif
-		float NdotL = max(0.f, dot(normal, lightDir[i].xyz));
-		diffuseLightFactor += lightness * NdotL * lightDiffuseColors[i];
-
-#ifdef SPECULAR_LIGHTING
-		float specularFactor = ComputeLightSpecularFactor(normal, NdotL, lightDir[i].xyz, viewDir);
-		specularLightFactor += lightness * specularFactor * lightSpecularColors[i];
-#endif
-	}
-
-#ifdef LUMINANCE_MAPPING
-	// Process the light accumulated from the luminance map.
-	diffuseLightFactor += SampleLuminanceMap(luminanceMap, tex.xy);
-#endif
-
-    // Limit diffuse term to prevent overburn
-    diffuseLightFactor = min(diffuseLightFactor, float3(1,1,1));
-
-#ifdef SPECULAR_LIGHTING
-	float3 totalColor = diffuseLightFactor * baseColor.rgb + specularLightFactor * specularColor;
 #else
-	float3 totalColor = diffuseLightFactor * baseColor.rgb;
+			#ifdef LOWEND_SHADOWS
+			lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex0);
+			#else
+			lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex0, invShadowmapSize, tex.z);
+			#endif
 #endif
-
-#ifdef REFLECTION_MAPPING
-	totalColor += SampleReflectionColor(normal, viewDir);
-#endif
-
-	oCol.rgb = ApplyFog(totalColor, fog);
-#ifdef DIFFUSE_ALPHA
-	oCol.a = baseColor.a;
-#else
-	oCol.a = SampleFragmentAlpha(tex.xy); // If alpha masking is enabled, we could move this to be the very first op in the shader, and early out.
-#endif
-}
-
-
-
-
-///////////////////////////////////////////////
-//This is the openGL version of the supershader. We only use 2 shadowmaps because were running out of resources.
-//
-///////////////////////////////////////////////
-
-
-
-arbvp1 void mainVS
-(
-	in float4 pos : POSITION,
-	in float3 normal : NORMAL,
-#ifdef VERTEX_COLOR
-	in float4 color : COLOR,
-#endif
-#ifdef NORMAL_MAPPING	
-	in float3 tangent : TANGENT,
-#endif	
-	in float2 tex : TEXCOORD0,
-#ifdef LIGHT_MAPPING
-	in float2 tex2 : TEXCOORD1, 
-#endif	
-	out float4 oPos : POSITION,
-	out float3 oTex,
-#ifdef VERTEX_COLOR
-	out float4 oColor : COLOR,
-#endif
-#ifdef LIGHT_MAPPING
-	out float2 oTex2, 
-#endif		
-	out float4 oFog,
-#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
-	out float3 oViewDir, // in tangent space
-#endif
-	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
-	out float4 oLightDir[cNumPerPixelLights]
-#ifdef SHADOW_MAPPING
-	,out float4 oShadowTex
-	
-#endif
-
-#if !defined(NORMAL_MAPPING)
-	, out float3 oNormal
-#endif
-)
-{
-	float4 worldPos = mul(worldMatrix, pos);
-
-	oPos = mul(worldViewProjMatrix, pos);
-	oTex.xy = ComputeTexCoord(tex);
-#ifdef LIGHT_MAPPING
-	oTex2 = tex2;
-#endif
-#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
-	oViewDir = normalize(camPos - worldPos.xyz);
-#endif
-
-#ifndef NORMAL_MAPPING
-	oNormal = mul(worldMatrix, float4(normal, 0)).xyz;
-#endif
-
-	// Process all point lights.
-	oLightDir[0] = float4(sunLightDir.xyz, 1.f);
-	oLightDir[1] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos0, lightAtt0);
-	oLightDir[2] = ComputePointLightDirAndAttenuation(worldPos.xyz, lightPos1, lightAtt1);
-
-#ifdef NORMAL_MAPPING
-	// Reconstruct tangent coordinate frame.
-	float4x4 mWorldToTangent = ComputeWorldToTangentSpaceTransform(normal, tangent);
-	
-	oLightDir[0] = float4(mul(mWorldToTangent, float4(sunLightDir.xyz,0)).xyz, 1.f);
-	oLightDir[1].xyz = mul(mWorldToTangent, float4(oLightDir[1].xyz, 0)).xyz;
-	oLightDir[2].xyz = mul(mWorldToTangent, float4(oLightDir[2].xyz, 0)).xyz;
-
-#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
-	oViewDir = mul(mWorldToTangent, float4(oViewDir,0)).xyz;
-#endif
-	
-#endif
-
-#ifdef VERTEX_COLOR
-    // Vertex color
-    oColor = color;
-#endif
-
-	// Output fog color and strength.
-	oFog = ComputeFog(oPos.z);
-	
-#ifdef SHADOW_MAPPING
-	
-
-	// Calculate shadow map coord
-	oShadowTex = mul(lightViewProj0, pos);
-	oTex.z = oPos.z;
-
-#endif
-}
-
-
-
-
-arbfp1 void mainPS(
-#ifdef VERTEX_COLOR
-    in float4 color : COLOR,
-#endif
-	in float3 tex,
-#ifdef LIGHT_MAPPING
-	in float2 tex2, 
-#endif		
-	in float4 fog,
-#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
-	in float3 viewDir, // in tangent space 
-#endif
-	
-	// xyz has the light direction, w has the light strength (precalculated per-vertex attenuation factor).
-	in float4 lightDir[cNumPerPixelLights], // in tangent space
-#ifdef SHADOW_MAPPING
-	in float4 shadowTex,
-	
-#endif
-
-#if !defined(NORMAL_MAPPING)
-	in float3 normal,
-#endif
-	out float4 oCol: COLOR
-)
-{
-#if defined(SPECULAR_LIGHTING) || defined(REFLECTION_MAPPING)
-	viewDir = normalize(viewDir);
-#endif
-	for(int i = 0; i < cNumPerPixelLights; ++i)
-		lightDir[i].xyz = normalize(lightDir[i].xyz);
-
-#ifdef VERTEX_COLOR
-	float4 baseColor = color * SampleDiffuseColor(tex.xy);
-#else
-	float4 baseColor = SampleDiffuseColor(tex.xy);
-#endif
-
-#ifdef SPECULAR_LIGHTING
-	float3 specularColor = SampleSpecularColor(tex.xy);
-#endif
-
-#ifdef NORMAL_MAPPING
-	float3 normal = SampleNormalMap(normalMap, tex.xy);
-#else
-	normal = normalize(normal); // normal comes as an input from VS.	
-#endif	
-	
-	// Start with ambient color.
-#ifdef LIGHT_MAPPING	
-	float3 diffuseLightFactor = tex2D(lightMap, tex2).xyz;
-#else	
-	float3 diffuseLightFactor = ambientLight.xyz;
-#endif
-
-#ifdef SPECULAR_LIGHTING
-	float3 specularLightFactor = float3(0,0,0);
-#endif
-
-	const float3 lightDiffuseColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
-	const float3 lightSpecularColors[cNumPerPixelLights] = { sunLightCol.xyz, lightCol0.xyz, lightCol1.xyz };
-	
-	for(int i = 0; i < cNumPerPixelLights; ++i)
-	{
-		float lightness = 1.f;
-#ifdef SHADOW_MAPPING
-		if (i == 0) // Only the first light - the directional light uses a shadow map.
-		{
-//			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
-//			lightness = SampleShadowMap4TapPCF(shadowMap, shadowTex, 0.f);
-			
-
-				#ifdef LOWEND_SHADOWS
-				lightness = SampleShadowMap1TapPCF(shadowMap0, shadowTex);
-				#else
-				lightness = SampleShadowMap4TapPCF(shadowMap0, shadowTex, invShadowmapSize0.x, tex.z);
-				#endif
-
-
 
 		}
 			
