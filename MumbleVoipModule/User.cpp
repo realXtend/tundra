@@ -79,18 +79,9 @@ namespace MumbleVoip
     void User::AddToPlaybackBuffer(PCMAudioFrame* frame)
     {
         received_voice_packet_count_++;
+        // Buffer overflow handling: We drop the oldest packet in the buffer
         if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
-        {
-            // We drop every other packet until there is room in playback buffer again
-            static unsigned int drop_dispatcher = 0;
-            drop_dispatcher++;
-            if (drop_dispatcher % 2 == 0)
-            {
-                delete frame;
-                voice_packet_drop_count_++;
-                return;
-            }
-        }
+            SAFE_DELETE(GetAudioFrame());
 
         playback_queue_.push_back(frame);
         last_audio_frame_time_.restart();
