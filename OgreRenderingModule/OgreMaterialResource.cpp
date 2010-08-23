@@ -141,6 +141,7 @@ namespace OgreRenderer
             matmgr.remove(tempname);
 
             //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
+            //! @todo check shadow quality mode and add the extra maps only if necessary
             if(ogre_material_->getReceiveShadows())
             {
                 //! @todo will cause crash if material was not propertly loaded. Using jack.material caused a crash.

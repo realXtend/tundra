@@ -11,7 +11,10 @@
 #include <QFile>
 #include <QDoubleSpinBox>
 #include <QCheckBox>
+#include <QComboBox>
+#include <QLabel>
 #include <QKeyEvent>
+#include <QApplication>
 
 #ifndef UISERVICE_TEST
 #include "UiModule.h"
@@ -68,6 +71,13 @@ namespace OgreRenderer
         }
         QObject::connect(spin, SIGNAL(valueChanged(double)), this, SLOT(ViewDistanceChanged(double)));
 
+        QComboBox* combo = settings_widget_->findChild<QComboBox*>("combo_shadows");
+        if (combo)
+        {
+            combo->setCurrentIndex((int)renderer->GetShadowQuality());
+            QObject::connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(ShadowQualityChanged(int)));
+        }
+        
         //fullscreen shortcut key
         input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
         if(input_context_.get())
@@ -101,5 +111,19 @@ namespace OgreRenderer
          Renderer *renderer = framework_->GetService<Renderer>();
         if (renderer)
             renderer->SetFullScreen(value);
+    }
+    
+    void RendererSettings::ShadowQualityChanged(int value)
+    {
+        if ((value < 0) || (value > 2))
+            return;
+            
+        Renderer *renderer = framework_->GetService<Renderer>();
+        if (!renderer)
+            return;
+        renderer->SetShadowQuality((ShadowQuality)value);
+        QLabel* restart_text = settings_widget_->findChild<QLabel*>("label_restartmessage");
+        if (restart_text)
+            restart_text->setText(QApplication::translate("SettingsWidget", "Setting will take effect after viewer restart."));
     }
 }
