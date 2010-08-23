@@ -9,65 +9,62 @@ lockbut.show()
 
 print("1");
 
-function readdata(comp) {
-	var datastr = comp.GetAttribute(); 
-	print(datastr);
-	var data = JSON.parse(datastr);	
-	return data;
+print(touchable);
+
+function onChanged() {
+	print("door.js onChanged");
+	var opened = component.GetAttribute('opened');
+	var locked = component.GetAttribute('locked');
+	
+	print("Opened: " + opened);
+	openbut.text = opened ? "Close" : "Open";
+	lockbut.text = locked ? "Unlock" : "Lock";
+	openbut.enabled = !(locked && !opened)
 }
 
 print("2");
 
-function onChanged() {
-	print("door.js onChanged");
-	var data = readdata(component);
-	
-	print("Opened: " + data.opened);
-	openbut.text = (data.opened) ? "Close" : "Open";
-	lockbut.text = (data.locked) ? "Unlock" : "Lock";
-	openbut.enabled = !(data.locked && !data.opened)
-}
+component.OnChanged.connect(onChanged);
+//onChanged(); //once to init
 
 print("3");
 
-component.OnChanged.connect(onChanged);
-onChanged(); //once to init
-
-print("4");
-
-function sync(comp, data) {
-	var newjson = JSON.stringify(data);
-	comp.SetAttribute(newjson);
-}
-
-print("5");
-
 function open() {
 	print("door.js open button clicked!");
-	var data = readdata(component);
-	print("Opened: " + data.opened);
-	if (data.opened || !data.locked) {
-		data.opened = !data.opened;
-		sync(component, data);
+	var opened = component.GetAttribute('opened');
+	var locked = component.GetAttribute('locked');
+	print("Opened: " + opened);
+	if (opened || !locked) {
+		opened = !opened;
+		component.SetAttribute('opened', opened);
+		component.OnChanged();
 	}
 	else {
 		print("Can't open a locked door!");
 	}
 }
 
-print("6");
+print("4");
 
 function lock() {
 	print("door.js lock button clicked!");
-	var data = readdata(component);
-	print("Locked: " + data.locked);
-	data.locked = !data.locked;
-	sync(component, data);
+	var opened = component.GetAttribute('opened');
+	var locked = component.GetAttribute('locked');
+	print("Locked: " + locked);
+	locked = !locked;
+	component.SetAttribute('locked', locked);
+	component.OnChanged();
 }	
 
-print("7");
+print("5");
 
 openbut.clicked.connect(open);
 lockbut.clicked.connect(lock);
+
+function hover() {
+	print("Hovering in JS");
+}
+
+touchable.MouseHover.connect(hover);
 
 print("Happy end in door.js!");
