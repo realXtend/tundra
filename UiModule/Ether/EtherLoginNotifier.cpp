@@ -41,6 +41,7 @@ namespace Ether
                 connect(this, SIGNAL(StartTaigaLogin(QWebFrame *)), handler, SLOT(ProcessLoginData(QWebFrame *)));
                 connect(this, SIGNAL(StartTaigaLogin(const QString &)), handler, SLOT(ProcessLoginData(const QString &)));
                 connect(this, SIGNAL(Disconnect()), handler, SLOT(Logout()));
+                connect(this, SIGNAL(Quit()), handler, SLOT(Quit()));
             }
             else
                 UiServices::UiModule::LogError("Could not retrieve login service.");
