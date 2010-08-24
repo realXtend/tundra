@@ -14,7 +14,7 @@ namespace OgreRenderer
     {
     public:
         //! Constructor
-        explicit ResourceHandler(Foundation::Framework* framework);
+        explicit ResourceHandler(Renderer* renderer, Foundation::Framework* framework);
         
         //! Destructor
         ~ResourceHandler();
@@ -139,6 +139,9 @@ namespace OgreRenderer
         
         //! Framework we belong to
         Foundation::Framework* framework_;
+        
+        //! Renderer we belong to
+        Renderer* renderer_;
     };
 }
 #endif

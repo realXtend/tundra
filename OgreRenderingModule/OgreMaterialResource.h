@@ -6,6 +6,7 @@
 #include "AssetInterface.h"
 #include "ResourceInterface.h"
 #include "OgreModuleApi.h"
+#include "Renderer.h"
 
 #include <OgreMaterial.h>
 
@@ -22,14 +23,16 @@ namespace OgreRenderer
     public:
         //! Generates an empty unloaded material resource.
         /*! \param id The resource ID that is associated to this material.
+            \param shadowquality Shadow quality setting in effect on the renderer
          */
-        explicit OgreMaterialResource(const std::string& id);
+        explicit OgreMaterialResource(const std::string& id, ShadowQuality shadowquality);
         
         //! constructor
         /*! \param id material id
+            \param shadowquality Shadow quality setting in effect on the renderer
             \param source asset data to construct material from
         */
-        OgreMaterialResource(const std::string& id, Foundation::AssetPtr source);
+        OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetPtr source);
 
         //! destructor
         virtual ~OgreMaterialResource();
@@ -69,6 +72,8 @@ namespace OgreRenderer
         //! Deinitializes the material and frees all Ogre-side structures as well.
         void RemoveMaterial();
         
+        //! Shadow quality, so that the resource knows to create extra shadowmaps if necessary
+        ShadowQuality shadowquality_;
     };
 }
 

@@ -22,7 +22,8 @@
 
 namespace OgreRenderer
 {
-    ResourceHandler::ResourceHandler(Foundation::Framework* framework) :
+    ResourceHandler::ResourceHandler(Renderer* renderer, Foundation::Framework* framework) :
+        renderer_(renderer),
         framework_(framework)
     {
         source_types_[OgreTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_TEXTURE;
@@ -438,7 +439,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr material = GetResourceInternal(source->GetId(), OgreMaterialResource::GetTypeStatic());
         if (!material)
         {
-            material = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
+            material = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId(), renderer_->GetShadowQuality()));
         }
 
         bool success = false;

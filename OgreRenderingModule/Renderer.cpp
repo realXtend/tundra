@@ -124,7 +124,7 @@ namespace OgreRenderer
         viewport_(0),
         object_id_(0),
         group_id_(0),
-        resource_handler_(ResourceHandlerPtr(new ResourceHandler(framework))),
+        resource_handler_(ResourceHandlerPtr(new ResourceHandler(this, framework))),
         config_filename_(config),
         plugins_filename_(plugins),
         ray_query_(0),
