@@ -152,12 +152,11 @@ def applyaudio(ent, audiouuid):
         ent.sound
     except AttributeError:
         ent.prim.SoundID = audiouuid
+        # default radius and volume
         ent.prim.SoundRadius = 5.0
-        ent.prim.SoundVolume = 10.0
+        ent.prim.SoundVolume = 5.0
     else:
         s = ent.sound
         ent.prim.SoundID = audiouuid
-        ent.prim.SoundRadius = 5.0
-        ent.prim.SoundVolume = 10.0
-        s.AddSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius)
+        s.SetSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius, ent.prim.SoundVolume)
     r.sendRexPrimData(ent.id)

@@ -38,12 +38,13 @@ namespace RexLogic
         virtual ~EC_AttachedSound();
         
     public slots:
-        //! add a new sound using the sound name (UUID in string format) rather than the id
+        //! Set a new sound and properties for it
         /*! \param name The asset_id of the sound to add
             \param pos The position for the sound to play at
             \param soundRadius The radius for the sound to be heard at
+            \param soundVolume The volume for the sound to play at
         */
-        void AddSound(QString& name, QVector3D& pos, float soundRadius);
+        void SetSound(QString& name, QVector3D& pos, float soundRadius, float soundVolume);
         //! Add sound to entity. 
         /*! \param sound Channel id from SoundServiceInterface
             \param slot Sound slot definition
