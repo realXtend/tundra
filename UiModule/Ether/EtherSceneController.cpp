@@ -690,7 +690,7 @@ namespace Ether
                 info_hide_timer_->start(7500);
             }
 
-            classical_login_widget_->StatusUpdate(login_in_progress_, text);
+//            classical_login_widget_->StatusUpdate(login_in_progress_, text);
         }
 
         void EtherSceneController::HideStatusWidget()

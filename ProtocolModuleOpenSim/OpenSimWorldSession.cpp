@@ -12,7 +12,7 @@ namespace OpenSimProtocol
     OpenSimWorldSession::OpenSimWorldSession(Foundation::Framework *framework) :
         framework_(framework), credentials_(ProtocolUtilities::AT_OpenSim)
     {
-        networkOpensim_ = framework_->GetModuleManager()->GetModule<OpenSimProtocol::ProtocolModuleOpenSim>();
+        networkOpensim_ = framework_->GetModuleManager()->GetModule<ProtocolModuleOpenSim>();
     }
 
     OpenSimWorldSession::~OpenSimWorldSession()
@@ -56,25 +56,26 @@ namespace OpenSimProtocol
         const QString& start_location,
         ProtocolUtilities::ConnectionThreadState *thread_state )
     {
-        // Get ProtocolModuleOpenSim
-        boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
-
+        boost::shared_ptr<ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
         if (spOpenSim.get())
         {
-            spOpenSim->GetLoginWorker()->PrepareOpenSimLogin(first_name, last_name, password, address, port, start_location, thread_state);
             spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_OpenSim);
+            OpenSimLoginThread *loginWorker = spOpenSim->GetLoginWorker();
+            loginWorker->PrepareOpenSimLogin(first_name, last_name, password, address, port, start_location, thread_state);
+
+            connect(loginWorker, SIGNAL(LoginStateChanged(int)), SLOT(HandleLoginStateChange(int)));
+
             // Start the thread.
-            boost::thread(boost::ref( *spOpenSim->GetLoginWorker() ));
+            boost::thread(boost::ref(*loginWorker));
         }
         else
         {
-            ProtocolModuleOpenSim::LogInfo("Could not lock ProtocolModuleOpenSim");
+            ProtocolModuleOpenSim::LogInfo("Could not get ProtocolModuleOpenSim");
             return false;
         }
 
         return true;
     }
-
 
     QUrl OpenSimWorldSession::ValidateUrl(const QString &urlString, const UrlType urlType)
     {
@@ -142,5 +143,19 @@ namespace OpenSimProtocol
     void OpenSimWorldSession::SetServerEntryPointUrl(const QUrl &newUrl)
     {
         serverEntryPointUrl_ = newUrl;
+    }
+
+    void OpenSimWorldSession::HandleLoginStateChange(int state)
+    {
+        ProtocolUtilities::Connection::State loginState = (ProtocolUtilities::Connection::State)state;
+        ProtocolModuleOpenSim::LogDebug("OpenSim login in process: " + NetworkStateToString(loginState));
+        if (loginState == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
+        {
+            emit LoginFailed(networkOpensim_.lock()->GetLoginWorker()->GetErrorMessage().c_str());
+        }
+        else if (loginState == ProtocolUtilities::Connection::STATE_CONNECTED)
+        {
+            emit LoginSuccessful();
+        }
     }
 }

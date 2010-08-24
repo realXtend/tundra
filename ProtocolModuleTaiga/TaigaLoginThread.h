@@ -1,7 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file TaigaLoginThread.h
-/// @brief @brief XML-RPC login worker.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file TaigaLoginThread.h
+ *  @brief Taiga XML-RPC login worker.
+ */
 
 #ifndef incl_ProtocolModuleTaiga_TaigaLoginThread_h
 #define incl_ProtocolModuleTaiga_TaigaLoginThread_h
@@ -16,8 +18,10 @@ namespace Foundation
 
 namespace TaigaProtocol
 {
-    class TaigaLoginThread
+    /// Taiga XML-RPC login worker.
+    class TaigaLoginThread : public QObject
     {
+        Q_OBJECT
 
     public:
         /// Default constructor.
@@ -40,16 +44,21 @@ namespace TaigaProtocol
          * @param worldAddress is a address of world (sim) server without port value. 
          * @param worldPort is a port of world (sim) server. 
          */
-        void PrepareTaigaLogin(const QString &worldAddress,
-                               const QString &worldPort,
-			                   ProtocolUtilities::ConnectionThreadState *thread_state);
+        void PrepareTaigaLogin(
+            const QString &worldAddress,
+            const QString &worldPort,
+            ProtocolUtilities::ConnectionThreadState *thread_state);
 
         /// Performs the actual XML-RPC login procedure.
         ///@return true if login (or authentication) was successful.
         bool PerformXMLRPCLogin();
 
         /// Change the state of the XML-RPC worker.
-		void SetConnectionState(ProtocolUtilities::Connection::State state) { threadState_->state = state; }
+        void SetConnectionState(ProtocolUtilities::Connection::State state)
+        {
+            threadState_->state = state;
+            emit LoginStateChanged((int)state);
+        }
 
         ///@return State of connection.
         volatile ProtocolUtilities::Connection::State GetState() const;
@@ -66,9 +75,11 @@ namespace TaigaProtocol
         const std::string GetUsername() const { return ""; }
         const std::string GetPassword() const { return ""; }
 
+    signals:
+        void LoginStateChanged(int state);
+
     private:
-        TaigaLoginThread(const TaigaLoginThread &);
-        void operator=(const TaigaLoginThread &);
+        Q_DISABLE_COPY(TaigaLoginThread);
 
         /// Triggers the XML-RPC login procedure.
         bool start_login_;
