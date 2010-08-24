@@ -18,8 +18,12 @@ namespace MumbleClient
 
 namespace MumbleVoip
 {
-    class Channel;
     class PCMAudioFrame;
+}
+
+namespace MumbleLib
+{
+    class Channel;
 
     //! Wrapper over libmumbleclient library's User class
     //! Present mumble client intance on MurMur server
@@ -30,7 +34,7 @@ namespace MumbleVoip
         //! Default constructor
         //! @param user
         //! @param channel The channel where the user are located
-        User(const MumbleClient::User& user, MumbleVoip::Channel* channel);
+        User(const MumbleClient::User& user, Channel* channel);
 
         //! Destructor
         virtual ~User();
@@ -64,7 +68,7 @@ namespace MumbleVoip
 
         //! @return oldest audio frame available for playback 
         //! @note caller must delete audio frame object after usage
-        virtual PCMAudioFrame* GetAudioFrame();
+        virtual MumbleVoip::PCMAudioFrame* GetAudioFrame();
 
         //! Set user status to be left
         virtual void SetLeft() { left_ = true; emit Left(); }
@@ -82,7 +86,7 @@ namespace MumbleVoip
         //! Put audio frame to end of playback buffer 
         //! If playback buffer is full it is cleared first.
         //! @param farme Audio data frame received from network and ment to be for playback locally
-        void AddToPlaybackBuffer(PCMAudioFrame* frame);
+        void AddToPlaybackBuffer(MumbleVoip::PCMAudioFrame* frame);
 
         //! Updatedes user last known position
         //! Also set position_known_ flag up
@@ -91,7 +95,7 @@ namespace MumbleVoip
 
         void CheckSpeakingState();
 
-        void SetChannel(MumbleVoip::Channel* channel);
+        void SetChannel(MumbleLib::Channel* channel);
 
     private:
         static const int SPEAKING_TIMEOUT_MS = 100; // time to emit StopSpeaking after las audio packet is received
@@ -102,9 +106,9 @@ namespace MumbleVoip
         Vector3df position_;
         bool position_known_;
 
-        QList<PCMAudioFrame*> playback_queue_;
+        QList<MumbleVoip::PCMAudioFrame*> playback_queue_;
         bool left_;
-        MumbleVoip::Channel* channel_;
+        MumbleLib::Channel* channel_;
         int received_voice_packet_count_;
         int voice_packet_drop_count_;
         QTime last_audio_frame_time_;
@@ -122,6 +126,6 @@ namespace MumbleVoip
         void ChangedChannel(User* user);
     };
 
-} // namespace MumbleVoip
+} // namespace MumbleLib
 
 #endif // incl_MumbleVoipModule_User_h

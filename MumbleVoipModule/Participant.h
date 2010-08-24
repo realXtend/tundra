@@ -5,48 +5,47 @@
 
 #include "CommunicationsService.h"
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     class User;
+}
 
-    namespace InWorldVoice
+namespace MumbleVoip
+{
+    //! ParticipantInterface implementation using mumble User object
+    class Participant : public Communications::InWorldVoice::ParticipantInterface
     {
-        //! ParticipantInterface implementation using mumble User object
-        class Participant : public Communications::InWorldVoice::ParticipantInterface
-        {
-            Q_OBJECT
-        public:
-            Participant(QString name, User* user);
-            virtual ~Participant();
-            virtual QString Name() const;
-            virtual QString AvatarUUID() const;
-            virtual bool IsSpeaking() const;
-            virtual void Mute(bool mute);
-            virtual bool IsMuted() const;
-            virtual Vector3df Position() const;
-            virtual void Add(User* user);
-            virtual User* UserPtr() const;
+        Q_OBJECT
+    public:
+        Participant(QString name, MumbleLib::User* user);
+        virtual ~Participant();
+        virtual QString Name() const;
+        virtual QString AvatarUUID() const;
+        virtual bool IsSpeaking() const;
+        virtual void Mute(bool mute);
+        virtual bool IsMuted() const;
+        virtual Vector3df Position() const;
+        virtual void Add(MumbleLib::User* user);
+        virtual MumbleLib::User* UserPtr() const;
 
-            virtual void SetName(QString name);
+        virtual void SetName(QString name);
 
-        private:
-            bool muted_;
-            bool speaking_;
-            bool position_known_;
-            Vector3df position_;
-            User* user_;
-            QString name_;
-            QString avatar_uuid_;
+    private:
+        bool muted_;
+        bool speaking_;
+        bool position_known_;
+        Vector3df position_;
+        MumbleLib::User* user_;
+        QString name_;
+        QString avatar_uuid_;
 
-        private slots:
-            void OnStartSpeaking();
-            void OnStopSpeaking();
-            void OnPositionUpdated();
-            void OnUserLeft();
-        };
-        typedef QList<Participant*> ParticipantList;
-
-    } // InWorldVoice
+    private slots:
+        void OnStartSpeaking();
+        void OnStopSpeaking();
+        void OnPositionUpdated();
+        void OnUserLeft();
+    };
+    typedef QList<Participant*> ParticipantList;
 
 } // MumbleVoip
 

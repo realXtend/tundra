@@ -4,100 +4,96 @@
 
 namespace MumbleVoip
 {
-    namespace InWorldVoice
+    Participant::Participant(QString name, MumbleLib::User* user) :
+        muted_(false),
+        speaking_(false),
+        position_known_(false),
+        position_(0.0, 0.0, 0.0),
+        user_(user),
+        name_(name)
     {
-        Participant::Participant(QString name, User* user) :
-            muted_(false),
-            speaking_(false),
-            position_known_(false),
-            position_(0.0, 0.0, 0.0),
-            user_(user),
-            name_(name)
-        {
-            avatar_uuid_ = user_->Name();
-            connect(user_, SIGNAL(StartReceivingAudio()), SLOT(OnStartSpeaking()) );
-            connect(user_, SIGNAL(StopReceivingAudio()), SLOT(OnStopSpeaking()) );
-            connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
-            connect(user_, SIGNAL(Left()), SLOT(OnUserLeft()) );
-        }
+        avatar_uuid_ = user_->Name();
+        connect(user_, SIGNAL(StartReceivingAudio()), SLOT(OnStartSpeaking()) );
+        connect(user_, SIGNAL(StopReceivingAudio()), SLOT(OnStopSpeaking()) );
+        connect(user_, SIGNAL(PositionUpdated()), SLOT(OnPositionUpdated()) );
+        connect(user_, SIGNAL(Left()), SLOT(OnUserLeft()) );
+    }
 
-        Participant::~Participant()
-        {
+    Participant::~Participant()
+    {
 
-        }
+    }
 
-        QString Participant::Name() const
-        {
-            return name_;
-        }
+    QString Participant::Name() const
+    {
+        return name_;
+    }
 
-        QString Participant::AvatarUUID() const
-        {
-            return avatar_uuid_;
-        }
+    QString Participant::AvatarUUID() const
+    {
+        return avatar_uuid_;
+    }
 
-        bool Participant::IsSpeaking() const
-        {
-            return speaking_;
-        }
+    bool Participant::IsSpeaking() const
+    {
+        return speaking_;
+    }
 
-        void Participant::Mute(bool mute)
-        {
-            muted_ = mute;
-        }
+    void Participant::Mute(bool mute)
+    {
+        muted_ = mute;
+    }
 
-        bool Participant::IsMuted() const
-        {
-            return muted_;
-        }
+    bool Participant::IsMuted() const
+    {
+        return muted_;
+    }
 
-        Vector3df Participant::Position() const
-        {
-            return position_;
-        }
+    Vector3df Participant::Position() const
+    {
+        return position_;
+    }
 
-        void Participant::Add(User* user)
-        {
-            user_ = user;
-        }
+    void Participant::Add(MumbleLib::User* user)
+    {
+        user_ = user;
+    }
 
-        void Participant::OnStartSpeaking()
-        {
-            speaking_ = true;
-            emit Communications::InWorldVoice::ParticipantInterface::StartSpeaking();
-        }
+    void Participant::OnStartSpeaking()
+    {
+        speaking_ = true;
+        emit Communications::InWorldVoice::ParticipantInterface::StartSpeaking();
+    }
 
-        void Participant::OnStopSpeaking()
-        {
-            speaking_ = false;
-            emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
-        }
+    void Participant::OnStopSpeaking()
+    {
+        speaking_ = false;
+        emit Communications::InWorldVoice::ParticipantInterface::StopSpeaking();
+    }
 
-        void Participant::OnPositionUpdated()
-        {
-            //! @todo ENSURE THAT user_ OBJECT IS NOT DELETED
-            if (!user_)
-                return;
-            
-            position_ = user_->Position();
-        }
+    void Participant::OnPositionUpdated()
+    {
+        //! @todo ENSURE THAT user_ OBJECT IS NOT DELETED
+        if (!user_)
+            return;
+        
+        position_ = user_->Position();
+    }
 
-        User* Participant::UserPtr() const
-        {
-            return user_;
-        }
+    MumbleLib::User* Participant::UserPtr() const
+    {
+        return user_;
+    }
 
-        void Participant::OnUserLeft()
-        {
-            emit Communications::InWorldVoice::ParticipantInterface::Left();
-        }
+    void Participant::OnUserLeft()
+    {
+        emit Communications::InWorldVoice::ParticipantInterface::Left();
+    }
 
-        void Participant::SetName(QString name)
-        {
-            name_ = name;
-            emit Communications::InWorldVoice::ParticipantInterface::StateChanged();
-        }
-
-    } // InWorldVoice
+    void Participant::SetName(QString name)
+    {
+        name_ = name;
+        emit Communications::InWorldVoice::ParticipantInterface::StateChanged();
+    }
 
 } // MumbleVoip

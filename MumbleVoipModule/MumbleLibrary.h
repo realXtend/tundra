@@ -6,7 +6,7 @@
 #include <QObject>
 #include <QString>
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     class MumbleMainLoopThread;
 
@@ -42,6 +42,6 @@ namespace MumbleVoip
         static MumbleMainLoopThread* mumble_main_loop_;
     };
 
-} // MumbleVoip
+} // MumbleLib
 
 #endif // incl_MumbleVoipModule_MumbleLibrary_h
