@@ -41,6 +41,8 @@ namespace MumbleLib
 
     QString User::Name() const
     {
+        if (left_)
+            return "";
         return QString(user_.name.c_str());
     }
     
@@ -51,11 +53,15 @@ namespace MumbleLib
     
     int User::Session() const
     {
+        if (left_)
+            return 0;
         return user_.session;
     }
     
     int User::Id() const
     {
+        if (left_)
+            return 0;
         return user_.user_id;
     }
     
@@ -68,6 +74,8 @@ namespace MumbleLib
     
     QString User::Comment() const
     {
+        if (left_)
+            return "";
         return QString(user_.comment.c_str());
     }
 
