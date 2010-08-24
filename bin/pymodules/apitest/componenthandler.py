@@ -3,6 +3,16 @@ import rexviewer as r
 import naali
 import urllib2 #for js_src downloading
 
+"""
+first EC handlers were not 'Naali modules' (circuits components),
+but apparently they typically need to get Naali events to handle logout etc.
+so am making now so that they are registered to the circuits manager automagically. the reference to the manager is not needed though, 'cause circuits supports
+registering new components under a component out of the box.
+"""
+#import modulemanager
+#import core.circuits_manager
+#modulemanager_instance = core.circuits_manager.ComponentRunner.instance
+
 """a registry of component handlers, by type"""
 handlertypes = {}
 def register(compname, handlertype):
@@ -17,7 +27,6 @@ register(door.COMPNAME, door.DoorHandler)
 class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
         circuits.BaseComponent.__init__(self)
-    #    self.handlerinstances = []
 
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
@@ -36,8 +45,9 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         if comp.className() == "EC_DynamicComponent":
             print "comp Name:", comp.Name
             if comp.Name in handlertypes:
-                handlertypes[comp.Name](entity, comp, changetype)
-                #self.handlerinstances.append(h)
+                handlertype = handlertypes[comp.Name]
+                h = handlertype(entity, comp, changetype)
+                self += h #so that handlers get circuits events too
 
             #if the data was there already, could do this.
             #but it's not - must now listen to onChanged and check instead
