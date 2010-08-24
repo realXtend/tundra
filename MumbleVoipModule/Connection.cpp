@@ -249,7 +249,9 @@ namespace MumbleLib
         celt_encoder_destroy(celt_encoder_);
         celt_encoder_ = 0;
         celt_decoder_destroy(celt_decoder_);
+        celt_decoder_ = 0;
         celt_mode_destroy(celt_mode_);
+        celt_mode_ = 0;
         MumbleVoip::MumbleVoipModule::LogDebug("CELT uninitialized.");
     }
 
@@ -480,9 +482,9 @@ namespace MumbleLib
             {
                 Channel* c = channels_.at(i);
                 channels_.removeAt(i);
-                // delete c; // @todo 
                 QString message = QString("Channel '%1' removed").arg(c->Name());
                 MumbleVoip::MumbleVoipModule::LogDebug(message.toStdString());
+                SAFE_DELETE(c);
                 break;
             }
         }
