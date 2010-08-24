@@ -115,7 +115,8 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
     {
         DeserializeData attributeData = addAttributes.back();
         Foundation::AttributeInterface *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
-        attribute->FromString(attributeData.value_, AttributeChange::Local);
+        if (attribute)
+            attribute->FromString(attributeData.value_, AttributeChange::Local);
         addAttributes.pop_back();
     }
     while(!remAttributes.empty())
