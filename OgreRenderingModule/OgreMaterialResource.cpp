@@ -11,13 +11,15 @@
 
 namespace OgreRenderer
 {
-    OgreMaterialResource::OgreMaterialResource(const std::string& id) : 
-        ResourceInterface(id)
+    OgreMaterialResource::OgreMaterialResource(const std::string& id, ShadowQuality shadowquality) : 
+        ResourceInterface(id),
+        shadowquality_(shadowquality)
     {
     }
 
-    OgreMaterialResource::OgreMaterialResource(const std::string& id, Foundation::AssetPtr source) : 
-        ResourceInterface(id)
+    OgreMaterialResource::OgreMaterialResource(const std::string& id, ShadowQuality shadowquality, Foundation::AssetPtr source) : 
+        ResourceInterface(id),
+        shadowquality_(shadowquality)
     {
         SetData(source);
     }
@@ -148,8 +150,7 @@ namespace OgreRenderer
             matmgr.remove(tempname);
 
             //workaround: if receives shadows, check the amount of shadowmaps. If only 1 specified, add 2 more to support 3 shadowmaps
-            //! @todo check shadow quality mode and add the extra maps only if necessary
-            if(ogre_material_->getReceiveShadows())
+            if(ogre_material_->getReceiveShadows() && shadowquality_ == Shadows_High && ogre_material_->getNumTechniques() > 0)
             {
                 Ogre::Technique *tech = ogre_material_->getTechnique(0);
                 if(tech)

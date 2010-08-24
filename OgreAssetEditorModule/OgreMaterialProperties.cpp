@@ -9,6 +9,7 @@
 #include "CoreDefines.h"
 #include "OgreMaterialProperties.h"
 #include "OgreMaterialResource.h"
+#include "Renderer.h"
 
 #include <OgreMaterial.h>
 #include <OgreTechnique.h>
@@ -24,7 +25,8 @@ namespace Naali
 OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset) :
     material_(0)
 {
-    material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), asset);
+    // Hack: tell the materialresource that shadows are medium quality, so that it won't create extra shadow texture units
+    material_ = new OgreRenderer::OgreMaterialResource(asset->GetId(), OgreRenderer::Shadows_Low, asset);
     if (material_)
         if (material_->IsValid())
             CreateProperties();
