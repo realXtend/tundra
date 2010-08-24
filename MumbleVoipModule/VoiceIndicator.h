@@ -8,8 +8,6 @@
 
 namespace MumbleVoip
 {
-//    class PCMAudioFrame;
-
     class VoiceIndicatorInterface : public QObject
     {
         Q_OBJECT
