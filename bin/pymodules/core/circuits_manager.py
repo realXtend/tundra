@@ -40,7 +40,7 @@ class ComponentRunner:
     def __init__(self):
         # instanciated from the c++ side, as modulemanager there
         #assert self.instance is None
-        ComponentRunner.instance = self #is used as a singleton now
+        ComponentRunner.instance = self #is used as a singleton now. is this needed anywhere actually? XXX
         
         self.mouseinfo = MouseInfo(0,0,0,0)
         #m.start() #instead we tick() & flush() in update
@@ -50,10 +50,6 @@ class ComponentRunner:
         self.start()
         r.manager = self
 
-    def register(self, component):
-        """for non-autoloaded components to register. now used in apitest/door.py dynamiccomponent handler instances"""
-        self.m += component
-        
     def start(self):
         # Create a new circuits Manager
         #ignevents = [Update, MouseMove]

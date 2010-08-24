@@ -1,7 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file TaigaLoginThread.cpp
-/// @brief XML-RPC login worker.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file TaigaLoginThread.cpp
+ *  @brief Taiga XML-RPC login worker.
+ */
 
 #include "StableHeaders.h"
 #include "TaigaLoginThread.h"
@@ -43,17 +45,26 @@ namespace TaigaProtocol
         if (start_login_)
         {
             threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
-            if ( PerformXMLRPCLogin() )
+            emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY);
+            if (PerformXMLRPCLogin())
+            {
                 threadState_->state =  ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
+                emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED);
+            }
             else
+            {
                 threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
+                emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_LOGIN_FAILED);
+            }
+
             start_login_ = false;
         }
     }
 
-    void TaigaLoginThread::PrepareTaigaLogin(const QString& worldAddress,
-                                             const QString& worldPort,
-                                             ProtocolUtilities::ConnectionThreadState *thread_state)
+    void TaigaLoginThread::PrepareTaigaLogin(
+        const QString& worldAddress,
+        const QString& worldPort,
+        ProtocolUtilities::ConnectionThreadState *thread_state)
     {
         worldAddress_ = worldAddress.toStdString();
         worldPort_ = worldPort.toStdString();

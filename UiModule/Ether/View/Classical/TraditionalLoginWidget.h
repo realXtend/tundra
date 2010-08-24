@@ -5,7 +5,7 @@
 
 #include "ui_TraditionalLoginWidget.h"
 
-#include <QTimer>
+class QTimer;
 
 namespace CoreUi
 {
@@ -22,6 +22,10 @@ namespace CoreUi
             void RemoveEtherButton();
             QMap<QString, QString> GetLoginInfo() const;
             void StatusUpdate(bool connecting, const QString &message);
+
+            void SetStatus(const QString &message);
+            void StartProgressBar();
+            void StopProgressBar();
 
         private slots:
             void ParseInputAndConnect();

@@ -33,11 +33,7 @@ namespace MumbleVoip
         void CloseSession();
         Foundation::Framework* framework_;
         QString description_;
-        MumbleVoip::Session* session_;
-
-        //! \todo Use shared ptr ...
-        //Session* session_;
-        
+        MumbleVoip::Session* session_;  //! \todo Use shared ptr ...
         ServerInfoProvider* server_info_provider_;
         ServerInfo* server_info_;
         event_category_id_t networkstate_event_category_;

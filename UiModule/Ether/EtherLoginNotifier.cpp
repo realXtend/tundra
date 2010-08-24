@@ -42,6 +42,10 @@ namespace Ether
                 connect(this, SIGNAL(StartTaigaLogin(const QString &)), handler, SLOT(ProcessLoginData(const QString &)));
                 connect(this, SIGNAL(Disconnect()), handler, SLOT(Logout()));
                 connect(this, SIGNAL(Quit()), handler, SLOT(Quit()));
+
+                connect(handler, SIGNAL(LoginStarted()), SLOT(EmitLoginStarted()));
+                connect(handler, SIGNAL(LoginFailed(const QString &)), SLOT(EmitLoginFailed(const QString &)));
+                connect(handler, SIGNAL(LoginSuccessful()), SLOT(EmitLoginSuccessful()));
             }
             else
                 UiServices::UiModule::LogError("Could not retrieve login service.");
@@ -117,6 +121,21 @@ namespace Ether
         void EtherLoginNotifier::EmitDisconnectRequest()
         {
             emit Disconnect();
+        }
+
+        void EtherLoginNotifier::EmitLoginStarted()
+        {
+            emit LoginStarted();
+        }
+
+        void EtherLoginNotifier::EmitLoginFailed(const QString &message)
+        {
+            emit LoginFailed(message);
+        }
+
+        void EtherLoginNotifier::EmitLoginSuccessful()
+        {
+            emit LoginSuccessful();
         }
 
         void EtherLoginNotifier::ExitApplication()

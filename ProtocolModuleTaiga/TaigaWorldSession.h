@@ -3,12 +3,14 @@
 #ifndef incl_ProtocolUtilities_TaigaWorldSession_h
 #define incl_ProtocolUtilities_TaigaWorldSession_h
 
-#include "LoginCredentials.h"
-
 #include "ProtocolModuleTaigaApi.h"
 #include "Interfaces/WorldSessionInterface.h"
+#include "LoginCredentials.h"
 
-#include <QUrl>
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace TaigaProtocol
 {
@@ -16,6 +18,8 @@ namespace TaigaProtocol
 
     class TAIGAPROTO_MODULE_API TaigaWorldSession : public ProtocolUtilities::WorldSessionInterface
     {
+        Q_OBJECT
+
     public:
         //! Constuctor.
         explicit TaigaWorldSession(Foundation::Framework *framework);
@@ -23,14 +27,23 @@ namespace TaigaProtocol
         //! Destructor
         virtual ~TaigaWorldSession(void);
 
-        //! WorldSessionInterface override
-        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
+        /**
+         * Logs in to a Taiga server.
+         * 
+         * @param address Server address.
+         * @param port Server pot.
+         * @param identityUrl Taiga identity URL.
+         * @param thread_state Login thread state.
+         * @return true if login was successfull false if not.
+         */
+        bool LoginToServer(
+            const QString& address,
+            const QString& port,
+            const QString& identityUrl,
+            ProtocolUtilities::ConnectionThreadState *thread_state);
 
         //! WorldSessionInterface override
-        bool LoginToServer(const QString& address,
-                           const QString& port,
-                           const QString& identityUrl,
-                           ProtocolUtilities::ConnectionThreadState *thread_state);
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
 
         //! WorldSessionInterface override
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
