@@ -45,6 +45,12 @@ namespace OgreRenderer
         Shadows_High // PSSM, Direct3D only
     };
     
+    enum TextureQuality
+    {
+        Texture_Low = 0, // Halved resolution
+        Texture_Normal
+    };
+    
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
@@ -256,6 +262,12 @@ namespace OgreRenderer
         //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
         void SetShadowQuality(ShadowQuality newquality);
         
+        //! Returns texture quality
+        TextureQuality GetTextureQuality() { return texturequality_; }
+        
+        //! Sets texture quality. Note: changes need viewer restart to take effect
+        void SetTextureQuality(TextureQuality newquality);
+        
     public slots:
         //! Toggles fullscreen
         void SetFullScreen(bool value);
@@ -373,6 +385,9 @@ namespace OgreRenderer
         
         //! Shadow quality
         ShadowQuality shadowquality_;
+        
+        //! Texture quality
+        TextureQuality texturequality_;
         
         //! Soft shadow gaussian listeners
         std::list<OgreRenderer::GaussianListener *> gaussianListeners_;

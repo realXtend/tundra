@@ -135,7 +135,8 @@ namespace OgreRenderer
         last_height_(0),
         resized_dirty_(0),
         view_distance_(500.0),
-        shadowquality_(Shadows_High)
+        shadowquality_(Shadows_High),
+        texturequality_(Texture_Normal)
     {
         InitializeQt();
         InitializeEvents();
@@ -289,6 +290,9 @@ namespace OgreRenderer
         if ((shadowquality_ == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))
             shadowquality_ = Shadows_Low;
 
+        texturequality_ = (TextureQuality)(framework_->GetDefaultConfig().DeclareSetting<int>(
+            "OgreRenderer","texture_quality", 1));
+
         // Ask Ogre if rendering system is available
         rendersystem = root_->getRenderSystemByName(rendersystem_name);
 
@@ -390,6 +394,12 @@ namespace OgreRenderer
     {
         // We cannot effect the new setting immediately, so save only to config
         framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "shadow_quality", (int)newquality);
+    }
+
+    void Renderer::SetTextureQuality(TextureQuality newquality)
+    {
+        // We cannot effect the new setting immediately, so save only to config
+        framework_->GetDefaultConfig().SetSetting<int>("OgreRenderer", "texture_quality", (int)newquality);
     }
 
     void Renderer::LoadPlugins(const std::string& plugin_filename)

@@ -369,6 +369,21 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>CoreUi::Classical::TraditionalLoginWidget</name>
+    <message>
+        <source>Username is missing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>World address is missing!</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Connecting to %1 with %2</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>DetachedWidget</name>
     <message>
         <source>Form</source>
