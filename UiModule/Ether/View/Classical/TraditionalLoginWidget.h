@@ -36,8 +36,7 @@ namespace CoreUi
             int progress_direction_;
 
         signals:
-            void ConnectOpenSim(const QMap<QString, QString> &);
-            void ConnectRealXtend(const QMap<QString, QString> &);
+            void Connect(const QMap<QString, QString> &);
             void ConnectingUiUpdate(const QString &message);
         };
     }

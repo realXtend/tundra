@@ -27,12 +27,9 @@ namespace CoreUi
             tabWidget->addTab(traditional_widget_, " Login");
             tabWidget->addTab(web_login_, " Weblogin");
 
-            connect(web_login_, SIGNAL( WebLoginInfoRecieved(QWebFrame *) ), login_notifier, SLOT( EmitTaigaLogin(QWebFrame *) ));
-            connect(web_login_, SIGNAL( WebLoginUrlReceived(const QString &) ), login_notifier, SLOT( EmitTaigaLogin(const QString &) ));
-            connect(traditional_widget_, SIGNAL( ConnectOpenSim(const QMap<QString, QString> &) ),
-                login_notifier, SLOT( EmitOpenSimLogin(const QMap<QString, QString> &) ));
-            connect(traditional_widget_, SIGNAL( ConnectRealXtend(const QMap<QString, QString> &) ),
-                login_notifier, SLOT( EmitRealXtendLogin(const QMap<QString, QString> &) ));
+            connect(traditional_widget_, SIGNAL(Connect(const QMap<QString, QString> &)), login_notifier, SLOT(EmitLogin(const QMap<QString, QString> &)));
+            connect(web_login_, SIGNAL(WebLoginInfoReceived(QWebFrame *)), login_notifier, SLOT( EmitLogin(QWebFrame *) ));
+            connect(web_login_, SIGNAL(WebLoginUrlReceived(const QString &)), login_notifier, SLOT( EmitLogin(const QString &) ));
 
             connect(login_notifier, SIGNAL(LoginStarted()), SLOT(LoginStarted()));
             connect(login_notifier, SIGNAL(LoginFailed(const QString &)), SLOT(LoginFailed(const QString &)));
