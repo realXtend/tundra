@@ -79,7 +79,7 @@ namespace CommunicationsService
         connect(in_world_chat_provider_, SIGNAL(SessionAvailable()), SLOT(InWorldChatSessionAvailable()) );
         connect(in_world_chat_provider_, SIGNAL(SessionUnavailable()), SLOT(InWorldChatSessionUnavailable()) );
         QString message = QString("In-world chat provider [%1] registered.").arg(provider.Description());
-        emit InWorldChatAvailable();
+//        emit InWorldChatAvailable();
     }
 
     void Service::InWorldChatSessionAvailable()
