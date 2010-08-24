@@ -56,7 +56,7 @@ namespace MumbleVoip
         }
         else
         {
-            in_world_voice_provider_ = new InWorldVoice::Provider(framework_);
+            in_world_voice_provider_ = new Provider(framework_);
         }
 
         link_plugin_ = new LinkPlugin();
@@ -95,7 +95,7 @@ namespace MumbleVoip
         }
         else
         {
-            MumbleLibrary::Stop();
+            MumbleLib::MumbleLibrary::Stop();
         }
     }
 

@@ -10,7 +10,7 @@ namespace MumbleClient
     class Channel;
 }
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     //! Channel on Mumble server
     //!
@@ -42,6 +42,6 @@ namespace MumbleVoip
         QString channel_name_;
     };
 
-}// namespace MumbleVoip
+}// namespace MumbleLib
 
 #endif // incl_MumbleVoipModule_Channel_h
