@@ -15,8 +15,6 @@ namespace MumbleVoip
 {
     class LinkPlugin;
     class ServerInfoProvider;
-    class ConnectionManager;
-    class ApplicationManager;
     class Provider;
 
     /**
