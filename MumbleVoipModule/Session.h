@@ -12,11 +12,6 @@ namespace Foundation
     class Framework;
 }
 
-namespace MumbleClient
-{
-    class MumbleClientLib;
-}
-
 namespace MumbleLib
 {
     class User;
@@ -61,7 +56,7 @@ namespace MumbleVoip
 
     private:
         static const int AUDIO_RECORDING_BUFFER_MS = 200;
-        static double AUDIO_QUALITY_; // 0 .. 1.0
+        static const double DEFAULT_AUDIO_QUALITY_; // 0 .. 1.0
 
         virtual void OpenConnection(ServerInfo info);
         bool GetOwnAvatarPosition(Vector3df& position, Vector3df& direction);

@@ -7,7 +7,7 @@ namespace MumbleVoip
 {
     /**
      * Raw pulse code modulated audio data
-     *
+     * Allocated always dynamically memory for given audio data.
      */
     class PCMAudioFrame
     {

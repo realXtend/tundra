@@ -15,6 +15,7 @@
 
 class QNetworkReply;
 class QNetworkAccessManager;
+
 namespace MumbleClient
 {
     class MumbleClient;
@@ -211,9 +212,9 @@ namespace MumbleLib
         void AudioDataAvailable(short* data, int size);
 
         /// emited when user left from server
-        void UserLeftFromServer(User* user);
+        void UserLeftFromServer(MumbleLib::User* user);
         /// emited when user join to server
-        void UserJoinedToServer(User* user);
+        void UserJoinedToServer(MumbleLib::User* user);
 
 //        void UserJoinedToChannel(User* user);
 

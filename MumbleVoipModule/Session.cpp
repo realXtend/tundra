@@ -24,8 +24,7 @@
 
 namespace MumbleVoip
 {
-    double Session::AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
-
+    const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
     Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
         state_(STATE_INITIALIZING),
         reason_(""),
@@ -69,11 +68,11 @@ namespace MumbleVoip
         }
         state_ = STATE_OPEN;
 
-        connect(connection_, SIGNAL(UserJoinedToServer(User*)), SLOT(CreateNewParticipant(User*)) );
-        connect(connection_, SIGNAL(UserLeftFromServer(User*)), SLOT(UpdateParticipantList()) );
+        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
+        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
         connection_->Join(server_info.channel);
         connection_->SendAudio(sending_audio_);
-        connection_->SetEncodingQuality(AUDIO_QUALITY_);
+        connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
         connection_->SendPosition(true); 
         connection_->SendAudio(audio_sending_enabled_);
         connection_->ReceiveAudio(audio_receiving_enabled_);
