@@ -256,7 +256,8 @@ namespace Ether
                     {
                         Data::RealXtendAvatar *ra = dynamic_cast<Data::RealXtendAvatar *>(avatar_info);
                         if (ra)
-                            card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(ra->id()), QString("%1").arg(ra->account()), ra->pixmapPath());
+                            card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(ra->id()),
+                                QString("%1").arg(ra->account()), ra->pixmapPath());
                         break;
                     }
 
@@ -264,7 +265,8 @@ namespace Ether
                     {
                         Data::OpenSimAvatar *oa = dynamic_cast<Data::OpenSimAvatar *>(avatar_info);
                         if (oa)
-                            card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(oa->id()), QString("%1 %2").arg(oa->firstName(), oa->lastName()), oa->pixmapPath());
+                            card = new View::InfoCard(View::InfoCard::TopToBottom, card_size_, QUuid(oa->id()),
+                                QString("%1 %2").arg(oa->firstName(), oa->lastName()), oa->pixmapPath());
                         break;
                     }
 
@@ -510,6 +512,7 @@ namespace Ether
                 case UiServices::Disconnected:
                     UpdateUiPixmaps();
                     scene_controller_->SetConnected(false);
+                    scene_controller_->ShowStatusInformation("Disconnected");
                     scene_->SetConnectionStatus(false);
                     break;
                 case UiServices::Failed:

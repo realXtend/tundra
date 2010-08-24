@@ -211,7 +211,7 @@ namespace TaigaProtocol
             catch (XmlRpcException &/*ex*/)
             {
                 threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address probably not valid.");
-                ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
+                ProtocolModuleTaiga::LogError(QString(">>> Message: <No Message Received>").toStdString());
             }
             return false;
         }
