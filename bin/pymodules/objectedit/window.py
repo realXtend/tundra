@@ -76,6 +76,17 @@ class ObjectEditWindow:
         box.addWidget(button_ok)
         box.addWidget(button_cancel)
         
+        self.soundline = lines.SoundAssetidEditline(controller) 
+        self.soundline.name = "soundLineEdit"
+
+        soundbutton_ok = self.getButton("Apply", self.ICON_OK, self.soundline, self.soundline.applyAction)
+        soundbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.soundline, self.soundline.cancelAction)
+        
+        box = self.mainTab.findChild("QHBoxLayout", "soundLine")
+        box.addWidget(self.soundline)
+        box.addWidget(soundbutton_ok)
+        box.addWidget(soundbutton_cancel)
+
         self.propedit = r.getPropertyEditor()
         self.tabwidget.addTab(self.propedit, "Properties")
         self.tabwidget.setTabEnabled(2, False)
@@ -112,6 +123,9 @@ class ObjectEditWindow:
 
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
+
+        self.soundline.connect('textEdited(QString)', soundbutton_ok.lineValueChanged)
+        self.soundline.connect('textEdited(QString)', soundbutton_cancel.lineValueChanged)
         
         self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.controller.createObject)
         self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.controller.deleteObject)
@@ -181,6 +195,7 @@ class ObjectEditWindow:
         self.tabwidget.setTabEnabled(2, False)
         
         self.meshline.update_text("")
+        self.soundline.update_text("")
         self.reset_guivals()
         
         self.untoggleButtons()
@@ -377,6 +392,10 @@ class ObjectEditWindow:
         self.highlightEntityFromList(ent)
         self.showName(ent)
         self.meshline.update_text(ent.prim.MeshID)
+        try:
+            self.soundline.update_text(ent.prim.SoundID)
+        except:
+            self.soundline.update_text('N/A')
         self.updateMaterialTab(ent)
         self.updatePropertyEditor(ent)
         self.updatingSelection = True

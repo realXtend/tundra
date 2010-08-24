@@ -92,6 +92,19 @@ class MeshAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applymesh(ent, self.text)
             self.deactivateButtons()
+
+class SoundAssetidEditline(DragDroppableEditline):
+    def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
+        print "doaction in SoundAssetidEditline-class..."
+        #applymesh(ent, asset_ref)
+        self.deactivateButtons()
+    
+    def applyAction(self):
+        #print self, "applyAction for Sound!"
+        ent = self.mainedit.active
+        if ent is not None:
+            applyaudio(ent, self.text)
+            self.deactivateButtons()
         
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
@@ -130,6 +143,7 @@ def applymesh(ent, meshuuid):
         #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
     else:
         ent.mesh.SetMesh(meshuuid)        
+        #ent.prim.MeshID = meshuuid # change meshuuid
     r.sendRexPrimData(ent.id)
     #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
 
@@ -137,7 +151,13 @@ def applyaudio(ent, audiouuid):
     try:
         ent.sound
     except AttributeError:
-        ent.prim.MeshID = audiouuid #new
+        ent.prim.SoundID = audiouuid
+        ent.prim.SoundRadius = 5.0
+        ent.prim.SoundVolume = 10.0
     else:
-        ent.audio.SetMesh(audiouuid)        
+        s = ent.sound
+        ent.prim.SoundID = audiouuid
+        ent.prim.SoundRadius = 5.0
+        ent.prim.SoundVolume = 10.0
+        s.AddSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius)
     r.sendRexPrimData(ent.id)

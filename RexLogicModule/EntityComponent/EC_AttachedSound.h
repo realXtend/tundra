@@ -8,6 +8,8 @@
 #include "Vector3D.h"
 #include "Declare_EC.h"
 
+#include <QVector3D>
+
 namespace RexLogic
 {
     //! Component which holds references to attached spatial sounds.
@@ -18,6 +20,7 @@ namespace RexLogic
     class REXLOGIC_MODULE_API EC_AttachedSound : public Foundation::ComponentInterface
     {
         Q_OBJECT
+        Q_ENUMS(SoundSlot)
 
         DECLARE_EC(EC_AttachedSound);
     public:
@@ -34,6 +37,13 @@ namespace RexLogic
 
         virtual ~EC_AttachedSound();
         
+    public slots:
+        //! add a new sound using the sound name (UUID in string format) rather than the id
+        /*! \param name The asset_id of the sound to add
+            \param pos The position for the sound to play at
+            \param soundRadius The radius for the sound to be heard at
+        */
+        void AddSound(QString& name, QVector3D& pos, float soundRadius);
         //! Add sound to entity. 
         /*! \param sound Channel id from SoundServiceInterface
             \param slot Sound slot definition
@@ -55,14 +65,16 @@ namespace RexLogic
          */
         void RemoveAllSounds();
 
+        //! Syncs position. Called from RexLogicModule.
+        void SetPosition(const Vector3df position);
+        
+    public:
+
         //! Get channel ids of currently playing sounds. Note that some may be zero (stopped)
         const std::vector<sound_id_t>& GetSounds() const { return sounds_; }
 
         //! Performs per-frame update, if necessary. Called from RexLogicModule.
         void Update(f64 frametime);
-
-        //! Syncs position. Called from RexLogicModule.
-        void SetPosition(const Vector3df position);
 
     private:
         EC_AttachedSound(Foundation::ModuleInterface *module);
