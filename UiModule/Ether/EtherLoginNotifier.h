@@ -40,11 +40,11 @@ namespace Ether
 
         public slots:
             void ParseInfoFromData(QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards);
-            
-            void EmitOpenSimLogin(const QMap<QString, QString> &info_map);
-            void EmitRealXtendLogin(const QMap<QString, QString> &info_map);
-            void EmitTaigaLogin(QWebFrame *web_frame);
-            void EmitTaigaLogin(const QString &url);
+
+            void EmitLogin(const QMap<QString, QString> &info_map);
+            void EmitLogin(QWebFrame *web_frame);
+            void EmitLogin(const QString &url);
+
             void EmitDisconnectRequest();
             void ExitApplication();
 
@@ -57,10 +57,15 @@ namespace Ether
             void ScriptTeleport();
 
         signals:
-            void StartOsLogin(const QMap<QString, QString> &info_map);
-            void StartRexLogin(const QMap<QString, QString> &info_map);
-            void StartTaigaLogin(QWebFrame *web_frame);
-            void StartTaigaLogin(const QString &url);
+            /// Emitted when login info for OpenSim/RealXtend login is ready.
+            void StartLogin(const QMap<QString, QString> &info_map);
+
+            /// Emitted when web frame for Taiga web login is ready.
+            void StartLogin(QWebFrame *web_frame);
+
+            /// Emitted when login URL for Taiga web login is ready.
+            void StartLogin(const QString &url);
+
             void Disconnect();
             void Quit();
 

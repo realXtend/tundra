@@ -394,7 +394,7 @@ namespace OpenSimProtocol
             catch (XmlRpcException &/*ex*/)
             {
                 threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address probably not valid.");
-                ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
+                ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Received>").toStdString());
             }
             return false;
         }

@@ -78,7 +78,7 @@ namespace Ether
             void RevertLoginAnimation(bool change_scene_after_anims_finish);
 
             void SuppressControlWidgets(bool suppress);
-            void ShowStatusInformation(QString text);
+            void ShowStatusInformation(const QString &text);
             
             void TryExitApplication();
             void StoreConfigs();

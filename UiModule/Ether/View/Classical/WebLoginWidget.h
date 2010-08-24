@@ -36,7 +36,7 @@ namespace CoreUi
             QString address_;
 
         signals:
-            void WebLoginInfoRecieved(QWebFrame *);
+            void WebLoginInfoReceived(QWebFrame *);
             void WebLoginUrlReceived(const QString &);
         };
     }
