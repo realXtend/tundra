@@ -22,18 +22,22 @@ namespace MumbleClient
     class User;
 }
 
+namespace MumbleVoip
+{
+    class ServerInfo;
+    class PCMAudioFrame;
+}
+
 struct CELTMode;
 struct CELTEncoder;
 struct CELTDecoder;
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     class Channel;
     class User;
-    class PCMAudioFrame;
-    class ServerInfo;
 
-    typedef QPair<User*, PCMAudioFrame*> AudioPacket;
+    typedef QPair<User*, MumbleVoip::PCMAudioFrame*> AudioPacket;
 
     //! Connection to a single mumble server.
     //!
@@ -52,7 +56,7 @@ namespace MumbleVoip
         enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
         //! Default constructor
-        Connection(ServerInfo &info);
+        Connection(MumbleVoip::ServerInfo &info);
 
         //! Default deconstructor
         virtual ~Connection();
@@ -77,18 +81,18 @@ namespace MumbleVoip
 
         //! Encode and send given frame to Mumble server
         //! Frame object is NOT deleted by this method 
-        virtual void SendAudioFrame(PCMAudioFrame* frame, Vector3df users_position);
+        virtual void SendAudioFrame(MumbleVoip::PCMAudioFrame* frame, Vector3df users_position);
 
         //! @return list of channels available
         //! @todo CONSIDER TO USE boost::weak_ptr HERE
         virtual QList<Channel*> ChannelList();
 
         //! @return channel by id. Return 0 if channel cannot be found
-        virtual MumbleVoip::Channel* ChannelById(int id);
+        virtual MumbleLib::Channel* ChannelById(int id);
 
         //! @param name The full name of the channel e.g "Root/mychannel"
         //! @return channel by name. Return 0 if channel cannot be found
-        virtual MumbleVoip::Channel* ChannelByName(QString name);
+        virtual MumbleLib::Channel* ChannelByName(QString name);
 
         //! Set audio sending true/false 
         //! @param send true if audio want to be sent to mumble server, otherwise false
@@ -163,8 +167,8 @@ namespace MumbleVoip
         static const int USER_STATE_CHECK_TIME_MS = 1000;
         static const int FRAME_BUFFER_SIZE = 256;
 
-        char encoded_frame_data_[FRAMES_PER_PACKET][FRAME_BUFFER_SIZE];
-        int encoded_frame_length_[FRAMES_PER_PACKET];
+        char encoded_frame_data_[MumbleVoip::FRAMES_PER_PACKET][FRAME_BUFFER_SIZE];
+        int encoded_frame_length_[MumbleVoip::FRAMES_PER_PACKET];
 
         void InitializeCELT();
         void UninitializeCELT();
@@ -175,7 +179,7 @@ namespace MumbleVoip
         QString reason_;
         MumbleClient::MumbleClient* client_;
         QString join_request_; // queued request to join a channel @todo IMPLEMENT BETTER
-        QList<PCMAudioFrame*> encode_queue_;
+        QList<MumbleVoip::PCMAudioFrame*> encode_queue_;
         QList<Channel*> channels_; // @todo Use shared ptr
         QMap<int, User*> users_; // maps: session id <-> User object
 
@@ -221,7 +225,7 @@ namespace MumbleVoip
         void CELTFrameReceived(int session, unsigned char*data, int size);
     };
 
-} // namespace MumbleVoip
+} // namespace MumbleLib
 
 //Q_DECLARE_METATYPE(MumbleClient::User) // not needed
 
