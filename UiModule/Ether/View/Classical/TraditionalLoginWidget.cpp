@@ -108,7 +108,7 @@ namespace CoreUi
 
                     map["Username"] = rex_username;
                     map["AuthenticationAddress"] = rex_auth_address;
-                    emit ConnectRealXtend(map);
+                    emit Connect(map);
                 }
             }
             else
@@ -116,7 +116,7 @@ namespace CoreUi
                 if (map["Username"].count(" ") == 1)
                 {
                     map["AvatarType"] = "OpenSim";
-                    emit ConnectOpenSim(map);
+                    emit Connect(map);
                 }
             }
 
@@ -126,7 +126,7 @@ namespace CoreUi
                 if (map["Username"].count(" ") == 1 && !map["Username"].endsWith(" "))
                 {
                     map["AvatarType"] = "OpenSim";
-                    emit ConnectOpenSim(map);
+                    emit Connect(map);
                 }
             }
             else if (radioButton_realXtend->isChecked() == true)
@@ -141,7 +141,7 @@ namespace CoreUi
                     map["AvatarType"] = "RealXtend";
                     map["Username"] = rex_username;
                     map["AuthenticationAddress"] = rex_auth_address;
-                    emit ConnectRealXtend(map);
+                    emit Connect(map);
                 }
             }
 
