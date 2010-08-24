@@ -27,14 +27,17 @@ import rexviewer as r
 import PythonQt
 from PythonQt import QtGui, QtCore
 
+import circuits
+
 INTERVAL = 0.2
 
-class AnimationSync:
+class AnimationSync(circuits.BaseComponent):
     GUINAME = "Animation Sync"
 
     def __init__(self, entity, comp, changetype):
         comp.connect("OnChanged()", self.onChanged)
         self.comp = comp
+        circuits.BaseComponent.__init__(self)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.widget.connect('valueChanged(int)', self.sliderChanged)

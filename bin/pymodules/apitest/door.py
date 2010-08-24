@@ -7,9 +7,6 @@ import rexviewer as r
 #componenthandlers don't necessarily need to be naali modules,
 #but this one needs to listen to update events to do mouse hover tricks
 import circuits
-#import modulemanager
-import core.circuits_manager
-modulemanager_instance = core.circuits_manager.ComponentRunner.instance
 
 #should be in the EC data
 OPENPOS = Vec(101.862, 82.6978, 24.9221)
@@ -34,9 +31,6 @@ class DoorHandler(circuits.BaseComponent):
     def __init__(self, entity, comp, changetype):
         self.comp = comp
         circuits.BaseComponent.__init__(self)
-
-        global modulemanager_instance
-        modulemanager_instance.register(self)
 
         comp.connect("OnChanged()", self.onChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
