@@ -78,6 +78,7 @@ namespace MumbleVoip
 
     void Provider::OnMumbleServerInfoReceived(ServerInfo info)
     {
+        SAFE_DELETE(server_info_);
         server_info_ = new ServerInfo(info);
 
         networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
