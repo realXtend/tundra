@@ -21,6 +21,7 @@ namespace OgreRenderer
     public slots:
         void ViewDistanceChanged(double value);
         void ShadowQualityChanged(int quality);
+        void TextureQualityChanged(int quality);
         
         //! toggles fullscreen mode
         void SetFullScreenMode(bool value);

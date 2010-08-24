@@ -72,6 +72,13 @@ namespace OgreRenderer
             QObject::connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(ShadowQualityChanged(int)));
         }
         
+        combo = settings_widget_->findChild<QComboBox*>("combo_texture");
+        if (combo)
+        {
+            combo->setCurrentIndex((int)renderer->GetTextureQuality());
+            QObject::connect(combo, SIGNAL(currentIndexChanged(int)), this, SLOT(TextureQualityChanged(int)));
+        }
+        
         //fullscreen shortcut key
         input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
         if(input_context_.get())
@@ -115,6 +122,20 @@ namespace OgreRenderer
         if (!renderer)
             return;
         renderer->SetShadowQuality((ShadowQuality)value);
+        QLabel* restart_text = settings_widget_->findChild<QLabel*>("label_restartmessage");
+        if (restart_text)
+            restart_text->setText(QApplication::translate("SettingsWidget", "Setting will take effect after viewer restart."));
+    }
+    
+    void RendererSettings::TextureQualityChanged(int value)
+    {
+        if ((value < 0) || (value > 1))
+            return;
+            
+        Renderer *renderer = framework_->GetService<Renderer>();
+        if (!renderer)
+            return;
+        renderer->SetTextureQuality((TextureQuality)value);
         QLabel* restart_text = settings_widget_->findChild<QLabel*>("label_restartmessage");
         if (restart_text)
             restart_text->setText(QApplication::translate("SettingsWidget", "Setting will take effect after viewer restart."));
