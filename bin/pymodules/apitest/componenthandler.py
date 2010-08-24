@@ -58,6 +58,10 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
             jscheck = make_jssrc_handler(entity, comp, changetype)
             comp.connect("OnChanged()", jscheck)
 
+    @circuits.handler("on_logout")
+    def removehandlers(self, evid):
+        self.unregister() #unregisters all DC handlers created here
+
 def make_jssrc_handler(entity, comp, changetype):
     #def handle_js():
     class JsHandler(): #need a functor so that can disconnect itself
