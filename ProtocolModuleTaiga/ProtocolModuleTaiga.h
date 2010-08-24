@@ -65,9 +65,6 @@ namespace TaigaProtocol
         /// @return loginworker_
         TaigaLoginThread* GetLoginWorker() { return &loginWorker_; }
 
-        ////////////////////////////////////////////////
-        /*** ProtocolModuleInterface implementation ***/
-        
         //! Function for registering network event
         virtual void RegisterNetworkEvents();
         

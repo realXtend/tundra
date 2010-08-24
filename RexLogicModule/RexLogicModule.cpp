@@ -106,7 +106,6 @@ std::string RexLogicModule::type_name_static_ = "RexLogic";
 
 RexLogicModule::RexLogicModule() :
     ModuleInterface(type_name_static_),
-    send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
     network_handler_(0),
@@ -257,8 +256,6 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
 
-    send_input_state_ = true;
-
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -396,8 +393,11 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 void RexLogicModule::Update(f64 frametime)
 {
     {
-
         PROFILE(RexLogicModule_Update);
+
+        /// \todo Move this to OpenSimProtocolModule.
+        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+            world_stream_->CreateUdpConnection();
 
         // interpolate & animate objects
         UpdateObjects(frametime);
@@ -411,15 +411,11 @@ void RexLogicModule::Update(f64 frametime)
         // update sound listener position/orientation
         UpdateSoundListener();
 
-        /// \todo Move this to OpenSimProtocolModule.
-        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-            world_stream_->CreateUdpConnection();
-
-        if (send_input_state_)
+        // workaround for not being able to send events during initialization
+        static bool send_input_state = true;
+        if (send_input_state)
         {
-            send_input_state_ = false;
-
-            // can't send events during initalization, so workaround
+            send_input_state = false;
             event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
@@ -431,15 +427,12 @@ void RexLogicModule::Update(f64 frametime)
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
-            // Update overlays last, after camera update
             input_handler_->Update(frametime);
-
-            UpdateAvatarOverlays();
-
+            // Update overlays last, after camera update
             UpdateAvatarNameTags(avatar_->GetUserAvatar());
-            
         }
     }
+
     RESETPROFILER;
 }
 
@@ -897,23 +890,6 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     }
 }
 
-void RexLogicModule::UpdateAvatarOverlays()
-{
-    // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-    return;
-
-    for (uint i = 0; i < found_avatars_.size(); ++i)
-    {
-        Scene::Entity* entity = found_avatars_[i].lock().get();
-        if (entity)
-        {
-            OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
-            if (overlay)
-                overlay->Update();
-        }
-    }
-}
-
 void RexLogicModule::UpdateSoundListener()
 {
     boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = 
@@ -1228,16 +1204,6 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
 
     return Console::ResultSuccess();
-    //bool success = world_stream_->ConnectToServer(name, passwd, server);
-
-    // overwrite the password so it won't stay in-memory
-    //passwd.replace(0, passwd.size(), passwd.size(), ' ');
-
-    //if (success)
-    //    return Console::ResultSuccess();
-    //else
-    //    return Console::ResultFailure("Failed to connect to server.");
-    //return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)

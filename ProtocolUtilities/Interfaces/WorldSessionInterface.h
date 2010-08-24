@@ -48,6 +48,15 @@ namespace ProtocolUtilities
         //! Set server entry point url
         virtual void SetServerEntryPointUrl(const QUrl &newUrl) = 0;
 
+    signals:
+        /// Indicates that login process was succesful.
+        void LoginSuccessful();
+
+        /** Indicates that login process failed.
+         *  @param message Error message.
+         */
+        void LoginFailed(const QString &message);
+
     private:
         //! State of the connection procedure thread.
         ProtocolUtilities::ConnectionThreadState threadState_;
