@@ -193,7 +193,7 @@ QPushButton::pressed{
            <item>
             <layout class="QHBoxLayout" name="soundLine">
              <item>
-              <widget class="QLabel" name="label_scale_3">
+              <widget class="QLabel" name="label_scale_4">
                <property name="minimumSize">
                 <size>
                  <width>40</width>
