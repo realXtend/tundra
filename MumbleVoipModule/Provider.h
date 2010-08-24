@@ -16,40 +16,35 @@ namespace Foundation
 namespace MumbleVoip
 {
     class ServerInfoProvider;
+    class Session;
 
-    namespace InWorldVoice
+    class Provider : public Communications::InWorldVoice::ProviderInterface
     {
-        class Session;
+        Q_OBJECT
+    public:
+        Provider(Foundation::Framework* framework);
+        virtual ~Provider();
+        virtual Communications::InWorldVoice::SessionInterface* Session();
+        virtual QString& Description();
+        virtual void Update(f64 frametime);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual QList<QString> Statistics();
+    private:
+        void CloseSession();
+        Foundation::Framework* framework_;
+        QString description_;
+        MumbleVoip::Session* session_;
 
-        class Provider : public Communications::InWorldVoice::ProviderInterface
-        {
-            Q_OBJECT
-        public:
-            Provider(Foundation::Framework* framework);
-            virtual ~Provider();
-            virtual Communications::InWorldVoice::SessionInterface* Session();
-            virtual QString& Description();
-            virtual void Update(f64 frametime);
-            virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-            virtual QList<QString> Statistics();
-        private:
-            void CloseSession();
-            Foundation::Framework* framework_;
-            QString description_;
-            MumbleVoip::InWorldVoice::Session* session_;
+        //! \todo Use shared ptr ...
+        //Session* session_;
+        
+        ServerInfoProvider* server_info_provider_;
+        ServerInfo* server_info_;
+        event_category_id_t networkstate_event_category_;
 
-            //! \todo Use shared ptr ...
-            //Session* session_;
-            
-            ServerInfoProvider* server_info_provider_;
-            ServerInfo* server_info_;
-            event_category_id_t networkstate_event_category_;
-
-        private slots:
-            void OnMumbleServerInfoReceived(ServerInfo info);
-        };
-
-    } // InWorldVoice
+    private slots:
+        void OnMumbleServerInfoReceived(ServerInfo info);
+    };
 
 } // MumbleVoip
 

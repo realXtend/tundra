@@ -12,7 +12,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     QString MumbleLibrary::reason_ = "";
     MumbleMainLoopThread* MumbleLibrary::mumble_main_loop_ = 0;
@@ -78,4 +78,4 @@ namespace MumbleVoip
         return mumble_main_loop_;
     }
 
-} // MumbleVoip
+} // MumbleLib

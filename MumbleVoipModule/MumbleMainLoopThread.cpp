@@ -13,7 +13,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     void MumbleMainLoopThread::run()
     {
@@ -22,7 +22,7 @@ namespace MumbleVoip
         {
             return;
         }
-        MumbleVoipModule::LogDebug("Mumble library mainloop started");
+        MumbleVoip::MumbleVoipModule::LogDebug("Mumble library mainloop started");
         try
         {
             mumble_lib->Run();
@@ -30,15 +30,15 @@ namespace MumbleVoip
         catch(std::exception &e)
         {
             QString message = QString("Mumble library mainloop stopped by exception: %1").arg(e.what());
-            MumbleVoipModule::LogError(message.toStdString());
+            MumbleVoip::MumbleVoipModule::LogError(message.toStdString());
         }
         catch(...)
         {
             QString message = QString("Mumble library mainloop stopped by unknown exception.");
-            MumbleVoipModule::LogError(message.toStdString());
+            MumbleVoip::MumbleVoipModule::LogError(message.toStdString());
             reason_ = message;
         }
-        MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
+        MumbleVoip::MumbleVoipModule::LogDebug("Mumble library mainloop stopped");
     }
 
     QString MumbleMainLoopThread::Reason() const
@@ -46,4 +46,4 @@ namespace MumbleVoip
         return reason_;
     }
 
-} // MumbleVoip
+} // MumbleLib
