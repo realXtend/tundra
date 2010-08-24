@@ -38,7 +38,10 @@ class AnimationSync(circuits.BaseComponent):
         comp.connect("OnChanged()", self.onChanged)
         self.comp = comp
         circuits.BaseComponent.__init__(self)
-        self.inworld_inited = False #a cheap hackish substitute for some initing system
+        self.inworld_inited = False #a cheap hackish substitute for some initin
+        self.initgui()
+
+    def initgui(self):
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.widget.connect('valueChanged(int)', self.sliderChanged)
 
@@ -106,6 +109,12 @@ class AnimationSync(circuits.BaseComponent):
 
     def showgui(self):
         self.proxywidget.show()
+
+    @circuits.handler("on_logout")
+    def removegui(self, evid):
+        self.proxywidget.hide()
+        uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromScene(self.proxywidget)
 
 COMPNAME = "animsync"
 #now done in componenthandler 'cause this is not a circuits component / naali module

@@ -36,7 +36,9 @@ class DoorHandler(circuits.BaseComponent):
         self.inworld_inited = False #a cheap hackish substitute for some initing system
 
         self.hovering = 0 #mouse hover exit hack
+        self.initgui()
 
+    def initgui(self):
         #qt widget ui
         group = QGroupBox()
         box = QVBoxLayout(group)
@@ -141,10 +143,22 @@ class DoorHandler(circuits.BaseComponent):
     @circuits.handler("update")
     def update(self, t):
         if self.forcepos is not None:
-            ent = r.getEntity(self.comp.GetParentEntityId())
-            ent.placeable.Position = self.forcepos
+            try:
+                ent = r.getEntity(self.comp.GetParentEntityId())
+            except ValueError: #the entity has been removed or something
+                pass
+            else:
+                ent.placeable.Position = self.forcepos
 
         if self.hovering > 0:
             self.hovering -= 1
             if self.hovering == 0:
                 setcursor(0)
+
+    @circuits.handler("on_logout")
+    def removegui(self, evid):
+        self.proxywidget.hide()
+        uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromMenu(self.proxywidget)
+        uism.RemoveWidgetFromScene(self.proxywidget)
+        
