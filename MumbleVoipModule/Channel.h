@@ -12,8 +12,7 @@ namespace MumbleClient
 
 namespace MumbleLib
 {
-    //! Channel on Mumble server
-    //!
+    //! Wrapper over MumbleClient::Channel class. Presents an mumble channel.
     //! @todo Add signals: UserJoined, UserLeft ???
     //! @todo Add Users() method ???
     class Channel
