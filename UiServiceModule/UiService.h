@@ -35,8 +35,8 @@ public:
 
 public slots:
     /** UiServiceInterface override.
-     *  @note If you want to add full screen widget that is resized automatically to fit the screen 
-     *  when scene rect changes, remember to set Qt::FullScreen window state for the widget.
+     *  @note If you want to add full screen widget that is resized automatically to fit the screen
+     *  when scene rectangle changes, remember to set Qt::FullScreen window state for the widget.
      */
     UiProxyWidget *AddWidgetToScene(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
@@ -50,7 +50,7 @@ public slots:
     void AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon);
 
     /// UiServiceInterface override.
-    virtual void AddWidgetToMenu(QWidget *widget);
+    void AddWidgetToMenu(QWidget *widget);
 
     /// UiServiceInterface override.
     void RemoveWidgetFromScene(QWidget *widget);
@@ -110,9 +110,9 @@ private:
     QList<QGraphicsProxyWidget *> fullScreenWidgets_;
 
 private slots:
-    /** Performs different operations for proxy widgets when scene rect is changed, f.ex. resizes
-    *   full screen widgets to fit the screen.
-     *  @param rect New scene rect.
+    /** Performs different operations for proxy widgets when scene rectangle is changed, f.ex. resizes
+     *  full screen widgets to fit the screen.
+     *  @param rect New scene rectangle.
      */
     void SceneRectChanged(const QRectF &rect);
 

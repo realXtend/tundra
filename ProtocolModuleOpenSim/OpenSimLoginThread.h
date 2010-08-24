@@ -1,12 +1,16 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file OpenSimLoginThread.h
-/// @brief @brief XML-RPC login worker.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file OpenSimLoginThread.h
+ *  @brief @brief XML-RPC login worker.
+ */
 
 #ifndef incl_OpenSimLoginThread_h
 #define incl_OpenSimLoginThread_h
 
 #include "NetworkEvents.h"
+
+#include <QObject>
 #include <QString>
 
 namespace Foundation
@@ -16,8 +20,11 @@ namespace Foundation
 
 namespace OpenSimProtocol
 {
-    class OpenSimLoginThread
+    /// XML-RPC login worker.
+    class OpenSimLoginThread : public QObject
     {
+        Q_OBJECT
+
     public:
         /// Default constructor.
         OpenSimLoginThread();
@@ -42,13 +49,14 @@ namespace OpenSimProtocol
          * @param worldAddress is a address of world (sim) server without port value. 
          * @param worldPort is a port of world (sim) server. 
          */
-        void PrepareOpenSimLogin(const QString &first_name,
-                                 const QString &last_name,
-                                 const QString &password,
-                                 const QString &worldAddress,
-                                 const QString &worldPort,
-                                 const QString &startLocation,
-                                 ProtocolUtilities::ConnectionThreadState *thread_state);
+        void PrepareOpenSimLogin(
+            const QString &first_name,
+            const QString &last_name,
+            const QString &password,
+            const QString &worldAddress,
+            const QString &worldPort,
+            const QString &startLocation,
+            ProtocolUtilities::ConnectionThreadState *thread_state);
 
         /**
          * Sets up the XML-RPC login procedure using authentication server or direct rexserver depending of 
@@ -77,12 +85,16 @@ namespace OpenSimProtocol
         bool PerformXMLRPCLogin();
 
         /// Change the state of the XML-RPC worker.
-        void SetConnectionState(ProtocolUtilities::Connection::State state) { threadState_->state = state; }
+        void SetConnectionState(ProtocolUtilities::Connection::State state)
+        {
+            threadState_->state = state;
+            emit LoginStateChanged((int)state);
+        }
 
         ///@return State of connection.
         volatile ProtocolUtilities::Connection::State GetState() const;
 
-        ///@return error message as std::string
+        ///@return error message.
         std::string &GetErrorMessage() const;
 
         ///@return The client parameters retreived from the XML-RPC reply.
@@ -91,12 +103,15 @@ namespace OpenSimProtocol
         ///@return True, if the XML-RPC worker is ready.
         const bool IsReady() const { return ready_; }
 
-        const std::string GetUsername() const { return firstName_ + " " + lastName_; }
-        const std::string GetPassword() const { return password_; }
+        std::string GetUsername() const { return firstName_ + " " + lastName_; }
+
+        std::string GetPassword() const { return password_; }
+
+    signals:
+        void LoginStateChanged(int state);
 
     private:
-        OpenSimLoginThread(const OpenSimLoginThread &);
-        void operator=(const OpenSimLoginThread &);
+        Q_DISABLE_COPY(OpenSimLoginThread);
 
         /// Triggers the XML-RPC login procedure.
         bool start_login_;

@@ -3,29 +3,32 @@
 #ifndef incl_Protocol_OpenSimWorldSession_h
 #define incl_Protocol_OpenSimWorldSession_h
 
-#include "LoginCredentials.h"
-
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"
+#include "LoginCredentials.h"
 
-#include <QUrl>
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace OpenSimProtocol
 {
+    class ProtocolModuleOpenSim;
+
     class OSPROTO_MODULE_API OpenSimWorldSession : public ProtocolUtilities::WorldSessionInterface
     {
+        Q_OBJECT
+
     public:
-        //! RealXtendWorldSession constructor
+        /** Constructor.
+         *  @param framework Framework.
+         */
         explicit OpenSimWorldSession(Foundation::Framework *framework);
 
-        //! RealXtendWorldSession deconstructor
-        virtual ~OpenSimWorldSession(void);
+        //! Destructor.
+        virtual ~OpenSimWorldSession();
 
-        /* INHERITED FUNCTIONS FROM WorldSessionInterface */
-
-        //! Login function
-        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
-        
         /**
          * Logs in to a reX server without the authentication procedure.
          * 
@@ -45,38 +48,45 @@ namespace OpenSimProtocol
             const QString& start_location,
             ProtocolUtilities::ConnectionThreadState *thread_state);
 
-        //! Make Url validation according to type
+        //! WorldSessionInterface override
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
+
+        //! WorldSessionInterface override
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
-        //! Get login credentials
+        //! WorldSessionInterface override
         LoginCredentials GetCredentials() const;
 
-        //! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
+        //! WorldSessionInterface override
         QUrl GetServerEntryPointUrl() const;
 
-        //! Get created WorldStream: void -> WorldStreamInterface when implemented
+        //! WorldSessionInterface override
         void GetWorldStream() const;
 
-        //! Set login credentials
+        //! WorldSessionInterface override
         void SetCredentials(const LoginCredentials &credentials);
 
-        //! Set server entry point url
+        //! WorldSessionInterface override
         void SetServerEntryPointUrl(const QUrl &newUrl);
 
     private:
         Q_DISABLE_COPY(OpenSimWorldSession)
 
         LoginCredentials credentials_;
+
         QUrl serverEntryPointUrl_;
 
         //! Pointer to framework
         Foundation::Framework *framework_;
 
         //! Pointer to the opensim network interface.
-        boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> networkOpensim_;
+        boost::weak_ptr<ProtocolModuleOpenSim> networkOpensim_;
 
         //! State of the connection procedure thread.
         ProtocolUtilities::ConnectionThreadState threadState_;
+
+    private slots:
+        void HandleLoginStateChange(int state);
     };
 }
 
