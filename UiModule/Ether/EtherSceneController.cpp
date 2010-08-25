@@ -407,8 +407,15 @@ namespace Ether
                 ActiveItemChanged(last_active_bottom_card_);
         }
 
-        void EtherSceneController::LeftPressed() { active_menu_->moveLeft(); }
-        void EtherSceneController::RightPressed() { active_menu_->moveRight(); }
+        void EtherSceneController::LeftPressed()
+        {
+            active_menu_->moveLeft();
+        }
+
+        void EtherSceneController::RightPressed()
+        {
+            active_menu_->moveRight();
+        }
 
         void EtherSceneController::ItemActivatedWithMouse(View::InfoCard *clicked_item)
         {
@@ -690,14 +697,14 @@ namespace Ether
                 info_hide_timer_->start(7500);
             }
 
-            ///\todo awful hack, remove
-            if (text != "Connected")
-                classical_login_widget_->StatusUpdate(login_in_progress_, text);
+            // We don't need to pass the text to classical login widget.
+            // It get's the status message from the login service.
+            //classical_login_widget_->StatusUpdate(login_in_progress_, text);
         }
 
         void EtherSceneController::HideStatusWidget()
         {
-            // If we have multiple status informations qutaeued i.e. timer is still active, don't hide
+            // If we have multiple status informations queued i.e. timer is still active, don't hide
             if (!info_hide_timer_->isActive())
                 status_widget_->hide();
         }

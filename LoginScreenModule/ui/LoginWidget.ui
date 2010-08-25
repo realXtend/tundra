@@ -324,13 +324,12 @@
                <bool>true</bool>
               </property>
               <property name="plainText">
-               <string>You are now using realXtend's virtual world viewer called Naali. The Next step is to get you into a world and for this we provide three types of login methods. 
+               <string>You are now using realXtend's virtual world viewer called Naali. The next step is to get you into a world and for this two types of login methods are provided.
 
-OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
+OpenSim login requires you to have an existing account for the server you are joining. Just insert your username (&quot;&lt;firstname&gt; &lt;lastname&gt;&quot;) to the username field, both password and world address (&lt;world&gt;:&lt;port&gt;) to the respective fields, and click Connect.
 
-RealXtend method brings you the ability to login to many worlds with the same avatar account. Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, in other words the OpenSim server must be running with the ModreX server component.
-
-Third option is to login into realXtend Taiga and ScienceSim servers that are based on CableBeach services. Select the WebLogin tab from the left top corner and you should see a wiki page that provides you a list of open Taiga servers from the realXtend project and the community. Naturally you can just type the login URL of the server to the Naali web browser manually. Web-based authentication gives you the possibility to login with your OpenID, Google and Yahoo accounts.</string>
+RealXtend method brings you the ability to login to many worlds with the same avatar account (&quot;&lt;username&gt;@&lt;auth_server&gt;:&lt;port&gt;&quot;). Again the account has to be created before doing a login. Next you need to know that the server supports realXtend login, in other words the OpenSim server must be running with the ModreX server component.
+</string>
               </property>
               <property name="textInteractionFlags">
                <set>Qt::NoTextInteraction</set>
