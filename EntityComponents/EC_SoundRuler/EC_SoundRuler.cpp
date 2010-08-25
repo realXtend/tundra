@@ -19,6 +19,7 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OpenSimPrim.h"
 #include "LoggingFunctions.h"
+#include "RexUUID.h"
 #include <Ogre.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
@@ -26,7 +27,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
 #include "MemoryLeakCheck.h"
 
 EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
-    visibleAttr_(this, "visible", true),
     radiusAttr_(this, "radius", 5),
     volumeAttr_(this, "volume", 5),
     segmentsAttr_(this, "segments", 29),
@@ -37,6 +37,10 @@ EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateSoundRuler()));
+    
+    RexUUID uuid = RexUUID::CreateRandom();
+    rulerName = uuid.ToString() + "ruler";
+    nodeName = uuid.ToString() + "node";
 }
 
 EC_SoundRuler::~EC_SoundRuler()
@@ -52,6 +56,7 @@ EC_SoundRuler::~EC_SoundRuler()
     {
         rulerObject = 0;
         sceneNode_ = 0;
+        prim = 0;
     }
 }
 
@@ -123,21 +128,21 @@ void EC_SoundRuler::Create()
     if (!sceneNode_)
         return;
     
-    if(scene_mgr->hasManualObject("soundRuler")) {
-        rulerObject = scene_mgr->getManualObject("soundRuler");
+    if(scene_mgr->hasManualObject(rulerName)) {
+        rulerObject = scene_mgr->getManualObject(rulerName);
         if(rulerObject->isAttached())
             rulerObject->detatchFromParent();
     } else {
-        rulerObject = scene_mgr->createManualObject("soundRuler");
+        rulerObject = scene_mgr->createManualObject(rulerName);
     }
     
     SetupSoundRuler();
 
     // get soundRulerNode only when we are working in world space
-    if(scene_mgr->hasSceneNode("soundRulerNode")) {
-        globalSceneNode = scene_mgr->getSceneNode("soundRulerNode");
+    if(scene_mgr->hasSceneNode(nodeName)) {
+        globalSceneNode = scene_mgr->getSceneNode(nodeName);
     } else {
-        globalSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode("soundRulerNode");
+        globalSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode(nodeName);
         globalSceneNode->setVisible(true);
     }
     assert(globalSceneNode);
@@ -179,11 +184,6 @@ void EC_SoundRuler::SetupSoundRuler()
 
 void EC_SoundRuler::UpdateSoundRuler() {
     Create();
-    
-    if(visibleAttr_.Get()) {
-        Show();
-    } else {
-        Hide();
-    }
+    Show();
 }
 

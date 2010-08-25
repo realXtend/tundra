@@ -36,9 +36,6 @@ public:
     /// Destructor.
     ~EC_SoundRuler();
     
-    //! Visibility
-    Foundation::Attribute<bool> visibleAttr_;
-    
     //! Sound radius
     Foundation::Attribute<Real> radiusAttr_;
     
@@ -92,6 +89,12 @@ private:
     
     /// Holds prim
     EC_OpenSimPrim *prim;
+    
+    // Name for this ruler
+    std::string rulerName;
+    
+    // Name for container node
+    std::string nodeName;
 };
 
 #endif
