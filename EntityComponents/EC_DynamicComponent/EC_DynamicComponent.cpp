@@ -221,25 +221,22 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
         return value;
     Foundation::Attribute<QVariant> *variantAttribute = dynamic_cast<Foundation::Attribute<QVariant>*>(attribute);
     //In case the attribute is not QVariant type then return QVariant value as string.
-
     if(!variantAttribute)
     {
         //except if it's a bool, make a qvariant of that .. as a test
-        Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
-        if(boolAttribute)
+        if(attribute->TypenameToString() == "bool")
         {
+            Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
             value = QVariant(boolAttribute->Get());
             return value;
         }
-
         //do this trick for real/floats too
-        Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
-        if(realAttribute)
+        else if(attribute->TypenameToString() == "real")
         {
+            Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
             value = QVariant(realAttribute->Get());
             return value;
         }
-
         else
         {
             value = QVariant(attribute->ToString().c_str());
@@ -266,7 +263,8 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
         if(!variantAttribute)
         {
             //except if it's a bool, get the value from the qvariant .. as a test
-            Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
+            //! @todo commeted out cause lines below causes null pointer crash
+            /*Foundation::Attribute<bool> *boolAttribute = dynamic_cast<Foundation::Attribute<bool>*>(attribute);
             if(boolAttribute)
             {
                 if (value.type() == QVariant::Bool)
@@ -287,7 +285,8 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
             else
             {
                 attribute->FromString(value.toString().toStdString(), change);
-            }
+            }*/
+            attribute->FromString(value.toString().toStdString(), change);
             return;
         }
 
