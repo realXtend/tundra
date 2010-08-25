@@ -16,6 +16,7 @@ class DragDroppableEditline(QLineEdit):
         
         self.combobox = None #throw into another class...
         self.buttons = []
+	self.spinners = []
         self.index = None 
 
     def accept(self, ev):
@@ -92,6 +93,32 @@ class MeshAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applymesh(ent, self.text)
             self.deactivateButtons()
+
+class SoundAssetidEditline(DragDroppableEditline):
+    def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
+        print "doaction in SoundAssetidEditline-class..."
+        self.deactivateButtons()
+    
+    def applyAction(self):
+        ent = self.mainedit.active
+        if ent is not None:
+            applyaudio(ent, self.text, self.spinners[0].value, self.spinners[1].value)
+            self.deactivateButtons()
+
+    def update_soundradius(self, radius):
+        ent = self.mainedit.active
+	if ent is not None:
+            self.spinners[0].setValue(radius)
+        else:
+            self.spinners[0].setValue(3.0)
+
+    def update_soundvolume(self, volume):
+        ent = self.mainedit.active
+        if ent is not None:
+            self.spinners[1].setValue(volume)
+        else:
+            self.spinners[1].setValue(3.0)
+
         
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
@@ -130,14 +157,32 @@ def applymesh(ent, meshuuid):
         #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
     else:
         ent.mesh.SetMesh(meshuuid)        
+        #ent.prim.MeshID = meshuuid # change meshuuid
     r.sendRexPrimData(ent.id)
     #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
 
-def applyaudio(ent, audiouuid):
+def applyaudio(ent, audiouuid, soundRadius, soundVolume):
     try:
         ent.sound
     except AttributeError:
-        ent.prim.MeshID = audiouuid #new
+        ent.prim.SoundID = audiouuid
+        # default radius and volume
+        ent.prim.SoundRadius = soundRadius
+        ent.prim.SoundVolume = soundVolume
     else:
-        ent.audio.SetMesh(audiouuid)        
+        ent.prim.SoundID = audiouuid
+        ent.prim.SoundRadius = soundRadius
+        ent.prim.SoundVolume = soundVolume
+        ent.sound.SetSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius, ent.prim.SoundVolume)
+    soundRulerUpdate(ent)
     r.sendRexPrimData(ent.id)
+
+def soundRulerUpdate(ent):
+    try:
+        ent.soundruler
+    except AttributeError:
+        ent.createComponent("EC_SoundRuler")
+
+    sr = ent.soundruler
+    sr.Show()
+    sr.UpdateSoundRuler()

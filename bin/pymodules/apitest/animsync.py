@@ -1,7 +1,8 @@
 """
 A test / draft for defining Naali Entity-Components with Naali Attribute data.
 This one synchs animation state with a GUI slider.
-There is now also another test, door.py, so moved common parts to componenthandler.py
+There is now also another test, door.py .
+Both are registered as ComponentHandlers in componenthandler.py, and instanciated from there when components of interest are encountered in scene data.0
 
 Originally this used the first test version of DynamicComponent that provided a single float attribute (Attribute<float>).
 That can be useful when testing performance and robustness of an upcoming ECA sync mechanism.
@@ -10,14 +11,11 @@ where all attributes of all components for a single entity are synched and store
 
 After this test, a Door test with two attributes: opened & locked, was written.
 First as door.py here, and then as door.js that can be safely loaded from the net (the source is for convenience in Naali repo jsmodules).
-To add support for multiple attributes of various types easily to py & js, that was made using a single Naali string attr to store json.
+To add support for multiple attributes of various types easily to py & js, that was made using a single Naali string attr to store json in v. 0.2.5
 With the current ECA sync the performance makes no diff, so there are little drawbacks in this shortcut to get to experiment more.
 
-Currently the DynamicComponent system doesn't differentiate/allow multiple instances for a single entity
--- that will be easy to add using the existing (quite new) Component instance identification system in Naali.
-But to allow this to work simultaneously with the door tests, adopting this to use the current single JSON attr also.
-Also, the initial idea was to have the door handler sync animation state of the door (for a skel animated folding door (haitariovi)),
-so perhaps these merge somehow.
+Now finally for Naali 0.3.0 this system is quite full featured: the DynamicComponents are identified using names, so there can be several for different purposes in a single Entity, and the handler system works so that there can be any number of Entities with a certain component and the individual handlers for those work correctly.
+
 """
 
 from __future__ import division
@@ -119,50 +117,3 @@ class AnimationSync(circuits.BaseComponent):
 COMPNAME = "animsync"
 #now done in componenthandler 'cause this is not a circuits component / naali module
 #componenthandler.register(COMPNAME, AnimationSync)
-    
-    #failed in the attempt to hide the tool when go out of scenes that have animsync - something of the widget stays there, so get error prints QPainter::end: Painter not active, aborted
-    #def on_logout(self, idt):
-    #    if self.proxywidget is not None:
-    #        self.proxywidget.hide()
-    #        uism = r.getUiSceneManager()
-    #        uism.RemoveProxyWidgetFromScene(self.proxywidget)
-    #        self.proxywidget = None
-    #        self.widget = None
-
-#    def update(self, frametime):
-#        comp = self.comp
-#        if comp is not None:
-#            if 0:
-#                avid = r.getUserAvatarId()
-#                e = r.getEntity(avid)
-#                pos = e.placeable.Position
-#                print pos
-#                comp.SetAttribute(pos.x())
-               #d.ComponentChanged(1) #Foundation::ChangeType::Local - not a qenum yet
-            #print d.GetAttribute()
-
-"""
-gui stuff that used to be here when this was a baseclass
-    @circuits.handler("on_logout")
-    def on_logout(self, idt):
-        if self.comp is not None:
-            try:
-                self.comp.disconnect("OnChanged()", self.onChanged)
-            finally: #disconnect fails if the entity had been deleted
-                self.comp = None
-
-    @circuits.handler("on_exit")
-    def on_exit(self):
-        if self.proxywidget is not None:
-            uism = r.getUiSceneManager()
-            uism.RemoveWidgetFromScene(self.proxywidget)
-
-        self.widget = None
-        self.proxywidget = None
-        self.initgui()
-
-    def initgui(self):
-        pass #overridden in subclasses
-
-    def registergui(self):
-"""

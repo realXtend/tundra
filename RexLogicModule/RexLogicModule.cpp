@@ -86,6 +86,7 @@
 #include "EC_3DCanvasSource.h"
 #include "EC_ChatBubble.h"
 #include "EC_Ruler.h"
+#include "EC_SoundRuler.h"
 #include "EC_Name.h"
 
 #include <OgreManualObject.h>
@@ -144,6 +145,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_3DCanvas);
     DECLARE_MODULE_EC(EC_3DCanvasSource);
     DECLARE_MODULE_EC(EC_Ruler);
+    DECLARE_MODULE_EC(EC_SoundRuler);
     DECLARE_MODULE_EC(EC_Name);
     DECLARE_MODULE_EC(EC_Mesh);
 }

@@ -162,6 +162,7 @@ namespace RexTypes
     ///\note When adding new asset/inventory types, remember also to add them to the functions.
     // UDP Asset types
     const asset_type_t RexAT_Texture = 0;
+    const asset_type_t RexAT_TextureJPEG = 19;
     const asset_type_t RexAT_SoundVorbis = 1;
     const asset_type_t RexAT_SoundWav = 17;
     const asset_type_t RexAT_Mesh = 43;
