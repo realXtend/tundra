@@ -412,6 +412,7 @@ class ObjectEditWindow:
         self.updatingSelection = True
         self.update_guivals(ent)
         self.updatingSelection = False
+        self.controller.soundRuler(ent)
 
     def updatePropertyEditor(self, ent):
         qprim = ent.prim

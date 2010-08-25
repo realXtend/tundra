@@ -174,4 +174,15 @@ def applyaudio(ent, audiouuid, soundRadius, soundVolume):
         ent.prim.SoundRadius = soundRadius
         ent.prim.SoundVolume = soundVolume
         ent.sound.SetSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius, ent.prim.SoundVolume)
+    soundRulerUpdate(ent)
     r.sendRexPrimData(ent.id)
+
+def soundRulerUpdate(ent):
+    try:
+        ent.soundruler
+    except AttributeError:
+        ent.createComponent("EC_SoundRuler")
+
+    sr = ent.soundruler
+    sr.Show()
+    sr.UpdateSoundRuler()
