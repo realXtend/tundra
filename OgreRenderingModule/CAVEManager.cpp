@@ -26,6 +26,7 @@ namespace OgreRenderer
     }
     CAVEManager::~CAVEManager()
     {
+        DisableCAVE();
         if(!view_map_.empty())
         {
             foreach(CAVEView* view, view_map_.values())
@@ -88,10 +89,12 @@ namespace OgreRenderer
             foreach(CAVEView* view, view_map_.values())
             {
                 view->hide();
+                delete view;
                 
             }
 
         }
+        view_map_.clear();
     }
 
     void CAVEManager::EnableCAVE()

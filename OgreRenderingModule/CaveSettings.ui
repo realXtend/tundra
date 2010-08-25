@@ -28,11 +28,22 @@
        </widget>
       </item>
       <item>
-       <widget class="QPushButton" name="addView">
-        <property name="text">
-         <string>Add a new view</string>
-        </property>
-       </widget>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <item>
+         <widget class="QPushButton" name="addView">
+          <property name="text">
+           <string>Add new view</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="addViewAdvanced">
+          <property name="text">
+           <string>Add new view (Advanced)</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </item>
       <item>
        <spacer name="verticalSpacer">

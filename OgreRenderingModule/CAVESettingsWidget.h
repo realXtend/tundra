@@ -6,6 +6,7 @@
 #include <QWidget>
 #include "ui_CaveSettings.h"
 #include "CAVEViewSettings.h"
+#include "CAVEViewSettingsAdvanced.h"
 namespace Foundation
 {
     class Framework;
@@ -26,11 +27,13 @@ namespace OgreRenderer
     public slots:
         void CAVEButtonToggled(bool v);
         void AddNewCAVEView();
+        void AddNewCAVEViewAdvanced();
 
     private:
         
         Foundation::Framework* framework_;
         CAVEViewSettings settings_dialog_;
+        CAVEViewSettingsAdvanced settings_dialog_advanced_;
         int next_view_num_;
         QString view_prefix_;
 

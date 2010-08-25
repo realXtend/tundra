@@ -374,8 +374,9 @@ namespace OgreRenderer
 
     void Renderer::PostInitialize()
     {
-        cave_manager_.InitializeUi();
+        
         resource_handler_->PostInitialize();
+        cave_manager_.InitializeUi();
         
     }
 

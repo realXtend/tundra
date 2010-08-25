@@ -2,8 +2,7 @@
 #include "CAVESettingsWidget.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
-#include "UiModule.h"
-#include "Inworld/InworldSceneController.h"
+#include "UiServiceInterface.h"
 #include "Framework.h"
 #include <Ogre.h>
 #include <QDebug>
@@ -20,16 +19,32 @@ namespace OgreRenderer
         setupUi(this);
 
         framework_ = framework;
-         boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
-
-
-        if (ui_module.get() == 0)
-            return;
-
-        ui_module->GetInworldSceneController()->AddSettingsWidget(this, "CAVE");
+        Foundation::UiServiceInterface *ui = framework->GetService<Foundation::UiServiceInterface>();
+            if (!ui)
+                return;
+        ui->AddSettingsWidget(this, "CAVE");
         QObject::connect(toggle_CAVE, SIGNAL(toggled(bool)),this, SLOT(CAVEButtonToggled(bool)));
         QObject::connect(addView, SIGNAL(clicked(bool)),this,SLOT(AddNewCAVEView()));
+        QObject::connect(addViewAdvanced, SIGNAL(clicked(bool)), this, SLOT(AddNewCAVEViewAdvanced()));
         
+    }
+
+    void CAVESettingsWidget::AddNewCAVEViewAdvanced()
+    {
+        if(settings_dialog_.exec() == QDialog::Accepted)
+        {
+            Ogre::Vector3 bl, br, tl, eye;
+            settings_dialog_.getCaveProjectionSettings(eye,bl,tl,br);
+            settings_dialog_advanced_.setCaveProjectionSettings(eye,bl,tl,br);
+            if(settings_dialog_advanced_.exec() == QDialog::Accepted)
+            {
+                QString view_name = view_prefix_;
+                view_name += QString::number(next_view_num_);
+                emit NewCAVEViewRequested(view_name, tl ,bl, br, eye);
+                next_view_num_++;
+            }
+        }
+
     }
 
     void CAVESettingsWidget::AddNewCAVEView()
@@ -39,8 +54,7 @@ namespace OgreRenderer
             Ogre::Vector3 bl, br, tl, eye;
             settings_dialog_.getCaveProjectionSettings(eye,bl,tl,br);
             QString view_name = view_prefix_;
-            view_name += next_view_num_;
-            qDebug() << view_name;
+            view_name += QString::number(next_view_num_);
             emit NewCAVEViewRequested(view_name, tl ,bl, br, eye);
             next_view_num_++;
 

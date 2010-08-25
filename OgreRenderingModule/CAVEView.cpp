@@ -18,8 +18,8 @@ namespace OgreRenderer
 
     CAVEView::~CAVEView()
     {
-        renderer_->GetSceneManager()->destroyCamera(camera_);
         Ogre::Root::getSingleton().detachRenderTarget(render_window_->getName());
+        renderer_->GetSceneManager()->destroyCamera(camera_);
 
     }
 
@@ -111,12 +111,15 @@ namespace OgreRenderer
         camera_ = new Ogre::Camera(std_name + "_camera", renderer_->GetSceneManager());        
         render_window_->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
+        camera_->getViewport()->setShadowsEnabled(true);
 
 
         //setup the camera
         camera_->setCustomProjectionMatrix(false);
         camera_->setNearClipDistance(original_cam->getNearClipDistance());
         camera_->setFarClipDistance(original_cam->getFarClipDistance());
+        camera_->setVisibilityFlags(original_cam->getVisibilityFlags());
+        
         
         Ogre::SceneNode* node = dynamic_cast<Ogre::SceneNode*>(original_cam->getParentNode());
         if(node)
