@@ -41,7 +41,7 @@ const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
 
 const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
 {
-    if (asset_type == RexAT_Texture)
+    if (asset_type == RexAT_Texture || asset_type == RexAT_TextureJPEG)
         return ASSETTYPENAME_TEXTURE;
     if (asset_type == RexAT_SoundVorbis)
         return ASSETTYPENAME_SOUNDVORBIS;
@@ -65,7 +65,7 @@ const std::string& GetTypeNameFromAssetType(asset_type_t asset_type)
 
 const std::string& GetInventoryTypeString(asset_type_t asset_type)
 {
-    if (asset_type == RexAT_Texture)
+    if (asset_type == RexAT_Texture || asset_type == RexAT_TextureJPEG)
         return IT_TEXTURE;
     if (asset_type == RexAT_SoundVorbis ||
         asset_type == RexAT_SoundWav)
@@ -134,7 +134,7 @@ const std::string& GetAssetTypeString(asset_type_t asset_type)
 
 const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
 {
-    if (asset_type == RexAT_Texture)
+    if (asset_type == RexAT_Texture || asset_type == RexAT_TextureJPEG)
         return CATEGORY_TEXTURE;
     if (asset_type == RexAT_SoundVorbis ||
         asset_type == RexAT_SoundWav)
@@ -157,7 +157,7 @@ const std::string& GetCategoryNameForAssetType(asset_type_t asset_type)
 
 const std::string& GetOpenFileNameFilter(asset_type_t asset_type)
 {
-    if (asset_type == RexAT_Texture)
+    if (asset_type == RexAT_Texture || asset_type == RexAT_TextureJPEG)
         return IMAGE_FILTER;
     if (asset_type == RexAT_SoundVorbis ||
         asset_type == RexAT_SoundWav)
@@ -214,6 +214,8 @@ std::string GetFileExtensionFromAssetType(const asset_type_t &asset_type)
     {
     case RexAT_Texture:
         return ".png";
+    case RexAT_TextureJPEG:
+        return ".jpeg";
     case RexAT_SoundVorbis:
         return ".ogg";
     case RexAT_SoundWav:
