@@ -68,7 +68,7 @@ namespace Environment
         event_manager_ = framework_->GetEventManager();
         
         // Depends on rexlogic etc. handling messages first to create the scene, so lower priority
-        event_manager_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 99);
+        event_manager_->RegisterEventSubscriber(this, 99);
 
         resource_event_category_ = event_manager_->QueryEventCategory("Resource");
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
