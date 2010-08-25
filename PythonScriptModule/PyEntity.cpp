@@ -16,6 +16,7 @@
 #include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
+#include "EC_SoundRuler.h"
 #include "EC_Highlight.h"
 #include "EC_Touchable.h"
 #include "EC_OpenSimPrim.h"
@@ -341,6 +342,18 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         }
         RexLogic::EC_AttachedSound* sound= checked_static_cast<RexLogic::EC_AttachedSound*>(component_soundptr.get());
         return PythonScriptModule::GetInstance()->WrapQObject(sound);
+    }
+    
+    else if (s_name.compare("soundruler") == 0)
+    {
+        Foundation::ComponentPtr soundrulerComponent= entity->GetComponent(EC_SoundRuler::TypeNameStatic());
+        if (!soundrulerComponent)
+        {
+             PyErr_SetString(PyExc_AttributeError, "Entity doesn't have a sound ruler component.");
+             return NULL;
+        }
+        EC_SoundRuler* soundruler = checked_static_cast<EC_SoundRuler*>(soundrulerComponent.get());
+        return PythonScriptModule::GetInstance()->WrapQObject(soundruler);
     }
 
     else if (s_name.compare("text") == 0)

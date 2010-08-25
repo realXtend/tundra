@@ -166,6 +166,7 @@ class ObjectEdit(Component):
         self.worldstream.SendObjectSelectPacket(ent.id)
         #self.updateSelectionBox(ent)
         self.highlight(ent)
+        self.soundRuler(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
 
         #print "selected", ent
@@ -226,10 +227,12 @@ class ObjectEdit(Component):
             self.window.addToList(child)
             self.window.highlightEntityFromList(child)
             self.highlight(child)
+            self.soundRuler(child)
             #self.sels.append(child)
             
     def deselect(self, ent):
         self.remove_highlight(ent)
+        self.removeSoundRuler(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.id == ent.id:
                 self.sels.remove(_ent)
@@ -241,6 +244,7 @@ class ObjectEdit(Component):
             
             for ent in self.sels:
                 self.remove_highlight(ent)
+                self.removeSoundRuler(ent)
             self.sels = []
             #self.hideSelector()
             
@@ -285,7 +289,29 @@ class ObjectEdit(Component):
         except AttributeError:
             r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.id)
         else:
-            h.Hide()        
+            h.Hide()
+
+    def soundRuler(self, ent):
+        if ent.prim.SoundID:
+            try:
+                ent.soundruler
+            except AttributeError:
+                ent.createComponent("EC_SoundRuler")
+
+            sr = ent.soundruler
+            sr.SetVolume(ent.prim.SoundVolume)
+            sr.SetRadius(ent.prim.SoundRadius)
+            sr.Show()
+            sr.UpdateSoundRuler()
+
+    def removeSoundRuler(self, ent):
+        if ent.prim.SoundID:
+            try:
+                sr = ent.soundruler
+            except AttributeError:
+                r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.id)
+            else:
+                sr.Hide()
 
     def changeManipulator(self, id):
         #r.logInfo("changing manipulator to " + str(id))
@@ -734,6 +760,7 @@ class ObjectEdit(Component):
                 self.deselect_all()
                 for ent in self.sels:
                     self.remove_highlight(ent)
+                    self.removeSoundRuler(ent)
 
         # Store the state before build scene activated us
         if activate == True and self.windowActiveStoredState == None:
