@@ -171,18 +171,22 @@ namespace UiServices
         }
         else if (category == "NetworkState")
         {
+            using namespace ProtocolUtilities;
             switch (event_id)
             {
-                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
-                    PublishConnectionState(Failed);
+                case Events::EVENT_CONNECTION_FAILED:
+                {
+                    ConnectionFailedEvent *event = static_cast<ConnectionFailedEvent *>(data);
+                    PublishConnectionState(Failed, event->message);
                     break;
-                case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
+                }
+                case Events::EVENT_SERVER_DISCONNECTED:
                     PublishConnectionState(Disconnected);
                     break;
-                case ProtocolUtilities::Events::EVENT_USER_KICKED_OUT:
+                case Events::EVENT_USER_KICKED_OUT:
                     PublishConnectionState(Disconnected);
                     break;
-                case ProtocolUtilities::Events::EVENT_SERVER_CONNECTED:
+                case Events::EVENT_SERVER_CONNECTED:
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
                     // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
                     break;
@@ -223,7 +227,7 @@ namespace UiServices
             inworld_scene_controller_->SetFocusToChat();
     }
 
-    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state)
+    void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
     {
         switch (connection_state)
         {
@@ -252,7 +256,7 @@ namespace UiServices
             }
             case Failed:
             {
-                ether_logic_->SetConnectionState(connection_state);
+                ether_logic_->SetConnectionState(connection_state, message);
                 break;
             }
             default:
@@ -265,11 +269,6 @@ namespace UiServices
         service_category_identifiers_.clear();
         foreach (QString category, event_query_categories_)
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
-    }
-
-    QObject *UiModule::GetEtherLoginNotifier() const
-    {
-        return ether_logic_->GetLoginNotifier();
     }
 
     QPair<QString, QString> UiModule::GetScreenshotPaths()

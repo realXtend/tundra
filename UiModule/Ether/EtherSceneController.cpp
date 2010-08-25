@@ -697,7 +697,9 @@ namespace Ether
 
         void EtherSceneController::HideStatusWidget()
         {
-            status_widget_->hide();
+            // If we have multiple status informations qutaeued i.e. timer is still active, don't hide
+            if (!info_hide_timer_->isActive())
+                status_widget_->hide();
         }
 
         void EtherSceneController::TryExitApplication()

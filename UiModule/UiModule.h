@@ -18,11 +18,6 @@
 class KeyEvent;
 class InputContext;
 
-namespace OgreRenderer
-{
-    class QOgreUIView;
-}
-
 namespace ProtocolUtilities
 {
     class WorldStream;
@@ -69,8 +64,6 @@ namespace UiServices
 
         CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
 
-        QObject *GetEtherLoginNotifier() const;
-
         QPair<QString, QString> GetScreenshotPaths();
 
         //! Logging
@@ -84,7 +77,8 @@ namespace UiServices
 
     private:
         //! Notify all ui module components of connected/disconnected state
-        void PublishConnectionState(ConnectionState connection_state);
+        //! \param message Optional message, e.g. error message.
+        void PublishConnectionState(ConnectionState connection_state, const QString &message = "");
 
         //! Get all the category id:s of categories in eventQueryCategories
         void SubscribeToEventCategories();
@@ -100,9 +94,6 @@ namespace UiServices
 
         //! Pointer to the QOgre UiView
         QGraphicsView *ui_view_;
-
-        //! UiConsoleManager pointer
-//        CoreUi::UiConsoleManager* ui_console_manager_;
 
         //! UiStateMachine pointer
         CoreUi::UiStateMachine *ui_state_machine_;
@@ -128,6 +119,7 @@ namespace UiServices
         //! Ui service.
         UiSceneServicePtr ui_scene_service_;
 
+        //! Input context for Ether
         boost::shared_ptr<InputContext> input;
     };
 }
