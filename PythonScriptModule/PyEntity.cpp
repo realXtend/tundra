@@ -449,12 +449,11 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("animationcontroller") == 0)
     {
-        //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-        const Foundation::ComponentInterfacePtr &animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
+        const Foundation::ComponentInterfacePtr animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
         OgreRenderer::EC_OgreAnimationController* animationcontrol = 0;
         if (animationcontrol_ptr)
         {
-          animationcontrol = checked_static_cast<OgreRenderer::EC_OgreAnimationController *>(animationcontrol_ptr.get());
+            animationcontrol = checked_static_cast<OgreRenderer::EC_OgreAnimationController *>(animationcontrol_ptr.get());
             return PythonScriptModule::GetInstance()->WrapQObject(animationcontrol);
         }
         else
