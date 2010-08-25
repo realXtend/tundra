@@ -285,6 +285,7 @@ namespace OgreRenderer
 #endif
 
         // Allow PSSM mode shadows only on DirectX
+        // On OpenGL (arbvp & arbfp) it runs out of vertex shader outputs
         shadowquality_ = (ShadowQuality)(framework_->GetDefaultConfig().DeclareSetting<int>(
             "OgreRenderer", "shadow_quality", 2));
         if ((shadowquality_ == Shadows_High) && (rendersystem_name != "Direct3D9 Rendering Subsystem"))

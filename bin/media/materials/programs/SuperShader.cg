@@ -125,7 +125,6 @@ void mainVS
 #endif
 #endif
 
-#endif
 }
 
 
@@ -152,7 +151,6 @@ void mainPS(
 	in float4 shadowTex1,
 	in float4 shadowTex2,
 #endif
-
 #endif
 
 #if !defined(NORMAL_MAPPING)
