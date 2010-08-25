@@ -64,6 +64,8 @@ namespace UiServices
 
         CoreUi::UiStateMachine *GetUiStateMachine() const { return ui_state_machine_; }
 
+        Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
+
         QPair<QString, QString> GetScreenshotPaths();
 
         //! Logging
