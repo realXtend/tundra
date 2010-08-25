@@ -6,6 +6,15 @@
 #include <QKeyEvent>
 #include <QDebug>
 
+#ifdef Q_WS_X11
+#include <QX11Info>
+#endif
+
+#ifdef Q_WS_WIN
+#include <windows.h>
+#endif
+
+
 namespace OgreRenderer
 {
 
