@@ -19,6 +19,7 @@ class QtGroupPropertyManager;
 class QtBrowserItem;
 class QTreeWidget;
 class QMenu;
+class QMimeData;
 
 namespace Foundation
 {
@@ -56,6 +57,7 @@ namespace ECEditor
         virtual ~ECBrowser();
 
         //! Insert new entity to browser and add it's components to the browser.
+        //! Note! to get changes visible you need to call UpdateBrowser method.
         /*! @param enity a new entity that we want to edit on the ECEditor.
          */
         void AddNewEntity(Scene::Entity *entity);
@@ -81,6 +83,16 @@ namespace ECEditor
         /*! @param component Pointer to a component that has just been selected.
          */
         void ComponentSelected(Foundation::ComponentInterface *component);
+
+    protected:
+        //! Override from QWidget.
+        void dragEnterEvent(QDragEnterEvent *event);
+        //! Override from QWidget.
+        void dropEvent(QDropEvent *event);
+        //! Override from QWidget.
+        void dragMoveEvent(QDragMoveEvent *event);
+        //! dropEvent will call this after feching the information that is need from the QDropEvent data.
+        bool dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action);
 
     private:
         //! Initialize browser widget and create all connections for different QObjects.
