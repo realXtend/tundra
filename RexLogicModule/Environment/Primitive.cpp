@@ -1097,6 +1097,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
 
         switch(i->second.Type)
         {
+            case RexTypes::RexAT_TextureJPEG:
             case RexTypes::RexAT_Texture:
             {
                 Foundation::ResourcePtr res = renderer->GetResource(mat_name, OgreRenderer::OgreTextureResource::GetTypeStatic());
@@ -1446,7 +1447,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
         while (i != prim->Materials.end())
         {
             uint idx = i->first;
-            if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(res->GetId()) == 0))
+            if ((i->second.Type == RexTypes::RexAT_Texture || i->second.Type == RexTypes::RexAT_TextureJPEG) && (i->second.asset_id.compare(res->GetId()) == 0))
             {
                 // Use a legacy material with the same name as the texture
                 OgreRenderer::GetOrCreateLegacyMaterial(res->GetId(), OgreRenderer::LEGACYMAT_NORMAL);
