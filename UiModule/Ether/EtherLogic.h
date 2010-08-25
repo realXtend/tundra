@@ -16,24 +16,13 @@ namespace Foundation
     class Framework;
 }
 
-namespace RexLogic
-{
-    class OpenSimLoginHandler;
-}
-
 namespace Ether
 {
-
     namespace Logic
     {
-        class EtherSceneController;
-        class EtherStateMachine;
-        class EtherLoginNotifier;
-
         class EtherLogic : public QObject
         {
-
-        Q_OBJECT
+            Q_OBJECT
 
         public:
             EtherLogic(Foundation::Framework *framework, QGraphicsView *view);
@@ -45,12 +34,12 @@ namespace Ether
             void PrintAvatarMap();
             void PrintWorldMap();
 
-            void SetConnectionState(UiServices::ConnectionState connection_state);
+            void SetConnectionState(UiServices::ConnectionState connection_state, const QString &message = "");
 
-            View::EtherScene *GetScene()  const { return scene_; }
-            EtherSceneController *GetSceneController()  const { return scene_controller_; }
+            View::EtherScene *GetScene() const { return scene_; }
+            EtherSceneController *GetSceneController() const { return scene_controller_; }
 
-            QObject *GetLoginNotifier() const;
+            EtherLoginNotifier *GetLoginNotifier() const { return login_notifier_; }
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);
             void UpdateUiPixmaps();
 
