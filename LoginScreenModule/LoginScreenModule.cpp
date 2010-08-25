@@ -20,13 +20,38 @@
 
 #include "MemoryLeakCheck.h"
 
+/*
+void StoreLoginInfo(const QMap<QString, QString> &login_info)
+{
+    QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, classic_settings_name_);
+    settings.setValue("avatar/type", classic_login_info["avatartype"]);
+    settings.setValue("avatar/account", classic_login_info["account"]);
+    settings.setValue("avatar/password", QByteArray(classic_login_info["password"].toStdString().c_str()).toBase64());
+    settings.setValue("world/loginurl", QUrl(classic_login_info["loginurl"]));
+    settings.setValue("world/startlocation", classic_login_info["startlocation"]);
+}
+
+QMap<QString, QString> GetLoginInfo() const
+{
+    QSettings classic_settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, classic_settings_name_);
+    QMap<QString, QString> info;
+    info["avatartype"] = classic_settings.value("avatar/type").toString();
+    info["account"] = classic_settings.value("avatar/account").toString();
+    info["password"] = QByteArray::fromBase64(classic_settings.value("avatar/password").toByteArray());
+    info["loginurl"] = classic_settings.value("world/loginurl").toUrl().toString();
+    info["startlocation"] = classic_settings.value("world/startlocation").toString();
+    return data_map;
+}
+*/
+
 std::string LoginScreenModule::type_name_static_ = "LoginScreen";
 
 LoginScreenModule::LoginScreenModule() :
     ModuleInterface(type_name_static_),
     window_(0),
     framework_category_(0),
-    network_category_(0)
+    network_category_(0),
+    connected_(false)
 {
 }
 
@@ -46,28 +71,29 @@ void LoginScreenModule::PostInitialize()
 {
     input_ = framework_->Input().RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
-//    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
 
     Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (ui)
     {
-        window_ = new LoginWidget(0, QMap<QString, QString>());
-        window_->setWindowState(Qt::WindowFullScreen);
+        window_ = new LoginWidget(QMap<QString, QString>());
+        connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
-        UiProxyWidget *proxy = ui->AddWidgetToScene(window_, Qt::Widget);
-        proxy->setPos(0,0);
-        proxy->show();
+        ui->AddWidgetToScene(window_, Qt::Widget);
+        ui->ShowWidget(window_);
 
         Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
         if (login)
         {
-            connect(window_, SIGNAL(ConnectOpenSim(const QMap<QString, QString> &)),
+            connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
                 login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
-            connect(window_, SIGNAL(ConnectRealXtend(const QMap<QString, QString> &)),
-                login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
-//            connect(login, SIGNAL(LoginStarted()), window_, SLOT(StatusUpdate(true, const QString &)));
-//            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StatusUpdate(false, QString &)));
-//            connect(login, SIGNAL(LoginSuccessful()), window_, SLOT(test()));
+
+            connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
+
+            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StopProgressBar()));
+            connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(SetStatus(const QString &)));
+
+            connect(login, SIGNAL(LoginSuccessful()), window_, SLOT(Connected()));
         }
     }
 
@@ -99,15 +125,21 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
         switch(event_id)
         {
         case EVENT_SERVER_CONNECTED:
+            connected_ = true;
             if (ui && window_)
+            {
+                window_->SetStatus("Connected");
                 ui->HideWidget(window_);
+            }
             break;
         case EVENT_USER_KICKED_OUT:
         case EVENT_SERVER_DISCONNECTED:
+            connected_ = false;
             if (ui && window_)
                 ui->ShowWidget(window_);
             break;
         case EVENT_CONNECTION_FAILED:
+            connected_ = false;
             break;
         }
     }
@@ -123,9 +155,18 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     const QKeySequence &toggleMenu = framework_->Input().KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
-        // if (connected)
-        //    toggle window
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (connected_ && ui)
+            if (!window_->isVisible())
+                ui->ShowWidget(window_);
+            else
+                ui->HideWidget(window_);
     }
+}
+
+void LoginScreenModule::Exit()
+{
+    framework_->Exit();
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
