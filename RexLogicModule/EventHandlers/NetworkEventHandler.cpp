@@ -524,41 +524,36 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
         return false;
 
     // Notifier qobject ptr
-    QObject *object = ui_module->GetEtherLoginNotifier();
-    if (!object)
+    Ether::Logic::EtherLoginNotifier* notifier = ui_module->GetEtherLoginNotifier();
+    if (!notifier)
         return false;
 
-    // Cast to actual class from qobject ptr
-    Ether::Logic::EtherLoginNotifier* notifier = dynamic_cast<Ether::Logic::EtherLoginNotifier*>(object);
-    if (notifier)
+    if (!notifier->IsTeleporting())
+        ongoing_script_teleport_ = false;
+
+    if (!ongoing_script_teleport_)
     {
-        if (!notifier->IsTeleporting())
-            ongoing_script_teleport_ = false;
-        
-        if (!ongoing_script_teleport_)
-        {
-            // Create question notification
-            QString posx = "";
-            QString posy = "";
-            QString posz = "";
-            posx.setNum(position.x);
-            posy.setNum(position.y);
-            posz.setNum(position.z);
+        // Create question notification
+        QString posx = "";
+        QString posy = "";
+        QString posz = "";
+        posx.setNum(position.x);
+        posy.setNum(position.y);
+        posz.setNum(position.z);
 
-            UiServices::QuestionNotification *question_notification = 
-                new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()),
-                    "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
+        UiServices::QuestionNotification *question_notification = 
+            new UiServices::QuestionNotification(QString("Do you want to teleport to region %1.").arg(region_name.c_str()),
+                "Yes", "No", "", QString(region_name.c_str())+"&"+posx+"&"+posy+"&"+posz, 7000);
 
-            // Connect notifier to recieve the answer signal
-            QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
+        // Connect notifier to recieve the answer signal
+        QObject::connect(question_notification, SIGNAL(QuestionAnswered(QString, QString)), notifier, SLOT(ScriptTeleportAnswer(QString, QString)));
 
-            // Send notification
-            ui_module->GetNotificationManager()->ShowNotification(question_notification);
+        // Send notification
+        ui_module->GetNotificationManager()->ShowNotification(question_notification);
 
-            // Set bools that we dont get spam notification if you are standing in the script zone
-            ongoing_script_teleport_ = true;
-            notifier->SetIsTeleporting(true);
-        }
+        // Set bools that we dont get spam notification if you are standing in the script zone
+        ongoing_script_teleport_ = true;
+        notifier->SetIsTeleporting(true);
     }
 #endif
     return false;

@@ -342,7 +342,7 @@ namespace ECEditor
             return;
         }
 
-        //! \todo hackish way to improve the browser perfomance by hiding the widget until all the changes are made
+        //! \todo hackish way to improve the browser performance by hiding the widget until all the changes are made
         //! so that unnecessary widget paints are avoided. This need be fixed in a way that browser's load is minimal.
         //! To ensure that the editor can handle thousands of induvicual elements in the same time.
         browser_->hide();

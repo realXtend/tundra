@@ -32,15 +32,13 @@ namespace Ether
 {
     namespace Logic
     {
-        EtherLogic::EtherLogic(Foundation::Framework *framework, QGraphicsView *view)
-            : QObject(),
+        EtherLogic::EtherLogic(Foundation::Framework *framework, QGraphicsView *view) :
               framework_(framework),
               view_(view),
               data_manager_(new Data::DataManager(this)),
               card_size_(QRectF(0, 0, 470, 349)),
               previous_scene_(0)
         {
-
 #ifdef DYNAMIC_LOGIN_SCENE
             StoreDataToFilesIfEmpty();
 
@@ -69,9 +67,9 @@ namespace Ether
 
             // Create scene controller
             scene_controller_ = new EtherSceneController(this, data_manager_, scene_, menus, card_size_, top_menu_visible_items_, bottom_menu_visible_items_);
-            
+
             // Create login handler
-            login_notifier_ = new EtherLoginNotifier(this, scene_controller_, framework); 
+            login_notifier_ = new EtherLoginNotifier(this, scene_controller_, framework);
 
             // Signals from scene contoller
             connect(scene_controller_, SIGNAL( ApplicationExitRequested() ),
@@ -329,11 +327,6 @@ namespace Ether
             }
         }
 
-        QObject *EtherLogic::GetLoginNotifier() const
-        {
-            return login_notifier_;
-        }
-
         void EtherLogic::ParseInfoFromCards(QPair<View::InfoCard*, View::InfoCard*> ui_cards)
         {
             QPair<Data::AvatarInfo*, Data::WorldInfo*> data_cards;
@@ -498,7 +491,7 @@ namespace Ether
             }
         }
 
-        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state)
+        void EtherLogic::SetConnectionState(UiServices::ConnectionState connection_state, const QString &message)
         {
             switch (connection_state)
             {
@@ -518,7 +511,7 @@ namespace Ether
                 case UiServices::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-                    scene_controller_->ShowStatusInformation("Failed to connect");
+                    scene_controller_->ShowStatusInformation("Failed to connect: "+ message);
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
