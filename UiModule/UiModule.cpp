@@ -271,6 +271,11 @@ namespace UiServices
             service_category_identifiers_[category] = framework_->GetEventManager()->QueryEventCategory(category.toStdString());
     }
 
+    Ether::Logic::EtherLoginNotifier *UiModule::GetEtherLoginNotifier() const
+    {
+        return ether_logic_->GetLoginNotifier();
+    }
+
     QPair<QString, QString> UiModule::GetScreenshotPaths()
     {
         return ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
