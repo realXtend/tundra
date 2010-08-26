@@ -87,9 +87,6 @@ private:
     /// Ogre scene node to attach EC to when we want global space axis vis
     Ogre::SceneNode *globalSceneNode;
     
-    /// Holds prim
-    EC_OpenSimPrim *prim;
-    
     // Name for this ruler
     std::string rulerName;
     
