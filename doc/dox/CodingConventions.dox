@@ -19,12 +19,12 @@ the template and inline code that is associated to that class.
 
 \subsection nameconvh Header Files
 Each .cpp file should have corresponding header file, excluding certain .cpp files such as main.cpp and unit tests. 
-All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be incl_NamespaceClassName_h.
+All header files should have #define guards to prevent multiple inclusion. The format of the symbol name should be incl_ModuleName_ClassName_h.
 
 Example:
 \verbatim
-#ifndef incl_CoreStdIncludes_h
-#define incl_CoreStdIncludes_h
+#ifndef incl_Core_StdIncludes_h
+#define incl_Core_StdIncludes_h
 \endverbatim
 Use <b>forward declarations</b> to minimize use of \#include declarations in header files.
 
@@ -78,12 +78,13 @@ before this document was written. Still, when in doubt, observe the existing cod
 if and when necessary.
 
 \section cppstandard Programming Guidelines
-The RealXtend architecture uses <b>STL</b>, <b>Boost</b> and <b>PoCo</b> as the major frameworks. Please prefer using the containers
-and algorithms found in those wherever it is sensible. Avoid being too smart, there is no need to spend time figuring out how to achieve something
+The RealXtend architecture uses <b>Qt</b>, <b>STL</b>, <b>Boost</b> and <b>PoCo</b> as the major frameworks. Please prefer using the containers
+and algorithms found in those wherever it is sensible. <b>The aim is to steer the architecture more towards being a pure Qt application so prefer 
+Qt over the other major frameworks.</b> Avoid being too smart, there is no need to spend time figuring out how to achieve something
 using a stl back_inserter_iterator combined with a mem_fun_ref and a bind2nd if writing it using a simple loop would only take you
 a moment.
 
-If you need to use code from other dependency libraries, like Gtk, in an unexpected context, make sure to document the dependency
+If you need to use code from other dependency libraries in an unexpected context, make sure to document the dependency
 clearly. Some of the dependencies are evolving and might be changed out later on.
 
 The core architecture uses <b>boost::shared_ptr</b> and <b>boost::weak_ptr</b> extensively. Be sure to understand how to use these and what their
