@@ -138,9 +138,7 @@ class MediaURLHandler(Component):
             
             # Check if texture is in scene and only if is create playback widget
             if mv.playback_widget == None:
-                # Dont remove this print, as in mediaurl heavy worlds there may come many of these on login
-                # so dev can at least see in console that viewer has not died as it might seem so otherwise - Jonne
-                r.logInfo("MediaUrlHandler: Checking scene for texture " + str(textureuuid))
+                r.logDebug("MediaUrlHandler: Checking scene for texture " + str(textureuuid))
                 if r.checkSceneForTexture(textureuuid):
                     mv.create_playback_widget()
                     
