@@ -116,11 +116,6 @@ void EC_SoundRuler::Create()
     if (!placeable)
         return;
     sceneNode_ = placeable->GetSceneNode();
-    
-    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-    assert(prim);
-    if (!prim)
-        return;
 
     assert(sceneNode_);
     if (!sceneNode_)
