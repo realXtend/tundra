@@ -32,7 +32,8 @@ namespace ProtocolUtilities
         virtual void OnNetworkMessageReceived(NetMsgID msgID, NetInMessage *msg) = 0;
 
         /// Called for each network message that is sent. This callback is provided just for 
-        /// debugging/stats collecting. \todo Provide a converter object that converts a Protocol::NetOutMessage to a NetMessage base object or a NetInMessage object to allow reading the contents.
+        /// debugging/stats collecting. \todo Provide a converter object that converts a Protocol::NetOutMessage 
+        /// to a NetMessage base object or a NetInMessage object to allow reading the contents.
         /// @param msg The message contents.
         virtual void OnNetworkMessageSent(const NetOutMessage *msg) {}
     };

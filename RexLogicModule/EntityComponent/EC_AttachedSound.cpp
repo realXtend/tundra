@@ -108,6 +108,32 @@ namespace RexLogic
         sounds_[OpenSimAttachedSound] = 0;
         sounds_[RexAmbientSound] = 0;
     }   
+    void EC_AttachedSound::SetSound(QString& name, QVector3D& pos, float soundRadius, float soundVolume)
+    {
+        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
+            framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!soundsystem)
+            return;
+        
+        sound_id_t sound_id = soundsystem->PlaySound3D(name.toStdString(), Foundation::SoundServiceInterface::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
+        
+        this->AddSound(sound_id, EC_AttachedSound::RexAmbientSound); 
+        
+        // The ambient sounds will always loop
+        soundsystem->SetLooped(sound_id, true);
+        
+        // Set sound radius
+        if(soundRadius > 0.0) {
+            soundsystem->SetPositional(sound_id, true);
+            soundsystem->SetRange(sound_id, 0.0f, soundRadius, 2.0f);
+        }
+        else
+        {
+            soundsystem->SetPositional(sound_id, false);
+        }
+        // set volume
+        soundsystem->SetGain(sound_id, soundVolume);
+    }
     
     void EC_AttachedSound::AddSound(sound_id_t sound, SoundSlot slot)
     {

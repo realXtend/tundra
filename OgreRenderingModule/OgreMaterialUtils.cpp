@@ -332,15 +332,6 @@ namespace OgreRenderer
         }
     }
     
-    Foundation::ResourcePtr CreateResourceFromMaterial(Ogre::MaterialPtr material)
-    {
-        assert(!material.isNull());
-        OgreMaterialResource* res = new OgreMaterialResource(material->getName());
-        res->SetMaterial(material);
-        Foundation::ResourcePtr res_ptr(res);
-        return res_ptr;
-    }
-    
     void RemoveMaterial(Ogre::MaterialPtr& material)
     {
         if (!material.isNull())

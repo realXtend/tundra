@@ -5,7 +5,7 @@
 
 #include "ui_TraditionalLoginWidget.h"
 
-#include <QTimer>
+class QTimer;
 
 namespace CoreUi
 {
@@ -23,6 +23,10 @@ namespace CoreUi
             QMap<QString, QString> GetLoginInfo() const;
             void StatusUpdate(bool connecting, const QString &message);
 
+            void SetStatus(const QString &message);
+            void StartProgressBar();
+            void StopProgressBar();
+
         private slots:
             void ParseInputAndConnect();
             void UpdateProgressBar();
@@ -32,8 +36,7 @@ namespace CoreUi
             int progress_direction_;
 
         signals:
-            void ConnectOpenSim(const QMap<QString, QString> &);
-            void ConnectRealXtend(const QMap<QString, QString> &);
+            void Connect(const QMap<QString, QString> &);
             void ConnectingUiUpdate(const QString &message);
         };
     }

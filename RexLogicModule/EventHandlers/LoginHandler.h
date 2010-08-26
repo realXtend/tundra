@@ -26,15 +26,31 @@ namespace RexLogic
         Q_OBJECT
 
     public:
+        /** Constuctor.
+         *  @param owner Owner module.
+         */
         explicit LoginHandler(RexLogicModule *owner);
+
+        /// Destructor.
         virtual ~LoginHandler();
 
     public slots:
+        /// LoginServiceInterface override.
         void ProcessLoginData(const QMap<QString, QString> &data);
+
+        /// LoginServiceInterface override.
         void ProcessLoginData(QWebFrame *frame);
+
+        /// LoginServiceInterface override.
         void ProcessLoginData(const QString &url);
+
+        /// LoginServiceInterface override.
         void StartWorldSession();
+
+        /// LoginServiceInterface override.
         void Logout();
+
+        /// LoginServiceInterface override.
         void Quit();
 
     private:
@@ -49,6 +65,11 @@ namespace RexLogic
 
         /// Server URL.
         QUrl server_entry_point_url_;
+
+    private slots:
+        void HandleLoginFailed(const QString &message);
+
+        void HandleLoginSuccessful();
     };
 }
 

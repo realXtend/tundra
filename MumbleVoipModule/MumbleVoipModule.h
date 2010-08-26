@@ -15,14 +15,7 @@ namespace MumbleVoip
 {
     class LinkPlugin;
     class ServerInfoProvider;
-    class ConnectionManager;
-    class ServerInfo;
-    class ApplicationManager;
-
-    namespace InWorldVoice
-    {
-        class Provider;
-    } 
+    class Provider;
 
     /**
      *  Mumble support for Naali viewer.
@@ -86,7 +79,7 @@ namespace MumbleVoip
         
         LinkPlugin* link_plugin_;
         ServerInfoProvider* server_info_provider_;
-        InWorldVoice::Provider* in_world_voice_provider_;
+        Provider* in_world_voice_provider_;
 
         static const int LINK_PLUGIN_UPDATE_INTERVAL_MS_ = 100;
         int time_from_last_update_ms_;

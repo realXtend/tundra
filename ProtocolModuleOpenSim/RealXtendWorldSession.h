@@ -3,28 +3,29 @@
 #ifndef incl_Protocol_RealXtendWorldSession_h
 #define incl_Protocol_RealXtendWorldSession_h
 
-#include "LoginCredentials.h"
-
 #include "ProtocolModuleOpenSimApi.h"
 #include "Interfaces/WorldSessionInterface.h"
+#include "LoginCredentials.h"
 
-#include <QUrl>
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace OpenSimProtocol
 {
+    class ProtocolModuleOpenSim;
+
     class OSPROTO_MODULE_API RealXtendWorldSession : public ProtocolUtilities::WorldSessionInterface
     {
+        Q_OBJECT
+
     public:
-        //! RealXtendWorldSession constructor
+        //! Constructor
         RealXtendWorldSession(Foundation::Framework *framework);
 
-        //! RealXtendWorldSession deconstructor
+        //! Destructor.
         virtual ~RealXtendWorldSession(void);
-
-        /* INHERITED FUNCTIONS FROM WorldSessionInterface */
-
-        //! Login function
-        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
 
         /**
          * Logs in to a reX server using the authentication procedure.
@@ -49,22 +50,25 @@ namespace OpenSimProtocol
             const QString& start_location,
             ProtocolUtilities::ConnectionThreadState *thread_state);
 
-        //! Make Url validation according to type
+        //! WorldSessionInterface override
+        bool StartSession(const LoginCredentials &credentials, const QUrl &serverEntryPointUrl);
+
+        //! WorldSessionInterface override
         QUrl ValidateUrl(const QString &urlString, const UrlType urlType);
 
-        //! Get login credentials
+        //! WorldSessionInterface override
         LoginCredentials GetCredentials() const;
 
-        //! Get server entry point url. Used for xmlrpc login_to_simulator and authentication internally.
+        //! WorldSessionInterface override
         QUrl GetServerEntryPointUrl() const;
 
-        //! Get created WorldStream: void -> WorldStreamInterface when implemented
+        //! WorldSessionInterface override
         void GetWorldStream() const;
 
-        //! Set login credentials
+        //! WorldSessionInterface override
         void SetCredentials(const LoginCredentials &credentials);
 
-        //! Set server entry point url
+        //! WorldSessionInterface override
         void SetServerEntryPointUrl(const QUrl &newUrl);
 
     private:
@@ -78,7 +82,10 @@ namespace OpenSimProtocol
         Foundation::Framework *framework_;
 
         //! Pointer to the opensim network interface.
-        boost::weak_ptr<OpenSimProtocol::ProtocolModuleOpenSim> networkOpensim_;
+        boost::weak_ptr<ProtocolModuleOpenSim> networkOpensim_;
+
+    private slots:
+        void HandleLoginStateChange(int state);
     };
 }
 

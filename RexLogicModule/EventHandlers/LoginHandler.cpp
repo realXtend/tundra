@@ -81,13 +81,12 @@ namespace RexLogic
                 if (server_entry_point_url_.isValid())
                 {
                     Logout();
-                    emit LoginStarted();
                     StartWorldSession();
                 }
             }
             else
             {
-                RexLogicModule::LogError("Username was not in form firstname lastname, could not perform login");
+                RexLogicModule::LogError("Username was not in form \"firstname lastname\", could not perform login");
             }
         }
         else if (type == "RealXtend")
@@ -105,14 +104,12 @@ namespace RexLogic
             if (server_entry_point_url_.isValid())
             {
                 Logout();
-                emit LoginStarted();
                 StartWorldSession();
             }
         }
         else
         {
-            RexLogicModule::LogError("Could not find avatar type in login info map.");
-            //emit LoginFailed("msg");
+            RexLogicModule::LogError("Could not find avatar type in login info map. Cannot proceed login.");
         }
     }
 
@@ -135,7 +132,6 @@ namespace RexLogic
         {
             credentials_.SetType(ProtocolUtilities::AT_Taiga);
             Logout();
-            emit LoginStarted();
             StartWorldSession();
         }
     }
@@ -147,119 +143,76 @@ namespace RexLogic
         if (server_entry_point_url_.isValid())
         {
             credentials_.SetType(ProtocolUtilities::AT_Taiga);
-            emit LoginStarted();
             StartWorldSession();
         }
     }
 
     void LoginHandler::StartWorldSession()
     {
-        bool success = false;
+        emit LoginStarted();
 
-        if (credentials_.GetType() == ProtocolUtilities::AT_OpenSim)
+        SAFE_DELETE(world_session_);
+        ProtocolUtilities::WorldStreamPtr stream = owner_->GetServerConnection();
+
+        // Prepare the right world session.
+        switch(credentials_.GetType())
         {
-            ProtocolUtilities::WorldStreamPtr stream = owner_->GetServerConnection();
+        case ProtocolUtilities::AT_OpenSim:
+        {
             stream->UnregisterCurrentProtocolModule();
             stream->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
             stream->SetConnectionType(ProtocolUtilities::DirectConnection);
             stream->StoreCredentials(credentials_.GetIdentity().toStdString(), credentials_.GetPassword().toStdString(), "");
-
             if (stream->PrepareCurrentProtocolModule() )
-            {
-                SAFE_DELETE(world_session_);
                 world_session_ = new OpenSimProtocol::OpenSimWorldSession(owner_->GetFramework());
-
-                success = world_session_->StartSession(credentials_, server_entry_point_url_);
-                if (success)
-                {
-                    // Save login credentials to config
-                    Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
-                    if (mgr->HasKey("Login", "server"))
-                        mgr->SetSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
-                    else
-                        mgr->DeclareSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
-                    if (mgr->HasKey("Login", "username"))
-                        mgr->SetSetting<std::string>("Login", "username", credentials_.GetIdentity().toStdString());
-                    else
-                        mgr->DeclareSetting<std::string>("Login", "username", credentials_.GetIdentity().toStdString());
-                }
-                else
-                {
-                    QString errorMsg = world_session_->GetConnectionThreadState()->errorMessage.c_str();
-                    emit LoginFailed(errorMsg);
-                    RexLogicModule::LogError(errorMsg.toStdString());
-                }
-            }
+            break;
         }
-        else if (credentials_.GetType() == ProtocolUtilities::AT_RealXtend)
+        case ProtocolUtilities::AT_RealXtend:
         {
-            WorldStreamPtr stream = owner_->GetServerConnection();
             stream->UnregisterCurrentProtocolModule();
             stream->SetCurrentProtocolType(ProtocolUtilities::OpenSim);
             stream->SetConnectionType(ProtocolUtilities::AuthenticationConnection);
             stream->StoreCredentials(credentials_.GetIdentity().toStdString(),
             credentials_.GetPassword().toStdString(), credentials_.GetAuthenticationUrl().toString().toStdString());
-
             if (stream->PrepareCurrentProtocolModule())
-            {
-                SAFE_DELETE(world_session_);
                 world_session_ = new OpenSimProtocol::RealXtendWorldSession(owner_->GetFramework());
-
-                success = world_session_->StartSession(credentials_, server_entry_point_url_);
-                if (success)
-                {
-                    // Save login credentials to config
-                    Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
-                    if (mgr->HasKey("Login", "rex_server"))
-                        mgr->SetSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
-                    else
-                        mgr->DeclareSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
-                    if (mgr->HasKey("Login", "auth_server"))
-                        mgr->SetSetting<std::string>("Login", "auth_server", credentials_.GetAuthenticationUrl().authority().toStdString());
-                    else
-                        mgr->DeclareSetting<std::string>("Login", "auth_server", credentials_.GetAuthenticationUrl().host().toStdString());
-                    if (mgr->HasKey("Login", "auth_name"))
-                        mgr->SetSetting<std::string>("Login", "auth_name", credentials_.GetIdentity().toStdString());
-                    else
-                        mgr->DeclareSetting<std::string>("Login", "auth_name", credentials_.GetIdentity().toStdString());
-                }
-                else
-                {
-                    QString errorMsg = world_session_->GetConnectionThreadState()->errorMessage.c_str();
-                    emit LoginFailed(errorMsg);
-                    RexLogicModule::LogError(errorMsg.toStdString());
-                }
-            }
+            break;
         }
-        else if (credentials_.GetType() == ProtocolUtilities::AT_Taiga)
+        case ProtocolUtilities::AT_Taiga:
         {
-            bool success = false;
-            QString errorMessage = "";
-
-            ProtocolUtilities::WorldStreamPtr stream = owner_->GetServerConnection();
             stream->UnregisterCurrentProtocolModule();
             stream->SetCurrentProtocolType(ProtocolUtilities::Taiga);
             stream->SetConnectionType(ProtocolUtilities::DirectConnection);
             stream->StoreCredentials(credentials_.GetIdentity().toStdString(), "", "");
-
             if (stream->PrepareCurrentProtocolModule())
-            {
-                SAFE_DELETE(world_session_);
                 world_session_ = new TaigaProtocol::TaigaWorldSession(owner_->GetFramework());
-                success = world_session_->StartSession(credentials_, server_entry_point_url_);
-                if (!success)
-                {
-                    QString errorMsg = world_session_->GetConnectionThreadState()->errorMessage.c_str();
-                    emit LoginFailed(errorMsg);
-                    RexLogicModule::LogError(errorMsg.toStdString());
-                }
-            }
+            break;
         }
+        case ProtocolUtilities::AT_Unknown:
+        default:
+            RexLogicModule::LogError("LoginHandler::StartWorldSession: Unknown login type.");
+            return;
+        }
+
+        assert(world_session_);
+        if (!world_session_)
+        {
+            RexLogicModule::LogError("LoginHandler::StartWorldSession: Could not instantiate world session.");
+            return;
+        }
+
+        connect(world_session_, SIGNAL(LoginSuccessful()), SLOT(HandleLoginSuccessful()));
+        connect(world_session_, SIGNAL(LoginFailed(const QString &)), SLOT(HandleLoginFailed(const QString &)));
+
+        /// \todo   The return value of StartSession doesn't tell us if the login succeeded ot not for real.
+        ///         because the login is done in separate thread. Refactor to void?.
+        world_session_->StartSession(credentials_, server_entry_point_url_);
     }
 
     void LoginHandler::Logout()
     {
-        owner_->LogoutAndDeleteWorld();
+        if (owner_->GetServerConnection()->IsConnected())
+            owner_->LogoutAndDeleteWorld();
     }
 
     void LoginHandler::Quit()
@@ -268,5 +221,36 @@ namespace RexLogic
             owner_->LogoutAndDeleteWorld();
 
         owner_->GetFramework()->Exit();
+    }
+
+    void LoginHandler::HandleLoginFailed(const QString &message)
+    {
+        emit LoginFailed(message);
+        RexLogicModule::LogError(message.toStdString());
+    }
+
+    void LoginHandler::HandleLoginSuccessful()
+    {
+        assert(credentials_.GetType() != ProtocolUtilities::AT_Unknown);
+
+        Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+        if (credentials_.GetType() ==ProtocolUtilities::AT_OpenSim)
+        {
+            mgr->DeclareSetting<std::string>("Login", "server", server_entry_point_url_.authority().toStdString());
+            mgr->DeclareSetting<std::string>("Login", "username", credentials_.GetIdentity().toStdString());
+        }
+        else if (credentials_.GetType() == ProtocolUtilities::AT_RealXtend)
+        {
+            Foundation::ConfigurationManagerPtr mgr = owner_->GetFramework()->GetConfigManager();
+            mgr->DeclareSetting<std::string>("Login", "rex_server", server_entry_point_url_.authority().toStdString());
+            mgr->DeclareSetting<std::string>("Login", "auth_server", credentials_.GetAuthenticationUrl().host().toStdString());
+            mgr->DeclareSetting<std::string>("Login", "auth_name", credentials_.GetIdentity().toStdString());
+        }
+        else if (credentials_.GetType() == ProtocolUtilities::AT_Taiga)
+        {
+            // do nothing for now
+        }
+
+        emit LoginSuccessful();
     }
 }

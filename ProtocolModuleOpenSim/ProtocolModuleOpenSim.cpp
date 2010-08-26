@@ -5,6 +5,7 @@
 
 #include "ProtocolModuleOpenSim.h"
 
+#include "NetworkMessages/NetMessageManager.h"
 #include "Framework.h"
 #include "EventManager.h"
 #include "Profiler.h"
@@ -110,7 +111,8 @@ namespace OpenSimProtocol
             }
             else if (loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
             {
-                eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, 0);
+                ProtocolUtilities::ConnectionFailedEvent data(loginWorker_.GetErrorMessage().c_str());
+                eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, &data);
                 loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
             }
 
@@ -164,6 +166,11 @@ namespace OpenSimProtocol
 
     bool ProtocolModuleOpenSim::CreateUdpConnection(const char *address, int port)
     {
+        /*
+        /// \todo Move this to OpenSimProtocolModule.
+        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+            world_stream_->CreateUdpConnection();
+        */
         loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
 
         if (networkManager_->ConnectTo(address, port))
@@ -178,7 +185,7 @@ namespace OpenSimProtocol
                 auth_data.type = ProtocolUtilities::AT_RealXtend;
             else
                 auth_data.type = ProtocolUtilities::AT_OpenSim;
-                
+
             // Fill in webdav information if exists
             if (loginWorker_.GetClientParameters().webdavInventoryUrl != "")
             {

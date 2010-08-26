@@ -10,12 +10,15 @@
 #include "Framework.h"
 #include "EC_DynamicComponent.h"
 #include "ECEditorModule.h"
+#include "RexTypes.h"
+#include "RexUUID.h"
 
 #include <QtBrowserItem>
 #include <QLayout>
 #include <QShortcut>
 #include <QMenu>
 #include <QDomDocument>
+#include <QMimeData>
 
 #include "MemoryLeakCheck.h"
 
@@ -76,11 +79,15 @@ namespace ECEditor
             SAFE_DELETE(componentGroups_.back())
             componentGroups_.pop_back();
         }
+        selectedEntities_.clear();
         QtTreePropertyBrowser::clear();
     }
 
     void ECBrowser::UpdateBrowser()
     {
+        // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
+        if(treeWidget_)
+            treeWidget_->setSortingEnabled(false);
         EntitySet::iterator iter = selectedEntities_.begin();
         for(;iter != selectedEntities_.end(); iter++)
         {
@@ -97,18 +104,172 @@ namespace ECEditor
         {
             (*compIter)->editor_->UpdateEditorUI();
         }
+        if(treeWidget_)
+            treeWidget_->setSortingEnabled(true);
+        /*if(treeWidget_)
+            treeWidget_->sortItems(0, Qt::AscendingOrder);*/
+    }
+
+    void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
+    {
+        QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
+        if (event->mimeData()->hasFormat("application/vnd.inventory.item") && item && !item->childCount())
+            event->acceptProposedAction();
+    }
+
+    void ECBrowser::dropEvent(QDropEvent *event)
+    {
+        QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
+        if(item)
+            dropMimeData(item, 0, event->mimeData(), event->dropAction());
+    }
+
+    void ECBrowser::dragMoveEvent(QDragMoveEvent *event)
+    {
+        if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
+        {
+            QTreeWidgetItem *item = treeWidget_->itemAt(event->pos().x(), event->pos().y() - 20);
+            if(item && !item->childCount())
+            {
+                event->accept();
+                return;
+            }
+        }
+        event->ignore();
+    }
+
+    bool ECBrowser::dropMimeData(QTreeWidgetItem *item, int index, const QMimeData *data, Qt::DropAction action)
+    {
+        if (action == Qt::IgnoreAction)
+            return true;
+
+        if (!data->hasFormat("application/vnd.inventory.item"))
+            return false;
+
+        QByteArray encodedData = data->data("application/vnd.inventory.item");
+        QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+        QString asset_id;
+        while(!stream.atEnd())
+        {
+            QString mimedata, asset_type, item_id, name;
+            stream >> mimedata;
+
+            QStringList list = mimedata.split(";", QString::SkipEmptyParts);
+            if (list.size() < 4)
+                continue;
+
+            item_id = list.at(1);
+            if (!RexUUID::IsValid(item_id.toStdString()))
+                continue;
+
+            name = list.at(2);
+            asset_id = list.at(3);
+        }
+
+        if (!RexUUID::IsValid(asset_id.toStdString()))
+            return false;
+
+        QTreeWidgetItem *rootItem = item;
+        for(;rootItem->parent(); rootItem = rootItem->parent())
+        {
+        }
+
+        ComponentGroupList::iterator iter = FindSuitableGroup(*rootItem);
+        if(iter != componentGroups_.end())
+        {
+            for(uint i = 0; i < (*iter)->components_.size(); i++)
+            {
+                Foundation::ComponentWeakPtr compWeak = (*iter)->components_[i];
+                if(compWeak.expired())
+                    continue;
+
+                QStringList names;
+                names << item->text(0);
+                if(item->parent())
+                    names << item->parent()->text(0);
+
+                // Try to find the right attribute.
+                Foundation::AttributeInterface *attr = 0;
+                for(uint i = 0; i < names.size(); i++)
+                {
+                    attr = compWeak.lock()->GetAttribute(names[i].toStdString());
+                    if(attr)
+                        break;
+                }
+                if(!attr)
+                    continue;
+                if(attr->TypenameToString() == "string")
+                {
+                    Foundation::Attribute<std::string> *attribute = dynamic_cast<Foundation::Attribute<std::string> *>(attr);
+                    if(attribute)
+                    {
+                        attribute->Set(asset_id.toStdString(), AttributeChange::Local);
+                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                    }
+                }
+                else if(attr->TypenameToString() == "qvariant")
+                {
+                    Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant> *>(attr);
+                    if(attribute)
+                    {
+                        if(attribute->Get().type() == QVariant::String)
+                        {
+                            attribute->Set(asset_id, AttributeChange::Local);
+                            compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                        }
+                    }
+                }
+                else if(attr->TypenameToString() == "qvariantarray")
+                {
+                    Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> > *>(attr);
+                    if(attribute)
+                    {
+                        //Get changed attribute value index.
+                        //int childIndex = item->parent()->indexOfChild(item);
+                        QString indexText = "";
+                        QString itemText = item->text(0);
+                        for(uint i = 1; i < itemText.size() - 1; i++)
+                            indexText += itemText[i];
+                        bool ok;
+                        int index = indexText.toInt(&ok);
+                        if(!ok)
+                            return false;
+
+                        std::vector<QVariant> variants = attribute->Get();
+                        if(variants.size() > index)
+                            variants[index] = asset_id;
+                        else if(variants.size() == index)
+                            variants.push_back(asset_id);
+                        else
+                            return false;
+
+                        attribute->Set(variants, AttributeChange::Local);
+                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                    }
+                }
+            }
+        }
+        else
+            return false;
+
+        return true;
     }
 
     void ECBrowser::InitBrowser()
     {
+        setMouseTracking(true);
+        setAcceptDrops(true);
         setContextMenuPolicy(Qt::CustomContextMenu);
         QObject::connect(this, SIGNAL(customContextMenuRequested(const QPoint &)), this, SLOT(ShowComponentContextMenu(const QPoint &)));
         treeWidget_ = findChild<QTreeWidget *>();
-        treeWidget_->setSortingEnabled(true);
         if(treeWidget_)
         {
+            treeWidget_->setSortingEnabled(true);
             //treeWidget_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             treeWidget_->setFocusPolicy(Qt::StrongFocus);
+            treeWidget_->setAcceptDrops(true);
+            treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
             connect(treeWidget_, SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged()));
             QShortcut* delete_shortcut = new QShortcut(Qt::Key_Delete, treeWidget_);
             QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), treeWidget_);
@@ -296,7 +457,7 @@ namespace ECEditor
             {
                 if(!(*iter)->components_.size())
                     return;
-                // Just take a first component from the componentgroup and copy its attributes to xml. 
+                // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
                 // Note! wont take account that other components might have different values in their attributes
                 Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
@@ -546,6 +707,7 @@ namespace ECEditor
                                      " Make sure that ECComponentEditor was intialized properly.");
             return;
         }
+        //treeWidget_->sortItems(treeWidget_->indexOfTopLevelItem(newItem), Qt::AscendingOrder);
 
         bool dynamic = comp->TypeName() == "EC_DynamicComponent";
         if(dynamic)

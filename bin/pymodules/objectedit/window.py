@@ -1,7 +1,7 @@
 import rexviewer as r
 
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox
+from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QDoubleSpinBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
@@ -23,6 +23,8 @@ else:
 
 PRIMTYPES = {
     "45": "Material",
+    "17": "Wav",
+    "1": "Ogg",
     "0": "Texture"
 }
 
@@ -74,6 +76,22 @@ class ObjectEditWindow:
         box.addWidget(button_ok)
         box.addWidget(button_cancel)
         
+        self.soundline = lines.SoundAssetidEditline(controller) 
+        self.soundline.name = "soundLineEdit"
+
+        soundbutton_ok = self.getButton("Apply", self.ICON_OK, self.soundline, self.soundline.applyAction)
+        soundbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.soundline, self.soundline.cancelAction)
+
+        soundRadius = self.getDoubleSpinBox("soundRadius", "Set sound radius", self.soundline)
+        soundVolume = self.getDoubleSpinBox("soundVolume", "Set sound volume", self.soundline)
+        
+        box = self.mainTab.findChild("QHBoxLayout", "soundLine")
+        box.addWidget(self.soundline)
+        box.addWidget(soundRadius)
+        box.addWidget(soundVolume)
+        box.addWidget(soundbutton_ok)
+        box.addWidget(soundbutton_cancel)
+
         self.propedit = r.getPropertyEditor()
         self.tabwidget.addTab(self.propedit, "Properties")
         self.tabwidget.setTabEnabled(2, False)
@@ -110,6 +128,14 @@ class ObjectEditWindow:
 
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
+
+        self.soundline.connect('textEdited(QString)', soundbutton_ok.lineValueChanged)
+        self.soundline.connect('textEdited(QString)', soundbutton_cancel.lineValueChanged)
+        soundRadius.connect('valueChanged(double)', soundbutton_ok.lineValueChanged)
+        soundRadius.connect('valueChanged(double)', soundbutton_cancel.lineValueChanged)
+        soundVolume.connect('valueChanged(double)', soundbutton_ok.lineValueChanged)
+        soundVolume.connect('valueChanged(double)', soundbutton_cancel.lineValueChanged)
+
         
         self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.controller.createObject)
         self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.controller.deleteObject)
@@ -179,6 +205,8 @@ class ObjectEditWindow:
         self.tabwidget.setTabEnabled(2, False)
         
         self.meshline.update_text("")
+        self.soundline.update_text("")
+
         self.reset_guivals()
         
         self.untoggleButtons()
@@ -277,15 +305,16 @@ class ObjectEditWindow:
         button.connect('clicked()', action)
         line.buttons.append(button)
         return button
-        
-    #~ def tabChanged(self, index):
-        #~ if index == 1:
-            #~ self.updateMaterialTab()
-        ##~ elif index == 0:
-            ##~ print "Object Edit"
-        ##~ else:
-            ##~ print "nothing found!"
-            
+
+    def getDoubleSpinBox(self, name, tooltip, line):
+        spinner = QDoubleSpinBox()
+        spinner.setValue(0.0)
+        spinner.name = name
+        spinner.toolTip = tooltip
+        spinner.setEnabled(True)
+        line.spinners.append(spinner)
+        return spinner
+
     def manipulator_move(self):
         print "MOVE",
         ent = self.controller.active
@@ -375,11 +404,15 @@ class ObjectEditWindow:
         self.highlightEntityFromList(ent)
         self.showName(ent)
         self.meshline.update_text(ent.prim.MeshID)
+        self.soundline.update_text(ent.prim.SoundID)
+        self.soundline.update_soundradius(ent.prim.SoundRadius)
+        self.soundline.update_soundvolume(ent.prim.SoundVolume)
         self.updateMaterialTab(ent)
         self.updatePropertyEditor(ent)
         self.updatingSelection = True
         self.update_guivals(ent)
         self.updatingSelection = False
+        self.controller.soundRuler(ent)
 
     def updatePropertyEditor(self, ent):
         qprim = ent.prim

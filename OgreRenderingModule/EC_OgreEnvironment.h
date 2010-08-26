@@ -175,9 +175,6 @@ namespace OgreRenderer
         /// Shuts down the Hydrax system.
         void ShutdownHydrax();
 #endif
-        /// Initializes shadows.
-        void InitShadows();
-
         /// renderer
         RendererWeakPtr renderer_;
 
@@ -217,9 +214,6 @@ namespace OgreRenderer
         /// Water fog color.
         Ogre::ColourValue waterFogColor_;
 
-        /// Camera near clip distance.
-        float cameraNearClip_;
-
         /// Camera far clip distance.
         float cameraFarClip_;
 
@@ -238,7 +232,6 @@ namespace OgreRenderer
         Hydrax::Noise::Perlin *noiseModule_;
         Hydrax::Module::ProjectedGrid *module_;
 
-        std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
     };
 }
 

@@ -3,13 +3,6 @@
 #ifndef incl_MumbleVoipModule_ApplicationManager_h
 #define incl_MumbleVoipModule_ApplicationManager_h
 
-//#include <mumbleclient/channel.h>
-
-namespace MumbleClient
-{
-    class Channel;
-}
-
 namespace MumbleVoip
 {
     //! Mumble client application startup

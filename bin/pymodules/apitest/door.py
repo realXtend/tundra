@@ -1,13 +1,12 @@
-import json
-
 from PythonQt import QtGui
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton
 
 import rexviewer as r
 
-import circuits #for @handler
-from componenthandler import DynamiccomponentHandler
+#componenthandlers don't necessarily need to be naali modules,
+#but this one needs to listen to update events to do mouse hover tricks
+import circuits
 
 #should be in the EC data
 OPENPOS = Vec(101.862, 82.6978, 24.9221)
@@ -23,15 +22,45 @@ def setcursor(ctype):
     cursor.setShape(ctype)    
     qapp.setOverrideCursor(cursor)
 
-class DoorHandler(DynamiccomponentHandler):
+COMPNAME = "door" #the DC name identifier string that this handler looks for
+
+class DoorHandler(circuits.BaseComponent):
     GUINAME = "Door Handler"
-    COMPNAME = "door" #the DC name identifier string that this handler looks for
     ADDMENU = True
 
-    def __init__(self):
-        DynamiccomponentHandler.__init__(self)
+    def __init__(self, entity, comp, changetype):
+        self.comp = comp
+        circuits.BaseComponent.__init__(self)
+
+        comp.connect("OnChanged()", self.onChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
-        self.hovering = 0
+
+        self.hovering = 0 #mouse hover exit hack
+        self.initgui()
+
+    def initgui(self):
+        #qt widget ui
+        group = QGroupBox()
+        box = QVBoxLayout(group)
+
+        self.openbut = QPushButton("init", group)
+        self.lockbut = QPushButton("init", group)
+        box.addWidget(self.openbut)
+        box.addWidget(self.lockbut)
+
+        self.openbut.connect('clicked()', self.open)
+        self.lockbut.connect('clicked()', self.lock)
+
+        self.widget = group
+        self.forcepos = None
+
+        #naali proxywidget boilerplate
+        uism = r.getUiSceneManager()
+        self.proxywidget = r.createUiProxyWidget(self.widget)
+        self.proxywidget.setWindowTitle(self.GUINAME)
+        if not uism.AddWidgetToScene(self.proxywidget):
+            print "Adding the ProxyWidget to the bar failed."
+        uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     def onChanged(self):
         print "door data changed"
@@ -50,10 +79,6 @@ class DoorHandler(DynamiccomponentHandler):
             t.connect('Clicked()', self.open)
             t.connect('MouseHover()', self.hover)
             self.inworld_inited = True
-
-        if self.proxywidget is None and self.widget is not None:
-            print "Door DynamicComponent handler registering to GUI"
-            self.registergui()
 
         opened = self.opened
         locked = self.locked
@@ -76,24 +101,6 @@ class DoorHandler(DynamiccomponentHandler):
         probably because server send pos update after the comp sync."""
         self.forcepos = ent.placeable.Position
         
-    def initgui(self):
-        #qt widget ui
-        group = QGroupBox()
-        box = QVBoxLayout(group)
-
-        self.openbut = QPushButton("init", group)
-        self.lockbut = QPushButton("init", group)
-        box.addWidget(self.openbut)
-        box.addWidget(self.lockbut)
-
-        self.openbut.connect('clicked()', self.open)
-        self.lockbut.connect('clicked()', self.lock)
-
-        self.widget = group
-        self.forcepos = None
-
-        #group.show() #as a temp workaround as naali ui system is borked XXX
-
     def get_opened(self):
         if self.comp is not None:
             return self.comp.GetAttribute("opened")
@@ -136,10 +143,22 @@ class DoorHandler(DynamiccomponentHandler):
     @circuits.handler("update")
     def update(self, t):
         if self.forcepos is not None:
-            ent = r.getEntity(self.comp.GetParentEntityId())
-            ent.placeable.Position = self.forcepos
+            try:
+                ent = r.getEntity(self.comp.GetParentEntityId())
+            except ValueError: #the entity has been removed or something
+                pass
+            else:
+                ent.placeable.Position = self.forcepos
 
         if self.hovering > 0:
             self.hovering -= 1
             if self.hovering == 0:
                 setcursor(0)
+
+    @circuits.handler("on_logout")
+    def removegui(self, evid):
+        self.proxywidget.hide()
+        uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromMenu(self.proxywidget)
+        uism.RemoveWidgetFromScene(self.proxywidget)
+        

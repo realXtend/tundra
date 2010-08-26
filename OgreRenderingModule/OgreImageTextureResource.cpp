@@ -8,13 +8,15 @@
 
 namespace OgreRenderer
 {
-    OgreImageTextureResource::OgreImageTextureResource(const std::string& id) : 
-        ResourceInterface(id)
+    OgreImageTextureResource::OgreImageTextureResource(const std::string& id, TextureQuality texturequality) : 
+        ResourceInterface(id),
+        texturequality_(texturequality)
     {
     }
 
-    OgreImageTextureResource::OgreImageTextureResource(const std::string& id, Foundation::AssetPtr source) : 
-        ResourceInterface(id)
+    OgreImageTextureResource::OgreImageTextureResource(const std::string& id, TextureQuality texturequality, Foundation::AssetPtr source) : 
+        ResourceInterface(id),
+        texturequality_(texturequality)
     {
         SetData(source);
     }
@@ -43,6 +45,8 @@ namespace OgreRenderer
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
             Ogre::Image image;
             image.load(stream);
+            if (texturequality_ == Texture_Low)
+                image.resize(image.getWidth() / 2, image.getHeight() / 2);
             ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
             
         }

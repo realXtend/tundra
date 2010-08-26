@@ -16,9 +16,9 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace MumbleVoip
+namespace MumbleLib
 {
-    User::User(const MumbleClient::User& user, MumbleVoip::Channel* channel)
+    User::User(const MumbleClient::User& user, MumbleLib::Channel* channel)
         : user_(user),
           speaking_(false),
           position_known_(false),
@@ -33,7 +33,7 @@ namespace MumbleVoip
 
     User::~User()
     {
-        foreach(PCMAudioFrame* audio, playback_queue_)
+        foreach(MumbleVoip::PCMAudioFrame* audio, playback_queue_)
             SAFE_DELETE(audio);
 
         playback_queue_.clear();
@@ -41,6 +41,8 @@ namespace MumbleVoip
 
     QString User::Name() const
     {
+        if (left_)
+            return "";
         return QString(user_.name.c_str());
     }
     
@@ -51,11 +53,15 @@ namespace MumbleVoip
     
     int User::Session() const
     {
+        if (left_)
+            return 0;
         return user_.session;
     }
     
     int User::Id() const
     {
+        if (left_)
+            return 0;
         return user_.user_id;
     }
     
@@ -68,6 +74,8 @@ namespace MumbleVoip
     
     QString User::Comment() const
     {
+        if (left_)
+            return "";
         return QString(user_.comment.c_str());
     }
 
@@ -76,17 +84,14 @@ namespace MumbleVoip
         return speaking_;
     }
 
-    void User::AddToPlaybackBuffer(PCMAudioFrame* frame)
+    void User::AddToPlaybackBuffer(MumbleVoip::PCMAudioFrame* frame)
     {
         received_voice_packet_count_++;
+        // Buffer overflow handling: We drop the oldest packet in the buffer
         if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
         {
-            foreach(PCMAudioFrame* frame, playback_queue_)
-            {
-                delete frame;
-                voice_packet_drop_count_++;
-            }
-            playback_queue_.clear();
+            MumbleVoip::PCMAudioFrame* frame = GetAudioFrame();
+            SAFE_DELETE(frame);
         }
 
         playback_queue_.push_back(frame);
@@ -114,10 +119,10 @@ namespace MumbleVoip
 
     int User::PlaybackBufferLengthMs() const
     {
-        return 1000 * playback_queue_.size() * SAMPLES_IN_FRAME / SAMPLE_RATE;
+        return 1000 * playback_queue_.size() * MumbleVoip::SAMPLES_IN_FRAME / MumbleVoip::SAMPLE_RATE;
     }
     
-    PCMAudioFrame* User::GetAudioFrame()
+    MumbleVoip::PCMAudioFrame* User::GetAudioFrame()
     {
         if (playback_queue_.size() == 0)
             return 0;
@@ -144,7 +149,7 @@ namespace MumbleVoip
         }
     }
 
-    void User::SetChannel(MumbleVoip::Channel* channel)
+    void User::SetChannel(MumbleLib::Channel* channel)
     {
         if (left_)
             return;
@@ -166,4 +171,4 @@ namespace MumbleVoip
             return -1;
     }
 
-} // namespace MumbleVoip
+} // namespace MumbleLib

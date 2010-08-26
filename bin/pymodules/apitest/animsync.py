@@ -1,7 +1,8 @@
 """
 A test / draft for defining Naali Entity-Components with Naali Attribute data.
 This one synchs animation state with a GUI slider.
-There is now also another test, door.py, so moved common parts to componenthandler.py
+There is now also another test, door.py .
+Both are registered as ComponentHandlers in componenthandler.py, and instanciated from there when components of interest are encountered in scene data.0
 
 Originally this used the first test version of DynamicComponent that provided a single float attribute (Attribute<float>).
 That can be useful when testing performance and robustness of an upcoming ECA sync mechanism.
@@ -10,56 +11,61 @@ where all attributes of all components for a single entity are synched and store
 
 After this test, a Door test with two attributes: opened & locked, was written.
 First as door.py here, and then as door.js that can be safely loaded from the net (the source is for convenience in Naali repo jsmodules).
-To add support for multiple attributes of various types easily to py & js, that was made using a single Naali string attr to store json.
+To add support for multiple attributes of various types easily to py & js, that was made using a single Naali string attr to store json in v. 0.2.5
 With the current ECA sync the performance makes no diff, so there are little drawbacks in this shortcut to get to experiment more.
 
-Currently the DynamicComponent system doesn't differentiate/allow multiple instances for a single entity
--- that will be easy to add using the existing (quite new) Component instance identification system in Naali.
-But to allow this to work simultaneously with the door tests, adopting this to use the current single JSON attr also.
-Also, the initial idea was to have the door handler sync animation state of the door (for a skel animated folding door (haitariovi)),
-so perhaps these merge somehow.
+Now finally for Naali 0.3.0 this system is quite full featured: the DynamicComponents are identified using names, so there can be several for different purposes in a single Entity, and the handler system works so that there can be any number of Entities with a certain component and the individual handlers for those work correctly.
+
 """
 
 from __future__ import division
 import time
 import rexviewer as r
-import json
 
 import PythonQt
 from PythonQt import QtGui, QtCore
 
-from componenthandler import DynamiccomponentHandler
+import circuits
 
 INTERVAL = 0.2
 
-class AnimationSync(DynamiccomponentHandler):
+class AnimationSync(circuits.BaseComponent):
     GUINAME = "Animation Sync"
-    COMPNAME = "animsync"
 
-    def __init__(self):
-        DynamiccomponentHandler.__init__(self)
-        self.inworld_inited = False #a cheap hackish substitute for some initing system
+    def __init__(self, entity, comp, changetype):
+        comp.connect("OnChanged()", self.onChanged)
+        self.comp = comp
+        circuits.BaseComponent.__init__(self)
+        self.inworld_inited = False #a cheap hackish substitute for some initin
+        self.initgui()
+
     def initgui(self):
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
         self.widget.connect('valueChanged(int)', self.sliderChanged)
+
+        #naali proxywidget boilerplate
+        uism = r.getUiSceneManager()
+        self.proxywidget = r.createUiProxyWidget(self.widget)
+        self.proxywidget.setWindowTitle(self.GUINAME)
+        if not uism.AddWidgetToScene(self.proxywidget):
+            print "Adding the ProxyWidget to the bar failed."
+        #uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
         #to not flood the network
         self.prev_sync = 0
         
     #json serialization to port to work with how DC works now with door.py & door.js
     def sliderChanged(self, guival):
-        print guival
         comp = self.comp
         if comp is not None:
             now = time.time()
             if self.prev_sync + INTERVAL < now:
-                comp.SetAttribute("timepos", str(guival / 100))
+                comp.SetAttribute("timepos", guival / 100)
                 comp.OnChanged() #XXX change to OnAttributeChanged when possible
                 self.prev_sync = now
 
     def onChanged(self):
-        v = float(self.comp.GetAttribute('timepos'))
-        print v
+        v = self.comp.GetAttribute('timepos')
 
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
@@ -67,7 +73,7 @@ class AnimationSync(DynamiccomponentHandler):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in door? it doesn't persist yet? adding..", ent.id
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
                 print ent.createComponent("EC_Touchable")
                 t = ent.touchable
             else:
@@ -101,24 +107,13 @@ class AnimationSync(DynamiccomponentHandler):
 
     def showgui(self):
         self.proxywidget.show()
-    
-    #failed in the attempt to hide the tool when go out of scenes that have animsync - something of the widget stays there, so get error prints QPainter::end: Painter not active, aborted
-    #def on_logout(self, idt):
-    #    if self.proxywidget is not None:
-    #        self.proxywidget.hide()
-    #        uism = r.getUiSceneManager()
-    #        uism.RemoveProxyWidgetFromScene(self.proxywidget)
-    #        self.proxywidget = None
-    #        self.widget = None
 
-#    def update(self, frametime):
-#        comp = self.comp
-#        if comp is not None:
-#            if 0:
-#                avid = r.getUserAvatarId()
-#                e = r.getEntity(avid)
-#                pos = e.placeable.Position
-#                print pos
-#                comp.SetAttribute(pos.x())
-               #d.ComponentChanged(1) #Foundation::ChangeType::Local - not a qenum yet
-            #print d.GetAttribute()
+    @circuits.handler("on_logout")
+    def removegui(self, evid):
+        self.proxywidget.hide()
+        uism = r.getUiSceneManager()
+        uism.RemoveWidgetFromScene(self.proxywidget)
+
+COMPNAME = "animsync"
+#now done in componenthandler 'cause this is not a circuits component / naali module
+#componenthandler.register(COMPNAME, AnimationSync)

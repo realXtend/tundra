@@ -24,545 +24,542 @@
 
 namespace MumbleVoip
 {
-    namespace InWorldVoice
+    const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
+    Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
+        state_(STATE_INITIALIZING),
+        reason_(""),
+        framework_(framework),
+        description_(""),
+        sending_audio_(false),
+        receiving_audio_(false),
+        audio_sending_enabled_(false),
+        audio_receiving_enabled_(true),
+        speaker_voice_activity_(0),
+        server_info_(server_info),
+        connection_(0)
     {
-        double Session::AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
+        channel_name_ = server_info.channel;
+        OpenConnection(server_info);
+    }
 
-        Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
-            state_(STATE_INITIALIZING),
-            reason_(""),
-            framework_(framework),
-            description_(""),
-            sending_audio_(false),
-            receiving_audio_(false),
-            audio_sending_enabled_(false),
-            audio_receiving_enabled_(true),
-            speaker_voice_activity_(0),
-            server_info_(server_info),
-            connection_(0)
+    Session::~Session()
+    {
+        foreach(Participant* p, participants_)
         {
-            channel_name_ = server_info.channel;
-            OpenConnection(server_info);
+            SAFE_DELETE(p);
         }
-
-        Session::~Session()
+        participants_.clear();
+        foreach(Participant* p, left_participants_)
         {
-            foreach(Participant* p, participants_)
-            {
-                SAFE_DELETE(p);
-            }
-            participants_.clear();
-            foreach(Participant* p, left_participants_)
-            {
-                SAFE_DELETE(p);
-            }
-            left_participants_.clear();
-            SAFE_DELETE(connection_);
+            SAFE_DELETE(p);
         }
+        left_participants_.clear();
+        SAFE_DELETE(connection_);
+    }
 
-        void Session::OpenConnection(ServerInfo server_info)
+    void Session::OpenConnection(ServerInfo server_info)
+    {
+        connection_ = new MumbleLib::Connection(server_info);
+        if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
         {
-            connection_ = new Connection(server_info);
-            if (connection_->GetState() == Connection::STATE_ERROR)
+            state_ = STATE_ERROR;
+            reason_ = connection_->GetReason();
+            return;
+        }
+        state_ = STATE_OPEN;
+
+        connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
+        connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
+        connection_->Join(server_info.channel);
+        connection_->SendAudio(sending_audio_);
+        connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
+        connection_->SendPosition(true); 
+        connection_->SendAudio(audio_sending_enabled_);
+        connection_->ReceiveAudio(audio_receiving_enabled_);
+        
+        MumbleLib::MumbleLibrary::Start();
+
+        DisableAudioSending();
+        EnableAudioReceiving();
+    }
+
+    void Session::Close()
+    {
+        if (connection_)
+        {
+            connection_->Close();
+        }
+        if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
+        {
+            state_ = STATE_CLOSED;
+            emit StateChanged(state_);
+        }
+    }
+
+    Communications::InWorldVoice::SessionInterface::State Session::GetState() const
+    {
+        return state_;
+    }
+
+    QString Session::Reason() const
+    {
+        return reason_;
+    }
+
+    QString Session::Description() const
+    {
+        return description_;
+    }
+
+    bool Session::IsSendingAudio() const
+    {
+        return sending_audio_;
+    }
+
+    bool Session::IsReceivingAudio() const
+    {
+        return receiving_audio_;
+    }
+
+    void Session::EnableAudioSending()
+    {
+        if (connection_)
+            connection_->SendAudio(true);
+        bool audio_sending_was_enabled = audio_sending_enabled_;
+        audio_sending_enabled_ = true;
+        if (!audio_sending_was_enabled)
+        {
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+            if (sound_service.get())
             {
-                state_ = STATE_ERROR;
-                reason_ = connection_->GetReason();
+                int frequency = SAMPLE_RATE;
+                bool sixteenbit = true;
+                bool stereo = false;
+                int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
+                sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
+            }
+
+            emit StartSendingAudio();
+        }
+    }
+
+    void Session::DisableAudioSending()
+    {
+        if (connection_)
+            connection_->SendAudio(false);
+        bool audio_sending_was_enabled = audio_sending_enabled_;
+        audio_sending_enabled_ = false;
+        if (audio_sending_was_enabled)
+        {
+            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+            if (sound_service.get())
+                sound_service->StopRecording();
+
+            emit StopSendingAudio();
+        }
+    }
+
+    bool Session::IsAudioSendingEnabled() const
+    {
+        return audio_sending_enabled_;
+    }
+
+    void Session::EnableAudioReceiving()
+    {
+        if (connection_)
+            connection_->ReceiveAudio(true);
+        audio_receiving_enabled_ = true;
+    }
+
+    void Session::DisableAudioReceiving()
+    {
+        if (connection_)
+            connection_->ReceiveAudio(false);
+        audio_receiving_enabled_ = false;
+    }
+
+    bool Session::IsAudioReceivingEnabled() const
+    {
+        return audio_receiving_enabled_;
+    }
+
+    double Session::SpeakerVoiceActivity() const
+    {
+        return speaker_voice_activity_;
+    }
+
+    QList<Communications::InWorldVoice::ParticipantInterface*> Session::Participants() const
+    {
+        QList<Communications::InWorldVoice::ParticipantInterface*> list;
+        for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
+        {
+            Participant* p = *i;
+            list.append(static_cast<Communications::InWorldVoice::ParticipantInterface*>(p));
+        }
+        return list;
+    }
+
+    void Session::Update(f64 frametime)
+    {
+        PlaybackReceivedAudio();
+        SendRecordedAudio();
+        UpdateParticipantList();
+    }
+
+    void Session::CreateNewParticipant(MumbleLib::User* user)
+    {
+        foreach(Participant* p, participants_)
+        {
+            if (p->UserPtr() == user)
                 return;
-            }
-            state_ = STATE_OPEN;
+        }
+        
+        disconnect(user, SIGNAL(ChangedChannel(User*)),this, SLOT(CheckChannel(User*)));    
+        connect(user, SIGNAL(ChangedChannel(User*)), SLOT(CheckChannel(User*)));
 
-            connect(connection_, SIGNAL(UserJoinedToServer(User*)), SLOT(CreateNewParticipant(User*)) );
-            connect(connection_, SIGNAL(UserLeftFromServer(User*)), SLOT(UpdateParticipantList()) );
-            connection_->Join(server_info.channel);
-            connection_->SendAudio(sending_audio_);
-            connection_->SetEncodingQuality(AUDIO_QUALITY_);
-            connection_->SendPosition(true); 
-            connection_->SendAudio(audio_sending_enabled_);
-            connection_->ReceiveAudio(audio_receiving_enabled_);
-            
-            MumbleLibrary::Start();
-
-            DisableAudioSending();
-            EnableAudioReceiving();
+        if (user->Name() == OwnAvatarId())
+        {
+            self_user_ = user;
+            return; 
         }
 
-        void Session::Close()
+        if (user->Channel()->FullName() != channel_name_)
         {
-            if (connection_)
+            other_channel_users_.append(user);
+            return; 
+        }
+
+        QString uuid = user->Name();
+        QString name = GetAvatarFullName(uuid);
+        if (name.size() == 0)
+            name = QString("%0 (no avatar)").arg(user->Name());
+        Participant* p = new Participant(name, user);
+        participants_.append(p);
+        connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
+        connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
+        connect(p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
+
+        emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
+    }
+
+    void Session::CheckChannel(MumbleLib::User* user)
+    {
+        if (user->IsLeft())
+            return;
+
+        if (user->Channel()->FullName() == channel_name_)
+        {
+            foreach(MumbleLib::User* u, other_channel_users_)
             {
-                connection_->Close();
+                if (u == user)
+                    other_channel_users_.removeOne(u);
             }
-            if (state_ != STATE_CLOSED && state_ != STATE_ERROR)
-            {
-                state_ = STATE_CLOSED;
-                emit StateChanged(state_);
-            }
+            CreateNewParticipant(user);
+            return;
         }
-
-        Communications::InWorldVoice::SessionInterface::State Session::GetState() const
-        {
-            return state_;
-        }
-
-        QString Session::Reason() const
-        {
-            return reason_;
-        }
-
-        QString Session::Description() const
-        {
-            return description_;
-        }
-
-        bool Session::IsSendingAudio() const
-        {
-            return sending_audio_;
-        }
-
-        bool Session::IsReceivingAudio() const
-        {
-            return receiving_audio_;
-        }
-
-        void Session::EnableAudioSending()
-        {
-            if (connection_)
-                connection_->SendAudio(true);
-            bool audio_sending_was_enabled = audio_sending_enabled_;
-            audio_sending_enabled_ = true;
-            if (!audio_sending_was_enabled)
-            {
-                boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
-                if (sound_service.get())
-                {
-                    int frequency = SAMPLE_RATE;
-                    bool sixteenbit = true;
-                    bool stereo = false;
-                    int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
-                    sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
-                }
-
-                emit StartSendingAudio();
-            }
-        }
-
-        void Session::DisableAudioSending()
-        {
-            if (connection_)
-                connection_->SendAudio(false);
-            bool audio_sending_was_enabled = audio_sending_enabled_;
-            audio_sending_enabled_ = false;
-            if (audio_sending_was_enabled)
-            {
-                boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
-                if (sound_service.get())
-                    sound_service->StopRecording();
-
-                emit StopSendingAudio();
-            }
-        }
-
-        bool Session::IsAudioSendingEnabled() const
-        {
-            return audio_sending_enabled_;
-        }
-
-        void Session::EnableAudioReceiving()
-        {
-            if (connection_)
-                connection_->ReceiveAudio(true);
-            audio_receiving_enabled_ = true;
-        }
-
-        void Session::DisableAudioReceiving()
-        {
-            if (connection_)
-                connection_->ReceiveAudio(false);
-            audio_receiving_enabled_ = false;
-        }
-
-        bool Session::IsAudioReceivingEnabled() const
-        {
-            return audio_receiving_enabled_;
-        }
-
-        double Session::SpeakerVoiceActivity() const
-        {
-            return speaker_voice_activity_;
-        }
-
-        QList<Communications::InWorldVoice::ParticipantInterface*> Session::Participants() const
-        {
-            QList<Communications::InWorldVoice::ParticipantInterface*> list;
-            for(ParticipantList::const_iterator i = participants_.begin(); i != participants_.end(); ++i)
-            {
-                Participant* p = *i;
-                list.append(static_cast<Communications::InWorldVoice::ParticipantInterface*>(p));
-            }
-            return list;
-        }
-
-        void Session::Update(f64 frametime)
-        {
-            PlaybackReceivedAudio();
-            SendRecordedAudio();
-            UpdateParticipantList();
-        }
-
-        void Session::CreateNewParticipant(User* user)
+        else
         {
             foreach(Participant* p, participants_)
             {
                 if (p->UserPtr() == user)
-                    return;
-            }
-            
-            disconnect(user, SIGNAL(ChangedChannel(User*)),this, SLOT(CheckChannel(User*)));    
-            connect(user, SIGNAL(ChangedChannel(User*)), SLOT(CheckChannel(User*)));
-
-            if (user->Name() == OwnAvatarId())
-            {
-                self_user_ = user;
-                return; 
-            }
-
-            if (user->Channel()->FullName() != channel_name_)
-            {
-                other_channel_users_.append(user);
-                return; 
-            }
-
-            QString uuid = user->Name();
-            QString name = GetAvatarFullName(uuid);
-            if (name.size() == 0)
-                name = QString("%0 (no avatar)").arg(user->Name());
-            Participant* p = new Participant(name, user);
-            participants_.append(p);
-            connect(p, SIGNAL(StartSpeaking()), SLOT(OnUserStartSpeaking()) );
-            connect(p, SIGNAL(StopSpeaking()), SLOT(OnUserStopSpeaking()) );
-            connect(p, SIGNAL(Left()), SLOT(UpdateParticipantList()) );
-
-            emit ParticipantJoined((Communications::InWorldVoice::ParticipantInterface*)p);
-        }
-
-        void Session::CheckChannel(User* user)
-        {
-            if (user->IsLeft())
-                return;
-
-            if (user->Channel()->FullName() == channel_name_)
-            {
-                foreach(User* u, other_channel_users_)
-                {
-                    if (u == user)
-                        other_channel_users_.removeOne(u);
-                }
-                CreateNewParticipant(user);
-                return;
-            }
-            else
-            {
-                foreach(Participant* p, participants_)
-                {
-                    if (p->UserPtr() == user)
-                    {
-                        participants_.removeOne(p);
-                        left_participants_.push_back(p);
-                        emit ParticipantLeft(p);
-                    }
-                }
-            }
-        }
-
-        void Session::UpdateParticipantList()
-        {
-            foreach(Participant* p, participants_)
-            {
-                if (p->UserPtr()->IsLeft())
                 {
                     participants_.removeOne(p);
-                    other_channel_users_.append(p->UserPtr());
+                    left_participants_.push_back(p);
                     emit ParticipantLeft(p);
-                    continue;
-                }
-                QString own_avatar_id_ = OwnAvatarId();
-                if (p->AvatarUUID() == own_avatar_id_)
-                {
-                    // for some reason we have own avatar as participant here!
-                    participants_.removeOne(p);
-                    other_channel_users_.append(p->UserPtr());
-                    emit ParticipantLeft(p);
-                    continue;
-                }
-                if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()) || p->AvatarUUID().length() == 0)
-                {
-                    // For some reason do not have real name for this participant here!
-                    QString full_name = GetAvatarFullName(p->AvatarUUID());
-                    if (full_name.length() > 0)
-                        p->SetName( full_name );
-                    continue;
                 }
             }
         }
+    }
 
-        void Session::OnUserStartSpeaking()
+    void Session::UpdateParticipantList()
+    {
+        foreach(Participant* p, participants_)
         {
-            bool was_receiving_audio = receiving_audio_;
-            receiving_audio_ = true;
-            if (!was_receiving_audio)
-                emit StartReceivingAudio();
-        }
-
-        void Session::OnUserStopSpeaking()
-        {
-            bool was_receiving_audio = receiving_audio_;
-            bool someone_speaking = false;
-            foreach(Participant* p, participants_)
+            if (p->UserPtr()->IsLeft())
             {
-                if (p->IsSpeaking())
-                {
-                    someone_speaking = true;
-                    return;
-                }
+                participants_.removeOne(p);
+                other_channel_users_.append(p->UserPtr());
+                emit ParticipantLeft(p);
+                continue;
             }
-            if (was_receiving_audio && !someone_speaking)
+            QString own_avatar_id_ = OwnAvatarId();
+            if (p->AvatarUUID() == own_avatar_id_)
             {
-                receiving_audio_ = false;
-                emit StopReceivingAudio();
+                // for some reason we have own avatar as participant here!
+                participants_.removeOne(p);
+                other_channel_users_.append(p->UserPtr());
+                emit ParticipantLeft(p);
+                continue;
+            }
+            if (p->AvatarUUID() == p->Name().left(p->AvatarUUID().size()) || p->AvatarUUID().length() == 0)
+            {
+                // For some reason do not have real name for this participant here!
+                QString full_name = GetAvatarFullName(p->AvatarUUID());
+                if (full_name.length() > 0)
+                    p->SetName( full_name );
+                continue;
             }
         }
+    }
 
-        void Session::UpdateSpeakerActivity(PCMAudioFrame* frame)
+    void Session::OnUserStartSpeaking()
+    {
+        bool was_receiving_audio = receiving_audio_;
+        receiving_audio_ = true;
+        if (!was_receiving_audio)
+            emit StartReceivingAudio();
+    }
+
+    void Session::OnUserStopSpeaking()
+    {
+        bool was_receiving_audio = receiving_audio_;
+        bool someone_speaking = false;
+        foreach(Participant* p, participants_)
         {
-            static int counter = 0;
-            counter++;
-            counter = counter % 10; // 10 ms audio frames -> 10 fps speaker activity updates
-            if (counter != 0)
+            if (p->IsSpeaking())
+            {
+                someone_speaking = true;
                 return;
-
-            short top = 0;
-            const short max = 100; //! \todo Use more proper treshold value
-            for(int i = 0; i < frame->SampleCount(); ++i)
-            {
-                int sample = abs(frame->SampleAt(i));
-                if (sample > top)
-                    top = sample;
             }
+        }
+        if (was_receiving_audio && !someone_speaking)
+        {
+            receiving_audio_ = false;
+            emit StopReceivingAudio();
+        }
+    }
 
-            double activity = top / max;
-            if (activity > 1.0)
-                activity = 1.0;
+    void Session::UpdateSpeakerActivity(PCMAudioFrame* frame)
+    {
+        static int counter = 0;
+        counter++;
+        counter = counter % 10; // 10 ms audio frames -> 10 fps speaker activity updates
+        if (counter != 0)
+            return;
 
-            double old_activity = speaker_voice_activity_;
-            speaker_voice_activity_ = activity;
-            if (old_activity != activity)
-                emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
+        short top = 0;
+        const short max = 100; //! \todo Use more proper treshold value
+        for(int i = 0; i < frame->SampleCount(); ++i)
+        {
+            int sample = abs(frame->SampleAt(i));
+            if (sample > top)
+                top = sample;
         }
 
-        bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
-        {
-            using namespace Foundation;
-            boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-            if (!world_logic)
-                return false;
+        double activity = top / max;
+        if (activity > 1.0)
+            activity = 1.0;
 
-            Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-            if (!user_avatar)
-                return false;
+        double old_activity = speaker_voice_activity_;
+        speaker_voice_activity_ = activity;
+        if (old_activity != activity)
+            emit Communications::InWorldVoice::SessionInterface::SpeakerVoiceActivityChanged(activity);
+    }
 
-            boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = user_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-            if (!ogre_placeable)
-                return false;
+    bool Session::GetOwnAvatarPosition(Vector3df& position, Vector3df& direction)
+    {
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        if (!world_logic)
+            return false;
 
-            Quaternion q = ogre_placeable->GetOrientation();
-            position = ogre_placeable->GetPosition(); 
-            direction = q*Vector3df::UNIT_Z;
+        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return false;
 
-            return true;
-        }
+        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = user_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        if (!ogre_placeable)
+            return false;
 
-        QString Session::OwnAvatarId()
-        {
-            using namespace Foundation;
-            boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
-            if (!world_logic)
-                return "";
+        Quaternion q = ogre_placeable->GetOrientation();
+        position = ogre_placeable->GetPosition(); 
+        direction = q*Vector3df::UNIT_Z;
 
-            Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
-            if (!user_avatar)
-                return "";
+        return true;
+    }
 
-            boost::shared_ptr<EC_OpenSimPresence> opensim_presence = user_avatar->GetComponent<EC_OpenSimPresence>();
-            if (!opensim_presence)
-                return "";
-
-            return opensim_presence->agentId.ToQString();
-        }
-
-        QString Session::GetAvatarFullName(QString uuid) const
-        {
-            Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
-            if (current_scene.get())
-            {
-                for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
-                {
-                    Scene::Entity &entity = **iter;
-                    EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
-                    if (presence_component)
-                        if (presence_component->agentId.ToQString() == uuid)
-                        {
-                            QString name = ""; 
-                            name = QString(presence_component->GetFullName().c_str());
-                            if (name.length() == 0)
-                                name = QString(presence_component->GetFirstName().c_str());
-                            return name;
-                        }
-                }
-            }
+    QString Session::OwnAvatarId()
+    {
+        using namespace Foundation;
+        boost::shared_ptr<WorldLogicInterface> world_logic = framework_->GetServiceManager()->GetService<WorldLogicInterface>(Service::ST_WorldLogic).lock();
+        if (!world_logic)
             return "";
-        }
 
-        void Session::SendRecordedAudio()
+        Scene::EntityPtr user_avatar = world_logic->GetUserAvatarEntity();
+        if (!user_avatar)
+            return "";
+
+        boost::shared_ptr<EC_OpenSimPresence> opensim_presence = user_avatar->GetComponent<EC_OpenSimPresence>();
+        if (!opensim_presence)
+            return "";
+
+        return opensim_presence->agentId.ToQString();
+    }
+
+    QString Session::GetAvatarFullName(QString uuid) const
+    {
+        Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
+        if (current_scene.get())
         {
-			if (!connection_)
-				return;
-
-            Vector3df avatar_position;
-            Vector3df avatar_direction;
-            GetOwnAvatarPosition(avatar_position, avatar_direction);
-
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
-            if (!sound_service)
+            for(Scene::SceneManager::iterator iter = current_scene->begin(); iter != current_scene->end(); ++iter)
             {
-                MumbleVoipModule::LogDebug("Cannot record audio: Soundservice cannot be found.");
-                return;
-            }
-
-            while (sound_service->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
-            {
-                int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
-                PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
-                int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
-                UpdateSpeakerActivity(frame);
-                assert(bytes_to_read == bytes);
-
-                //if (voice_indicator_)
-                //{
-                //    voice_indicator_->AnalyzeAudioFrame(frame);
-                //    if (!voice_indicator_->IsSpeaking())
-                //    {
-                //        delete frame;
-                //        continue;
-                //    }
-                //}
-                if (audio_sending_enabled_)
-                    connection_->SendAudioFrame(frame, avatar_position);
-
-                delete frame;
+                Scene::Entity &entity = **iter;
+                EC_OpenSimPresence *presence_component = entity.GetComponent<EC_OpenSimPresence>().get();
+                if (presence_component)
+                    if (presence_component->agentId.ToQString() == uuid)
+                    {
+                        QString name = ""; 
+                        name = QString(presence_component->GetFullName().c_str());
+                        if (name.length() == 0)
+                            name = QString(presence_component->GetFirstName().c_str());
+                        return name;
+                    }
             }
         }
+        return "";
+    }
 
-        void Session::PlaybackReceivedAudio()
+    void Session::SendRecordedAudio()
+    {
+		if (!connection_)
+			return;
+
+        Vector3df avatar_position;
+        Vector3df avatar_direction;
+        GetOwnAvatarPosition(avatar_position, avatar_direction);
+
+        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+        if (!sound_service)
         {
-			if (!connection_)
-				return;
-
-            if (!audio_receiving_enabled_)
-				return;
-
-            for(;;) // until we have 'em all
-            {
-                AudioPacket packet = connection_->GetAudioPacket();
-                if (packet.second == 0)
-                    break; // there was nothing to play
-
-				bool source_muted = false;
-				foreach(Participant* participant, participants_)
-				{
-					if (participant->UserPtr() == packet.first && participant->IsMuted())
-					{
-						source_muted = true;
-						break;
-					}
-				}
-				if (!source_muted)
-					PlaybackAudioFrame(packet.first, packet.second);
-            }
+            MumbleVoipModule::LogDebug("Cannot record audio: Soundservice cannot be found.");
+            return;
         }
 
-        void Session::PlaybackAudioFrame(User* user, PCMAudioFrame* frame)
+        while (sound_service->GetRecordedSoundSize() > SAMPLES_IN_FRAME*SAMPLE_WIDTH/8)
         {
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
-            if (!sound_service.get())
-                return;    
+            int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
+            PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
+            int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+            UpdateSpeakerActivity(frame);
+            assert(bytes_to_read == bytes);
 
-            Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
-            
-            sound_buffer.data_.resize(frame->DataSize());
-            memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
-
-            sound_buffer.frequency_ = frame->SampleRate();
-            if (frame->SampleWidth() == 16)
-                sound_buffer.sixteenbit_ = true;
-            else
-                sound_buffer.sixteenbit_ = false;
-            
-            if (frame->Channels() == 2)
-                sound_buffer.stereo_ = true;
-            else
-                sound_buffer.stereo_ = false;
-
-            QMutexLocker user_locker(user);
-            if (audio_playback_channels_.contains(user->Session()))
-                if (user->PositionKnown())
-                    sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
-                else
-                    sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
-            else
-                if (user->PositionKnown())
-                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
-                else
-                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+            //if (voice_indicator_)
+            //{
+            //    voice_indicator_->AnalyzeAudioFrame(frame);
+            //    if (!voice_indicator_->IsSpeaking())
+            //    {
+            //        delete frame;
+            //        continue;
+            //    }
+            //}
+            if (audio_sending_enabled_)
+                connection_->SendAudioFrame(frame, avatar_position);
 
             delete frame;
         }
+    }
 
-        boost::shared_ptr<Foundation::SoundServiceInterface> Session::SoundService()
+    void Session::PlaybackReceivedAudio()
+    {
+		if (!connection_)
+			return;
+
+        if (!audio_receiving_enabled_)
+			return;
+
+        for(;;) // until we have 'em all
         {
-            if (!framework_)
-                return boost::shared_ptr<Foundation::SoundServiceInterface>();
+            MumbleLib::AudioPacket packet = connection_->GetAudioPacket();
+            if (packet.second == 0)
+                break; // there was nothing to play
 
-            Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
-
-            if (!service_manager.get())
-                return boost::shared_ptr<Foundation::SoundServiceInterface>();
-
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-
-            if (!sound_service.get())
-                return boost::shared_ptr<Foundation::SoundServiceInterface>();
-
-            return sound_service;
+			bool source_muted = false;
+			foreach(Participant* participant, participants_)
+			{
+				if (participant->UserPtr() == packet.first && participant->IsMuted())
+				{
+					source_muted = true;
+					break;
+				}
+			}
+			if (!source_muted)
+				PlaybackAudioFrame(packet.first, packet.second);
+            else
+                delete packet.second;
         }
+    }
 
-        QList<QString> Session::Statistics()
+    void Session::PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame)
+    {
+        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = SoundService();
+        if (!sound_service.get())
+            return;    
+
+        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        
+        sound_buffer.data_.resize(frame->DataSize());
+        memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
+
+        sound_buffer.frequency_ = frame->SampleRate();
+        if (frame->SampleWidth() == 16)
+            sound_buffer.sixteenbit_ = true;
+        else
+            sound_buffer.sixteenbit_ = false;
+        
+        if (frame->Channels() == 2)
+            sound_buffer.stereo_ = true;
+        else
+            sound_buffer.stereo_ = false;
+
+        QMutexLocker user_locker(user);
+        if (audio_playback_channels_.contains(user->Session()))
+            if (user->PositionKnown())
+                sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+            else
+                sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
+        else
+            if (user->PositionKnown())
+                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+            else
+                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+
+        delete frame;
+    }
+
+    boost::shared_ptr<Foundation::SoundServiceInterface> Session::SoundService()
+    {
+        if (!framework_)
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+        Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
+
+        if (!service_manager.get())
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+
+        if (!sound_service.get())
+            return boost::shared_ptr<Foundation::SoundServiceInterface>();
+
+        return sound_service;
+    }
+
+    QList<QString> Session::Statistics()
+    {
+        QList<QString> lines;
+        QString line = QString("  Total %1 participants:").arg(participants_.size());
+        lines.append(line);
+        foreach(Participant* p, participants_)
         {
-            QList<QString> lines;
-            QString line = QString("  Total %1 participants:").arg(participants_.size());
+            MumbleLib::User* user = p->UserPtr();
+            if (!user)
+                continue;
+            int buffer_len = user->PlaybackBufferLengthMs();
+            int drop = static_cast<int>( 100*user->VoicePacketDropRatio() );
+            QString line = QString("    participant %1:   audio buffer=%2 ms   frame loss=%3 %").arg(p->Name()).arg(buffer_len).arg(drop);
             lines.append(line);
-            foreach(Participant* p, participants_)
-            {
-                User* user = p->UserPtr();
-                if (!user)
-                    continue;
-                int buffer_len = user->PlaybackBufferLengthMs();
-                int drop = static_cast<int>( 100*user->VoicePacketDropRatio() );
-                QString line = QString("    participant %1:   audio buffer=%2 ms   frame loss=%3 %").arg(p->Name()).arg(buffer_len).arg(drop);
-                lines.append(line);
-            }
-            return lines;
         }
-
-    } // InWorldVoice
+        return lines;
+    }
 
 } // MumbleVoip

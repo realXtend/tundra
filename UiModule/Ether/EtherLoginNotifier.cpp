@@ -36,11 +36,16 @@ namespace Ether
             Foundation::LoginServiceInterface *handler = framework_->GetService<Foundation::LoginServiceInterface>();
             if (handler)
             {
-                connect(this, SIGNAL(StartOsLogin(const QMap<QString, QString> &)), handler, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
-                connect(this, SIGNAL(StartRexLogin(const QMap<QString, QString> &)), handler, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
-                connect(this, SIGNAL(StartTaigaLogin(QWebFrame *)), handler, SLOT(ProcessLoginData(QWebFrame *)));
-                connect(this, SIGNAL(StartTaigaLogin(const QString &)), handler, SLOT(ProcessLoginData(const QString &)));
+                connect(this, SIGNAL(StartLogin(const QMap<QString, QString> &)), handler, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
+                connect(this, SIGNAL(StartLogin(QWebFrame *)), handler, SLOT(ProcessLoginData(QWebFrame *)));
+                connect(this, SIGNAL(StartLogin(const QString &)), handler, SLOT(ProcessLoginData(const QString &)));
+
                 connect(this, SIGNAL(Disconnect()), handler, SLOT(Logout()));
+                connect(this, SIGNAL(Quit()), handler, SLOT(Quit()));
+
+                connect(handler, SIGNAL(LoginStarted()), SLOT(EmitLoginStarted()));
+                connect(handler, SIGNAL(LoginFailed(const QString &)), SLOT(EmitLoginFailed(const QString &)));
+                connect(handler, SIGNAL(LoginSuccessful()), SLOT(EmitLoginSuccessful()));
             }
             else
                 UiServices::UiModule::LogError("Could not retrieve login service.");
@@ -75,7 +80,7 @@ namespace Ether
                     info_map["Password"] = oa->password();
                     info_map["AvatarType"] = "OpenSim";
                     last_info_map_ = info_map;
-                    emit StartOsLogin(info_map);
+                    emit StartLogin(info_map);
                     break;
                 }
                 case AvatarTypes::RealXtend:
@@ -87,35 +92,45 @@ namespace Ether
                     info_map["AuthenticationAddress"] = ra->authUrl().toString();
                     info_map["AvatarType"] = "RealXtend";
                     last_info_map_ = info_map;
-                    emit StartRexLogin(info_map);
+                    emit StartLogin(info_map);
                     break;
                 }
             }
         }
 
-        void EtherLoginNotifier::EmitOpenSimLogin(const QMap<QString, QString> &info_map)
+        void EtherLoginNotifier::EmitLogin(const QMap<QString, QString> &info_map)
         {
-            emit StartOsLogin(info_map);
+            emit StartLogin(info_map);
         }
 
-        void EtherLoginNotifier::EmitRealXtendLogin(const QMap<QString, QString> &info_map)
+        void EtherLoginNotifier::EmitLogin(QWebFrame *web_frame)
         {
-            emit StartRexLogin(info_map);
+            emit StartLogin(web_frame);
         }
 
-        void EtherLoginNotifier::EmitTaigaLogin(QWebFrame *web_frame)
+        void EtherLoginNotifier::EmitLogin(const QString &url)
         {
-            emit StartTaigaLogin(web_frame);
-        }
-
-        void EtherLoginNotifier::EmitTaigaLogin(const QString &url)
-        {
-            emit StartTaigaLogin(url);
+            emit StartLogin(url);
         }
 
         void EtherLoginNotifier::EmitDisconnectRequest()
         {
             emit Disconnect();
+        }
+
+        void EtherLoginNotifier::EmitLoginStarted()
+        {
+            emit LoginStarted();
+        }
+
+        void EtherLoginNotifier::EmitLoginFailed(const QString &message)
+        {
+            emit LoginFailed(message);
+        }
+
+        void EtherLoginNotifier::EmitLoginSuccessful()
+        {
+            emit LoginSuccessful();
         }
 
         void EtherLoginNotifier::ExitApplication()
@@ -154,9 +169,9 @@ namespace Ether
             QString avatar_type = last_info_map_["AvatarType"].toLower();
 
             if (avatar_type == "opensim")
-                emit StartOsLogin(last_info_map_);
+                emit StartLogin(last_info_map_);
             else if (avatar_type == "realxtend")
-                emit StartRexLogin(last_info_map_);
+                emit StartLogin(last_info_map_);
             else
             {
                 UiServices::UiModule::LogError("Webauth avatars can't teleport yet.");

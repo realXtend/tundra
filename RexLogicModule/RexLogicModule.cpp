@@ -86,6 +86,7 @@
 #include "EC_3DCanvasSource.h"
 #include "EC_ChatBubble.h"
 #include "EC_Ruler.h"
+#include "EC_SoundRuler.h"
 #include "EC_Name.h"
 
 #include <OgreManualObject.h>
@@ -106,7 +107,6 @@ std::string RexLogicModule::type_name_static_ = "RexLogic";
 
 RexLogicModule::RexLogicModule() :
     ModuleInterface(type_name_static_),
-    send_input_state_(false),
     movement_damping_constant_(10.0f),
     camera_state_(CS_Follow),
     network_handler_(0),
@@ -145,6 +145,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_3DCanvas);
     DECLARE_MODULE_EC(EC_3DCanvasSource);
     DECLARE_MODULE_EC(EC_Ruler);
+    DECLARE_MODULE_EC(EC_SoundRuler);
     DECLARE_MODULE_EC(EC_Name);
     DECLARE_MODULE_EC(EC_Mesh);
 }
@@ -256,8 +257,6 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-
-    send_input_state_ = true;
 
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
@@ -396,8 +395,11 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 void RexLogicModule::Update(f64 frametime)
 {
     {
-
         PROFILE(RexLogicModule_Update);
+
+        /// \todo Move this to OpenSimProtocolModule.
+        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
+            world_stream_->CreateUdpConnection();
 
         // interpolate & animate objects
         UpdateObjects(frametime);
@@ -411,15 +413,11 @@ void RexLogicModule::Update(f64 frametime)
         // update sound listener position/orientation
         UpdateSoundListener();
 
-        /// \todo Move this to OpenSimProtocolModule.
-        if (!world_stream_->IsConnected() && world_stream_->GetConnectionState() == ProtocolUtilities::Connection::STATE_INIT_UDP)
-            world_stream_->CreateUdpConnection();
-
-        if (send_input_state_)
+        // workaround for not being able to send events during initialization
+        static bool send_input_state = true;
+        if (send_input_state)
         {
-            send_input_state_ = false;
-
-            // can't send events during initalization, so workaround
+            send_input_state = false;
             event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
                 GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
@@ -431,15 +429,12 @@ void RexLogicModule::Update(f64 frametime)
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
-            // Update overlays last, after camera update
             input_handler_->Update(frametime);
-
-            UpdateAvatarOverlays();
-
+            // Update overlays last, after camera update
             UpdateAvatarNameTags(avatar_->GetUserAvatar());
-            
         }
     }
+
     RESETPROFILER;
 }
 
@@ -602,9 +597,16 @@ Vector3df RexLogicModule::GetCameraRight() const
 
 void RexLogicModule::EntityHovered(Scene::Entity* entity)
 {
-    EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-    if(widget)
-        widget->HoveredOver();
+    // Check if raycast result gave a valid entity
+    if (entity)
+    {
+        EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+        if(widget)
+            widget->HoveredOver();
+    }
+    // All hovers are out, no entity was returned by raycast
+    else
+        scene_handler_->ClearHovers(0);
 }
 
 Vector3df RexLogicModule::GetCameraPosition() const
@@ -893,23 +895,6 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         {
             sound->Update(frametime);
             sound->SetPosition(placeable->GetPosition());
-        }
-    }
-}
-
-void RexLogicModule::UpdateAvatarOverlays()
-{
-    // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-    return;
-
-    for (uint i = 0; i < found_avatars_.size(); ++i)
-    {
-        Scene::Entity* entity = found_avatars_[i].lock().get();
-        if (entity)
-        {
-            OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
-            if (overlay)
-                overlay->Update();
         }
     }
 }
@@ -1228,16 +1213,6 @@ Console::CommandResult RexLogicModule::ConsoleLogin(const StringVector &params)
     StartLoginOpensim(name.c_str(), passwd.c_str(), server.c_str());
 
     return Console::ResultSuccess();
-    //bool success = world_stream_->ConnectToServer(name, passwd, server);
-
-    // overwrite the password so it won't stay in-memory
-    //passwd.replace(0, passwd.size(), passwd.size(), ' ');
-
-    //if (success)
-    //    return Console::ResultSuccess();
-    //else
-    //    return Console::ResultFailure("Failed to connect to server.");
-    //return Console::ResultFailure("Cannot login from console no more");
 }
 
 Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)

@@ -8,11 +8,9 @@
 #include "ProtocolModuleOpenSimApi.h"
 #include "OpenSimLoginThread.h"
 
-#include "NetworkMessages/NetMessageManager.h"
 #include "Interfaces/INetMessageListener.h"
 #include "Interfaces/ProtocolModuleInterface.h"
 #include "NetworkEvents.h"
-#include "NetworkConnection.h"
 
 #include "CoreThread.h"
 #include "RexUUID.h"
@@ -52,9 +50,11 @@ namespace OpenSimProtocol
         //! Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
 
+        /// INetMessageListener override.
         /// Passes inbound network events to listeners.
         virtual void OnNetworkMessageReceived(ProtocolUtilities::NetMsgID msgID, ProtocolUtilities::NetInMessage *msg);
 
+        /// INetMessageListener override.
         /// Passes outbound network events to listeners. Used for stats/debugging.
         virtual void OnNetworkMessageSent(const ProtocolUtilities::NetOutMessage *msg);
 
@@ -65,59 +65,49 @@ namespace OpenSimProtocol
         /// @return loginworker_
         OpenSimLoginThread* GetLoginWorker() { return &loginWorker_; }
 
-        /*** ProtocolModuleInterface implementation ***/
-
-        //! Function for registering network event
+        /// ProtocolModuleInterface override
         virtual void RegisterNetworkEvents();
 
-        //! Function for uniregistering networking
+        /// ProtocolModuleInterface override
         virtual void UnregisterNetworkEvents();
 
-        /// Creates the UDP connection to the server.
-        ///@ return True, if the connection was succesfull, false otherwise.
+        /// ProtocolModuleInterface override
         virtual bool CreateUdpConnection(const char *address, int port);
 
-        ///@return Connection::State enum of the connection state.
+        /// ProtocolModuleInterface override
         virtual ProtocolUtilities::Connection::State GetConnectionState() const { return loginWorker_.GetState(); }
 
-        /// Set new state
+        /// ProtocolModuleInterface override
         virtual void SetConnectionState(ProtocolUtilities::Connection::State newstate) { loginWorker_.SetConnectionState(newstate); }
         
-        ///@return Connection::State enum of the connection state.
+        /// ProtocolModuleInterface override
         virtual std::string &GetConnectionErrorMessage() const { return loginWorker_.GetErrorMessage(); }
 
         /// Returns client parameters of current connection
         virtual const ProtocolUtilities::ClientParameters& GetClientParameters() const { return clientParameters_; }
 
-        /// Sets new capability.
-        /// @param name Name of capability.
-        /// @param url URL of the capability.
+        /// ProtocolModuleInterface override
         virtual void SetCapability(const std::string &name, const std::string &url);
 
-        /// Returns URL of the requested capability, or null string if the capability doens't exist.
-        /// @param name Name of the capability.
-        /// @return Capability URL.
+        /// ProtocolModuleInterface override
         virtual std::string GetCapability(const std::string &name) const;
-        
-        /// Sets Authentication type
-        /// @params authentivation type ProtocolUtilities::AuthenticationType
+
+        /// ProtocolModuleInterface override
         virtual void SetAuthenticationType(ProtocolUtilities::AuthenticationType aType) { authenticationType_ = aType; }
 
-        ///@return True if connection exists.
+        /// ProtocolModuleInterface override
         virtual bool IsConnected() const { return connected_; }
 
-        /// Disconnects from a reX server.
+        /// ProtocolModuleInterface override
         virtual void DisconnectFromServer();
 
-        /// Start building a new outbound message.
-        /// @return An empty message holder where the message can be built.
+        /// ProtocolModuleInterface override
         virtual ProtocolUtilities::NetOutMessage *StartMessageBuilding(ProtocolUtilities::NetMsgID msgId);
 
-        /// Finishes (sends) the message. The passed msg pointer will be invalidated after calling this, so don't
-        /// access it or hold on to it afterwards. The user doesn't have to do any deallocation, it is all managed by
-        /// this class.
+        /// ProtocolModuleInterface override
         virtual void FinishMessageBuilding(ProtocolUtilities::NetOutMessage *msg);
 
+        /// ProtocolModuleInterface override
         virtual ProtocolUtilities::NetMessageManager *GetNetworkMessageManager() const { return networkManager_.get(); }
 
     private:

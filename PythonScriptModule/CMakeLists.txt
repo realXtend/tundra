@@ -35,14 +35,14 @@ use_package (PROPERTYEDITOR)
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent EntityComponents/EC_SoundRuler)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight
-    ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent) # OgreRenderingModule)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight EC_Touchable
+    ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent EC_SoundRuler) # OgreRenderingModule)
 
 link_package (BOOST)
 link_package (POCO)

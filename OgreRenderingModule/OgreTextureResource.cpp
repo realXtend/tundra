@@ -8,14 +8,16 @@
 
 namespace OgreRenderer
 {
-    OgreTextureResource::OgreTextureResource(const std::string& id) : 
+    OgreTextureResource::OgreTextureResource(const std::string& id, TextureQuality texturequality) : 
         ResourceInterface(id),
+        texturequality_(texturequality),
         level_(-1)
     {
     }
 
-    OgreTextureResource::OgreTextureResource(const std::string& id, Foundation::TexturePtr source) : 
+    OgreTextureResource::OgreTextureResource(const std::string& id, TextureQuality texturequality, Foundation::TexturePtr source) : 
         ResourceInterface(id),
+        texturequality_(texturequality),
         level_(-1)
     {
         SetData(source);
@@ -55,6 +57,8 @@ namespace OgreRenderer
             Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetSize(), false));
             Ogre::Image image;
             image.load(stream);
+            if (texturequality_ == Texture_Low)
+                image.resize(image.getWidth() / 2, image.getHeight() / 2);
             ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(id_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, image);
             
         }
@@ -143,9 +147,21 @@ namespace OgreRenderer
                 }
             }
 
-            Ogre::Box dimensions(0,0, source->GetWidth(), source->GetHeight());
-            Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)source->GetData());
-            ogre_texture_->getBuffer()->blitFromMemory(pixel_box);   
+            // For the highest level texture, reduce size in low quality mode
+            if ((!source->GetLevel()) && (texturequality_ == Texture_Low))
+            {
+                Ogre::Image tempImage;
+                Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetDataSize(), false));
+                tempImage.loadRawData(stream, source->GetWidth(), source->GetHeight(), 1, pixel_format);
+                tempImage.resize(source->GetWidth() / 2, source->GetHeight() / 2);
+                ogre_texture_->getBuffer()->blitFromMemory(tempImage.getPixelBox());
+            }
+            else
+            {
+                Ogre::Box dimensions(0,0, source->GetWidth(), source->GetHeight());
+                Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)source->GetData());
+                ogre_texture_->getBuffer()->blitFromMemory(pixel_box);
+            }
         }
         catch (Ogre::Exception &e)
         {

@@ -14,16 +14,15 @@ uniform float gradientClamp;
 uniform float gradientScaleBias; */
 uniform float4 shadowMapParams;
 
-
-uniform float4 invShadowmapSize0;
-uniform float4 invShadowmapSize1;
-uniform float4 invShadowmapSize2;
-
 uniform float4x4 lightViewProj0;
+#ifdef PSSM_SHADOWS
 uniform float4x4 lightViewProj1;
 uniform float4x4 lightViewProj2;
+#endif
 
-float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV,float inverseShadowmapSize, float viewZ)
+uniform float invShadowmapSize;
+
+ps_3_0 float SampleShadowMap4TapPCF(sampler2D shadowMap, float4 shadowUV,float inverseShadowmapSize, float viewZ)
 {
     const float shadowFuzzyWidth = shadowMapParams.x;
     const float fixedDepthBias = shadowMapParams.y;

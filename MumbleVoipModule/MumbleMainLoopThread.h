@@ -8,7 +8,7 @@
 #include "CoreTypes.h"
 #include "Framework.h"
 
-namespace MumbleVoip
+namespace MumbleLib
 {
     /**
      * Thread for running the lib mumble mainloop
@@ -24,6 +24,6 @@ namespace MumbleVoip
     private:
         QString reason_;
     };
-} // end of namespace: MumbleVoip
+} // end of namespace: MumbleLib
 
 #endif // incl_MumbleVoipModule_MumbleMainLoopThread_h
