@@ -84,7 +84,7 @@ void ModuleInterface::InitializeInternal()
     }
 
     // Register to event system with default priority
-    framework_->GetEventManager()->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), DEFAULT_EVENT_PRIORITY);
+    framework_->GetEventManager()->RegisterEventSubscriber(this, DEFAULT_EVENT_PRIORITY);
 
     Initialize();
 }

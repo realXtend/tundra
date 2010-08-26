@@ -238,7 +238,7 @@ namespace WorldMap
         
         if (worldmap_widget_)
         {
-            WorldMapModule::LogInfo("WorldMapModule: Set current sim to world map: " + sim_name);
+            WorldMapModule::LogDebug("Setting current sim to world map: " + sim_name);
             worldmap_widget_->SetSimName(QString(sim_name.c_str()));
         }
 

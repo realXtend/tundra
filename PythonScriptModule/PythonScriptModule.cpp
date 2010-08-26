@@ -97,10 +97,11 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
-#include "EC_3DCanvasSource.h"
+#include "EC_Touchable.h"
 
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
+
 
 //for py_print
 //#include <stdio.h>
@@ -166,7 +167,7 @@ namespace PythonScript
         em_ = framework_->GetEventManager();
         
         // Reprioritize to be able to override behaviour
-        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
+        em_->RegisterEventSubscriber(this, 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
@@ -881,9 +882,9 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     uint refresh_rate;
 
     if(!PyArg_ParseTuple(args, "OsI", &qwidget, &uuidstr, &refresh_rate))
-        return NULL;
+        Py_RETURN_NONE;
     if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
-        return NULL;
+        Py_RETURN_NONE;
 
     // Prepare QWidget and texture UUID
     PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
@@ -891,7 +892,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
     
     if (!qwidget_ptr)
-        return NULL;
+        Py_RETURN_NONE;
 
     RexUUID texture_uuid = RexUUID();
     texture_uuid.FromString(std::string(uuidstr));
@@ -904,11 +905,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (!scene) 
     { 
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        return NULL;   
+        Py_RETURN_NONE;   
     }
 
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
+    QList<entity_id_t> affected_entitys_;
     for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
@@ -981,11 +983,27 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 continue;
 
             if (submeshes_.size() > 0)
+            {
                 PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+                affected_entitys_.append(entity.GetId());
+            }
         }
     }
 
-    Py_RETURN_NONE;
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    if (owner && affected_entitys_.count() > 0)
+    {
+        PyObject *py_ent_ptr_list = PyList_New(affected_entitys_.size());
+        int i = 0;
+        foreach(entity_id_t entity_id, affected_entitys_)
+        {
+            PyList_SET_ITEM(py_ent_ptr_list, i, owner->entity_create(entity_id));
+            ++i;
+        }
+        return py_ent_ptr_list;            
+    }
+    else
+        Py_RETURN_NONE;
 }
 
 PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
@@ -1163,10 +1181,10 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
 {
-    // Always create new EC_3DCanvas component
     if (submeshes.isEmpty())
         return;
-
+    
+    // Always create new EC_3DCanvas component
     EC_3DCanvas *ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
     if (ec_canvas)
         entity->RemoveComponent(entity->GetComponent<EC_3DCanvas>());    
@@ -1182,23 +1200,17 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
         ec_canvas->Start();
     }
 
-    // Only create EC_3DCanvasSource if it doesent exist laready
-    QWebView *webview = dynamic_cast<QWebView*>(widget);
-    if (webview)
+    // Touchable 
+    EC_Touchable *ec_touchable = entity->GetComponent<EC_Touchable>().get();
+    if (!ec_touchable)
     {
-        EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
-        if (!ec_canvas_source)
-        {
-            entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), AttributeChange::LocalOnly);
-            ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
-        }
-        if (ec_canvas_source)
-        {
-            QString url = webview->url().toString();
-            ec_canvas_source->manipulate_ec_3dcanvas = false;
-            ec_canvas_source->source_.Set(url.toStdString(), AttributeChange::LocalOnly);
-            ec_canvas_source->ComponentChanged(AttributeChange::LocalOnly);
-        }
+        entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_Touchable::TypeNameStatic()));
+        ec_touchable = entity->GetComponent<EC_Touchable>().get();
+    }
+    if (ec_touchable)
+    {
+        ec_touchable->SetHighlightOnHover(false);
+        ec_touchable->SetHoverCursor(Qt::PointingHandCursor);
     }
 }
 
@@ -1522,7 +1534,6 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
         return NULL;
     }
     PythonScript::self()->LogInfo(message);
-    
     Py_RETURN_NONE;
 }
 
@@ -1535,9 +1546,34 @@ PyObject* PyLogDebug(PyObject *self, PyObject *args)
         return NULL;
     }
     PythonScript::self()->LogDebug(message);
+    Py_RETURN_NONE;
+}
+
+PyObject* PyLogWarning(PyObject *self, PyObject *args) 
+{
+    const char* message;
+    if(!PyArg_ParseTuple(args, "s", &message))
+    {
+        PyErr_SetString(PyExc_ValueError, "Needs a string.");
+        return NULL;
+    }
+    PythonScript::self()->LogWarning(message);
+    Py_RETURN_NONE;
+}
+
+PyObject* PyLogError(PyObject *self, PyObject *args) 
+{
+    const char* message;
+    if(!PyArg_ParseTuple(args, "s", &message))
+    {
+        PyErr_SetString(PyExc_ValueError, "Needs a string.");
+        return NULL;
+    }
+    PythonScript::self()->LogError(message);
     
     Py_RETURN_NONE;
 }
+
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
     Real newyaw;
@@ -2006,6 +2042,12 @@ static PyMethodDef EmbMethods[] = {
 
     {"logDebug", (PyCFunction)PyLogDebug, METH_VARARGS,
     "Prints a debug text using the LogDebug-method."},
+
+    {"logWarning", (PyCFunction)PyLogWarning, METH_VARARGS,
+    "Prints a text using the LogWarning-method."},
+
+    {"logError", (PyCFunction)PyLogError, METH_VARARGS,
+    "Prints a text using the LogError-method."},
 
     {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
     "Get the right-vector for the camera."},
