@@ -36,7 +36,6 @@ namespace PDH
     { 
         PDH_FMT_COUNTERVALUE() : doubleValue(0.0), longValue(0) { }
 
-        double doubleValue() const { return doubleValue; } 
         double doubleValue; 
         long longValue;
     };
