@@ -10,7 +10,7 @@ struct GlobalAllocObject
    void * operator new(size_t sz )
    {  
 #ifndef Q_WS_WIN
-       return malloc(sz)
+       return malloc(sz);
 #else
        return GlobalAlloc(GPTR, sizeof(T)); 
 #endif

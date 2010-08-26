@@ -25,23 +25,24 @@ namespace PDH
     typedef unsigned int PDH_STATUS;
     typedef unsigned int DWORD;
     typedef std::string LPCTSTR;
+    typedef char TCHAR;
 
 #define ERROR_SUCCESS 1
 #define PDH_FMT_DOUBLE 2
 #define PDH_FMT_LONG 3
 
-    struct PDF_FMT_COUNTERVALUE 
+    struct PDH_FMT_COUNTERVALUE 
     { 
         double doubleValue() { return 0.0; } 
     };
     
     struct HQUERY {};
   
-    PDF_STATUS PdhGetFormattedCounterValue( void*, DWORD, DWORD&, PDF_FMT_COUNTERVALUE*) { return PDF_STATUS(); }
-    void PdhOpenQuery(int, int, HQUERY*) {}
-    void PdhCloseQuery(HQUERY query) {}
-    PDH_STATUS  PdhAddCounter (HQuery, LPCTSTR, int, Counter&) { return PDH_STATUS(); };
-    PDH_STATUS PdhCollectQueryData(HQuery) {  return PDH_STATUS(); };
+ //  PDH_STATUS PdhGetFormattedCounterValue( void*, DWORD, DWORD&, PDF_FMT_COUNTERVALUE*) { return PDF_STATUS(); }
+ //  void PdhOpenQuery(int, int, HQUERY*) {}
+ //  void PdhCloseQuery(HQUERY query) {}
+ //  PDH_STATUS PdhAddCounter (HQUERY, LPCTSTR, int, Counter&) { return PDH_STATUS(); };
+ //  PDH_STATUS PdhCollectQueryData(HQuery) {  return PDH_STATUS(); };
 
 #endif
 
@@ -80,13 +81,17 @@ class Counter : public SharedGlobalObject<HCOUNTER>
     public:
         PDH_STATUS GetFormatted(DWORD fmt, PDH_FMT_COUNTERVALUE*  fmtValue) const
         {
+#ifdef Q_WS_WIN
             DWORD  ctrType;
             return PdhGetFormattedCounterValue (*(get()->handle()), fmt, &ctrType, fmtValue);
+#else
+            return 0;
+#endif
         }
    
        double asDouble() const
        {
-          PDH_FMT_COUNTERVALUE   fmtValue;
+          PDH_FMT_COUNTERVALUE fmtValue;
           PDH_STATUS pdhStatus = GetFormatted(PDH_FMT_DOUBLE, &fmtValue);
           if (pdhStatus != ERROR_SUCCESS) 
             return -1.0;
@@ -138,11 +143,17 @@ class Query
     public:
         Query()   
         { 
+#ifdef Q_WS_WIN
             if ( PdhOpenQuery (0, 0, &h) != ERROR_SUCCESS )
                 std::cout<<" DebugStats::Perfomance.h : Error in opening pdhquery";
-           
+#endif           
         }
-        ~Query()  { PdhCloseQuery (h); }
+        ~Query()  
+        { 
+#ifdef Q_WS_WIN        
+            PdhCloseQuery (h); 
+#endif
+        }
 
        operator HQUERY() { return h;}
        
@@ -151,7 +162,7 @@ class Query
 
           Counter pCounterHandle;
 
-    #ifdef Q_WS_WIN
+#ifdef Q_WS_WIN
 
           
           PDH_COUNTER_PATH_ELEMENTS pdhCpe;
@@ -186,7 +197,11 @@ class Query
        
        PDH_STATUS Collect() const 
        {
-          return PdhCollectQueryData (h); 
+#ifdef Q_WS_WIN
+           return PdhCollectQueryData (h); 
+#else 
+           return 0;
+#endif
        }
 };
 
