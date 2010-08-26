@@ -7,7 +7,7 @@ set -x
 # sources gui tool: ppa:mapopa/qt4.6
 
 deps=$HOME/src/rex-deps
-viewer=$deps/../naaliclean/naali
+viewer=$deps/../rex-viewer
 viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
