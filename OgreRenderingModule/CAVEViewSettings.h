@@ -21,8 +21,6 @@ namespace OgreRenderer
         void getCaveProjectionSettings(Ogre::Vector3 &eye_pos, Ogre::Vector3 &bottom_left, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_right);
         CAVEViewSettings( QWidget* parent=0 );
         ~CAVEViewSettings();
-
-
     };
 
 }
