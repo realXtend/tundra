@@ -9,6 +9,11 @@
 namespace PDH
 {
 
+#ifndef Q_WS_WIN
+#define TEXT(quote) quote
+#endif
+
+
     PerformanceMonitor::PerformanceMonitor()
     {}
 
