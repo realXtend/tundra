@@ -1,7 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file OpenSimLoginThread.cpp
-/// @brief XML-RPC login worker.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file OpenSimLoginThread.cpp
+ *  @brief @brief XML-RPC login worker.
+ */
 
 #include "StableHeaders.h"
 #include "OpenSimLoginThread.h"
@@ -22,8 +24,6 @@
 #include <boost/shared_ptr.hpp>
 #include <utility>
 #include <algorithm>
-
-#include "Md5.h"
 
 namespace OpenSimProtocol
 {
@@ -47,23 +47,37 @@ namespace OpenSimProtocol
         if (start_login_)
         {
             threadState_->state = ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY;
-            if ( PerformXMLRPCLogin() )
+            emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_WAITING_FOR_XMLRPC_REPLY);
+            if (PerformXMLRPCLogin())
             {
-                if ( authentication_ == OPENSIM_AUTHENTICATION )
+                if (authentication_ == OPENSIM_AUTHENTICATION)
+                {
                     threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
-
-                if ( authentication_ == REALXTEND_AUTHENTICATION )
+                    emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED);
+                }
+                if (authentication_ == REALXTEND_AUTHENTICATION)
                 {
                     threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_AUTH_REPLY_RECEIVED;
+                    emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED);
+
                     callMethod_ = LOGIN_TO_SIMULATOR;
-                    if ( PerformXMLRPCLogin() )
+                    if (PerformXMLRPCLogin())
+                    {
                         threadState_->state = ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED;
+                        emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED);
+                    }
                     else
+                    {
                         threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
+                        emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_LOGIN_FAILED);
+                    }
                 }
             }
             else
+            {
                 threadState_->state = ProtocolUtilities::Connection::STATE_LOGIN_FAILED;
+                emit LoginStateChanged((int)ProtocolUtilities::Connection::STATE_LOGIN_FAILED);
+            }
 
             start_login_ = false;
         }
@@ -198,17 +212,17 @@ namespace OpenSimProtocol
             }
             else
             {
-                if (startLocation_.find("&") == std::string::npos)                
+                if (startLocation_.find("&") == std::string::npos)
                 {
                     call.AddMember("start", "uri:"+startLocation_+"&amp;128&amp;128&amp;0");
                 }
                 else
-                {                   
+                {
                     QString startloc(startLocation_.c_str());
                     startloc.replace("&", "&amp;");
                     call.AddMember("start", "uri:"+startloc.toStdString());
                 }
-            }            
+            }
 
             call.AddMember("version", QString("realXtend Naali %1.%2").arg(major, minor).toStdString());
             call.AddMember("channel", QString(APPLICATION_NAME).toStdString());
@@ -252,9 +266,11 @@ namespace OpenSimProtocol
         catch(XmlRpcException& ex)
         {
             if (callMethod_ == CLIENT_AUTHENTICATION )
-                threadState_->errorMessage = QString("Authentication failed to %1:%2, please check your Authentication address and port.").arg(authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString();
+                threadState_->errorMessage = QString("Authentication failed to %1:%2, please check your Authentication address and port.").arg(
+                    authenticationAddress_.c_str(), authenticationPort_.c_str()).toStdString();
             else if (callMethod_ == LOGIN_TO_SIMULATOR )
-                threadState_->errorMessage = QString("Login failed to %1:%2, please check your World address and port.").arg(worldAddress_.c_str(), worldPort_.c_str()).toStdString();
+                threadState_->errorMessage = QString("Login failed to %1:%2, please check your World address and port.").arg(
+                    worldAddress_.c_str(), worldPort_.c_str()).toStdString();
             ProtocolModuleOpenSim::LogError(ex.what());
             return false;
         }
@@ -378,7 +394,7 @@ namespace OpenSimProtocol
             catch (XmlRpcException &/*ex*/)
             {
                 threadState_->errorMessage = std::string("Connecting failed, reason unknown. World address probably not valid.");
-                ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Recieved>").toStdString());
+                ProtocolModuleOpenSim::LogError(QString(">>> Message: <No Message Received>").toStdString());
             }
             return false;
         }

@@ -9,6 +9,7 @@
 #include "OgreModuleApi.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
+#include "CAVEManager.h"
 
 #include <QObject>
 #include <QVariant>
@@ -38,6 +39,19 @@ class QWidget;
 
 namespace OgreRenderer
 {
+    enum ShadowQuality
+    {
+        Shadows_Off = 0,
+        Shadows_Low,
+        Shadows_High // PSSM, Direct3D only
+    };
+    
+    enum TextureQuality
+    {
+        Texture_Low = 0, // Halved resolution
+        Texture_Normal
+    };
+    
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
@@ -243,6 +257,18 @@ namespace OgreRenderer
         /// Used to perform alpha-keying based input.
         QImage &GetBackBuffer() { return backBuffer; }
 
+        //! Returns shadow quality
+        ShadowQuality GetShadowQuality() { return shadowquality_; }
+        
+        //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
+        void SetShadowQuality(ShadowQuality newquality);
+        
+        //! Returns texture quality
+        TextureQuality GetTextureQuality() { return texturequality_; }
+        
+        //! Sets texture quality. Note: changes need viewer restart to take effect
+        void SetTextureQuality(TextureQuality newquality);
+        
     public slots:
         //! Toggles fullscreen
         void SetFullScreen(bool value);
@@ -264,6 +290,9 @@ namespace OgreRenderer
 
         //! Creates scenemanager & camera
         void SetupScene();
+
+        //! Initializes shadows. Called by SetupScene().
+        void InitShadows();
 
         //! Successfully initialized flag
         bool initialized_;
@@ -347,6 +376,8 @@ namespace OgreRenderer
         //! resized dirty count
         int resized_dirty_;
 
+        CAVEManager cave_manager_;
+
         //! For render function
         QImage ui_buffer_;
         QRect last_view_rect_;
@@ -354,6 +385,15 @@ namespace OgreRenderer
         
         //! Visible entities
         std::set<entity_id_t> visible_entities_;
+        
+        //! Shadow quality
+        ShadowQuality shadowquality_;
+        
+        //! Texture quality
+        TextureQuality texturequality_;
+        
+        //! Soft shadow gaussian listeners
+        std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
     };
 }
 

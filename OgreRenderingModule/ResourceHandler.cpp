@@ -22,7 +22,8 @@
 
 namespace OgreRenderer
 {
-    ResourceHandler::ResourceHandler(Foundation::Framework* framework) :
+    ResourceHandler::ResourceHandler(Renderer* renderer, Foundation::Framework* framework) :
+        renderer_(renderer),
         framework_(framework)
     {
         source_types_[OgreTextureResource::GetTypeStatic()] = RexTypes::ASSETTYPENAME_TEXTURE;
@@ -253,7 +254,7 @@ namespace OgreRenderer
                 Foundation::ResourcePtr tex = GetResourceInternal(imageasset->GetId(), OgreTextureResource::GetTypeStatic());
                 if (!tex)
                 {
-                    tex = Foundation::ResourcePtr(new OgreTextureResource(imageasset->GetId()));
+                    tex = Foundation::ResourcePtr(new OgreTextureResource(imageasset->GetId(), renderer_->GetTextureQuality()));
                 }
                 OgreTextureResource* tex_res = dynamic_cast<OgreTextureResource*>(tex.get());
                 if ((tex_res) && (tex_res->SetDataFromImage(imageasset)))
@@ -303,7 +304,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr tex = GetResourceInternal(source_tex->GetId(), OgreTextureResource::GetTypeStatic());
         if (!tex)
         {
-            tex = Foundation::ResourcePtr(new OgreTextureResource(source_tex->GetId()));
+            tex = Foundation::ResourcePtr(new OgreTextureResource(source_tex->GetId(), renderer_->GetTextureQuality()));
         }
 
         // If highest level, erase texture decode request tag (should not get more raw resource events for this texture)
@@ -412,7 +413,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr tex = GetResourceInternal(source->GetId(), OgreImageTextureResource::GetTypeStatic());
         if (!tex)
         {
-            tex = Foundation::ResourcePtr(new OgreImageTextureResource(source->GetId()));
+            tex = Foundation::ResourcePtr(new OgreImageTextureResource(source->GetId(), renderer_->GetTextureQuality()));
         }
 
         bool success = false;
@@ -438,7 +439,7 @@ namespace OgreRenderer
         Foundation::ResourcePtr material = GetResourceInternal(source->GetId(), OgreMaterialResource::GetTypeStatic());
         if (!material)
         {
-            material = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId()));
+            material = Foundation::ResourcePtr(new OgreMaterialResource(source->GetId(), renderer_->GetShadowQuality()));
         }
 
         bool success = false;

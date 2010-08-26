@@ -12,8 +12,7 @@
 
 namespace UiServices
 {
-
-    UiDarkBlueStyle::UiDarkBlueStyle ()
+    UiDarkBlueStyle::UiDarkBlueStyle()
     {
         default_palette_ = QApplication::palette();
     }
@@ -32,7 +31,6 @@ namespace UiServices
 
         QPixmap backgroundImage("./data/ui/images/styles/darkblue_bg.png");
         QPixmap buttonImage("./data/ui/images/styles/darkblue_button.png");
-
         QPixmap midImage = buttonImage;
 
         QPainter painter;
@@ -42,7 +40,6 @@ namespace UiServices
         painter.end();
 
         palette = QPalette(paletteColor);
-
         palette.setBrush(QPalette::BrightText, Qt::white);
         palette.setBrush(QPalette::WindowText, white);
         palette.setBrush(QPalette::Base, baseColor);
@@ -57,43 +54,33 @@ namespace UiServices
 
         QBrush brush = palette.background();
         brush.setColor(Qt::lightGray);
-
         palette.setBrush(QPalette::Disabled, QPalette::WindowText, brush);
         palette.setBrush(QPalette::Disabled, QPalette::Text, brush);
         palette.setBrush(QPalette::Disabled, QPalette::ButtonText, brush);
         palette.setBrush(QPalette::Disabled, QPalette::Base, brush);
         palette.setBrush(QPalette::Disabled, QPalette::Button, brush);
         palette.setBrush(QPalette::Disabled, QPalette::Mid, brush);
-
-
     }
 
     void UiDarkBlueStyle::polish(QWidget *widget)
     {        
-        if (qobject_cast<QPushButton *>(widget)
-            || qobject_cast<QComboBox *>(widget))
+        if (qobject_cast<QPushButton *>(widget) || qobject_cast<QComboBox *>(widget))
             widget->setAttribute(Qt::WA_Hover, true); 
 
         if (qobject_cast<QScrollArea *>(widget))
             widget->setBackgroundRole(QPalette::Base);
 
         if (qobject_cast<QWebView *>(widget))
-        {
             widget->setPalette(default_palette_);
-        }
-
     }
 
     void UiDarkBlueStyle::unpolish(QWidget *widget)
     {
-        if (qobject_cast<QPushButton *>(widget)
-            || qobject_cast<QComboBox *>(widget))
+        if (qobject_cast<QPushButton *>(widget) || qobject_cast<QComboBox *>(widget))
             widget->setAttribute(Qt::WA_Hover, false);
     }
 
-    int UiDarkBlueStyle::pixelMetric(PixelMetric metric,
-        const QStyleOption *option,
-        const QWidget *widget) const
+    int UiDarkBlueStyle::pixelMetric(PixelMetric metric, const QStyleOption *option, const QWidget *widget) const
     {
 #ifndef Q_WS_X11
         switch (metric)
@@ -113,34 +100,69 @@ namespace UiServices
         return QCleanlooksStyle::pixelMetric(metric, option, widget);
     }
 
-    int UiDarkBlueStyle::styleHint(StyleHint hint, const QStyleOption *option,
-        const QWidget *widget,
-        QStyleHintReturn *returnData) const
+    int UiDarkBlueStyle::styleHint(StyleHint hint, const QStyleOption *option, const QWidget *widget, QStyleHintReturn *returnData) const
     {
-        switch (hint) {
-     case SH_DitherDisabledText:
-         return int(false);
-     case SH_EtchDisabledText:
-         return int(true);
-     default:
-         return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
+        switch (hint) 
+        {
+            case SH_DitherDisabledText:
+                return int(false);
+            case SH_EtchDisabledText:
+                return int(true);
+            default:
+                return QCleanlooksStyle::styleHint(hint, option, widget, returnData);
+        }
+    }
+    
+    QSize UiDarkBlueStyle::sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &contentsSize, const QWidget *widget) const
+    {
+        switch (type)
+        {
+            case QStyle::CT_PushButton:
+            {
+                // Be sure its pushbuttons only
+                const QPushButton *button = dynamic_cast<const QPushButton *>(widget);
+                if (button)
+                {
+                    // We need to adjust the button width if text goes overboard,
+                    // seems that our theme is not actually setting our button font to the widgets, so it cant know how
+                    // wide text will be with the theme font and will clip on long strings. This should fix it even if this is kind of ugly... - Pforce
+                    
+                    // Set up metrics with out button font, check the widget if size is bigger than default
+                    QFont font("facetextrabold", 8, 0, false);
+                    font.setCapitalization(QFont::AllUppercase);
+                    qreal b_psize = button->font().pointSize();
+                    if (b_psize > 8)
+                        font.setPointSize(b_psize);
+                    // Create metrics with font
+                    QFontMetrics metric(font);
+                    // 5 x char width seems to be a nice margin to get whole text to show
+                    int width_for_text = metric.width(button->text()) + metric.averageCharWidth() * 5; 
+                    // Set new width only if its bigger than qt is suggesting from the default theme
+                    QSize size = QCleanlooksStyle::sizeFromContents(type, option, contentsSize, widget);
+                    if (width_for_text > size.width())
+                        size.setWidth(width_for_text);
+                    return size;
+                }
+                return QCleanlooksStyle::sizeFromContents(type, option, contentsSize, widget);
+                break;
+            }
+            default:
+                return QCleanlooksStyle::sizeFromContents(type, option, contentsSize, widget);
         }
     }
 
     void UiDarkBlueStyle::drawComplexControl(ComplexControl control, const QStyleOptionComplex *option, QPainter *painter, const QWidget *widget) const
     {
-
         switch (control)
         {
-        case QStyle::CC_TitleBar:
+            case QStyle::CC_TitleBar:
             {
                 const int buttonMargin = 0;
                 painter->save();
+                const QStyleOptionTitleBar *myTitleBar = qstyleoption_cast<const QStyleOptionTitleBar *>(option);
 
-                const QStyleOptionTitleBar *myTitleBar =
-                    qstyleoption_cast<const QStyleOptionTitleBar *>(option);
-                if (myTitleBar) {
-
+                if (myTitleBar) 
+                {
                     bool active = (myTitleBar->titleBarState & State_Active);
 
                     QRect textRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarLabel, widget);
@@ -159,7 +181,8 @@ namespace UiServices
                     painter->setPen(QColor(232, 229, 228));                    
                     painter->drawText(textRect, myTitleBar->text, option);
 
-                    if ((myTitleBar->subControls & SC_TitleBarCloseButton) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+                    if ((myTitleBar->subControls & SC_TitleBarCloseButton) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) 
+                    {
                         QRect closeButtonRect = proxy()->subControlRect(CC_TitleBar, myTitleBar, SC_TitleBarCloseButton, widget);
                         if (closeButtonRect.isValid()) {
                             bool hover = (myTitleBar->activeSubControls & SC_TitleBarCloseButton) && (myTitleBar->state & State_MouseOver);
@@ -181,7 +204,8 @@ namespace UiServices
                         }
                     }
 
-                    if ((myTitleBar->subControls & SC_TitleBarSysMenu) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) {
+                    if ((myTitleBar->subControls & SC_TitleBarSysMenu) && (myTitleBar->titleBarFlags & Qt::WindowSystemMenuHint)) 
+                    {
                         bool hover = (myTitleBar->activeSubControls & SC_TitleBarSysMenu) && (myTitleBar->state & State_MouseOver);
                         bool sunken = (myTitleBar->activeSubControls & SC_TitleBarSysMenu) && (myTitleBar->state & State_Sunken);
 
@@ -194,157 +218,159 @@ namespace UiServices
                             painter->restore();
                         }
                     }
-
                     painter->restore();                    
                 }
+                break;
             }
-            break;
-        default:
-            QCleanlooksStyle::drawComplexControl(control, option, painter, widget);
+            default:
+                QCleanlooksStyle::drawComplexControl(control, option, painter, widget);
         }
     }
 
-    void UiDarkBlueStyle::drawPrimitive(PrimitiveElement element,
-        const QStyleOption *option,
-        QPainter *painter,
-        const QWidget *widget) const
+    void UiDarkBlueStyle::drawPrimitive(PrimitiveElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
     {
-        switch (element) {
-     case PE_PanelButtonCommand:
-         {
-             int delta = (option->state & State_MouseOver) ? 64 : 0;
-             QColor slightlyOpaqueBlack(0, 0, 0, 63);
-             QColor semiTransparentWhite(255, 255, 255, 127 + delta);
-             QColor semiTransparentBlack(0, 0, 0, 127 - delta);
+        switch (element) 
+        {
+            case PE_PanelButtonCommand:
+            {
+                int delta = (option->state & State_MouseOver) ? 64 : 0;
+                QColor slightlyOpaqueBlack(0, 0, 0, 63);
+                QColor semiTransparentWhite(255, 255, 255, 127 + delta);
+                QColor semiTransparentBlack(0, 0, 0, 127 - delta);
 
-             int x, y, width, height;
-             option->rect.getRect(&x, &y, &width, &height);
+                int x, y, width, height;
+                option->rect.getRect(&x, &y, &width, &height);
 
-             QPainterPath roundRect = roundRectPath(option->rect);
-             int radius = qMin(width, height) / 5;
+                QPainterPath roundRect = roundRectPath(option->rect);
+                int radius = qMin(width, height) / 5;
 
-             QBrush brush;
-             bool darker;
+                QBrush brush;
+                bool darker;
 
-             const QStyleOptionButton *buttonOption = qstyleoption_cast<const QStyleOptionButton *>(option);
-             if (buttonOption && (buttonOption->features & QStyleOptionButton::Flat)) {
-                 brush = option->palette.background();
-                 darker = (option->state & (State_Sunken | State_On));
-             } else {
-                 if (option->state & (State_Sunken | State_On)) {
-                     brush = option->palette.mid();
-                     darker = !(option->state & State_Sunken);
-                 } else {
-                     brush = option->palette.button();
-                     darker = false;
-                 }
-             }
+                const QStyleOptionButton *buttonOption = qstyleoption_cast<const QStyleOptionButton *>(option);
+                if (buttonOption && (buttonOption->features & QStyleOptionButton::Flat)) 
+                {
+                    brush = option->palette.background();
+                    darker = (option->state & (State_Sunken | State_On));
+                } 
+                else 
+                {
+                    if (option->state & (State_Sunken | State_On)) 
+                    {
+                        brush = option->palette.mid();
+                        darker = !(option->state & State_Sunken);
+                    } 
+                    else 
+                    {
+                        brush = option->palette.button();
+                        darker = false;
+                    }
+                }
 
-             QFont font("facetextrabold", 8, 0, false);
-             if (widget)
-             {
-                qreal w_psize = widget->font().pointSize();
-                if (w_psize > 8)
-                    font.setPointSize(w_psize);
-             }
-             font.setCapitalization(QFont::AllUppercase);
-             font.setStyleStrategy(QFont::PreferAntialias);
-             font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
-             painter->setRenderHint(QPainter::Antialiasing, true);
-             painter->setFont(font);
+                QFont font("facetextrabold", 8, 0, false);
+                if (widget)
+                {
+                    qreal w_psize = widget->font().pointSize();
+                    if (w_psize > 8)
+                        font.setPointSize(w_psize);
+                }
+                font.setCapitalization(QFont::AllUppercase);
+                font.setStyleStrategy(QFont::PreferAntialias);
+                font.setLetterSpacing(QFont::AbsoluteSpacing, 1);
+                painter->setRenderHint(QPainter::Antialiasing, true);
+                painter->setFont(font);
 
-             painter->save();
-             painter->setRenderHint(QPainter::Antialiasing, true);
-             painter->fillPath(roundRect, brush);
-             if (darker)
-                 painter->fillPath(roundRect, slightlyOpaqueBlack);
+                painter->save();
+                painter->setRenderHint(QPainter::Antialiasing, true);
+                painter->fillPath(roundRect, brush);
+                if (darker)
+                    painter->fillPath(roundRect, slightlyOpaqueBlack);
 
-             int x1 = x;
-             int x2 = x + radius;
-             int x3 = x + width - radius;
-             int x4 = x + width;
+                int x1 = x;
+                int x2 = x + radius;
+                int x3 = x + width - radius;
+                int x4 = x + width;
 
-             if (option->direction == Qt::RightToLeft) {
-                 qSwap(x1, x4);
-                 qSwap(x2, x3);
-             }
+                if (option->direction == Qt::RightToLeft)
+                {
+                    qSwap(x1, x4);
+                    qSwap(x2, x3);
+                }
 
-             QPolygon topHalf;
-             topHalf << QPoint(x1, y)
-                 << QPoint(x4, y)
-                 << QPoint(x3, y + radius)
-                 << QPoint(x2, y + height - radius)
-                 << QPoint(x1, y + height);
+                QPolygon topHalf;
+                topHalf << QPoint(x1, y)
+                        << QPoint(x4, y)
+                        << QPoint(x3, y + radius)
+                        << QPoint(x2, y + height - radius)
+                        << QPoint(x1, y + height);
 
-             QPen topPen(semiTransparentWhite, 1);
-             QPen bottomPen(semiTransparentBlack, 1);
+                QPen topPen(semiTransparentWhite, 1);
+                QPen bottomPen(semiTransparentBlack, 1);
 
-             painter->setClipPath(roundRect);
-             painter->setClipRegion(topHalf, Qt::IntersectClip);
-             painter->setPen(topPen);
-             painter->drawPath(roundRect);
+                painter->setClipPath(roundRect);
+                painter->setClipRegion(topHalf, Qt::IntersectClip);
+                painter->setPen(topPen);
+                painter->drawPath(roundRect);
 
-             QPolygon bottomHalf = topHalf;
-             bottomHalf[0] = QPoint(x4, y + height);
+                QPolygon bottomHalf = topHalf;
+                bottomHalf[0] = QPoint(x4, y + height);
 
-             painter->setClipPath(roundRect);
-             painter->setClipRegion(bottomHalf, Qt::IntersectClip);
-             painter->setPen(bottomPen);
-             painter->drawPath(roundRect);
+                painter->setClipPath(roundRect);
+                painter->setClipRegion(bottomHalf, Qt::IntersectClip);
+                painter->setPen(bottomPen);
+                painter->drawPath(roundRect);
 
-             painter->setPen(Qt::NoPen);
-             painter->setClipping(false);
-             painter->drawPath(roundRect);
+                painter->setPen(Qt::NoPen);
+                painter->setClipping(false);
+                painter->drawPath(roundRect);
 
-             painter->restore();
-         }
-         break; 
-     case PE_Frame:
-         {
-             painter->save();
-             painter->setPen(QColor(209, 212, 214));
-             painter->setBrush(QColor(42, 45, 50));
-             painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
-             painter->restore();
-         }
-     default:
-         QCleanlooksStyle::drawPrimitive(element, option, painter, widget);
+                painter->restore();
+                break;
+            }
+            case PE_Frame:
+            {
+                painter->save();
+                painter->setPen(QColor(209, 212, 214));
+                painter->setBrush(QColor(42, 45, 50));
+                painter->drawRect(option->rect.adjusted(0, 0, -1, -1));
+                painter->restore();
+            }
+            default:
+                QCleanlooksStyle::drawPrimitive(element, option, painter, widget);
         }
     }
 
-    void UiDarkBlueStyle::drawControl(ControlElement element,
-        const QStyleOption *option,
-        QPainter *painter,
-        const QWidget *widget) const
+    void UiDarkBlueStyle::drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const
     {
-        switch (element) {
-     case CE_PushButtonLabel:
-         {
-             QStyleOptionButton myButtonOption;
-             const QStyleOptionButton *buttonOption =
-                 qstyleoption_cast<const QStyleOptionButton *>(option);
-             if (buttonOption) {
-                 myButtonOption = *buttonOption;
-                 if (myButtonOption.palette.currentColorGroup()
-                     != QPalette::Disabled) {
-                         if (myButtonOption.state & (State_Sunken | State_On)) {
-                             myButtonOption.palette.setBrush(QPalette::ButtonText,
-                                 myButtonOption.palette.brightText());
-                         }
-                 }
-             }
-             QCleanlooksStyle::drawControl(element, &myButtonOption, painter, widget);
-         }
-         break;     
-     default:
-         QCleanlooksStyle::drawControl(element, option, painter, widget);
+        switch (element) 
+        {
+            case CE_PushButtonLabel:
+            {
+                QStyleOptionButton myButtonOption;
+                const QStyleOptionButton *buttonOption = qstyleoption_cast<const QStyleOptionButton *>(option);
+                if (buttonOption) 
+                {
+                    myButtonOption = *buttonOption;
+                    if (myButtonOption.palette.currentColorGroup() != QPalette::Disabled)
+                    {
+                        if (myButtonOption.state & (State_Sunken | State_On)) 
+                        {
+                            myButtonOption.palette.setBrush(QPalette::ButtonText, myButtonOption.palette.brightText());
+                        }
+                    }
+                }
+                QCleanlooksStyle::drawControl(element, &myButtonOption, painter, widget);
+                break;
+            }
+            default:
+                QCleanlooksStyle::drawControl(element, option, painter, widget);
         }
     }
 
-    void UiDarkBlueStyle::setTexture(QPalette &palette, QPalette::ColorRole role,
-        const QPixmap &pixmap)
+    void UiDarkBlueStyle::setTexture(QPalette &palette, QPalette::ColorRole role, const QPixmap &pixmap)
     {
-        for (int i = 0; i < QPalette::NColorGroups; ++i) {
+        for (int i = 0; i < QPalette::NColorGroups; ++i) 
+        {
             QColor color = palette.brush(QPalette::ColorGroup(i), role).color();
             palette.setBrush(QPalette::ColorGroup(i), role, QBrush(color, pixmap));
         }
@@ -354,8 +380,8 @@ namespace UiServices
     {
         int radius = qMin(rect.width(), rect.height()) / 5;
         int diam = 2 * radius;
-
         int x1, y1, x2, y2;
+
         rect.getCoords(&x1, &y1, &x2, &y2);
 
         QPainterPath path;
@@ -381,16 +407,16 @@ namespace UiServices
             switch (subControl)
             {
                 // Reposition the window title
-            case QStyle::SC_TitleBarLabel:
-                rect = QCleanlooksStyle::subControlRect(control, option, subControl, widget);                
-                rect.setTop(-2);
-                return rect;
-                // Reposition/resize the close button
-            case QStyle::SC_TitleBarCloseButton:
-                rect = QCleanlooksStyle::subControlRect(control, option, subControl, widget);
-                rect.setRight(rect.right()-3);
-                rect.setTop(6);
-                return rect;      
+                case QStyle::SC_TitleBarLabel:
+                    rect = QCleanlooksStyle::subControlRect(control, option, subControl, widget);                
+                    rect.setTop(-2);
+                    return rect;
+                    // Reposition/resize the close button
+                case QStyle::SC_TitleBarCloseButton:
+                    rect = QCleanlooksStyle::subControlRect(control, option, subControl, widget);
+                    rect.setRight(rect.right()-3);
+                    rect.setTop(6);
+                    return rect;
             }
         }
 #endif

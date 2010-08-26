@@ -85,9 +85,6 @@ namespace OgreRenderer
     //! Returns texture names used by a material's all techniques, passes & textureunits. Does not return duplicates.
     void OGRE_MODULE_API GetTextureNamesFromMaterial(Ogre::MaterialPtr material, StringVector& textures);
     
-    //! Creates a material resource from an Ogre material pointer
-    Foundation::ResourcePtr OGRE_MODULE_API CreateResourceFromMaterial(Ogre::MaterialPtr material);
-
     //! Deletes a material. Note: the material pointer passed in will be set to null
     void OGRE_MODULE_API RemoveMaterial(Ogre::MaterialPtr& material);
 

@@ -6,7 +6,8 @@
 #include "TextureInterface.h"
 #include "AssetInterface.h"
 #include "OgreModuleApi.h"
- 
+#include "Renderer.h"
+
 #include <OgreTexture.h>
 
 namespace OgreRenderer
@@ -22,14 +23,16 @@ namespace OgreRenderer
     public:
         //! constructor
         /*! \param id texture id
+            \param texturequality texture quality
          */
-        OgreTextureResource(const std::string& id);
+        OgreTextureResource(const std::string& id, TextureQuality texturequality);
         
         //! constructor
         /*! \param id texture id
+            \param texturequality texture quality
             \param source source raw texture data
         */
-        OgreTextureResource(const std::string& id, Foundation::TexturePtr source);
+        OgreTextureResource(const std::string& id, TextureQuality texturequality, Foundation::TexturePtr source);
 
         //! destructor
         virtual ~OgreTextureResource();
@@ -75,6 +78,9 @@ namespace OgreRenderer
 
         //! quality level, 0 = highest, -1 = no content yet
         int level_;
+        
+        //! Texture quality
+        TextureQuality texturequality_;
     };
 }
 #endif

@@ -59,7 +59,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatartracking, works :)
+if 0: #test avatartracking, works :)
     av_entid = r.getUserAvatarId()
     print "<:::",
     try:
@@ -90,14 +90,14 @@ if 1: #test avatartracking, works :)
 if 0: #push an event, input and/or chat
     #from eventsource import viewer
     #from modulemanager import m 
-    import circuits_manager
-    mm = circuits_manager.ComponentRunner.instance
+    import core.circuits_manager
+    mm = core.circuits_manager.ComponentRunner.instance
     print mm
     
     #mm.INPUT_EVENT(r.MoveForwardPressed)
     
     #a chat message again now too
-    mm.RexNetMsgChatFromSimulator("Bob", "- that's me, Bob.")
+    #mm.RexNetMsgChatFromSimulator("Bob", "- that's me, Bob.")
     
     #previous pyglet stuff, was an ncoming chat msg event
     #m.dispatch_event('on_chat', "input", "testing")
@@ -1288,6 +1288,24 @@ if 0:
     if mesh is not None:
         print "swoot"
 
+if 0:
+    avid = r.getUserAvatarId()
+    e = r.getEntity(avid)
+    try:
+        e.sound
+    except AttributeError:
+        print e.createComponent("EC_AttachedSound")
+        print "created a new Sound component"
+
+    s = e.sound
+    print type(s), s
+
+    e.removeSound(s)
+    try:
+        e.sound
+    except AttributeError:
+        print "sound removed successfully"
+
 if 0: #create a new component, hilight
     avid = r.getUserAvatarId()
     e = r.getEntity(avid)
@@ -1370,13 +1388,17 @@ if 0: #test adding a dynamiccomponent
         "opened": true
         }""")
 
-if 1: #the new DynamicComponent with individual attrs etc
-    doorid = 2185799489
+if 0: #the new DynamicComponent with individual attrs etc
+    doorid = 1948506985
     e = r.getEntity(doorid)
     dc = e.getDynamicComponent("door")
     a = dc.GetAttribute("opened")
     print a, type(a)
     dc.SetAttribute("opened", True)
+    dc.OnChanged()
+
+    jssrc = dc.GetAttribute("js_src")
+    print jssrc
 
 if 0: #animation control
     avid = r.getUserAvatarId()

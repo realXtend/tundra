@@ -3,12 +3,11 @@
 #ifndef incl_UiModule_ClassicalLoginWidget_h
 #define incl_UiModule_ClassicalLoginWidget_h
 
-#include <QWidget>
-#include <QMap>
-#include <QHideEvent>
-
-#include "Ether/EtherLoginNotifier.h"
 #include "ui_ClassicalLoginWidget.h"
+
+class QHideEvent;
+
+namespace Ether { namespace Logic { class EtherLoginNotifier; } }
 
 namespace CoreUi
 {
@@ -27,9 +26,14 @@ namespace CoreUi
 
         public slots:
             void RemoveEtherButton();
-            QMap<QString, QString> GetLoginInfo();
+            QMap<QString, QString> GetLoginInfo() const;
             void AppExitRequest();
             void StatusUpdate(bool connecting, QString message);
+
+        signals:
+            void AppExitRequested();
+            void StatusUpdateToUi(QString);
+            void ClassicLoginHidden();
 
         protected:
             void hideEvent(QHideEvent *hide_event);
@@ -39,10 +43,10 @@ namespace CoreUi
             TraditionalLoginWidget *traditional_widget_;
             WebLoginWidget *web_login_;
 
-        signals:
-            void AppExitRequested();
-            void StatusUpdateToUi(QString);
-            void ClassicLoginHidden();
+        private slots:
+            void LoginStarted();
+            void LoginFailed(const QString &message);
+            void LoginSuccessful();
         };
     }
 }

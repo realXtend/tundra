@@ -1,30 +1,32 @@
 import circuits
 import rexviewer as r
 import naali
+import urllib2 #for js_src downloading
 
-class DynamiccomponentHandler(circuits.BaseComponent):
-    GUINAME = "DynamicComponent handler"
-    ADDMENU = False
+"""
+first EC handlers were not 'Naali modules' (circuits components),
+but apparently they typically need to get Naali events to handle logout etc.
+so am making now so that they are registered to the circuits manager automagically. the reference to the manager is not needed though, 'cause circuits supports
+registering new components under a component out of the box.
+"""
+#import modulemanager
+#import core.circuits_manager
+#modulemanager_instance = core.circuits_manager.ComponentRunner.instance
 
+"""a registry of component handlers, by type"""
+handlertypes = {}
+def register(compname, handlertype):
+    handlertypes[compname] = handlertype
+
+import animsync
+register(animsync.COMPNAME, animsync.AnimationSync)
+
+import door
+register(door.COMPNAME, door.DoorHandler)
+
+class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
-        self.comp = None
-
         circuits.BaseComponent.__init__(self)
-        self.widget = None
-        self.proxywidget = None
-        self.initgui()
-
-    def initgui(self):
-        pass #overridden in subclasses
-
-    def registergui(self):
-        uism = r.getUiSceneManager()
-        self.proxywidget = r.createUiProxyWidget(self.widget)
-        self.proxywidget.setWindowTitle(self.GUINAME)
-        if not uism.AddWidgetToScene(self.proxywidget):
-            print "Adding the ProxyWidget to the bar failed."
-        if self.ADDMENU:
-            uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     @circuits.handler("on_sceneadded")
     def on_sceneadded(self, name):
@@ -42,26 +44,63 @@ class DynamiccomponentHandler(circuits.BaseComponent):
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
             print "comp Name:", comp.Name
-            if comp.Name == self.COMPNAME:
-                if self.comp is None:
-                    comp.connect("OnChanged()", self.onChanged)
-                    self.comp = comp
-                    print "DYNAMIC COMPONENT FOUND", self.comp, self.comp.Name
-                else:
-                    print "ANOTHER DynamicComponent of the given type found - only one supported now, ignoring", entity, comp, comp.Name
+            if comp.Name in handlertypes:
+                handlertype = handlertypes[comp.Name]
+                h = handlertype(entity, comp, changetype)
+                self += h #so that handlers get circuits events too
+
+            #if the data was there already, could do this.
+            #but it's not - must now listen to onChanged and check instead
+            #jssrc = comp.GetAttribute("js_src")
+            #print "JS SRC:", jssrc
+            #if jssrc is not None:
+            #    self.apply_js(jssrc)
+            jscheck = make_jssrc_handler(entity, comp, changetype)
+            comp.connect("OnChanged()", jscheck)
 
     @circuits.handler("on_logout")
-    def on_logout(self, idt):
-        if self.comp is not None:
-            try:
-                self.comp.disconnect("OnChanged()", self.onChanged)
-            finally: #disconnect fails if the entity had been deleted
-                self.comp = None
+    def removehandlers(self, evid):
+        self.unregister() #unregisters all DC handlers created here
 
-    @circuits.handler("on_exit")
-    def on_exit(self):
-        if self.proxywidget is not None:
-            uism = r.getUiSceneManager()
-            uism.RemoveWidgetFromScene(self.proxywidget)
+def make_jssrc_handler(entity, comp, changetype):
+    #def handle_js():
+    class JsHandler(): #need a functor so that can disconnect itself
+        def __call__(self):
+            jssrc = comp.GetAttribute("js_src")
+            print "JS SRC:", jssrc
+            if jssrc is not None:
+                apply_js(jssrc, comp)
+            comp.disconnect("OnChanged()", self)
+    return JsHandler()
 
+def apply_js(jssrc, comp):
+    jscode = loadjs(jssrc)
 
+    print jscode
+
+    ctx = {
+        #'entity'/'this': self.entity
+        'component': comp
+    }
+
+    ent = r.getEntity(comp.GetParentEntityId())
+    try:
+        ent.touchable
+    except AttributeError:
+        pass
+    else:
+        ctx['touchable'] = ent.touchable
+    try:
+        ent.placeable
+    except:
+        pass
+    else:
+        ctx['placeable'] = ent.placeable
+            
+    naali.runjs(jscode, ctx)
+    print "-- done with js"
+
+def loadjs(srcurl):
+    print "js source url:", srcurl
+    f = urllib2.urlopen(srcurl)
+    return f.read()

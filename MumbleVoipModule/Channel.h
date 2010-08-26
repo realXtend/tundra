@@ -10,10 +10,9 @@ namespace MumbleClient
     class Channel;
 }
 
-namespace MumbleVoip
+namespace MumbleLib
 {
-    //! Channel on Mumble server
-    //!
+    //! Wrapper over MumbleClient::Channel class. Presents an mumble channel.
     //! @todo Add signals: UserJoined, UserLeft ???
     //! @todo Add Users() method ???
     class Channel
@@ -42,6 +41,6 @@ namespace MumbleVoip
         QString channel_name_;
     };
 
-}// namespace MumbleVoip
+}// namespace MumbleLib
 
 #endif // incl_MumbleVoipModule_Channel_h

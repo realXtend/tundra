@@ -46,7 +46,6 @@ namespace TaigaProtocol
     {
         // Get ProtocolModuleTaiga
         boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> spTaiga = networkTaiga_.lock();
-
         if (spTaiga.get())
         {
             spTaiga->GetLoginWorker()->PrepareTaigaLogin(address, port, thread_state);
@@ -54,7 +53,7 @@ namespace TaigaProtocol
             spTaiga->SetIdentityUrl(identityUrl);
             spTaiga->SetHostUrl(address + port);
             // Start the thread.
-            boost::thread(boost::ref( *spTaiga->GetLoginWorker() ));
+            boost::thread(boost::ref(*spTaiga->GetLoginWorker()));
         }
         else
         {
@@ -93,7 +92,6 @@ namespace TaigaProtocol
     
     void TaigaWorldSession::GetWorldStream() const
     {
-
     }
 
     void TaigaWorldSession::SetCredentials(const LoginCredentials &credentials)

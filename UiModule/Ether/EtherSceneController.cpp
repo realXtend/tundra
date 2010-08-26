@@ -681,7 +681,7 @@ namespace Ether
             control_widget_->SuppressButtons(suppress);
         }
 
-        void EtherSceneController::ShowStatusInformation(QString text)
+        void EtherSceneController::ShowStatusInformation(const QString &text)
         {
             if (status_widget_)
             {
@@ -690,12 +690,16 @@ namespace Ether
                 info_hide_timer_->start(7500);
             }
 
-            classical_login_widget_->StatusUpdate(login_in_progress_, text);
+            ///\todo awful hack, remove
+            if (text != "Connected")
+                classical_login_widget_->StatusUpdate(login_in_progress_, text);
         }
 
         void EtherSceneController::HideStatusWidget()
         {
-            status_widget_->hide();
+            // If we have multiple status informations qutaeued i.e. timer is still active, don't hide
+            if (!info_hide_timer_->isActive())
+                status_widget_->hide();
         }
 
         void EtherSceneController::TryExitApplication()

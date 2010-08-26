@@ -42,7 +42,7 @@ namespace OpenSimProtocol
         }
         else
         {
-            ProtocolModuleOpenSim::LogInfo("Invalid credential type, must be RealXtendCredentials for RealXtendWorldSession");
+            ProtocolModuleOpenSim::LogInfo("Invalid credential type, must be RealXtend for RealXtendWorldSession");
             success = false;
         }
 
@@ -59,16 +59,18 @@ namespace OpenSimProtocol
         const QString& start_location,
         ProtocolUtilities::ConnectionThreadState *thread_state )
     {
-        // Get ProtocolModuleOpenSim
         boost::shared_ptr<OpenSimProtocol::ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
-
         if (spOpenSim.get())
         {
-            spOpenSim->GetLoginWorker()->PrepareRealXtendLogin(password, address, port, thread_state, auth_login, 
-                auth_server_address_noport, auth_server_port, start_location);
             spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_RealXtend);
+            OpenSimLoginThread *loginWorker = spOpenSim->GetLoginWorker();
+            loginWorker->PrepareRealXtendLogin(password, address, port, thread_state, auth_login, 
+                auth_server_address_noport, auth_server_port, start_location);
+
+            connect(loginWorker, SIGNAL(LoginStateChanged(int)), SLOT(HandleLoginStateChange(int)));
+
             // Start the login thread.
-            boost::thread(boost::ref(*spOpenSim->GetLoginWorker()));
+            boost::thread(boost::ref(*loginWorker));
         }
         else
         {
@@ -145,5 +147,19 @@ namespace OpenSimProtocol
     void RealXtendWorldSession::SetServerEntryPointUrl(const QUrl &newUrl)
     {
         serverEntryPointUrl_ = newUrl;
+    }
+
+    void RealXtendWorldSession::HandleLoginStateChange(int state)
+    {
+        ProtocolUtilities::Connection::State loginState = (ProtocolUtilities::Connection::State)state;
+        ProtocolModuleOpenSim::LogDebug("RexAuth login in process: " + NetworkStateToString(loginState));
+        if (loginState == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
+        {
+            emit LoginFailed(networkOpensim_.lock()->GetLoginWorker()->GetErrorMessage().c_str());
+        }
+        else if (loginState == ProtocolUtilities::Connection::STATE_CONNECTED)
+        {
+            emit LoginSuccessful();
+        }
     }
 }

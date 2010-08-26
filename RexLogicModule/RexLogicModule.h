@@ -274,9 +274,6 @@ namespace RexLogic
          */
         void UpdateObjects(f64 frametime);
 
-        //! Update avatar overlays. Must be done after other object update
-        void UpdateAvatarOverlays();
-        
         //! Update sound listener position
         /*! Uses current camera for now
          */
@@ -291,9 +288,11 @@ namespace RexLogic
         //! Handle an asset event.
         bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
-        //! Does preparations before logout/delete of scene
-        //! For example: Takes ui screenshots of world/avatar with rendering service.
-        //! Add functionality if you need something done before logout.
+        /*! Does preparations before logout/delete of scene
+         *  For example: Takes ui screenshots of world/avatar with rendering service.
+         *  Add functionality if you need something done before logout.
+         *  \todo Move the av&world screenshot functionality to Ether/UiModule?
+         */
         void AboutToDeleteWorld();
 
         //! Gets a map of all avatars in world and the distance from users avatar,
@@ -366,9 +365,6 @@ namespace RexLogic
         /// if not. Thanks go to Ogre for having issues with this..
         void DebugSanityCheckOgreCameraTransform();
 #endif
-
-        //! workaround for not being able to send events during initialization
-        bool send_input_state_;
 
         //! Mapping for full uuids - localids
         typedef std::map<RexUUID, entity_id_t> IDMap;

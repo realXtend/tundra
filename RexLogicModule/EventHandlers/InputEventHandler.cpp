@@ -114,6 +114,8 @@ void InputEventHandler::Update(f64 frametime)
             eventMgr->SendEvent(category, Scene::Events::EVENT_ENTITY_MOUSE_HOVER, &data);
             owner_->EntityHovered(result.entity_);
         }
+        else
+            owner_->EntityHovered(0);
     }
 }
 

@@ -3,14 +3,10 @@ vertex_program Rex/TerrainPCFVS cg
 	source RexTerrainPCF.cg
 	entry_point mainVS
 	profiles vs_3_0 arbvp1
-	compile_arguments -DSHADOW_MAPPING
 
 	default_params
 	{
 		param_named_auto worldViewProjMatrix worldviewproj_matrix
-		param_named_auto lightViewProj0	texture_viewproj_matrix 0
-		param_named_auto lightViewProj1	texture_viewproj_matrix 1
-		param_named_auto lightViewProj2	texture_viewproj_matrix 2
 		param_named_auto worldMatrix world_matrix
 
 		//Directional lighting
@@ -40,17 +36,6 @@ fragment_program Rex/TerrainPCFFS cg
 	source RexTerrainPCF.cg
 	entry_point mainPS
 	profiles ps_3_0 arbfp1
-	compile_arguments -DSHADOW_MAPPING
-
-	default_params
-	{
-		param_named_auto invShadowmapSize0	inverse_texture_size 0
-		param_named_auto invShadowmapSize1	inverse_texture_size 1
-		param_named_auto invShadowmapSize2	inverse_texture_size 2
-
-		// Shadow mapping parameters: (shadow fuzzy width, fixed depth bias, gradient clamp, gradient scale bias)
-		param_named shadowMapParams float4 2000.0 0 0 0
-	}
 }
 
 material Rex/TerrainPCF
@@ -112,22 +97,6 @@ material Rex/TerrainPCF
 			texture_unit detail3
 			{
 				texture terr_dirt-grass.jpg
-			}
-
-			texture_unit shadowMap0
-			{
-				content_type shadow
-				tex_address_mode clamp
-			}
-			texture_unit shadowMap1
-			{
-				content_type shadow
-				tex_address_mode clamp
-			}
-			texture_unit shadowMap2
-			{
-				content_type shadow
-				tex_address_mode clamp
 			}
 		}
 	}

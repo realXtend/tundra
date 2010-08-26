@@ -159,7 +159,8 @@ namespace Foundation
     
     bool EventManager::SendEvent(const EventSubscriber& subscriber, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
-        if (ModuleInterface* module = subscriber.module_.lock().get())
+        ModuleInterface* module = subscriber.module_;
+        if (module)
         {
             try
             {
@@ -182,11 +183,9 @@ namespace Foundation
         return false;
     }
     
-    bool EventManager::RegisterEventSubscriber(ModuleWeakPtr module, int priority)
+    bool EventManager::RegisterEventSubscriber(ModuleInterface* module, int priority)
     {
-        ModuleSharedPtr module_ptr = module.lock();
-        ModuleInterface *module_rawptr = module_ptr.get();
-        if (!module_rawptr)
+        if (!module)
         {
             RootLogError("Tried to register null module as event subscriber");
             return false;
@@ -195,7 +194,7 @@ namespace Foundation
         for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
             // If module found, just readjust the priority
-            if (subscribers_[i].module_.lock().get() == module_rawptr)
+            if (subscribers_[i].module_ == module)
             {
                 subscribers_[i].priority_ = priority;
                 std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
@@ -205,7 +204,7 @@ namespace Foundation
         
         EventSubscriber new_subscriber;
         new_subscriber.module_ = module;
-        new_subscriber.module_name_ = module_rawptr->Name();
+        new_subscriber.module_name_ = module->Name();
         new_subscriber.priority_ = priority;
         subscribers_.push_back(new_subscriber);
         std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
@@ -219,7 +218,7 @@ namespace Foundation
         
         for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
-            if (subscribers_[i].module_.lock().get() == module)
+            if (subscribers_[i].module_ == module)
             {
                 subscribers_.erase(subscribers_.begin() + i);
                 return true;
@@ -236,7 +235,7 @@ namespace Foundation
         
         for (unsigned i = 0; i < subscribers_.size(); ++i)
         {
-            if (subscribers_[i].module_.lock().get() == module)
+            if (subscribers_[i].module_ == module)
                 return true;
         }
         

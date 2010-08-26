@@ -97,8 +97,9 @@ namespace ECEditor
             {
                 //! \todo support multiple entity selection
                 Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-                if (editor_window_)
+                if (editor_window_ && entity_clicked_data)
                     editor_window_->AddEntity(entity_clicked_data->entity->GetId());
+                break;
             }
             case Scene::Events::EVENT_ENTITY_SELECT:
                 //if (editor_window_)
@@ -108,6 +109,13 @@ namespace ECEditor
                 //if (editor_window_)
                 //    editor_window_->RemoveEntity(entity_clicked_data->entity->GetId());
                 break;
+            case Scene::Events::EVENT_ENTITY_DELETED:
+            {
+                Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
+                if(editor_window_ && entity_clicked_data)
+                    editor_window_->RemoveEntity(entity_clicked_data->entity->GetId());
+                break;
+            }
             default:
                 break;
             }
@@ -115,7 +123,7 @@ namespace ECEditor
 
         if (category_id == network_state_event_category_ && event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             if (editor_window_)
-                editor_window_->ClearEntities();
+                editor_window_->ClearEntities(); 
 
         return false;
     }
@@ -165,7 +173,7 @@ namespace ECEditor
      */
     Console::CommandResult ECEditorModule::EditDynamicComponent(const StringVector &params)
     {
-        Scene::SceneManager *sceneMgr = framework_->GetScene("World").get();
+        Scene::SceneManager *sceneMgr = framework_->GetDefaultWorldScene().get();
         if(!sceneMgr)
             return Console::ResultFailure("Failed to find main scene.");
 

@@ -78,6 +78,7 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "Environment/PrimGeometryUtils.h"
 #include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
+#include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_OgreMesh.h"
@@ -96,10 +97,11 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
-#include "EC_3DCanvasSource.h"
+#include "EC_Touchable.h"
 
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
+
 
 //for py_print
 //#include <stdio.h>
@@ -165,7 +167,7 @@ namespace PythonScript
         em_ = framework_->GetEventManager();
         
         // Reprioritize to be able to override behaviour
-        em_->RegisterEventSubscriber(framework_->GetModuleManager()->GetModule(this), 105);
+        em_->RegisterEventSubscriber(this, 105);
 
         // Get Framework category, so we can listen to its event about protocol module ready,
         // then we can subscribe to the other networking categories
@@ -880,9 +882,9 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     uint refresh_rate;
 
     if(!PyArg_ParseTuple(args, "OsI", &qwidget, &uuidstr, &refresh_rate))
-        return NULL;
+        Py_RETURN_NONE;
     if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
-        return NULL;
+        Py_RETURN_NONE;
 
     // Prepare QWidget and texture UUID
     PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
@@ -890,7 +892,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
     
     if (!qwidget_ptr)
-        return NULL;
+        Py_RETURN_NONE;
 
     RexUUID texture_uuid = RexUUID();
     texture_uuid.FromString(std::string(uuidstr));
@@ -903,11 +905,12 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (!scene) 
     { 
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        return NULL;   
+        Py_RETURN_NONE;   
     }
 
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
+    QList<entity_id_t> affected_entitys_;
     for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
@@ -980,11 +983,145 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                 continue;
 
             if (submeshes_.size() > 0)
+            {
                 PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+                affected_entitys_.append(entity.GetId());
+            }
         }
     }
 
-    Py_RETURN_NONE;
+    PythonScriptModule *owner = PythonScriptModule::GetInstance();
+    if (owner && affected_entitys_.count() > 0)
+    {
+        PyObject *py_ent_ptr_list = PyList_New(affected_entitys_.size());
+        int i = 0;
+        foreach(entity_id_t entity_id, affected_entitys_)
+        {
+            PyList_SET_ITEM(py_ent_ptr_list, i, owner->entity_create(entity_id));
+            ++i;
+        }
+        return py_ent_ptr_list;            
+    }
+    else
+        Py_RETURN_NONE;
+}
+
+PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
+{
+    char* uuidstr;
+
+    if(!PyArg_ParseTuple(args, "s", &uuidstr))
+        return NULL;
+
+    RexUUID texture_uuid = RexUUID();
+    texture_uuid.FromString(std::string(uuidstr));
+    
+    // Get RexLogic and Scene
+    RexLogic::RexLogicModule *rexlogicmodule_;
+    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
+    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
+
+    if (!scene) 
+    { 
+        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
+        return NULL;   
+    }
+
+    // Iterate the scene to find all submeshes that use this texture uuid
+    QList<uint> submeshes_;
+    bool submeshes_found_ = false;
+    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    {
+        Scene::Entity &entity = **iter;
+        submeshes_.clear();
+
+        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
+        if (!primentity) 
+            continue;
+        
+        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
+
+        if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
+        {
+            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            
+            OgreRenderer::EC_OgreMesh *meshptr = 0;
+            OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
+
+            if (mesh) 
+            {
+                meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+                if (!meshptr)
+                    continue;
+                if (!meshptr->GetEntity())
+                    continue;
+            }
+            else if (custom_object)
+            {
+                custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
+                if (!custom_object_ptr)
+                    continue;
+                if (!custom_object_ptr->GetEntity())
+                    continue;
+                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+                custom_object_ptr->CommitChanges(manual);
+            }
+            else
+                continue;
+            
+            // Iterate mesh materials map
+            if (meshptr)
+            {
+                MaterialMap material_map = prim.Materials;
+                MaterialMap::const_iterator i = material_map.begin();
+                while (i != material_map.end())
+                {
+                    // Store sumbeshes to list where we want to apply the new widget as texture
+                    uint submesh_id = i->first;
+                    if ((i->second.Type == RexTypes::RexAT_Texture))
+                    {
+                        if ((i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                        {
+                            submeshes_.append(submesh_id);
+                        }
+                        else
+                        {
+                            // Url asset id check for containing texture UUID
+                            QString q_asset_id(i->second.asset_id.c_str());
+                            if (q_asset_id.contains(texture_uuid.ToString().c_str()))
+                                submeshes_.append(submesh_id);
+                        }
+                    }
+                    ++i;
+                }
+            }
+            // Iterate custom object texture map
+            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
+            {
+                TextureMap texture_map = prim.PrimTextures;
+                TextureMap::const_iterator i = texture_map.begin();
+
+                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
+                {
+                    uint submesh_id = i->first;
+                    if (i->second == texture_uuid.ToString())
+                        submeshes_.append(submesh_id);
+                    ++i;
+                }
+            }
+            else
+                continue;
+
+            if (submeshes_.size() > 0)
+                Py_RETURN_TRUE; // No need to iterate further if any submeshes were found
+        }
+    }
+
+    if (submeshes_found_)
+        Py_RETURN_TRUE;
+    else
+        Py_RETURN_FALSE;
 }
 
 PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
@@ -1044,10 +1181,10 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
 
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
 {
-    // Always create new EC_3DCanvas component
     if (submeshes.isEmpty())
         return;
-
+    
+    // Always create new EC_3DCanvas component
     EC_3DCanvas *ec_canvas = entity->GetComponent<EC_3DCanvas>().get();
     if (ec_canvas)
         entity->RemoveComponent(entity->GetComponent<EC_3DCanvas>());    
@@ -1063,23 +1200,17 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
         ec_canvas->Start();
     }
 
-    // Only create EC_3DCanvasSource if it doesent exist laready
-    QWebView *webview = dynamic_cast<QWebView*>(widget);
-    if (webview)
+    // Touchable 
+    EC_Touchable *ec_touchable = entity->GetComponent<EC_Touchable>().get();
+    if (!ec_touchable)
     {
-        EC_3DCanvasSource *ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
-        if (!ec_canvas_source)
-        {
-            entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_3DCanvasSource::TypeNameStatic()), AttributeChange::LocalOnly);
-            ec_canvas_source = entity->GetComponent<EC_3DCanvasSource>().get();
-        }
-        if (ec_canvas_source)
-        {
-            QString url = webview->url().toString();
-            ec_canvas_source->manipulate_ec_3dcanvas = false;
-            ec_canvas_source->source_.Set(url.toStdString(), AttributeChange::LocalOnly);
-            ec_canvas_source->ComponentChanged(AttributeChange::LocalOnly);
-        }
+        entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_Touchable::TypeNameStatic()));
+        ec_touchable = entity->GetComponent<EC_Touchable>().get();
+    }
+    if (ec_touchable)
+    {
+        ec_touchable->SetHighlightOnHover(false);
+        ec_touchable->SetHoverCursor(Qt::PointingHandCursor);
     }
 }
 
@@ -1403,7 +1534,6 @@ PyObject* PyLogInfo(PyObject *self, PyObject *args)
         return NULL;
     }
     PythonScript::self()->LogInfo(message);
-    
     Py_RETURN_NONE;
 }
 
@@ -1416,9 +1546,34 @@ PyObject* PyLogDebug(PyObject *self, PyObject *args)
         return NULL;
     }
     PythonScript::self()->LogDebug(message);
+    Py_RETURN_NONE;
+}
+
+PyObject* PyLogWarning(PyObject *self, PyObject *args) 
+{
+    const char* message;
+    if(!PyArg_ParseTuple(args, "s", &message))
+    {
+        PyErr_SetString(PyExc_ValueError, "Needs a string.");
+        return NULL;
+    }
+    PythonScript::self()->LogWarning(message);
+    Py_RETURN_NONE;
+}
+
+PyObject* PyLogError(PyObject *self, PyObject *args) 
+{
+    const char* message;
+    if(!PyArg_ParseTuple(args, "s", &message))
+    {
+        PyErr_SetString(PyExc_ValueError, "Needs a string.");
+        return NULL;
+    }
+    PythonScript::self()->LogError(message);
     
     Py_RETURN_NONE;
 }
+
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
     Real newyaw;
@@ -1888,6 +2043,12 @@ static PyMethodDef EmbMethods[] = {
     {"logDebug", (PyCFunction)PyLogDebug, METH_VARARGS,
     "Prints a debug text using the LogDebug-method."},
 
+    {"logWarning", (PyCFunction)PyLogWarning, METH_VARARGS,
+    "Prints a text using the LogWarning-method."},
+
+    {"logError", (PyCFunction)PyLogError, METH_VARARGS,
+    "Prints a text using the LogError-method."},
+
     {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
     "Get the right-vector for the camera."},
     
@@ -1968,6 +2129,9 @@ static PyMethodDef EmbMethods[] = {
     {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
     "Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
 
+    {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
+    "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
+
     {"applyUICanvasToSubmeshes", (PyCFunction)ApplyUICanvasToSubmeshes, METH_VARARGS, 
     "Applies a ui canvas to the given submeshes of the entity. Parameters: entity id, list of submeshes (material indices), uicanvas (internal mode required)"},
     
@@ -2019,6 +2183,7 @@ namespace PythonScript
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
+            PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
