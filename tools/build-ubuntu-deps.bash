@@ -6,8 +6,12 @@ set -x
 # following ppa sources using add-apt-repository or the software
 # sources gui tool: ppa:mapopa/qt4.6
 
-deps=$HOME/src/rex-deps
-viewer=$deps/../rex-viewer
+viewer=$(dirname $(readlink -f $0))/..
+deps=$viewer/../naali-deps
+mkdir -p $deps
+deps=$(cd $deps && pwd)
+viewer=$(cd $viewer && pwd)
+
 viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
