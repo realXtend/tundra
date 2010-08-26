@@ -597,9 +597,16 @@ Vector3df RexLogicModule::GetCameraRight() const
 
 void RexLogicModule::EntityHovered(Scene::Entity* entity)
 {
-    EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-    if(widget)
-        widget->HoveredOver();
+    // Check if raycast result gave a valid entity
+    if (entity)
+    {
+        EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
+        if(widget)
+            widget->HoveredOver();
+    }
+    // All hovers are out, no entity was returned by raycast
+    else
+        scene_handler_->ClearHovers(0);
 }
 
 Vector3df RexLogicModule::GetCameraPosition() const

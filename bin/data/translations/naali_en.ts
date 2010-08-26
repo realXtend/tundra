@@ -2068,6 +2068,14 @@ Duration: %1 sec</source>
         <source>High</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Texture Quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>RequestManagerWidget</name>

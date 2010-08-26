@@ -31,8 +31,7 @@ EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
     volumeAttr_(this, "volume", 5),
     segmentsAttr_(this, "segments", 29),
     rulerObject(0),
-    sceneNode_(0),
-    prim(0)
+    sceneNode_(0)
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     
@@ -56,7 +55,6 @@ EC_SoundRuler::~EC_SoundRuler()
     {
         rulerObject = 0;
         sceneNode_ = 0;
-        prim = 0;
     }
 }
 
@@ -118,11 +116,6 @@ void EC_SoundRuler::Create()
     if (!placeable)
         return;
     sceneNode_ = placeable->GetSceneNode();
-    
-    prim = entity->GetComponent<EC_OpenSimPrim>().get();
-    assert(prim);
-    if (!prim)
-        return;
 
     assert(sceneNode_);
     if (!sceneNode_)
@@ -155,8 +148,19 @@ void EC_SoundRuler::Create()
 
 void EC_SoundRuler::SetupSoundRuler()
 {
-    if(!rulerObject || !prim)
+    if(!rulerObject)
         return;
+        
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (!entity)
+        return;
+        
+    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+    assert(prim);
+    if(!prim)
+        return;
+        
     float const radius = prim->SoundRadius;
     float const volume = prim->SoundVolume;
     float const segments = segmentsAttr_.Get();
