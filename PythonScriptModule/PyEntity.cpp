@@ -212,18 +212,7 @@ namespace PythonScript
 
     PyObject* PythonScriptModule::entity_create(entity_id_t ent_id) //, Scene::EntityPtr entity)
     {
-//        rexviewer_EntityObject* eob;
-        //std::cout << "Entity: creating a wrapper pyobject ..";
         PyEntity *eob = PyObject_New(PyEntity, &PyEntityType); //sets refcount to 1
-
-        //std::cout << "setting the pointer to the entity in the wrapper: " << entity << std::endl;
-        //eob->entity = entity; //doesn't have a constructor, just this factory
-        
-        //std::cout << "storing the pointer to the entity in the entity_ptrs map:" << entity << std::endl;
-        //entity_ptrs[ent_id] = entity;
-
-        //std::cout << "storing the entity id in the wrapper object:" << ent_id << std::endl;
-        PythonScript::self()->LogDebug("Storing the entity id in the wrapper object:" + QString::number(ent_id).toStdString());
         eob->ent_id = ent_id;
         return (PyObject*) eob;
     }
