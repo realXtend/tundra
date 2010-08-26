@@ -58,4 +58,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+if (MSVC)
+	target_link_libraries (${TARGET_NAME} pdh.lib)
+endif (MSVC)
+
 final_target ()

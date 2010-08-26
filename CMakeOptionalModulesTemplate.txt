@@ -32,7 +32,9 @@ add_subdirectory (EntityComponents/EC_DynamicComponent)      # declared by Pytho
 
 #add_subdirectory (LegacyAvatarModule)
 
-add_subdirectory (MumbleVoipModule)
+if (MSVC)
+   add_subdirectory (MumbleVoipModule)
+endif()
 add_subdirectory (WorldBuildingModule)
 add_subdirectory (PhononPlayerModule)
 add_subdirectory (WorldMapModule)

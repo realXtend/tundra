@@ -17,10 +17,15 @@ import PythonQt
 qapp = PythonQt.Qt.QApplication.instance()
 import PythonQt.QtGui as gui
 cursor = gui.QCursor()
-#print cursor, cursor.shape()
+
 def setcursor(ctype):
-    cursor.setShape(ctype)    
-    qapp.setOverrideCursor(cursor)
+    cursor.setShape(ctype)
+    current = qapp.overrideCursor()
+    if current != None:
+        if current.shape() != ctype:
+            qapp.setOverrideCursor(cursor)
+    else:
+        qapp.setOverrideCursor(cursor)
 
 COMPNAME = "door" #the DC name identifier string that this handler looks for
 
@@ -34,8 +39,6 @@ class DoorHandler(circuits.BaseComponent):
 
         comp.connect("OnChanged()", self.onChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
-
-        self.hovering = 0 #mouse hover exit hack
         self.initgui()
 
     def initgui(self):
@@ -77,7 +80,8 @@ class DoorHandler(circuits.BaseComponent):
             else:
                 print "touchable pre-existed in door."
             t.connect('Clicked()', self.open)
-            t.connect('MouseHover()', self.hover)
+            t.connect('MouseHoverIn()', self.hover_in)
+            t.connect('MouseHoverOut()', self.hover_out)
             self.inworld_inited = True
 
         opened = self.opened
@@ -122,8 +126,7 @@ class DoorHandler(circuits.BaseComponent):
     locked = property(get_locked, set_locked)
 
     def open(self):
-        print "open"
-
+        #print "open"
         if self.opened or not self.locked:
             self.opened = not self.opened
             print self.opened
@@ -134,11 +137,16 @@ class DoorHandler(circuits.BaseComponent):
         #\todo if has key
         self.locked = not self.locked
 
-    def hover(self):
+    def hover_in(self):
         #XXX add locked check too
         ctype = 1 if self.opened else 2
         setcursor(ctype)
-        self.hovering = 10 #a dirty hack to do onMouseExit (this is onMouseOver). not 100% reliable it seems XXX
+
+    def hover_out(self):
+        curr_cursor = qapp.overrideCursor()
+        while curr_cursor != None:
+            qapp.restoreOverrideCursor()
+            curr_cursor = qapp.overrideCursor()
 
     @circuits.handler("update")
     def update(self, t):
@@ -149,11 +157,6 @@ class DoorHandler(circuits.BaseComponent):
                 pass
             else:
                 ent.placeable.Position = self.forcepos
-
-        if self.hovering > 0:
-            self.hovering -= 1
-            if self.hovering == 0:
-                setcursor(0)
 
     @circuits.handler("on_logout")
     def removegui(self, evid):
