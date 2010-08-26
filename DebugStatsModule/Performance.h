@@ -5,6 +5,7 @@
 
 #include <pdh.h>
 #include <PDHMsg.h>
+#include "GlobalAllocObject.h"
 
 #endif 
 
@@ -12,7 +13,7 @@
 #include <sstream>
 #include <iomanip>
 
-#include "GlobalAllocObject.h"
+
 
 #include <QString>
 
@@ -33,7 +34,11 @@ namespace PDH
 
     struct PDH_FMT_COUNTERVALUE 
     { 
-        double doubleValue() { return 0.0; } 
+        PDH_FMT_COUNTERVALUE() : doubleValue(0.0), longValue(0) { }
+
+        double doubleValue() const { return doubleValue; } 
+        double doubleValue; 
+        long longValue;
     };
     
     struct HQUERY {};
@@ -75,9 +80,12 @@ class PerformanceMonitor
 
     };
 
-
-class Counter : public SharedGlobalObject<HCOUNTER>
-    {
+#ifdef Q_WS_WIN
+  class Counter : public SharedGlobalObject<HCOUNTER>
+#else
+  class Counter 
+#endif  
+  {
     public:
         PDH_STATUS GetFormatted(DWORD fmt, PDH_FMT_COUNTERVALUE*  fmtValue) const
         {
