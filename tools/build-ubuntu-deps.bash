@@ -6,8 +6,12 @@ set -x
 # following ppa sources using add-apt-repository or the software
 # sources gui tool: ppa:mapopa/qt4.6
 
-deps=$HOME/src/rex-deps
-viewer=$deps/../rex-viewer
+viewer=$(dirname $(readlink -f $0))/..
+deps=$viewer/../naali-deps
+mkdir -p $deps
+deps=$(cd $deps && pwd)
+viewer=$(cd $viewer && pwd)
+
 viewerdeps_svn=http://realxtend-naali-deps.googlecode.com/svn/
 prefix=$deps/install
 build=$deps/build
@@ -39,7 +43,7 @@ if lsb_release -c | grep -q lucid; then
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
+	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev
 
 	
 fi
@@ -49,7 +53,7 @@ if lsb_release -c | grep -q karmic; then
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
 	 build-essential g++ libglib libogre-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
-	 libxmlrpc-epi-dev bison flex libxml2-dev liboil-dev cmake libalut-dev
+	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev
 	sudo apt-get install 'libboost1.38.*-dev' 
 	
 fi
@@ -58,7 +62,7 @@ if lsb_release -c | grep -q jaunty; then
 	sudo aptitude -y install build-essential libboost1.37-dev \
 	 libopenjpeg-dev libxmlrpc-epi-dev libcurl4-gnutls-dev libqt4-dev \
 	 libexpat1-dev libphonon-dev python-dev scons g++ python-gtk2-dev \
-	 libdbus-glib-1-dev ccache bison flex libxml2-dev liboil-dev \
+	 libdbus-glib-1-dev ccache bison flex libxml2-dev libois-dev \
 	 libalut-dev libvorbis-dev libogg-dev
 	sudo apt-get install 'libboost1.37.*-dev' cmake
 	 

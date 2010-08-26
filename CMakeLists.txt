@@ -21,9 +21,15 @@ include (ConfigurePackages)
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
-# Use Caelum, but not Hydrax for now.
-SET (CAELUM 1)
-SET (HYDRAX 0)
+if (MSVC)
+  # Use Caelum, but not Hydrax for now.
+  SET (CAELUM 1)
+  SET (HYDRAX 0)
+else ()
+  SET (CAELUM 0)
+  SET (HYDRAX 0)
+endif()
+
 
 # Possibility to disable console output and make viewer a true Windows application (Windows only)
 SET (WINDOWS_APP 0)
