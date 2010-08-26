@@ -42,12 +42,7 @@ namespace PDH
     
     struct HQUERY {};
   
- //  PDH_STATUS PdhGetFormattedCounterValue( void*, DWORD, DWORD&, PDF_FMT_COUNTERVALUE*) { return PDF_STATUS(); }
- //  void PdhOpenQuery(int, int, HQUERY*) {}
- //  void PdhCloseQuery(HQUERY query) {}
- //  PDH_STATUS PdhAddCounter (HQUERY, LPCTSTR, int, Counter&) { return PDH_STATUS(); };
- //  PDH_STATUS PdhCollectQueryData(HQuery) {  return PDH_STATUS(); };
-
+ 
 #endif
 
 /**
