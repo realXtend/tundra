@@ -277,7 +277,7 @@ void Environment::SetSunDirection(const QVector<float>& vector)
     // Assure that we do not given too near of zero vector values, a la HACK. 
     float squaredLength = vector[0] * vector[0] + vector[1]* vector[1] + vector[2] * vector[2];
     // Length must be diffrent then zero, so we say that value must be higher then our tolerance. 
-    float tolerance = 0.001;
+    float tolerance = 0.001f;
 
     if ( squaredLength > tolerance) 
        env->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
