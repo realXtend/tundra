@@ -153,9 +153,8 @@ namespace RexLogic
         }
 
         if (event_id == Input::Events::MOUSELOOK)
-        {    
+        {
             Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
-                            
             movement_.x_.rel_ += m->x_.rel_;
             movement_.y_.rel_ += m->y_.rel_;
             movement_.x_.abs_ = m->x_.abs_;
@@ -230,33 +229,29 @@ namespace RexLogic
         }
 
         if (current_state_ == FocusOnObject)
-        {
             current_state_ = ThirdPerson;
-        }
 
         return false;
     }
 
     void CameraControllable::AddTime(f64 frametime)
-    {   
+    {
         drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
         drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-            
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
         
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
 
             // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
             if (netpos && placeable)
             {
                 Vector3df avatar_pos = placeable->GetPosition();
@@ -276,29 +271,28 @@ namespace RexLogic
                 if (current_state_ == FirstPerson)
                 {
                     bool fallback = true;
+
                     // Try to use head bone from target entity to get the first person camera position
-                    Foundation::ComponentPtr mesh_ptr = target->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-                    Foundation::ComponentPtr appearance_ptr = target->GetComponent(EC_AvatarAppearance::TypeNameStatic());
-                    if (mesh_ptr && appearance_ptr)
+                    OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                    EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
+                    if (mesh && appearance)
                     {
-                        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
-                        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearance_ptr.get());
-                        Ogre::Entity* ent = mesh.GetEntity();
+                        Ogre::Entity* ent = mesh->GetEntity();
                         if (ent)
                         {
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
                             
                             std::string view_bone_name;
-                            Real adjustheight = mesh.GetAdjustPosition().z;
+                            Real adjustheight = mesh->GetAdjustPosition().z;
                             
-                            if (appearance.HasProperty("viewbone"))
+                            if (appearance->HasProperty("viewbone"))
                             {
                                 // This bone property is exclusively for view tracking & assumed to be correct position, no offset
-                                view_bone_name = appearance.GetProperty("viewbone");
+                                view_bone_name = appearance->GetProperty("viewbone");
                             }
-                            else if (appearance.HasProperty("headbone"))
+                            else if (appearance->HasProperty("headbone"))
                             {
-                                view_bone_name = appearance.GetProperty("headbone");
+                                view_bone_name = appearance->GetProperty("headbone");
                                 // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
                                 // which is not preferable, but necessary
                                 adjustheight += 0.15f;
@@ -378,12 +372,12 @@ namespace RexLogic
                             if ((mouse_position_map["x2"] - mouse_position_map["x1"]) > mouse_drag_sensitivity)
                             {
                                 rotation_direction = 1;
-                                rotateCameraAroundObject();
+                                RotateCameraAroundObject();
                             }
                             if ((mouse_position_map["x1"] - mouse_position_map["x2"]) > mouse_drag_sensitivity)
                             {
                                 rotation_direction = -1;
-                                rotateCameraAroundObject();
+                                RotateCameraAroundObject();
                             }
                         }
 
@@ -393,12 +387,12 @@ namespace RexLogic
                             if ((mouse_position_map["y2"] - mouse_position_map["y1"] ) > mouse_drag_sensitivity)
                             {
                                 rotation_direction = 1;
-                                rotateCameraAroundObject();
+                                RotateCameraAroundObject();
                             }
                             if ((mouse_position_map["y1"] - mouse_position_map["y2"]) > mouse_drag_sensitivity)
                             {
                                 rotation_direction = -1;
-                                rotateCameraAroundObject();
+                                RotateCameraAroundObject();
                             }
                         }
                     }
@@ -477,7 +471,7 @@ namespace RexLogic
         }
     }
 
-    void CameraControllable::funcFocusOnObject(float x, float y, float z)
+    void CameraControllable::SetFocusOnObject(float x, float y, float z)
     {
         current_state_ = FocusOnObject;
         mouse_position_map.clear();
@@ -485,52 +479,50 @@ namespace RexLogic
         keep_mouse_position["y1"] = 0;
         keep_mouse_position["x2"] = 0;
         keep_mouse_position["y2"] = 0;
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
 
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-            if (netpos && placeable)
+            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (camera_placeable && netpos && placeable)
             {
                 Vector3df camera_position = camera_placeable->GetPosition();
                 center_x = x;
                 center_y = y;
                 center_z = z;
 
-                Radius = sqrt ((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y) + (camera_position.z - center_z)*(camera_position.z - center_z));
+                Radius = sqrt(
+                    (camera_position.x - center_x)*(camera_position.x - center_x) + 
+                    (camera_position.y - center_y)*(camera_position.y - center_y) +
+                    (camera_position.z - center_z)*(camera_position.z - center_z));
                 Theta = acos ((camera_position.z - center_z) / Radius);
                 Phi = atan2 ((camera_position.y - center_y), (camera_position.x - center_x));
             }
         }
     }
 
-    void CameraControllable::rotateCameraAroundObject()
+    void CameraControllable::RotateCameraAroundObject()
     {
         drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
         drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-            
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
 
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-            if (netpos && placeable)
+            OgreRenderer::EC_OgrePlaceable *camera_placeable =  camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable =  target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (camera_placeable && netpos && placeable)
             {
                 if ( !isUpDown )
                 {
@@ -542,7 +534,8 @@ namespace RexLogic
                     
                     camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
                     camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
-                } else 
+                }
+                else
                 {
                     Theta += rotation_direction * rotation_angle_theta;
 

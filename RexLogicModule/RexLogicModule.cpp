@@ -516,7 +516,7 @@ void RexLogicModule::CameraTripod()
 void RexLogicModule::FocusOnObject(float x, float y, float z)
 {
     camera_state_ = CS_FocusOnObject;
-    camera_controllable_->funcFocusOnObject(x, y, z);
+    camera_controllable_->SetFocusOnObject(x, y, z);
 }
 
 void RexLogicModule::ResetCameraState()

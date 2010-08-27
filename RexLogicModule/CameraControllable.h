@@ -118,9 +118,10 @@ namespace RexLogic
         void ClampPosition(Vector3df &position);
 
         //! This function is called when the user holds ALT key and clicks somewhere;
-        void funcFocusOnObject(float, float, float);
+        void SetFocusOnObject(float, float, float);
+
         //! Rotate camera around the point that is clicked on
-        void rotateCameraAroundObject();
+        void RotateCameraAroundObject();
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
