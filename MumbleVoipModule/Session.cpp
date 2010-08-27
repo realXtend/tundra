@@ -214,8 +214,8 @@ namespace MumbleVoip
                 return;
         }
         
-        disconnect(user, SIGNAL(ChangedChannel(User*)),this, SLOT(CheckChannel(User*)));    
-        connect(user, SIGNAL(ChangedChannel(User*)), SLOT(CheckChannel(User*)));
+        disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)),this, SLOT(CheckChannel(MumbleLib::User*)));    
+        connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), SLOT(CheckChannel(MumbleLib::User*)));
 
         if (user->Name() == OwnAvatarId())
         {
