@@ -27,11 +27,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 #include "MemoryLeakCheck.h"
 
 EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     source_(this, "source"),
     position_(this, "position", 0),
     submesh_(this, "submesh", 0),
     show2d_(this, "show 2D", true),
-    framework_(module->GetFramework()),
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),

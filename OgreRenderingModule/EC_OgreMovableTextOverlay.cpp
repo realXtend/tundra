@@ -20,6 +20,7 @@ namespace OgreRenderer
 {
 
 EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     text_element_(0),
     container_(0),
     overlay_(0),

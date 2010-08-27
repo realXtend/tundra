@@ -18,6 +18,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 #include "MemoryLeakCheck.h"
 
 EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
+    Foundation::ComponentInterface(module->GetFramework()),
     meshResouceId_(this, "Mesh id", ""),
     meshMaterial_(this, "Mesh materials"),
     drawDistance_(this, "Draw distance", 0.0f),

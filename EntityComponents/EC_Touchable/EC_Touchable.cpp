@@ -155,6 +155,7 @@ void EC_Touchable::UpdateMaterial()
 }
 
 EC_Touchable::EC_Touchable(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0),
     materialName(this, "material name", "Touchable"),

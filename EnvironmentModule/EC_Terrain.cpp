@@ -12,7 +12,8 @@
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module)
+EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework())
 {
 }
 
