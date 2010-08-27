@@ -201,7 +201,15 @@ namespace CoreUi
         if (im_proxy_)
         {
             if (!im_proxy_->isVisible())
+            {
                 im_proxy_->show();
+                // \todo Find a proper solution to the problem
+                // IM widget doesn't get input without main frame resisizing for unknow reason.
+                // HACK begin
+                im_proxy_->moveBy(1,1);
+                im_proxy_->moveBy(-1,-1);
+                // HACK end
+            }
             else
                 im_proxy_->AnimatedHide();
         }
