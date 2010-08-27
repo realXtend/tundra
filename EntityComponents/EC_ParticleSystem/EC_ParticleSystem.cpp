@@ -50,23 +50,18 @@ void EC_ParticleSystem::SetPlaceable(Foundation::ComponentPtr comp)
 
 bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
-    if (event_id != Resource::Events::RESOURCE_READY)
-        return false;
-
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    if(!event_data)
+    if (event_id != Resource::Events::RESOURCE_READY || !event_data || particle_tag_ != event_data->tag_)
         return false;
-
-    if (particle_tag_ != event_data->tag_)
-        return false;
-    particle_tag_ = 0;
 
     OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(event_data->resource_.get());
-    if(!partres)
+    if (!partres)
         return false;
 
-    if(partres->GetNumTemplates())
+    if (partres->GetNumTemplates())
         CreateParticleSystem(QString::fromStdString(partres->GetTemplateName(0)));
+
+    return false;
 }
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
