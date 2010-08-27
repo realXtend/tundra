@@ -125,6 +125,8 @@ namespace UiServices
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
         ui_state_machine_->SwitchToEtherScene();
+        connect(ui_state_machine_, SIGNAL(SceneChanged(const QString&, const QString&)), 
+                ether_logic_->GetQObjSceneController(), SLOT(UiServiceSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
         input = framework_->Input().RegisterInputContext("EtherInput", 90);
