@@ -201,6 +201,7 @@ namespace RexLogic
         if (event_id == RexTypes::Actions::Zoom)
         {
             Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
+            camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
             camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
         }
 
