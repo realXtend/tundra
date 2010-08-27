@@ -79,10 +79,13 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-        
-        rotation_angle = 0;
-        current_angle = 0;
+              
+        // angle of rotation: 10 degrees or 0.175 radians
+        rotation_angle_theta = 0.175;
+        rotation_angle_phi = 0.175;
+        mouse_drag_sensitivity = 2;
         isRotating = false;
+        isUpDown= false;
         mouse_position_map.clear();
     }
 
@@ -162,15 +165,7 @@ namespace RexLogic
             current_state_ = Tripod;
             firstperson_pitch_ = 0.0f;
         }
-
-        if (event_id == Input::Events::ALT_LEFTCLICK_REL)
-        {
-            if(current_state_ == FocusOnObject) 
-            {
-                current_state_ = ThirdPerson;
-            }
-        }
-
+     
         if (event_id == Input::Events::MOUSEDRAG)
         {
             if (current_state_ == FocusOnObject)
@@ -188,7 +183,7 @@ namespace RexLogic
                         mouse_position_map["y2"] =  mouse_pos->y_.abs_;
                     }
                 }
-                if(mouse_position_map.size() == 4)
+                if (mouse_position_map.size() == 4)
                 {
                     mouse_position_map["x1"] = mouse_position_map["x2"];
                     mouse_position_map["y1"] = mouse_position_map["y2"];
@@ -205,8 +200,6 @@ namespace RexLogic
         if (event_id == RexTypes::Actions::Zoom)
         {
             Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
-
-            camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
             camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
         }
 
@@ -236,21 +229,9 @@ namespace RexLogic
 
         if (current_state_ == FocusOnObject)
         {
-            if (event_id == Actions::RotateLeft)
-            {
-                isRotating = true;
-                rotation_direction = 1;
-            }
-            if (event_id == Actions::RotateRight)
-            {   
-                isRotating = true;
-                rotation_direction = -1;
-            }       
-            if (event_id == Actions::RotateLeft + 1 || event_id == Actions::RotateRight + 1)
-            {
-                isRotating = false;
-            }
+            current_state_ = ThirdPerson;
         }
+
         return false;
     }
 
@@ -287,7 +268,7 @@ namespace RexLogic
                     pos += (avatar_orientation * camera_offset_);
                     camera_placeable->SetPosition(pos);
                     Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
-                    camera_placeable->LookAt(lookat);
+                    camera_placeable->LookAt(lookat); 
                 }
                 
                 if (current_state_ == FirstPerson)
@@ -383,11 +364,6 @@ namespace RexLogic
 
                 if (current_state_ == FocusOnObject)
                 {
-                    if (isRotating)
-                    {
-                        rotation_angle += 5 * rotation_direction;
-                        rotateCameraAroundObject();
-                    }
                     if (mouse_position_map.size() == 4)
                     {
                         keep_mouse_position["x1"] = keep_mouse_position["x2"];
@@ -396,14 +372,30 @@ namespace RexLogic
                         keep_mouse_position["y2"] = mouse_position_map["y2"];
                         if (keep_mouse_position["x1"] != keep_mouse_position["x2"])
                         {
-                            if (mouse_position_map["x1"] < mouse_position_map["x2"])
+                            isUpDown = false;
+                            if ((mouse_position_map["x2"] - mouse_position_map["x1"]) > mouse_drag_sensitivity)
                             {
-                                rotation_angle -= 5;
+                                rotation_direction = 1;
                                 rotateCameraAroundObject();
                             }
-                            if (mouse_position_map["x1"] > mouse_position_map["x2"])
+                            if ((mouse_position_map["x1"] - mouse_position_map["x2"]) > mouse_drag_sensitivity)
                             {
-                                rotation_angle += 5;
+                                rotation_direction = -1;
+                                rotateCameraAroundObject();
+                            }
+                        }
+
+                        if (keep_mouse_position["y1"] != keep_mouse_position["y2"])
+                        {
+                            isUpDown = true;
+                            if ((mouse_position_map["y2"] - mouse_position_map["y1"] ) > mouse_drag_sensitivity)
+                            {
+                                rotation_direction = 1;
+                                rotateCameraAroundObject();
+                            }
+                            if ((mouse_position_map["y1"] - mouse_position_map["y2"]) > mouse_drag_sensitivity)
+                            {
+                                rotation_direction = -1;
                                 rotateCameraAroundObject();
                             }
                         }
@@ -514,13 +506,9 @@ namespace RexLogic
                 center_y = y;
                 center_z = z;
 
-                camera_position_x = camera_position.x;
-                camera_position_y = camera_position.y;
-
-                fixed_camera_position_z = camera_position.z;
-                focus_radius = sqrt((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y));
-
-                current_angle = acos((camera_position_y - center_y) / focus_radius);
+                Radius = sqrt ((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y) + (camera_position.z - center_z)*(camera_position.z - center_z));
+                Theta = acos ((camera_position.z - center_z) / Radius);
+                Phi = atan2 ((camera_position.y - center_y), (camera_position.x - center_x));
             }	
         }
 
@@ -547,12 +535,27 @@ namespace RexLogic
                 checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
             if (netpos && placeable)
             {
-                Quaternion orientation = netpos->orientation_;
-                Vector3df camera_position = camera_placeable->GetPosition();
-                new_x = center_x + focus_radius*sin((rotation_angle*PI)/180 + current_angle);
-                new_y = center_y + focus_radius*cos((rotation_angle*PI)/180 + current_angle);
-                camera_placeable->SetPosition(Vector3df(new_x, new_y, fixed_camera_position_z));
-                camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+                if ( !isUpDown )
+                {
+                    Phi += rotation_direction * rotation_angle_phi;//(rotation_angle_z*PI)/180;
+
+                    new_x = center_x + Radius * sin(Theta) * cos(Phi);
+                    new_y = center_y + Radius * sin(Theta) * sin(Phi);
+                    new_z = center_z + Radius * cos(Theta);
+                    
+                    camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
+                    camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+                } else 
+                {
+                    Theta += rotation_direction * rotation_angle_theta;
+
+                    new_x = center_x + Radius * sin(Theta) * cos(Phi);
+                    new_y = center_y + Radius * sin(Theta) * sin(Phi);
+                    new_z = center_z + Radius * cos(Theta);
+                    
+                    camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
+                    camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+                }
             }	
                                 
         }		
