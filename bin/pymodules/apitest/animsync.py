@@ -69,7 +69,11 @@ class AnimationSync(circuits.BaseComponent):
 
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
-            ent = r.getEntity(self.comp.GetParentEntityId())
+            try:
+                ent = r.getEntity(self.comp.GetParentEntityId())
+            except ValueError:
+                return
+
             try:
                 t = ent.touchable
             except AttributeError:
@@ -91,7 +95,12 @@ class AnimationSync(circuits.BaseComponent):
         comp = self.comp
         if comp is not None:
             #print comp.GetAttribute()
-            ent = r.getEntity(comp.GetParentEntityId())
+            try:
+                ent = r.getEntity(comp.GetParentEntityId())
+            except ValueError:
+                print "No entity"
+                return
+
             try:
                 a = ent.animationcontroller
             except AttributeError:
