@@ -21,6 +21,7 @@ using namespace RexTypes;
 using namespace OgreRenderer;
 
 EC_Light::EC_Light(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     light_(0),
     attached_(false),
     typeAttr_(this, "light type", LT_Point),

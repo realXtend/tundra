@@ -19,11 +19,8 @@
 #define LogWarning(msg) Poco::Logger::get("EC_DynamicComponent").warning(std::string("Warning: ") + msg);
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(),
-    framework_(0)
+    Foundation::ComponentInterface(module->GetFramework())
 {
-    assert(module);
-    framework_ = module->GetFramework();
 }
 
 EC_DynamicComponent::~EC_DynamicComponent()

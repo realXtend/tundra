@@ -36,9 +36,6 @@ namespace Environment
 
         void CreateOgreWaterObject();
 
-        /// Just need to have this here to be able to destroy the Ogre data. 
-        Foundation::Framework* framework_; 
-
         //! Ogre scene node
         Ogre::SceneNode *scene_node_;
 
