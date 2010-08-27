@@ -16,6 +16,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
 
 EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     editor_(0)
 {
     RegionHandle = 0;

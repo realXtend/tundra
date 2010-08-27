@@ -12,6 +12,7 @@
 namespace OgreRenderer
 {
     EC_OgreParticleSystem::EC_OgreParticleSystem(Foundation::ModuleInterface* module) :
+        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         adjustment_node_(0),
         attached_(false),
@@ -26,11 +27,11 @@ namespace OgreRenderer
     {
         if (renderer_.expired())
             return;
-        RendererPtr renderer = renderer_.lock();   
-            
+        RendererPtr renderer = renderer_.lock();
+
         DetachSystems();
         RemoveParticleSystems();
-        
+
         if (adjustment_node_)
         {
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();

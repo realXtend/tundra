@@ -111,7 +111,8 @@ namespace OpenSimProtocol
             }
             else if (loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
             {
-                eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, 0);
+                ProtocolUtilities::ConnectionFailedEvent data(loginWorker_.GetErrorMessage().c_str());
+                eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, &data);
                 loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
             }
 

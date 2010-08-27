@@ -123,7 +123,7 @@ namespace MumbleLib
 
         void PositionUpdated();
 
-        void ChangedChannel(User* user);
+        void ChangedChannel(MumbleLib::User* user);
     };
 
 } // namespace MumbleLib

@@ -43,7 +43,11 @@ namespace WorldBuilding
 
         CameraID CameraHandler::CreateCustomCamera()
         {
-            Scene::EntityPtr cam_entity = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            if (!scene)
+                return -1;
+
+            Scene::EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeId());
             if (!cam_entity.get())
                 return -1;
 

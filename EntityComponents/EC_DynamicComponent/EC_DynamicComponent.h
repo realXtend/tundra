@@ -119,7 +119,6 @@ public slots:
     bool ContainAttribute(const QString &name) const;
 private:
     explicit EC_DynamicComponent(Foundation::ModuleInterface *module);
-    Foundation::Framework *framework_;
 };
 
 //! Function that is used by std::sort algorithm to sort attributes by their name.

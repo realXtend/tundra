@@ -59,6 +59,7 @@ namespace MumbleVoip
 
     void Session::OpenConnection(ServerInfo server_info)
     {
+        SAFE_DELETE(connection_);
         connection_ = new MumbleLib::Connection(server_info);
         if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
         {
@@ -70,6 +71,7 @@ namespace MumbleVoip
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
+        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State state)), SLOT(CheckConnectionState()));
         connection_->Join(server_info.channel);
         connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
@@ -214,8 +216,8 @@ namespace MumbleVoip
                 return;
         }
         
-        disconnect(user, SIGNAL(ChangedChannel(User*)),this, SLOT(CheckChannel(User*)));    
-        connect(user, SIGNAL(ChangedChannel(User*)), SLOT(CheckChannel(User*)));
+        disconnect(user, SIGNAL(ChangedChannel(MumbleLib::User*)),this, SLOT(CheckChannel(MumbleLib::User*)));    
+        connect(user, SIGNAL(ChangedChannel(MumbleLib::User*)), SLOT(CheckChannel(MumbleLib::User*)));
 
         if (user->Name() == OwnAvatarId())
         {
@@ -560,6 +562,19 @@ namespace MumbleVoip
             lines.append(line);
         }
         return lines;
+    }
+
+    void Session::CheckConnectionState()
+    {
+        switch(connection_->GetState())
+        {
+        case STATE_ERROR:
+            if (state_ == STATE_OPEN)
+            {
+                // connection lost
+            }
+            break;
+        }
     }
 
 } // MumbleVoip

@@ -1,20 +1,16 @@
 #include "StableHeaders.h"
 #include "CAVEViewSettingsAdvanced.h"
+
 namespace OgreRenderer
 {
-    CAVEViewSettingsAdvanced::CAVEViewSettingsAdvanced( QWidget* parent )
-        :QDialog(parent)
+    CAVEViewSettingsAdvanced::CAVEViewSettingsAdvanced(QWidget* parent) :
+        QDialog(parent)
     {
         setupUi(this);
-        
-
     }
-
-    
 
     CAVEViewSettingsAdvanced::~CAVEViewSettingsAdvanced()
     {
-
     }
 
     void CAVEViewSettingsAdvanced::getCaveProjectionSettings(Ogre::Vector3 &eye_pos, Ogre::Vector3 &bottom_left, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_right)
@@ -34,8 +30,6 @@ namespace OgreRenderer
         bottom_right.x = brxv->value();
         bottom_right.y = bryv->value();
         bottom_right.z = brzv->value();
-
-
     }
 
     void CAVEViewSettingsAdvanced::setCaveProjectionSettings(Ogre::Vector3 &eye_pos, Ogre::Vector3 &bottom_left, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_right)

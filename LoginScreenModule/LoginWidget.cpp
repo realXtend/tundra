@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   LoginWidget.cpp
- *  @brief  Simple login widget for OpenSim and realXend authentication methods.
+ *  @brief  Simple full screen login widget for OpenSim and realXend authentication methods.
  */
 
 #include "StableHeaders.h"
@@ -10,38 +10,36 @@
 #include "LoginWidget.h"
 #include "MemoryLeakCheck.h"
 
-LoginWidget::LoginWidget(QWidget *parent, const QMap<QString,QString> &login_data) :
-    QWidget(parent),
+LoginWidget::LoginWidget(const QMap<QString,QString> &login_data) :
     progress_timer_(new QTimer(this))
 {
-    InitWidget(login_data);
-    connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
-}
+    /*
+        QVBoxLayout *layout = new QVBoxLayout(this);
+        layout->addWidget(this);
+        layout->setContentsMargins(0, 0, 0, 0);
+        setLayout(layout);
+    */
 
-void LoginWidget::InitWidget(const QMap<QString,QString> &stored_login_data)
-{
-/*
-    QVBoxLayout *layout = new QVBoxLayout(this);
-    layout->addWidget(this);
-    layout->setContentsMargins(0, 0, 0, 0);
-    setLayout(layout);
-*/
     setupUi(this);
+    move(0,0);
+    setWindowState(Qt::WindowFullScreen);
 
     progressBar->hide();
 
     connect(pushButton_Connect, SIGNAL(clicked()), SLOT(ParseInputAndConnect()));
-//    connect(pushButton_Exit, SIGNAL(clicked()), parent(), SLOT(AppExitRequest()));
+    connect(pushButton_Exit, SIGNAL(clicked()), SLOT(Exit()));
 
-    connect(lineEdit_WorldAddress, SIGNAL(returnPressed() ), SLOT(ParseInputAndConnect()));
-    connect(lineEdit_StartLocation, SIGNAL(returnPressed() ), SLOT(ParseInputAndConnect()));
+    connect(lineEdit_WorldAddress, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
+    connect(lineEdit_StartLocation, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Username, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
     connect(lineEdit_Password, SIGNAL(returnPressed()), SLOT(ParseInputAndConnect()));
 
-    lineEdit_Username->setText(stored_login_data["account"]);
-    lineEdit_Password->setText(stored_login_data["password"]);
-    lineEdit_WorldAddress->setText(stored_login_data["loginurl"]);
-    lineEdit_StartLocation->setText(stored_login_data["startlocation"]);
+    lineEdit_Username->setText(login_data["account"]);
+    lineEdit_Password->setText(login_data["password"]);
+    lineEdit_WorldAddress->setText(login_data["loginurl"]);
+    lineEdit_StartLocation->setText(login_data["startlocation"]);
+
+    connect(progress_timer_, SIGNAL(timeout()), SLOT(UpdateProgressBar()));
 }
 
 QMap<QString, QString> LoginWidget::GetLoginInfo() const
@@ -62,8 +60,17 @@ QMap<QString, QString> LoginWidget::GetLoginInfo() const
 
 void LoginWidget::ParseInputAndConnect()
 {
-    if (lineEdit_WorldAddress->text().isEmpty() || lineEdit_Username->text().isEmpty())
+    if (lineEdit_Username->text().isEmpty())
+    {
+        SetStatus(tr("Username is missing!"));
         return;
+    }
+
+    if (lineEdit_WorldAddress->text().isEmpty())
+    {
+        SetStatus(tr("World address is missing!"));
+        return;
+    }
 
     QMap<QString, QString> map;
     map["WorldAddress"] = lineEdit_WorldAddress->text();
@@ -83,7 +90,7 @@ void LoginWidget::ParseInputAndConnect()
 
             map["Username"] = rex_username;
             map["AuthenticationAddress"] = rex_auth_address;
-            emit ConnectRealXtend(map);
+            emit Connect(map);
         }
     }
     else
@@ -91,27 +98,29 @@ void LoginWidget::ParseInputAndConnect()
         if (map["Username"].count(" ") == 1)
         {
             map["AvatarType"] = "OpenSim";
-            emit ConnectOpenSim(map);
+            emit Connect(map);
         }
     }
-
-    StatusUpdate(true, QString("Connecting to %1 with %2").arg(map["WorldAddress"], map["Username"]));
 }
 
-void LoginWidget::StatusUpdate(bool connecting, const QString &message)
+void LoginWidget::SetStatus(const QString &message)
 {
-    if (connecting)
-    {
-        progressBar->setValue(0);
-        progressBar->show();
-        progress_timer_->start(30);
-    }
-    else
-    {
-        progress_timer_->stop();
-        progressBar->hide();
-    }
     statusLabel->setText(message);
+}
+
+void LoginWidget::Connected()
+{
+    SetStatus("Connected");
+    StopProgressBar();
+}
+
+void LoginWidget::StartProgressBar()
+{
+    SetStatus(QString(tr("Connecting to %1 with %2")).arg(lineEdit_WorldAddress->text(), lineEdit_Username->text()));
+
+    progressBar->setValue(0);
+    progressBar->show();
+    progress_timer_->start(30);
 }
 
 void LoginWidget::UpdateProgressBar()
@@ -124,3 +133,13 @@ void LoginWidget::UpdateProgressBar()
     progressBar->setValue(value + progress_direction_);
 }
 
+void LoginWidget::StopProgressBar()
+{
+    progress_timer_->stop();
+    progressBar->hide();
+}
+
+void LoginWidget::Exit()
+{
+    emit ExitClicked();
+}

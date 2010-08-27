@@ -724,15 +724,12 @@ class ObjectEdit(Component):
     active = property(getActive)
     
     def on_exit(self):
-        r.logInfo("Object Edit exiting...")
-
+        r.logInfo("Object Edit exiting..")
         # Connect to key pressed signal from input context
         inputcontext.disconnectAll()
-
         self.deselect_all()
-        self.window.on_exit()  
-
-        r.logInfo("         ...exit done.")
+        self.window.on_exit()
+        r.logInfo(".. done")
 
     def on_hide(self, shown):
         self.windowActive = shown
@@ -790,7 +787,7 @@ class ObjectEdit(Component):
                         r.logDebug("update: scene not found")
    
     def on_logout(self, id):
-        r.logInfo("Object Edit resetting due to Logout.")
+        r.logInfo("Object Edit resetting due to logout")
         self.deselect_all()
         self.sels = []
         self.selection_box = None

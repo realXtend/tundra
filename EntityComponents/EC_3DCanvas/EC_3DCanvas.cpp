@@ -18,6 +18,7 @@
 #include <QDebug>
 
 EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
     update_internals_(false),
     refresh_timer_(0),
@@ -49,8 +50,6 @@ EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
 EC_3DCanvas::~EC_3DCanvas()
 {
     submeshes_.clear();
-    //UpdateSubmeshes();
-
     widget_ = 0;
 
     if (refresh_timer_)

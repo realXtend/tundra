@@ -7,6 +7,7 @@
  */
 
 #include "ComponentInterface.h"
+#include "ModuleInterface.h"
 #include "Declare_EC.h"
 
 /// EC_Name provides network-synchronizable means of identification for entities in addition to the plain ID number.
@@ -35,6 +36,7 @@ public:
 private:
     /// Constructor. Sets name and description to empty strings.
     EC_Name(Foundation::ModuleInterface *module) :
+        Foundation::ComponentInterface(module->GetFramework()),
         name(this, "name", ""),
         description(this, "description", ""),
         userDefined(this, "user-defined", false)
