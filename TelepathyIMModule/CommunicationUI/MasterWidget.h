@@ -3,14 +3,11 @@
 #ifndef incl_Communication_MasterWidget_h
 #define incl_Communication_MasterWidget_h
 
-//#include "Foundation.h"
 #include "ImUiDefines.h"
-
-//#include "EventHandler.h"
-
 #include "TelepathyIMModuleFwd.h"
 
 #include <QWidget>
+#include <QStackedLayout>
 #include <QSize>
 
 namespace UiHelpers
@@ -62,7 +59,6 @@ namespace CommunicationUI
 
     private:
         void InitializeSelf();
-        QSize CleanSelf();
         bool connecting_;
 
         Ui::LoginWidget *login_ui_;
@@ -83,6 +79,8 @@ namespace CommunicationUI
 
         QSize current_size_;
         QStringList to_be_removed_;
+
+        QStackedLayout *stacked_layout_;
     };
 }
 
