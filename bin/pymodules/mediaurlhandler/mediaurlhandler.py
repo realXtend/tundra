@@ -31,9 +31,6 @@ class MediaurlView:
                 self.__media_player_service_used = True
                 r.logInfo("Media content supported for video playback: " + str(self.__url))
                 return
-            #else:
-                #print(" -- media content is not supported.")
-        # error -- playback widget cannot be created using player service -> we create a QWebview widget
         self.playback_widget = PythonQt.QtWebKit.QWebView()
         
     def load_url(self):
@@ -80,23 +77,8 @@ class MediaURLHandler(Component):
         Component.__init__(self)
         #which texture uuids with mediaurl are in which webview wrapper
         self.texture2mediaurlview = {}
-
-        """
-        the code below was to test webviews first as 2d widgets. 
-        perhaps useful later when add feat to open from 3d canvas to 2d usage
-        """
-        #uism = r.getUiSceneManager()
-        #uiprops = r.createUiWidgetProperty()
-        #uiprops.widget_name_ = "MediaURL"
-        ##uiprops.my_size_ = QSize(width, height)
-        ##self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
-        #self.proxywidget = r.createUiProxyWidget(self.wv, uiprops)
-        ##print widget, dir(widget)
-        #uism.AddProxyWidget(self.proxywidget)
-        #self.wv.show()
         
     def on_logout(self, id):
-        #r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
             if mediaurlview is None:
                 continue
@@ -105,14 +87,10 @@ class MediaURLHandler(Component):
         self.texture2mediaurlview.clear()
 
     def on_exit(self):
-        r.logInfo('MediaURLHandler exiting...')    
-        #r.logInfo("Uninitializing MediaURLHandler")
-        for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            if mediaurlview is None:
-                continue
-            mediaurlview.delete_playback_widget()        
-        self.texture2mediaurlview.clear()                
-        self.texture2mediaurlview = None
+        # Dont delete any meadiaurlview as it causes crashes
+        # on_logout seems to be ok but close to qapp rundown it 
+        # causes semi-random crashes
+        return          
 
     def on_genericmessage(self, name, data):
         #print "MediaURLHandler got Generic Message:", name, data
@@ -125,7 +103,8 @@ class MediaURLHandler(Component):
                 mediaurlview = self.texture2mediaurlview[textureuuid]
                 if mediaurlview is not None:
                     if mediaurlview.url().toString() == urlstring:
-                        return # we already have this information...
+                        mediaurlview.refreshrate = refreshrate
+                        return
                     del self.texture2mediaurlview[textureuuid]
                     mediaurlview.delete_playback_widget()
 
