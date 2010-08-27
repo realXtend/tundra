@@ -123,7 +123,7 @@ void EC_Ruler::Create()
     if(scene_mgr->hasManualObject("translateRuler")) {
         rulerObject = scene_mgr->getManualObject("translateRuler");
         if(rulerObject->isAttached())
-            rulerObject->detatchFromParent();
+            rulerObject->detachFromParent();
     } else {
         rulerObject = scene_mgr->createManualObject("translateRuler");
     }

@@ -20,8 +20,10 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "ModuleManager.h"
+
 #include <Ogre.h>
-#include "math.h"
+
+#include <math.h>
 
 using namespace RexTypes;
 
@@ -79,10 +81,10 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-              
+
         // angle of rotation: 10 degrees or 0.175 radians
-        rotation_angle_theta = 0.175;
-        rotation_angle_phi = 0.175;
+        rotation_angle_theta = 0.175f;
+        rotation_angle_phi = 0.175f;
         mouse_drag_sensitivity = 2;
         isRotating = false;
         isUpDown= false;
@@ -299,7 +301,7 @@ namespace RexLogic
                                 view_bone_name = appearance.GetProperty("headbone");
                                 // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
                                 // which is not preferable, but necessary
-                                adjustheight += 0.15;
+                                adjustheight += 0.15f;
                             }
                             
                             if (!view_bone_name.empty())
@@ -408,29 +410,25 @@ namespace RexLogic
         switch (current_state_)
         {
         case FirstPerson:
+            if (camera_distance_ != camera_min_distance_)
             {
-                if (camera_distance_ != camera_min_distance_)
-                {
-                    current_state_ = ThirdPerson;
-                    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-                    
-                    firstperson_pitch_ = 0.0f;
-                }
-                break;
+                current_state_ = ThirdPerson;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                
+                firstperson_pitch_ = 0.0f;
             }
+            break;
         case ThirdPerson:
+            if (camera_distance_ == camera_min_distance_)
             {
-                if (camera_distance_ == camera_min_distance_)
-                {
-                    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
-                    current_state_ = FirstPerson;
-                    
-                    firstperson_pitch_ = 0.0f;
-                }
-                break;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
+                current_state_ = FirstPerson;
+                
+                firstperson_pitch_ = 0.0f;
             }
+            break;
         }
     }
 
@@ -509,9 +507,8 @@ namespace RexLogic
                 Radius = sqrt ((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y) + (camera_position.z - center_z)*(camera_position.z - center_z));
                 Theta = acos ((camera_position.z - center_z) / Radius);
                 Phi = atan2 ((camera_position.y - center_y), (camera_position.x - center_x));
-            }	
+            }
         }
-
     }
 
     void CameraControllable::rotateCameraAroundObject()
@@ -556,11 +553,8 @@ namespace RexLogic
                     camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
                     camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
                 }
-            }	
-                                
-        }		
+            }
+        }
     }
-
-    
 }
 

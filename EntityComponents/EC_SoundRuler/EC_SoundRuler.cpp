@@ -125,7 +125,7 @@ void EC_SoundRuler::Create()
     if(scene_mgr->hasManualObject(rulerName)) {
         rulerObject = scene_mgr->getManualObject(rulerName);
         if(rulerObject->isAttached())
-            rulerObject->detatchFromParent();
+            rulerObject->detachFromParent();
     } else {
         rulerObject = scene_mgr->createManualObject(rulerName);
     }
