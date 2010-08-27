@@ -1,14 +1,14 @@
-!define VERSION "0.2.5"
+!define VERSION "0.3.0"
 
 Name "Naali ${VERSION}"
 
 Page directory
 Page instfiles
 
-InstallDir "$PROGRAMFILES\Naali${VERSION}"
+InstallDir "$PROGRAMFILES\Naali ${VERSION}"
 VIProductVersion "${VERSION}"
 
-OutFile "Naali-0.2.5.exe"
+OutFile "Naali-0.3.0.exe"
 
 XPStyle on
 
@@ -50,13 +50,16 @@ Section "Uninstall"
   RMDir /r $INSTDIR
   
   #removing the APPDATA\roaming\realxtend doesn't seem to work properly on Vista. (maybe incorrect user information is given through add/remove programs)
-  SetShellVarContext all
-  RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
+  
+  # LETS EVEN PROMPT USER IF HE WANT TO REMOVE ALL PERSONAL REX DATA (ether, old viewer data, assets, textures) BEFORE WE GO AHEAD AND DELETE THEM
+  
+  #SetShellVarContext all
+  #RMDir /r "$APPDATA\Roaming\realXtend"
+  #RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
 
-  SetShellVarContext current
-  RMDir /r "$APPDATA\Roaming\realXtend"
-  RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
+  #SetShellVarContext current
+  #RMDir /r "$APPDATA\Roaming\realXtend"
+  #RMDir /r "$SMPROGRAMS\Naali ${VERSION}"
 
   DeleteRegKey HKLM "Software\Microsoft\Windows\CurrentVersion\Uninstall\Naali"
 SectionEnd
