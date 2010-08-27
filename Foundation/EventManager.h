@@ -32,7 +32,7 @@ namespace Foundation
         {
             EventSubscriber() : priority_(0) {}
             
-            ModuleWeakPtr module_;
+            ModuleInterface* module_;
             std::string module_name_;
             int priority_;
         };
@@ -124,7 +124,7 @@ namespace Foundation
             \param priority Priority. Higher priority = gets called first
             \return true if successfully subscribed
          */
-        bool RegisterEventSubscriber(ModuleWeakPtr module, int priority);
+        bool RegisterEventSubscriber(ModuleInterface* module, int priority);
 
         //! Unregisters a module from the subscriber tree
         /*! Do not call while responding to an event!

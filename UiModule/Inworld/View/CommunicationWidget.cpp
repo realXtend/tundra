@@ -98,7 +98,9 @@ namespace CoreUi
     {
         setupUi(internal_widget_);
         setWidget(internal_widget_);
-        imButton->setEnabled(false);
+
+        // Hide IM contenat are (and button) by default. Shown when UpdateImWidget is called.
+        imContentWidget->hide();
 
         // Stacked layout
         stacked_layout_ = new QStackedLayout();
@@ -199,7 +201,15 @@ namespace CoreUi
         if (im_proxy_)
         {
             if (!im_proxy_->isVisible())
+            {
                 im_proxy_->show();
+                // \todo Find a proper solution to the problem
+                // IM widget doesn't get input without main frame resisizing for unknow reason.
+                // HACK begin
+                im_proxy_->moveBy(1,1);
+                im_proxy_->moveBy(-1,-1);
+                // HACK end
+            }
             else
                 im_proxy_->AnimatedHide();
         }
@@ -355,8 +365,7 @@ namespace CoreUi
     void CommunicationWidget::UpdateImWidget(UiProxyWidget *im_proxy)
     {
         im_proxy_ = im_proxy;
-        imButton->setEnabled(true);
-
+        imContentWidget->show();
     }
 
     void CommunicationWidget::SetFocusToChat()

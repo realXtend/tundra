@@ -93,6 +93,7 @@ namespace MumbleVoip
         void OnUserStopSpeaking(); // rename to: UpdateReceivingAudioStatus
         void UpdateSpeakerActivity(PCMAudioFrame*);
         void CheckChannel(MumbleLib::User*);
+        void CheckConnectionState();
     };
 
 } // MumbleVoip

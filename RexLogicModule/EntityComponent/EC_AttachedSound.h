@@ -83,8 +83,6 @@ namespace RexLogic
         //! Init sound slot vector
         void InitSoundVector();
 
-        Foundation::Framework* framework_;
-
         //! Vector of current attached sounds
         std::vector<sound_id_t> sounds_;
     };

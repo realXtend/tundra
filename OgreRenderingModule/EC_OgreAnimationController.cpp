@@ -9,7 +9,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreAnimationController::EC_OgreAnimationController(Foundation::ModuleInterface* module)
+    EC_OgreAnimationController::EC_OgreAnimationController(Foundation::ModuleInterface* module) :
+        Foundation::ComponentInterface(module->GetFramework())
     {
         ResetState();
     }
@@ -27,6 +28,17 @@ namespace OgreRenderer
         }
         
         mesh_entity_ = mesh_entity;     
+    }
+    
+    QStringList EC_OgreAnimationController::GetAvailableAnimations()
+    {
+        QStringList availableList;
+        for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
+        {
+            availableList << QString(i->first.c_str());
+        }
+        
+        return availableList;
     }
     
     void EC_OgreAnimationController::Update(f64 frametime)
@@ -83,7 +95,7 @@ namespace OgreRenderer
                         }
                     }
                 }
-                break;	
+                break;    
 
             case PHASE_FADEOUT:
                 // If period is infinitely fast, skip to disabled status immediately
@@ -137,10 +149,10 @@ namespace OgreRenderer
             if (!skel)
                 return;
                 
-		    if (highpriority_mask_.size() != skel->getNumBones())
-			    highpriority_mask_.resize(skel->getNumBones());
-		    if (lowpriority_mask_.size() != skel->getNumBones())
-			    lowpriority_mask_.resize(skel->getNumBones());
+            if (highpriority_mask_.size() != skel->getNumBones())
+                highpriority_mask_.resize(skel->getNumBones());
+            if (lowpriority_mask_.size() != skel->getNumBones())
+                lowpriority_mask_.resize(skel->getNumBones());
 
             for (uint i = 0; i < skel->getNumBones(); ++i)
             {
@@ -148,19 +160,19 @@ namespace OgreRenderer
                 lowpriority_mask_[i] = 1.0;
             }
 
-		    // Loop through all high priority animations & update the lowpriority-blendmask based on their active tracks
+            // Loop through all high priority animations & update the lowpriority-blendmask based on their active tracks
             for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
-	        {
+            {
                 Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
                 if (!animstate)
-                    continue;	        
+                    continue;            
                 // Create blend mask if animstate doesn't have it yet
                 if (!animstate->hasBlendMask())
                     animstate->createBlendMask(skel->getNumBones());
 
                 if ((i->second.high_priority_) && (i->second.weight_ > 0.0))
                 {
-				    // High-priority animations get the full weight blend mask
+                    // High-priority animations get the full weight blend mask
                     animstate->_setBlendMaskData(&highpriority_mask_[0]);
                     if (!skel->hasAnimation(animstate->getAnimationName()))
                         continue;
@@ -170,28 +182,28 @@ namespace OgreRenderer
                     Ogre::Animation::NodeTrackIterator it = anim->getNodeTrackIterator();
                     while (it.hasMoreElements())
                     {
-					    Ogre::NodeAnimationTrack* track = it.getNext();
-					    unsigned id = track->getHandle();
-					    // For each active track, reduce corresponding bone weight in lowpriority-blendmask 
-					    // by this animation's weight
-					    if (id < lowpriority_mask_.size())
-					    {
-						    lowpriority_mask_[id] -= i->second.weight_;
-						    if (lowpriority_mask_[id] < 0.0) lowpriority_mask_[id] = 0.0;
-					    }
-			        }
+                        Ogre::NodeAnimationTrack* track = it.getNext();
+                        unsigned id = track->getHandle();
+                        // For each active track, reduce corresponding bone weight in lowpriority-blendmask 
+                        // by this animation's weight
+                        if (id < lowpriority_mask_.size())
+                        {
+                            lowpriority_mask_[id] -= i->second.weight_;
+                            if (lowpriority_mask_[id] < 0.0) lowpriority_mask_[id] = 0.0;
+                        }
+                    }
                 }
             }
 
-		    // Now set the calculated blendmask on low-priority animations
+            // Now set the calculated blendmask on low-priority animations
             for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
-	        {
+            {
                 Ogre::AnimationState* animstate = GetAnimationState(entity, i->first);
                 if (!animstate)
-                    continue;	
-                if (i->second.high_priority_ == false)	        
-                    animstate->_setBlendMaskData(&lowpriority_mask_[0]);			    			   
-		    }
+                    continue;    
+                if (i->second.high_priority_ == false)
+                    animstate->_setBlendMaskData(&lowpriority_mask_[0]);
+            }
         }
     }
     

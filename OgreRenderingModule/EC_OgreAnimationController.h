@@ -13,6 +13,7 @@ namespace Ogre
 }
 
 #include <OgreAnimationState.h>
+#include <QStringList>
 
 namespace OgreRenderer
 {
@@ -30,6 +31,7 @@ namespace OgreRenderer
 	//! Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
         bool EnableAnimation(const QString &name) { return EnableAnimation(name.toStdString(), false); }
         bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (Real)new_position); }
+        QStringList GetAvailableAnimations();
 
     public:
         

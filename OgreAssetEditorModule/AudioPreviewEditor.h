@@ -36,7 +36,7 @@ namespace Resource
 
 namespace Naali
 {
-    //! AudioPreviewEditor is used to play different audioclips from the inventory and show audio info.
+    //! AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
     class AudioPreviewEditor: public QWidget
     {
         Q_OBJECT

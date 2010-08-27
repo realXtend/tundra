@@ -62,12 +62,23 @@ private:
     /// Login window.
     boost::shared_ptr<InputContext> input_;
 
+    /// "Framework" event category ID.
     event_category_id_t framework_category_;
 
+    /// "NetworkState" event category ID.
     event_category_id_t network_category_;
+
+    /// Are we currently connected to world.
+    bool connected_;
+
 private slots:
-    /// Handles key event.
+    /** Handles key events from input service.
+     *  @apram key Key event.
+     */
     void HandleKeyEvent(KeyEvent *key);
+
+    /// Exits the program.
+    void Exit();
 };
 
 #endif

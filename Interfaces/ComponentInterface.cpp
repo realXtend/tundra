@@ -19,26 +19,22 @@
 namespace Foundation
 {
 
-ComponentInterface::ComponentInterface() :
-    parent_entity_(0), change_(AttributeChange::None)
+ComponentInterface::ComponentInterface(Framework* framework) :
+    parent_entity_(0),
+    framework_(framework),
+    change_(AttributeChange::None)
 {
 }
 
 ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
-    parent_entity_(rhs.parent_entity_)
+    framework_(rhs.framework_),
+    parent_entity_(rhs.parent_entity_),
+    change_(AttributeChange::None)
 {
 }
 
 ComponentInterface::~ComponentInterface()
 {
-}
-
-Framework* ComponentInterface::GetFramework() const
-{
-    if (GetParentEntity())
-        return GetParentEntity()->GetFramework();
-    else
-        return 0;
 }
 
 void ComponentInterface::SetName(const QString& name)

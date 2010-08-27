@@ -5,6 +5,7 @@
 
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
+
 class QGraphicsView;
 class QGraphicsScene;
 class QGraphicsWidget;
@@ -42,6 +43,8 @@ namespace Ether
     {
         class EtherLogic;
         class EtherSceneController;
+        class EtherStateMachine;
+        class EtherLoginNotifier;
     }
     namespace View
     {

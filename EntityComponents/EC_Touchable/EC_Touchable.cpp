@@ -27,6 +27,7 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
+#include <QApplication>
 #include <QTimer>
 
 #include "MemoryLeakCheck.h"
@@ -52,32 +53,80 @@ void EC_Touchable::OnHover()
 {
     if (!IsVisible())
         Show();
+    if (!hovering_)
+        OnHoverIn();
     emit MouseHover();
 }
 
-//experimental, only for javascript DynamicComponent handlers now
+
+void EC_Touchable::OnHoverIn()
+{
+    if (hovering_)
+        return;
+    hovering_ = true;
+    SetCursorVisible(true);
+    emit MouseHoverIn();
+}
+
+void EC_Touchable::OnHoverOut()
+{
+    if (IsVisible())
+        Hide();
+    hovering_ = false;
+    SetCursorVisible(false);
+    emit MouseHoverOut();
+}
+
 void EC_Touchable::OnClick()
 {
     emit Clicked();
 }
 
-void  EC_Touchable::Show()
+void EC_Touchable::SetCursorVisible(bool visible)
 {
-    if (!entityClone_)
-        Create();
-
-    if (!entityClone_)
+    if (hover_cursor_.shape() != Qt::ArrowCursor)
     {
-        LogError("EC_Touchable not initialized properly.");
-        return;
+        QCursor *current_cursor = QApplication::overrideCursor();
+        if (visible)
+        {
+            if (current_cursor)
+            {
+                if (current_cursor->shape() != hover_cursor_.shape())
+                    QApplication::setOverrideCursor(hover_cursor_);
+            }
+            else
+                QApplication::setOverrideCursor(hover_cursor_);
+        }
+        else
+        {
+            while (current_cursor)
+            {
+                QApplication::restoreOverrideCursor();
+                current_cursor = QApplication::overrideCursor();
+            }
+        }
     }
-
-    if (entityClone_ && sceneNode_)
-        sceneNode_->getAttachedObject(cloneName_)->setVisible(true);
-    QTimer::singleShot(visibilityTime.Get() * 1000, this, SLOT(Hide()));
 }
 
-void  EC_Touchable::Hide()
+void EC_Touchable::Show()
+{
+    if (show_material_)
+    {
+        if (!entityClone_)
+            Create();
+
+        if (!entityClone_)
+        {
+            LogError("EC_Touchable not initialized properly.");
+            return;
+        }
+
+        if (entityClone_ && sceneNode_)
+            sceneNode_->getAttachedObject(cloneName_)->setVisible(true);
+    }
+}
+
+void EC_Touchable::Hide()
 {
     if (entityClone_ && sceneNode_)
         sceneNode_->getAttachedObject(cloneName_)->setVisible(false);
@@ -93,11 +142,7 @@ bool EC_Touchable::IsVisible() const
 void EC_Touchable::UpdateMaterial()
 {
     if (!entityClone_ ||!sceneNode_)
-    {
-        LogError("EC_Touchable not initialized properly. Cannot set new material.");
         return;
-    }
-
     try
     {
         entityClone_->setMaterialName(materialName.Get());
@@ -110,13 +155,26 @@ void EC_Touchable::UpdateMaterial()
 }
 
 EC_Touchable::EC_Touchable(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0),
     materialName(this, "material name", "Touchable"),
-    visibilityTime(this, "visibility time", 0.5f)
+    show_material_(true),
+    hovering_(false),
+    hover_cursor_(QCursor(Qt::ArrowCursor))
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateMaterial()));
+    connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
+}
+
+void EC_Touchable::SetHighlightOnHover(bool enabled)
+{
+    show_material_ = enabled;
+}
+
+void EC_Touchable::SetHoverCursor(Qt::CursorShape shape)
+{
+    hover_cursor_ = QCursor(shape);
 }
 
 void EC_Touchable::Create()
@@ -208,7 +266,7 @@ void EC_Touchable::Create()
 
     try
     {
-//        OgreRenderer::CloneMaterial("Touchable", materialName.Get());
+        //OgreRenderer::CloneMaterial("Touchable", materialName.Get());
         entityClone_->setMaterialName(materialName.Get());
     }
     catch (Ogre::Exception &e)
@@ -218,7 +276,6 @@ void EC_Touchable::Create()
     }
 
     sceneNode_->attachObject(entityClone_);
-
     Hide();
 }
 

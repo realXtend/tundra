@@ -244,6 +244,19 @@ namespace ProtocolUtilities
         /// Name.
         std::string fullName;
     };
+
+    /// Event data for EVENT_CONNECTION_FAILED
+    class ConnectionFailedEvent: public Foundation::EventDataInterface
+    {
+    public:
+        /*
+         *  @param msg Error message
+         */
+        ConnectionFailedEvent(const QString &msg) : message(msg) {}
+
+        /// Error message
+        QString message;
+    };
 }
 
 #endif // incl_Protocol_NetworkEvents_h

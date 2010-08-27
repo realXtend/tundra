@@ -912,7 +912,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         HandleMeshMaterials(entityid);
         
         // Check/set animation
-        HandleMeshAnimation(entityid);        
+        HandleMeshAnimation(entityid);
     }
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {

@@ -31,7 +31,6 @@ from xml.dom.minidom import getDOMImplementation
 # from circuits import Event, Manager, Debugger
 
 import Queue
-
         
 class LocalScene(Component):
     def __init__(self):
@@ -155,10 +154,9 @@ class LocalScene(Component):
         pass
         
     def on_exit(self):
-        r.logInfo("Local Scene exiting...")
+        r.logInfo("LocalScene exiting..")
         self.window.on_exit()  
-        r.logInfo("Local Done exiting...")
-
+        r.logInfo(".. done")
         
     def on_hide(self, shown):
         #print "on hide"
@@ -170,7 +168,8 @@ class LocalScene(Component):
         pass
 
     def on_logout(self, id):
-        r.logInfo("Local scene Logout.")
+        pass
+        #r.logInfo("Local scene Logout.")
         
     def checkBoxHighlightToggled(self, enabled):
         self.highlight = enabled

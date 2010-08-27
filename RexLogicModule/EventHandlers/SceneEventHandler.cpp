@@ -104,12 +104,16 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
         ScenePtr scene = owner_->GetCurrentActiveScene();
         if (scene)
         {
-            EntityPtr entity = scene->GetEntity(event_data->localID);
+            event_id_t entity_id = event_data->localID;
+            EntityPtr entity = scene->GetEntity(entity_id);
             if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
             {
                 boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
                 touchable->OnHover();
+                if (!hovered_entitys_.contains(entity_id))
+                    hovered_entitys_.append(entity_id);
             }
+            ClearHovers(entity_id);
         }
         break;
     }
@@ -118,6 +122,33 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
     }
 
     return false;
+}
+
+void SceneEventHandler::ClearHovers(event_id_t entity_id)
+{
+    Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+    if (!scene)
+        return; 
+
+    if (hovered_entitys_.count() > 0)
+    {
+        QList<event_id_t> remove_entitys;
+        foreach (event_id_t hover_entity_id, hovered_entitys_)
+        {
+            if (hover_entity_id != entity_id)
+            {
+                remove_entitys.append(hover_entity_id);
+                Scene::EntityPtr entity = scene->GetEntity(hover_entity_id);
+                if (entity && entity->HasComponent(EC_Touchable::TypeNameStatic()))
+                {
+                    boost::shared_ptr<EC_Touchable> touchable =  entity->GetComponent<EC_Touchable>();
+                    touchable->OnHoverOut();
+                }
+            }
+        }
+        foreach (event_id_t remove_entity_id, remove_entitys)
+            hovered_entitys_.removeAll(remove_entity_id);
+    }
 }
 
 void SceneEventHandler::HandleEntityDeletedEvent(event_id_t entityid)

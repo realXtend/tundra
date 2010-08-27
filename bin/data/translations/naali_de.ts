@@ -201,6 +201,29 @@ p, li { white-space: pre-wrap; }
     </message>
 </context>
 <context>
+    <name>CAVESettings</name>
+    <message>
+        <source>CAVESettings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>CAVE Settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable CAVE</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add new view</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Add new view (Advanced)</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>CacheSettingsWidget</name>
     <message>
         <source>CacheSettingsWidget</source>
@@ -240,6 +263,96 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Texture cache will store decoded textures to disc. This will speed up world loading. Default is to cache only j2p textures as they take the most time decoding. If above checkbox is unchecked youll cache also the more common fomats like jpg/png/bmp. Might be woth trying with slow PC. Minimum size: 20 mb Maximum size: 9000 mb.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CaveViewSettingsDialog</name>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Projection settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Horizontal Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Vertical Angle</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Distance To View Plane</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FOV Vertical</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>FOV Horizontal</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen Top Left Corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eye Position</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>CaveViewSettingsDialogAdvanced</name>
+    <message>
+        <source>Dialog</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Projection settings</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen Bottom left Corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>X</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Z</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Y</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen Bottom Right Corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen Top Left Corner</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eye Position</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2066,6 +2179,14 @@ Duration: %1 sec</source>
     </message>
     <message>
         <source>High</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Texture Quality</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Normal</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

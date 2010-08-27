@@ -5,6 +5,8 @@ import naali
 
 from circuits import Component
 
+import loadurlhandler
+
 ''' @todo Create only one instance per videoplayer per url and reuse that widget if 
           it's used multiple times in a scene.
 '''
@@ -19,18 +21,16 @@ class MediaurlView:
         self.type = self.__get_mime_type(urlstring)
         self.__media_player_service_used = False
         self.playback_widget = None
-        self.submeshes = None
+        self.entid_to_submeshes = {}
+        self.entid_clicked_connected = []
         
     def create_playback_widget(self):
         if len(self.type) > 0 and naali.mediaplayerservice is not None:
             if naali.mediaplayerservice.IsMimeTypeSupported(self.type):
-                self.playback_widget = naali.mediaplayerservice.GetPlayerWidget(str(urlstring))
+                self.playback_widget = naali.mediaplayerservice.GetPlayerWidget(str(self.__url))
                 self.__media_player_service_used = True
-                r.logInfo("Media content supported for video playback: " + str(urlstring))
+                r.logInfo("Media content supported for video playback: " + str(self.__url))
                 return
-            #else:
-                #print(" -- media content is not supported.")
-        # error -- playback widget cannot be created using player service -> we create a QWebview widget
         self.playback_widget = PythonQt.QtWebKit.QWebView()
         
     def load_url(self):
@@ -48,9 +48,20 @@ class MediaurlView:
             self.playback_widget.stop() # stop any networking done by this webview
             self.playback_widget.deleteLater() # let qt delete when sees fit
         self.playback_widget = None # set internal widget as gone
+        self.entid_to_submeshes = {}
             
     def url(self):
-        return self.__url        
+        return self.__url
+
+    def mouse_clicked(self):
+        if not self.__media_player_service_used:
+            loadurlhandler.loadurl(self.__url)
+        
+    def mouse_hover_in(self):
+        pass
+        
+    def mouse_hover_out(self):
+        pass
         
     def __get_mime_type(self, url_string):   
         try:
@@ -66,23 +77,8 @@ class MediaURLHandler(Component):
         Component.__init__(self)
         #which texture uuids with mediaurl are in which webview wrapper
         self.texture2mediaurlview = {}
-
-        """
-        the code below was to test webviews first as 2d widgets. 
-        perhaps useful later when add feat to open from 3d canvas to 2d usage
-        """
-        #uism = r.getUiSceneManager()
-        #uiprops = r.createUiWidgetProperty()
-        #uiprops.widget_name_ = "MediaURL"
-        ##uiprops.my_size_ = QSize(width, height)
-        ##self.proxywidget = uism.AddWidgetToScene(ui, uiprops)
-        #self.proxywidget = r.createUiProxyWidget(self.wv, uiprops)
-        ##print widget, dir(widget)
-        #uism.AddProxyWidget(self.proxywidget)
-        #self.wv.show()
         
     def on_logout(self, id):
-        #r.logInfo("Uninitializing MediaURLHandler due to logout, deleting all open playback widgets")
         for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
             if mediaurlview is None:
                 continue
@@ -91,14 +87,10 @@ class MediaURLHandler(Component):
         self.texture2mediaurlview.clear()
 
     def on_exit(self):
-        r.logInfo('MediaURLHandler exiting...')    
-        #r.logInfo("Uninitializing MediaURLHandler")
-        for textureid, mediaurlview in self.texture2mediaurlview.iteritems():
-            if mediaurlview is None:
-                continue
-            mediaurlview.delete_playback_widget()        
-        self.texture2mediaurlview.clear()                
-        self.texture2mediaurlview = None
+        # Dont delete any meadiaurlview as it causes crashes
+        # on_logout seems to be ok but close to qapp rundown it 
+        # causes semi-random crashes
+        return          
 
     def on_genericmessage(self, name, data):
         #print "MediaURLHandler got Generic Message:", name, data
@@ -111,7 +103,8 @@ class MediaURLHandler(Component):
                 mediaurlview = self.texture2mediaurlview[textureuuid]
                 if mediaurlview is not None:
                     if mediaurlview.url().toString() == urlstring:
-                        return # we already have this information...
+                        mediaurlview.refreshrate = refreshrate
+                        return
                     del self.texture2mediaurlview[textureuuid]
                     mediaurlview.delete_playback_widget()
 
@@ -124,15 +117,17 @@ class MediaURLHandler(Component):
             
             # Check if texture is in scene and only if is create playback widget
             if mv.playback_widget == None:
-                # Dont remove this print, as in mediaurl heavy worlds there may come many of these on login
-                # so dev can at least see in console that viewer has not died as it might seem so otherwise - Jonne
-                r.logDebug("MediaUrlHandler - Checking if texture " + str(textureuuid) + " is in scene")
+                r.logDebug("MediaUrlHandler: Checking scene for texture " + str(textureuuid))
                 if r.checkSceneForTexture(textureuuid):
                     mv.create_playback_widget()
                     
             # If widget was created (texture found in scene), then apply to submeshes
             if mv.playback_widget != None:
-                r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
+                affected_entitys = r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
+                # Connect affected entities Toucheble signals to to MediaurlView
+                if affected_entitys != None:
+                    for entity in affected_entitys:
+                        self.connect_touchable(mv, entity)
                 mv.load_url()
 
     def on_entity_visuals_modified(self, entid):
@@ -142,18 +137,51 @@ class MediaURLHandler(Component):
                 continue
             submeshes = r.getSubmeshesWithTexture(entid, texture_uuid)
             if submeshes:
-                if mediaurlview.submeshes == submeshes:
-                    #print "There submeshes alredy set to mediaurlview, skipping new apply"
-                    return
-                #print "Modified entity uses a known mediaurl texture:", entid, texture_uuid, submeshes, mediaurlview
+                # This doesent work. Seems to be right in theory but some entitys textures are not updated
+                # especially when there are multiple entitys with same mediurl texture
+                """
+                # Don't reapply if submeshes are the same for this entity
+                try:
+                    if mediaurlview.entid_to_submeshes[entid] == submeshes:
+                        print "Already have submeshes for ", str(entid)
+                        print " >> Present: ", mediaurlview.entid_to_submeshes[entid]
+                        print " >> Found  : ", submeshes
+                        return
+                except KeyError, e:
+                    print " Adding new submeshes to ent id to map for ", str(entid)
+                    print " >> ", submeshes
+                    mediaurlview.entid_to_submeshes[entid] = submeshes
+                """
+                
+                # Check if we need to create the playback widget
                 if mediaurlview.playback_widget == None:
                     mediaurlview.create_playback_widget()
                     r.applyUICanvasToSubmeshes(entid, submeshes, mediaurlview.playback_widget, mediaurlview.refreshrate)
                     mediaurlview.load_url()
                 else:
                     r.applyUICanvasToSubmeshes(entid, submeshes, mediaurlview.playback_widget, mediaurlview.refreshrate)
-                mediaurlview.submeshes = submeshes
-        
+                # Get entity for id and hook to Touchable signals
+                entity = r.getEntity(entid)
+                self.connect_touchable(mediaurlview, entity)
+                
+    def connect_touchable(self, mediaurlview, entity):
+        if mediaurlview == None or entity == None:
+            return
+        entid = entity.id
+        try:
+            mediaurlview.entid_clicked_connected.index(entid) # already hooked up this entity
+            return
+        except:
+            mediaurlview.entid_clicked_connected.append(entid)
+        try:
+            touchable = entity.touchable
+            if touchable != None:
+                touchable.connect("Clicked()", mediaurlview.mouse_clicked)
+            else:
+                r.logWarning("MediaUrlHandler - Could not find touchable from entity")
+        except:
+            r.logWarning("MediaUrlHandler - Failed to connect EC_Touchable signals to mediaurlview")
+
     def on_input(self, evid):
         #print(">>> hander:on_input")    
         if evid == r.Undo: #WorldInputModule doesn't send all keys, just naali events, so am just reusing ctrl-z for testing herew

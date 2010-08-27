@@ -65,7 +65,8 @@ use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderin
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable EntityComponents/EC_3DCanvas
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble EntityComponents/EC_Ruler EntityComponents/EC_SoundRuler)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble EntityComponents/EC_Ruler EntityComponents/EC_SoundRuler 
+    EntityComponents/EC_ParticleSystem)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)
@@ -76,7 +77,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
     EC_Highlight EC_HoveringText EC_Clone EC_Light EC_OpenSimPresence EC_OpenSimPrim EC_Touchable EC_3DCanvas
-    EC_3DCanvasSource EC_ChatBubble EC_Ruler EC_SoundRuler)
+    EC_3DCanvasSource EC_ChatBubble EC_Ruler EC_SoundRuler EC_ParticleSystem)
 
 if (NOT UISERVICE_TEST)
     link_modules (UiModule)

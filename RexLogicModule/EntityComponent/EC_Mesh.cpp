@@ -18,6 +18,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 #include "MemoryLeakCheck.h"
 
 EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
+    Foundation::ComponentInterface(module->GetFramework()),
     meshResouceId_(this, "Mesh id", ""),
     meshMaterial_(this, "Mesh materials"),
     drawDistance_(this, "Draw distance", 0.0f),
@@ -326,7 +327,7 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     tag = renderer_.lock()->RequestResource(id, type);
     if(tag == 0)
     {
-        LogWarning("Failed to request asset:" + id + " : " + type);
+        LogWarning("Failed to request resource:" + id + " : " + type);
         return 0;
     }
 
