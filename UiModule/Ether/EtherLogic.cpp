@@ -498,7 +498,7 @@ namespace Ether
                 case UiServices::Connected:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(true);
-                    scene_controller_->ShowStatusInformation("Connected");
+                    scene_controller_->ShowStatusInformation("Connected, loading world...", 30000);
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
