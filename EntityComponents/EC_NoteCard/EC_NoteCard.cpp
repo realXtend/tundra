@@ -37,6 +37,7 @@ static int notecard_pos_increment = 50;
 static int text_safe_size = 500;
 
 EC_NoteCard::EC_NoteCard(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     widget_(0),
     title_edit_(0),
     text_edit_(0),
