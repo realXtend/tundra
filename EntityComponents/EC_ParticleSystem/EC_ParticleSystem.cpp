@@ -16,6 +16,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 #include <Ogre.h>
 
 EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
+    Foundation::ComponentInterface(module->GetFramework()),
     framework_(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
@@ -143,9 +144,8 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
         Foundation::Attribute<std::string> *particleAtt = dynamic_cast<Foundation::Attribute<std::string> *>(attribute);
         if(!particleAtt)
             return;
-        if(RexUUID::IsValid(particleAtt->Get()))
-            particle_tag_ = RequestResource(particleAtt->Get(), OgreRenderer::OgreParticleResource::GetTypeStatic());
-        else // To visualize that resource id was wrong delete previous particle effect off.
+        particle_tag_ = RequestResource(particleAtt->Get(), OgreRenderer::OgreParticleResource::GetTypeStatic());
+        if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
     else if(attribute->GetNameString() == castShadows_.GetNameString())
