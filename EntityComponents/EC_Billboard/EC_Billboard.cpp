@@ -24,6 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Billboard");
 #include <QTimer>
 
 EC_Billboard::EC_Billboard(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     billboardSet_(0),
     billboard_(0),
     materialName_("")

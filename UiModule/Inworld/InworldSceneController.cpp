@@ -51,12 +51,14 @@ namespace UiServices
         connect(inworld_scene_, SIGNAL(sceneRectChanged(const QRectF)), this, SLOT(ApplyNewProxyPosition(const QRectF)));
 
         // Docking widget
+        /*
+        Disable this feature for now, it is just plain annoying in its current state...
         docking_widget_ = new QWidget();
         docking_widget_->setStyleSheet("QWidget { background-color: rgba(0, 0, 0, 75); border: 1px solid rgba(255,255,255,100); border-radius: 0px; }");
         docking_widget_proxy_ = inworld_scene_->addWidget(docking_widget_);
         docking_widget_proxy_->hide();
         docking_widget_proxy_->setVisible(false);
-
+        */
     }
 
     InworldSceneController::~InworldSceneController()
@@ -106,8 +108,8 @@ namespace UiServices
             all_proxy_widgets_in_scene_.append(widget);
 
         connect(widget, SIGNAL(BringProxyToFrontRequest(QGraphicsProxyWidget*)), SLOT(BringProxyToFront(QGraphicsProxyWidget*)));
-        connect(widget, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, const QPointF &)));
-        connect(widget, SIGNAL(ProxyUngrabbed(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetUngrabbed(QGraphicsProxyWidget*, const QPointF &)));
+        //connect(widget, SIGNAL(ProxyMoved(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetMoved(QGraphicsProxyWidget*, const QPointF &)));
+        //connect(widget, SIGNAL(ProxyUngrabbed(QGraphicsProxyWidget*, const QPointF &)), SLOT(ProxyWidgetUngrabbed(QGraphicsProxyWidget*, const QPointF &)));
         connect(widget, SIGNAL(Closed()), SLOT(ProxyClosed()));
         connect(widget, SIGNAL(Visible(bool)), SLOT(ProxyClosed()));
 
@@ -287,6 +289,9 @@ namespace UiServices
 
     void InworldSceneController::ProxyWidgetMoved(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
     {
+        if (!docking_widget_)
+            return;
+
         if (proxy_pos.x() + proxy_widget->size().width() > inworld_scene_->width() - DOCK_WIDTH)
         {
             docking_widget_->setGeometry(0, 0, DOCK_WIDTH, inworld_scene_->height() - DIST_FROM_BOTTOM);
@@ -302,6 +307,9 @@ namespace UiServices
 
     void InworldSceneController::ProxyWidgetUngrabbed(QGraphicsProxyWidget* proxy_widget, const QPointF &proxy_pos)
     {
+        if (!docking_widget_)
+            return;
+
         bool changes = false;
         if (proxy_pos.x() + proxy_widget->size().width() > inworld_scene_->width() - DOCK_WIDTH)
         {
@@ -334,6 +342,9 @@ namespace UiServices
 
     void InworldSceneController::DockLineup()
     {
+        if (!docking_widget_)
+            return;
+
         if (all_docked_proxy_widgets_.count() == 0)
             return;
 
@@ -365,6 +376,9 @@ namespace UiServices
 
     void InworldSceneController::ProxyClosed()
     {
+        if (!docking_widget_)
+            return;
+
         for(int i = 0; i < all_docked_proxy_widgets_.length(); i++)
         {
             if (!all_docked_proxy_widgets_.at(i)->isVisible())

@@ -25,6 +25,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
 #include "MemoryLeakCheck.h"
 
 EC_Ruler::EC_Ruler(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     typeAttr_(this, "ruler type", EC_Ruler::Rotation),
     visibleAttr_(this, "visible", false),
     axisAttr_(this, "axis", EC_Ruler::X),

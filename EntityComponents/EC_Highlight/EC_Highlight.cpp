@@ -70,6 +70,7 @@ bool EC_Highlight::IsVisible() const
 }
 
 EC_Highlight::EC_Highlight(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)
 {

@@ -43,11 +43,11 @@ namespace Foundation
         friend class AttributeInterface;
 
         Q_OBJECT
-        Q_PROPERTY(QString Name READ Name)        
+        Q_PROPERTY(QString Name READ Name)
 
     public:
-        //! Default constuctor.
-        ComponentInterface();
+        //! Constuctor.
+        ComponentInterface(Framework* framework);
 
         //! Copy-constructor.
         ComponentInterface(const ComponentInterface& rhs);
@@ -57,12 +57,12 @@ namespace Foundation
 
         //! Returns type name of the component.
         virtual const QString &TypeName() const = 0;
-
-        //! Returns the framework pointer.
-        Framework* GetFramework() const;
-
+        
         //! Returns name of the component.
         const QString Name() const { return name_; }
+
+        //! Returns framework
+        Framework *GetFramework() const { return framework_; }
 
         //! Sets name of the component.
         void SetName(const QString& name);
@@ -179,6 +179,9 @@ namespace Foundation
         //! Change status for the component itself
         AttributeChange::Type change_;
 
+        //! Framework pointer. Needed so that component is able to perform important uninitialization etc. even when not in an entity
+        Framework* framework_;
+        
     private:
         //! Called by AttributeInterface on initialization of each attribute
         void AddAttribute(AttributeInterface* attr) { attributes_.push_back(attr); }

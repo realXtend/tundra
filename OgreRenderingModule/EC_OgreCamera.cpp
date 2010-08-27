@@ -10,6 +10,7 @@
 namespace OgreRenderer
 {
     EC_OgreCamera::EC_OgreCamera(Foundation::ModuleInterface* module) :
+        Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         attached_(false),
         camera_(0)
