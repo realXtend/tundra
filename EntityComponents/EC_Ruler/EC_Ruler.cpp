@@ -120,10 +120,14 @@ void EC_Ruler::Create()
     if (!sceneNode_)
         return;
     
-    if(scene_mgr->hasManualObject("translateRuler")) {
+    if(scene_mgr->hasManualObject("translateRuler")){
         rulerObject = scene_mgr->getManualObject("translateRuler");
         if(rulerObject->isAttached())
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+            rulerObject->detatchFromParent();
+#else
             rulerObject->detachFromParent();
+#endif
     } else {
         rulerObject = scene_mgr->createManualObject("translateRuler");
     }
