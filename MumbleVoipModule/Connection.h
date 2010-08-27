@@ -207,7 +207,7 @@ namespace MumbleLib
         QReadWriteLock lock_users_;
         
     signals:
-        void StateChanged(State state);
+        void StateChanged(const State &state);
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
 
