@@ -88,6 +88,7 @@
 #include "EC_Ruler.h"
 #include "EC_SoundRuler.h"
 #include "EC_Name.h"
+#include "EC_ParticleSystem.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -134,6 +135,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
     DECLARE_MODULE_EC(EC_HoveringWidget);
+    DECLARE_MODULE_EC(EC_Mesh);
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
@@ -147,7 +149,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Ruler);
     DECLARE_MODULE_EC(EC_SoundRuler);
     DECLARE_MODULE_EC(EC_Name);
-    DECLARE_MODULE_EC(EC_Mesh);
+    DECLARE_MODULE_EC(EC_ParticleSystem);
 }
 
 // virtual

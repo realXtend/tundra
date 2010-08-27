@@ -326,7 +326,7 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     tag = renderer_.lock()->RequestResource(id, type);
     if(tag == 0)
     {
-        LogWarning("Failed to request asset:" + id + " : " + type);
+        LogWarning("Failed to request resource:" + id + " : " + type);
         return 0;
     }
 

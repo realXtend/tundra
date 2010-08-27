@@ -26,11 +26,11 @@ namespace OgreRenderer
     {
         if (renderer_.expired())
             return;
-        RendererPtr renderer = renderer_.lock();   
-            
+        RendererPtr renderer = renderer_.lock();
+
         DetachSystems();
         RemoveParticleSystems();
-        
+
         if (adjustment_node_)
         {
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();

@@ -225,8 +225,8 @@ namespace ECEditor
                     Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> > *>(attr);
                     if(attribute)
                     {
-                        //Get changed attribute value index.
-                        //int childIndex = item->parent()->indexOfChild(item);
+                        // We asume that item's name is form of "[0]","[1]" etc. We need to cut down those first and last characters
+                        // to able to get real index number of that item that is cause sorting can make the item order a bit odd.
                         QString indexText = "";
                         QString itemText = item->text(0);
                         for(uint i = 1; i < itemText.size() - 1; i++)
