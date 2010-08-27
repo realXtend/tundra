@@ -151,8 +151,15 @@ class LoadURLHandler(Component):
         if self.lineedit_address.lineEdit().text != url:
             self.lineedit_address.lineEdit().setText(url)
     
+    def on_logout(self, id):
+        if self.webview != None:
+            self.webview.stop()
+        if self.proxywidget != None:
+            self.proxywidget.hide()
+            
     def on_exit(self):
-        r.logInfo('LoadURLHandler exiting')
+        if self.webview != None:
+            self.webview.stop()
         if self.proxywidget is not None:
             self.proxywidget.hide()
             uism = r.getUiSceneManager()
