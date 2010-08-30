@@ -202,7 +202,7 @@ class Manipulator:
                 self.resethighlight()
             
             submeshid = raycast_results[-3]
-            if submeshid > 0:
+            if submeshid >= 0:
                 name =  self.MATERIALNAMES[submeshid]
                 if name is not None:
                     name += str("_hi")
