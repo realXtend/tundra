@@ -53,7 +53,7 @@ void ComponentInterface::SetParentEntity(Scene::Entity* entity)
     if (parent_entity_)
         emit ParentEntitySet();
     else
-        emit ParentEntityDetached()
+        emit ParentEntityDetached();
 }
 
 Scene::Entity* ComponentInterface::GetParentEntity() const
