@@ -16,6 +16,7 @@ namespace MumbleVoip
     class LinkPlugin;
     class ServerInfoProvider;
     class Provider;
+    class SettingsWidget;
 
     /**
      *  Mumble support for Naali viewer.
@@ -63,6 +64,7 @@ namespace MumbleVoip
     private slots:
         void StartLinkPlugin();
         void StartMumbleClient(ServerInfo info);
+        void SetupSettingsWidget();
 
     private:
         static std::string module_name_;
@@ -88,6 +90,7 @@ namespace MumbleVoip
         event_category_id_t event_category_framework_;
         QString avatar_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
+        SettingsWidget* settings_widget_;
     };
 
 } // end of namespace: MumbleVoip
