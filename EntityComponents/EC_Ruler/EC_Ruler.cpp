@@ -188,6 +188,7 @@ void EC_Ruler::SetupScaleRuler()
             y = size;
     }
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     rulerObject->position(0, 0, 0);
     rulerObject->position(x, y, z);
@@ -202,6 +203,7 @@ void EC_Ruler::SetupRotationRuler()
     float const segments = segmentsAttr_.Get();
 
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
     unsigned i = 0;
@@ -250,6 +252,7 @@ void EC_Ruler::SetupTranslateRuler() {
             y = size;
     }
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     rulerObject->position(x, y, z);
     rulerObject->position(-x, -y, -z);
