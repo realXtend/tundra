@@ -182,7 +182,18 @@ void EC_SoundRuler::SetupSoundRuler()
         }
         i++;
     }
-    rulerObject->index(0); // Close the line = circle
+    rulerObject->end();
+    
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
+        rulerObject->position(0, radius * cos(theta), radius * sin(theta));
+    }
+    rulerObject->end();
+    
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
+        rulerObject->position(radius * cos(theta), 0, radius * sin(theta));
+    }
     rulerObject->end();
 }
 
