@@ -142,6 +142,9 @@ namespace Foundation
         //! Emitted when the parent entity is set.
         void ParentEntitySet();
 
+        //! Emitted when the parent entity detached from this component, i.e. set to null.
+        void ParentEntityDetached();
+
     protected:
         //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
         QDomElement BeginSerialization(QDomDocument& doc, QDomElement& base_element) const;
