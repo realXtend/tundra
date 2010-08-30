@@ -62,7 +62,6 @@ class AnimationSync(circuits.BaseComponent):
             if self.prev_sync + INTERVAL < now:
                 comp.SetAttribute("timepos", guival / 100)
                 comp.ComponentChanged("Local")
-                comp.OnChanged() #XXX change to OnAttributeChanged when possible
                 self.prev_sync = now
 
     def onChanged(self):
