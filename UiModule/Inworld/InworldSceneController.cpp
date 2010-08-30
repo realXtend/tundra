@@ -80,6 +80,13 @@ namespace UiServices
             SAFE_DELETE(proxy);
             return 0;
         }
+        
+        // \todo Find a proper solution to the problem
+        // Proxy widget doesn't get input without main frame resisizing for unknow reason.
+        // HACK begin
+        proxy->moveBy(1, 1);
+        proxy->moveBy(-1,-1);
+        // HACK end
 
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
