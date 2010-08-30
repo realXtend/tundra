@@ -221,8 +221,6 @@ class MoveManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
     MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
-    # multiply the two orientations, so we get the proper end orientation for the widget
-    MANIPULATORORIENTATION = Manipulator.ninty_around_x * Manipulator.ninty_around_y
     
     BLUEARROW = [1,2]
     REDARROW = [5,6]
