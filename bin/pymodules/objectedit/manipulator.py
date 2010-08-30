@@ -340,18 +340,15 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = Manipulator.ninty_around_x
-    
     MATERIALNAMES = {
-        0: "asd",  #shadows?
-        1: "resed", 
-        2: "resed2", 
-        3: "resed3"
+        0: "axis_red",
+        1: "axis_blue", 
+        2: "axis_green"
     }
     
-    BLUEARROW = [3]
-    REDARROW = [1]
-    GREENARROW = [2]
+    REDARROW = [0]
+    BLUEARROW = [1] # we do green_axis actions
+    GREENARROW = [2] # we do blue_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
@@ -362,14 +359,7 @@ class RotationManipulator(Manipulator):
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
 
-            if xsmaller and ysmaller:
-                dir = -1
-            elif xsmaller and not ysmaller:
-                dir = 1
-            elif not xsmaller and ysmaller:
-                dir = -1
-            else:
-                dir = 1
+            dir = 1
             
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
