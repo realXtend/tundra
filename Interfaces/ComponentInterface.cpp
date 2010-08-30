@@ -50,7 +50,10 @@ void ComponentInterface::SetName(const QString& name)
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
 {
     parent_entity_ = entity;
-    emit ParentEntitySet();
+    if (parent_entity_)
+        emit ParentEntitySet();
+    else
+        emit ParentEntityDetached()
 }
 
 Scene::Entity* ComponentInterface::GetParentEntity() const
