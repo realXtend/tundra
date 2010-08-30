@@ -174,17 +174,13 @@ void EC_SoundRuler::SetupSoundRuler()
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
     unsigned int i = 0;
-    unsigned int j = 0;
     for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
         rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-        rulerObject->index(i++);
-        if(j % spikeInterval == 0) {
+        if(i % spikeInterval == 0) {
             rulerObject->position(radius * cos(theta), radius * sin(theta), volume);
-            rulerObject->index(i++);
             rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-            rulerObject->index(i++);
         }
-        j++;
+        i++;
     }
     rulerObject->index(0); // Close the line = circle
     rulerObject->end();
