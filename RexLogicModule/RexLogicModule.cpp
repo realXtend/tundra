@@ -89,6 +89,7 @@
 #include "EC_SoundRuler.h"
 #include "EC_Name.h"
 #include "EC_ParticleSystem.h"
+#include "EC_SoundListener.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -150,6 +151,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_SoundRuler);
     DECLARE_MODULE_EC(EC_Name);
     DECLARE_MODULE_EC(EC_ParticleSystem);
+    DECLARE_MODULE_EC(EC_SoundListener);
 }
 
 // virtual
