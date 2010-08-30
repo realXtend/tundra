@@ -172,6 +172,7 @@ void EC_SoundRuler::SetupSoundRuler()
     unsigned int const spikeInterval = (unsigned int)(segments / 4.0);
 
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
     unsigned int i = 0;
