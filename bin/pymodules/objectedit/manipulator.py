@@ -220,8 +220,6 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
-    MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
-    
     BLUEARROW = [1,2]
     REDARROW = [5,6]
     GREENARROW = [3,4]
