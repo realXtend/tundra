@@ -70,8 +70,7 @@ void  EC_SoundRuler::Show()
         return;
     }
 
-    if (rulerObject)
-        rulerObject->setVisible(true);
+    rulerObject->setVisible(true);
 }
 
 void  EC_SoundRuler::Hide()
@@ -85,8 +84,7 @@ void  EC_SoundRuler::Hide()
         return;
     }
     
-    if (rulerObject)
-        rulerObject->setVisible(false);
+    rulerObject->setVisible(false);
 }
 
 bool EC_SoundRuler::IsVisible() const
