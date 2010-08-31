@@ -222,9 +222,9 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
-    BLUEARROW = [1,2]
-    GREENARROW = [3,4]
-    REDARROW = [5,6]
+    BLUEARROW = [2]
+    GREENARROW = [0]
+    REDARROW = [1]
 
     AXIS_GREEN = 0
     AXIS_RED = 1
@@ -232,13 +232,9 @@ class MoveManipulator(Manipulator):
     
     
     MATERIALNAMES = {
-        0: "axis_black",  # submesh divider
-        1: "axis_blue", 
-        2: None, #"axis_blue", 
-        3: "axis_green",
-        4: None, #"axis_green",
-        5: "axis_red", 
-        6: None, #"axis_red"
+        0: "axis_green",
+        1: "axis_red",
+        2: "axis_blue"
     }
 
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
@@ -345,14 +341,14 @@ class RotationManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
     MATERIALNAMES = {
-        0: "axis_red",
-        1: "axis_blue", 
-        2: "axis_green"
+        2: "axis_red",
+        3: "axis_blue", 
+        0: "axis_green"
     }
     
-    REDARROW = [0]
-    BLUEARROW = [1] # we do green_axis actions
-    GREENARROW = [2] # we do blue_axis actions
+    REDARROW = [2]
+    BLUEARROW = [3] # we do green_axis actions
+    GREENARROW = [0] # we do blue_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
