@@ -134,19 +134,25 @@ add_subdirectory (CommunicationsModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.
-add_subdirectory (EntityComponents/EC_Highlight)        # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_HoveringText)     # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_Clone)            # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_Light)            # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_OpenSimPresence)  # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_OpenSimPrim)      # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_Touchable)        # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_3DCanvas)         # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_3DCanvasSource)   # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_Ruler)            # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_SoundRuler)       # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_ParticleSystem)   # declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_SoundListener)    # declared by RexLogicModule
+
+# The following EC's are declared by RexLogicModule
+add_subdirectory (EntityComponents/EC_Highlight)
+add_subdirectory (EntityComponents/EC_HoveringText)
+add_subdirectory (EntityComponents/EC_Clone)
+add_subdirectory (EntityComponents/EC_Light)
+add_subdirectory (EntityComponents/EC_OpenSimPresence)
+add_subdirectory (EntityComponents/EC_OpenSimPrim)
+add_subdirectory (EntityComponents/EC_Touchable)
+add_subdirectory (EntityComponents/EC_3DCanvas)
+add_subdirectory (EntityComponents/EC_3DCanvasSource)
+add_subdirectory (EntityComponents/EC_Ruler)
+add_subdirectory (EntityComponents/EC_SoundRuler)
+add_subdirectory (EntityComponents/EC_ParticleSystem)
+add_subdirectory (EntityComponents/EC_Sound)
+add_subdirectory (EntityComponents/EC_SoundListener)
+
+# Add EC's declared by other modules here:
+# ...
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from a template.

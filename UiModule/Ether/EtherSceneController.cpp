@@ -499,7 +499,7 @@ namespace Ether
                 status_widget_->hide();
             else if (request_type == "help")
             {
-                ShowStatusInformation("Naalis help system is still under development, sorry.");
+                ShowStatusInformation(tr("Naali's help system is still under development, sorry."));
                 return;
             }
             else if (request_type == "exit")

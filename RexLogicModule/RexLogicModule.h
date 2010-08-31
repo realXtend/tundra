@@ -99,7 +99,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterface, public Foundation::WorldLogicInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -124,6 +124,7 @@ namespace RexLogic
         Scene::EntityPtr GetUserAvatarEntity() const;
         Scene::EntityPtr GetCameraEntity() const;
         Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const;
+        const QString &GetAvatarAppearanceProperty(const QString &name) const;
 
         //=============== RexLogicModule API ===============/
 
@@ -288,13 +289,6 @@ namespace RexLogic
         //! Handle an asset event.
         bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
-        /*! Does preparations before logout/delete of scene
-         *  For example: Takes ui screenshots of world/avatar with rendering service.
-         *  Add functionality if you need something done before logout.
-         *  \todo Move the av&world screenshot functionality to Ether/UiModule?
-         */
-        void AboutToDeleteWorld();
-
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
         void UpdateAvatarNameTags(Scene::EntityPtr users_avatar);
@@ -401,6 +395,30 @@ namespace RexLogic
 
         //! Login service.
         boost::shared_ptr<LoginHandler> login_service_;
+
+        //! List of possible sound listeners (entitities which have EC_SoundListener).
+        QList<Scene::Entity *> soundListeners_;
+
+        //! Currently active sound listener.
+        Scene::EntityWeakPtr activeSoundListener_;
+
+    private slots:
+        /** Called when new component is added to the active scene.
+         *  Currently used for handling sound listener EC's.
+         *  @param entity Entity for which the component was added.
+         *  @param component The added component.
+         */
+        void NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+
+        /** Called when component is removed from the active scene.
+         *  Currently used for handling sound listener EC's.
+         *  @param entity Entity from which the component was removed.
+         *  @param component The removed component.
+         */
+        void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+
+        /// Finds entity with active sound listener component and stores it.
+        void FindActiveListener();
     };
 }
 
