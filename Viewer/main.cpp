@@ -86,6 +86,9 @@ int main (int argc, char **argv)
 //! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
+    // Exclude the server logic from loading
+    // Note: later we will want to be able to run both server & viewer logic inside the same executable
+    fw.GetModuleManager()->ExcludeModule("ServerLogicModule");
 }
 
 int run (int argc, char **argv)

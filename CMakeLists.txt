@@ -101,55 +101,58 @@ add_subdirectory (Interfaces)
 add_subdirectory (RexCommon)
 add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
-add_subdirectory (Application)
-add_subdirectory (RexLogicModule)
+add_subdirectory (UiServiceModule)
+add_subdirectory (QtInputModule)
+add_subdirectory (OpenALAudioModule)
 add_subdirectory (SupportModules)
-add_subdirectory (AssetModule)
 add_subdirectory (HttpUtilities)
-add_subdirectory (RpcUtilities)
-add_subdirectory (ProtocolUtilities)
-add_subdirectory (EnvironmentModule)
-if (NOT UISERVICE_TEST)
-    add_subdirectory (UiModule)
-endif ()
+
+# Viewer & server logic modules and executables
+add_subdirectory (ViewerLogicModule)
+add_subdirectory (Viewer)
+add_subdirectory (ServerLogicModule)
+add_subdirectory (Server)
+
+#add_subdirectory (RexLogicModule)
+#add_subdirectory (AssetModule)
+#add_subdirectory (RpcUtilities)
+#add_subdirectory (ProtocolUtilities)
+#add_subdirectory (EnvironmentModule)
+#add_subdirectory (UiModule)
 
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
-add_subdirectory (QtInputModule)
-add_subdirectory (TextureDecoderModule)
-add_subdirectory (ProtocolModuleOpenSim)
-add_subdirectory (ProtocolModuleTaiga)
 
-if (UISERVICE_TEST)
-    add_subdirectory (UiServiceModule)
-    add_subdirectory (LoginScreenModule)
-endif ()
+#add_subdirectory (TextureDecoderModule)
+#add_subdirectory (ProtocolModuleOpenSim)
+#add_subdirectory (ProtocolModuleTaiga)
+#add_subdirectory (LoginScreenModule)
 
-# The following are optional, but contain 
+# The following are optional, but contain
 # commonly used functionality.
-add_subdirectory (InventoryModule)
-add_subdirectory (OgreAssetEditorModule)
-add_subdirectory (CommunicationsModule)
+#add_subdirectory (InventoryModule)
+#add_subdirectory (OgreAssetEditorModule)
+#add_subdirectory (CommunicationsModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.
 
 # The following EC's are declared by RexLogicModule
-add_subdirectory (EntityComponents/EC_Highlight)
-add_subdirectory (EntityComponents/EC_HoveringText)
-add_subdirectory (EntityComponents/EC_Clone)
-add_subdirectory (EntityComponents/EC_Light)
-add_subdirectory (EntityComponents/EC_OpenSimPresence)
-add_subdirectory (EntityComponents/EC_OpenSimPrim)
-add_subdirectory (EntityComponents/EC_Touchable)
-add_subdirectory (EntityComponents/EC_3DCanvas)
-add_subdirectory (EntityComponents/EC_3DCanvasSource)
-add_subdirectory (EntityComponents/EC_Ruler)
-add_subdirectory (EntityComponents/EC_SoundRuler)
-add_subdirectory (EntityComponents/EC_ParticleSystem)
-add_subdirectory (EntityComponents/EC_Sound)
-add_subdirectory (EntityComponents/EC_SoundListener)
+#add_subdirectory (EntityComponents/EC_Highlight)
+#add_subdirectory (EntityComponents/EC_HoveringText)
+#add_subdirectory (EntityComponents/EC_Clone)
+#add_subdirectory (EntityComponents/EC_Light)
+#add_subdirectory (EntityComponents/EC_OpenSimPresence)
+#add_subdirectory (EntityComponents/EC_OpenSimPrim)
+#add_subdirectory (EntityComponents/EC_Touchable)
+#add_subdirectory (EntityComponents/EC_3DCanvas)
+#add_subdirectory (EntityComponents/EC_3DCanvasSource)
+#add_subdirectory (EntityComponents/EC_Ruler)
+#add_subdirectory (EntityComponents/EC_SoundRuler)
+#add_subdirectory (EntityComponents/EC_ParticleSystem)
+#add_subdirectory (EntityComponents/EC_Sound)
+#add_subdirectory (EntityComponents/EC_SoundListener)
 
 # Add EC's declared by other modules here:
 # ...
@@ -162,7 +165,7 @@ if (NOT EXISTS CMakeOptionalModules.txt)
 endif ()
 
 # Read the set of optional modules from another file
-# that is kept outside the source control. 
+# that is kept outside the source control.
 # To configure the set of optional modules to add to the build,
 # edit CMakeOptionalModules.txt and rerun cmake.
 include (CMakeOptionalModules.txt)
