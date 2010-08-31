@@ -99,7 +99,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public QObject, public Foundation::ModuleInterface, public Foundation::WorldLogicInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public Foundation::ModuleInterface
     {
         Q_OBJECT
 
@@ -124,6 +124,7 @@ namespace RexLogic
         Scene::EntityPtr GetUserAvatarEntity() const;
         Scene::EntityPtr GetCameraEntity() const;
         Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const;
+        const QString &GetAvatarAppearanceProperty(const QString &name) const;
 
         //=============== RexLogicModule API ===============/
 
@@ -287,13 +288,6 @@ namespace RexLogic
 
         //! Handle an asset event.
         bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        /*! Does preparations before logout/delete of scene
-         *  For example: Takes ui screenshots of world/avatar with rendering service.
-         *  Add functionality if you need something done before logout.
-         *  \todo Move the av&world screenshot functionality to Ether/UiModule?
-         */
-        void AboutToDeleteWorld();
 
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
