@@ -547,7 +547,7 @@ namespace Ether
                 login_in_progress_ = !login_in_progress_;
             }
 
-            ShowStatusInformation(QString("Connecting to %1 with %2").arg(selected_cards.second->title(), selected_cards.first->title()));
+            ShowStatusInformation(QString("Connecting to %1 with %2").arg(selected_cards.second->title(), selected_cards.first->title()), 30000);
         }
 
         void EtherSceneController::StartLoginAnimation()
@@ -688,25 +688,27 @@ namespace Ether
             control_widget_->SuppressButtons(suppress);
         }
 
-        void EtherSceneController::ShowStatusInformation(const QString &text)
+        void EtherSceneController::UiServiceSceneChanged(const QString &old_name, const QString &new_name)
+        {
+            if (old_name == "Ether")
+                HideStatusWidget();
+        }
+
+        void EtherSceneController::ShowStatusInformation(const QString &text, int hideout)
         {
             if (status_widget_)
             {
                 status_widget_->UpdateStatusText(text);
                 status_widget_->show();
-                info_hide_timer_->start(7500);
+                info_hide_timer_->start(hideout);
             }
-
-            // We don't need to pass the text to classical login widget.
-            // It get's the status message from the login service.
-            //classical_login_widget_->StatusUpdate(login_in_progress_, text);
         }
 
         void EtherSceneController::HideStatusWidget()
         {
-            // If we have multiple status informations queued i.e. timer is still active, don't hide
-            if (!info_hide_timer_->isActive())
-                status_widget_->hide();
+            if (info_hide_timer_->isActive())
+                info_hide_timer_->stop();
+            status_widget_->hide();
         }
 
         void EtherSceneController::TryExitApplication()

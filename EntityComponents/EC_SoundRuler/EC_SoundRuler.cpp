@@ -27,6 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
 #include "MemoryLeakCheck.h"
 
 EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     radiusAttr_(this, "radius", 5),
     volumeAttr_(this, "volume", 5),
     segmentsAttr_(this, "segments", 29),
@@ -69,8 +70,7 @@ void  EC_SoundRuler::Show()
         return;
     }
 
-    if (rulerObject)
-        rulerObject->setVisible(true);
+    rulerObject->setVisible(true);
 }
 
 void  EC_SoundRuler::Hide()
@@ -84,8 +84,7 @@ void  EC_SoundRuler::Hide()
         return;
     }
     
-    if (rulerObject)
-        rulerObject->setVisible(false);
+    rulerObject->setVisible(false);
 }
 
 bool EC_SoundRuler::IsVisible() const
@@ -124,7 +123,11 @@ void EC_SoundRuler::Create()
     if(scene_mgr->hasManualObject(rulerName)) {
         rulerObject = scene_mgr->getManualObject(rulerName);
         if(rulerObject->isAttached())
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
             rulerObject->detatchFromParent();
+#else
+            rulerObject->detachFromParent();
+#endif
     } else {
         rulerObject = scene_mgr->createManualObject(rulerName);
     }
@@ -167,22 +170,30 @@ void EC_SoundRuler::SetupSoundRuler()
     unsigned int const spikeInterval = (unsigned int)(segments / 4.0);
 
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
     unsigned int i = 0;
-    unsigned int j = 0;
     for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
         rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-        rulerObject->index(i++);
-        if(j % spikeInterval == 0) {
+        if(i % spikeInterval == 0) {
             rulerObject->position(radius * cos(theta), radius * sin(theta), volume);
-            rulerObject->index(i++);
             rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-            rulerObject->index(i++);
         }
-        j++;
+        i++;
     }
-    rulerObject->index(0); // Close the line = circle
+    rulerObject->end();
+    
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
+        rulerObject->position(0, radius * cos(theta), radius * sin(theta));
+    }
+    rulerObject->end();
+    
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
+        rulerObject->position(radius * cos(theta), 0, radius * sin(theta));
+    }
     rulerObject->end();
 }
 

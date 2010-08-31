@@ -1,9 +1,10 @@
 """namespace config, 'cause the c++ side doesn't do it too nicely"""
 
 from __main__ import _naali
+#from _naali import *
 
-n = _naali
-
+#XXX do we actually want these style changes,
+#or is it better to just call the slots directly
 # module methods
 runjs = _naali.RunJavascriptString
 getCamera = _naali.GetCamera

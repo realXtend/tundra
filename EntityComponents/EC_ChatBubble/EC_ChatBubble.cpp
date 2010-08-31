@@ -32,6 +32,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
 #include "MemoryLeakCheck.h"
 
 EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
@@ -39,8 +40,8 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     billboard_(0),
     pop_timer_(new QTimer(this)),
     bubble_max_rect_(0,0,1000,500),
-    current_scale_(1.0),
-    default_z_pos_(1.9)
+    current_scale_(1.0f),
+    default_z_pos_(1.9f)
 {
     // Get renderer service
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();

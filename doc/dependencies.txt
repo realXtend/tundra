@@ -7,7 +7,7 @@ This project has the following dependencies:
 
 - poco-1.3.4 or newer (Economy package), http://pocoproject.org/. Used as dynamic libraries.
 
-- Ogre 1.6.1 or newer, http://www.ogre3d.org 
+- Ogre 1.7.1 or newer, http://www.ogre3d.org 
 
 - Qt 4.6.1 or newer, http://www.qtsoftware.com/ 
 

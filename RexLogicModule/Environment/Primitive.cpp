@@ -1211,7 +1211,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
 void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff)
 {
     if (radius < 0.001)
-        radius = 0.001;
+        radius = 0.001f;
 
     // Attenuation calculation
     float x = 3.f * (1.f + falloff);

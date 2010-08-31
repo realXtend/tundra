@@ -20,6 +20,7 @@ namespace OgreRenderer
 {
 
 EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     text_element_(0),
     container_(0),
     overlay_(0),
@@ -296,7 +297,7 @@ void EC_OgreMovableTextOverlay::CreateOverlay(const Vector3df& offset)
     text_element_ = checked_static_cast<Ogre::TextAreaOverlayElement*>
         (Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", overlayName_));
 //        text_element_ = Ogre::OverlayManager::getSingleton().createOverlayElement("TextArea", "shapeNameText");
-    text_element_->setDimensions(0.8, 0.8);
+    text_element_->setDimensions(0.8f, 0.8f);
     text_element_->setMetricsMode(Ogre::GMM_PIXELS);
     text_element_->setPosition(1, 2);
     text_element_->setParameter("font_name", fontName);

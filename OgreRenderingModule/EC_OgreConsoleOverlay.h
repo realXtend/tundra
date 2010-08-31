@@ -24,7 +24,11 @@ namespace OgreRenderer
     class EC_OgreConsoleOverlayInterface : public Foundation::ComponentInterface
     {
     public:
-        EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) {}
+        EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) :
+            Foundation::ComponentInterface(framework)
+        {
+        }
+        
         virtual ~EC_OgreConsoleOverlayInterface() {}
 
         virtual void Display(const std::string &text) = 0;
