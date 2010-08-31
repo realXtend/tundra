@@ -270,9 +270,6 @@ namespace Foundation
         //! Should be called after modules are loaded and initialized
         void RegisterConsoleCommands();
 
-        //! default event subscriber tree XML file path
-        static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
-
         //! Create logging system
         void CreateLoggingSystem();
 
