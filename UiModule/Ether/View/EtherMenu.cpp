@@ -65,7 +65,6 @@ namespace Ether
 
         void EtherMenu::CalculateGap()
         {
-        
             int number_of_items = max_visible_objects_;
             qreal width = boundaries_.width();
             qreal space_reserved=0;
@@ -84,7 +83,6 @@ namespace Ether
                 number_of_items++;
             current_gap_ = (width - space_reserved)/(number_of_items-1);
             current_gap_ = current_gap_>max_gap_? max_gap_:current_gap_;
-
         }
 
         void EtherMenu::SetFocusToCard(InfoCard *card)
@@ -119,7 +117,6 @@ namespace Ether
                     obj->setOpacity(invisible_);
                 }
             }
-
             InitializeObjectsToStates();
         }
 

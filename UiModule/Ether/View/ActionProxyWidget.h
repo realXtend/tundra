@@ -12,6 +12,11 @@
 
 #include "ui_EtherActionWidget.h"
 
+namespace ProtocolUtilities
+{
+    class GridInfoHelper;
+}
+
 namespace Ether
 {
     namespace View
@@ -74,6 +79,8 @@ namespace Ether
             Data::RealXtendAvatar *current_rex_avatar_data_;
             QString current_type_;
             QMap<QString,QVariant> current_grid_info_map_;
+
+            ProtocolUtilities::GridInfoHelper *grid_info_helper_;
 
         signals:
             void ActionInProgress(bool);

@@ -38,8 +38,8 @@ namespace Ether
               current_type_(""),
               current_os_world_data_(0),
               current_os_avatar_data_(0),
-              current_rex_avatar_data_(0)
-
+              current_rex_avatar_data_(0),
+              grid_info_helper_(0)
         {
             QWidget *container_widget = new QWidget(0);
             ether_action_widget_ui_.setupUi(container_widget);
@@ -398,13 +398,20 @@ namespace Ether
             QUrl login_url(url_string);
             if (login_url.isValid())
             {
-                ProtocolUtilities::GridInfoHelper *grid_info_helper = new ProtocolUtilities::GridInfoHelper(this, login_url);
-                connect(grid_info_helper, SIGNAL( GridInfoDataRecieved(QMap<QString, QVariant>) ), SLOT( GridInfoRevieced(QMap<QString, QVariant>) ));
+                QStringList clear_edits;
+                clear_edits << "nicknameLineEdit" << "modeLineEdit" << "helpURLLineEdit" << "registerURLLineEdit" << "platformLineEdit" << "aboutURLLineEdit" << "passwordURLLineEdit";
+                foreach (QString name, clear_edits)
+                    if (current_widget_->findChild<QLineEdit*>(name))
+                        current_widget_->findChild<QLineEdit*>(name)->setText("");
+
+                SAFE_DELETE(grid_info_helper_);
+                grid_info_helper_ = new ProtocolUtilities::GridInfoHelper(0, login_url);
+                connect(grid_info_helper_, SIGNAL(GridInfoDataRecieved(QMap<QString, QVariant>)), SLOT(GridInfoRevieced(QMap<QString, QVariant>)));
                 
                 QLabel *status = current_widget_->findChild<QLabel*>("gridInfoStatusLabel");
                 if (status)
                     status->setText("Retrieving grid info from server...");
-                grid_info_helper->GetGridInfo();
+                grid_info_helper_->GetGridInfo();
             }
             else
             {
@@ -487,7 +494,7 @@ namespace Ether
             uiFile.close();
 
             QPushButton *button = new_rex_avatar->findChild<QPushButton*>("pushButtonSave");
-            connect(button, SIGNAL( clicked() ), SLOT( SaveInformation() ));
+            connect(button, SIGNAL(clicked()), SLOT(SaveInformation()));
 
             QPixmap pic = CretatePicture(QSize(150,150), "./data/ui/images/ether/naali.png");
             QLabel *pic_label = new_rex_avatar->findChild<QLabel*>("pictureLabel");
