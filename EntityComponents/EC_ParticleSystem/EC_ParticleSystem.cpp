@@ -1,4 +1,5 @@
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
 #include "ModuleInterface.h"
 #include "Entity.h"
@@ -14,6 +15,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 
 #include <Ogre.h>
+#include "MemoryLeakCheck.h"
 
 EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
@@ -50,18 +52,21 @@ void EC_ParticleSystem::SetPlaceable(Foundation::ComponentPtr comp)
 
 bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    // Making sure that event type is RESOURCE_READY before we start to dynamic cast.
+    if (event_id != Resource::Events::RESOURCE_READY)
+        return false;
+
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
-    if (event_id != Resource::Events::RESOURCE_READY || !event_data || particle_tag_ != event_data->tag_)
+    if(!event_data || particle_tag_ != event_data->tag_)
         return false;
 
     OgreRenderer::OgreParticleResource* partres = checked_static_cast<OgreRenderer::OgreParticleResource*>(event_data->resource_.get());
     if (!partres)
-        return false;
+        return true;
 
     if (partres->GetNumTemplates())
         CreateParticleSystem(QString::fromStdString(partres->GetTemplateName(0)));
-
-    return false;
+    return true;
 }
 
 void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
@@ -159,8 +164,13 @@ void EC_ParticleSystem::UpdateSignals()
 {
     disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
     FindPlaceable();
-    connect(GetParentEntity()->GetScene(), SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
+    if(!GetParentEntity())
+        return;
+
+    Scene::SceneManager *scene = GetParentEntity()->GetScene();
+    if(scene)
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*))); 
 }
 
 void EC_ParticleSystem::FindPlaceable()

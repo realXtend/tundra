@@ -146,6 +146,7 @@ add_subdirectory (EntityComponents/EC_3DCanvasSource)   # declared by RexLogicMo
 add_subdirectory (EntityComponents/EC_Ruler)            # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_SoundRuler)       # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_ParticleSystem)   # declared by RexLogicModule
+add_subdirectory (EntityComponents/EC_Sound)   # declared by RexLogicModule
 add_subdirectory (EntityComponents/EC_SoundListener)    # declared by RexLogicModule
 
 # If the custom optional modules configuration file does not yet
