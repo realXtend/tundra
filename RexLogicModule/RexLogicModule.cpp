@@ -986,12 +986,12 @@ void RexLogicModule::AboutToDeleteWorld()
         if (ec_appearance->HasProperty("headbone"))
         {
             view_bone_name = ec_appearance->GetProperty("headbone");
-            adjustheight += 0.15;
+            adjustheight += Real(0.15);
             if (!view_bone_name.empty())
             {
                 if (skel && skel->hasBone(view_bone_name))
                 {
-                    Ogre::Bone* bone = skel->getBone(view_bone_name);
+                    Ogre::Bone* bone = skel->getBone(view_bone_name); 
                     Ogre::Vector3 headpos = bone->_getDerivedPosition();
                     Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
                     avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);

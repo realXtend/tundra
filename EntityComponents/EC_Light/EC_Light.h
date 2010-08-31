@@ -9,7 +9,6 @@
 #include "Vector3D.h"
 #include "Color.h"
 
-
 class QDomDocument;
 class QDomElement;
 
@@ -17,6 +16,7 @@ namespace Ogre
 {
     class Light;
 }
+
 
 class EC_Light : public Foundation::ComponentInterface
 {

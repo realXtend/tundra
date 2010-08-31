@@ -5,6 +5,7 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include <Ogre.h>
+#include <QDebug>
 
 namespace OgreRenderer
 {
@@ -24,6 +25,7 @@ namespace OgreRenderer
         
         // In case the placeable is used for camera control, set fixed yaw axis
         link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
+
     }
     
     EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -292,4 +294,5 @@ namespace OgreRenderer
         const Ogre::Vector3 newpos = link_scene_node_->getPosition();
         return QVector3D(newpos.x, newpos.y, newpos.z);
     }
+
 }

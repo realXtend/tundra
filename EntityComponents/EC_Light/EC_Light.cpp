@@ -57,6 +57,8 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateOgreLight()));
 
+   
+
 }
 
 EC_Light::~EC_Light()
