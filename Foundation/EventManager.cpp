@@ -20,10 +20,7 @@
 
 namespace Foundation
 {
-    bool CompareSubscribers(const EventManager::EventSubscriber& lhs, const EventManager::EventSubscriber& rhs)
-    {
-        return lhs.priority_ > rhs.priority_;
-    }
+   
     
     EventManager::EventManager(Framework *framework) : 
         framework_(framework),
@@ -120,12 +117,20 @@ namespace Foundation
         }
         
         // Send event in priority order, until someone returns true
-        for (unsigned i = 0; i < subscribers_.size(); ++i)
+        for (unsigned i = 0; i < module_subscribers_.size(); ++i)
         {
-            if (SendEvent(subscribers_[i], category_id, event_id, data))
+            if (SendEvent(module_subscribers_[i], category_id, event_id, data))
                 return true;
         }
         
+        // After that send events to components
+
+        for (unsigned i = 0; i < component_subscribers_.size(); ++i)
+        {
+            if (SendEvent(component_subscribers_[i], category_id, event_id, data))
+                return true;
+        }
+
         return false;
     }
     
@@ -157,6 +162,7 @@ namespace Foundation
         new_delayed_events_.push_back(new_delayed_event);
     }
     
+    /*
     bool EventManager::SendEvent(const EventSubscriber& subscriber, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
     {
         ModuleInterface* module = subscriber.module_;
@@ -182,7 +188,9 @@ namespace Foundation
         
         return false;
     }
-    
+    */
+
+    /*
     bool EventManager::RegisterEventSubscriber(ModuleInterface* module, int priority)
     {
         if (!module)
@@ -210,7 +218,9 @@ namespace Foundation
         std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
         return true;
     }
+    */
     
+    /*
     bool EventManager::UnregisterEventSubscriber(ModuleInterface* module)
     {
         if (!module)
@@ -227,7 +237,9 @@ namespace Foundation
         
         return false;
     }
+    */
     
+    /*
     bool EventManager::HasEventSubscriber(ModuleInterface* module)
     {
         if (!module)
@@ -241,6 +253,7 @@ namespace Foundation
         
         return false;
     }
+    */
 
     request_tag_t EventManager::GetNextRequestTag()
     {

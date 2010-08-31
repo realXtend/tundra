@@ -15,6 +15,7 @@
 
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
+#include "EventDataInterface.h"
 
 #include <QObject>
 
@@ -123,6 +124,17 @@ namespace Foundation
 
         //! Deserialize from XML
         virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
+
+
+        /** Receives an event
+            Should return true if the event was handled and is not to be propagated further
+            Override in your own module if you want to receive events. Do not call.
+            See @ref EventSystem.
+            @param category_id Category id of the event
+            @param event_id Id of the event
+            @param data Event data, or 0 if no data passed.
+        */
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
 
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
