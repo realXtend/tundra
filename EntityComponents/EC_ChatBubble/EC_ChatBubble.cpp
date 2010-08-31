@@ -257,7 +257,7 @@ void EC_ChatBubble::Update()
         return;
 
     Scene::Entity *entity = GetParentEntity();
-    assert(entity);
+//    assert(entity);
     if (!entity)
         return;
 

@@ -29,6 +29,7 @@
 #include "EC_OgreAnimationController.h"
 #include "EC_HoveringText.h"
 #include "EC_OpenSimPresence.h"
+#include "EC_SoundListener.h"
 
 #include <QPushButton>
 
@@ -102,13 +103,11 @@ namespace RexLogic
         defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
         defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-        // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
-        //defaultcomponents.push_back(OgreRenderer::EC_OgreMovableTextOverlay::NameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
-        
+
         // Note: we assume the avatar is created because of a message from network
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::Network);
 
@@ -195,10 +194,13 @@ namespace RexLogic
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::TypeNameStatic()));
                 entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::TypeNameStatic()));
 
+                // Add sound listener EC for our own avatar.
+                entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_SoundListener::TypeNameStatic()));
+
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
                 fw->GetEventManager()->SendEvent(fw->GetEventManager()->QueryEventCategory("Scene"), Scene::Events::EVENT_CONTROLLABLE_ENTITY, &event_data);
-                
+
                 // If avatar does not have appearance address yet, and the connection info has, then use it
                 EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
                 if (avatar->GetAppearanceAddress().empty())

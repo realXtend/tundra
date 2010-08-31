@@ -32,7 +32,9 @@ EC_SoundListener::~EC_SoundListener()
 
 void EC_SoundListener::RetrievePlaceable()
 {
-    assert(GetParentEntity());
+    if (!GetParentEntity())
+        LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
+
     placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placeable_)
         LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");

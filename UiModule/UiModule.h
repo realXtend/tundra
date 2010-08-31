@@ -77,6 +77,9 @@ namespace UiServices
     private slots:
         void OnKeyPressed(KeyEvent *key);
 
+        /// Takes UI screenshots of world/avatar with rendering service.
+        void TakeEtherScreenshots();
+
     private:
         //! Notify all ui module components of connected/disconnected state
         //! \param message Optional message, e.g. error message.

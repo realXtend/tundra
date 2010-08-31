@@ -38,10 +38,11 @@ namespace OgreRenderer
             settings_dialog_advanced_.setCaveProjectionSettings(eye,bl,tl,br);
             if(settings_dialog_advanced_.exec() == QDialog::Accepted)
             {
+				settings_dialog_advanced_.getCaveProjectionSettings(eye,bl,tl,br);
                 QString view_name = view_prefix_;
                 view_name += QString::number(next_view_num_);
                 emit NewCAVEViewRequested(view_name, tl ,bl, br, eye);
-                next_view_num_++;
+                next_view_num_++; 
             }
         }
 

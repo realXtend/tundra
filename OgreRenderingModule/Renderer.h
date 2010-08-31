@@ -16,7 +16,6 @@
 #include <QTime>
 #include <QRect>
 #include <QImage>
-#include <QWidget>
 
 namespace Foundation
 {
@@ -34,8 +33,6 @@ namespace Ogre
     class RaySceneQuery;
     class Viewport;
 }
-
-class QWidget;
 
 namespace OgreRenderer
 {
