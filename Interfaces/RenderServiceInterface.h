@@ -114,6 +114,13 @@ namespace Foundation
             const std::string& worldfile,
             const std::string& avatarfile) = 0;
 
+        //! Render current main window content to texture
+        virtual QPixmap RenderImage(bool use_main_camera = true) = 0;
+
+        //! Render current main window with focus on the avatar
+        //! @todo make this focus non hard coded but as param
+        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation) = 0;
+
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
             \param id Resource id

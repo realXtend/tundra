@@ -72,6 +72,7 @@ namespace WorldBuilding
 
         void ObjectSelected(Scene::Entity *entity);
         void ObjectDeselected();
+        void UpdateObjectViewport();
         
         void RotateObject(qreal x, qreal y);
         void Zoom(qreal delta);
