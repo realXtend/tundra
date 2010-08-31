@@ -381,7 +381,15 @@ if 0: #pythonqt introspec
 if 0: # EC_OgreCamera
     import naali
     cam = naali.getCamera()
-    print dir(cam), cam.className, cam
+    if cam is not None:
+        print dir(cam), cam.className, cam
+
+    #the slot is there now also directly, not with the 'pythonified' name
+    #print "cam from slot directly:", naali.GetCameraEntity()
+    from __main__ import _naali
+    print dir(_naali)
+    _naali.delete()
+    _naali.deleteLater()
 
 if 0:
     import naali

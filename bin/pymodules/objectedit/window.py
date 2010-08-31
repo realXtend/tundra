@@ -316,7 +316,6 @@ class ObjectEditWindow:
         return spinner
 
     def manipulator_move(self):
-        print "MOVE",
         ent = self.controller.active
         if self.controller.keypressed:
             self.controller.keypressed = False
@@ -341,7 +340,6 @@ class ObjectEditWindow:
         
         if freemove:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
-        print "2"
         
     def manipulator_scale(self):
         ent = self.controller.active

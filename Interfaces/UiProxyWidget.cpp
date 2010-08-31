@@ -33,10 +33,6 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
         name.append(":" + widget->windowTitle());
     setObjectName(name);
 
-    ///\todo Do we want to copy flags from proxy to widget? STINKFIST
-//    widget->setWindowFlags(properties_.GetWindowStyle());
-//    widget->setWindowTitle(properties_.GetName());
-
     // Embed widget to this proxy widget.
     setWidget(widget);
 

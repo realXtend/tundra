@@ -327,7 +327,7 @@ namespace PythonScript
             }
             else if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             {
-                value = PyObject_CallMethod(pmmInstance, "SERVER_DISCONNECTED", "i", event_id);
+                value = PyObject_CallMethod(pmmInstance, "SERVER_DISCONNECTED", "i", event_id); //XXX useless to pass the id here - remove, but verify that all users are ported then
             }
         }
         else if (category_id == framework_category_id)

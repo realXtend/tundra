@@ -1,0 +1,1 @@
+from websocketserver import NaaliWebsocketServer

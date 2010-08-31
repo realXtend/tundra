@@ -18,7 +18,7 @@
 
 namespace Foundation
 {
-    FrameworkQtApplication::FrameworkQtApplication(Framework *framework, int argc, char **argv) :
+    FrameworkQtApplication::FrameworkQtApplication(Framework *framework, int &argc, char **argv) :
         QApplication(argc, argv),
         framework_(framework),
         app_activated_(true),

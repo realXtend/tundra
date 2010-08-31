@@ -5,6 +5,7 @@
 #include "ModuleInterface.h"
 
 EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     regionHandle(0),
     localId(0),
     parentId(0),

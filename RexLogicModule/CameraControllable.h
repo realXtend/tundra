@@ -43,19 +43,20 @@ namespace RexLogic
             FocusOnObject
         };
 
-        float rotation_angle;
-        // current camera angle
-        float current_angle;
+        float rotation_angle_phi;
+        float rotation_angle_theta;
         float center_x, center_y, center_z;
         // new camera coordinates after mathematical calculations
         float new_x, new_y, new_z;
-        // the length from the camera to the pivot point
-        float focus_radius;
-        float camera_position_x, camera_position_y, camera_position_z, fixed_camera_position_z;
         bool isRotating;
+        // is camera rotating up/down around object
+        bool isUpDown;
         int rotation_direction;
         QMap<QString, int> mouse_position_map;
         QMap<QString, int> keep_mouse_position;
+        //camera's spherical coordinata system
+        float Radius, Theta, Phi;
+        float mouse_drag_sensitivity;
 
         //! default constructor
         //! \param fw Framework pointer
@@ -117,9 +118,10 @@ namespace RexLogic
         void ClampPosition(Vector3df &position);
 
         //! This function is called when the user holds ALT key and clicks somewhere;
-        void funcFocusOnObject(float, float, float);
+        void SetFocusOnObject(float, float, float);
+
         //! Rotate camera around the point that is clicked on
-        void rotateCameraAroundObject();
+        void RotateCameraAroundObject();
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;

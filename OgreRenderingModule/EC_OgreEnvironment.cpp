@@ -48,6 +48,7 @@ void ClampFog(Real& start, Real& end, Real farclip)
 }
 
 EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
+    Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(0),
 //#ifdef CAELUM
@@ -348,7 +349,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         Real fogEnd = fogEnd_;
         ClampFog(fogStart, fogEnd, cameraFarClip_);
         
-        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart, fogEnd);
+        sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001f, fogStart, fogEnd);
         viewport->setBackgroundColour(fogColor_);
         camera->setFarClipDistance(cameraFarClip_);
     }
@@ -364,7 +365,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
 #ifdef CAELUM
             caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
 #endif
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001, fogStart, fogEnd);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor_);
             camera->setFarClipDistance(cameraFarClip_);
             cameraUnderWater_ = false;
@@ -382,7 +383,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
             // Hide the Caelum subsystems.
             caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001, fogStart, fogEnd);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * waterFogColor_, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor_ * waterFogColor_);
             camera->setFarClipDistance(farClip);
             cameraUnderWater_ = true;

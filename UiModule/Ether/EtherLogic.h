@@ -38,6 +38,7 @@ namespace Ether
 
             View::EtherScene *GetScene() const { return scene_; }
             EtherSceneController *GetSceneController() const { return scene_controller_; }
+            QObject *GetQObjSceneController() { return (QObject*)scene_controller_; }
 
             EtherLoginNotifier *GetLoginNotifier() const { return login_notifier_; }
             QPair<QString, QString> GetLastLoginScreenshotData(std::string conf_path);

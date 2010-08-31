@@ -32,7 +32,7 @@ namespace Foundation
          *  @param arc Command line argument count.
          *  @param argv Command line arguments.
          */
-        FrameworkQtApplication(Framework *owner, int argc, char** argv);
+        FrameworkQtApplication(Framework *owner, int &argc, char** argv);
 
         /// Destructor.
         ~FrameworkQtApplication();

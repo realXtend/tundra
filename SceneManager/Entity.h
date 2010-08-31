@@ -143,12 +143,12 @@ namespace Scene
             \return List of components with certain class type, or empty list if no components was found.
         */
         template <class T>
-        std::vector<T> GetComponents() const
+        std::vector<boost::shared_ptr<T> > GetComponents() const
         {
-            std::vector<T> ret;
+            std::vector<boost::shared_ptr<T> > ret;
             for(size_t i = 0; i < components_.size() ; ++i)
             {
-                T* t = boost::dynamic_pointer_cast<T>(components_[i]);
+                boost::shared_ptr<T> t = boost::dynamic_pointer_cast<T>(components_[i]);
                 if (t)
                     ret.push_back(t);
             }

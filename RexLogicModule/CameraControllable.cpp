@@ -20,8 +20,10 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "ModuleManager.h"
+
 #include <Ogre.h>
-#include "math.h"
+
+#include <math.h>
 
 using namespace RexTypes;
 
@@ -79,10 +81,13 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-        
-        rotation_angle = 0;
-        current_angle = 0;
+
+        // angle of rotation: 10 degrees or 0.175 radians
+        rotation_angle_theta = 0.175f;
+        rotation_angle_phi = 0.175f;
+        mouse_drag_sensitivity = 2;
         isRotating = false;
+        isUpDown= false;
         mouse_position_map.clear();
     }
 
@@ -148,9 +153,8 @@ namespace RexLogic
         }
 
         if (event_id == Input::Events::MOUSELOOK)
-        {    
+        {
             Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
-                            
             movement_.x_.rel_ += m->x_.rel_;
             movement_.y_.rel_ += m->y_.rel_;
             movement_.x_.abs_ = m->x_.abs_;
@@ -162,15 +166,7 @@ namespace RexLogic
             current_state_ = Tripod;
             firstperson_pitch_ = 0.0f;
         }
-
-        if (event_id == Input::Events::ALT_LEFTCLICK_REL)
-        {
-            if(current_state_ == FocusOnObject) 
-            {
-                current_state_ = ThirdPerson;
-            }
-        }
-
+     
         if (event_id == Input::Events::MOUSEDRAG)
         {
             if (current_state_ == FocusOnObject)
@@ -188,7 +184,7 @@ namespace RexLogic
                         mouse_position_map["y2"] =  mouse_pos->y_.abs_;
                     }
                 }
-                if(mouse_position_map.size() == 4)
+                if (mouse_position_map.size() == 4)
                 {
                     mouse_position_map["x1"] = mouse_position_map["x2"];
                     mouse_position_map["y1"] = mouse_position_map["y2"];
@@ -205,7 +201,6 @@ namespace RexLogic
         if (event_id == RexTypes::Actions::Zoom)
         {
             Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
-
             camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
             camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
         }
@@ -235,45 +230,29 @@ namespace RexLogic
         }
 
         if (current_state_ == FocusOnObject)
-        {
-            if (event_id == Actions::RotateLeft)
-            {
-                isRotating = true;
-                rotation_direction = 1;
-            }
-            if (event_id == Actions::RotateRight)
-            {   
-                isRotating = true;
-                rotation_direction = -1;
-            }       
-            if (event_id == Actions::RotateLeft + 1 || event_id == Actions::RotateRight + 1)
-            {
-                isRotating = false;
-            }
-        }
+            current_state_ = ThirdPerson;
+
         return false;
     }
 
     void CameraControllable::AddTime(f64 frametime)
-    {   
+    {
         drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
         drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-            
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
         
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
 
             // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
             if (netpos && placeable)
             {
                 Vector3df avatar_pos = placeable->GetPosition();
@@ -287,38 +266,37 @@ namespace RexLogic
                     pos += (avatar_orientation * camera_offset_);
                     camera_placeable->SetPosition(pos);
                     Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
-                    camera_placeable->LookAt(lookat);
+                    camera_placeable->LookAt(lookat); 
                 }
                 
                 if (current_state_ == FirstPerson)
                 {
                     bool fallback = true;
+
                     // Try to use head bone from target entity to get the first person camera position
-                    Foundation::ComponentPtr mesh_ptr = target->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-                    Foundation::ComponentPtr appearance_ptr = target->GetComponent(EC_AvatarAppearance::TypeNameStatic());
-                    if (mesh_ptr && appearance_ptr)
+                    OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                    EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
+                    if (mesh && appearance)
                     {
-                        OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_ptr.get());
-                        EC_AvatarAppearance& appearance = *checked_static_cast<EC_AvatarAppearance*>(appearance_ptr.get());
-                        Ogre::Entity* ent = mesh.GetEntity();
+                        Ogre::Entity* ent = mesh->GetEntity();
                         if (ent)
                         {
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
                             
                             std::string view_bone_name;
-                            Real adjustheight = mesh.GetAdjustPosition().z;
+                            Real adjustheight = mesh->GetAdjustPosition().z;
                             
-                            if (appearance.HasProperty("viewbone"))
+                            if (appearance->HasProperty("viewbone"))
                             {
                                 // This bone property is exclusively for view tracking & assumed to be correct position, no offset
-                                view_bone_name = appearance.GetProperty("viewbone");
+                                view_bone_name = appearance->GetProperty("viewbone");
                             }
-                            else if (appearance.HasProperty("headbone"))
+                            else if (appearance->HasProperty("headbone"))
                             {
-                                view_bone_name = appearance.GetProperty("headbone");
+                                view_bone_name = appearance->GetProperty("headbone");
                                 // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
                                 // which is not preferable, but necessary
-                                adjustheight += 0.15;
+                                adjustheight += 0.15f;
                             }
                             
                             if (!view_bone_name.empty())
@@ -383,11 +361,6 @@ namespace RexLogic
 
                 if (current_state_ == FocusOnObject)
                 {
-                    if (isRotating)
-                    {
-                        rotation_angle += 5 * rotation_direction;
-                        rotateCameraAroundObject();
-                    }
                     if (mouse_position_map.size() == 4)
                     {
                         keep_mouse_position["x1"] = keep_mouse_position["x2"];
@@ -396,15 +369,31 @@ namespace RexLogic
                         keep_mouse_position["y2"] = mouse_position_map["y2"];
                         if (keep_mouse_position["x1"] != keep_mouse_position["x2"])
                         {
-                            if (mouse_position_map["x1"] < mouse_position_map["x2"])
+                            isUpDown = false;
+                            if ((mouse_position_map["x2"] - mouse_position_map["x1"]) > mouse_drag_sensitivity)
                             {
-                                rotation_angle -= 5;
-                                rotateCameraAroundObject();
+                                rotation_direction = 1;
+                                RotateCameraAroundObject();
                             }
-                            if (mouse_position_map["x1"] > mouse_position_map["x2"])
+                            if ((mouse_position_map["x1"] - mouse_position_map["x2"]) > mouse_drag_sensitivity)
                             {
-                                rotation_angle += 5;
-                                rotateCameraAroundObject();
+                                rotation_direction = -1;
+                                RotateCameraAroundObject();
+                            }
+                        }
+
+                        if (keep_mouse_position["y1"] != keep_mouse_position["y2"])
+                        {
+                            isUpDown = true;
+                            if ((mouse_position_map["y2"] - mouse_position_map["y1"] ) > mouse_drag_sensitivity)
+                            {
+                                rotation_direction = 1;
+                                RotateCameraAroundObject();
+                            }
+                            if ((mouse_position_map["y1"] - mouse_position_map["y2"]) > mouse_drag_sensitivity)
+                            {
+                                rotation_direction = -1;
+                                RotateCameraAroundObject();
                             }
                         }
                     }
@@ -416,29 +405,25 @@ namespace RexLogic
         switch (current_state_)
         {
         case FirstPerson:
+            if (camera_distance_ != camera_min_distance_)
             {
-                if (camera_distance_ != camera_min_distance_)
-                {
-                    current_state_ = ThirdPerson;
-                    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-                    
-                    firstperson_pitch_ = 0.0f;
-                }
-                break;
+                current_state_ = ThirdPerson;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                
+                firstperson_pitch_ = 0.0f;
             }
+            break;
         case ThirdPerson:
+            if (camera_distance_ == camera_min_distance_)
             {
-                if (camera_distance_ == camera_min_distance_)
-                {
-                    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                    framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
-                    current_state_ = FirstPerson;
-                    
-                    firstperson_pitch_ = 0.0f;
-                }
-                break;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
+                current_state_ = FirstPerson;
+                
+                firstperson_pitch_ = 0.0f;
             }
+            break;
         }
     }
 
@@ -487,7 +472,7 @@ namespace RexLogic
         }
     }
 
-    void CameraControllable::funcFocusOnObject(float x, float y, float z)
+    void CameraControllable::SetFocusOnObject(float x, float y, float z)
     {
         current_state_ = FocusOnObject;
         mouse_position_map.clear();
@@ -495,69 +480,75 @@ namespace RexLogic
         keep_mouse_position["y1"] = 0;
         keep_mouse_position["x2"] = 0;
         keep_mouse_position["y2"] = 0;
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
 
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-            if (netpos && placeable)
+            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (camera_placeable && netpos && placeable)
             {
                 Vector3df camera_position = camera_placeable->GetPosition();
                 center_x = x;
                 center_y = y;
                 center_z = z;
 
-                camera_position_x = camera_position.x;
-                camera_position_y = camera_position.y;
-
-                fixed_camera_position_z = camera_position.z;
-                focus_radius = sqrt((camera_position.x - center_x)*(camera_position.x - center_x) + (camera_position.y - center_y)*(camera_position.y - center_y));
-
-                current_angle = acos((camera_position_y - center_y) / focus_radius);
-            }	
+                Radius = sqrt(
+                    (camera_position.x - center_x)*(camera_position.x - center_x) + 
+                    (camera_position.y - center_y)*(camera_position.y - center_y) +
+                    (camera_position.z - center_z)*(camera_position.z - center_z));
+                Theta = acos ((camera_position.z - center_z) / Radius);
+                Phi = atan2 ((camera_position.y - center_y), (camera_position.x - center_x));
+            }
         }
-
     }
 
-    void CameraControllable::rotateCameraAroundObject()
+    void CameraControllable::RotateCameraAroundObject()
     {
         drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
         drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-            
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+
+        Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
 
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-
-            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
-            OgreRenderer::EC_OgrePlaceable *placeable = 
-                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
-            if (netpos && placeable)
+            OgreRenderer::EC_OgrePlaceable *camera_placeable =  camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+            OgreRenderer::EC_OgrePlaceable *placeable =  target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (camera_placeable && netpos && placeable)
             {
-                Quaternion orientation = netpos->orientation_;
-                Vector3df camera_position = camera_placeable->GetPosition();
-                new_x = center_x + focus_radius*sin((rotation_angle*PI)/180 + current_angle);
-                new_y = center_y + focus_radius*cos((rotation_angle*PI)/180 + current_angle);
-                camera_placeable->SetPosition(Vector3df(new_x, new_y, fixed_camera_position_z));
-                camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
-            }	
-                                
-        }		
-    }
+                if ( !isUpDown )
+                {
+                    Phi += rotation_direction * rotation_angle_phi;//(rotation_angle_z*PI)/180;
 
-    
+                    new_x = center_x + Radius * sin(Theta) * cos(Phi);
+                    new_y = center_y + Radius * sin(Theta) * sin(Phi);
+                    new_z = center_z + Radius * cos(Theta);
+                    
+                    camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
+                    camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+                }
+                else
+                {
+                    Theta += rotation_direction * rotation_angle_theta;
+
+                    new_x = center_x + Radius * sin(Theta) * cos(Phi);
+                    new_y = center_y + Radius * sin(Theta) * sin(Phi);
+                    new_z = center_z + Radius * cos(Theta);
+                    
+                    camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
+                    camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+                }
+            }
+        }
+    }
 }
 
