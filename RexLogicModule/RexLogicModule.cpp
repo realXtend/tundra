@@ -98,6 +98,8 @@
 
 #include <boost/make_shared.hpp>
 
+#include <QApplication>
+
 #include "MemoryLeakCheck.h"
 
 namespace RexLogic
@@ -191,6 +193,9 @@ void RexLogicModule::Initialize()
     // Register login service.
     login_service_ = boost::shared_ptr<LoginHandler>(new LoginHandler(this));
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
+
+    // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
+    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SLOT(LogoutAndDeleteWorld()));
 }
 
 // virtual
@@ -970,6 +975,7 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
 }
+
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {

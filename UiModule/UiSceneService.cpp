@@ -20,6 +20,8 @@ namespace UiServices
 {
     UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
     {
+        connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
+                this, SIGNAL(SceneChanged(const QString&, const QString&)));
     }
 
     UiSceneService::~UiSceneService()
@@ -113,12 +115,7 @@ namespace UiServices
 
     bool UiSceneService::SwitchToScene(const QString &name)
     {
-        QString oldName = owner_->GetUiStateMachine()->GetCurrentSceneName();
-        bool success = owner_->GetUiStateMachine()->SwitchToScene(name);
-        QString newName = owner_->GetUiStateMachine()->GetCurrentSceneName();
-        if (success)
-            emit SceneChanged(oldName, newName);
-        return success;
+        return owner_->GetUiStateMachine()->SwitchToScene(name);
     }
 }
 

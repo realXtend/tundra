@@ -37,15 +37,19 @@ namespace WorldBuilding
     public:
         WorldObjectView(QWidget* widget=0);
 
+    public slots:
+        void RequestUpdate();
+
     protected:
         void mousePressEvent ( QMouseEvent * e);
         void mouseReleaseEvent ( QMouseEvent * e);
         void mouseMoveEvent ( QMouseEvent * e);
         void wheelEvent ( QWheelEvent * e ); 
-
+        
     signals:
         void RotateObject(qreal x, qreal y);
         void Zoom(qreal delta);
+        void UpdateMe();
 
     private:
         bool left_mousebutton_pressed_;

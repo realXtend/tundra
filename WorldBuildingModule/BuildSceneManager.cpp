@@ -72,10 +72,9 @@ namespace WorldBuilding
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_info_widget_, SLOT(SceneRectChanged(const QRectF&)));
 
         world_object_view_ = new WorldObjectView();
-        world_object_view_->setFixedSize(300,300);
         object_info_ui.viewport_layout->addWidget(world_object_view_);
         object_info_widget_->SetWorldObjectView(world_object_view_);
-
+        connect(world_object_view_, SIGNAL(UpdateMe()), SLOT(UpdateObjectViewport()));
 
         // Init manipulations widget
         object_manipulations_widget_ = new Ui::BuildingWidget(Ui::BuildingWidget::Left);
@@ -105,7 +104,6 @@ namespace WorldBuilding
         camera_handler_ = new View::CameraHandler(framework_, this);
         connect(world_object_view_, SIGNAL(RotateObject(qreal, qreal)), this, SLOT(RotateObject(qreal, qreal))); 
         connect(world_object_view_, SIGNAL(Zoom(qreal)), this, SLOT(Zoom(qreal))); 
-        
 
         // Setup ui helper
         ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
@@ -274,11 +272,8 @@ namespace WorldBuilding
         if (ui)
         {
             ui->SwitchToScene(scene_name_);
-
             object_info_widget_->CheckSize();
             object_manipulations_widget_->CheckSize();
-
-            python_handler_->EmitEditingActivated(true);
         }
     }
 
@@ -286,10 +281,12 @@ namespace WorldBuilding
     {
         Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
         if (ui)
+        {
             if (inworld_state)
                 ui->SwitchToScene("Inworld");
             else
                 ui->SwitchToScene("Ether");
+        }
     }
 
     void BuildSceneManager::SceneChangedNotification(const QString &old_name, const QString &new_name)
@@ -347,8 +344,8 @@ namespace WorldBuilding
             return;
         prim_selected_ = selected;
 
-        object_info_ui.status_label->setVisible(!selected);
         world_object_view_->setVisible(selected);
+        object_info_ui.status_label->setVisible(!selected);
         object_info_ui.server_id_title->setVisible(selected);
         object_info_ui.server_id_value->setVisible(selected);
         object_info_ui.local_id_title->setVisible(selected);
@@ -379,33 +376,27 @@ namespace WorldBuilding
             return;
         }
 
+        camera_handler_->FocusToEntity(selected_camera_id_, entity);
+        UpdateObjectViewport();
+
         // Update our widgets UI
         object_info_ui.server_id_value->setText(ui_helper_->CheckUiValue(prim->getFullId()));
         object_info_ui.local_id_value->setText(ui_helper_->CheckUiValue(prim->getLocalId()));
-
-        // Update entity viewport UI
-        if (camera_handler_->FocusToEntity(selected_camera_id_, entity))
-        {
-            //qDebug() << "ObjectViewData: " << object_view_data_.x << " - " << object_view_data_.y << " : " << object_view_data_.delta;
-            world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-            if (!world_object_view_->text().isEmpty())
-                world_object_view_->setText("");
-        }
-        else
-        {
-            QPixmap disabled_pixmap(world_object_view_->size());
-            disabled_pixmap.fill(Qt::gray);
-            world_object_view_->setPixmap(disabled_pixmap);
-            world_object_view_->setText("Could not focus to object");
-        }
-
+        
         // Update the property editor
         if (!property_editor_handler_->HasCurrentPrim())
             property_editor_handler_->CreatePropertyBrowser(object_info_widget_->GetInternal(), object_info_ui.property_browser_layout, prim);
         else
             property_editor_handler_->PrimSelected(prim);
         ObjectSelected(true);
-        selected_entity_ =  entity;
+        selected_entity_ =  entity;       
+    }
+
+    void BuildSceneManager::UpdateObjectViewport()
+    {
+        world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+        if (!world_object_view_->text().isEmpty())
+            world_object_view_->setText("");
     }
 
     void BuildSceneManager::Zoom(qreal delta)
@@ -418,12 +409,6 @@ namespace WorldBuilding
                 qreal acceleration = 0.01;
                 if (camera_handler_->ZoomRelativeToPoint(entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
                     world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-                
-                // Manaluusua: Fill this with needed data to remember zoom/rotation/pos of camera when you change object
-                // prolly will be vectors etc not these simple x,y as they mean nothing to the camera
-                object_view_data_.delta = delta;
-                object_view_data_.acceleration_delta = acceleration;
-                //qDebug() << "Zoom: " << delta << " with accel " << acceleration;
             }
         }
     }
@@ -439,14 +424,6 @@ namespace WorldBuilding
                 qreal acceleration_y = 1;
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
                 world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-
-                // Manaluusua: Fill this with needed data to remember zoom/rotation/pos of camera when you change object
-                // prolly will be vectors etc not these simple x,y as they mean nothing to the camera
-                object_view_data_.x = x;
-                object_view_data_.y = y;
-                object_view_data_.acceleration_x = acceleration_x;
-                object_view_data_.acceleration_y = acceleration_y;
-                //qDebug() << "Rotate: " << x << " - " << y << " with accel " << acceleration_x << " - " << acceleration_y;
             }
         }
     }
