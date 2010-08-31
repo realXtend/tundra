@@ -504,6 +504,7 @@ namespace Ether
                     break;
                 case UiServices::Disconnected:
                     UpdateUiPixmaps();
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Disconnected");
                     scene_->SetConnectionStatus(false);
@@ -517,6 +518,7 @@ namespace Ether
                     break;
                 case UiServices::Kicked:
                     UpdateUiPixmaps();
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("You were kicked from the server");
                     scene_->SetConnectionStatus(false);
