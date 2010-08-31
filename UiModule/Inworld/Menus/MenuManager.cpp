@@ -71,7 +71,7 @@ namespace CoreUi
         ActionNode *child_node = new ActionNode(name, icon);
         ///\todo hack protection for menu crashing when root having more than 5 items.
         /// Remove when Qt 4.7 supposedly fixes this.
-        if (root_menu_->ChildCount() >= 5)
+        if ((category.isEmpty() || category == "Root") && root_menu_->ChildCount() >= 5)
         {
             category_map_["World Tools"]->AddChildNode(child_node);
         }
