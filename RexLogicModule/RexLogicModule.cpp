@@ -195,7 +195,7 @@ void RexLogicModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
-    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SLOT(LogoutAndDeleteWorld()));
+    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual
