@@ -83,6 +83,7 @@ public:
     //! Spotlight outer angle (degrees)
     Foundation::Attribute<Real> outerAngleAttr_;
     
+
 private slots:
     void UpdateOgreLight();
     
@@ -106,6 +107,8 @@ private:
     
     //! Attached flag
     bool attached_;
+
+
 };
 
 #endif
