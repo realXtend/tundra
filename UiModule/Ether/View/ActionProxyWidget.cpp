@@ -156,13 +156,42 @@ namespace Ether
                             Data::OpenSimWorld *os_world = dynamic_cast<Data::OpenSimWorld *>(world_info);
                             if (os_world && type == "info")
                             {
-                                action_widget = OpenSimWorldInfoWidget(os_world);
-                                title = QString("Information of OpenSim world %1").arg(os_world->loginUrl().host());
+                                QMap<QString, QVariant> grid_info = os_world->gridInfo();
+                                if (grid_info.contains("welcome"))
+                                {
+                                    title = grid_info["welcome"].toString();
+                                    action_widget = WebBrowserWidget(grid_info["welcome"].toString());
+                                }
+                                else if (grid_info.contains("about"))
+                                {
+                                    title = grid_info["about"].toString();
+                                    action_widget = WebBrowserWidget(grid_info["about"].toString());
+                                }
+                                else
+                                {
+                                    title = "Information URL not found";
+                                    action_widget = new QLabel("This server does not have welcome/information URL in grid info. Try fetching grid info first.");
+                                }
                             }
                             else if (os_world && type == "edit")
                             {
                                 action_widget = OpenSimWorldEditWidget(os_world);
                                 title = QString("Editing OpenSim world %1").arg(os_world->loginUrl().host());
+                            }
+                            else if (os_world && type == "register")
+                            {
+                                QMap<QString, QVariant> grid_info = os_world->gridInfo();
+                                if (grid_info.contains("register"))
+                                {
+                                    title = grid_info["register"].toString();
+                                    action_widget = WebBrowserWidget(grid_info["register"].toString());
+                                }
+                                else
+                                {
+                                    title = "Registration URL not found";
+                                    action_widget = new QLabel("This server does not have registration URL in grid info. Try fetching grid info first.");
+                                }
+
                             }
                         }
                     }
@@ -244,6 +273,11 @@ namespace Ether
         void ActionProxyWidget::UpdateGeometry(const QRectF &rect)
         {
             setGeometry(rect);
+            if (!current_widget_)
+                return;
+            QWebView *webview = dynamic_cast<QWebView*>(current_widget_);
+            if (webview)
+                webview->setFixedSize(rect.width()-50, rect.height()-150);
         }
 
         QWidget *ActionProxyWidget::CreateNewOpenSimAvatar()
@@ -381,6 +415,15 @@ namespace Ether
             return new_os_world_widget;
         }
 
+        QWidget *ActionProxyWidget::WebBrowserWidget(QString url)
+        {
+            QWebView *web_view = new QWebView();
+            QRectF current_rect = rect();
+            web_view->setFixedSize(current_rect.width()-50, current_rect.height()-150);
+            web_view->load(QUrl(url));
+            return web_view;
+        }
+
         void ActionProxyWidget::GridInfoRequested()
         {
             // Lets make a request to protocolutilities to fetch grid info
@@ -399,7 +442,7 @@ namespace Ether
             if (login_url.isValid())
             {
                 QStringList clear_edits;
-                clear_edits << "nicknameLineEdit" << "modeLineEdit" << "helpURLLineEdit" << "registerURLLineEdit" << "platformLineEdit" << "aboutURLLineEdit" << "passwordURLLineEdit";
+                clear_edits << "nicknameLineEdit" << "modeLineEdit" << "helpURLLineEdit" << "registerURLLineEdit" << "platformLineEdit" << "welcomeURLLineEdit" << "aboutURLLineEdit" << "passwordURLLineEdit";
                 foreach (QString name, clear_edits)
                     if (current_widget_->findChild<QLineEdit*>(name))
                         current_widget_->findChild<QLineEdit*>(name)->setText("");
