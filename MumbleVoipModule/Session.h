@@ -23,6 +23,7 @@ namespace MumbleVoip
     class ServerInfo;
     class PCMAudioFrame;
     class Participant;
+    class Settings;
 
     typedef QList<Participant*> ParticipantList;
 
@@ -30,7 +31,7 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Session(Foundation::Framework* framework, const ServerInfo &server_info);
+        Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings);
         virtual ~Session();
 
         virtual void Close();
@@ -85,6 +86,7 @@ namespace MumbleVoip
         QString channel_name_;
         QMap<int, sound_id_t> audio_playback_channels_;
         std::string recording_device_;
+        Settings* settings_;
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);
@@ -94,6 +96,7 @@ namespace MumbleVoip
         void UpdateSpeakerActivity(PCMAudioFrame*);
         void CheckChannel(MumbleLib::User*);
         void CheckConnectionState();
+        void OnSettingsChanged();
     };
 
 } // MumbleVoip

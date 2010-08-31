@@ -49,12 +49,11 @@ namespace MumbleVoip
         SAFE_DELETE(link_plugin_);
         SAFE_DELETE(server_info_provider_);
         SAFE_DELETE(in_world_voice_provider_);
+        SAFE_DELETE(settings_widget_);
     }
 
     void MumbleVoipModule::Load()
     {
-        SettingsWidget* w = new SettingsWidget();
-
         if (use_native_mumble_client_)
         {
             server_info_provider_ = new ServerInfoProvider(framework_);
@@ -62,7 +61,7 @@ namespace MumbleVoip
         }
         else
         {
-            in_world_voice_provider_ = new Provider(framework_);
+            in_world_voice_provider_ = new Provider(framework_, &settings_);
         }
 
         link_plugin_ = new LinkPlugin();
@@ -345,7 +344,7 @@ namespace MumbleVoip
         if (!ui)
             return;
 
-        settings_widget_ = new SettingsWidget();
+        settings_widget_ = new SettingsWidget(&settings_);
 
         //QUiLoader loader;
         //QFile file("./data/ui/soundsettings.ui");

@@ -7,31 +7,26 @@
 //#include <QGraphicsProxyWidget>
 #include "ui_VoiceSettings.h"
 
-
 namespace MumbleVoip
 {
-    class Settings
-    {
-    public:
-        bool enabled;
-        double voice_quality;
-        double microphone_level;
-        int playback_buffer_size_ms;
-        QString default_voice_mode;
-    };
+    class Settings;
 
     class SettingsWidget : public QWidget, private Ui::VoiceSettings
     {
         Q_OBJECT
     public:
-        SettingsWidget();
-        virtual ~SettingsWidget() {};
+        SettingsWidget(Settings* settings);
+        virtual ~SettingsWidget();
 
     private:
         virtual void InitializeUI();
         virtual void LoadInitialState();
     private slots:
         virtual void OpenMicrophoneAdjustmentWidget();
+        virtual void SaveSettings();
+        virtual void UpdateUI();
+    private:
+        Settings* settings_;
 
     };
 } // MumbleVoip

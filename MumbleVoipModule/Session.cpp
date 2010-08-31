@@ -19,13 +19,14 @@
 #include "Participant.h"
 #include "MumbleLibrary.h"
 #include "MumbleVoipModule.h"
+#include "Settings.h"
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
     const double Session::DEFAULT_AUDIO_QUALITY_ = 0.5; // 0 .. 1.0
-    Session::Session(Foundation::Framework* framework, const ServerInfo &server_info) : 
+    Session::Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings) : 
         state_(STATE_INITIALIZING),
         reason_(""),
         framework_(framework),
@@ -36,10 +37,12 @@ namespace MumbleVoip
         audio_receiving_enabled_(true),
         speaker_voice_activity_(0),
         server_info_(server_info),
-        connection_(0)
+        connection_(0),
+        settings_(settings)
     {
         channel_name_ = server_info.channel;
         OpenConnection(server_info);
+        connect(settings, SIGNAL(Changed()), this, SLOT(OnSettingsChanged()));
     }
 
     Session::~Session()
@@ -60,7 +63,7 @@ namespace MumbleVoip
     void Session::OpenConnection(ServerInfo server_info)
     {
         SAFE_DELETE(connection_);
-        connection_ = new MumbleLib::Connection(server_info);
+        connection_ = new MumbleLib::Connection(server_info, 200);
         if (connection_->GetState() == MumbleLib::Connection::STATE_ERROR)
         {
             state_ = STATE_ERROR;
@@ -575,6 +578,11 @@ namespace MumbleVoip
             }
             break;
         }
+    }
+
+    void Session::OnSettingsChanged()
+    {
+        connection_->SetPlaybackBufferMaxLengthMs(settings_->playback_buffer_size_ms);
     }
 
 } // MumbleVoip

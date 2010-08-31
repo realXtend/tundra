@@ -77,7 +77,7 @@ namespace MumbleLib
         connection->MarkUserLeft(user);
     }
 
-    Connection::Connection(MumbleVoip::ServerInfo &info) :
+    Connection::Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms) :
             client_(0),
             authenticated_(false),
             celt_mode_(0),
@@ -88,7 +88,8 @@ namespace MumbleLib
             frame_sequence_(0),
             encoding_quality_(0),
             state_(STATE_CONNECTING),
-            send_position_(false)
+            send_position_(false),
+            playback_buffer_length_ms_(playback_buffer_length_ms)
     {
         // BlockingQueuedConnection for cross thread signaling
         QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::BlockingQueuedConnection);
@@ -600,6 +601,7 @@ namespace MumbleLib
             return;
         }
         User* user = new User(mumble_user, channel);
+        user->SetPlaybackBufferMaxLengthMs(playback_buffer_length_ms_);
         user->moveToThread(this->thread()); //! @todo Do we need this?
         
         emit UserObjectCreated(user);
@@ -750,6 +752,18 @@ namespace MumbleLib
             user->CheckSpeakingState();
             Channel* channel = ChannelById(user->CurrentChannelID());
             user->SetChannel(channel);
+        }
+        lock_users_.unlock();
+    }
+
+    void Connection::SetPlaybackBufferMaxLengthMs(int length)
+    {
+        playback_buffer_length_ms_ = length;
+        lock_users_.lockForRead();
+        foreach(User* user, users_)
+        {
+            QMutexLocker user_locker(user);
+            user->SetPlaybackBufferMaxLengthMs(length);
         }
         lock_users_.unlock();
     }

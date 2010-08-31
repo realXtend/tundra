@@ -17,12 +17,13 @@ namespace MumbleVoip
 {
     class ServerInfoProvider;
     class Session;
+    class Settings;
 
     class Provider : public Communications::InWorldVoice::ProviderInterface
     {
         Q_OBJECT
     public:
-        Provider(Foundation::Framework* framework);
+        Provider(Foundation::Framework* framework, Settings* settings);
         virtual ~Provider();
         virtual Communications::InWorldVoice::SessionInterface* Session();
         virtual QString& Description();
@@ -37,6 +38,7 @@ namespace MumbleVoip
         ServerInfoProvider* server_info_provider_;
         ServerInfo* server_info_;
         event_category_id_t networkstate_event_category_;
+        Settings* settings_;
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
