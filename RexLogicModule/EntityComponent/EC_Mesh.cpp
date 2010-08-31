@@ -262,8 +262,13 @@ bool EC_Mesh::HasMaterialsChanged() const
 void EC_Mesh::UpdateSignals()
 {
     disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
-    connect(GetParentEntity()->GetScene(), SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
+    if(!GetParentEntity())
+        return;
+
+    Scene::SceneManager *scene = GetParentEntity()->GetScene();
+    if(scene)
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
     placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if(!placeable_)
         LogError("Component need to have a EC_OgrePlaceable component so that mesh can be attach into the world.");
