@@ -29,7 +29,7 @@ QWidget#scrollAreaWidgetContents {
 }
 
 QWidget#ObjectManipulationsWidget {
-	background-color: rgba(0,0,0,100);
+	background-color: rgba(0,0,0,120);
 }
 
 QWidget#border_widget {

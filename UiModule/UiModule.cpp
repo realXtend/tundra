@@ -5,7 +5,6 @@
 
 #include "UiModule.h"
 #include "UiSettingsService.h"
-//#include "UiProxyStyle.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
@@ -75,7 +74,7 @@ namespace UiServices
         //QApplication::setStyle(new UiProxyStyle());
         // QApplication take ownership of the new UiDarkBlueStyle
         ///\todo UiDarkBlueStyle seems to be causing many memory leaks.
-        /// Maybe it's not deleted properly by th QApplication?
+        /// Maybe it's not deleted properly by the QApplication?
         QApplication::setStyle(new UiDarkBlueStyle());
         QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
         QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
@@ -113,11 +112,12 @@ namespace UiServices
             ui_state_machine_->SetServiceGetter(service_getter_);
             LogDebug("Service getter READY");
 
+            // Register settings service
             ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
             GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_UiSettings, ui_settings_service_);
             LogDebug("UI Settings Service registered and READY");
 
-            // Register UI service.
+            // Register UI service
             ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
             framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, ui_scene_service_);
         }

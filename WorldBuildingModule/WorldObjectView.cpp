@@ -14,7 +14,14 @@ namespace WorldBuilding
         QLabel(widget),
         left_mousebutton_pressed_(false)
     {
+        setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+        setAlignment(Qt::AlignCenter);
+        setMaximumHeight(350);
+    }
 
+    void WorldObjectView::RequestUpdate()
+    {
+        emit UpdateMe();
     }
 
     void WorldObjectView::mousePressEvent(QMouseEvent *e)

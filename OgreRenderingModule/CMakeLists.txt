@@ -53,7 +53,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon ProtocolUtilities)
 
 if (CAELUM)
     use_package (CAELUM)
