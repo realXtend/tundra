@@ -401,6 +401,30 @@ namespace RexLogic
 
         //! Login service.
         boost::shared_ptr<LoginHandler> login_service_;
+
+        //! List of possible sound listeners (entitities which have EC_SoundListener).
+        QList<Scene::Entity *> soundListeners_;
+
+        //! Currently active sound listener.
+        Scene::EntityWeakPtr activeSoundListener_;
+
+    private slots:
+        /** Called when new component is added to the active scene.
+         *  Currently used for handling sound listener EC's.
+         *  @param entity Entity for which the component was added.
+         *  @param component The added component.
+         */
+        void NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+
+        /** Called when component is removed from the active scene.
+         *  Currently used for handling sound listener EC's.
+         *  @param entity Entity from which the component was removed.
+         *  @param component The removed component.
+         */
+        void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+
+        /// Finds entity with active sound listener component and stores it.
+        void FindActiveListener();
     };
 }
 
