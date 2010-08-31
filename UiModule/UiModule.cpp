@@ -33,6 +33,13 @@
 #include "SceneEvents.h"
 #include "InputEvents.h"
 #include "UiServiceInterface.h"
+#include "WorldLogicInterface.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OgreMesh.h"
+#include "Renderer.h"
+#include "Entity.h"
+
+#include <Ogre.h>
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -132,6 +139,12 @@ namespace UiServices
         input = framework_->Input().RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
         connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
+
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic)
+            connect(worldLogic, SIGNAL(AboutToDeleteWorld()), SLOT(TakeEtherScreenshots()));
+        else
+            LogWarning("Could not get world logic service.");
     }
 
     void UiModule::Uninitialize()
@@ -227,6 +240,55 @@ namespace UiServices
 
         if (key->keyCode == toggleWorldChat)
             inworld_scene_controller_->SetFocusToChat();
+    }
+
+    void UiModule::TakeEtherScreenshots()
+    {
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (!worldLogic)
+            return;
+
+        Scene::EntityPtr avatar_entity = worldLogic->GetUserAvatarEntity();
+        if (!avatar_entity)
+            return;
+
+        OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
+            return;
+
+        // Head bone pos setup
+        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Quaternion avatar_orientation = ec_placeable->GetOrientation();
+        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
+        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        Vector3df avatar_head_position;
+
+        QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");
+        if (!view_bone_name.isEmpty() && skel && skel->hasBone(view_bone_name.toStdString()))
+        {
+            adjustheight += 0.15f;
+            Ogre::Bone* bone = skel->getBone(view_bone_name.toStdString());
+            Ogre::Vector3 headpos = bone->_getDerivedPosition();
+            Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+            avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
+        }
+        else
+        {
+            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
+            avatar_head_position = ec_placeable->GetPosition();
+        }
+
+        // Get paths where to store the screenshots and pass to renderer for screenshots.
+        QPair<QString, QString> paths = GetScreenshotPaths();
+        if (!paths.first.isEmpty() && !paths.second.isEmpty())
+        {
+            OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+            if (renderer)
+                renderer->CaptureWorldAndAvatarToFile(avatar_head_position, avatar_orientation,
+                    paths.first.toStdString(), paths.second.toStdString());
+        }
     }
 
     void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)

@@ -70,9 +70,6 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
-#ifndef UISERVICE_TEST
-#include "UiModule.h"
-#endif
 
 // External EC's
 #include "EC_Highlight.h"
@@ -491,6 +488,12 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
         return Scene::EntityPtr();
 }
 
+const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
+{
+    static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
+    return prop;
+}
+
 void RexLogicModule::SwitchCameraState()
 {
     if (camera_state_ == CS_Follow)
@@ -679,7 +682,7 @@ Real RexLogicModule::GetCameraFOV() const
 
 void RexLogicModule::LogoutAndDeleteWorld()
 {
-    AboutToDeleteWorld();
+    emit AboutToDeleteWorld();
 
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
@@ -966,70 +969,6 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
-}
-
-void RexLogicModule::AboutToDeleteWorld()
-{
-#ifndef UISERVICE_TEST
-    // Lets take some screenshots before deleting the scene
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-
-    if (!avatar_ && !ui_module)
-        return;
-
-    Scene::EntityPtr avatar_entity = avatar_->GetUserAvatar();
-    if (!avatar_entity)
-        return;
-
-    OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-    EC_AvatarAppearance *ec_appearance = avatar_entity->GetComponent<EC_AvatarAppearance>().get();
-    if (!ec_placeable || !ec_mesh || !ec_appearance)
-        return;
-
-    if (ec_placeable && ec_mesh && ec_appearance)
-    {
-        // Head bone pos setup
-        Vector3Df avatar_position = ec_placeable->GetPosition();
-        Quaternion avatar_orientation = ec_placeable->GetOrientation();
-        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
-        std::string view_bone_name;
-        Real adjustheight = ec_mesh->GetAdjustPosition().z;
-        Vector3df avatar_head_position;
-
-        if (ec_appearance->HasProperty("headbone"))
-        {
-            view_bone_name = ec_appearance->GetProperty("headbone");
-            adjustheight += 0.15;
-            if (!view_bone_name.empty())
-            {
-                if (skel && skel->hasBone(view_bone_name))
-                {
-                    Ogre::Bone* bone = skel->getBone(view_bone_name);
-                    Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                    Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-                    avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
-                }
-            }
-        }
-        else
-        {
-            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
-            avatar_head_position = ec_placeable->GetPosition();
-        }
-
-        // Get paths where to store the screenshots
-        QPair<QString, QString> paths = ui_module->GetScreenshotPaths();
-
-        // Pass all variables to renderer for screenshot
-        if (!paths.first.isEmpty() && !paths.second.isEmpty())
-        {
-            SetAllTextOverlaysVisible(false);
-            GetOgreRendererPtr()->CaptureWorldAndAvatarToFile(
-                avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
-        }
-    }
-#endif
 }
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
