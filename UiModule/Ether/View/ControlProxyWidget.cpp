@@ -11,6 +11,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QDesktopServices>
 
 #include <QDebug>
 
@@ -501,7 +502,7 @@ namespace Ether
 
         void ControlProxyWidget::HelpHandler()
         {
-            emit ActionRequest("help");
+            QDesktopServices::openUrl(QUrl("http://wiki.realxtend.org/index.php/Getting_Started_with_Naali"));
         }
 
         void ControlProxyWidget::HideHandler()
@@ -514,7 +515,7 @@ namespace Ether
             if (!suppress_buttons_)
                 action_widget_->ShowWidget(type, controlled_card_);
             else 
-                qDebug() << "<Ether::ControlProxyWidget> Suppressed action '" << type << "'";
+                qDebug() << "[Ether]: Suppressed action '" << type << "'";
         }
 
         void ControlProxyWidget::SuppressButtons(bool suppress)

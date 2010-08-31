@@ -9,6 +9,8 @@
 #include <QPropertyAnimation>
 #include <QWidget>
 #include <QVBoxLayout>
+#include <QWebView>
+#include <QUrl>
 
 #include "ui_EtherActionWidget.h"
 
@@ -48,6 +50,7 @@ namespace Ether
             QWidget *RealXtendAvatarInfoWidget(Data::RealXtendAvatar *data);
             QWidget *RealXtendAvatarEditWidget(Data::RealXtendAvatar *data);
 
+            QWidget *WebBrowserWidget(QString url);
             QPixmap CretatePicture(QSize image_size, QString pixmap_path);
 
             void StartShowAnimations(QWidget *shown_widget);
