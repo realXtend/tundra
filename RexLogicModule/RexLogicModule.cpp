@@ -295,14 +295,22 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     activeScene_ = framework_->CreateScene(name);
     framework_->SetDefaultWorldScene(activeScene_);
 
+    // Connect ComponentAdded&Removed signals.
+    connect(activeScene_.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+            SLOT(NewComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
+    connect(activeScene_.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+
     // Listen to component changes to serialize them via RexFreeData
     primitive_->RegisterToComponentChangeSignals(activeScene_);
 
     // Create camera entity into the scene
-    Foundation::Framework* fw = GetFramework();
-    Foundation::ComponentPtr placeable = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    Foundation::ComponentPtr camera = fw->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
-    if ((placeable) && (camera))
+    Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
+    Foundation::ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    Foundation::ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
+    Foundation::ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
+    assert(placeable && camera && sound_listener);
+    if (placeable && camera && sound_listener)
     {
         Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddComponent(placeable);
@@ -819,7 +827,6 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
     }
 }
 
-
 void RexLogicModule::UpdateObjects(f64 frametime)
 {
     PROFILE(RexLogicModule_UpdateObjects);
@@ -907,13 +914,18 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = 
-        framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    if (!activeScene_)
+        return;
+
+    Foundation::SoundServiceInterface *soundsystem =  framework_->GetService<Foundation::SoundServiceInterface>();
     if (!soundsystem)
         return;
 
-    // In freelook, use camera position. Otherwise use avatar position
     Vector3df listener_pos;
+//    if (!activeSoundListener_.expired())
+//        activeSoundListener_.lock()->listener->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetPosition();
+
+    // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
         listener_pos = GetCameraPosition();
@@ -1287,6 +1299,41 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
 void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
 {
     emit OnIncomingEstateOwnerMessage(params);
+}
+
+void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
+{
+    if (component->TypeName() == EC_SoundListener::TypeNameStatic())
+    {
+        LogDebug("Added new sound listener to the listener list.");
+//        EC_SoundListener *listener = entity->GetComponent<EC_SoundListener>().get();
+//        connect(listener, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)), 
+//            SLOT(ActiveListenerChanged());
+        soundListeners_ << entity;
+    }
+}
+
+void RexLogicModule::ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
+{
+    if (component->TypeName() == EC_SoundListener::TypeNameStatic())
+    {
+        LogDebug("Removed sound listener from the listener list.");
+        soundListeners_.removeOne(entity);
+    }
+}
+
+void RexLogicModule::FindActiveListener()
+{
+    if (!activeScene_)
+        return;
+
+    // Iterate throught possible listeners and find the active one.
+    foreach(Scene::Entity *listener, soundListeners_)
+        if (listener->GetComponent<EC_SoundListener>()->active.Get())
+        {
+            activeSoundListener_ = activeScene_->GetEntity(listener->GetId());
+            break;
+        }
 }
 
 } // namespace RexLogic

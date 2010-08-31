@@ -2,8 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_SoundListener.h
- *  @brief  
- *  @note   
+ *  @brief  Only one entity be ative sound listener at a time.
  */
 
 #ifndef incl_EC_SoundListener_EC_SoundListener_h
@@ -35,7 +34,7 @@ private slots:
     /// Retrieves placeable component when parent entity is set.
     void RetrievePlaceable();
 
-    /// When active attribute is changed and it's true, iterates the scene and 
+    /// When active attribute is changed and it's true, iterates the scene and
     /// disables all the other sound listeners.
     void DisableOtherSoundListeners();
 
