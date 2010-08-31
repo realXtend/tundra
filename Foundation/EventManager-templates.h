@@ -117,12 +117,12 @@ namespace Foundation
         ModuleInterface* module = dynamic_cast<ModuleInterface* >(subscriber);
         
         if ( module != 0)
-            return EventSubscriberExist(module, module_subscribers);
+            return EventSubscriberExist(module, module_subscribers_);
 
         ComponentInterface* component = dynamic_cast<ComponentInterface* >(subscriber);
 
         if ( component != 0 )
-            return EventSubscriberExist(component, component_subscribers);
+            return EventSubscriberExist(component, component_subscribers_);
                     
         return false;
           
