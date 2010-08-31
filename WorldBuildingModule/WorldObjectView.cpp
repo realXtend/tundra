@@ -33,6 +33,7 @@ namespace WorldBuilding
                 QApplication::changeOverrideCursor(Qt::SizeAllCursor);
             else
                 QApplication::setOverrideCursor(Qt::SizeAllCursor);
+            update_timer_.start();
         }
     }
 
@@ -57,6 +58,8 @@ namespace WorldBuilding
     {
         if (left_mousebutton_pressed_)
         {
+            if (update_timer_.elapsed() < 20)
+                return;
             QPointF current_pos = e->posF();
             if (!last_pos_.isNull())
             {
@@ -64,6 +67,7 @@ namespace WorldBuilding
                 emit RotateObject(2*PI*movement.x()/width(),2*PI*movement.y()/height());
             }
             last_pos_ = current_pos;
+            update_timer_.start();
         }
     }
 }
