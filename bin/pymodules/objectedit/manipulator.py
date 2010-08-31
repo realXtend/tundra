@@ -12,13 +12,14 @@ class Manipulator:
     USES_MANIPULATOR = True
     
     MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
-    MANIPULATORSCALE = Vec(0.2, 0.2, 0.2)
+    MANIPULATORSCALE = Vec(1, 1, 1)
     
     MATERIALNAMES = None
     
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
+
     # some handy shortcut rotations for quats
     ninty_around_x = Quat(math.sqrt(0.5), math.sqrt(0.5), 0, 0)
     ninty_around_y = Quat(math.sqrt(0.5), 0, math.sqrt(0.5), 0)
@@ -80,6 +81,7 @@ class Manipulator:
         self.setManipulatorScale(ents)
             
     def getPivotPos(self, ents):        
+        '''Median position used as pivot point'''
         xs = [e.placeable.Position.x() for e in ents]
         ys = [e.placeable.Position.y() for e in ents]
         zs = [e.placeable.Position.z() for e in ents]
@@ -221,16 +223,16 @@ class MoveManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
     BLUEARROW = [1,2]
-    REDARROW = [5,6]
     GREENARROW = [3,4]
+    REDARROW = [5,6]
 
-    AXIS_RED = 1
     AXIS_GREEN = 0
+    AXIS_RED = 1
     AXIS_BLUE = 2
     
     
     MATERIALNAMES = {
-        0: "axis_black",  #shodows?
+        0: "axis_black",  # submesh divider
         1: "axis_blue", 
         2: None, #"axis_blue", 
         3: "axis_green",
@@ -283,11 +285,17 @@ class MoveManipulator(Manipulator):
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
-    #MANIPULATOR_MESH_NAME = "axes.mesh"
+    MANIPULATOR_MESH_NAME = "scale1.mesh"
+
+    MATERIALNAMES = {
+        2: "axis_blue", 
+        0: "axis_green",
+        1: "axis_red"
+    }
     
-    BLUEARROW = [3]#not used
+    BLUEARROW = [2]
     REDARROW = [1]
-    GREENARROW = [2]
+    GREENARROW = [0]
     
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed:
