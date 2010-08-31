@@ -5,11 +5,10 @@
  *  @brief  
  */
 
-#include "ServiceInterface.h"
-
 #ifndef incl_Interfaces_WorldLogicInterface_h
 #define incl_Interfaces_WorldLogicInterface_h
 
+#include "ServiceInterface.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
