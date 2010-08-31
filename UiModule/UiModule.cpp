@@ -242,55 +242,6 @@ namespace UiServices
             inworld_scene_controller_->SetFocusToChat();
     }
 
-    void UiModule::TakeEtherScreenshots()
-    {
-        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
-        if (!worldLogic)
-            return;
-
-        Scene::EntityPtr avatar_entity = worldLogic->GetUserAvatarEntity();
-        if (!avatar_entity)
-            return;
-
-        OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-
-        if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
-            return;
-
-        // Head bone pos setup
-        Vector3Df avatar_position = ec_placeable->GetPosition();
-        Quaternion avatar_orientation = ec_placeable->GetOrientation();
-        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
-        Real adjustheight = ec_mesh->GetAdjustPosition().z;
-        Vector3df avatar_head_position;
-
-        QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");
-        if (!view_bone_name.isEmpty() && skel && skel->hasBone(view_bone_name.toStdString()))
-        {
-            adjustheight += 0.15f;
-            Ogre::Bone* bone = skel->getBone(view_bone_name.toStdString());
-            Ogre::Vector3 headpos = bone->_getDerivedPosition();
-            Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-            avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
-        }
-        else
-        {
-            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
-            avatar_head_position = ec_placeable->GetPosition();
-        }
-
-        // Get paths where to store the screenshots and pass to renderer for screenshots.
-        QPair<QString, QString> paths = GetScreenshotPaths();
-        if (!paths.first.isEmpty() && !paths.second.isEmpty())
-        {
-            OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
-            if (renderer)
-                renderer->CaptureWorldAndAvatarToFile(avatar_head_position, avatar_orientation,
-                    paths.first.toStdString(), paths.second.toStdString());
-        }
-    }
-
     void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
     {
         switch (connection_state)
@@ -340,9 +291,57 @@ namespace UiServices
         return ether_logic_->GetLoginNotifier();
     }
 
-    QPair<QString, QString> UiModule::GetScreenshotPaths()
+    void UiModule::TakeEtherScreenshots()
     {
-        return ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (!worldLogic)
+            return;
+
+        Scene::EntityPtr avatar_entity = worldLogic->GetUserAvatarEntity();
+        if (!avatar_entity)
+            return;
+
+        OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
+            return;
+
+        // Head bone pos setup
+        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Quaternion avatar_orientation = ec_placeable->GetOrientation();
+        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
+        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        Vector3df avatar_head_position;
+
+        QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");
+        if (!view_bone_name.isEmpty() && skel && skel->hasBone(view_bone_name.toStdString()))
+        {
+            adjustheight += 0.15f;
+            Ogre::Bone* bone = skel->getBone(view_bone_name.toStdString());
+            Ogre::Vector3 headpos = bone->_getDerivedPosition();
+            Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+            avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
+        }
+        else
+        {
+            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
+            avatar_head_position = ec_placeable->GetPosition();
+        }
+
+        // Get paths where to store the screenshots and pass to renderer for screenshots.
+        QPair<QString, QString> paths = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+        boost::shared_ptr<Foundation::RenderServiceInterface> render_service = 
+            framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+
+        if (render_service && !paths.first.isEmpty() && !paths.second.isEmpty())
+        {
+            QPixmap render_result;
+            render_result = render_service->RenderImage();
+            render_result.save(paths.first);
+            render_result = render_service->RenderAvatar(avatar_head_position, avatar_orientation);
+            render_result.save(paths.second);
+        }
     }
 }
 

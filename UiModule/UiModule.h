@@ -66,8 +66,6 @@ namespace UiServices
 
         Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
-        QPair<QString, QString> GetScreenshotPaths();
-
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
 
@@ -77,7 +75,7 @@ namespace UiServices
     private slots:
         void OnKeyPressed(KeyEvent *key);
 
-        /// Takes UI screenshots of world/avatar with rendering service.
+        //! Takes UI screenshots of world/avatar with rendering service
         void TakeEtherScreenshots();
 
     private:
