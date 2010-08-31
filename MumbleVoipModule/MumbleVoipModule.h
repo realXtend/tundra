@@ -10,6 +10,7 @@
 #include "Core.h"
 #include <QObject>
 #include "ServerInfo.h"
+#include "Settings.h"
 
 namespace MumbleVoip
 {
@@ -90,6 +91,7 @@ namespace MumbleVoip
         event_category_id_t event_category_framework_;
         QString avatar_id_for_link_plugin_;
         QString context_id_for_link_plugin_;
+        Settings settings_;
         SettingsWidget* settings_widget_;
     };
 

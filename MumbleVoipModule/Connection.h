@@ -53,11 +53,13 @@ namespace MumbleLib
     class Connection : public QObject
     {
         Q_OBJECT
+        Q_PROPERTY(int playback_buffer_max_length_ms READ GetPlaybackBufferMaxLengthMs WRITE SetPlaybackBufferMaxLengthMs ) 
+        Q_PROPERTY(double encoding_quality READ GetEncodingQuality WRITE SetEncodingQuality)
     public:
         enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
         //! Default constructor
-        Connection(MumbleVoip::ServerInfo &info);
+        Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms);
 
         //! Default deconstructor
         virtual ~Connection();
@@ -155,6 +157,15 @@ namespace MumbleLib
         //! Remove user from user list if it exist
         void MarkUserLeft(const MumbleClient::User& user);
 
+
+        int GetPlaybackBufferMaxLengthMs() { return encoding_quality_; }
+        
+        //! Set the playback buffer max length for all user object.
+        void SetPlaybackBufferMaxLengthMs(int length); // {playback_buffer_length_ms_ = length; }
+        
+        double GetEncodingQuality() {return encoding_quality_;}
+//        void SetEncodingQuality(double quality) {encoding_quality_ = quality;}
+
     private slots:
         void AddToUserList(User* user);
         void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
@@ -196,6 +207,7 @@ namespace MumbleLib
         double encoding_quality_;
         int frame_sequence_;
         QTimer user_update_timer_;
+        int playback_buffer_length_ms_;
         
         QMutex mutex_channels_;
         QMutex mutex_authentication_;

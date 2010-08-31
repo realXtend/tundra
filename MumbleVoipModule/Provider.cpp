@@ -14,12 +14,13 @@
 
 namespace MumbleVoip
 {
-    Provider::Provider(Foundation::Framework* framework) :
+    Provider::Provider(Foundation::Framework* framework, Settings* settings) :
         framework_(framework),
         description_("Mumble in-world voice"),
         session_(0),
         server_info_(0),
-        server_info_provider_(0)
+        server_info_provider_(0),
+        settings_(settings)
     {
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
@@ -66,7 +67,7 @@ namespace MumbleVoip
         {
             if (!server_info_)
                 return 0;
-            session_ = new MumbleVoip::Session(framework_, *server_info_);
+            session_ = new MumbleVoip::Session(framework_, *server_info_, settings_);
         }
         return session_;
     }
