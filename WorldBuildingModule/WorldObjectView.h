@@ -5,32 +5,12 @@
 
 #include <QLabel>
 #include <QPointF>
+#include <QTime>
 
 class QMouseEvent;
 
 namespace WorldBuilding
-{
-    struct ObjectViewData
-    {
-    public:
-        void Reset()
-        {
-            x = -1; 
-            y = -1; 
-            delta = -1; 
-            acceleration_x = 1; 
-            acceleration_y = 1; 
-            acceleration_delta = 0.01;
-        };
-
-        qreal x;
-        qreal y;
-        qreal delta;
-        qreal acceleration_x;
-        qreal acceleration_y;
-        qreal acceleration_delta;
-    };
-    
+{   
     class WorldObjectView: public QLabel
     {
         Q_OBJECT
@@ -54,10 +34,8 @@ namespace WorldBuilding
     private:
         bool left_mousebutton_pressed_;
         QPointF last_pos_;
-        
-
+        QTime update_timer_;
     };
-
 }
 
 #endif
