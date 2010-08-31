@@ -27,7 +27,7 @@ namespace WorldBuilding
             pixelData_(0),
             last_dir_(Vector3df::ZERO)
         {
-            render_texture_name_ = "EntityViewPortTexture-" + QUuid::createUuid().toString().toStdString();
+            render_texture_name_ = "EntityViewPortTexture_" + QUuid::createUuid().toString().toStdString();
 
             Ogre::TexturePtr entity_screenshot = Ogre::TextureManager::getSingleton().createManual(
                 render_texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
@@ -230,13 +230,15 @@ namespace WorldBuilding
             if (entity_viewport_texture.isNull())
                 return QPixmap::fromImage(captured_pixmap);
 
-            // Resize rendering texture if needed
+            // Re-create rendering texture if size has changed, this has to be done it seems with Ogre 1.7.1
             if (entity_viewport_texture->getWidth() != image_size.width() || entity_viewport_texture->getHeight() != image_size.height())
             {
-                entity_viewport_texture->freeInternalResources();
-                entity_viewport_texture->setWidth(image_size.width());
-                entity_viewport_texture->setHeight(image_size.height());
-                entity_viewport_texture->createInternalResources();
+                Ogre::TextureManager::getSingleton().remove(render_texture_name_);
+                render_texture_name_ = "EntityViewPortTexture_" + QUuid::createUuid().toString().toStdString();
+                entity_viewport_texture = Ogre::TextureManager::getSingleton().createManual(
+                    render_texture_name_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME,
+                    Ogre::TEX_TYPE_2D, image_size.width(), image_size.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
+                entity_viewport_texture->getBuffer()->getRenderTarget()->setAutoUpdated(false);
             }
 
             // Set camera aspect ratio
@@ -244,29 +246,34 @@ namespace WorldBuilding
 
             // Get rendering texture and update it
             Ogre::RenderTexture *render_texture = entity_viewport_texture->getBuffer()->getRenderTarget();
-            if (render_texture->getNumViewports() == 0)
+            if (render_texture)
             {
-                Ogre::Viewport *vp = render_texture->addViewport(ec_camera->GetCamera());
-                vp->setOverlaysEnabled(false);
-                // Exclude highlight mesh from rendering
-                vp->setVisibilityMask(0x2);
+                render_texture->removeAllViewports();
+                if (render_texture->getNumViewports() == 0)
+                {
+                    Ogre::Viewport *vp = render_texture->addViewport(ec_camera->GetCamera());
+                    vp->setOverlaysEnabled(false);
+                    // Exclude highlight mesh from rendering
+                    vp->setVisibilityMask(0x2);
+                }
+                render_texture->update();
+
+                // Copy render target pixels into memory
+                SAFE_DELETE(pixelData_);
+                
+                pixelData_ = new Ogre::uchar[image_size.height() * image_size.width() * 4];
+                Ogre::Box bounds(0, 0, image_size.width(), image_size.height());
+                Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)pixelData_);
+
+                //entity_viewport_texture->getBuffer()->blitToMemory(pixels);
+                render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
+
+                // Create a QImage from the memory
+                captured_pixmap = QImage(pixelData_, image_size.width(), image_size.height(), QImage::Format_ARGB32_Premultiplied);
+                captured_pixmap.save("test.png");
+                if (captured_pixmap.isNull())
+                    WorldBuildingModule::LogDebug("Capturing entity to viewport image failed.");
             }
-            render_texture->update();
-
-            // Copy render target pixels into memory
-            SAFE_DELETE(pixelData_);
-            
-            pixelData_ = new Ogre::uchar[image_size.height() * image_size.width() * 4];
-            Ogre::Box bounds(0, 0, image_size.height(), image_size.width());
-            Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)pixelData_);
-
-            render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
-
-            // Create a QImage from the memory
-            captured_pixmap = QImage(pixelData_, image_size.height(), image_size.width(), QImage::Format_ARGB32_Premultiplied);
-            if (captured_pixmap.isNull())
-                WorldBuildingModule::LogDebug("Capturing entity to viewport image failed.");
-
             // Return image as a QPixmap
             return QPixmap::fromImage(captured_pixmap);
         }
