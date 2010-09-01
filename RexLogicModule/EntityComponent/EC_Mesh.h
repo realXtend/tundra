@@ -51,6 +51,7 @@ public:
     void SetMesh(const std::string &name, bool clone = false);
     void RemoveMesh();
     bool SetMaterial(uint index, const std::string& material_name);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
 
     Foundation::Attribute<std::string> meshResouceId_;
     Foundation::Attribute<std::vector<QVariant> > meshMaterial_;
@@ -99,6 +100,7 @@ private:
     Ogre::Entity* entity_;
     Ogre::SceneNode* node_;
     bool attached_;
+    event_category_id_t resource_event_category_;
 };
 
 #endif
