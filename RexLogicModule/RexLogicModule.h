@@ -74,9 +74,6 @@ namespace RexLogic
     class LoginHandler;
     namespace InWorldChat { class Provider; }
 
-    //! @todo remove when can.
-    class ComponentResourceHandler;
-
     typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
 
     typedef boost::shared_ptr<Avatar> AvatarPtr;
@@ -84,7 +81,6 @@ namespace RexLogic
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
-    typedef boost::shared_ptr<ComponentResourceHandler> ComponentResourceHandlerPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -389,9 +385,6 @@ namespace RexLogic
         MainPanelHandler *main_panel_handler_;
 
         InWorldChatProviderPtr in_world_chat_provider_;
-
-        //! @todo remove this while can.
-        ComponentResourceHandlerPtr component_res_handler_;
 
         //! Login service.
         boost::shared_ptr<LoginHandler> login_service_;
