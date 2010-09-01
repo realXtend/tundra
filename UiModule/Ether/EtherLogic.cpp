@@ -498,12 +498,13 @@ namespace Ether
                 case UiServices::Connected:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(true);
-                    scene_controller_->ShowStatusInformation("Connected, loading world...", 30000);
+                    scene_controller_->ShowStatusInformation("Joining world");
                     scene_controller_->RevertLoginAnimation(true);
                     scene_->SetConnectionStatus(true);
                     break;
                 case UiServices::Disconnected:
                     UpdateUiPixmaps();
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
                     scene_controller_->ShowStatusInformation("Disconnected");
                     scene_->SetConnectionStatus(false);
@@ -511,14 +512,15 @@ namespace Ether
                 case UiServices::Failed:
                     scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-                    scene_controller_->ShowStatusInformation("Failed to connect: "+ message);
+                    scene_controller_->ShowStatusInformation("Failed to connect:\n"+ message);
                     scene_controller_->RevertLoginAnimation(false);
                     scene_->SetConnectionStatus(false);
                     break;
                 case UiServices::Kicked:
                     UpdateUiPixmaps();
+                    scene_controller_->SetConnectingState(false);
                     scene_controller_->SetConnected(false);
-                    scene_controller_->ShowStatusInformation("Kicked from server");
+                    scene_controller_->ShowStatusInformation("You were kicked from the server");
                     scene_->SetConnectionStatus(false);
                     break;
             }

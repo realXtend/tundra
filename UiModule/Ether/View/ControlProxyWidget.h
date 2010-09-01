@@ -63,6 +63,7 @@ namespace Ether
             void SetActionWidget(View::ActionProxyWidget *action_widget) { action_widget_ = action_widget; }
             void SetOverlayWidget(ControlProxyWidget *overlay_widget) { overlay_widget_ =  overlay_widget; }
 
+            void IgnoreContollerCardMovement(bool ignore);
             void SuppressButtons(bool suppress);
             void SetConnected(bool connected);
 
@@ -108,6 +109,7 @@ namespace Ether
 
             bool suppress_buttons_;
             bool connected_;
+            bool ignore_movement_;
 
         signals:
             void ActionRequest(QString);
