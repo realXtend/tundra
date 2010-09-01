@@ -315,6 +315,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
         Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddComponent(placeable);
         entity->AddComponent(camera);
+        entity->AddComponent(sound_listener);
         
         OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
         camera_ptr->SetPlaceable(placeable);
@@ -923,31 +924,19 @@ void RexLogicModule::UpdateSoundListener()
     if (!activeScene_)
         return;
 
-    Foundation::SoundServiceInterface *soundsystem =  framework_->GetService<Foundation::SoundServiceInterface>();
-    if (!soundsystem)
-        return;
-
-    Vector3df listener_pos;
-//    if (!activeSoundListener_.expired())
-//        activeSoundListener_.lock()->listener->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetPosition();
-
     // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
-        listener_pos = GetCameraPosition();
+        EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
+        if (listener && !listener->IsActive())
+            listener->SetActive(true);
     }
-    else
+    else if (GetUserAvatarEntity())
     {
-        Scene::EntityPtr entity = avatar_->GetUserAvatar();
-        if (!entity)
-            return;
-        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        if (!placeable)
-            return;
-        listener_pos = placeable->GetPosition();
+        EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
+        if (listener && !listener->IsActive())
+            listener->SetActive(true);
     }
-
-    soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
 bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -971,7 +960,6 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
 }
-
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 {
@@ -1027,11 +1015,10 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 /*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
-    
+
     boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-    if (canvas_source){
+    if (canvas_source)
         canvas_source->Clicked();
-    }
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1269,12 +1256,14 @@ void RexLogicModule::FindActiveListener()
         return;
 
     // Iterate throught possible listeners and find the active one.
+/*
     foreach(Scene::Entity *listener, soundListeners_)
-        if (listener->GetComponent<EC_SoundListener>()->active.Get())
+        if (listener->GetComponent<EC_SoundListener>()->IsActive())
         {
             activeSoundListener_ = activeScene_->GetEntity(listener->GetId());
             break;
         }
+*/
 }
 
 } // namespace RexLogic

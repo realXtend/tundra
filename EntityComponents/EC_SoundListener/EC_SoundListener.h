@@ -9,8 +9,17 @@
 #define incl_EC_SoundListener_EC_SoundListener_h
 
 #include "ComponentInterface.h"
-#include "AttributeInterface.h"
 #include "Declare_EC.h"
+
+namespace Foundation
+{
+    class SoundServiceInterface;
+}
+
+namespace OgreRenderer
+{
+    class EC_OgrePlaceable;
+}
 
 /**
  *
@@ -25,18 +34,23 @@ public:
     ~EC_SoundListener();
 
     /// Is this listener active.
-    Foundation::Attribute<bool> active;
+    bool IsActive() const { return active_; }
 
-    /// Returns placeble component.
-    Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+    /** Sets listener active or not.
+     *  If this listener component is set active it iterates the scene and
+     *  disables all the other sound listeners.
+     *  @param active activeness.
+     */
+    void SetActive(bool active);
 
 private slots:
     /// Retrieves placeable component when parent entity is set.
     void RetrievePlaceable();
 
-    /// When active attribute is changed and it's true, iterates the scene and
-    /// disables all the other sound listeners.
-    void DisableOtherSoundListeners();
+    /** Updates listeners position for sound service, is this listerner is active.
+     *  @param frametime Time elapsed since the last frame.
+     */
+    void Update(double frametime);
 
 private:
     /** Constructor.
@@ -45,7 +59,13 @@ private:
     explicit EC_SoundListener(Foundation::ModuleInterface *module);
 
     /// Parent entity's placeable component.
-    Foundation::ComponentPtr placeable_;
+    boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;
+
+    /// Sound service.
+    boost::weak_ptr<Foundation::SoundServiceInterface> soundService_;
+
+    /// Is this listener active.
+    bool active_;
 };
 
 #endif
