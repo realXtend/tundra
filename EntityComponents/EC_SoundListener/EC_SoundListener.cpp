@@ -12,22 +12,24 @@
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-
+#include "SoundServiceInterface.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
 EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
-    active(this, "active", false)
+    active_(false)
 {
+    soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound);
+
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(this, SIGNAL(OnChanged()), SLOT(DisableOtherSoundListeners()));
+    connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update(double)));
 }
 
 EC_SoundListener::~EC_SoundListener()
 {
-    placeable_.reset();
 }
 
 void EC_SoundListener::RetrievePlaceable()
@@ -36,28 +38,35 @@ void EC_SoundListener::RetrievePlaceable()
         LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
 
     placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if (!placeable_)
+    if (!placeable_.lock())
         LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");
 }
 
-void EC_SoundListener::DisableOtherSoundListeners()
+void EC_SoundListener::SetActive(bool active)
 {
+    active_ = active;
+
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return;
 
-    bool thisActive = active.Get();
-    if (thisActive)
+    if (active_)
     {
         // Disable all the other listeners, only one can be active at a time.
-        ///\todo Not the most sophisticated way, come up with a better one.
+        ///\todo Maybe not the most sophisticated way to handle this here; do this in RexLogicModule maybe.
         Scene::EntityList listeners = scene->GetEntitiesWithComponent("EC_SoundListener");
         foreach(Scene::EntityPtr listener, listeners)
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->active.Set(!thisActive, AttributeChange::LocalOnly);
+                listener->GetComponent<EC_SoundListener>()->SetActive(!active_);
         }
     }
+}
+
+void EC_SoundListener::Update(double frametime)
+{
+    if (active_ && !placeable_.expired() && !soundService_.expired())
+        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
 }
 
