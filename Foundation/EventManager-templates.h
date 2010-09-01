@@ -67,6 +67,8 @@ namespace Foundation
                 return true;
             }
         }
+        
+       
         return false;
     }
 
@@ -86,10 +88,46 @@ namespace Foundation
         ComponentInterface* component = dynamic_cast<ComponentInterface* >(subscriber);
 
         if ( component != 0 )
-            return RemoveSubscriber(component, component_subscribers_);
-                    
-        return false;
+        {
+            bool ret = RemoveSubscriber(component, component_subscribers_);
+            
+            QMap<QPair<event_category_id_t, event_id_t>, QList<ComponentInterface* > >::iterator iter;
+            
+            bool ret2 = false;
 
+            for ( iter = specialEvents_.begin(); iter != specialEvents_.end();)
+            {
+                QList<ComponentInterface* > lst = specialEvents_[iter.key()];
+              
+                bool found = false;
+            
+                // Here we assume that component has not register many times...
+                for ( int i = 0; i < lst.size() && !found; ++i)
+                {
+                  if ( lst[i] == component )
+                  {
+                      lst.removeAt(i);
+                      found = true;
+                      ret2 = true;
+                      break;
+                  }
+
+                }
+
+                  if ( lst.isEmpty() )
+                    iter = specialEvents_.erase(iter);
+                  else
+                    ++iter;
+                 
+             }
+            
+           return (ret || ret2);
+            
+
+        }
+        
+        return false;
+        
     }
 
     template <typename T, typename U> bool EventManager::EventSubscriberExist(T* subscriber, QList<U>& subscribers)
