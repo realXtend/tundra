@@ -36,28 +36,36 @@ namespace WorldBuilding
         selected_camera_id_(-1)
     {
         setParent(parent);
+        connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
+
         InitScene();
-        ObjectSelected(false);
+        ObjectSelected(false);        
     }
 
     BuildSceneManager::~BuildSceneManager()
     {
+        SAFE_DELETE(object_info_widget_);
+        SAFE_DELETE(object_manipulations_widget_);
+    }
+
+    void BuildSceneManager::CleanPyWidgets()
+    {
         // Remove pythong inserted widgets from lauyout as they are deleted in py code
         foreach (QWidget *py_widget, python_deleted_widgets_)
         {
+            py_widget->hide();
             int index = object_manip_ui.main_layout->indexOf(py_widget);
             if (index == -1)
                 continue;
-            QLayoutItem *item = object_manip_ui.main_layout->itemAt(index);
+            QLayoutItem *item = object_manip_ui.main_layout->takeAt(index);
             if (!item)
                 continue;
             object_manip_ui.main_layout->removeItem(item);
+            delete item; // Deletes the layout item which != the widget
+            py_widget->setParent(0);
             py_widget = 0;
         }
         python_deleted_widgets_.clear();
-
-        SAFE_DELETE(object_info_widget_);
-        SAFE_DELETE(object_manipulations_widget_);
     }
 
     void BuildSceneManager::InitScene()
@@ -127,15 +135,11 @@ namespace WorldBuilding
     {
         if (!widget)
             return;
-        
-        // Stuff that is handy
-        QString title_style("font-size:18px;font-weight:bold;");
-        int len = object_manip_ui.main_layout->count();
-        QString type_compare = type.toLower();
 
         // Check for type
         bool create_widgets = false;
         bool python_deletes = true;
+        QString type_compare = type.toLower();
         if (type_compare == "materials")
         {
             create_widgets = true;
@@ -151,22 +155,21 @@ namespace WorldBuilding
 
         if (create_widgets)
         {
+            QString title_style("font-size:18px;font-weight:bold;padding-top:5px;");
+            int len = object_manip_ui.main_layout->count();
+
+            // Make title and insert widget
             QLabel *title = new QLabel(type);
             title->setStyleSheet(title_style);
             object_manip_ui.main_layout->insertWidget(len-1, title);
             object_manip_ui.main_layout->insertWidget(len, widget);
 
+            // Put to internal lists for visibility and deleting
             toggle_visibility_widgets_ << title << widget;
             if (python_deletes)
                 python_deleted_widgets_ << widget;
 
-            for (int i=0; i<widget->layout()->count(); ++i)
-            {
-                QPushButton *b = dynamic_cast<QPushButton*>(widget->layout()->itemAt(i)->widget());
-                if (!b)
-                    continue;
-                b->setStyleSheet("");
-            }
+            // Hide all on startup
             widget->hide();
             title->hide();
         }
