@@ -38,7 +38,6 @@ namespace WorldBuilding
         setParent(parent);
         InitialseScene();
         ObjectSelected(false);
-        object_view_data_.Reset();
     }
 
     BuildSceneManager::~BuildSceneManager()
@@ -408,7 +407,7 @@ namespace WorldBuilding
             {
                 qreal acceleration = 0.01;
                 if (camera_handler_->ZoomRelativeToPoint(entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
-                    world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+                    UpdateObjectViewport();
             }
         }
     }
@@ -423,7 +422,7 @@ namespace WorldBuilding
                 qreal acceleration_x = 1;
                 qreal acceleration_y = 1;
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
-                world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
+                UpdateObjectViewport();
             }
         }
     }

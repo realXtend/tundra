@@ -102,8 +102,6 @@ namespace WorldBuilding
         AnchorLayout *layout_;
 
         WorldObjectView* world_object_view_;
-        ObjectViewData object_view_data_;
-
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
 
