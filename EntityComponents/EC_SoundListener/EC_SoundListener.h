@@ -2,7 +2,9 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_SoundListener.h
- *  @brief  Only one entity be ative sound listener at a time.
+ *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
+ *          Updates parent entity's placeable component's position to the sound service each frame.
+ *  @note   Only one entity can have active sound listener at a time.
  */
 
 #ifndef incl_EC_SoundListener_EC_SoundListener_h
@@ -21,8 +23,9 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
 }
 
-/**
- *
+/** Entity-component which provides sound listener position for in-world 3D audio.
+ *  Updates parent entity's placeable component's position to the sound service each frame.
+ *  @note   Only one entity can have active sound listener at a time.
  */
 class EC_SoundListener : public Foundation::ComponentInterface
 {
@@ -47,10 +50,8 @@ private slots:
     /// Retrieves placeable component when parent entity is set.
     void RetrievePlaceable();
 
-    /** Updates listeners position for sound service, is this listerner is active.
-     *  @param frametime Time elapsed since the last frame.
-     */
-    void Update(double frametime);
+    /// Updates listeners position for sound service, is this listener is active. Called each frame.
+    void Update();
 
 private:
     /** Constructor.

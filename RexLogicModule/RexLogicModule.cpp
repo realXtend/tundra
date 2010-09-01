@@ -199,8 +199,11 @@ void RexLogicModule::Initialize()
 // virtual
 void RexLogicModule::PostInitialize()
 {
+    Foundation::EventManagerPtr eventMgr = framework_->GetEventManager();
+    eventMgr->RegisterEventSubscriber(this, 104);
+
     // Input events.
-    event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+    event_category_id_t eventcategoryid = eventMgr->QueryEventCategory("Input");
 
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
@@ -213,15 +216,15 @@ void RexLogicModule::PostInitialize()
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
 
     // Action events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
-    
+    eventcategoryid = eventMgr->QueryEventCategory("Action");
+
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
 
     // Scene events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
+    eventcategoryid = eventMgr->QueryEventCategory("Scene");
 
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
@@ -233,34 +236,34 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
 
     // Resource events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+    eventcategoryid = eventMgr->QueryEventCategory("Resource");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
 
     // Inventory events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
+    eventcategoryid = eventMgr->QueryEventCategory("Inventory");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
 
     // Asset events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
+    eventcategoryid = eventMgr->QueryEventCategory("Asset");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-    
+
     // Framework events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+    eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
 
     // NetworkState events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+    eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
 
     // NetworkIn events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+    eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
 
