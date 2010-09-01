@@ -38,7 +38,6 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
 #include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
-#include "EntityComponent/ComponentResourceHandler.h" //! @todo remove this when can.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -174,7 +173,6 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
-    component_res_handler_ = ComponentResourceHandlerPtr(new ComponentResourceHandler(this));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -958,8 +956,6 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventD
     avatar_->HandleResourceEvent(event_id, data);
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);
-    //! @todo This should be removed in future.
-    component_res_handler_->HandleResourceEvent(event_id, data);
 
     return false;
 }
