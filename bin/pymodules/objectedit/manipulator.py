@@ -402,6 +402,11 @@ class RotationManipulator(Manipulator):
         if self.grabbed and self.grabbed_axis is not None:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
+
+            if amountx < amounty:
+                amount = amounty
+            else:
+                amount = amountx
             
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
@@ -423,16 +428,16 @@ class RotationManipulator(Manipulator):
                 ort *= delta
             else:
                 if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    # print "green axis", self.grabbed_axis,
-                    mov = amountx * 30 * dir
+                    print "green axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    # print "blue axis", self.grabbed_axis,
-                    mov = amountx * 30 * dir
+                    print "blue axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[2] += mov
                 elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    # print "red axis", self.grabbed_axis,
-                    mov = amounty * 30 * dir
+                    print "red axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)
                 # TODO: figure out the shifted members
