@@ -47,11 +47,11 @@ namespace MumbleVoip
 
     void SettingsWidget::LoadInitialState()
     {
-        this->playbackBufferSlider->setValue(settings_->playback_buffer_size_ms);
-        this->encodeQualitySlider->setValue(settings_->encode_quality*100);
-        this->defaultVoiceMode->setCurrentIndex(static_cast<int>(settings_->default_voice_mode));
-        this->microphoneLevelSlider->setValue(settings_->microphone_level*100);
-        this->enabledCheckBox->setChecked(settings_->enabled);
+        this->playbackBufferSlider->setValue(settings_->GetPlaybackBufferSizeMs());
+        this->encodeQualitySlider->setValue(settings_->GetEncodeQuality()*100);
+        this->defaultVoiceMode->setCurrentIndex(static_cast<int>(settings_->GetDefaultVoiceMode()));
+        this->microphoneLevelSlider->setValue(settings_->GetMicrophoneLevel()*100);
+        this->enabledCheckBox->setChecked(settings_->GetEnabled());
     }
 
     void SettingsWidget::OpenMicrophoneAdjustmentWidget()
@@ -61,11 +61,11 @@ namespace MumbleVoip
 
     void SettingsWidget::ApplyChanges()
     {
-        settings_->playback_buffer_size_ms = this->playbackBufferSlider->value();
-        settings_->encode_quality = this->encodeQualitySlider->value()*0.01;
-        settings_->default_voice_mode = Settings::VoiceMode(this->defaultVoiceMode->currentIndex());
-        settings_->microphone_level = this->microphoneLevelSlider->value()*0.01;
-        settings_->enabled = this->enabledCheckBox->isChecked();
+        settings_->SetPlaybackBufferSizeMs( this->playbackBufferSlider->value() );
+        settings_->SetEncodeQuality( this->encodeQualitySlider->value()*0.01 );
+        settings_->SetDefaultVoiceMode( Settings::VoiceMode(this->defaultVoiceMode->currentIndex()) );
+        settings_->SetMicrophoneLevel( this->microphoneLevelSlider->value()*0.01 );
+        settings_->SetEnabled( this->enabledCheckBox->isChecked() );
         settings_->Save();
 
         UpdateUI();
@@ -76,15 +76,6 @@ namespace MumbleVoip
         playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value()));
         encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value()));
         microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value()));
-        if (!settings_->enabled)
-        {
-            for(QObjectList::const_iterator i = this->groupBox->children().begin(); i != this->groupBox->children().end(); ++i)
-            {
-                (*i)->setProperty( "enabled", false );
-            }
-
-        //    groupBox->enabled = false;
-        }
     }
     
     void SettingsWidget::ApplyEncodeQuality()
