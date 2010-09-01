@@ -50,7 +50,7 @@ namespace Foundation
          */
         template <class T> boost::weak_ptr<T> GetService() const
         {
-            for(ServicesMap::const_iterator it = services_.begin(); = it != services_.end(); ++it)
+            for(ServicesMap::const_iterator it = services_.begin(); it != services_.end(); ++it)
             {
                 boost::weak_ptr<T> service = boost::dynamic_pointer_cast<T>(it->second);
                 if (service.lock())
