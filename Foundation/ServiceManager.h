@@ -43,6 +43,23 @@ namespace Foundation
         //! Returns un-casted service from service type
         ServiceWeakPtr GetService(service_type_t type);
 
+        /** Returns service by class T.
+         *  \param T class type of the service
+         *  \return The service, or null if the service doesn't exist and dynamic cast fails.
+         *  \note The pointer may invalidate between frames, always reacquire at begin of frame update
+         */
+        template <class T> boost::weak_ptr<T> GetService() const
+        {
+            for(ServicesMap::const_iterator it = services_.begin(); = it != services_.end(); ++it)
+            {
+                boost::weak_ptr<T> service = boost::dynamic_pointer_cast<T>(it->second);
+                if (service.lock())
+                    return service;
+            }
+
+            return boost::weak_ptr<T>();
+        }
+
         //! Returns service from service type.
         /*! Returns empty weak pointer if the service is not registered
 

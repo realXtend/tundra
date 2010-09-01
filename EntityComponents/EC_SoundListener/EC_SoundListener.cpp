@@ -22,7 +22,7 @@ EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
     active_(false)
 {
-    soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound);
+    soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(this, SIGNAL(OnChanged()), SLOT(DisableOtherSoundListeners()));
