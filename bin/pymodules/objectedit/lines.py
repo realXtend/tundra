@@ -16,7 +16,7 @@ class DragDroppableEditline(QLineEdit):
         
         self.combobox = None #throw into another class...
         self.buttons = []
-	self.spinners = []
+        self.spinners = []
         self.index = None 
 
     def accept(self, ev):
