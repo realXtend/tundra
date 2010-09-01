@@ -15,11 +15,12 @@ namespace MumbleVoip
     {
         settings_->Load();
         InitializeUI();
-        LoadInitialState();
+        UpdateUI();
     }
 
     SettingsWidget::~SettingsWidget()
     {
+        ApplyChanges();
         settings_->Save();
     }
 
@@ -27,30 +28,30 @@ namespace MumbleVoip
     {
         setupUi(this);
 
-        connect(this->testMicrophoneButton, SIGNAL(clicked()), this, SLOT(OpenMicrophoneAdjustmentWidget()));
-
-        this->playbackBufferSlider->setRange(0,1000);
-        this->playbackBufferSlider->setTickInterval(10);
-        this->encodeQualitySlider->setRange(0,100);
-        this->encodeQualitySlider->setTickInterval(1);
         QStringList items;
-        items.append("Allways off");
+        items.append("Allways Off");
         items.append("Allways On");
-        items.append("Push-to-talk");
+        items.append("Push-To-Talk");
         this->defaultVoiceMode->addItems(items);
 
-        UpdateUI();
+        LoadInitialState();
 
-        connect(this->playbackBufferSlider, SIGNAL(valueChanged(int)), this, SLOT(SaveSettings()));
-        connect(this->encodeQualitySlider, SIGNAL(valueChanged(int)), this, SLOT(SaveSettings()));
-        connect(this->defaultVoiceMode, SIGNAL(currentIndexChanged(int)), this, SLOT(SaveSettings()));
+        connect(this->testMicrophoneButton, SIGNAL(clicked()), this, SLOT(OpenMicrophoneAdjustmentWidget()));
+        connect(this->applyPlaybackBufferSizeButton, SIGNAL(clicked()), this, SLOT(ApplyPlaybackBufferSize()));
+        connect(this->applyEncodeQualityButton, SIGNAL(clicked()), this, SLOT(ApplyEncodeQuality()));
+        connect(this->playbackBufferSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
+        connect(this->encodeQualitySlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
+        connect(this->defaultVoiceMode, SIGNAL(currentIndexChanged(int)), this, SLOT(ApplyChanges()));
+        connect(this->microphoneLevelSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
     }
 
     void SettingsWidget::LoadInitialState()
     {
         this->playbackBufferSlider->setValue(settings_->playback_buffer_size_ms);
-        this->encodeQualitySlider->setValue(settings_->encode_quality);
+        this->encodeQualitySlider->setValue(settings_->encode_quality*100);
         this->defaultVoiceMode->setCurrentIndex(static_cast<int>(settings_->default_voice_mode));
+        this->microphoneLevelSlider->setValue(settings_->microphone_level*100);
+        this->enabledCheckBox->setChecked(settings_->enabled);
     }
 
     void SettingsWidget::OpenMicrophoneAdjustmentWidget()
@@ -58,11 +59,13 @@ namespace MumbleVoip
         // \todo Show the widget
     }
 
-    void SettingsWidget::SaveSettings()
+    void SettingsWidget::ApplyChanges()
     {
         settings_->playback_buffer_size_ms = this->playbackBufferSlider->value();
-        settings_->encode_quality = this->encodeQualitySlider->value();
+        settings_->encode_quality = this->encodeQualitySlider->value()*0.01;
         settings_->default_voice_mode = Settings::VoiceMode(this->defaultVoiceMode->currentIndex());
+        settings_->microphone_level = this->microphoneLevelSlider->value()*0.01;
+        settings_->enabled = this->enabledCheckBox->isChecked();
         settings_->Save();
 
         UpdateUI();
@@ -70,8 +73,28 @@ namespace MumbleVoip
 
     void SettingsWidget::UpdateUI()
     {
-        playbackBufferSizeLabel->setText(QString("%1 ms").arg(settings_->playback_buffer_size_ms));
-        encodeQualityLabel->setText(QString("%1 %").arg(settings_->encode_quality));
+        playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value()));
+        encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value()));
+        microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value()));
+        if (!settings_->enabled)
+        {
+            for(QObjectList::const_iterator i = this->groupBox->children().begin(); i != this->groupBox->children().end(); ++i)
+            {
+                (*i)->setProperty( "enabled", false );
+            }
+
+        //    groupBox->enabled = false;
+        }
+    }
+    
+    void SettingsWidget::ApplyEncodeQuality()
+    {
+        ApplyChanges();
+    }
+
+    void SettingsWidget::ApplyPlaybackBufferSize()
+    {
+        ApplyChanges();
     }
 
 } // MumbleVoip

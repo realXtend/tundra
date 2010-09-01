@@ -17,13 +17,20 @@
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_3">
      <item>
-      <widget class="QCheckBox" name="voiceEnabledCheckBox">
+      <widget class="QCheckBox" name="enabledCheckBox">
        <property name="text">
-        <string>Enable (When enabled a connection to voice server is automatically established when user login to voice enabled world)</string>
+        <string>Enable</string>
        </property>
       </widget>
      </item>
     </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label">
+     <property name="text">
+      <string>When enabled a connection to voice server is automatically established when user login to voice enabled world</string>
+     </property>
+    </widget>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -47,37 +54,20 @@
                </widget>
               </item>
               <item row="1" column="1">
-               <spacer name="horizontalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>10</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item row="1" column="2">
                <widget class="QSlider" name="playbackBufferSlider">
+                <property name="maximum">
+                 <number>1000</number>
+                </property>
+                <property name="singleStep">
+                 <number>10</number>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickInterval">
+                 <number>10</number>
                 </property>
                </widget>
-              </item>
-              <item row="1" column="3">
-               <spacer name="horizontalSpacer_2">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>10</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
               </item>
               <item row="2" column="0">
                <widget class="QLabel" name="label_7">
@@ -86,10 +76,19 @@
                 </property>
                </widget>
               </item>
-              <item row="2" column="2">
+              <item row="2" column="1">
                <widget class="QSlider" name="encodeQualitySlider">
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="singleStep">
+                 <number>5</number>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="tickInterval">
+                 <number>5</number>
                 </property>
                </widget>
               </item>
@@ -107,63 +106,79 @@
                 </property>
                </widget>
               </item>
-              <item row="7" column="2">
-               <widget class="QSlider" name="microphoneSlider">
+              <item row="7" column="1">
+               <widget class="QSlider" name="microphoneLevelSlider">
+                <property name="maximum">
+                 <number>100</number>
+                </property>
+                <property name="singleStep">
+                 <number>5</number>
+                </property>
                 <property name="orientation">
                  <enum>Qt::Horizontal</enum>
                 </property>
+                <property name="tickInterval">
+                 <number>5</number>
+                </property>
                </widget>
               </item>
-              <item row="2" column="4">
+              <item row="2" column="3">
                <widget class="QLabel" name="encodeQualityLabel">
                 <property name="text">
                  <string>50 %</string>
                 </property>
                </widget>
               </item>
-              <item row="1" column="4">
+              <item row="1" column="3">
                <widget class="QLabel" name="playbackBufferSizeLabel">
                 <property name="text">
                  <string>200 ms</string>
                 </property>
                </widget>
               </item>
-              <item row="5" column="2">
+              <item row="5" column="1">
                <layout class="QHBoxLayout" name="horizontalLayout_4">
                 <item>
                  <widget class="QComboBox" name="defaultVoiceMode"/>
                 </item>
-                <item>
-                 <spacer name="horizontalSpacer">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
                </layout>
               </item>
-              <item row="7" column="4">
+              <item row="7" column="3">
                <widget class="QLabel" name="microphoneLevelLabel">
                 <property name="text">
                  <string>45 %</string>
                 </property>
                </widget>
               </item>
-              <item row="7" column="5">
+              <item row="7" column="4">
                <widget class="QPushButton" name="testMicrophoneButton">
                 <property name="text">
                  <string>Test microphone</string>
                 </property>
                </widget>
               </item>
+              <item row="1" column="4">
+               <widget class="QPushButton" name="applyPlaybackBufferSizeButton">
+                <property name="text">
+                 <string>Apply</string>
+                </property>
+               </widget>
+              </item>
               <item row="1" column="5">
-               <widget class="QPushButton" name="pushButton">
+               <spacer name="horizontalSpacer_2">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>10</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item row="2" column="4">
+               <widget class="QPushButton" name="applyEncodeQualityButton">
                 <property name="text">
                  <string>Apply</string>
                 </property>
