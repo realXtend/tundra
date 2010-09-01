@@ -6,7 +6,7 @@ endmacro (MocFolder)
 ##############
 
 # Define target name and output directory
-init_target (ServerLogicModule OUTPUT modules/core)
+init_target (TundraClientModule OUTPUT modules/core)
 
 MocFolder ()
 

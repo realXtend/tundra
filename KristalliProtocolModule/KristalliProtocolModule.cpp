@@ -22,6 +22,7 @@ namespace
 {
     const std::string moduleName("KristalliProtocolModule");
 
+/*
     const struct
     {
         SocketTransportLayer transport;
@@ -31,7 +32,6 @@ namespace
         { SocketOverUDP, 2345 }, // The default Kristalli over UDP port.
 
         { SocketOverTCP, 2345 }, // The default Kristalli over TCP port.
-/*
         { SocketOverUDP, 123 }, // Network Time Protocol.
 
         { SocketOverTCP, 80 }, // HTTP.
@@ -73,18 +73,16 @@ namespace
         { SocketOverUDP, 520 }, // RIP.
         { SocketOverUDP, 67 }, // DHCP client->server.
         { SocketOverUDP, 68 }, // DHCP server->client.
-*/
     };
 
     /// The number of different port choices to try from the list.
     const int cNumPortChoices = sizeof(destinationPorts) / sizeof(destinationPorts[0]);
-
+*/
 }
 
 KristalliProtocolModule::KristalliProtocolModule()
 :ModuleInterface(NameStatic())
-, serverConnection(0),
-nextPortAttempt(0)
+, serverConnection(0)
 {
 }
 
@@ -135,34 +133,12 @@ void KristalliProtocolModule::Update(f64 frametime)
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
         {
-            nextPortAttempt = (nextPortAttempt + 1) % cNumPortChoices;
             PerformConnection();
         }
         else if (!reconnectTimer.Enabled())
             reconnectTimer.StartMSecs(cReconnectTimeout);
     }
-/*
-    if (connectionPending && serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
-    {
-        connection->SetDatagramInFlowRatePerSecond(200);
-        
-        // Kristalli connection is established, now send a login message
-        LogInfo("KristalliServer connection established, sending login message");
-        if (!worldStream_)
-        {
-            LogError("No worldstream, cannot proceed with KristalliServer login");
-            return;
-        }
-        
-        ProtocolUtilities::ClientParameters& clientParams = worldStream_->GetInfo();
-        
-        MsgLogin msg;
-        for (unsigned i = 0; i < RexUUID::cSizeBytes; ++i)
-            msg.userUUID[i] = clientParams.agentID.data[i];
-        msg.userName = StringToBuffer(worldStream_->GetUsername());
-        connection->Send(msg);
-    }
-*/
+
     RESETPROFILER;
 }
 
@@ -171,15 +147,17 @@ const std::string &KristalliProtocolModule::NameStatic()
     return moduleName;
 }
 
-void KristalliProtocolModule::Connect(const char *ip, unsigned short port)
+void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
 {
     serverIp = ip;
+    serverPort = port;
+    serverTransport = transport;
 
     if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
         Disconnect();
 
     if (!Connected())
-        PerformConnection(); // Start performing a connection attempt to the desired address, using the 
+        PerformConnection(); // Start performing a connection attempt to the desired address/port/transport
 }
 
 void KristalliProtocolModule::PerformConnection()
@@ -191,10 +169,10 @@ void KristalliProtocolModule::PerformConnection()
     }
 
     // Connect to the server.
-    serverConnection = network.Connect(serverIp.c_str(), destinationPorts[nextPortAttempt].portNumber, destinationPorts[nextPortAttempt].transport, this);
+    serverConnection = network.Connect(serverIp.c_str(), serverPort, serverTransport, this);
     if (!serverConnection)
     {
-        std::cout << "Unable to connect to " << serverIp << ":" << destinationPorts[nextPortAttempt].portNumber << std::endl;
+        std::cout << "Unable to connect to " << serverIp << ":" << serverPort << std::endl;
         return;
     }
 }
@@ -206,7 +184,6 @@ void KristalliProtocolModule::Disconnect()
         network.CloseMessageConnection(serverConnection);
         serverConnection = 0;
     }
-    nextPortAttempt = 0;
 
     // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
     serverIp = "";

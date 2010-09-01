@@ -88,7 +88,7 @@ endif (HYDRAX)
 # The define also enables LoginScreenModule which is an experimental module 
 # for abstracting the login screen / main menu from the main application:
 # currently this functionality resides in RexLogicModule and UiModule.
-SET (UISERVICE_TEST 0)
+SET (UISERVICE_TEST 1)
 
 # Add all the subprojects in the rex viewer.
 
@@ -101,59 +101,59 @@ add_subdirectory (Interfaces)
 add_subdirectory (RexCommon)
 add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
-add_subdirectory (KristalliProtocolModule)
 add_subdirectory (UiServiceModule)
 add_subdirectory (QtInputModule)
 add_subdirectory (OpenALAudioModule)
 add_subdirectory (SupportModules)
 add_subdirectory (HttpUtilities)
 
-# Viewer & server logic modules and executables
-add_subdirectory (ViewerLogicModule)
+# Tundra viewer & server logic modules and executables
+add_subdirectory (KristalliProtocolModule)
+add_subdirectory (TundraClientModule)
+add_subdirectory (TundraServerModule)
 add_subdirectory (Viewer)
-add_subdirectory (ServerLogicModule)
 add_subdirectory (Server)
 
-#add_subdirectory (RexLogicModule)
-#add_subdirectory (AssetModule)
-#add_subdirectory (RpcUtilities)
-#add_subdirectory (ProtocolUtilities)
-#add_subdirectory (EnvironmentModule)
+# Legacy reX related modules
+add_subdirectory (RexLogicModule)
+add_subdirectory (AssetModule)
+add_subdirectory (RpcUtilities)
+add_subdirectory (ProtocolUtilities)
+add_subdirectory (EnvironmentModule)
 #add_subdirectory (UiModule)
+add_subdirectory (TextureDecoderModule)
+add_subdirectory (ProtocolModuleOpenSim)
+add_subdirectory (ProtocolModuleTaiga)
+add_subdirectory (LoginScreenModule)
 
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
 
-#add_subdirectory (TextureDecoderModule)
-#add_subdirectory (ProtocolModuleOpenSim)
-#add_subdirectory (ProtocolModuleTaiga)
-#add_subdirectory (LoginScreenModule)
-
 # The following are optional, but contain
 # commonly used functionality.
-#add_subdirectory (InventoryModule)
-#add_subdirectory (OgreAssetEditorModule)
-#add_subdirectory (CommunicationsModule)
+add_subdirectory (InventoryModule)
+add_subdirectory (OgreAssetEditorModule)
+add_subdirectory (CommunicationsModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.
 
 # The following EC's are declared by RexLogicModule
-#add_subdirectory (EntityComponents/EC_Highlight)
-#add_subdirectory (EntityComponents/EC_HoveringText)
-#add_subdirectory (EntityComponents/EC_Clone)
-#add_subdirectory (EntityComponents/EC_Light)
-#add_subdirectory (EntityComponents/EC_OpenSimPresence)
-#add_subdirectory (EntityComponents/EC_OpenSimPrim)
-#add_subdirectory (EntityComponents/EC_Touchable)
-#add_subdirectory (EntityComponents/EC_3DCanvas)
-#add_subdirectory (EntityComponents/EC_3DCanvasSource)
-#add_subdirectory (EntityComponents/EC_Ruler)
-#add_subdirectory (EntityComponents/EC_SoundRuler)
-#add_subdirectory (EntityComponents/EC_ParticleSystem)
-#add_subdirectory (EntityComponents/EC_Sound)
-#add_subdirectory (EntityComponents/EC_SoundListener)
+add_subdirectory (EntityComponents/EC_Highlight)
+add_subdirectory (EntityComponents/EC_HoveringText)
+add_subdirectory (EntityComponents/EC_Clone)
+add_subdirectory (EntityComponents/EC_Light)
+add_subdirectory (EntityComponents/EC_OpenSimPresence)
+add_subdirectory (EntityComponents/EC_OpenSimPrim)
+add_subdirectory (EntityComponents/EC_Touchable)
+add_subdirectory (EntityComponents/EC_3DCanvas)
+add_subdirectory (EntityComponents/EC_3DCanvasSource)
+add_subdirectory (EntityComponents/EC_Ruler)
+add_subdirectory (EntityComponents/EC_SoundRuler)
+add_subdirectory (EntityComponents/EC_ParticleSystem)
+add_subdirectory (EntityComponents/EC_Sound)
+add_subdirectory (EntityComponents/EC_SoundListener)
 
 # Add EC's declared by other modules here:
 # ...

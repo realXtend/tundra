@@ -1,19 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ViewerLogicModule_ViewerLogicModule_h
-#define incl_ViewerLogicModule_ViewerLogicModule_h
+#ifndef incl_TundraServerModule_TundraServerModule_h
+#define incl_TundraServerModule_TundraServerModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
-class ViewerLogicModule : public Foundation::ModuleInterface
+class TundraServerModule : public Foundation::ModuleInterface
 {
 public:
     /// Default constructor.
-    ViewerLogicModule();
+    TundraServerModule();
 
     /// Destructor.
-    ~ViewerLogicModule();
+    ~TundraServerModule();
 
     /// ModuleInterface override.
     void PreInitialize();

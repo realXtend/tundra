@@ -38,7 +38,7 @@ namespace KristalliProtocol
         MODULE_LOGGING_FUNCTIONS;
 
         /// Connects to the Kristalli server at the given address.
-        void Connect(const char *ip, unsigned short port);
+        void Connect(const char *ip, unsigned short port, SocketTransportLayer transport);
 
         void Disconnect();
 
@@ -72,8 +72,10 @@ namespace KristalliProtocol
         /// This variable stores the server ip address we are desiring to connect to.
         /// This is used to remember where we need to reconnect in case the connection goes down.
         std::string serverIp;
-        /// The index to the port list where we try to connect to next.
-        int nextPortAttempt;
+        /// Store the port number we are desiring to connect to. Used for reconnecting
+        unsigned short serverPort;
+        /// Store the transport type. Used for reconnecting
+        SocketTransportLayer serverTransport;
 
         Network network;
         MessageConnection *serverConnection;

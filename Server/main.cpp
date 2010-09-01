@@ -88,15 +88,15 @@ void setup (Foundation::Framework &fw)
 {
     // Exclude the viewer logic from loading
     // Note: later we will want to be able to run both server & viewer logic inside the same executable
-    fw.GetModuleManager()->ExcludeModule("ViewerLogicModule");
+    fw.GetModuleManager()->ExcludeModule("TundraClientModule");
+    fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
     
-    // Exclude window & rendering related stuff
-    //! \todo we might not always want to do this
-    fw.GetModuleManager()->ExcludeModule("ConsoleModule");
-    fw.GetModuleManager()->ExcludeModule("QtInputModule");
-    fw.GetModuleManager()->ExcludeModule("OgreRenderingModule");
-    fw.GetModuleManager()->ExcludeModule("OpenALAudioModule");
-    fw.GetModuleManager()->ExcludeModule("UiServiceModule");
+    // Exclude window & rendering related stuff, if a fully headless server is desired
+    //fw.GetModuleManager()->ExcludeModule("ConsoleModule");
+    //fw.GetModuleManager()->ExcludeModule("QtInputModule");
+    //fw.GetModuleManager()->ExcludeModule("OgreRenderingModule");
+    //fw.GetModuleManager()->ExcludeModule("OpenALAudioModule");
+    //fw.GetModuleManager()->ExcludeModule("UiServiceModule");
 }
 
 int run (int argc, char **argv)
