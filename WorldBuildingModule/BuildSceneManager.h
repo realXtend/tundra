@@ -82,6 +82,7 @@ namespace WorldBuilding
 
     private slots:
         void InitScene();
+        void CleanPyWidgets();
         void SceneChangedNotification(const QString &old_name, const QString &new_name);
         void ObjectSelected(bool selected);
 
