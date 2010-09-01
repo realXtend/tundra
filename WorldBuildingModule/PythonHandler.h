@@ -46,7 +46,9 @@ namespace WorldBuilding
         void EmitRotateChange(int x, int y, int z);
         void EmitObjectAction(PythonParams::ObjectAction action);
 
-        PythonParams::ManipulationMode GetCurrentManipulationMode() { return current_mode_; }        
+        void PassWidget(const QString &type, QWidget *widget);
+
+        PythonParams::ManipulationMode GetCurrentManipulationMode() { return current_mode_; }     
 
     private:
         PythonParams::ManipulationMode current_mode_;
@@ -61,6 +63,8 @@ namespace WorldBuilding
         void CreateObject();
         void DuplicateObject();
         void DeleteObject();
+
+        void WidgetRecieved(const QString &type, QWidget *widget);
     };
 }
 

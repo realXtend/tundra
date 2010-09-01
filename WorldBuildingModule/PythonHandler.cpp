@@ -61,4 +61,9 @@ namespace WorldBuilding
                 break;
         }
     }
+
+    void PythonHandler::PassWidget(const QString &type, QWidget *widget)
+    {
+        emit WidgetRecieved(type, widget);
+    }
 }
