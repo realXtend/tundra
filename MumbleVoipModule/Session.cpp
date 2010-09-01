@@ -582,7 +582,7 @@ namespace MumbleVoip
 
     void Session::OnSettingsChanged()
     {
-        connection_->SetPlaybackBufferMaxLengthMs(settings_->playback_buffer_size_ms);
+        //connection_->SetPlaybackBufferMaxLengthMs(settings_->playback_buffer_size_ms_);
     }
 
 } // MumbleVoip
