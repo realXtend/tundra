@@ -1,9 +1,10 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   EC_SoundListener.h
- *  @brief  
- *  @note   
+ *  @file   EC_SoundListener.cpp
+ *  @brief  Entity-component which provides sound listener position for in-world 3D audio.
+ *          Updates parent entity's placeable component's position to the sound service each frame.
+ *  @note   Only one entity can have active sound listener at a time.
  */
 
 #include "StableHeaders.h"
@@ -25,7 +26,7 @@ EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(this, SIGNAL(OnChanged()), SLOT(DisableOtherSoundListeners()));
-    connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update(double)));
+    connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update()));
 }
 
 EC_SoundListener::~EC_SoundListener()
@@ -64,7 +65,7 @@ void EC_SoundListener::SetActive(bool active)
     }
 }
 
-void EC_SoundListener::Update(double frametime)
+void EC_SoundListener::Update()
 {
     if (active_ && !placeable_.expired() && !soundService_.expired())
         soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
