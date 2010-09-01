@@ -88,7 +88,7 @@ void setup (Foundation::Framework &fw)
 {
     // Exclude the server logic from loading
     // Note: later we will want to be able to run both server & viewer logic inside the same executable
-    fw.GetModuleManager()->ExcludeModule("ServerLogicModule");
+    fw.GetModuleManager()->ExcludeModule("TundraServerModule");
 }
 
 int run (int argc, char **argv)

@@ -14,18 +14,18 @@
 
 #add_subdirectory (TestModule)
 #add_subdirectory (UnitTests)
-#add_subdirectory (DebugStatsModule)
+add_subdirectory (DebugStatsModule)
 #add_subdirectory (NetTestLogicModule)
 
-#add_subdirectory (PythonScriptModule)
+add_subdirectory (PythonScriptModule)
 #add_subdirectory (TelepathyIMModule)
-#add_subdirectory (ECEditorModule)
+add_subdirectory (ECEditorModule)
 #add_subdirectory (NoteCardModule)
 
 #add_subdirectory (JavascriptScriptModule)
-#add_subdirectory (InWorldChatModule)
-#add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
-#add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
+add_subdirectory (InWorldChatModule)
+add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
+add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
 #add_subdirectory (EntityComponents/EC_NoteCard)     # declared by NoteCardModule
 #add_subdirectory (EntityComponents/EC_DynamicComponent)      # declared by PythonScriptModule
 

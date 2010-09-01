@@ -1,19 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_ServerLogicModule_ServerLogicModule_h
-#define incl_ServerLogicModule_ServerLogicModule_h
+#ifndef incl_TundraClientModule_TundraClientModule_h
+#define incl_TundraClientModule_TundraClientModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
-class ServerLogicModule : public Foundation::ModuleInterface
+class TundraClientModule : public Foundation::ModuleInterface
 {
 public:
     /// Default constructor.
-    ServerLogicModule();
+    TundraClientModule();
 
     /// Destructor.
-    ~ServerLogicModule();
+    ~TundraClientModule();
 
     /// ModuleInterface override.
     void PreInitialize();
