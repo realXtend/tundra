@@ -23,7 +23,9 @@ namespace MumbleVoip
         virtual void LoadInitialState();
     private slots:
         virtual void OpenMicrophoneAdjustmentWidget();
-        virtual void SaveSettings();
+        virtual void ApplyEncodeQuality();
+        virtual void ApplyPlaybackBufferSize();
+        virtual void ApplyChanges();
         virtual void UpdateUI();
     private:
         Settings* settings_;
