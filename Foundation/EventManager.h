@@ -120,8 +120,9 @@ namespace Foundation
 
             //! Unregisters a module or component from the subscriber tree
             /*! Do not call while responding to an event!
-                \param module Module to unregister
-                \return true if successfully unsubscribed
+                @param module Module to unregister
+                @return true if successfully unsubscribed
+                @note if @p subscriber is a component it will also remove it from special event subscriber map!!!
              */
             
             template <typename T> bool UnregisterEventSubscriber(T* subscriber);
@@ -264,7 +265,7 @@ namespace Foundation
             QMap<QPair<event_category_id_t, event_id_t>, QList<ComponentInterface* > > specialEvents_;
     };
 
-};
+}
 
 #include "EventManager-templates.h"
 
