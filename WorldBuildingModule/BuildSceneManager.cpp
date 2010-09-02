@@ -154,7 +154,8 @@ namespace WorldBuilding
 
         // Add to scene and toolbar
         scene_->addItem(widget);
-        toolbar_->AddButton(name, widget);
+        if (name != "Console")
+            toolbar_->AddButton(name, widget);
 
         // Set initial pos and hide
         widget->setPos(object_manipulations_widget_->rect().width() + 25, 25);

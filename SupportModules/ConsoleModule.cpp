@@ -39,14 +39,14 @@ namespace Console
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Console, manager_);
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_ConsoleCommand,
             checked_static_cast<ConsoleManager*>(manager_.get())->GetCommandManager());
-
-        QGraphicsView *ui_view = GetFramework()->GetUIView();
-        if (ui_view)
-            ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
     }
 
     void ConsoleModule::PostInitialize()
     {
+        QGraphicsView *ui_view = GetFramework()->GetUIView();
+        if (ui_view)
+            ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
+
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
