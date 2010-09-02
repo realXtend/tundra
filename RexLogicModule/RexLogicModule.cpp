@@ -37,7 +37,6 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
-#include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -87,6 +86,7 @@
 #include "EC_ParticleSystem.h"
 #include "EC_SoundListener.h"
 #include "EC_Sound.h"
+#include "EC_Mesh.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>

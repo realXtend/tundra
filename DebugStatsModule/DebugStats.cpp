@@ -98,6 +98,10 @@ void DebugStatsModule::PostInitialize()
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
 
+    RegisterConsoleCommand(Console::CreateCommand("exec",
+        "Invokes action execution in entity",
+        Console::Bind(this, &DebugStatsModule::Exec)));
+
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
     AddProfilerWidgetToUi();
@@ -463,6 +467,32 @@ Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params
         }
     }
     
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
+{
+    if (params.size() < 2)
+        return Console::ResultFailure("Not enough parameters.");
+
+    int id = ParseString<int>(params[0], 0);
+    if (id == 0)
+        return Console::ResultFailure("Invalid value for entity ID. The ID must be an integer and unequal to zero.");
+
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene.");
+
+    Scene::EntityPtr entity = scene->GetEntity(id);
+    if (!entity)
+        return Console::ResultFailure("No entity found for entity ID " + params[0]);
+
+    QVector<QString> execParameters;
+    for(size_t i = 2; i < params.size(); ++i)
+        execParameters << params[i].c_str();
+
+    entity->Exec(params[1].c_str(), execParameters);
+
     return Console::ResultSuccess();
 }
 

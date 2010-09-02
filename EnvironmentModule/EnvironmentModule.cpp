@@ -26,6 +26,7 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
+#include "CompositionHandler.h"
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -79,8 +80,7 @@ namespace Environment
         if (renderer)
         {
             // Initialize post-process dialog.
-            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler().GetAvailableCompositors());
-            postprocess_dialog_->SetHandler(&renderer->GetCompositionHandler());
+            postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
             Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
@@ -269,7 +269,7 @@ namespace Environment
                     //button is checked
                     if (postprocess_dialog_)
                     {
-                        QString effect_name = renderer->GetCompositionHandler().MapNumberToEffectName(vec.at(0)).c_str();
+                        QString effect_name = renderer->GetCompositionHandler()->MapNumberToEffectName(vec.at(0)).c_str();
                         bool enabled = true;
                         if (vec.at(1) == "False")
                             enabled = false;

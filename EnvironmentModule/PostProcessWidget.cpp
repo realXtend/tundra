@@ -10,10 +10,11 @@
 
 namespace Environment
 {
-    PostProcessWidget::PostProcessWidget(QVector<QString> &effects) : handler_(0)
+    PostProcessWidget::PostProcessWidget(OgreRenderer::CompositionHandler *handler) :
+        handler_(handler)
     {
         widget_.setupUi(this);
-        AddEffects(effects);
+        AddEffects(handler_->GetAvailableCompositors());
         setWindowTitle(tr("Post-processing"));
     }
 
