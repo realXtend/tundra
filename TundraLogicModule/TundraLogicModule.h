@@ -1,19 +1,19 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraServerModule_TundraServerModule_h
-#define incl_TundraServerModule_TundraServerModule_h
+#ifndef incl_TundraLogicModule_TundraLogicModule_h
+#define incl_TundraLogicModule_TundraLogicModule_h
 
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
 
-class TundraServerModule : public Foundation::ModuleInterface
+class TundraLogicModule : public Foundation::ModuleInterface
 {
 public:
     /// Default constructor.
-    TundraServerModule();
+    TundraLogicModule();
 
     /// Destructor.
-    ~TundraServerModule();
+    ~TundraLogicModule();
 
     /// ModuleInterface override.
     void PreInitialize();
@@ -38,6 +38,18 @@ public:
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
 
+    /// Starts a server (console command)
+    Console::CommandResult ConsoleStartServer(const StringVector &params);
+    
+    /// Stops a server (console command)
+    Console::CommandResult ConsoleStopServer(const StringVector &params);
+    
+    /// Stops a server (console command)
+    Console::CommandResult ConsoleConnect(const StringVector &params);
+    
+    /// Stops a server (console command)
+    Console::CommandResult ConsoleDisconnect(const StringVector &params);
+    
 private:
     //! Type name of the module.
     static std::string type_name_static_;

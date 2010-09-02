@@ -86,11 +86,9 @@ int main (int argc, char **argv)
 //! post init setup for framework
 void setup (Foundation::Framework &fw)
 {
-    // Exclude the viewer logic from loading
-    // Note: later we will want to be able to run both server & viewer logic inside the same executable
-    fw.GetModuleManager()->ExcludeModule("TundraClientModule");
+    // Exclude the login screen from loading
     fw.GetModuleManager()->ExcludeModule("LoginScreenModule");
-    
+
     // Exclude window & rendering related stuff, if a fully headless server is desired
     //fw.GetModuleManager()->ExcludeModule("ConsoleModule");
     //fw.GetModuleManager()->ExcludeModule("QtInputModule");

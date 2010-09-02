@@ -286,7 +286,8 @@ namespace Ether
             // Notify widget
             status_widget_ = new View::ControlProxyWidget(View::ControlProxyWidget::StatusWidget, View::ControlProxyWidget::NoneDirection);
             layout_manager_->AddCornerAnchor(status_widget_, Qt::TopLeftCorner, Qt::TopLeftCorner); 
-            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner); 
+            layout_manager_->AddCornerAnchor(status_widget_, Qt::TopRightCorner, Qt::TopRightCorner);
+            status_widget_->setZValue(51);
             status_widget_->hide(); 
         }
 
@@ -333,8 +334,13 @@ namespace Ether
 
         void EtherSceneController::SceneRectChanged(const QRectF &new_rect)
         {
-            if (!top_menu_ || !bottom_menu_)
+            if (login_in_progress_)
                 return;
+            if (!top_menu_ || !bottom_menu_)
+                return;    
+
+            // Set everything visible
+            SetEtherItemsVisible();
 
             QRectF controls_rect, left_over_rect, top_rect, bottom_rect;
             View::InfoCard *hightlight_top = top_menu_->GetHighlighted();
@@ -378,19 +384,57 @@ namespace Ether
             action_proxy_widget_->UpdateGeometry(new_rect);
 
             // Start crazy, but neccessary hack
-            connect(hightlight_top->GetMoveAnimationPointer(), SIGNAL( finished()), SLOT( TheResizer() ));
+            disconnect(hightlight_top->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(TheResizer()));
+            connect(hightlight_top->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(TheResizer()));
             last_scale_ = present_scale * 10;
 
             // Classical login widget (full screen)
             classic_login_proxy_->setGeometry(new_rect);
+
+            // Make sure conrols stay up to date
+            UpdateAvatarInfoWidget();
+            UpdateWorldInfoWidget();
         }
 
         void EtherSceneController::TheResizer()
         {
             // End crazy, but neccessary hack
+            QList<View::ControlProxyWidget*> controls;
+            controls << avatar_info_widget_ << world_info_widget_ << avatar_addremove_widget_ << world_addremove_widget_;
+            bool still_resizing = false;
             if (last_scale_ != (int)(top_menu_->GetHighlighted()->scale()*10) && top_menu_->GetHighlighted()->scale() < 0.95)
+                still_resizing = true;
+
+            foreach (View::ControlProxyWidget *control, controls)
+                control->IgnoreContollerCardMovement(still_resizing);
+            if (still_resizing)
                 SceneRectChanged(scene_->sceneRect());
-            disconnect(this, SLOT( TheResizer() ));
+            else
+                disconnect(top_menu_->GetHighlighted()->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(TheResizer()));
+        }
+
+        void EtherSceneController::SetEtherItemsVisible()
+        {
+            if (!top_menu_ || !bottom_menu_)
+                return;
+            QVector<View::InfoCard*> all_cards = top_menu_->GetObjects();
+            all_cards += bottom_menu_->GetObjects();
+            foreach(View::InfoCard *card, all_cards)
+            {
+                // Already hidden items
+                if (card->opacity() == 0.0)
+                    continue;
+                // if not 0.0 but in >0.0->1.0 we make sure its 1.0
+                card->setOpacity(1.0);
+            }
+            if (avatar_info_widget_)
+                avatar_info_widget_->setOpacity(1.0);
+            if (world_info_widget_)
+                world_info_widget_->setOpacity(1.0);
+            if (control_widget_)
+                control_widget_->setOpacity(1.0);
+            if (action_proxy_widget_)
+                action_proxy_widget_->setOpacity(1.0);
         }
 
         void EtherSceneController::UpPressed()
@@ -460,7 +504,19 @@ namespace Ether
         void EtherSceneController::UpdateAvatarInfoWidget()
         {
             if (last_active_top_card_)
+            {
                 avatar_info_widget_->UpdateContollerCard(last_active_top_card_);
+                avatar_addremove_widget_->UpdateContollerCard(last_active_top_card_);
+            }
+        }
+        
+        void EtherSceneController::UpdateWorldInfoWidget()
+        {
+            if (last_active_bottom_card_)
+            {
+                world_info_widget_->UpdateContollerCard(last_active_bottom_card_);
+                world_addremove_widget_->UpdateContollerCard(last_active_bottom_card_);
+            }
         }
 
         void EtherSceneController::RemoveAvatar(Data::AvatarInfo *avatar_info)
@@ -472,12 +528,6 @@ namespace Ether
                 scene_->removeItem(last_active_top_card_);
                 emit ObjectRemoved(avatar_info->id());
             }
-        }
-
-        void EtherSceneController::UpdateWorldInfoWidget()
-        {
-            if (last_active_bottom_card_)
-                world_info_widget_->UpdateContollerCard(last_active_bottom_card_);
         }
 
         void EtherSceneController::RemoveWorld(Data::WorldInfo *world_info)
@@ -499,7 +549,7 @@ namespace Ether
                 status_widget_->hide();
             else if (request_type == "help")
             {
-                ShowStatusInformation("Naalis help system is still under development, sorry.");
+                ShowStatusInformation(tr("Naali's help system is still under development, sorry."));
                 return;
             }
             else if (request_type == "exit")
@@ -516,7 +566,6 @@ namespace Ether
                     if (!world_card)
                         return;
                     ShowStatusInformation(QString("Login to %1 canceled").arg(world_card->title()));
-
                 }
                 else if (request_type == "disconnect" && connected_world_)
                     ShowStatusInformation(QString("Disconnected from %1").arg(connected_world_->title()));
@@ -524,7 +573,7 @@ namespace Ether
                 emit DisconnectCurrentConnection();
                 SuppressControlWidgets(false);
                 scene_->SupressKeyEvents(false);
-                SceneRectChanged(scene_->sceneRect());
+                RecalculateMenus();
 
                 control_widget_->setOpacity(1);
                 control_widget_->show();
@@ -533,6 +582,9 @@ namespace Ether
 
         void EtherSceneController::TryStartLogin()
         {
+            if (login_in_progress_)
+                return;
+            
             QPair<View::InfoCard*, View::InfoCard*> selected_cards;
             selected_cards.first = top_menu_->GetHighlighted();
             selected_cards.second = bottom_menu_->GetHighlighted();
@@ -541,12 +593,9 @@ namespace Ether
             SuppressControlWidgets(true);
 
             StartLoginAnimation();
-            if (!login_in_progress_)
-            {
-                emit LoginRequest(selected_cards);
-                login_in_progress_ = !login_in_progress_;
-            }
-
+            emit LoginRequest(selected_cards);
+            login_in_progress_ = true;
+            
             ShowStatusInformation(QString("Connecting to %1 with %2").arg(selected_cards.second->title(), selected_cards.first->title()), 30000);
         }
 
@@ -554,6 +603,7 @@ namespace Ether
         {
             if (!login_animations_)
                 return;
+            SetEtherItemsVisible();
 
             login_animations_->clear();
             login_animations_->setDirection(QAbstractAnimation::Forward);
@@ -565,13 +615,18 @@ namespace Ether
             QPropertyAnimation *anim;
             foreach (View::InfoCard* card, t_obj)
             {
+                if (!card->isActive())
+                    continue;
+
                 // Animate opacity from current to 0 for every card except the selected cards
                 if (card != last_active_bottom_card_ && card != last_active_top_card_)
                 {
+                    if (card->opacity() == 0.0)
+                        continue;
                     anim = new QPropertyAnimation(card, "opacity", login_animations_);
                     anim->setStartValue(card->opacity());
                     anim->setEndValue(0);
-                    anim->setDuration(2000);
+                    anim->setDuration(1000);
                     anim->setEasingCurve(QEasingCurve::InOutSine);
                     login_animations_->addAnimation(anim);
                 }
@@ -581,14 +636,14 @@ namespace Ether
             anim = new QPropertyAnimation(avatar_addremove_widget_, "opacity", login_animations_);
             anim->setStartValue(avatar_addremove_widget_->opacity());
             anim->setEndValue(0);
-            anim->setDuration(2000);
+            anim->setDuration(1000);
             anim->setEasingCurve(QEasingCurve::InOutSine);
             login_animations_->addAnimation(anim);
 
             anim = new QPropertyAnimation(world_addremove_widget_, "opacity", login_animations_);
             anim->setStartValue(world_addremove_widget_->opacity());
             anim->setEndValue(0);
-            anim->setDuration(2000);
+            anim->setDuration(1000);
             anim->setEasingCurve(QEasingCurve::InOutSine);
             login_animations_->addAnimation(anim);
 
@@ -664,11 +719,8 @@ namespace Ether
         {
             if (!login_animations_)
                 return;
-
             if (login_animations_->direction() == QAbstractAnimation::Backward && change_scene_after_anims_finish_)
-               scene_->EmitSwitchSignal();
-            if (login_animations_->direction() == QAbstractAnimation::Backward && !change_scene_after_anims_finish_)
-                HideStatusWidget();
+                scene_->EmitSwitchSignal();
             if (login_animations_->direction() == QAbstractAnimation::Backward)
                 SuppressControlWidgets(false);
         }
@@ -690,8 +742,10 @@ namespace Ether
 
         void EtherSceneController::UiServiceSceneChanged(const QString &old_name, const QString &new_name)
         {
-            if (old_name == "Ether")
+            if (old_name.toLower() == "ether")
                 HideStatusWidget();
+            if (new_name.toLower() == "ether")
+                RecalculateMenus();
         }
 
         void EtherSceneController::ShowStatusInformation(const QString &text, int hideout)

@@ -56,6 +56,9 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
     
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateOgreLight()));
+
+   
+
 }
 
 EC_Light::~EC_Light()
@@ -158,3 +161,4 @@ void EC_Light::UpdateOgreLight()
         LogError("Exception while setting EC_Light parameters to Ogre: " + std::string(e.what()));
     }
 }
+

@@ -38,7 +38,6 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
 #include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
-#include "EntityComponent/ComponentResourceHandler.h" //! @todo remove this when can.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -70,9 +69,6 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
-#ifndef UISERVICE_TEST
-#include "UiModule.h"
-#endif
 
 // External EC's
 #include "EC_Highlight.h"
@@ -100,6 +96,8 @@
 #include <OgreBillboardSet.h>
 
 #include <boost/make_shared.hpp>
+
+#include <QApplication>
 
 #include "MemoryLeakCheck.h"
 
@@ -175,7 +173,6 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
-    component_res_handler_ = ComponentResourceHandlerPtr(new ComponentResourceHandler(this));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -194,13 +191,19 @@ void RexLogicModule::Initialize()
     // Register login service.
     login_service_ = boost::shared_ptr<LoginHandler>(new LoginHandler(this));
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
+
+    // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
+    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual
 void RexLogicModule::PostInitialize()
 {
+    Foundation::EventManagerPtr eventMgr = framework_->GetEventManager();
+    eventMgr->RegisterEventSubscriber(this, 104);
+
     // Input events.
-    event_category_id_t eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Input");
+    event_category_id_t eventcategoryid = eventMgr->QueryEventCategory("Input");
 
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
@@ -213,15 +216,15 @@ void RexLogicModule::PostInitialize()
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
 
     // Action events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Action");
-    
+    eventcategoryid = eventMgr->QueryEventCategory("Action");
+
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
 
     // Scene events.
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Scene");
+    eventcategoryid = eventMgr->QueryEventCategory("Scene");
 
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
@@ -233,34 +236,34 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
 
     // Resource events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Resource");
+    eventcategoryid = eventMgr->QueryEventCategory("Resource");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
 
     // Inventory events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Inventory");
+    eventcategoryid = eventMgr->QueryEventCategory("Inventory");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
 
     // Asset events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Asset");
+    eventcategoryid = eventMgr->QueryEventCategory("Asset");
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-    
+
     // Framework events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("Framework");
+    eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
 
     // NetworkState events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+    eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
 
     // NetworkIn events
-    eventcategoryid = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
+    eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
 
@@ -315,6 +318,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
         Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
         entity->AddComponent(placeable);
         entity->AddComponent(camera);
+        entity->AddComponent(sound_listener);
         
         OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
         camera_ptr->SetPlaceable(placeable);
@@ -489,6 +493,12 @@ Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QS
         return entity;
     else
         return Scene::EntityPtr();
+}
+
+const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) const
+{
+    static const QString prop = GetUserAvatarEntity()->GetComponent<EC_AvatarAppearance>()->GetProperty(name.toStdString()).c_str();
+    return prop;
 }
 
 void RexLogicModule::SwitchCameraState()
@@ -679,7 +689,7 @@ Real RexLogicModule::GetCameraFOV() const
 
 void RexLogicModule::LogoutAndDeleteWorld()
 {
-    AboutToDeleteWorld();
+    emit AboutToDeleteWorld();
 
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
@@ -917,31 +927,19 @@ void RexLogicModule::UpdateSoundListener()
     if (!activeScene_)
         return;
 
-    Foundation::SoundServiceInterface *soundsystem =  framework_->GetService<Foundation::SoundServiceInterface>();
-    if (!soundsystem)
-        return;
-
-    Vector3df listener_pos;
-//    if (!activeSoundListener_.expired())
-//        activeSoundListener_.lock()->listener->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetPosition();
-
     // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
-        listener_pos = GetCameraPosition();
+        EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
+        if (listener && !listener->IsActive())
+            listener->SetActive(true);
     }
-    else
+    else if (GetUserAvatarEntity())
     {
-        Scene::EntityPtr entity = avatar_->GetUserAvatar();
-        if (!entity)
-            return;
-        OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        if (!placeable)
-            return;
-        listener_pos = placeable->GetPosition();
+        EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
+        if (listener && !listener->IsActive())
+            listener->SetActive(true);
     }
-
-    soundsystem->SetListener(listener_pos, GetCameraOrientation());
 }
 
 bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -950,8 +948,6 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventD
     avatar_->HandleResourceEvent(event_id, data);
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);
-    //! @todo This should be removed in future.
-    component_res_handler_->HandleResourceEvent(event_id, data);
 
     return false;
 }
@@ -966,70 +962,6 @@ bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventData
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);
-}
-
-void RexLogicModule::AboutToDeleteWorld()
-{
-#ifndef UISERVICE_TEST
-    // Lets take some screenshots before deleting the scene
-    UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-
-    if (!avatar_ && !ui_module)
-        return;
-
-    Scene::EntityPtr avatar_entity = avatar_->GetUserAvatar();
-    if (!avatar_entity)
-        return;
-
-    OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-    EC_AvatarAppearance *ec_appearance = avatar_entity->GetComponent<EC_AvatarAppearance>().get();
-    if (!ec_placeable || !ec_mesh || !ec_appearance)
-        return;
-
-    if (ec_placeable && ec_mesh && ec_appearance)
-    {
-        // Head bone pos setup
-        Vector3Df avatar_position = ec_placeable->GetPosition();
-        Quaternion avatar_orientation = ec_placeable->GetOrientation();
-        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
-        std::string view_bone_name;
-        Real adjustheight = ec_mesh->GetAdjustPosition().z;
-        Vector3df avatar_head_position;
-
-        if (ec_appearance->HasProperty("headbone"))
-        {
-            view_bone_name = ec_appearance->GetProperty("headbone");
-            adjustheight += 0.15;
-            if (!view_bone_name.empty())
-            {
-                if (skel && skel->hasBone(view_bone_name))
-                {
-                    Ogre::Bone* bone = skel->getBone(view_bone_name);
-                    Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                    Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-                    avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
-                }
-            }
-        }
-        else
-        {
-            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
-            avatar_head_position = ec_placeable->GetPosition();
-        }
-
-        // Get paths where to store the screenshots
-        QPair<QString, QString> paths = ui_module->GetScreenshotPaths();
-
-        // Pass all variables to renderer for screenshot
-        if (!paths.first.isEmpty() && !paths.second.isEmpty())
-        {
-            SetAllTextOverlaysVisible(false);
-            GetOgreRendererPtr()->CaptureWorldAndAvatarToFile(
-                avatar_head_position, avatar_orientation, paths.first.toStdString(), paths.second.toStdString());
-        }
-    }
-#endif
 }
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
@@ -1086,11 +1018,10 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
 /*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
     if(info_icon.get())
         info_icon->EntityClicked();*/
-    
+
     boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-    if (canvas_source){
+    if (canvas_source)
         canvas_source->Clicked();
-    }
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1328,12 +1259,14 @@ void RexLogicModule::FindActiveListener()
         return;
 
     // Iterate throught possible listeners and find the active one.
+/*
     foreach(Scene::Entity *listener, soundListeners_)
-        if (listener->GetComponent<EC_SoundListener>()->active.Get())
+        if (listener->GetComponent<EC_SoundListener>()->IsActive())
         {
             activeSoundListener_ = activeScene_->GetEntity(listener->GetId());
             break;
         }
+*/
 }
 
 } // namespace RexLogic

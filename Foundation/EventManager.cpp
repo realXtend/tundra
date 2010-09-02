@@ -20,10 +20,7 @@
 
 namespace Foundation
 {
-    bool CompareSubscribers(const EventManager::EventSubscriber& lhs, const EventManager::EventSubscriber& rhs)
-    {
-        return lhs.priority_ > rhs.priority_;
-    }
+   
     
     EventManager::EventManager(Framework *framework) : 
         framework_(framework),
@@ -120,13 +117,41 @@ namespace Foundation
         }
         
         // Send event in priority order, until someone returns true
-        for (unsigned i = 0; i < subscribers_.size(); ++i)
+        for (unsigned i = 0; i < module_subscribers_.size(); ++i)
         {
-            if (SendEvent(subscribers_[i], category_id, event_id, data))
+            if (SendEvent(module_subscribers_[i], category_id, event_id, data))
                 return true;
         }
         
+        // After that send events to components
+
+        for (unsigned i = 0; i < component_subscribers_.size(); ++i)
+        {
+            if (SendEvent(component_subscribers_[i], category_id, event_id, data))
+                return true;
+        }
+
+        // Then go through 
+        QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
+       
+        if ( specialEvents_.contains(group) )
+        {
+            QList<ComponentInterface* > lst = specialEvents_[group];
+            for ( int i = 0; i < lst.size(); ++i)
+            {
+                EventSubscriber<ComponentInterface> subs;
+                subs.subscriber_ = lst[i];
+
+                if (SendEvent(subs, category_id, event_id, data))
+                    return true;
+
+            }
+        }
+
         return false;
+
+
+
     }
     
     bool EventManager::SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data)
@@ -157,91 +182,40 @@ namespace Foundation
         new_delayed_events_.push_back(new_delayed_event);
     }
     
-    bool EventManager::SendEvent(const EventSubscriber& subscriber, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
+
+    bool EventManager::RegisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id, event_id_t event_id)
     {
-        ModuleInterface* module = subscriber.module_;
-        if (module)
+       
+        QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
+       
+        if ( specialEvents_.contains(group) )
         {
-            try
-            {
-                return module->HandleEvent(category_id, event_id, data);
-            }
-            catch(const std::exception &e)
-            {
-                std::cout << "HandleEvent caught an exception inside module " << module->Name() << ": " << (e.what() ? e.what() : "(null)") << std::endl;
-                RootLogCritical(std::string("HandleEvent caught an exception inside module " + module->Name() + ": " + (e.what() ? e.what() : "(null)")));
-                throw;
-            }
-            catch(...)
-            {
-                std::cout << "HandleEvent caught an unknown exception inside module " << module->Name() << std::endl;
-                RootLogCritical(std::string("HandleEvent caught an unknown exception inside module " + module->Name()));
-                throw;
-            }
+            QList<ComponentInterface* > lst = specialEvents_[group];
+            lst.append(component);
         }
-        
-        return false;
-    }
-    
-    bool EventManager::RegisterEventSubscriber(ModuleInterface* module, int priority)
-    {
-        if (!module)
+        else
         {
-            RootLogError("Tried to register null module as event subscriber");
-            return false;
+            QList<ComponentInterface* > lst;
+            lst.append(component);
+            specialEvents_.insert(group,lst); 
         }
-        
-        for (unsigned i = 0; i < subscribers_.size(); ++i)
-        {
-            // If module found, just readjust the priority
-            if (subscribers_[i].module_ == module)
-            {
-                subscribers_[i].priority_ = priority;
-                std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
-                return true;
-            }
-        }
-        
-        EventSubscriber new_subscriber;
-        new_subscriber.module_ = module;
-        new_subscriber.module_name_ = module->Name();
-        new_subscriber.priority_ = priority;
-        subscribers_.push_back(new_subscriber);
-        std::sort(subscribers_.begin(), subscribers_.end(), CompareSubscribers);
+
         return true;
     }
-    
-    bool EventManager::UnregisterEventSubscriber(ModuleInterface* module)
-    {
-        if (!module)
-            return false;
-        
-        for (unsigned i = 0; i < subscribers_.size(); ++i)
-        {
-            if (subscribers_[i].module_ == module)
-            {
-                subscribers_.erase(subscribers_.begin() + i);
-                return true;
-            }
-        }
-        
-        return false;
-    }
-    
-    bool EventManager::HasEventSubscriber(ModuleInterface* module)
-    {
-        if (!module)
-            return false;
-        
-        for (unsigned i = 0; i < subscribers_.size(); ++i)
-        {
-            if (subscribers_[i].module_ == module)
-                return true;
-        }
-        
-        return false;
-    }
 
+    bool EventManager::UnregisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id,event_id_t event_id)
+     {
+       QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
+       if ( specialEvents_.contains(group) )
+       {
+            specialEvents_.remove(group);
+            return true;
+       }
+
+       return false;
+     }
+
+   
     request_tag_t EventManager::GetNextRequestTag()
     {
         if (next_request_tag_ == 0) 

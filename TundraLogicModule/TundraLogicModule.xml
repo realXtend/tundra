@@ -1,0 +1,4 @@
+<config>
+    <entry>TundraLogicModule</entry>
+    <dependency>KristalliProtocolModule</dependency>
+</config>

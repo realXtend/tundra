@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_TundraClientModule_StableHeaders_h
-#define incl_TundraClientModule_StableHeaders_h
+#ifndef incl_TundraLogicModule_StableHeaders_h
+#define incl_TundraLogicModule_StableHeaders_h
 
 #include "CoreStdIncludes.h"
 
