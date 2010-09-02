@@ -230,6 +230,9 @@ private:
     /// A bitmask for the mouse buttons released this frame.
 	unsigned long releasedMouseButtons;
 
+    /// Keep track of key modifiers to be sent with mouse pressed/released
+    unsigned long current_modifiers_;
+
     // The following variables double-buffer the mouse button presses and releases, so that a module will not lose these
     // events depending on what order the module Updates are called.
 	unsigned long newMouseButtonsPressedQueue;

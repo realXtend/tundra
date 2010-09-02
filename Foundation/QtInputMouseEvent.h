@@ -9,6 +9,7 @@
 #include <qnamespace.h>
 #include <QPoint>
 #include <QObject>
+#include <QKeySequence>
 
 class QGraphicsItem;
 
@@ -39,6 +40,7 @@ public:
     relativeX(-1),relativeY(-1),relativeZ(-1),
     globalX(-1),globalY(-1),
     otherButtons(0),
+    modifiers(0),
     handled(false)
     {
     }
@@ -103,6 +105,11 @@ public:
 	/// What other mouse buttons were held down when this event occurred. This is a combination of MouseButton flags.
 	unsigned long otherButtons;
 
+    /// A bitfield of the keyboard modifiers (Ctrl, Shift, ...) associated with this key event.
+    /// Use Qt::KeyboardModifier, http://doc.trolltech.com/4.6/qt.html#KeyboardModifier-enum to access these.
+    /// Also see \see KeyEvent::HasShiftModifier.
+	unsigned long modifiers;
+
 	/// Which keyboard keys were held down when this event occurred.
 	std::vector<Qt::Key> heldKeys;
 
@@ -161,14 +168,12 @@ public slots:
     bool IsLeftButtonDown() const { return IsButtonDown(LeftButton); }
     bool IsMiddleButtonDown() const { return IsButtonDown(MiddleButton); }
     bool IsRightButtonDown() const { return IsButtonDown(RightButton); }
-/*
-    ///\todo Implement these.
+
+    // Modifier check functions
 	bool HasShiftModifier() const { return (modifiers & Qt::ShiftModifier) != 0; }
-	bool HasCtrlModifier() const { return (modifiers & Qt::CtrlModifier) != 0; }
-	bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
-	/// On windows, this is associated to the Win key.
-	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; }
-*/
+	bool HasCtrlModifier() const { return (modifiers & Qt::ControlModifier) != 0; }
+    bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
+	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
 
 public:
 
