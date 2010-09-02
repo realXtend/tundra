@@ -144,6 +144,7 @@ namespace OgreRenderer
         //! get node scale
         void SetQScale(const QVector3D newscale);
 
+
     public slots:
         //! translate
         /* 0 = x, 1 = y, 2 = z. returns new position */

@@ -1,7 +1,7 @@
 import rexviewer as r
 
 import PythonQt
-from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QDoubleSpinBox
+from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QDoubleSpinBox, QPixmap
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
@@ -31,8 +31,8 @@ PRIMTYPES = {
 class ObjectEditWindow:
     UIFILE = "pymodules/objectedit/editobject.ui"
     
-    ICON_OK = "pymodules/objectedit/ok.png"
-    ICON_CANCEL = "pymodules/objectedit/cancel.png" 
+    ICON_OK = "pymodules/objectedit/ok-small.png"
+    ICON_CANCEL = "pymodules/objectedit/cancel-small.png" 
     
     def __init__(self, controller):
         self.controller = controller
@@ -59,39 +59,49 @@ class ObjectEditWindow:
         self.widget = ui
         self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
 
+        # Tabs
         self.mainTab = ui.findChild("QWidget", "MainFrame")
         self.materialTab = ui.findChild("QWidget", "MaterialsTab")
         self.tabwidget.setTabEnabled(1, False)
         self.materialTabFormWidget = self.materialTab.formLayoutWidget
         self.mainTab.label.text = "<none>"
 
+        # Mesh line edit and buttons
         self.meshline = lines.MeshAssetidEditline(controller) 
         self.meshline.name = "meshLineEdit"
 
         button_ok = self.getButton("Apply", self.ICON_OK, self.meshline, self.meshline.applyAction)
         button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline, self.meshline.cancelAction)
         
-        box = self.mainTab.findChild("QHBoxLayout", "meshLine")
+        #box = self.mainTab.findChild("QHBoxLayout", "meshLine")
+        box = QHBoxLayout()
+        box.setContentsMargins(0,0,0,0)
         box.addWidget(self.meshline)
         box.addWidget(button_ok)
         box.addWidget(button_cancel)
+        self.mesh_widget = QWidget()
+        self.mesh_widget.setLayout(box)
         
+        # Sound line edit and buttons
         self.soundline = lines.SoundAssetidEditline(controller) 
         self.soundline.name = "soundLineEdit"
-
         soundbutton_ok = self.getButton("Apply", self.ICON_OK, self.soundline, self.soundline.applyAction)
         soundbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.soundline, self.soundline.cancelAction)
-
         soundRadius = self.getDoubleSpinBox("soundRadius", "Set sound radius", self.soundline)
         soundVolume = self.getDoubleSpinBox("soundVolume", "Set sound volume", self.soundline)
         
-        box = self.mainTab.findChild("QHBoxLayout", "soundLine")
+        #box = self.mainTab.findChild("QHBoxLayout", "soundLine")
+        box = QHBoxLayout()
+        box.setContentsMargins(0,0,0,0)
         box.addWidget(self.soundline)
         box.addWidget(soundRadius)
         box.addWidget(soundVolume)
         box.addWidget(soundbutton_ok)
         box.addWidget(soundbutton_cancel)
+        self.sound_widget = QWidget()
+        self.sound_widget.setLayout(box)
 
+        # Properties, dead code really..
         self.propedit = r.getPropertyEditor()
         self.tabwidget.addTab(self.propedit, "Properties")
         self.tabwidget.setTabEnabled(2, False)
@@ -290,10 +300,10 @@ class ObjectEditWindow:
             self.controller.select(ent)
     
     def getButton(self, name, iconname, line, action):
-        size = QSize(16, 16)
+        size = QSize(20, 20)
         button = buttons.PyPushButton()
-        icon = QIcon(iconname)
-        icon.actualSize(size)
+        icon = QIcon(QPixmap(iconname).scaled(size))
+        #icon.actualSize(size)
         button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         button.setMaximumSize(size)
         button.setMinimumSize(size)
@@ -316,7 +326,6 @@ class ObjectEditWindow:
         return spinner
 
     def manipulator_move(self):
-        print "MOVE",
         ent = self.controller.active
         if self.controller.keypressed:
             self.controller.keypressed = False
@@ -341,7 +350,6 @@ class ObjectEditWindow:
         
         if freemove:
             self.controller.changeManipulator(self.controller.MANIPULATE_FREEMOVE)
-        print "2"
         
     def manipulator_scale(self):
         ent = self.controller.active

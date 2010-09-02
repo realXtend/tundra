@@ -18,6 +18,7 @@
 
 #include "InputEvents.h"
 #include "SceneEvents.h"
+#include "NetworkEvents.h"
 #include "Entity.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -102,6 +103,7 @@ namespace OgreRenderer
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
         input_event_category_ = event_manager->QueryEventCategory("Input");
         scene_event_category_ = event_manager->QueryEventCategory("Scene");
+        network_state_event_category_ = event_manager->QueryEventCategory("NetworkState");
         
         renderer_->PostInitialize();
 
@@ -148,6 +150,13 @@ namespace OgreRenderer
             }
             else
                 framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_NONE_CLICKED, 0);
+        }
+
+        if (network_state_event_category_)
+        {
+            if (event_id == ProtocolUtilities::Events::EVENT_USER_DISCONNECTED)
+                renderer_->ResetImageRendering();
+            return false;
         }
 
         return false;

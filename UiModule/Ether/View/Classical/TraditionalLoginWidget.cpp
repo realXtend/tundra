@@ -103,11 +103,8 @@ namespace CoreUi
                     map["AvatarType"] = "RealXtend";
                     QString username_input = map["Username"];
                     int at_index = username_input.indexOf("@");
-                    QString rex_username = username_input.midRef(0, at_index).toString();
-                    QString rex_auth_address = username_input.midRef(at_index+1).toString();
-
-                    map["Username"] = rex_username;
-                    map["AuthenticationAddress"] = rex_auth_address;
+                    map["Username"] = username_input.midRef(0, at_index).toString();
+                    map["AuthenticationAddress"] = username_input.midRef(at_index+1).toString();
                     emit Connect(map);
                 }
             }
@@ -119,7 +116,6 @@ namespace CoreUi
                     emit Connect(map);
                 }
             }
-
 /*
             if (radioButton_OpenSim->isChecked() == true)
             {
@@ -144,10 +140,8 @@ namespace CoreUi
                     emit Connect(map);
                 }
             }
-
-        StatusUpdate(true, QString("Connecting to %1 with %2").arg(map["WorldAddress"], map["Username"]));
+            StatusUpdate(true, QString("Connecting to %1 with %2").arg(map["WorldAddress"], map["Username"]));
 */
-
         }
 
         void TraditionalLoginWidget::StatusUpdate(bool connecting, const QString &message)

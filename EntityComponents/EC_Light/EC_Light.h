@@ -9,7 +9,6 @@
 #include "Vector3D.h"
 #include "Color.h"
 
-
 class QDomDocument;
 class QDomElement;
 
@@ -17,6 +16,7 @@ namespace Ogre
 {
     class Light;
 }
+
 
 class EC_Light : public Foundation::ComponentInterface
 {
@@ -83,6 +83,7 @@ public:
     //! Spotlight outer angle (degrees)
     Foundation::Attribute<Real> outerAngleAttr_;
     
+
 private slots:
     void UpdateOgreLight();
     
@@ -106,6 +107,8 @@ private:
     
     //! Attached flag
     bool attached_;
+
+
 };
 
 #endif

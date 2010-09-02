@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>521</width>
-    <height>394</height>
+    <width>483</width>
+    <height>378</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -123,7 +123,7 @@
           <widget class="QLabel" name="gridInfoStatusLabel">
            <property name="minimumSize">
             <size>
-             <width>0</width>
+             <width>200</width>
              <height>16</height>
             </size>
            </property>

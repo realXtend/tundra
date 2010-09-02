@@ -63,7 +63,11 @@ namespace OgreRenderer
         assert(renderer_);
         assert(camera_);
         assert(render_window_);
-
+		bool openGL = false;
+		if(renderer_->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+		{
+			openGL = true;
+		}
         qreal pi = Ogre::Math::PI;
 
         //Projection magic be happening here.
@@ -89,8 +93,19 @@ namespace OgreRenderer
         etl = top_left-eye_pos;
         ebr = bottom_right-eye_pos;
 
-        qreal distance_to_plane = sn.dotProduct(ebl);
+		qreal distance_to_plane;
+		if(openGL)
+		{
+			sn = -sn;
+			distance_to_plane = -sn.dotProduct(ebl);
+		}
+		else
+		{
+			distance_to_plane = sn.dotProduct(ebl);
+		}
 
+
+		
         l = sr.dotProduct(ebl)*n/distance_to_plane;
         r = sr.dotProduct(ebr)*n/distance_to_plane;
         b = su.dotProduct(ebl)*n/distance_to_plane;

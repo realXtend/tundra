@@ -43,7 +43,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         #print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
-            print "comp Name:", comp.Name
+            #print "comp Name:", comp.Name
             if comp.Name in handlertypes:
                 handlertype = handlertypes[comp.Name]
                 h = handlertype(entity, comp, changetype)
@@ -58,16 +58,12 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
             jscheck = make_jssrc_handler(entity, comp, changetype)
             comp.connect("OnChanged()", jscheck)
 
-    @circuits.handler("on_logout")
-    def removehandlers(self, evid):
-        self.unregister() #unregisters all DC handlers created here
-
 def make_jssrc_handler(entity, comp, changetype):
     #def handle_js():
     class JsHandler(): #need a functor so that can disconnect itself
         def __call__(self):
             jssrc = comp.GetAttribute("js_src")
-            print "JS SRC:", jssrc
+            #print "JS SRC:", jssrc
             if jssrc is not None:
                 apply_js(jssrc, comp)
             comp.disconnect("OnChanged()", self)
@@ -76,7 +72,7 @@ def make_jssrc_handler(entity, comp, changetype):
 def apply_js(jssrc, comp):
     jscode = loadjs(jssrc)
 
-    print jscode
+    #print jscode
 
     ctx = {
         #'entity'/'this': self.entity
@@ -98,9 +94,9 @@ def apply_js(jssrc, comp):
         ctx['placeable'] = ent.placeable
             
     naali.runjs(jscode, ctx)
-    print "-- done with js"
+    #print "-- done with js"
 
 def loadjs(srcurl):
-    print "js source url:", srcurl
+    #print "js source url:", srcurl
     f = urllib2.urlopen(srcurl)
     return f.read()

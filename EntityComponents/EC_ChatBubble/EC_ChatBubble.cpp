@@ -40,8 +40,8 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
     billboard_(0),
     pop_timer_(new QTimer(this)),
     bubble_max_rect_(0,0,1000,500),
-    current_scale_(1.0),
-    default_z_pos_(1.9)
+    current_scale_(1.0f),
+    default_z_pos_(1.9f)
 {
     // Get renderer service
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
@@ -257,7 +257,7 @@ void EC_ChatBubble::Update()
         return;
 
     Scene::Entity *entity = GetParentEntity();
-    assert(entity);
+//    assert(entity);
     if (!entity)
         return;
 

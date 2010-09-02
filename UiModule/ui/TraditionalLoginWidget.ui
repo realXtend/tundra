@@ -457,7 +457,7 @@
                <bool>true</bool>
               </property>
               <property name="plainText">
-               <string>You are now using realXtend's virtual world viewer called Naali. The Next step is to get you into a world and for this we provide three types of login methods. 
+               <string>You are now using realXtend's virtual world viewer called Naali. The next step is to get you into a world and for this we provide three types of login methods. 
 
 OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
 
@@ -514,6 +514,9 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
               <widget class="QLabel" name="statusLabel">
                <property name="text">
                 <string/>
+               </property>
+               <property name="wordWrap">
+                <bool>false</bool>
                </property>
               </widget>
              </item>

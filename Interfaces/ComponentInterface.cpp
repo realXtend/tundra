@@ -13,7 +13,7 @@
 #include "Framework.h"
 #include "Entity.h"
 #include "SceneManager.h"
-
+#include "EventManager.h"
 #include <QDomDocument>
 
 namespace Foundation
@@ -35,6 +35,15 @@ ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
 
 ComponentInterface::~ComponentInterface()
 {
+    // Removes itself from EventManager 
+    if ( framework_ != 0)
+    {       
+        boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
+        if ( event_manager_ != 0 )
+        {
+            event_manager_->UnregisterEventSubscriber(this);
+        }
+    }
 }
 
 void ComponentInterface::SetName(const QString& name)
@@ -50,7 +59,10 @@ void ComponentInterface::SetName(const QString& name)
 void ComponentInterface::SetParentEntity(Scene::Entity* entity)
 {
     parent_entity_ = entity;
-    emit ParentEntitySet();
+    if (parent_entity_)
+        emit ParentEntitySet();
+    else
+        emit ParentEntityDetached();
 }
 
 Scene::Entity* ComponentInterface::GetParentEntity() const

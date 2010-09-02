@@ -73,12 +73,14 @@ namespace Ether
 
             void RecalculateMenus();
             void TheResizer();
+            
+            void SetEtherItemsVisible();
 
             void StartLoginAnimation();
             void RevertLoginAnimation(bool change_scene_after_anims_finish);
 
             void SuppressControlWidgets(bool suppress);
-            void ShowStatusInformation(const QString &text);
+            void ShowStatusInformation(const QString &text, int hideout = 7500);
             
             void TryExitApplication();
             void StoreConfigs();
@@ -94,6 +96,8 @@ namespace Ether
             void LoginAnimationFinished();
             void HideStatusWidget();
             void StopActiveItemAnimations();
+
+            void UiServiceSceneChanged(const QString &old_name, const QString &new_name);
 
         private:
             //! Pointer to data manager

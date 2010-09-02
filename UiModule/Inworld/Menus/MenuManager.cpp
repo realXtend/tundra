@@ -13,10 +13,14 @@
 #include <QTimer>
 #include <QUuid>
 #include <QDebug>
+
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
 {
+    QString MenuManager::defaultItemIcon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
+    QString MenuManager::defaultGroupIcon = "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png";
+
     MenuManager::MenuManager(QObject *parent, CoreUi::AnchorLayoutManager *layout_manager) :
             QObject(parent),
             layout_manager_(layout_manager),
@@ -49,7 +53,7 @@ namespace CoreUi
         else if (name == "World Tools")
             hack_icon = base_url + "edbutton_WRLDTOOLS_icon.png";
         else
-            hack_icon = base_url + "edbutton_WRLDTOOLS_icon.png";
+            hack_icon = defaultGroupIcon;
 
         GroupNode *group_node = new GroupNode(false, name, hack_icon, hgap, vgap);
         root_menu_->AddChildNode(group_node);
@@ -64,14 +68,14 @@ namespace CoreUi
 
     void MenuManager::AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon)
     {
-        QString iconPath;
-        if (icon.isEmpty())
-            iconPath = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
-        else
-            iconPath = icon;
-
-        ActionNode *child_node = new ActionNode(name, iconPath);
-        if (category.isEmpty())
+        ActionNode *child_node = new ActionNode(name, icon);
+        ///\todo hack protection for menu crashing when root having more than 5 items.
+        /// Remove when Qt 4.7 supposedly fixes this.
+        if ((category.isEmpty() || category == "Root") && root_menu_->ChildCount() >= 5)
+        {
+            category_map_["World Tools"]->AddChildNode(child_node);
+        }
+        else if (category.isEmpty())
         {
             category_map_["Root"]->AddChildNode(child_node);
         }

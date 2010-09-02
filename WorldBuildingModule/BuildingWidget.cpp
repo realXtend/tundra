@@ -12,10 +12,10 @@ namespace WorldBuilding
     {
         BuildingWidget::BuildingWidget(ToolPosition tool_position) :
             QGraphicsProxyWidget(0, Qt::Widget),
-            view_(0),
             internal_widget_(new QWidget()),
             tool_position_(tool_position),
-            resizing_(false)
+            resizing_(false),
+            view_(0)
         {
         }
 
@@ -26,7 +26,7 @@ namespace WorldBuilding
         void BuildingWidget::PrepWidget()
         {
             setWidget(internal_widget_);
-            min_width_ = internal_widget_->minimumWidth();
+            min_width_ = internal_widget_->minimumWidth(); // 15px for toolbar
         }
 
         void BuildingWidget::CheckSize()
@@ -39,6 +39,13 @@ namespace WorldBuilding
                     setPos(scene()->sceneRect().width() - min_width_, 0);
                 widget()->setMinimumWidth(min_width_);
                 widget()->setGeometry(w_rect.x(), w_rect.y(), min_width_, w_rect.height());
+                if (view_)
+                {
+                    QRect view_rect = view_->rect();
+                    view_->setMinimumWidth(min_width_);
+                    view_->setMaximumWidth(min_width_);
+                    view_->setGeometry(0, 0, min_width_, view_rect.height());
+                }
             }
         }
 
@@ -176,6 +183,8 @@ namespace WorldBuilding
                                 if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
                                     QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
                         }
+                        if (view_)
+                            view_->setMaximumWidth(widget()->minimumWidth()-18);
                     }
                 }
 
@@ -192,6 +201,9 @@ namespace WorldBuilding
             if (QApplication::overrideCursor())
                 QApplication::restoreOverrideCursor();
             QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
+
+            if (view_)
+                view_->RequestUpdate();
         }
 
         void BuildingWidget::SceneRectChanged(const QRectF &new_rect)
@@ -202,6 +214,8 @@ namespace WorldBuilding
                 if (tool_position_ == Right)
                     setPos(scene_half_width, 0);
                 widget()->setMinimumWidth(scene_half_width);
+                if (view_)
+                    view_->setMaximumWidth(scene_half_width);
             }
         }
     }

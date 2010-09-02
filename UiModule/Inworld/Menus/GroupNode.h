@@ -41,6 +41,9 @@ namespace CoreUi
         void CalculatePosVec();
         void AdjustNode(QAbstractAnimation::Direction dir);
 
+        /// Returns number of children this node has.
+        int ChildCount() const { return children_.size(); }
+
         /// Sorts the children: groups before actions.
         void Sort();
 
