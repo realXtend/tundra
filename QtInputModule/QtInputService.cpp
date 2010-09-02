@@ -35,6 +35,7 @@ pressedMouseButtons(0),
 releasedMouseButtons(0),
 newMouseButtonsPressedQueue(0),
 newMouseButtonsReleasedQueue(0),
+current_modifiers_(0),
 mainView(0),
 mainWindow(0),
 framework(framework_)
@@ -538,6 +539,8 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 //		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
+        current_modifiers_ = e->modifiers(); // local tracking for mouse events
+
         // We only take key events from the main QGraphicsView.
         if (obj != qobject_cast<QObject*>(mainView))
             return false;
@@ -601,6 +604,7 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         keyEvent.handled = false;
 
 		heldKeys.erase(existingKey);
+        current_modifiers_ = e->modifiers(); // local tracking for mouse events
 
         // Queue up the release event for the polling API, independent of whether any Qt widget has keyboard focus.
         if (keyEvent.keyPressCount == 1) /// \todo The polling API does not get key repeats at all. Should it?
@@ -670,6 +674,7 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 		mouseEvent.z = 0;
 		mouseEvent.relativeX = mouseEvent.x - lastMouseX;
 		mouseEvent.relativeY = mouseEvent.y - lastMouseY;
+        mouseEvent.modifiers = current_modifiers_;
 
         lastMouseX = mouseEvent.x;
         lastMouseY = mouseEvent.y;
