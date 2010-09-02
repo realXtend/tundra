@@ -121,7 +121,7 @@ namespace RexLogic
         void SetFocusOnObject(float, float, float);
 
         //! Rotate camera around the point that is clicked on
-        void rotateCameraAroundObject();
+        void RotateCameraAroundObject();
         void FocusOnObjectZoom();
 
     private:
