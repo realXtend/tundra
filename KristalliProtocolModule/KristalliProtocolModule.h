@@ -21,13 +21,22 @@ namespace KristalliProtocol
 {
     struct UserConnection
     {
+        UserConnection() :
+            id(0),
+            connection(0),
+            authenticated(false)
+        {
+        }
+        
         u8 id;
         MessageConnection* connection;
+        bool authenticated;
+        std::string userName;
     };
     
     typedef std::list<UserConnection> UserConnectionList;
     
-    //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocol::KristalliProtocolModule'
+    //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
     class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public Foundation::ModuleInterface, public IMessageHandler, public INetworkServerListener
     {
@@ -87,10 +96,12 @@ namespace KristalliProtocol
         bool IsServer() const { return server != 0; }
         
         /// Returns user connections for a server
-        const UserConnectionList& GetUserConnections() { return connections; }
+        UserConnectionList& GetUserConnections() { return connections; }
         
-        /// Gets user connection by message connection. Returns null if no such connection
-        const UserConnection* GetUserConnection(MessageConnection* source) const;
+        /// Gets user by message connection. Returns null if no such connection
+        UserConnection* GetUserConnection(MessageConnection* source);
+        /// Gets user by connection ID. Returns null if no such connection
+        UserConnection* GetUserConnection(u8 id);
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.

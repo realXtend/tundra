@@ -15,6 +15,7 @@ typedef unsigned long message_id_t;
 
 namespace KristalliProtocol
 {
+    struct UserConnection;
 
 namespace Events
 {
@@ -46,30 +47,25 @@ namespace Events
     class KristalliUserConnected : public Foundation::EventDataInterface
     {
     public:
-        KristalliUserConnected(u8 id_, MessageConnection *source_) :
-            id(id_),
-            source(source_)
+        KristalliUserConnected(UserConnection *connection_) :
+            connection(connection_)
         {
         }
         
-        u8 id;
-        MessageConnection *source;
+        UserConnection *connection;
     };
     
     // Event structure for user connected
     class KristalliUserDisconnected : public Foundation::EventDataInterface
     {
     public:
-        KristalliUserDisconnected(u8 id_, MessageConnection *source_) :
-            id(id_),
-            source(source_)
+        KristalliUserDisconnected(UserConnection *connection_) :
+            connection(connection_)
         {
         }
         
-        u8 id;
-        MessageConnection *source;
+        UserConnection *connection;
     };
-    
 } // ~Events namespace
 
 } // ~KristalliProtocolModule namespace
