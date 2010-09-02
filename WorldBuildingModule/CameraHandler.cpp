@@ -83,9 +83,7 @@ namespace WorldBuilding
 
         bool CameraHandler::FocusToEntity(CameraID cam_id, Scene::Entity *entity, Vector3df offset)
         {
-
 			bool focus_completed = false;
-
 			if (!id_to_cam_entity_.contains(cam_id))
 				return focus_completed;
 			Scene::Entity *cam_entity = id_to_cam_entity_[cam_id];
@@ -94,7 +92,8 @@ namespace WorldBuilding
 			OgreRenderer::EC_OgrePlaceable *entity_ec_placable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
 			OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
 			OgreRenderer::EC_OgreCamera *cam_ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-	        if(last_dir_ == Vector3df::ZERO)
+	        
+            if (last_dir_ == Vector3df::ZERO)
 			{
 				if (!entity_ec_placable || !cam_ec_placable || !cam_ec_camera)
 					return focus_completed;
@@ -141,22 +140,16 @@ namespace WorldBuilding
 					return focus_completed;
 	                 
 				cam_ec_placable->SetPosition(position_vector + (entity_ec_placable->GetOrientation() * position_offset));
-				if (last_dir_ != Vector3df::ZERO)
-				{
-					//qDebug() << "Testig";
-					//cam_ec_placable->SetPosition(cam_ec_placable->GetPosition() + last_dir_);
-				}
 				cam_ec_placable->LookAt(look_at);
 				focus_completed = true;
-			}else
+			}
+            else
 			{
 				cam_ec_placable->SetPosition(entity_ec_placable->GetPosition() - last_dir_);
 				cam_ec_placable->LookAt(entity_ec_placable->GetPosition());
 				focus_completed = true;
 			}
-			
-				
-				return focus_completed;
+			return focus_completed;
         }
 
         void CameraHandler::RotateCamera(Vector3df pivot, CameraID id, qreal x, qreal y)
