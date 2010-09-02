@@ -94,7 +94,7 @@ class MeshAssetidEditline(DragDroppableEditline):
 
 class SoundAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        print "doaction in SoundAssetidEditline-class..."
+        #print "doaction in SoundAssetidEditline-class..."
         self.deactivateButtons()
     
     def applyAction(self):

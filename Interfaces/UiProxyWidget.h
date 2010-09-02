@@ -49,6 +49,9 @@ public:
     void BringToFront();
 
 public slots:
+    /// Toggles visibility with show/hide
+    void ToggleVisibility();
+
     /// Performs animated hide, if animations are enabled.
     void AnimatedHide();
 

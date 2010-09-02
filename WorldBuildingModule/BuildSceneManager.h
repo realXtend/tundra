@@ -8,6 +8,7 @@
 
 #include "WorldObjectView.h"
 #include "BuildingWidget.h"
+#include "BuildToolbar.h"
 
 #include "PythonHandler.h"
 #include "CameraHandler.h"
@@ -95,7 +96,11 @@ namespace WorldBuilding
         void DeleteObjectClicked();
 
         void ManipModeChanged(PythonParams::ManipulationMode mode);
+
+        void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
         void HandlePythonWidget(const QString &type, QWidget *widget);
+
+        void ToggleLights();
 
     private:
         Foundation::Framework *framework_;
@@ -107,6 +112,7 @@ namespace WorldBuilding
         WorldObjectView* world_object_view_;
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
+        Ui::BuildToolbar *toolbar_;
 
         Ui_ObjectInfoWidget object_info_ui;
         Ui_ObjectManipulationsWidget object_manip_ui;
@@ -125,6 +131,8 @@ namespace WorldBuilding
         QList<QWidget*> python_deleted_widgets_;
 
         QTimer *viewport_poller_;
+
+        bool override_server_time_;
     };
 }
 

@@ -415,4 +415,18 @@ namespace UiServices
         if (proxy && !proxy->isVisible())
             proxy->deleteLater();
     }
+
+    void InworldSceneController::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
+    {
+        if (!widget)
+            return;
+        if (!inworld_scene_->isActive())
+            return;
+        if (widget->scene() == inworld_scene_)
+            return;
+
+        inworld_scene_->addItem(widget);
+        widget->setPos(50,250);
+        widget->hide();
+    }
 }

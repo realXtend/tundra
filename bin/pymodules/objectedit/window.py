@@ -24,8 +24,8 @@ else:
 PRIMTYPES = {
     "45": "Material",
     "17": "Wav",
-    "1": "Ogg",
-    "0": "Texture"
+    "1" : "Ogg",
+    "0" : "Texture"
 }
 
 class ObjectEditWindow:

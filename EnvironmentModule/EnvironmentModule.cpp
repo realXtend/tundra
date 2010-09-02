@@ -30,6 +30,8 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
+#include "WorldBuildingServiceInterface.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace Environment
@@ -92,7 +94,13 @@ namespace Environment
                 "./data/ui/images/menus/edbutton_POSTPR_normal.png");
         }
 
-         environment_editor_ = new EnvironmentEditor(this);
+        environment_editor_ = new EnvironmentEditor(this);
+        Foundation::WorldBuildingServicePtr wb_service = GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
+        if (wb_service)
+        {
+            QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
+            QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
+        }
     }
 
     void EnvironmentModule::Uninitialize()
@@ -541,16 +549,6 @@ namespace Environment
     {
         environment_ = EnvironmentPtr(new Environment(this));
         environment_->CreateEnvironment();
-        
-        /*
-        if ( environment_editor_ != 0)
-        {
-            environment_editor_->InitAmbientTabWindow();
-            environment_editor_->InitFogTabWindow();
-        }
-        */
-        
-        
     }
 
     void EnvironmentModule::CreateSky()
