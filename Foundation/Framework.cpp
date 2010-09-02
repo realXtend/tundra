@@ -162,10 +162,8 @@ namespace Foundation
 
         Poco::Channel *filechannel = loggingfactory->createChannel("FileChannel");
         
-        std::wstring logfilepath_w = platform_->GetUserDocumentsDirectoryW();
-        logfilepath_w += L"/" + ToWString(APPLICATION_NAME) + L".log";
-        std::string logfilepath;
-        Poco::UnicodeConverter::toUTF8(logfilepath_w, logfilepath);
+        std::string logfilepath = platform_->GetUserDocumentsDirectory();
+        logfilepath += "/" + std::string(APPLICATION_NAME) + ".log";
 
         filechannel->setProperty("path",logfilepath);
         filechannel->setProperty("rotation","3M");
