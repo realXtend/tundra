@@ -1,0 +1,22 @@
+diff -r 0b19f2aead68 lib/pychess/widgets/ionest.py
+--- a/lib/pychess/widgets/ionest.py	Thu Aug 26 11:22:59 2010 -0700
++++ b/lib/pychess/widgets/ionest.py	Thu Sep 02 14:04:30 2010 +0300
+@@ -21,6 +21,8 @@
+ from pychess.widgets import gamewidget
+ from pychess.widgets import gamenanny
+ 
++#XXX dirty hack to get a ref to the urrent gamemodel --antont for naali experimentation
++globalgamemodel = None
+ 
+ def generalStart (gamemodel, player0tup, player1tup, loaddata=None):
+     """ The player tuples are:
+@@ -35,6 +37,9 @@
+          An int of the game in file you want to load,
+          The position from where to start the game) """
+ 
++    global globalgamemodel
++    globalgamemodel = gamemodel
++
+     worker = GtkWorker (lambda w:
+             workfunc(w, gamemodel, player0tup, player1tup, loaddata))
+ 
