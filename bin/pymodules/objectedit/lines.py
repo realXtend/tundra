@@ -3,8 +3,6 @@ from PythonQt.QtGui import QLineEdit
 
 PRIMTYPES_REVERSED = {
     "Material": "45",
-    "Wav": "17",
-    "Ogg": "1",
     "Texture": "0"
 }
 
