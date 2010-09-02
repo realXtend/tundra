@@ -86,6 +86,7 @@ namespace
 KristalliProtocolModule::KristalliProtocolModule()
 :ModuleInterface(NameStatic())
 , serverConnection(0)
+, server(0)
 {
 }
 
@@ -131,6 +132,10 @@ void KristalliProtocolModule::Update(f64 frametime)
     if (serverConnection)
         serverConnection->ProcessMessages();
 
+    // Process server incoming connections & messages if server up
+    if (server)
+        server->ProcessMessages();
+
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed || serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
     {
         const int cReconnectTimeout = 5 * 1000.f;
@@ -155,7 +160,7 @@ void KristalliProtocolModule::Connect(const char *ip, unsigned short port, Socke
     serverIp = ip;
     serverPort = port;
     serverTransport = transport;
-
+    
     if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
         Disconnect();
 
@@ -190,6 +195,8 @@ void KristalliProtocolModule::Disconnect()
 
     // Clear the remembered destination server ip address so that the automatic connection timer will not try to reconnect.
     serverIp = "";
+    
+    reconnectTimer.Stop();
 }
 
 bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
@@ -199,10 +206,11 @@ bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLa
     server = network.StartServer(port, transport, this);
     if (!server)
     {
-        LogError("Failed to start server at port " + ToString((int)port));
+        LogError("Failed to start server on port " + ToString((int)port));
         return false;
     }
     
+    LogInfo("Started server on port " + ToString((int)port));
     return true;
 }
 
@@ -212,6 +220,7 @@ void KristalliProtocolModule::StopServer()
     {
         network.StopServer();
         connections.clear();
+        LogInfo("Stopped server");
     }
 }
 
@@ -242,12 +251,12 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
             connections.erase(iter);
-            LogInfo("User disconnected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)iter->id));
-            break;
+            LogInfo("User disconnected, connection ID " + ToString((int)iter->id));
+            return;
         }
     }
     
-    LogInfo("Unknown user from " + source->GetEndPoint().ToString() + " disconnected");
+    LogInfo("Unknown user disconnected");
 }
 
 void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
