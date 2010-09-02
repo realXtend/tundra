@@ -150,25 +150,25 @@ void EC_Mesh::RemoveMesh()
     entity_ = 0;
 }
 
-bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
+bool EC_Mesh::SetMaterial(uint index, const QString &material_name)
 {
     if(!entity_)
         return false;
 
     if (index >= entity_->getNumSubEntities())
     {
-        LogError("Could not set material " + material_name + ": illegal submesh index " + ToString<uint>(index));
+        LogError("Could not set material " + material_name.toStdString() + ": illegal submesh index " + ToString<uint>(index));
         return false;
     }
     try
     {
         Ogre::SubEntity *sub = entity_->getSubEntity(index);
         if(sub)
-            sub->setMaterialName(material_name);
+            sub->setMaterialName(material_name.toStdString());
     }
     catch (Ogre::Exception& e)
     {
-        LogError("Could not set material " + material_name + ": " + std::string(e.what()));
+        LogError("Could not set material " + material_name.toStdString() + ": " + std::string(e.what()));
         return false;
     }
 
@@ -415,7 +415,8 @@ bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, Foundation::Event
         if (!res || index > meshMaterial_.Get().size()) 
             return false;
         OgreRenderer::OgreMaterialResource* materialResource = checked_static_cast<OgreRenderer::OgreMaterialResource*>(res.get());
-        SetMaterial(index, materialResource->GetMaterial()->getName());
+        QString material_name = QString::fromStdString(materialResource->GetMaterial()->getName());
+        SetMaterial(index, material_name);
         materialRequestTags_[index] = 0;
     }
     return true;

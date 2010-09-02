@@ -50,7 +50,7 @@ public slots:
     //! Add or change entity's mesh.
     void SetMesh(const QString &name);
     void RemoveMesh();
-    bool SetMaterial(uint index, const std::string& material_name);
+    bool SetMaterial(uint index, const QString &material_name);
 
 private slots:
     //! Emitted when the parrent entity has been setted.
@@ -60,7 +60,7 @@ private slots:
 
 signals:
     void OnMeshChanged();
-    void OnMaterialChanged(uint index, const std::string &material_name);
+    void OnMaterialChanged(uint index, const QString &material_name);
     void OnSkeletonChanged(QString skeleton_name);
 
 private:
