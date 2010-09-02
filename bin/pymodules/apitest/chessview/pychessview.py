@@ -10,36 +10,56 @@ from pychess.System.Log import log
 import pychess.widgets.ionest as i #current hack to get access to GameModel
 import parsemove #the own thing here for parsing move data from pychess
 
-def main():
+try:
+    import circuits
+except:
+    print "circuits not there, can still run as standalone outside Naali"
+else:
+    class ChessView(circuits.BaseComponent):
+        def __init__(self):
+            initchess()
+
+        @circuits.handler("update")
+        def update(self, t):
+            updatechess()
+
+def initchess():
     p = pychess.Main.PyChess(None)
     gtk.gdk.threads_init()
 
     log.log("Started from Naali\n")
     print "PyChess in Naali"
 
-    g = None
-    prev_board = None
-    prev_arBoard = None
+g = None
+prev_board = None
+prev_arBoard = None
 
+def updatechess():
+    global g, prev_board, prev_arBoard
+
+    gtk.main_iteration(block=False)
+
+    if g is None and i.globalgamemodel is not None:
+        g = i.globalgamemodel
+
+    if g is not None:
+        #print g.players, id(g.boards[-1]), g.boards[-1]
+        board = g.boards[-1]
+
+        if board is not prev_board:
+            print "BOARD:", board
+            if len(board.board.history) > 0:
+                prevmove = board.board.history[-1][0]
+                parsemove.parsemove(board, prev_arBoard, prevmove)
+
+            prev_board = board
+            prev_arBoard = board.board.arBoard[:]
+
+def main():
+    initchess()
     while 1:
         #print ".",
-        gtk.main_iteration(block=False)
-    
-        if g is None and i.globalgamemodel is not None:
-            g = i.globalgamemodel
-
-            if g is not None:
-                #print g.players, id(g.boards[-1]), g.boards[-1]
-                board = g.boards[-1]
-
-            if board is not prev_board:
-                print "BOARD:", board
-                if len(board.board.history) > 0:
-                    prevmove = board.board.history[-1][0]
-                    parsemove.parsemove(board, prev_arBoard, prevmove)
-
-                prev_board = board
-                prev_arBoard = board.board.arBoard[:]
+        updatechess()
 
 """in parsemove.py now
 def removePiece(tcord, tpiece, opcolor):
