@@ -429,15 +429,15 @@ class RotationManipulator(Manipulator):
                 ort *= delta
             else:
                 if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    print "green axis", self.grabbed_axis,
+                    #print "green axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    print "blue axis", self.grabbed_axis,
+                    #print "blue axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[2] += mov
                 elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    print "red axis", self.grabbed_axis,
+                    #print "red axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)
