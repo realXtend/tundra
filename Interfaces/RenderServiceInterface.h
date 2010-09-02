@@ -103,17 +103,6 @@ namespace Foundation
         //! \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName) = 0;
 
-        //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
-        //! \param avatar_position Avatar's position.
-        //! \param avatar_orientation Avatar's orientation.
-        //! \param worldfile Worldfile's filename.
-        //! \param avatarfile Avatarfile's filename.
-        virtual void CaptureWorldAndAvatarToFile(
-            const Vector3Df &avatar_position,
-            const Quaternion &avatar_orientation,
-            const std::string& worldfile,
-            const std::string& avatarfile) = 0;
-
         //! Render current main window content to texture
         virtual QPixmap RenderImage(bool use_main_camera = true) = 0;
 

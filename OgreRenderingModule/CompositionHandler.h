@@ -60,7 +60,7 @@ namespace OgreRenderer
         float mBloomTexOffsetsVert[15][4];
     };
 
-    ///\note This class handles the post-processing effects
+    /// Handles the post-processing effects
     class OGRE_MODULE_API CompositionHandler 
     {
     public:
