@@ -55,6 +55,9 @@ namespace MumbleLib
         Q_OBJECT
         Q_PROPERTY(int playback_buffer_max_length_ms READ GetPlaybackBufferMaxLengthMs WRITE SetPlaybackBufferMaxLengthMs ) 
         Q_PROPERTY(double encoding_quality READ GetEncodingQuality WRITE SetEncodingQuality)
+        Q_PROPERTY(bool sending_audio) // \todo implement
+        Q_PROPERTY(bool receiving_audio) // \todo implement
+        Q_PROPERTY(bool sending_position) // \todo implement
     public:
         enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
@@ -164,7 +167,6 @@ namespace MumbleLib
         void SetPlaybackBufferMaxLengthMs(int length); // {playback_buffer_length_ms_ = length; }
         
         double GetEncodingQuality() {return encoding_quality_;}
-//        void SetEncodingQuality(double quality) {encoding_quality_ = quality;}
 
     private slots:
         void AddToUserList(User* user);
@@ -215,11 +217,12 @@ namespace MumbleLib
         QMutex mutex_encoding_quality_;
         QMutex mutex_raw_udp_tunnel_;
         QMutex mutex_client_;
+        QMutex mutex_encoder_;
         QReadWriteLock lock_state_;
         QReadWriteLock lock_users_;
         
     signals:
-        void StateChanged(const State &state);
+        void StateChanged(MumbleLib::Connection::State state);
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
 

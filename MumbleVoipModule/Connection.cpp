@@ -226,6 +226,7 @@ namespace MumbleLib
             return;
         }
 
+        QMutexLocker encoder_locker(&mutex_encoder_);
         celt_encoder_ = celt_encoder_create(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, NULL );
         if (!celt_encoder_)
         {
@@ -247,6 +248,7 @@ namespace MumbleLib
 
     void Connection::UninitializeCELT()
     {
+        QMutexLocker encoder_locker(&mutex_encoder_);
         celt_encoder_destroy(celt_encoder_);
         celt_encoder_ = 0;
         celt_decoder_destroy(celt_decoder_);
@@ -378,6 +380,8 @@ namespace MumbleLib
         
         if (encode_queue_.size() < MumbleVoip::FRAMES_PER_PACKET)
             return;
+
+        QMutexLocker encoder_locker(&mutex_encoder_);
 
         for (int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
         {
@@ -729,12 +733,16 @@ namespace MumbleLib
 
     void Connection::SetEncodingQuality(double quality)
     {
-        QMutexLocker locker(&mutex_encoding_quality_);
+        mutex_encoding_quality_.lock();
         if (quality < 0)
             quality = 0;
         if (quality > 1.0)
             quality = 1.0;
         encoding_quality_ = quality;
+        mutex_encoding_quality_.unlock();
+
+        QMutexLocker encoder_locker(&mutex_encoder_);
+        celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(BitrateForDecoder()));
     }
     
     int Connection::BitrateForDecoder()

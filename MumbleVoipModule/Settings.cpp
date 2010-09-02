@@ -25,7 +25,7 @@ namespace MumbleVoip
     void Settings::Load()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
-        enabled_ = settings.value("MumbleVoice/enabled", true).toBool();
+        enabled_ = settings.value("MumbleVoice/enabled", false).toBool();
         encode_quality_ = settings.value("MumbleVoice/encode_quality", 0.5).toDouble();
         microphone_level_ = settings.value("MumbleVoice/microphone_level", 0.5).toDouble();
         playback_buffer_size_ms_ = settings.value("MumbleVoice/playback_buffer_size", 200).toInt();

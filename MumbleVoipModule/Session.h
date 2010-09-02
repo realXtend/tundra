@@ -96,7 +96,8 @@ namespace MumbleVoip
         void UpdateSpeakerActivity(PCMAudioFrame*);
         void CheckChannel(MumbleLib::User*);
         void CheckConnectionState();
-        void OnSettingsChanged();
+        void SetPlaybackBufferSizeMs(int);
+        void SetEncodeQuality(double);
     };
 
 } // MumbleVoip

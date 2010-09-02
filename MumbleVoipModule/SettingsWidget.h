@@ -11,6 +11,7 @@ namespace MumbleVoip
 {
     class Settings;
 
+    /// Provide UI for Mumble Voip module settings. The widget is used with Settings service.
     class SettingsWidget : public QWidget, private Ui::VoiceSettings
     {
         Q_OBJECT
@@ -21,10 +22,12 @@ namespace MumbleVoip
     private:
         virtual void InitializeUI();
         virtual void LoadInitialState();
+
     private slots:
         virtual void OpenMicrophoneAdjustmentWidget();
         virtual void ApplyEncodeQuality();
         virtual void ApplyPlaybackBufferSize();
+        virtual void ApplyMicrophoneLevel();
         virtual void ApplyChanges();
         virtual void UpdateUI();
     private:
