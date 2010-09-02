@@ -1,5 +1,6 @@
 <config>
     <entry>PythonScriptModule</entry>
+    <dependency>UiServiceModule</dependency>
     <dependency>ConsoleModule</dependency>
     <dependency>RexLogicModule</dependency>
 </config>

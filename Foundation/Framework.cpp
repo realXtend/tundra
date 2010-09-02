@@ -310,6 +310,8 @@ namespace Foundation
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
+
+            emit FrameProcessed(frametime);
         }
         
         RESETPROFILER

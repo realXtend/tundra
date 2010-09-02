@@ -6,7 +6,12 @@ endmacro (MocFolder)
 ##############
 
 # Define target name and output directory
-init_target (TundraServerModule OUTPUT modules/core)
+init_target (TundraLogicModule OUTPUT modules/core)
+
+set(KRISTALLI_CORE_PATH "../Kristalli")
+
+include_directories(${KRISTALLI_CORE_PATH}/include)
+link_directories(${KRISTALLI_CORE_PATH}/build/win)
 
 MocFolder ()
 
@@ -26,11 +31,11 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager)
+use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager)
+link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule)
 link_package (OGRE)
 link_package (BOOST)
 link_package (POCO)

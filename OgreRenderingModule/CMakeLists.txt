@@ -19,7 +19,7 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB UI_FILES *.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h Renderer.h CAVESettingsWidget.h CAVEManager.h CAVEViewSettings.h CAVEViewSettingsAdvanced.h)
+file (GLOB MOC_FILES QOgreUIView.h RendererSettings.h EC_*.h Renderer.h CAVESettingsWidget.h CAVEManager.h CAVEViewSettings.h CAVEViewSettingsAdvanced.h StereoManager.h StereoWidget.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
@@ -53,7 +53,7 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager AssetModule RexCommon ProtocolUtilities)
 
 if (CAELUM)
     use_package (CAELUM)

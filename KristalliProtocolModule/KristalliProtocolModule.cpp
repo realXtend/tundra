@@ -14,6 +14,9 @@
 #include "KristalliProtocolModuleEvents.h"
 #include "Profiler.h"
 #include "EventManager.h"
+#include "CoreStringUtils.h"
+
+#include <algorithm>
 
 namespace KristalliProtocol
 {
@@ -172,7 +175,7 @@ void KristalliProtocolModule::PerformConnection()
     serverConnection = network.Connect(serverIp.c_str(), serverPort, serverTransport, this);
     if (!serverConnection)
     {
-        std::cout << "Unable to connect to " << serverIp << ":" << serverPort << std::endl;
+        LogError("Unable to connect to " + serverIp + ":" + ToString(serverPort));
         return;
     }
 }
@@ -189,6 +192,64 @@ void KristalliProtocolModule::Disconnect()
     serverIp = "";
 }
 
+bool KristalliProtocolModule::StartServer(unsigned short port, SocketTransportLayer transport)
+{
+    StopServer();
+    
+    server = network.StartServer(port, transport, this);
+    if (!server)
+    {
+        LogError("Failed to start server at port " + ToString((int)port));
+        return false;
+    }
+    
+    return true;
+}
+
+void KristalliProtocolModule::StopServer()
+{
+    if (server)
+    {
+        network.StopServer();
+        connections.clear();
+    }
+}
+
+void KristalliProtocolModule::NewConnectionEstablished(MessageConnection *source)
+{
+    source->RegisterInboundMessageHandler(this);
+    source->SetDatagramInFlowRatePerSecond(200);
+    
+    UserConnection connection;
+    connection.id = AllocateNewConnectionID();
+    connection.connection = source;
+    connections.push_back(connection);
+    
+    LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection.id));
+    
+    Events::KristalliUserConnected msg(connection.id, source);
+    framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
+}
+
+void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
+{
+    // Delete from connection list if it was a known user
+    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    {
+        if (iter->connection == source)
+        {
+            Events::KristalliUserConnected msg(iter->id, source);
+            framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
+            
+            connections.erase(iter);
+            LogInfo("User disconnected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)iter->id));
+            break;
+        }
+    }
+    
+    LogInfo("Unknown user from " + source->GetEndPoint().ToString() + " disconnected");
+}
+
 void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes)
 {
     assert(source);
@@ -201,14 +262,34 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
         framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
     } catch(std::exception &e)
     {
-        std::cerr << "KristalliProtocolModule: Exception \"" << e.what() << "\" thrown when handling network message id " << id << " size " << (int)numBytes << " from client " 
-            << source->ToString() << std::endl;
+        LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " + ToString(id) + " size " + ToString((int)numBytes) + " from client " 
+            + source->ToString());
     }
 }
 
 bool KristalliProtocolModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
     return false;
+}
+
+u8 KristalliProtocolModule::AllocateNewConnectionID() const
+{
+    u8 newID = 1;
+    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
+        newID = std::max((int)newID, (int)(iter->id+1));
+    
+    return newID;
+}
+
+const UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
+{
+    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    {
+        if (iter->connection == source)
+            return &(*iter);
+    }
+    
+    return 0;
 }
 
 } // ~KristalliProtocolModule namespace

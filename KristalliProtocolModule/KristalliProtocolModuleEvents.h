@@ -18,9 +18,15 @@ namespace KristalliProtocol
 
 namespace Events
 {
-    // This event is posted whenever a new inbound network message is received from a Kristalli server.
+    // This event is posted whenever a new inbound network message is received from a Kristalli peer.
     static const event_id_t NETMESSAGE_IN = 1;
 
+    // This event is posted for a new user connection to a server
+    static const event_id_t USER_CONNECTED = 2;
+    
+    // This event is posted for a new user connection to a server
+    static const event_id_t USER_DISCONNECTED = 3;
+    
     // The message received from a Kristalli server is wrapped in this Naali event structure.
     class KristalliNetMessageIn : public Foundation::EventDataInterface
     {
@@ -35,35 +41,33 @@ namespace Events
         const char *data;
         size_t numBytes;
     };
-
-    // This event is posted when user's master status on Kristalli server changes
-    static const event_id_t MASTER_USER = 2;
     
-    class KristalliMasterUser : public Foundation::EventDataInterface
+    // Event structure for user connected
+    class KristalliUserConnected : public Foundation::EventDataInterface
     {
     public:
-        KristalliMasterUser(bool isMaster) :
-           userIsMaster(isMaster)
-        {
-        }
-       
-        bool userIsMaster;
-    };
-    
-    // This event is used to verify validity of assetstore assets. An asset might exist in user's cache,
-    // but we consider it valid only if it also is known by the server
-    static const event_id_t VALIDATE_ASSET = 3;
-    class KristalliValidateAsset : public Foundation::EventDataInterface
-    {
-    public:
-        KristalliValidateAsset(const std::string& name) :
-            assetname(name),
-            valid(false)
+        KristalliUserConnected(u8 id_, MessageConnection *source_) :
+            id(id_),
+            source(source_)
         {
         }
         
-        std::string assetname;
-        bool valid;
+        u8 id;
+        MessageConnection *source;
+    };
+    
+    // Event structure for user connected
+    class KristalliUserDisconnected : public Foundation::EventDataInterface
+    {
+    public:
+        KristalliUserDisconnected(u8 id_, MessageConnection *source_) :
+            id(id_),
+            source(source_)
+        {
+        }
+        
+        u8 id;
+        MessageConnection *source;
     };
     
 } // ~Events namespace

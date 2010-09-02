@@ -107,10 +107,9 @@ add_subdirectory (OpenALAudioModule)
 add_subdirectory (SupportModules)
 add_subdirectory (HttpUtilities)
 
-# Tundra viewer & server logic modules and executables
+# Tundra logic module & executables
 add_subdirectory (KristalliProtocolModule)
-add_subdirectory (TundraClientModule)
-add_subdirectory (TundraServerModule)
+add_subdirectory (TundraLogicModule)
 add_subdirectory (Viewer)
 add_subdirectory (Server)
 
@@ -147,8 +146,8 @@ add_subdirectory (EntityComponents/EC_Light)
 add_subdirectory (EntityComponents/EC_OpenSimPresence)
 add_subdirectory (EntityComponents/EC_OpenSimPrim)
 add_subdirectory (EntityComponents/EC_Touchable)
-add_subdirectory (EntityComponents/EC_3DCanvas)
-add_subdirectory (EntityComponents/EC_3DCanvasSource)
+#add_subdirectory (EntityComponents/EC_3DCanvas)
+#add_subdirectory (EntityComponents/EC_3DCanvasSource)
 add_subdirectory (EntityComponents/EC_Ruler)
 add_subdirectory (EntityComponents/EC_SoundRuler)
 add_subdirectory (EntityComponents/EC_ParticleSystem)

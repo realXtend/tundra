@@ -52,6 +52,7 @@ public:
     */
     void CreateParticleSystem(const QString &systemName);
     void DeleteParticleSystem();
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
     Foundation::Attribute<std::string>  particleId_;
     Foundation::Attribute<bool>         castShadows_;
@@ -74,6 +75,7 @@ private:
     Ogre::ParticleSystem* particleSystem_;
     Ogre::SceneNode* node_;
     request_tag_t particle_tag_;
+    event_category_id_t resource_event_category_;
 };
 
 #endif

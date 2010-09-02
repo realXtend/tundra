@@ -1,6 +1,4 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <config>
   <entry>TextureDecoderModule</entry>
-   <!-- UiModule: Ensure load order, not a link dependency. Do not remove! -->
-   <dependency>UiModule</dependency> 
 </config>

@@ -10,13 +10,14 @@
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 #include "CAVEManager.h"
+#include "StereoManager.h"
 
 #include <QObject>
 #include <QVariant>
 #include <QTime>
 #include <QRect>
+#include <QPixmap>
 #include <QImage>
-#include <QWidget>
 
 namespace Foundation
 {
@@ -34,8 +35,6 @@ namespace Ogre
     class RaySceneQuery;
     class Viewport;
 }
-
-class QWidget;
 
 namespace OgreRenderer
 {
@@ -88,8 +87,6 @@ namespace OgreRenderer
 
         //! Shows world view
         void ShowCurrentWorldView();
-
-
 
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
@@ -268,10 +265,25 @@ namespace OgreRenderer
         
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
-        
+
     public slots:
         //! Toggles fullscreen
         void SetFullScreen(bool value);
+
+        //! Render current main window content to texture
+        virtual QPixmap RenderImage(bool use_main_camera = true);
+
+        //! Render current main window with focus on the avatar
+        //! @todo make this focus non hard coded but as param
+        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation);
+
+        //! Prep the texture and entitys used in texture rendering
+        void PrepareImageRendering(int width, int height);
+
+        //! Reset the texture
+        void ResetImageRendering();
+
+        QImage CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height);
 
     private:
         //! Initialises Qt
@@ -376,7 +388,12 @@ namespace OgreRenderer
         //! resized dirty count
         int resized_dirty_;
 
+
+		//!Manager to handle Cave rendering
         CAVEManager cave_manager_;
+
+		//!Manager to Handle Stereo rendering
+		StereoManager stereo_manager_;
 
         //! For render function
         QImage ui_buffer_;
@@ -394,6 +411,11 @@ namespace OgreRenderer
         
         //! Soft shadow gaussian listeners
         std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
+
+        //! RenderImage() services texture
+        std::string image_rendering_texture_name_;
+
+        Scene::EntityPtr texture_rendering_cam_entity_;
     };
 }
 

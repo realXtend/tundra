@@ -47,6 +47,14 @@ EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
         Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
         node_ = scene_mgr->createSceneNode();
     }
+
+    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
+    if(event_manager)
+    {
+        event_manager->RegisterEventSubscriber(this, 99);
+        resource_event_category_ = event_manager->QueryEventCategory("Resource");
+    }
+
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -240,6 +248,18 @@ bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
 
     emit OnMaterialChanged(index, material_name);
     return true;
+}
+
+bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+{
+    if(category_id == resource_event_category_)
+    {
+        if(event_id == Resource::Events::RESOURCE_READY)
+        {
+            return HandleResourceEvent(event_id, data);
+        }
+    }
+    return false;
 }
 
 bool EC_Mesh::HasMaterialsChanged() const

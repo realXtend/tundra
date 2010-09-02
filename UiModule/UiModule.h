@@ -27,6 +27,8 @@ namespace UiServices
 {
     class UiSettingsService;
     class UiSceneService;
+    class MessageNotification;
+
     typedef boost::shared_ptr<UiSettingsService> UiSettingsPtr;
     typedef boost::shared_ptr<UiSceneService> UiSceneServicePtr;
 
@@ -66,8 +68,6 @@ namespace UiServices
 
         Ether::Logic::EtherLoginNotifier *GetEtherLoginNotifier() const;
 
-        QPair<QString, QString> GetScreenshotPaths();
-
         //! Logging
         MODULE_LOGGING_FUNCTIONS;
 
@@ -76,6 +76,11 @@ namespace UiServices
 
     private slots:
         void OnKeyPressed(KeyEvent *key);
+
+        void OnSceneChanged(const QString &old_name, const QString &new_name);
+
+        //! Takes UI screenshots of world/avatar with rendering service
+        void TakeEtherScreenshots();
 
     private:
         //! Notify all ui module components of connected/disconnected state
@@ -123,6 +128,10 @@ namespace UiServices
 
         //! Input context for Ether
         boost::shared_ptr<InputContext> input;
+
+        //! Welcome message to be sent when inworld scene is enabled
+        //! Do NOT delete this on deconstructor or anywhere else for that matter!
+        MessageNotification *welcome_message_;
     };
 }
 

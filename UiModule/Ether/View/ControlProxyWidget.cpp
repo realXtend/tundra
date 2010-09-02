@@ -11,6 +11,7 @@
 #include <QHBoxLayout>
 #include <QVBoxLayout>
 #include <QGraphicsScene>
+#include <QDesktopServices>
 
 #include <QDebug>
 
@@ -33,7 +34,9 @@ namespace Ether
               text_label_(0),
               suppress_buttons_(false),
               overlay_widget_(0),
-              connected_(false)
+              connected_(false),
+              ignore_movement_(false),
+              controlled_card_(0)
         {
             parent_->setObjectName("containerWidget");
             setWidget(parent_);
@@ -165,10 +168,10 @@ namespace Ether
 
             // Init animations
             fade_animation_ = new QPropertyAnimation(this, "opacity", this);
-            fade_animation_->setDuration(1000);
+            fade_animation_->setDuration(300);
             fade_animation_->setEasingCurve(QEasingCurve::Linear);
             fade_animation_->setStartValue(0);
-            fade_animation_->setEndValue(1);              
+            fade_animation_->setEndValue(1);
         }
 
         void ControlProxyWidget::InitActionWidgets()
@@ -305,7 +308,7 @@ namespace Ether
 
             // Init animations
             fade_animation_ = new QPropertyAnimation(this, "opacity", this);
-            fade_animation_->setDuration(1000);
+            fade_animation_->setDuration(300);
             fade_animation_->setEasingCurve(QEasingCurve::Linear);
             fade_animation_->setStartValue(0);
             fade_animation_->setEndValue(1);   
@@ -408,16 +411,29 @@ namespace Ether
 
         void ControlProxyWidget::UpdateContollerCard(InfoCard *new_card)
         {
+            // Disconnect everything
+            if (controlled_card_)
+                disconnect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
+            disconnect();
+
+            // Set new controlled card
             controlled_card_ = new_card;
             UpdateStatusText(controlled_card_->title());
+            connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL(finished()), this, SLOT(ControlledWidgetStopped()));
+        }
 
-            disconnect();
-            connect(controlled_card_->GetMoveAnimationPointer(), SIGNAL( finished()),
-                    this, SLOT( ControlledWidgetStopped() ));
+        void ControlProxyWidget::IgnoreContollerCardMovement(bool ignore)
+        {
+            ignore_movement_ = ignore;
+            if (!ignore_movement_)
+                ControlledWidgetStopped();
         }
 
         void ControlProxyWidget::ControlledWidgetStopped()
         {
+            if (ignore_movement_)
+                return;
+
             if (type_ == AddRemoveControl)
                 UpdateGeometry(overlay_widget_->mapRectToScene(overlay_widget_->boundingRect()), controlled_card_->scale(), false);
             else
@@ -481,12 +497,12 @@ namespace Ether
             if (!suppress_buttons_)
                 emit ActionRequest("connect");
             else 
-                qDebug() << "<Ether::ControlProxyWidget> Suppressed connect action, login is in progress";
+                qDebug() << "[Ether]: Suppressed connect action, login is already in progress";
         }
 
         void ControlProxyWidget::HelpHandler()
         {
-            emit ActionRequest("help");
+            QDesktopServices::openUrl(QUrl("http://wiki.realxtend.org/index.php/Getting_Started_with_Naali"));
         }
 
         void ControlProxyWidget::HideHandler()
@@ -499,7 +515,7 @@ namespace Ether
             if (!suppress_buttons_)
                 action_widget_->ShowWidget(type, controlled_card_);
             else 
-                qDebug() << "<Ether::ControlProxyWidget> Suppressed action '" << type << "'";
+                qDebug() << "[Ether]: Suppressed action '" << type << "'";
         }
 
         void ControlProxyWidget::SuppressButtons(bool suppress)
