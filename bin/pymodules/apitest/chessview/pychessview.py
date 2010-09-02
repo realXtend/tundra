@@ -15,18 +15,31 @@ try:
 except:
     print "circuits not there, can still run as standalone outside Naali"
 else:
+    import time
     class ChessView(circuits.BaseComponent):
         def __init__(self):
+            circuits.BaseComponent.__init__(self)
             initchess()
+            self.inited = False
 
         @circuits.handler("update")
         def update(self, t):
+            if not self.inited:
+                print "< BEFORE GDK INIT"
+                gtk.gdk.threads_init()
+                while _ in range(100):
+                    gtk.main_iteration(block=False)
+                print "> AFTER  GDK INIT"
+                time.sleep(0.1)
+                print ">> AFTER SLEEP"
+                self.inited = True
+    
+            print "x"
             updatechess()
+            print "y"
 
 def initchess():
     p = pychess.Main.PyChess(None)
-    gtk.gdk.threads_init()
-
     log.log("Started from Naali\n")
     print "PyChess in Naali"
 
@@ -35,9 +48,11 @@ prev_board = None
 prev_arBoard = None
 
 def updatechess():
+    #print ".",
     global g, prev_board, prev_arBoard
 
     gtk.main_iteration(block=False)
+    #gtk.gdk.threads_enter()
 
     if g is None and i.globalgamemodel is not None:
         g = i.globalgamemodel
@@ -54,11 +69,12 @@ def updatechess():
 
             prev_board = board
             prev_arBoard = board.board.arBoard[:]
+    #gtk.gdk.threads_leave()
 
 def main():
     initchess()
+    gtk.gdk.threads_init()
     while 1:
-        #print ".",
         updatechess()
 
 """in parsemove.py now
