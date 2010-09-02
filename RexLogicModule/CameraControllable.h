@@ -121,6 +121,7 @@ namespace RexLogic
         void funcFocusOnObject(float, float, float);
         //! Rotate camera around the point that is clicked on
         void rotateCameraAroundObject();
+        void FocusOnObjectZoom();
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;

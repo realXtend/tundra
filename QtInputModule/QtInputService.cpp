@@ -97,6 +97,9 @@ framework(framework_)
     mainWindow->installEventFilter(this);
 
     LoadKeyBindingsFromFile();
+
+    lastMouseButtonReleaseTime = QTime::currentTime();
+    doubleClickDetected = false;
 }
 
 QtInputService::~QtInputService()
@@ -429,6 +432,10 @@ void QtInputService::TriggerMouseEvent(MouseEvent &mouse)
         case MouseEvent::MouseScroll:
     		eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
             break;
+        case MouseEvent::MouseDoubleClicked:
+            eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
+            doubleClickDetected = false;
+            break;
         default:
             assert(false);
             break;
@@ -629,8 +636,13 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         }
         else
         {
+            if (lastMouseButtonReleaseTime.msecsTo(QTime::currentTime()) < 300)
+            {
+                doubleClickDetected = true;
+            }
             heldMouseButtons &= ~(MouseEvent::MouseButton)e->button();
             newMouseButtonsReleasedQueue |= (MouseEvent::MouseButton)e->button();
+            lastMouseButtonReleaseTime = QTime::currentTime();
         }
 
         // If there's a visible QGraphicsItem under the mouse and mouse is not in FPS mode, 
@@ -645,7 +657,13 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 		MouseEvent mouseEvent;
         mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
-		mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
+        if ( !doubleClickDetected)
+        {
+            mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
+        } else 
+        {
+            mouseEvent.eventType = MouseEvent::MouseDoubleClicked;
+        }
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
 		mouseEvent.y = mousePos.y();
