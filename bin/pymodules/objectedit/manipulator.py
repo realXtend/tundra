@@ -232,6 +232,7 @@ class Manipulator:
             
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos[0] < entpos[0], campos[1] < entpos[1])
+                self.controller.soundRuler(ent)
                 
             if self.usesManipulator:
                 self.moveTo(ents)
