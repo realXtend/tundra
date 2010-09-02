@@ -379,9 +379,13 @@ bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::Event
 
             try
             {
-                entity_->getMesh()->_notifySkeleton(skeletonRes->GetSkeleton());
-                LogDebug("Set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName());
-                emit OnSkeletonChanged(QString::fromStdString(skeleton_->getName()));
+                Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeletonRes->GetSkeleton()->getName());
+                if(skel.get())
+                {
+                    entity_->getMesh()->_notifySkeleton(skel);
+                    LogDebug("Set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName());
+                    emit OnSkeletonChanged(QString::fromStdString(skeleton_->getName()));
+                }
             }
             catch (Ogre::Exception& e)
             {
