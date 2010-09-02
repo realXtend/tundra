@@ -3,8 +3,6 @@
 #ifndef incl_Asset_AssetCache_h
 #define incl_Asset_AssetCache_h
 
-class QCryptographicHash;
-
 #include "Foundation.h"
 #include "AssetInterface.h"
 
@@ -16,8 +14,7 @@ namespace Asset
     //! Stores assets to memory and/or disk based cache. Created and used by AssetManager.
     class AssetCache : public QObject
     {
-
-    Q_OBJECT
+        Q_OBJECT
 
     public:
         typedef std::map<std::string, Foundation::AssetPtr> AssetMap;
@@ -37,7 +34,11 @@ namespace Asset
             \param type Optional type (empty to match any)
             \return Pointer to asset if found, or null if not
          */
-        Foundation::AssetPtr GetAsset(const std::string& asset_id, bool check_memory = true, bool check_disk = true, const std::string& asset_type = std::string());
+        Foundation::AssetPtr GetAsset(
+            const std::string& asset_id,
+            bool check_memory = true,
+            bool check_disk = true,
+            const std::string& asset_type = std::string());
 
         //! Stores asset to cache. Posts ASSET_READY event when done.
         /*! \param asset Asset
@@ -49,7 +50,7 @@ namespace Asset
 
         //! Returns all assets
         const AssetMap& GetAssets() const { return assets_; }
-        
+
         //! Update. Adds age to assets, removes oldest if cache size too big
         void Update(f64 frametime);
 
@@ -77,10 +78,10 @@ namespace Asset
 
         //! Current disk asset cache path
         std::string cache_path_;
-        
+
         //! Maximum memory cache size
         uint memory_cache_size_;
-        
+
         //! Update time accumulator
         f64 update_time_;
 
@@ -90,9 +91,6 @@ namespace Asset
 
         //! Framework
         Foundation::Framework* framework_;
-
-        //! MD5 Engine
-        QCryptographicHash *md5_engine_;
 
         QDir cache_dir_;
         int disk_cache_max_size_;
