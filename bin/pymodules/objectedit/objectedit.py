@@ -113,6 +113,7 @@ class ObjectEdit(Component):
         if self.cpp_python_handler == None:
             r.logDebug("Could not aqquire world building service to object edit")
         else:
+            # Connect signals
             self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
             self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
             self.cpp_python_handler.connect('RemoveHightlight()', self.deselect_all)
@@ -120,6 +121,10 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('CreateObject()', self.createObject)
             self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
+            # Pass widgets
+            self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
+            self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
+            self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
             
     def on_keypressed(self, k):
         trigger = (k.keyCode, k.modifiers)

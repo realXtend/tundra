@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>302</width>
+    <width>358</width>
     <height>329</height>
    </rect>
   </property>
@@ -45,7 +45,6 @@ QLabel {
 QLabel#editing_title {
 	font-size: 18px;
 	font-weight: bold;
-	padding-bottom: 10px;
 }
 
 QLabel#label_rotate_z_title, #label_rotate_x_title, #label_rotate_y_title {
@@ -148,7 +147,7 @@ QPushButton#button_scale {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>295</width>
+          <width>351</width>
           <height>327</height>
          </rect>
         </property>

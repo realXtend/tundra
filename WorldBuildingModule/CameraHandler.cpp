@@ -281,7 +281,6 @@ namespace WorldBuilding
 
                 // Create a QImage from the memory
                 captured_pixmap = QImage(pixelData_, image_size.width(), image_size.height(), QImage::Format_ARGB32_Premultiplied);
-                captured_pixmap.save("test.png");
                 if (captured_pixmap.isNull())
                     WorldBuildingModule::LogDebug("Capturing entity to viewport image failed.");
             }

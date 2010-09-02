@@ -9,6 +9,7 @@
 #include "SceneManager.h"
 #include "OgreRenderingModule.h"
 #include "RexUUID.h"
+#include "EventManager.h"
 
 #include "LoggingFunctions.h"
 
@@ -31,6 +32,12 @@ EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
         return;
     renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
 
+    Foundation::EventManager *event_manager = framework_->GetEventManager().get();
+    if(event_manager)
+    {
+        event_manager->RegisterEventSubscriber(this, 99);
+        resource_event_category_ = event_manager->QueryEventCategory("Resource");
+    }
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
@@ -106,11 +113,8 @@ void EC_ParticleSystem::DeleteParticleSystem()
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
     OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_.get());
-    if(!placeable)
-        return;
-
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
-    if(!scene_mgr)
+    if(!placeable || !scene_mgr)
         return;
 
     try
@@ -128,8 +132,19 @@ void EC_ParticleSystem::DeleteParticleSystem()
 
     scene_mgr->destroyParticleSystem(particleSystem_);
     particleSystem_ = 0;
-
     return;
+}
+
+bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    if(category_id == resource_event_category_)
+    {
+        if(event_id == Resource::Events::RESOURCE_READY)
+        {
+            return HandleResourceEvent(event_id, data);
+        }
+    }
+    return false;
 }
 
 void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
@@ -186,10 +201,11 @@ void EC_ParticleSystem::FindPlaceable()
 request_tag_t EC_ParticleSystem::RequestResource(const std::string& id, const std::string& type)
 {
     request_tag_t tag = 0;
-    if(renderer_.expired())
+    Foundation::RenderServiceInterface *renderInter = framework_->GetService<Foundation::RenderServiceInterface>();
+    if(!renderInter)
         return tag;
 
-    tag = renderer_.lock()->RequestResource(id, type);
+    tag = renderInter->RequestResource(id, type);
     if(tag == 0)
     {
         LogWarning("Failed to request resource:" + id + " : " + type);

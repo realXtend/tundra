@@ -40,7 +40,9 @@ ComponentInterface::~ComponentInterface()
     {       
         boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
         if ( event_manager_ != 0 )
+        {
             event_manager_->UnregisterEventSubscriber(this);
+        }
     }
 }
 
