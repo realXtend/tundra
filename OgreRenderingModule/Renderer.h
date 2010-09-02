@@ -10,6 +10,7 @@
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 #include "CAVEManager.h"
+#include "StereoManager.h"
 
 #include <QObject>
 #include <QVariant>
@@ -387,7 +388,12 @@ namespace OgreRenderer
         //! resized dirty count
         int resized_dirty_;
 
+
+		//!Manager to handle Cave rendering
         CAVEManager cave_manager_;
+
+		//!Manager to Handle Stereo rendering
+		StereoManager stereo_manager_;
 
         //! For render function
         QImage ui_buffer_;
