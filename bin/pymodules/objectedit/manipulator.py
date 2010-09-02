@@ -1,15 +1,53 @@
 import rexviewer as r
+import math
+
+import PythonQt
 import PythonQt.QtGui
+
+from PythonQt.QtCore import Qt
 from PythonQt.QtGui import QQuaternion as Quat
 from PythonQt.QtGui import QVector3D as Vec
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
-import math
 
+try:
+    qapp = PythonQt.Qt.QApplication.instance()
+except:
+    qapp = None
+
+def set_custom_cursor(cursor_shape):
+    if qapp == None:
+        return
+    cursor = PythonQt.QtGui.QCursor(cursor_shape)
+    current = qapp.overrideCursor()
+    if current != None:
+        if current.shape() != cursor_shape:
+            qapp.setOverrideCursor(cursor)
+    else:
+        qapp.setOverrideCursor(cursor)
+    
+def remove_custom_cursor(cursor_shape):
+    if qapp == None:
+        return
+    curr_cursor = qapp.overrideCursor()
+    if curr_cursor != None:
+        if curr_cursor.shape() == cursor_shape:
+            qapp.restoreOverrideCursor()
+
+def remove_custom_cursors():
+    if qapp == None:
+        return
+    curr_cursor = qapp.overrideCursor()
+    while curr_cursor != None:
+        qapp.restoreOverrideCursor()
+        curr_cursor = qapp.overrideCursor()
+    
 class Manipulator:
     NAME = "Manipulator"
     MANIPULATOR_MESH_NAME = "axes.mesh"
     USES_MANIPULATOR = True
+    CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
+    CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
     MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
     MANIPULATORSCALE = Vec(1, 1, 1)
@@ -60,6 +98,7 @@ class Manipulator:
     def stopManipulating(self):
         self.grabbed_axis = None
         self.grabbed = False
+        remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
     
     def initVisuals(self):
         #r.logInfo("initVisuals in manipulator " + str(self.NAME))
@@ -103,6 +142,7 @@ class Manipulator:
                 
                 self.grabbed_axis = None
                 self.grabbed = False
+                remove_custom_cursors()
                 
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
@@ -134,6 +174,11 @@ class Manipulator:
                     #~ print "arrow got screwed..."
                     self.grabbed_axis = None
                     self.grabbed = False
+                    
+                if self.grabbed_axis != None:
+                    set_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                else:
+                    remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -210,6 +255,7 @@ class Manipulator:
                     name += str("_hi")
                     self.manipulator.mesh.SetMaterial(submeshid, name)
                     self.highlightedSubMesh = submeshid
+                    set_custom_cursor(self.CURSOR_HOVER_SHAPE)
 
     def resethighlight(self):
         if self.usesManipulator and self.highlightedSubMesh is not None:
@@ -217,6 +263,7 @@ class Manipulator:
             if name is not None:
                 self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
             self.highlightedSubMesh = None
+            remove_custom_cursors()
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
