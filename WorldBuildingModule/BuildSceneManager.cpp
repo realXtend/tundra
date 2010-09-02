@@ -33,10 +33,12 @@ namespace WorldBuilding
         camera_handler_(0),
         prim_selected_(true),
         selected_entity_(0),
-        selected_camera_id_(-1)
+        selected_camera_id_(-1),
+        viewport_poller_(new QTimer(this))
     {
         setParent(parent);
         connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
+        connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
 
         InitScene();
         ObjectSelected(false);        
@@ -427,6 +429,14 @@ namespace WorldBuilding
 
         foreach(QWidget *widget, toggle_visibility_widgets_)
             widget->setVisible(selected);
+
+        if (selected)
+            viewport_poller_->start(50);
+        else
+        {
+            selected_entity_ = 0;
+            viewport_poller_->stop();
+        }
     }
 
     void BuildSceneManager::ObjectSelected(Scene::Entity *entity)
@@ -445,9 +455,6 @@ namespace WorldBuilding
             return;
         }
 
-        camera_handler_->FocusToEntity(selected_camera_id_, entity);
-        UpdateObjectViewport();
-
         // Update our widgets UI
         object_info_ui.server_id_value->setText(ui_helper_->CheckUiValue(prim->getFullId()));
         object_info_ui.local_id_value->setText(ui_helper_->CheckUiValue(prim->getLocalId()));
@@ -457,15 +464,17 @@ namespace WorldBuilding
             property_editor_handler_->CreatePropertyBrowser(object_info_widget_->GetInternal(), object_info_ui.property_browser_layout, prim);
         else
             property_editor_handler_->PrimSelected(prim);
+        selected_entity_ =  entity;
+
+        // Starts to update the viewport with a timer
         ObjectSelected(true);
-        selected_entity_ =  entity;       
     }
 
     void BuildSceneManager::UpdateObjectViewport()
     {
-        world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
-        if (!world_object_view_->text().isEmpty())
-            world_object_view_->setText("");
+        if (selected_camera_id_ != -1 && world_object_view_ && selected_entity_)
+            if (camera_handler_->FocusToEntity(selected_camera_id_, selected_entity_))
+                world_object_view_->setPixmap(camera_handler_->RenderCamera(selected_camera_id_, world_object_view_->size()));
     }
 
     void BuildSceneManager::Zoom(qreal delta)
@@ -476,8 +485,7 @@ namespace WorldBuilding
             if (entity_ec_placable)
             {
                 qreal acceleration = 0.01;
-                if (camera_handler_->ZoomRelativeToPoint(entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration))
-                    UpdateObjectViewport();
+                camera_handler_->ZoomRelativeToPoint(entity_ec_placable->GetPosition(),selected_camera_id_, delta*acceleration);
             }
         }
     }
@@ -492,7 +500,6 @@ namespace WorldBuilding
                 qreal acceleration_x = 1;
                 qreal acceleration_y = 1;
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
-                UpdateObjectViewport();
             }
         }
     }

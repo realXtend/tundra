@@ -57,6 +57,8 @@ signals:
     void MouseMove(MouseEvent *mouse);
     /// Mouse wheel was scrolled.
     void MouseScroll(MouseEvent *mouse);
+    /// Mouse double click
+    void MouseDoubleClicked(MouseEvent *mouse);
 
     // The following signals are emitted on the appropriate events. It is guaranteed that each press event
     // will follow a corresponding release event (although if it gets lost from Qt, it might get delayed

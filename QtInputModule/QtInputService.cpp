@@ -35,6 +35,7 @@ pressedMouseButtons(0),
 releasedMouseButtons(0),
 newMouseButtonsPressedQueue(0),
 newMouseButtonsReleasedQueue(0),
+current_modifiers_(0),
 mainView(0),
 mainWindow(0),
 framework(framework_)
@@ -97,6 +98,9 @@ framework(framework_)
     mainWindow->installEventFilter(this);
 
     LoadKeyBindingsFromFile();
+
+    lastMouseButtonReleaseTime = QTime::currentTime();
+    doubleClickDetected = false;
 }
 
 QtInputService::~QtInputService()
@@ -429,6 +433,10 @@ void QtInputService::TriggerMouseEvent(MouseEvent &mouse)
         case MouseEvent::MouseScroll:
     		eventManager->SendEvent(inputCategory, QtInputEvents::MouseScroll, &mouse);
             break;
+        case MouseEvent::MouseDoubleClicked:
+            eventManager->SendEvent(inputCategory, QtInputEvents::MouseDoubleClicked, &mouse);
+            doubleClickDetected = false;
+            break;
         default:
             assert(false);
             break;
@@ -531,6 +539,8 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 //		keyEvent.otherHeldKeys = heldKeys; ///\todo
         keyEvent.handled = false;
 
+        current_modifiers_ = e->modifiers(); // local tracking for mouse events
+
         // We only take key events from the main QGraphicsView.
         if (obj != qobject_cast<QObject*>(mainView))
             return false;
@@ -594,6 +604,7 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         keyEvent.handled = false;
 
 		heldKeys.erase(existingKey);
+        current_modifiers_ = e->modifiers(); // local tracking for mouse events
 
         // Queue up the release event for the polling API, independent of whether any Qt widget has keyboard focus.
         if (keyEvent.keyPressCount == 1) /// \todo The polling API does not get key repeats at all. Should it?
@@ -629,8 +640,13 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
         }
         else
         {
+            if (lastMouseButtonReleaseTime.msecsTo(QTime::currentTime()) < 300)
+            {
+                doubleClickDetected = true;
+            }
             heldMouseButtons &= ~(MouseEvent::MouseButton)e->button();
             newMouseButtonsReleasedQueue |= (MouseEvent::MouseButton)e->button();
+            lastMouseButtonReleaseTime = QTime::currentTime();
         }
 
         // If there's a visible QGraphicsItem under the mouse and mouse is not in FPS mode, 
@@ -645,13 +661,20 @@ bool QtInputService::eventFilter(QObject *obj, QEvent *event)
 		MouseEvent mouseEvent;
         mouseEvent.itemUnderMouse = GetVisibleItemAtCoords(e->x(), e->y());
         mouseEvent.origin = mouseEvent.itemUnderMouse ? MouseEvent::PressOriginQtWidget : MouseEvent::PressOriginScene;
-		mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
+        if ( !doubleClickDetected)
+        {
+            mouseEvent.eventType = (event->type() == QEvent::MouseButtonPress) ? MouseEvent::MousePressed : MouseEvent::MouseReleased;
+        } else 
+        {
+            mouseEvent.eventType = MouseEvent::MouseDoubleClicked;
+        }
         mouseEvent.button = (MouseEvent::MouseButton)e->button();
         mouseEvent.x = mousePos.x();
 		mouseEvent.y = mousePos.y();
 		mouseEvent.z = 0;
 		mouseEvent.relativeX = mouseEvent.x - lastMouseX;
 		mouseEvent.relativeY = mouseEvent.y - lastMouseY;
+        mouseEvent.modifiers = current_modifiers_;
 
         lastMouseX = mouseEvent.x;
         lastMouseY = mouseEvent.y;

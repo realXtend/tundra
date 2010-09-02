@@ -122,6 +122,7 @@ namespace RexLogic
 
         //! Rotate camera around the point that is clicked on
         void RotateCameraAroundObject();
+        void FocusOnObjectZoom();
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
