@@ -25,7 +25,6 @@ EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
     soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(this, SIGNAL(OnChanged()), SLOT(DisableOtherSoundListeners()));
     connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update()));
 }
 
