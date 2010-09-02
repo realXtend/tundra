@@ -10,6 +10,8 @@
 #include "ConsoleManager.h"
 #include "ConsoleModule.h"
 
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "Framework.h"
 
@@ -28,16 +30,22 @@ namespace Console
         console_ui_(new Ui::ConsoleWidget()),
         console_widget_(new QWidget()),
         visible_(false),
-        opacity_(0.8)
+        opacity_(0.8),
+        hooked_to_scenes_(false)
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
-        proxy_widget_ = new ConsoleProxyWidget(console_widget_);
-        proxy_widget_->setMinimumHeight(0);
-        proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
-        proxy_widget_->setOpacity(opacity_);
-        proxy_widget_->setZValue(100);
-        ui_view_->scene()->addItem(proxy_widget_);
+
+        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (ui)
+        {
+            proxy_widget_ = ui->AddWidgetToScene(console_widget_);
+            proxy_widget_->setMinimumHeight(0);
+            proxy_widget_->setGeometry(QRect(0, 0, ui_view_->width(), 0));
+            proxy_widget_->setOpacity(opacity_);
+            proxy_widget_->setZValue(100);
+            ui->RegisterUniversalWidget("Console", proxy_widget_);
+        }
 
         animation_.setTargetObject(proxy_widget_);
         animation_.setPropertyName("geometry");
@@ -48,7 +56,7 @@ namespace Console
         // Input field
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
         // Scene to notify rect changes
-        connect(ui_view_->scene(), SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+        
         // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
         connect(this, SIGNAL(PrintOrderReceived(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
 
@@ -87,7 +95,7 @@ namespace Console
         if (visible_)
         {
             QRectF new_size = rect;
-            new_size.setHeight(rect.height() * proxy_widget_->GetConsoleRelativeHeight());
+            new_size.setHeight(rect.height() * 0.5);
             proxy_widget_->setGeometry(new_size);
         }
         else
@@ -100,18 +108,38 @@ namespace Console
     {
         if (!ui_view_)
             return;
-        if (ui_view_->scene() != proxy_widget_->scene())
+
+        if (!hooked_to_scenes_)
+        {
+            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            if (ui)
+            {
+                QGraphicsScene *scene = ui->GetScene("Inworld");
+                if (scene)
+                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+                scene = ui->GetScene("WorldBuilding");
+                if (scene)
+                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+                scene = ui->GetScene("Ether");
+                if (scene)
+                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+                hooked_to_scenes_ = true;
+            }
+        }
+
+        QGraphicsScene *current_scene = proxy_widget_->scene();
+        if (!current_scene)
             return;
 
         visible_ = !visible_;
-        int current_height = ui_view_->height()*proxy_widget_->GetConsoleRelativeHeight();
+        int current_height = ui_view_->height()*0.5;
         if (visible_)
         {
             animation_.setStartValue(QRect(0, 0, ui_view_->width(), 0));
             animation_.setEndValue(QRect(0, 0, ui_view_->width(), current_height));
             // Not bringing to front, works in UiProxyWidgets, hmm...
-            ui_view_->scene()->setActiveWindow(proxy_widget_);
-            ui_view_->scene()->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
+            current_scene->setActiveWindow(proxy_widget_);
+            current_scene->setFocusItem(proxy_widget_, Qt::ActiveWindowFocusReason);
             console_ui_->ConsoleInputArea->setFocus(Qt::MouseFocusReason);
             proxy_widget_->show();
         }
