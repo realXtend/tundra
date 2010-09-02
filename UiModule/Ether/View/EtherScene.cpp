@@ -117,5 +117,20 @@ namespace Ether
         {
             emit EtherSceneReadyForSwitch();
         }
+
+        void EtherScene::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
+        {
+            if (!widget)
+                return;
+            if (!isActive())
+                return;
+            if (widget->scene() == this)
+                return;
+            if (name.toLower() != "console") // Ether only accepts the console
+                return;
+
+            addItem(widget);
+            widget->hide();
+        }
     }
 }

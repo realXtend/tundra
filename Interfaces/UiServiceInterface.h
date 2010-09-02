@@ -158,12 +158,26 @@ namespace Foundation
          */
         virtual bool SwitchToScene(const QString &name) = 0;
 
+        /** Registers a universal widget. This means when scene is changed all interested will get
+         *  a TranferRequest signal
+         *  @param name Name of the widget
+         *  @param widget The registered QWidget
+         */
+        virtual void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) = 0;
+
     signals:
         /** Emitted when scene is changed.
          *  @param oldName Name of the old scene.
          *  @param newName Name of the new scene.
          */
         void SceneChanged(const QString &oldName, const QString &newName);
+
+        /** Emitted when scene changes for every widget that has registered
+         *  to be a universal widget. Scenes have to implement to catch this if they accept widgets from other scenes.
+         *  @param widget_name The tranfering widgets name
+         *  @param widget The transfering widget
+         */
+        void TransferRequest(const QString &widget_name, QGraphicsProxyWidget *widget);
     };
 }
 
