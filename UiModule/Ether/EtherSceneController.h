@@ -73,6 +73,8 @@ namespace Ether
 
             void RecalculateMenus();
             void TheResizer();
+            
+            void SetEtherItemsVisible();
 
             void StartLoginAnimation();
             void RevertLoginAnimation(bool change_scene_after_anims_finish);

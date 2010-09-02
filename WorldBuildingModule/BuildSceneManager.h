@@ -81,7 +81,8 @@ namespace WorldBuilding
         virtual QObject *GetPythonHandler() const;
 
     private slots:
-        void InitialseScene();
+        void InitScene();
+        void CleanPyWidgets();
         void SceneChangedNotification(const QString &old_name, const QString &new_name);
         void ObjectSelected(bool selected);
 
@@ -94,6 +95,8 @@ namespace WorldBuilding
 
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
+        void HandlePythonWidget(const QString &type, QWidget *widget);
+
     private:
         Foundation::Framework *framework_;
         QString scene_name_;
@@ -102,8 +105,6 @@ namespace WorldBuilding
         AnchorLayout *layout_;
 
         WorldObjectView* world_object_view_;
-        ObjectViewData object_view_data_;
-
         Ui::BuildingWidget *object_info_widget_;
         Ui::BuildingWidget *object_manipulations_widget_;
 
@@ -118,7 +119,10 @@ namespace WorldBuilding
         Scene::Entity* selected_entity_;
 
         View::CameraHandler *camera_handler_;
-        View::CameraID selected_camera_id_;        
+        View::CameraID selected_camera_id_;
+
+        QList<QWidget*> toggle_visibility_widgets_;
+        QList<QWidget*> python_deleted_widgets_;
     };
 }
 

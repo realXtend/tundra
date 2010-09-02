@@ -11,6 +11,7 @@
 #include "InputServiceInterface.h"
 
 #include "Ether/EtherLogic.h"
+#include "Ether/EtherSceneController.h"
 #include "Ether/View/EtherScene.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
@@ -56,7 +57,8 @@ namespace UiServices
         service_getter_(0),
         inworld_scene_controller_(0),
         inworld_notification_manager_(0),
-        ether_logic_(0)
+        ether_logic_(0),
+        welcome_message_(0)
     {
     }
 
@@ -95,8 +97,8 @@ namespace UiServices
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             UiAction *ether_action = new UiAction(ui_state_machine_);
             UiAction *build_action = new UiAction(ui_state_machine_);
-            QObject::connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
-            QObject::connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
+            connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
+            connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
@@ -128,12 +130,18 @@ namespace UiServices
     void UiModule::PostInitialize()
     {
         SubscribeToEventCategories();
+
+        // Start ether logic and register to scene service
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
+        // Switch ether scene active on startup
         ui_state_machine_->SwitchToEtherScene();
+        // Connect the switch signal to needed places
         connect(ui_state_machine_, SIGNAL(SceneChanged(const QString&, const QString&)), 
                 ether_logic_->GetQObjSceneController(), SLOT(UiServiceSceneChanged(const QString&, const QString&)));
+        connect(ui_state_machine_, SIGNAL(SceneChanged(const QString&, const QString&)), 
+                SLOT(OnSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
         input = framework_->Input().RegisterInputContext("EtherInput", 90);
@@ -204,6 +212,7 @@ namespace UiServices
                 case Events::EVENT_SERVER_CONNECTED:
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
                     // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
+                    ether_logic_->GetSceneController()->ShowStatusInformation("Connected, loading world content...", 60000);
                     break;
                 default:
                     break;
@@ -232,14 +241,28 @@ namespace UiServices
 
         InputServiceInterface &inputService = framework_->Input();
 
-        const QKeySequence toggleEther =   inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
-        const QKeySequence toggleWorldChat =  inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+        const QKeySequence toggleEther = inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+        const QKeySequence toggleWorldChat = inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
 
         if (key->keyCode == toggleEther)
             ui_state_machine_->ToggleEther();
 
         if (key->keyCode == toggleWorldChat)
             inworld_scene_controller_->SetFocusToChat();
+    }
+
+    void UiModule::OnSceneChanged(const QString &old_name, const QString &new_name)
+    {
+        if (!welcome_message_)
+            return;
+        if (old_name.toLower() == "ether" && new_name.toLower() == "inworld")
+        {
+            // A bit of a hack to add the notification only when inworld scene is active,
+            // if we dont do this the notification widget does not respond to mouse clicks
+            // and wont hide when the timer runs out
+            GetNotificationManager()->ShowNotification(welcome_message_);
+            welcome_message_ = 0;
+        }
     }
 
     void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
@@ -258,7 +281,9 @@ namespace UiServices
                     QString sim = QString::fromStdString(current_world_stream_->GetSimName());
                     QString username = QString::fromStdString(current_world_stream_->GetUsername());
                     if (!sim.isEmpty())
-                        GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
+                        welcome_message_ = new MessageNotification("Welcome to " + sim + " " + username, 10000);
+                    else
+                        welcome_message_ = 0;
                 }
                 break;
             }
