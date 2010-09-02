@@ -20,7 +20,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 
 EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
-    framework_(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
     particleId_(this, "Particle id"),
@@ -44,17 +43,6 @@ EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
 EC_ParticleSystem::~EC_ParticleSystem()
 {
     DeleteParticleSystem();
-}
-
-
-Foundation::ComponentPtr EC_ParticleSystem::GetPlaceable() const
-{
-    return placeable_;
-}
-
-void EC_ParticleSystem::SetPlaceable(Foundation::ComponentPtr comp)
-{
-    placeable_ = comp;
 }
 
 bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -89,7 +77,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), systemName.toStdString());
         if(particleSystem_)
         {
-            OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_.get());
+            OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
             if(!placeable)
                 return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
@@ -112,7 +100,7 @@ void EC_ParticleSystem::DeleteParticleSystem()
         return;
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
-    OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(placeable_.get());
+    OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     if(!placeable || !scene_mgr)
         return;
@@ -178,7 +166,6 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
 void EC_ParticleSystem::UpdateSignals()
 {
     disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
-    FindPlaceable();
     if(!GetParentEntity())
         return;
 
@@ -188,14 +175,14 @@ void EC_ParticleSystem::UpdateSignals()
                 this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*))); 
 }
 
-void EC_ParticleSystem::FindPlaceable()
+Foundation::ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
     assert(framework_);
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if(!placeable_)
-        LogError("Couldn't find a EC_OgrePlaceable coponent in this entity.");
-    return;
+    Foundation::ComponentPtr comp;
+    if(!GetParentEntity())
+        return comp;
+    comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    return comp;
 }
 
 request_tag_t EC_ParticleSystem::RequestResource(const std::string& id, const std::string& type)

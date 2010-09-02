@@ -40,9 +40,8 @@ private slots:
 
 private:
     explicit EC_Sound(Foundation::ModuleInterface *module);
-    void FindPlaceable();
+    Foundation::ComponentPtr FindPlaceable() const;
 
-    Foundation::ComponentInterfacePtr placeable_;
     sound_id_t sound_id_;
 };
 
