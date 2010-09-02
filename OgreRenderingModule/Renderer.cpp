@@ -137,6 +137,7 @@ namespace OgreRenderer
         last_width_(0),
         last_height_(0),
         cave_manager_(this),
+		stereo_manager_(this),
         resized_dirty_(0),
         view_distance_(500.0),
         shadowquality_(Shadows_High),
@@ -381,6 +382,7 @@ namespace OgreRenderer
     {
         resource_handler_->PostInitialize();
         cave_manager_.InitializeUi();
+		//stereo_manager_.InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
