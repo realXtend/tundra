@@ -65,7 +65,7 @@ public:
 		MouseReleased, ///< A mouse button was released.
 ///\todo Offer these additional events.
 //		MouseClicked,  ///< A mouse click occurs when mouse button is pressed and released inside a short interval.
-//		MouseDoubleClicked
+		MouseDoubleClicked
 	};
 
     /// PressOrigin tells whether a mouse press originated on top of a Qt widget or on top of the 3D scene area.

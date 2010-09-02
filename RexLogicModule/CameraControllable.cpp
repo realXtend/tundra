@@ -192,6 +192,10 @@ namespace RexLogic
                 }
             }
         }
+        if (event_id == Input::Events::MOUSE_DOUBLECLICK)
+        {
+
+        }
         return false;
     }
 
@@ -199,8 +203,20 @@ namespace RexLogic
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
-            Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
-            camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
+            if (current_state_ == FocusOnObject)
+            {
+                Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
+                Radius -= (value * zoom_sensitivity_) / 2.0;
+                if ( Radius > 0.5)
+                {
+                    FocusOnObjectZoom();
+                }
+            } else             
+            {
+                Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
+                camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
+                camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
+            }
         }
 
         if (current_state_ == FreeLook)
@@ -227,7 +243,8 @@ namespace RexLogic
             normalized_free_translation_.normalize();
         }
 
-        if (current_state_ == FocusOnObject)
+        if (event_id == RA::MoveBackward || event_id == RA::MoveDown || event_id == RA::MoveForward || event_id == RA::MoveLeft 
+            || event_id == RA::MoveRight || event_id == RA::MoveUp || event_id == RA::RotateLeft || event_id == RA::RotateRight)
         {
             current_state_ = ThirdPerson;
         }
@@ -561,6 +578,31 @@ namespace RexLogic
         }		
     }
 
+    void CameraControllable::FocusOnObjectZoom()
+    {
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        Scene::EntityPtr target = target_entity_.lock();
+        Scene::EntityPtr camera = camera_entity_.lock();
+
+        if (renderer && target && camera)
+        {
+            OgreRenderer::EC_OgrePlaceable *camera_placeable = 
+                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(camera->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+
+            EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(target->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
+            OgreRenderer::EC_OgrePlaceable *placeable = 
+                checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(target->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()).get());
+            if (netpos && placeable)
+            {
+                new_x = center_x + Radius * sin(Theta) * cos(Phi);
+                new_y = center_y + Radius * sin(Theta) * sin(Phi);
+                new_z = center_z + Radius * cos(Theta);
+
+                camera_placeable->SetPosition(Vector3df(new_x, new_y, new_z));
+                camera_placeable->LookAt(Vector3df(center_x, center_y, center_z));
+            }
+        }
+    }
     
 }
 
