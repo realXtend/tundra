@@ -7,6 +7,7 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "ModuleManager.h"
 #include "KristalliProtocolModule.h"
+#include "CoreStringUtils.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -59,6 +60,21 @@ Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector&
     if(!module)
         return Console::ResultFailure("No Kristalli module");
     
+    unsigned short port = 2345;
+    SocketTransportLayer transport = SocketOverUDP;
+    
+    try
+    {
+        if (params.size() > 0)
+            port = ParseString<int>(params[0]);
+        if (params.size() > 1)
+            if (params[1] == "tcp")
+                transport = SocketOverTCP;
+    }
+    catch (...) {}
+    
+    module->StartServer(port, transport);
+    
     return Console::ResultSuccess();
 }
 
@@ -67,7 +83,9 @@ Console::CommandResult TundraLogicModule::ConsoleStopServer(const StringVector& 
     KristalliProtocol::KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock().get();
     if(!module)
         return Console::ResultFailure("No Kristalli module");
-        
+    
+    module->StopServer();
+    
     return Console::ResultSuccess();
 }
 
@@ -76,7 +94,25 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
     KristalliProtocol::KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock().get();
     if(!module)
         return Console::ResultFailure("No Kristalli module");
-        
+
+    if (params.size() < 1)
+        return Console::ResultFailure("No address specified");
+    
+    unsigned short port = 2345;
+    SocketTransportLayer transport = SocketOverUDP;
+    
+    try
+    {
+        if (params.size() > 1)
+            port = ParseString<int>(params[1]);
+        if (params.size() > 2)
+            if (params[2] == "tcp")
+                transport = SocketOverTCP;
+    }
+    catch (...) {}
+    
+    module->Connect(params[0].c_str(), port, transport);
+    
     return Console::ResultSuccess();
 }
 
@@ -85,6 +121,8 @@ Console::CommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& 
     KristalliProtocol::KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock().get();
     if(!module)
         return Console::ResultFailure("No Kristalli module");
+    
+    module->Disconnect();
     
     return Console::ResultSuccess();
 }
