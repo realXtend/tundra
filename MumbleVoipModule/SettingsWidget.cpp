@@ -31,7 +31,7 @@ namespace MumbleVoip
         QStringList items;
         items.append("Allways Off");
         items.append("Allways On");
-        items.append("Push-To-Talk");
+//        items.append("Push-To-Talk"); // \todo Implement the ptt mode first
         this->defaultVoiceMode->addItems(items);
 
         LoadInitialState();
@@ -39,8 +39,8 @@ namespace MumbleVoip
         connect(this->testMicrophoneButton, SIGNAL(clicked()), this, SLOT(OpenMicrophoneAdjustmentWidget()));
         connect(this->applyPlaybackBufferSizeButton, SIGNAL(clicked()), this, SLOT(ApplyPlaybackBufferSize()));
         connect(this->applyEncodeQualityButton, SIGNAL(clicked()), this, SLOT(ApplyEncodeQuality()));
-        connect(this->playbackBufferSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
-        connect(this->encodeQualitySlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
+        connect(this->playbackBufferSlider, SIGNAL(valueChanged(int)), this, SLOT(UpdateUI()));
+        connect(this->encodeQualitySlider, SIGNAL(valueChanged(int)), this, SLOT(UpdateUI()));
         connect(this->defaultVoiceMode, SIGNAL(currentIndexChanged(int)), this, SLOT(ApplyChanges()));
         connect(this->microphoneLevelSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
     }
@@ -68,24 +68,34 @@ namespace MumbleVoip
         settings_->SetEnabled( this->enabledCheckBox->isChecked() );
         settings_->Save();
 
+        settings_->property("playback_buffer_size_ms") = this->playbackBufferSlider->value();
+
         UpdateUI();
     }
 
     void SettingsWidget::UpdateUI()
     {
-        playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value()));
-        encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value()));
-        microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value()));
+        playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value(), 4));
+        encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value(), 3));
+        microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value(), 3));
     }
     
     void SettingsWidget::ApplyEncodeQuality()
     {
-        ApplyChanges();
+        settings_->setProperty("encode_quality", QVariant(this->encodeQualitySlider->value()*0.01));
+        settings_->Save();
     }
 
     void SettingsWidget::ApplyPlaybackBufferSize()
     {
-        ApplyChanges();
+        settings_->setProperty("playback_buffer_size_ms", this->playbackBufferSlider->value());
+        settings_->Save();
+    }
+
+    void SettingsWidget::ApplyMicrophoneLevel()
+    {
+        settings_->SetMicrophoneLevel( this->microphoneLevelSlider->value()*0.01 );
+        settings_->Save();
     }
 
 } // MumbleVoip

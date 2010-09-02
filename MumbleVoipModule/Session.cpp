@@ -42,7 +42,8 @@ namespace MumbleVoip
     {
         channel_name_ = server_info.channel;
         OpenConnection(server_info);
-        connect(settings, SIGNAL(Changed()), this, SLOT(OnSettingsChanged()));
+        connect(settings_, SIGNAL(PlaybackBufferSizeMsChanged(int)), this, SLOT(SetPlaybackBufferSizeMs(int)));
+        connect(settings_, SIGNAL(EncodeQualityChanged(double)), this, SLOT(SetEncodeQuality(double)));
     }
 
     Session::~Session()
@@ -74,7 +75,7 @@ namespace MumbleVoip
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
-        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State state)), SLOT(CheckConnectionState()));
+        connect(connection_, SIGNAL(StateChanged(MumbleLib::Connection::State)), SLOT(CheckConnectionState()));
         connection_->Join(server_info.channel);
         connection_->SendAudio(sending_audio_);
         connection_->SetEncodingQuality(DEFAULT_AUDIO_QUALITY_);
@@ -84,7 +85,10 @@ namespace MumbleVoip
         
         MumbleLib::MumbleLibrary::Start();
 
-        DisableAudioSending();
+        if (settings_->GetEnabled())
+            EnableAudioSending();
+        else
+            DisableAudioSending();
         EnableAudioReceiving();
     }
 
@@ -580,9 +584,14 @@ namespace MumbleVoip
         }
     }
 
-    void Session::OnSettingsChanged()
+    void Session::SetPlaybackBufferSizeMs(int size)
     {
-        //connection_->SetPlaybackBufferMaxLengthMs(settings_->playback_buffer_size_ms_);
+        connection_->SetPlaybackBufferMaxLengthMs(size);
+    }
+
+    void Session::SetEncodeQuality(double quality)
+    {
+        connection_->SetEncodingQuality(quality);
     }
 
 } // MumbleVoip
