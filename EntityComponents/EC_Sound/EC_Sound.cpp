@@ -73,9 +73,9 @@ void EC_Sound::PlaySound()
     if(sound_id_)
         StopSound();
 
-    if(placeable_)
+    OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
+    if(placeable)
     {
-        OgreRenderer::EC_OgrePlaceable *placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable_.get());
         sound_id_ = soundService->PlaySound3D(soundId_.Get(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain_.Get());
         soundService->SetLooped(sound_id_, loopSound_.Get());
@@ -112,7 +112,6 @@ void EC_Sound::UpdateSoundSettings()
 void EC_Sound::UpdateSignals()
 {
     disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
-    FindPlaceable();
     if(GetParentEntity())
     {
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
@@ -122,11 +121,12 @@ void EC_Sound::UpdateSignals()
     }
 }
 
-void EC_Sound::FindPlaceable()
+Foundation::ComponentPtr EC_Sound::FindPlaceable() const
 {
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-    if(!placeable_)
-        LogError("Couldn't find a EC_OgrePlaceable component in entity.");
-    return;
+    assert(framework_);
+    Foundation::ComponentPtr comp;
+    if(!GetParentEntity())
+        return comp;
+    comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    return comp;
 }
