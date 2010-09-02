@@ -32,6 +32,7 @@ modulenames = [
     #("apitest.animsync", "AnimationSync"), #these are loadeed in that Registry now
     #("apitest.door", "DoorHandler"),
     #("apitest.jscomponent", "JavascriptHandler")
+    ("apitest.chessview.pychessview", "ChessView")
     ]
 
 modules = []
