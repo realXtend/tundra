@@ -236,18 +236,18 @@ void KristalliProtocolModule::NewConnectionEstablished(MessageConnection *source
     
     LogInfo("User connected from " + source->GetEndPoint().ToString() + ", connection ID " + ToString((int)connection.id));
     
-    Events::KristalliUserConnected msg(connection.id, source);
+    Events::KristalliUserConnected msg(&connection);
     framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_CONNECTED, &msg);
 }
 
 void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 {
     // Delete from connection list if it was a known user
-    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
         if (iter->connection == source)
         {
-            Events::KristalliUserConnected msg(iter->id, source);
+            Events::KristalliUserConnected msg(&(*iter));
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
             connections.erase(iter);
@@ -290,11 +290,22 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
     return newID;
 }
 
-const UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source) const
+UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source)
 {
-    for(UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
     {
         if (iter->connection == source)
+            return &(*iter);
+    }
+    
+    return 0;
+}
+
+UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
+{
+    for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
+    {
+        if (iter->id == id)
             return &(*iter);
     }
     

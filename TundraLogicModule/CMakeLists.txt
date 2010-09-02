@@ -60,4 +60,6 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+target_link_libraries (${TARGET_NAME} Algorithm.lib Core.lib Network.lib Time.lib ws2_32.lib)
+
 final_target ()
