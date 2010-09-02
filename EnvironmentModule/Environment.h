@@ -43,6 +43,7 @@ namespace Environment
         Environment(EnvironmentModule *owner);
         virtual ~Environment();
 
+    public:
         /**
          * @return The scene entity that represents the environment in the currently active world.        
          **/
@@ -161,10 +162,6 @@ namespace Environment
          **/
         bool IsCaelum();
 
-        //! Setter/getter for bool local override of server time
-        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
-        bool GetTimeOverride() { return time_override_; }
-
         //! Set new sunlight direction
         //! @param vector new sun light direction.
         void SetSunDirection(const QVector<float>& vector);
@@ -209,6 +206,11 @@ namespace Environment
 
             return vec;
         }
+
+    public slots:
+        //! Setter/getter for bool local override of server time
+        void SetTimeOverride(bool enabled) { time_override_ = enabled; }
+        bool GetTimeOverride() { return time_override_; }
 
     signals:
         //! Emitted when water fog is adjusted.

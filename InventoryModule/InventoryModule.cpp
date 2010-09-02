@@ -467,8 +467,9 @@ void InventoryModule::CreateInventoryWindow()
     inventoryWindow_ = new InventoryWindow;
     connect(inventoryWindow_, SIGNAL(OpenItemProperties(const QString &)), this, SLOT(OpenItemPropertiesWindow(const QString &)));
 
-    ui->AddWidgetToScene(inventoryWindow_);
+    UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
     ui->AddWidgetToMenu(inventoryWindow_);
+    ui->RegisterUniversalWidget("Inventory", inv_proxy);
 
 #ifndef UISERVICE_TEST
     UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
