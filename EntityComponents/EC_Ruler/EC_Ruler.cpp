@@ -120,10 +120,14 @@ void EC_Ruler::Create()
     if (!sceneNode_)
         return;
     
-    if(scene_mgr->hasManualObject("translateRuler")) {
+    if(scene_mgr->hasManualObject("translateRuler")){
         rulerObject = scene_mgr->getManualObject("translateRuler");
         if(rulerObject->isAttached())
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
             rulerObject->detatchFromParent();
+#else
+            rulerObject->detachFromParent();
+#endif
     } else {
         rulerObject = scene_mgr->createManualObject("translateRuler");
     }
@@ -184,6 +188,7 @@ void EC_Ruler::SetupScaleRuler()
             y = size;
     }
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     rulerObject->position(0, 0, 0);
     rulerObject->position(x, y, z);
@@ -198,6 +203,7 @@ void EC_Ruler::SetupRotationRuler()
     float const segments = segmentsAttr_.Get();
 
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
 
     unsigned i = 0;
@@ -246,6 +252,7 @@ void EC_Ruler::SetupTranslateRuler() {
             y = size;
     }
     rulerObject->clear();
+    rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     rulerObject->position(x, y, z);
     rulerObject->position(-x, -y, -z);

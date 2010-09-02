@@ -80,6 +80,13 @@ namespace UiServices
             SAFE_DELETE(proxy);
             return 0;
         }
+        
+        // \todo Find a proper solution to the problem
+        // Proxy widget doesn't get input without main frame resisizing for unknow reason.
+        // HACK begin
+        proxy->moveBy(1, 1);
+        proxy->moveBy(-1,-1);
+        // HACK end
 
         // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
         // signal to a slot which handles the deletion. This must be done because closing
@@ -119,12 +126,14 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-        if (name == "Inventory")
+        //if (name == "Inventory")
+        if ( name.contains("inv", Qt::CaseInsensitive))
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
         }
-        else if (name == "Avatar Editor")
+        //else if (name == "Avatar Editor")
+        else if ( name.contains("avatar", Qt::CaseInsensitive) )
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
@@ -136,10 +145,12 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(UiProxyWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-        if (name== "Inventory")
+        //if (name== "Inventory")
+        if ( name.contains("inv", Qt::CaseInsensitive) )
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(widget);
-        else if (name== "Avatar Editor")
-            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
+        //else if (name== "Avatar Editor")
+        else if ( name.contains("avatar", Qt::CaseSensitive) )
+           control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(widget);
         else
             menu_manager_->AddMenuItem(widget, name, menu, icon);
     }

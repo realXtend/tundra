@@ -103,7 +103,7 @@ namespace Ether
             effect->setBlurRadius(15);
 
             active_animations_ = new QSequentialAnimationGroup(this);
-            blur_animation_ = new QPropertyAnimation(effect, "blurRadius", active_animations_);
+            blur_animation_ = new QPropertyAnimation(effect, "blurRadius");
             blur_animation_->setEasingCurve(QEasingCurve::Linear);
             blur_animation_->setDuration(750);
             blur_animation_->setStartValue(30);
@@ -111,7 +111,7 @@ namespace Ether
             blur_animation_->setEndValue(30);
             blur_animation_->setLoopCount(-1);
 
-            jump_animation_ = new QPropertyAnimation(effect, "blurRadius", active_animations_);
+            jump_animation_ = new QPropertyAnimation(effect, "blurRadius");
             jump_animation_->setEasingCurve(QEasingCurve::Linear);
             jump_animation_->setDuration(400);
             jump_animation_->setStartValue(0);
@@ -119,7 +119,7 @@ namespace Ether
             jump_animation_->setEndValue(25);
 
             active_animations_->addAnimation(jump_animation_);
-            active_animations_->addAnimation(blur_animation_);
+            //active_animations_->addAnimation(blur_animation_);
 
             setGraphicsEffect(effect);
             setTransformOriginPoint(QPointF(bounding_rectf_.width()/2, bounding_rectf_.top()));

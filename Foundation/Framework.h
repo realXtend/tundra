@@ -48,13 +48,16 @@ namespace Foundation
 
         \ingroup Foundation_group
     */
-    class Framework
+    class Framework : public QObject
     {
+        Q_OBJECT
+
     public:
         typedef std::map<std::string, Scene::ScenePtr> SceneMap;
 
         //! constructor. Initializes the framework.
         Framework(int argc, char** argv);
+
         //! destructor
         ~Framework();
 
@@ -256,13 +259,16 @@ namespace Foundation
             return GetServiceManager()->GetService<T>().lock().get();
         }
 
+    signals:
+        /** Emitted after one frame is processed.
+         *  @param frametime Elapsed time in seconds since the last frame.
+         */
+        void FrameProcessed(double frametime);
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized
         void RegisterConsoleCommands();
-
-        //! default event subscriber tree XML file path
-        static const char *DEFAULT_EVENT_SUBSCRIBER_TREE_PATH;
 
         //! Create logging system
         void CreateLoggingSystem();

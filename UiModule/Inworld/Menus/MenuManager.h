@@ -36,7 +36,7 @@ namespace CoreUi
          *  @param menu Name of the menu. If the menu doesn't exist, it is created. If no name is given the entry is added to the root menu.
          *  @param icon Path to image which will be used as the icon for the entry. If no path is given, default icon is used.
          */
-        void AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon);
+        void AddMenuItem(QGraphicsProxyWidget *widget, const QString &name, const QString &category, const QString &icon = defaultItemIcon);
 
         /** Removes menu item.
          *  @param widget Controlled widget.
@@ -44,7 +44,7 @@ namespace CoreUi
         void RemoveMenuItem(QGraphicsProxyWidget *controlled_widget);
 
     private slots:
-        void AddMenuGroup(const QString &name, const QString &icon = "", qreal hgap = 5.0, qreal vgap = 5.0);
+        void AddMenuGroup(const QString &name, const QString &icon = defaultGroupIcon, qreal hgap = 5.0, qreal vgap = 5.0);
 
         void ActionNodeClicked(const QUuid &id);
         void GroupNodeClicked(GroupNode *node, QParallelAnimationGroup *move_animations, QParallelAnimationGroup *size_animations);
@@ -74,6 +74,12 @@ namespace CoreUi
 
         //! Pointer to the main root menu
         GroupNode *root_menu_;
+
+        /// Default icon for menu item node.
+        static QString defaultItemIcon;
+
+        /// Default icon for menu group node.
+        static QString defaultGroupIcon;
     };
 }
 

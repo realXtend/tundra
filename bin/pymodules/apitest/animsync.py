@@ -33,11 +33,11 @@ class AnimationSync(circuits.BaseComponent):
     GUINAME = "Animation Sync"
 
     def __init__(self, entity, comp, changetype):
-        comp.connect("OnChanged()", self.onChanged)
         self.comp = comp
         circuits.BaseComponent.__init__(self)
         self.inworld_inited = False #a cheap hackish substitute for some initin
         self.initgui()
+        comp.connect("OnChanged()", self.onChanged)
 
     def initgui(self):
         self.widget = QtGui.QSlider(QtCore.Qt.Horizontal)
@@ -61,7 +61,7 @@ class AnimationSync(circuits.BaseComponent):
             now = time.time()
             if self.prev_sync + INTERVAL < now:
                 comp.SetAttribute("timepos", guival / 100)
-                comp.OnChanged() #XXX change to OnAttributeChanged when possible
+                comp.ComponentChanged("Local")
                 self.prev_sync = now
 
     def onChanged(self):
@@ -69,7 +69,11 @@ class AnimationSync(circuits.BaseComponent):
 
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
-            ent = r.getEntity(self.comp.GetParentEntityId())
+            try:
+                ent = r.getEntity(self.comp.GetParentEntityId())
+            except ValueError:
+                return
+
             try:
                 t = ent.touchable
             except AttributeError:
@@ -91,7 +95,12 @@ class AnimationSync(circuits.BaseComponent):
         comp = self.comp
         if comp is not None:
             #print comp.GetAttribute()
-            ent = r.getEntity(comp.GetParentEntityId())
+            try:
+                ent = r.getEntity(comp.GetParentEntityId())
+            except ValueError:
+                print "No entity"
+                return
+
             try:
                 a = ent.animationcontroller
             except AttributeError:

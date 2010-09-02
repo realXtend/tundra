@@ -12,13 +12,14 @@ class Manipulator:
     USES_MANIPULATOR = True
     
     MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
-    MANIPULATORSCALE = Vec(0.2, 0.2, 0.2)
+    MANIPULATORSCALE = Vec(1, 1, 1)
     
     MATERIALNAMES = None
     
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
+
     # some handy shortcut rotations for quats
     ninty_around_x = Quat(math.sqrt(0.5), math.sqrt(0.5), 0, 0)
     ninty_around_y = Quat(math.sqrt(0.5), 0, math.sqrt(0.5), 0)
@@ -80,6 +81,7 @@ class Manipulator:
         self.setManipulatorScale(ents)
             
     def getPivotPos(self, ents):        
+        '''Median position used as pivot point'''
         xs = [e.placeable.Position.x() for e in ents]
         ys = [e.placeable.Position.y() for e in ents]
         zs = [e.placeable.Position.z() for e in ents]
@@ -202,7 +204,7 @@ class Manipulator:
                 self.resethighlight()
             
             submeshid = raycast_results[-3]
-            if submeshid > 0:
+            if submeshid >= 0:
                 name =  self.MATERIALNAMES[submeshid]
                 if name is not None:
                     name += str("_hi")
@@ -220,27 +222,19 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
-    MANIPULATORSCALE = Vec(0.15, 0.15, 0.15)
-    # multiply the two orientations, so we get the proper end orientation for the widget
-    MANIPULATORORIENTATION = Manipulator.ninty_around_x * Manipulator.ninty_around_y
-    
-    BLUEARROW = [1,2]
-    REDARROW = [5,6]
-    GREENARROW = [3,4]
+    BLUEARROW = [2]
+    GREENARROW = [0]
+    REDARROW = [1]
 
-    AXIS_RED = 1
     AXIS_GREEN = 0
+    AXIS_RED = 1
     AXIS_BLUE = 2
     
     
     MATERIALNAMES = {
-        0: "axis_black",  #shodows?
-        1: "axis_blue", 
-        2: None, #"axis_blue", 
-        3: "axis_green",
-        4: None, #"axis_green",
-        5: "axis_red", 
-        6: None, #"axis_red"
+        0: "axis_green",
+        1: "axis_red",
+        2: "axis_blue"
     }
 
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
@@ -287,11 +281,17 @@ class MoveManipulator(Manipulator):
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
-    #MANIPULATOR_MESH_NAME = "axes.mesh"
+    MANIPULATOR_MESH_NAME = "scale1.mesh"
+
+    MATERIALNAMES = {
+        2: "axis_blue", 
+        0: "axis_green",
+        1: "axis_red"
+    }
     
-    BLUEARROW = [3]#not used
+    BLUEARROW = [2]
     REDARROW = [1]
-    GREENARROW = [2]
+    GREENARROW = [0]
     
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed:
@@ -340,18 +340,15 @@ class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
-    MANIPULATORORIENTATION = Manipulator.ninty_around_x
-    
     MATERIALNAMES = {
-        0: "asd",  #shadows?
-        1: "resed", 
-        2: "resed2", 
-        3: "resed3"
+        2: "axis_red",
+        3: "axis_blue", 
+        0: "axis_green"
     }
     
-    BLUEARROW = [3]
-    REDARROW = [1]
-    GREENARROW = [2]
+    REDARROW = [2]
+    BLUEARROW = [3] # we do green_axis actions
+    GREENARROW = [0] # we do blue_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
@@ -362,14 +359,7 @@ class RotationManipulator(Manipulator):
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
 
-            if xsmaller and ysmaller:
-                dir = -1
-            elif xsmaller and not ysmaller:
-                dir = 1
-            elif not xsmaller and ysmaller:
-                dir = -1
-            else:
-                dir = 1
+            dir = 1
             
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:

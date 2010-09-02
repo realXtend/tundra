@@ -66,8 +66,12 @@ class DoorHandler(circuits.BaseComponent):
         uism.AddWidgetToMenu(self.proxywidget, self.GUINAME, "Developer Tools")
 
     def onChanged(self):
+        try:
+            ent = r.getEntity(self.comp.GetParentEntityId())
+        except ValueError: #the entity has been removed or something
+            return
+
         print "door data changed"
-        ent = r.getEntity(self.comp.GetParentEntityId())
 
         if not self.inworld_inited:
             #if hasattr(self.comp, 'touchable')
@@ -75,7 +79,6 @@ class DoorHandler(circuits.BaseComponent):
                 t = ent.touchable
             except AttributeError:
                 print "no touchable in door? it doesn't persist yet? adding..", ent.id
-                print ent.createComponent("EC_Touchable")
                 t = ent.touchable
             else:
                 print "touchable pre-existed in door."
@@ -89,7 +92,7 @@ class DoorHandler(circuits.BaseComponent):
 
         newpos = OPENPOS if opened else CLOSEPOS
         ent.placeable.Position = newpos        
-        print opened, type(opened), ent.placeable.Position
+        #print opened, type(opened), ent.placeable.Position
 
         self.openbut.text = "Close" if opened else "Open"
         self.lockbut.text = "Unlock" if locked else "Lock"
@@ -150,12 +153,12 @@ class DoorHandler(circuits.BaseComponent):
 
     @circuits.handler("update")
     def update(self, t):
+        try:
+            ent = r.getEntity(self.comp.GetParentEntityId())
+        except ValueError: #the entity has been removed or something
+            return # nothing useful to do anyway
+
         if self.forcepos is not None:
-            try:
-                ent = r.getEntity(self.comp.GetParentEntityId())
-            except ValueError: #the entity has been removed or something
-                pass
-            else:
                 ent.placeable.Position = self.forcepos
 
     @circuits.handler("on_logout")

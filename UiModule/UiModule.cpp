@@ -5,13 +5,13 @@
 
 #include "UiModule.h"
 #include "UiSettingsService.h"
-//#include "UiProxyStyle.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
 #include "InputServiceInterface.h"
 
 #include "Ether/EtherLogic.h"
+#include "Ether/EtherSceneController.h"
 #include "Ether/View/EtherScene.h"
 #include "Inworld/InworldSceneController.h"
 #include "Inworld/ControlPanelManager.h"
@@ -33,6 +33,13 @@
 #include "SceneEvents.h"
 #include "InputEvents.h"
 #include "UiServiceInterface.h"
+#include "WorldLogicInterface.h"
+#include "EC_OgrePlaceable.h"
+#include "EC_OgreMesh.h"
+#include "Renderer.h"
+#include "Entity.h"
+
+#include <Ogre.h>
 
 #include <QApplication>
 #include <QFontDatabase>
@@ -50,7 +57,8 @@ namespace UiServices
         service_getter_(0),
         inworld_scene_controller_(0),
         inworld_notification_manager_(0),
-        ether_logic_(0)
+        ether_logic_(0),
+        welcome_message_(0)
     {
     }
 
@@ -68,7 +76,7 @@ namespace UiServices
         //QApplication::setStyle(new UiProxyStyle());
         // QApplication take ownership of the new UiDarkBlueStyle
         ///\todo UiDarkBlueStyle seems to be causing many memory leaks.
-        /// Maybe it's not deleted properly by th QApplication?
+        /// Maybe it's not deleted properly by the QApplication?
         QApplication::setStyle(new UiDarkBlueStyle());
         QFontDatabase::addApplicationFont("./media/fonts/FACB.TTF");
         QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
@@ -89,8 +97,8 @@ namespace UiServices
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             UiAction *ether_action = new UiAction(ui_state_machine_);
             UiAction *build_action = new UiAction(ui_state_machine_);
-            QObject::connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
-            QObject::connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
+            connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
+            connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
@@ -106,11 +114,12 @@ namespace UiServices
             ui_state_machine_->SetServiceGetter(service_getter_);
             LogDebug("Service getter READY");
 
+            // Register settings service
             ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
             GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_UiSettings, ui_settings_service_);
             LogDebug("UI Settings Service registered and READY");
 
-            // Register UI service.
+            // Register UI service
             ui_scene_service_ = UiSceneServicePtr(new UiSceneService(this));
             framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, ui_scene_service_);
         }
@@ -121,15 +130,29 @@ namespace UiServices
     void UiModule::PostInitialize()
     {
         SubscribeToEventCategories();
+
+        // Start ether logic and register to scene service
         ether_logic_ = new Ether::Logic::EtherLogic(GetFramework(), ui_view_);
         ui_state_machine_->RegisterScene("Ether", ether_logic_->GetScene());
         ether_logic_->Start();
+        // Switch ether scene active on startup
         ui_state_machine_->SwitchToEtherScene();
+        // Connect the switch signal to needed places
+        connect(ui_state_machine_, SIGNAL(SceneChanged(const QString&, const QString&)), 
+                ether_logic_->GetQObjSceneController(), SLOT(UiServiceSceneChanged(const QString&, const QString&)));
+        connect(ui_state_machine_, SIGNAL(SceneChanged(const QString&, const QString&)), 
+                SLOT(OnSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
         input = framework_->Input().RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
         connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
+
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic)
+            connect(worldLogic, SIGNAL(AboutToDeleteWorld()), SLOT(TakeEtherScreenshots()));
+        else
+            LogWarning("Could not get world logic service.");
     }
 
     void UiModule::Uninitialize()
@@ -189,6 +212,7 @@ namespace UiServices
                 case Events::EVENT_SERVER_CONNECTED:
                     // Udp connection has been established, we are still loading object so lets not change UI layer yet
                     // to connected state. See Scene categorys EVENT_CONTROLLABLE_ENTITY case for real UI switch.
+                    ether_logic_->GetSceneController()->ShowStatusInformation("Connected, loading world content...", 60000);
                     break;
                 default:
                     break;
@@ -217,14 +241,28 @@ namespace UiServices
 
         InputServiceInterface &inputService = framework_->Input();
 
-        const QKeySequence toggleEther =   inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
-        const QKeySequence toggleWorldChat =  inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+        const QKeySequence toggleEther = inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+        const QKeySequence toggleWorldChat = inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
 
         if (key->keyCode == toggleEther)
             ui_state_machine_->ToggleEther();
 
         if (key->keyCode == toggleWorldChat)
             inworld_scene_controller_->SetFocusToChat();
+    }
+
+    void UiModule::OnSceneChanged(const QString &old_name, const QString &new_name)
+    {
+        if (!welcome_message_)
+            return;
+        if (old_name.toLower() == "ether" && new_name.toLower() == "inworld")
+        {
+            // A bit of a hack to add the notification only when inworld scene is active,
+            // if we dont do this the notification widget does not respond to mouse clicks
+            // and wont hide when the timer runs out
+            GetNotificationManager()->ShowNotification(welcome_message_);
+            welcome_message_ = 0;
+        }
     }
 
     void UiModule::PublishConnectionState(UiServices::ConnectionState connection_state, const QString &message)
@@ -243,7 +281,9 @@ namespace UiServices
                     QString sim = QString::fromStdString(current_world_stream_->GetSimName());
                     QString username = QString::fromStdString(current_world_stream_->GetUsername());
                     if (!sim.isEmpty())
-                        GetNotificationManager()->ShowNotification(new MessageNotification("Welcome to " + sim + " " + username, 10000));
+                        welcome_message_ = new MessageNotification("Welcome to " + sim + " " + username, 10000);
+                    else
+                        welcome_message_ = 0;
                 }
                 break;
             }
@@ -276,9 +316,57 @@ namespace UiServices
         return ether_logic_->GetLoginNotifier();
     }
 
-    QPair<QString, QString> UiModule::GetScreenshotPaths()
+    void UiModule::TakeEtherScreenshots()
     {
-        return ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (!worldLogic)
+            return;
+
+        Scene::EntityPtr avatar_entity = worldLogic->GetUserAvatarEntity();
+        if (!avatar_entity)
+            return;
+
+        OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+
+        if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
+            return;
+
+        // Head bone pos setup
+        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Quaternion avatar_orientation = ec_placeable->GetOrientation();
+        Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
+        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        Vector3df avatar_head_position;
+
+        QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");
+        if (!view_bone_name.isEmpty() && skel && skel->hasBone(view_bone_name.toStdString()))
+        {
+            adjustheight += 0.15f;
+            Ogre::Bone* bone = skel->getBone(view_bone_name.toStdString());
+            Ogre::Vector3 headpos = bone->_getDerivedPosition();
+            Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+            avatar_head_position = avatar_position + (avatar_orientation * ourheadpos);
+        }
+        else
+        {
+            // Fallback: will get screwed up shot but not finding the headbone should not happen, ever
+            avatar_head_position = ec_placeable->GetPosition();
+        }
+
+        // Get paths where to store the screenshots and pass to renderer for screenshots.
+        QPair<QString, QString> paths = ether_logic_->GetLastLoginScreenshotData(framework_->GetConfigManager()->GetPath());
+        boost::shared_ptr<Foundation::RenderServiceInterface> render_service = 
+            framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer).lock();
+
+        if (render_service && !paths.first.isEmpty() && !paths.second.isEmpty())
+        {
+            QPixmap render_result;
+            render_result = render_service->RenderImage();
+            render_result.save(paths.first);
+            render_result = render_service->RenderAvatar(avatar_head_position, avatar_orientation);
+            render_result.save(paths.second);
+        }
     }
 }
 
