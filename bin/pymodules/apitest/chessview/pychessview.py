@@ -1,3 +1,8 @@
+import sys
+from sys import stdin, stdout
+
+import time
+
 import gtk
 import __builtin__, gettext, gtk.glade
 gettext.install("pychess", unicode=1)
@@ -10,38 +15,10 @@ from pychess.System.Log import log
 import pychess.widgets.ionest as i #current hack to get access to GameModel
 import parsemove #the own thing here for parsing move data from pychess
 
-try:
-    import circuits
-except:
-    print "circuits not there, can still run as standalone outside Naali"
-else:
-    import time
-    class ChessView(circuits.BaseComponent):
-        def __init__(self):
-            circuits.BaseComponent.__init__(self)
-            initchess()
-            self.inited = False
-
-        @circuits.handler("update")
-        def update(self, t):
-            if not self.inited:
-                print "< BEFORE GDK INIT"
-                gtk.gdk.threads_init()
-                while _ in range(100):
-                    gtk.main_iteration(block=False)
-                print "> AFTER  GDK INIT"
-                time.sleep(0.1)
-                print ">> AFTER SLEEP"
-                self.inited = True
-    
-            print "x"
-            updatechess()
-            print "y"
-
 def initchess():
     p = pychess.Main.PyChess(None)
     log.log("Started from Naali\n")
-    print "PyChess in Naali"
+    #print "PyChess in Naali"
 
 g = None
 prev_board = None
@@ -62,14 +39,13 @@ def updatechess():
         board = g.boards[-1]
 
         if board is not prev_board:
-            print "BOARD:", board
+            #print "BOARD:", board
             if len(board.board.history) > 0:
                 prevmove = board.board.history[-1][0]
                 parsemove.parsemove(board, prev_arBoard, prevmove)
 
             prev_board = board
             prev_arBoard = board.board.arBoard[:]
-    #gtk.gdk.threads_leave()
 
 def main():
     initchess()

@@ -1,11 +1,13 @@
+from msg import send
+
 def removePiece(tcord, tpiece, opcolor):
-    print "REMOVE:", tcord, tpiece, opcolor
+    send("REMOVE:%d,%d,%d,%d" % (tcord, tpiece, opcolor))
 
 def addPiece(tcord, piece, color):
-    print "ADD:", tcord, piece, color
+    send("ADD:%d,%d,%d" % (tcord, piece, color))
 
 def movePiece(fcord, tcord, piece, color):
-    print "MOVE:", fcord, tcord, piece, color
+    send("MOVE:%d,%d,%d,%d" % (fcord, tcord, piece, color))
 
 from pychess.Utils.const import *
 def parsemove(board, arBoard, move): 
