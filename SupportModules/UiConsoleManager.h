@@ -21,6 +21,7 @@ namespace Ui
 class QString;
 class QRectF;
 class QGraphicsView;
+class UiProxyWidget;
 
 namespace Console
 {
@@ -62,6 +63,9 @@ namespace Console
         //! is console visible or hidden?
         bool visible_;
 
+        //! if we have already hooked to all scenes for resize events
+        bool hooked_to_scenes_;
+
         //! Method for coloring/styling the string for the console
         void StyleString(QString &str);
 
@@ -84,7 +88,7 @@ namespace Console
         QWidget * console_widget_;
 
         // Proxy for our UI
-        ConsoleProxyWidget *proxy_widget_;
+        UiProxyWidget *proxy_widget_;
 
         //! Animation used for sliding effect
         QPropertyAnimation animation_;

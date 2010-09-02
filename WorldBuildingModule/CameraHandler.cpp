@@ -112,6 +112,9 @@ namespace WorldBuilding
 
 				if (entity_mesh)
 				{
+                    if (!entity_mesh->GetEntity())
+                        return false;
+
 					entity_mesh->GetBoundingBox(bounding_min, bounding_max);
 					derived_scale = entity_mesh->GetEntity()->getParentNode()->_getDerivedScale();
 					der_size_vector = Vector3df(derived_scale.x, derived_scale.y, derived_scale.z) * (bounding_max - bounding_min);
@@ -121,6 +124,9 @@ namespace WorldBuilding
 				}
 				else if (entity_custom_object)
 				{
+                    if (!entity_custom_object->GetEntity())
+                        return false;
+
 					entity_custom_object->GetBoundingBox(bounding_min, bounding_max);
 					derived_scale = entity_custom_object->GetEntity()->getParentNode()->_getDerivedScale();
 					der_size_vector = Vector3df(derived_scale.x, derived_scale.y, derived_scale.z) * (bounding_max - bounding_min);

@@ -7,6 +7,7 @@
 #include <QStateMachine>
 #include <QState>
 #include <QMap>
+#include <QGraphicsProxyWidget>
 
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
@@ -40,6 +41,7 @@ namespace Ether
 
         private slots:
             void RectChanged(const QRectF &new_rect);
+            void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
 
         private:
             QPixmap bg_image_connected_, bg_image_disconnected_;

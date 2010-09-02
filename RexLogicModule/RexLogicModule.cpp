@@ -37,6 +37,7 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
+//#include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -135,7 +136,6 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_Controllable);
     DECLARE_MODULE_EC(EC_AvatarAppearance);
     DECLARE_MODULE_EC(EC_HoveringWidget);
-    DECLARE_MODULE_EC(EC_Mesh);
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
@@ -152,6 +152,7 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_ParticleSystem);
     DECLARE_MODULE_EC(EC_SoundListener);
     DECLARE_MODULE_EC(EC_Sound);
+    DECLARE_MODULE_EC(EC_Mesh);
 }
 
 // virtual

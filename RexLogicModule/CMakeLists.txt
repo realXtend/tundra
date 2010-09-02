@@ -66,7 +66,7 @@ use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderin
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable EntityComponents/EC_3DCanvas
     EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble EntityComponents/EC_Ruler EntityComponents/EC_SoundRuler 
-    EntityComponents/EC_ParticleSystem EntityComponents/EC_SoundListener EntityComponents/EC_Sound  EntityComponents/EC_Mesh)
+    EntityComponents/EC_ParticleSystem EntityComponents/EC_SoundListener EntityComponents/EC_Sound EntityComponents/EC_Mesh)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)

@@ -17,6 +17,8 @@ namespace Foundation { class KeyBindings; }
 
 namespace CoreUi
 {
+    typedef QMap<QString, QGraphicsProxyWidget*> UniversalWidgetMap;
+
     class UI_MODULE_API UiStateMachine : public QStateMachine
     {
 
@@ -64,6 +66,10 @@ namespace CoreUi
         void SetConnectionState(UiServices::ConnectionState new_connection_state);
         void SetServiceGetter(QObject *service_getter);
 
+        void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget);
+
+        UniversalWidgetMap GetUniversalWidgets() { return universal_widgets_; }
+
     private slots:
         void DelayedSceneChange();
         void SetTransitions();
@@ -95,6 +101,8 @@ namespace CoreUi
 
         QString current_scene_name_;
         QString next_scene_name_;
+
+        UniversalWidgetMap universal_widgets_;
 
     signals:
         void EtherTogglePressed();
