@@ -1,6 +1,7 @@
 import __builtin__, gettext, gtk.glade
 gettext.install("pychess", unicode=1)
 t = gettext.translation("pychess", fallback=True)
+__builtin__.__dict__["ngettext"] = t.ungettext #evilness copy-paste from pychess startup script
 
 from pychess.System.Log import log
 import parsemove
