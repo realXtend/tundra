@@ -63,7 +63,6 @@ class ObjectEdit(Component):
         self.useLocalTransform = False
         self.cpp_python_handler = None
         self.left_button_down = False
-        self.right_button_down = False
         self.keypressed = False
 
         self.shortcuts = {
@@ -83,8 +82,6 @@ class ObjectEdit(Component):
         inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
         inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
         inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
-        inputcontext.connect('MouseRightPressed(MouseEvent*)', self.on_mouserightpressed)
-        inputcontext.connect('MouseRightReleased(MouseEvent*)', self.on_mouserightreleased)
         inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
         
         self.resetManipulators()
@@ -142,7 +139,6 @@ class ObjectEdit(Component):
         
     def resetValues(self):
         self.left_button_down = False
-        self.right_button_down = False
         self.sel_activated = False #to prevent the selection to be moved on the intial click
         self.prev_mouse_abs_x = 0
         self.prev_mouse_abs_y = 0
@@ -368,14 +364,16 @@ class ObjectEdit(Component):
         if not self.windowActive:
             return
 
+        if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
+            self.on_multiselect(mouseinfo)
+            return
+            
         self.dragStarted(mouseinfo) #need to call this to enable working dragging
-        
         self.left_button_down = True
-        
+
         results = []
         results = r.rayCast(mouseinfo.x, mouseinfo.y)
         ent = None
-        
         if results is not None and results[0] != 0:
             id = results[0]
             ent = r.getEntity(id)
@@ -469,47 +467,34 @@ class ObjectEdit(Component):
             
         return rectx, recty, rectwidth, rectheight
 
-    def on_mouserightpressed(self, mouseinfo):
-        #r.logInfo("rightmouse down")
-        if self.windowActive:
-            self.right_button_down = True
-            
+    def on_multiselect(self, mouseinfo):
+        r.logInfo("on_multiselect()")
+        if self.windowActive:           
             results = []
             results = r.rayCast(mouseinfo.x, mouseinfo.y)
-            
             ent = None
-            
             if results is not None and results[0] != 0:
                 id = results[0]
                 ent = r.getEntity(id)
                 
             found = False
             if ent is not None:                
-                #print "Got entity:", ent.id
                 for entity in self.sels:
                     if entity.id == ent.id:
-                        found = True #clicked on an already selected entity
-                        #print "multiselect clicked entity is already in selection"
-                
-                #if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
+                        found = True
                 if self.validId(ent.id):
                     if not found:
-                        #print "new ent to add to multiselect found:", ent.id
                         self.multiselect(ent)
-                    else: #remove this entity which was previously in the selection
+                    else:
                         self.deselect(ent)
                     self.canmove = True
-                        
-            #r.logInfo(str(self.sels))
+            
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
             if id != r.getUserAvatarId(): #add other avatar id's check
                 if not self.manipulator.compareIds(id):  #and id != self.selection_box.id:
                     return True
         return False
-        
-    def on_mouserightreleased(self, mouseinfo):
-        self.right_button_down = False
 
     def on_mousemove(self, mouseinfo):
         """Handle mouse move events. When no button is pressed, just check
@@ -690,11 +675,8 @@ class ObjectEdit(Component):
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
-                
                 #self.window.update_scalevals(scale)
-                
                 self.modified = True
-
                 #self.updateSelectionBox(ent)
             
     def changerot_cpp(self, x, y, z):
