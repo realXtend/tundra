@@ -4,6 +4,7 @@
 #include "QtInputModuleApi.h"
 #include "InputServiceInterface.h"
 #include "ForwardDefines.h"
+#include <QTime>
 /// QtInputService provides other modules with different methods of acquiring keyboard and mouse input.
 /** The input service works with the notion of 'input contexts', which are objects that modules acquire
     to receive input events. The contexts have a priority that determine the order in which the input 
@@ -168,6 +169,8 @@ private:
     // but from the previous Qt mouse input event.
     int lastMouseX;
     int lastMouseY;
+    QTime lastMouseButtonReleaseTime;
+    bool doubleClickDetected;
 
     /// If true, the mouse cursor is visible and free to move around as usual.
     /// If false, we use mouse in relative movement mode, meaning we hide the cursor and force it to stay in the middle of the application screen.
@@ -226,6 +229,9 @@ private:
 	unsigned long pressedMouseButtons;
     /// A bitmask for the mouse buttons released this frame.
 	unsigned long releasedMouseButtons;
+
+    /// Keep track of key modifiers to be sent with mouse pressed/released
+    unsigned long current_modifiers_;
 
     // The following variables double-buffer the mouse button presses and releases, so that a module will not lose these
     // events depending on what order the module Updates are called.

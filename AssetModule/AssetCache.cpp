@@ -1,14 +1,14 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "AssetCache.h"
 #include "RexAsset.h"
 #include "AssetModule.h"
 #include "AssetEvents.h"
-#include "AssetCache.h"
+
 #include "Framework.h"
 #include "Platform.h"
 #include "ConfigurationManager.h"
-
 #include "UiSettingsServiceInterface.h"
 
 #include <QCryptographicHash>
@@ -24,10 +24,9 @@ namespace Asset
     const int CACHE_MAX_DELETES = 10;
 
     AssetCache::AssetCache(Foundation::Framework* framework) :
-        framework_(framework), 
+        framework_(framework),
         memory_cache_size_(DEFAULT_MEMORY_CACHE_SIZE),
         update_time_(0.0),
-        md5_engine_(new QCryptographicHash(QCryptographicHash::Md5)),
         disk_changes_after_last_check_(false),
         disk_cache_max_size_(0)
     {
@@ -52,13 +51,12 @@ namespace Asset
 
     AssetCache::~AssetCache()
     {
-        SAFE_DELETE(md5_engine_);
     }
 
     void AssetCache::InitDiskCaching()
     {
         // Connect to ui signals
-        Foundation::UiSettingServicePtr ui_settings = framework_->GetServiceManager()->GetService<Foundation::UiSettingsServiceInterface>(Foundation::Service::ST_UiSettings).lock();
+        Foundation::UiSettingsServiceInterface *ui_settings = framework_->GetService<Foundation::UiSettingsServiceInterface>();
         if (ui_settings)
         {
             QObject *cache_widget = ui_settings->GetCacheSettingsWidget();
@@ -171,13 +169,11 @@ namespace Asset
             while (i != end_iter)
             {
                 if (boost::filesystem::is_regular_file(i->status()))
-                {
                     disk_cache_contents_.insert(i->path().native_directory_string());
-                }
                 ++i;
             }
         }
-        catch (std::exception e)
+        catch (std::exception &/*e*/)
         {
         }
     }
@@ -382,10 +378,10 @@ namespace Asset
 
     std::string AssetCache::GetHash(const std::string &asset_id)
     {
-        QCryptographicHash md5_engine_(QCryptographicHash::Md5);
-        md5_engine_.addData(asset_id.c_str(), asset_id.size());
-        QString md5_hash(md5_engine_.result().toHex());
-        md5_engine_.reset();
+        QCryptographicHash md5_engine(QCryptographicHash::Md5);
+        md5_engine.addData(asset_id.c_str(), asset_id.size());
+        QString md5_hash(md5_engine.result().toHex());
+        md5_engine.reset();
         return md5_hash.toStdString();
     }
 }

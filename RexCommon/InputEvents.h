@@ -152,6 +152,7 @@ namespace Input
         static const event_id_t INPUTSTATE_FOCUSONOBJECT = 108;
         static const event_id_t ALT_LEFTCLICK = 109;
         static const event_id_t ALT_LEFTCLICK_REL = 110;
+        static const event_id_t MOUSE_DOUBLECLICK = 111;
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.

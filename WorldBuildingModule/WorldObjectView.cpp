@@ -17,6 +17,8 @@ namespace WorldBuilding
         setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
         setAlignment(Qt::AlignCenter);
         setMaximumHeight(350);
+        setMinimumHeight(350);
+        setText("");
     }
 
     void WorldObjectView::RequestUpdate()

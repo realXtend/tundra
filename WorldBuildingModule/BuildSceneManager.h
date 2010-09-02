@@ -17,6 +17,7 @@
 
 #include <QtInputKeyEvent.h>
 #include <QObject>
+#include <QTimer>
 
 class QtAbstractPropertyBrowser;
 class QtProperty;
@@ -94,7 +95,6 @@ namespace WorldBuilding
         void DeleteObjectClicked();
 
         void ManipModeChanged(PythonParams::ManipulationMode mode);
-
         void HandlePythonWidget(const QString &type, QWidget *widget);
 
     private:
@@ -123,6 +123,8 @@ namespace WorldBuilding
 
         QList<QWidget*> toggle_visibility_widgets_;
         QList<QWidget*> python_deleted_widgets_;
+
+        QTimer *viewport_poller_;
     };
 }
 

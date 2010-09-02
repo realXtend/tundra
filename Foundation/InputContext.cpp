@@ -124,6 +124,7 @@ void InputContext::TriggerMouseEvent(MouseEvent &mouse)
             ///\todo XButton1 and XButton2 support?
         }
         break;
+    case MouseEvent::MouseDoubleClicked: emit MouseDoubleClicked(&mouse); break;
     default:
         assert(false);
         break;
