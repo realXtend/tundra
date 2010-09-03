@@ -438,7 +438,6 @@ class ObjectEdit(Component):
         self.manipulator.stopManipulating()
         self.manipulator.showManipulator(self.sels)
         self.usingManipulator = False
-        self.duplicateDragStart = False #XXXchange?
         
         if self.selection_rect_startpos is not None:
             self.selection_rect.hide()
@@ -541,11 +540,6 @@ class ObjectEdit(Component):
                     hits = rend.FrustumQuery(rect) #the wish
 
                 else:
-                    if self.duplicateDragStart:
-                        for ent in self.sels:
-                            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 0, 0, 0) #nasty hardcoded offset
-                        self.duplicateDragStart = False
-                            
                     ent = self.active
                     if ent is not None and self.sel_activated and self.canmove:
                         self.dragging = True
@@ -587,9 +581,6 @@ class ObjectEdit(Component):
         #if ent is not None:
         for ent in self.sels:
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
-        
-    def duplicateStart(self):
-        self.duplicateDragStart = True
         
     def createObject(self):
         avatar_id = r.getUserAvatarId()
