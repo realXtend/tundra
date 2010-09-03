@@ -16,12 +16,21 @@ from PythonQt.QtGui import QVector3D as Vec3
 import circuits
 import rexviewer as r
 
+piecevis = {
+    PAWN: ('axis1.mesh', Vec3(0.1, 0.1, 0.07)),
+    KNIGHT: ('axis1.mesh', Vec3(0.1, 0.1, 0.12)),
+    BISHOP: ('rotate1.mesh', Vec3(0.1, 0.1, 0.1)),
+    ROOK: ('scale1.mesh', Vec3(1.0, 1.0, 1.0)),
+    QUEEN: ('avatar.mesh', Vec3(1.0, 1.0, 1.0)),
+    KING: ('Jack.mesh', Vec3(1.0, 1.0, 1.0))
+}
+
 def index2pos(cord):
     return cord / 8, cord % 8
 
 def worldpos(x, y):
     wx = 120 + x
-    wy = 120 + y
+    wy = 120 - y
     wz = 25
     return Vec3(wx, wy, wz)
     
@@ -86,14 +95,16 @@ class ChessViewControl(circuits.BaseComponent):
 
         for cor, piece in enumerate(self.board):
             if piece != EMPTY:
+                mesh, scale = piecevis[piece]
                 x, y = index2pos(cor)
-                self.addpiece(x, y, piece)
+                print "loading mesh", mesh, "with scale", scale
+                self.addpiece(x, y, piece, mesh, scale)
 
-    def addpiece(self, x, y, piece):
-        ent = r.createEntity("axes.mesh", self.entidcount)
+    def addpiece(self, x, y, piece, mesh, scale):
+        ent = r.createEntity(mesh, self.entidcount)
         self.entidcount += 1 #make the api func use next available id XXX
         ent.placeable.Position = worldpos(x, y)
-        ent.placeable.Scale = Vec3(0.1, 0.1, 0.1)
+        ent.placeable.Scale = scale
         self.pos2piece[(x, y)] = ent
 
     def move(self, movedata):
@@ -111,7 +122,8 @@ class ChessViewControl(circuits.BaseComponent):
         print "REMOVE:", removedata
         cord, tpiece, opcolor = [int(i) for i in removedata.split(',')]
         x, y = index2pos(cord)
-        self.pos2piece.pop((x, y))
+        eaten = self.pos2piece.pop((x, y))
+        r.removeEntity(eaten.id)
 
     @circuits.handler("update")
     def update(self, t):
