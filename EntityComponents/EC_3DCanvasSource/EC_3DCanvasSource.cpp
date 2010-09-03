@@ -69,7 +69,7 @@ void EC_3DCanvasSource::Clicked()
 
 void EC_3DCanvasSource::SourceEdited()
 {
-    std::string new_source = source_edit_->text().toStdString();
+    QString new_source = source_edit_->text();
     if (new_source != source_.Get())
     {
         // Replicate changed source to network
@@ -106,7 +106,7 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
     //! \todo: check here if the link is something we want to open differently (external program etc.)
     
     // If url is different than the source, update the lineedit & browser & replicate to network
-    std::string url_str = url.toString().toStdString();
+    QString url_str = url.toString();
     if (url_str != source_.Get())
     {
         QWebView* webwidget = dynamic_cast<QWebView*>(content_widget_);
@@ -115,7 +115,7 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         webwidget->setUrl(url);
         
         if (source_edit_)
-            source_edit_->setText(QString::fromStdString(url_str));
+            source_edit_->setText(url_str);
         
         // Set last_source now so that we won't trigger reload of the page again when the source comes back from network
         last_source_ = url_str;
@@ -145,8 +145,8 @@ void EC_3DCanvasSource::RepaintCanvas()
 
 void EC_3DCanvasSource::UpdateWidget()
 {
-    std::string source = source_.Get();
-    if (source.empty())
+    QString source = source_.Get();
+    if (source.isNull())
     {
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
         return;
@@ -155,7 +155,7 @@ void EC_3DCanvasSource::UpdateWidget()
     if (source != last_source_)
     {
         if (source_edit_)
-            source_edit_->setText(QString::fromStdString(source));
+            source_edit_->setText(source);
         
         last_source_ = source;
         if (!placeholder_widget_)
@@ -165,7 +165,7 @@ void EC_3DCanvasSource::UpdateWidget()
         }
         
         // See if source looks like an url, and instantiate a QWebView then if it doesn't already exist
-        if (source.find("http://") != std::string::npos)
+        if (source.indexOf("http://") != -1)
         {
             QWebView* webwidget = dynamic_cast<QWebView*>(content_widget_);
             if (!webwidget)
@@ -182,7 +182,7 @@ void EC_3DCanvasSource::UpdateWidget()
                 if (layout)
                     layout->addWidget(webwidget);
 
-                webwidget->setUrl(QUrl(QString::fromStdString(source)));
+                webwidget->setUrl(QUrl(source));
                 webwidget->page()->setLinkDelegationPolicy(QWebPage::DelegateAllLinks);
                 content_widget_ = webwidget;
                 
@@ -194,7 +194,7 @@ void EC_3DCanvasSource::UpdateWidget()
             else
             {
                 // If source changed, update the webview URL
-                webwidget->setUrl(QUrl(QString::fromStdString(source)));
+                webwidget->setUrl(QUrl(source));
             }
         }
     }
@@ -266,7 +266,7 @@ void EC_3DCanvasSource::FetchWebViewUrl()
     QString url = canvas_webview->url().toString();
     if (!url.isEmpty())
     {
-        source_.Set(url.toStdString(), AttributeChange::LocalOnly);
+        source_.Set(url, AttributeChange::LocalOnly);
         ComponentChanged(AttributeChange::LocalOnly);
     }
     else

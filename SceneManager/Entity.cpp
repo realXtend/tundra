@@ -157,7 +157,7 @@ namespace Scene
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
         if (name)
-            return name->name.Get();
+            return name->name.Get().toStdString();
         else
             return "";
     }
@@ -166,7 +166,7 @@ namespace Scene
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
         if (name)
-            return name->description.Get();
+            return name->description.Get().toStdString();
         else
             return "";
     }

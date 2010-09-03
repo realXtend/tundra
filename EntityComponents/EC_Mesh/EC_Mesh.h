@@ -40,8 +40,8 @@ public:
     virtual bool IsSerializable() const { return true; }
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
 
-    Foundation::Attribute<std::string> meshResouceId_;
-    Foundation::Attribute<std::string> skeletonId_;
+    Foundation::Attribute<QString> meshResouceId_;
+    Foundation::Attribute<QString> skeletonId_;
     Foundation::Attribute<std::vector<QVariant> > meshMaterial_;
     Foundation::Attribute<Real> drawDistance_;
     Foundation::Attribute<bool> castShadows_;

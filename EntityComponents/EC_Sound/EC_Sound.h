@@ -21,7 +21,7 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    Foundation::Attribute<std::string>  soundId_;
+    Foundation::Attribute<QString>      soundId_;
     Foundation::Attribute<Real>         soundInnerRadius_;
     Foundation::Attribute<Real>         soundOuterRadius_;
     Foundation::Attribute<Real>         soundGain_;

@@ -66,8 +66,8 @@ namespace Foundation
     AttributeInterface *ComponentManager::CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name)
     {
         AttributeInterface *attribute = 0;
-        if (typeName == "string")
-            attribute = new Attribute<std::string>(owner, name.c_str());
+        if(typeName == "string")
+            attribute = new Attribute<QString>(owner, name.c_str());
         else if(typeName == "int")
             attribute = new Attribute<int>(owner, name.c_str());
         else if(typeName == "real")
