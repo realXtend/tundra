@@ -1,7 +1,7 @@
 from msg import send
 
 def removePiece(tcord, tpiece, opcolor):
-    send("REMOVE:%d,%d,%d,%d" % (tcord, tpiece, opcolor))
+    send("REMOVE:%d,%d,%d" % (tcord, tpiece, opcolor))
 
 def addPiece(tcord, piece, color):
     send("ADD:%d,%d,%d" % (tcord, piece, color))

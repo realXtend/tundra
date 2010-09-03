@@ -54,6 +54,7 @@ def main():
     gtk.gdk.threads_init()
     while 1:
         updatechess()
+        time.sleep(0.01)
 
 """in parsemove.py now
 def removePiece(tcord, tpiece, opcolor):
