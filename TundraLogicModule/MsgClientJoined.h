@@ -24,7 +24,7 @@ struct MsgClientJoined
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 52; }
+	static inline u32 MessageID() { return 102; }
 	static inline const char *Name() { return "ClientJoined"; }
 
 	bool reliable;

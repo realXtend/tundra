@@ -2,26 +2,27 @@
     <!-- LOGIN -->
 
     <!-- Client to server -->
-    <message id="50" name="Login" reliable="true" priority="100">
+    <message id="100" name="Login" reliable="true" priority="100">
         <s8 name="userName" dynamicCount="8" />
         <!-- Todo: add security to the login as appropriate -->
         <s8 name="password" dynamicCount="8" />
     </message>
     <!-- Server to client that attempts to join -->
-    <message id="51" name="LoginReply" reliable="true" priority="100">
+    <message id="101" name="LoginReply" reliable="true" priority="100">
         <!-- zero = failure, nonzero = success -->
         <u8 name="success" />
         <!-- Note: in case of failure, userID is undefined -->
         <u8 name="userID" />
     </message>
     <!-- Server to other clients when a client joins -->
-    <message id="52" name="ClientJoined" reliable="true" priority="100">
+    <message id="102" name="ClientJoined" reliable="true" priority="100">
         <u8 name="userID" />
         <s8 name="userName" dynamicCount="8" />
     </message>
     <!-- Server to other clients when a client left or timed out -->
-    <message id="53" name="ClientLeft" reliable="true" priority="100">
+    <message id="103" name="ClientLeft" reliable="true" priority="100">
         <u8 name="userID" />
+        <s8 name="userName" dynamicCount="8" />        
     </message>
     
     <!-- SCENE REPLICATION -->

@@ -24,7 +24,7 @@ struct MsgClientLeft
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 53; }
+	static inline u32 MessageID() { return 103; }
 	static inline const char *Name() { return "ClientLeft"; }
 
 	bool reliable;
@@ -32,20 +32,27 @@ struct MsgClientLeft
 	u32 priority;
 
 	u8 userID;
+	std::vector<s8> userName;
 
 	inline size_t Size() const
 	{
-		return 1;
+		return 1 + 1 + userName.size()*1;
 	}
 
 	inline void SerializeTo(DataSerializer &dst) const
 	{
 		dst.Add<u8>(userID);
+		dst.Add<u8>(userName.size());
+		if (userName.size() > 0)
+			dst.AddArray<s8>(&userName[0], userName.size());
 	}
 
 	inline void DeserializeFrom(DataDeserializer &src)
 	{
 		userID = src.Read<u8>();
+		userName.resize(src.Read<u8>());
+		if (userName.size() > 0)
+			src.ReadArray<s8>(&userName[0], userName.size());
 	}
 
 };

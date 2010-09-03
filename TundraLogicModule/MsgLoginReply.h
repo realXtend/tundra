@@ -24,7 +24,7 @@ struct MsgLoginReply
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 51; }
+	static inline u32 MessageID() { return 101; }
 	static inline const char *Name() { return "LoginReply"; }
 
 	bool reliable;

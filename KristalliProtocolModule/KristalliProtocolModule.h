@@ -22,14 +22,14 @@ namespace KristalliProtocol
     struct UserConnection
     {
         UserConnection() :
-            id(0),
             connection(0),
+            userID(0),
             authenticated(false)
         {
         }
         
-        u8 id;
         MessageConnection* connection;
+        u8 userID;
         bool authenticated;
         std::string userName;
     };
@@ -95,8 +95,11 @@ namespace KristalliProtocol
         /// Return whether we are a server
         bool IsServer() const { return server != 0; }
         
-        /// Returns user connections for a server
+        /// Returns all user connections for a server
         UserConnectionList& GetUserConnections() { return connections; }
+        
+        /// Returns authenticated user connections for a server. Note: this is a partial copy and changing it does not change the actual userlist
+        UserConnectionList GetAuthenticatedUsers() const;
         
         /// Gets user by message connection. Returns null if no such connection
         UserConnection* GetUserConnection(MessageConnection* source);
