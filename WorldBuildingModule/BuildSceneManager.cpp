@@ -152,14 +152,66 @@ namespace WorldBuilding
         if (widget->scene() == scene_)
             return;
 
-        // Add to scene and toolbar
-        scene_->addItem(widget);
-        if (name != "Console")
-            toolbar_->AddButton(name, widget);
+        bool scene_widget = true;
+        QString name_compare = name.toLower();
+        if (name_compare == "components")
+        {
+            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+            widget->setWidget(0);
+            object_info_ui.components_layout->addWidget(tranfer_widgets_[name].first);
+            tranfer_widgets_[name].first->show();
+            scene_widget = false;
+        }
+        else if (name_compare == "console")
+        {
+            scene_->addItem(widget);
+            scene_widget = false;
+        }
+        else if (name_compare == "inventory")
+        {
+            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+            widget->setWidget(0);
+            object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
+            tranfer_widgets_[name].first->show();
+            scene_widget = false;
+        }
 
-        // Set initial pos and hide
-        widget->setPos(object_manipulations_widget_->rect().width() + 25, 25);
-        widget->hide();
+        if (scene_widget)
+        {
+            // Add to scene and toolbar
+            scene_->addItem(widget);
+            toolbar_->AddButton(name, widget);
+            // Set initial pos and hide
+            widget->setPos(object_manipulations_widget_->rect().width() + 25, 25);
+            widget->hide();
+        }
+    }
+
+    void BuildSceneManager::HandleTransfersBack()
+    {
+        foreach (QString name, tranfer_widgets_.keys())
+        {
+            int index = -1;
+            TransferPair pair = tranfer_widgets_[name];
+            if (name == "Components")
+            {
+                index = object_info_ui.components_layout->indexOf(pair.first);
+                QLayoutItem *item = object_info_ui.components_layout->takeAt(index);
+                if (item)
+                    delete item;
+            }
+            else
+            {
+                index = object_manip_ui.tab_widget->indexOf(pair.first);
+                if (index != -1)
+                    object_manip_ui.tab_widget->removeTab(index);
+            }
+            pair.first->setParent(0);
+            pair.second->setWidget(pair.first);
+            pair.second->hide();
+        }
+        tranfer_widgets_.clear();
+        object_manip_ui.tab_widget->clear();
     }
 
     void BuildSceneManager::HandlePythonWidget(const QString &type, QWidget *widget)
@@ -192,8 +244,9 @@ namespace WorldBuilding
             // Make title and insert widget
             QLabel *title = new QLabel(type);
             title->setStyleSheet(title_style);
-            object_manip_ui.main_layout->insertWidget(len-1, title);
-            object_manip_ui.main_layout->insertWidget(len, widget);
+            title->setIndent(0);
+            object_manip_ui.main_layout->insertWidget(len-2, title);
+            object_manip_ui.main_layout->insertWidget(len-1, widget);
 
             // Put to internal lists for visibility and deleting
             toggle_visibility_widgets_ << title << widget;
@@ -393,12 +446,15 @@ namespace WorldBuilding
             object_info_widget_->CheckSize();
             object_manipulations_widget_->CheckSize();
             python_handler_->EmitEditingActivated(true);
+            tranfer_widgets_.clear();
+            object_manip_ui.tab_widget->clear();
         }
         else if (old_name == scene_name_)
         {
             ObjectSelected(false);
             python_handler_->EmitEditingActivated(false);
             toolbar_->RemoveAllButtons();
+            HandleTransfersBack();
         }
     }
 

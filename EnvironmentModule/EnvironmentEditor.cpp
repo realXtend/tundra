@@ -248,8 +248,9 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 
-        ui->AddWidgetToScene(this);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
         ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        ui->RegisterUniversalWidget("Environment", editor_proxy);
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");

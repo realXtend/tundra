@@ -43,6 +43,9 @@ namespace Ether
         void EtherScene::keyPressEvent(QKeyEvent *ke)
         {
             QGraphicsScene::keyPressEvent(ke);
+            if (ke->isAccepted())
+                return;
+
             if (ke->isAutoRepeat() || supress_key_events_)
                 return;
 
@@ -72,7 +75,6 @@ namespace Ether
                 case Qt::Key_Enter:
                     emit EnterPressed();
                     break;
-
                 default:
                     break;
             }

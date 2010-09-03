@@ -51,7 +51,7 @@ QPushButton#button_exit, #button_lights {
 	color: rgba(255,255,255,225);
 	font: Arial;
 	font-size: 10pt;
-	min-height: 25px;
+	min-height: 22px;
 	padding-left: 10px;
 	padding-right: 10px;
 	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));

@@ -41,10 +41,8 @@ namespace WorldBuilding
                 widget()->setGeometry(w_rect.x(), w_rect.y(), min_width_, w_rect.height());
                 if (view_)
                 {
-                    QRect view_rect = view_->rect();
-                    view_->setMinimumWidth(min_width_);
-                    view_->setMaximumWidth(min_width_);
-                    view_->setGeometry(0, 0, min_width_, view_rect.height());
+                    view_->setMinimumWidth(10);
+                    view_->setMaximumWidth(min_width_-25);
                 }
             }
         }
@@ -184,7 +182,7 @@ namespace WorldBuilding
                                     QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
                         }
                         if (view_)
-                            view_->setMaximumWidth(widget()->minimumWidth()-18);
+                            view_->setMaximumWidth(widget()->minimumWidth()-25);
                     }
                 }
 
@@ -201,9 +199,6 @@ namespace WorldBuilding
             if (QApplication::overrideCursor())
                 QApplication::restoreOverrideCursor();
             QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
-
-            if (view_)
-                view_->RequestUpdate();
         }
 
         void BuildingWidget::SceneRectChanged(const QRectF &new_rect)
@@ -215,7 +210,7 @@ namespace WorldBuilding
                     setPos(scene_half_width, 0);
                 widget()->setMinimumWidth(scene_half_width);
                 if (view_)
-                    view_->setMaximumWidth(scene_half_width);
+                    view_->setMaximumWidth(scene_half_width-25);
             }
         }
     }
