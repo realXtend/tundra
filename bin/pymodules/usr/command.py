@@ -115,10 +115,12 @@ st/shared_ptr.hpp, line 419
     meshname = "axes.mesh"
     
     avatar = r.getEntity(r.getUserAvatarId())
-    ent = r.createEntity(meshname)
+    ent = r.createEntity(meshname, 12345681)
     #print "New entity created:", ent, ent.pos
-    ent.pos = avatar.pos
-    ent.scale = 0.0, 0.0, 0.0
+    ent.placeable.Position = avatar.placeable.Position
+
+    from PythonQt.QtGui import QVector3D as Vec
+    ent.placeable.Scale = Vec(0.1, 0.1, 0.1)
     #print "new pos", ent.pos, ent.scale
 
 if 0: #placeable and text tests
