@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Toolbar</class>
+ <widget class="QWidget" name="Toolbar">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>403</width>
+    <height>32</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>0</width>
+    <height>32</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>16777215</width>
+    <height>32</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Toolbar</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#Toolbar {
+	background-color: transparent;
+}
+
+QWidget#content_widget {
+	background-color: rgba(34,34,34,191);
+}
+
+QWidget#corner_widget {
+	background-color: transparent;
+	background-image: url('./data/ui/images/menus/corner_piece_top.png');
+	background-position: top right;
+	background-repeat: no-repeat;
+}
+
+QPushButton#button_exit, #button_lights {
+	color: rgba(255,255,255,225);
+	font: Arial;
+	font-size: 10pt;
+	min-height: 25px;
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+	border: 1px solid rgba(0,0,0,100);
+	border-radius: 7px;
+}
+
+QPushButton::hover#button_exit, ::hover#button_lights {
+	color: white;
+	background-color: qlineargradient(spread:pad, x1:0.0170455, y1:0, x2:0.597, y2:1, stop:0 rgba(91, 91, 91, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+}
+
+QPushButton::pressed#button_exit, ::pressed#button_lights {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+	border: 1px solid rgba(255,255,255,20);
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="spacing">
+    <number>0</number>
+   </property>
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <spacer name="horizontalSpacer">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <property name="spacing">
+      <number>7</number>
+     </property>
+     <property name="leftMargin">
+      <number>0</number>
+     </property>
+     <property name="rightMargin">
+      <number>2</number>
+     </property>
+     <item>
+      <widget class="QSlider" name="slider_lights">
+       <property name="minimumSize">
+        <size>
+         <width>150</width>
+         <height>0</height>
+        </size>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>150</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="styleSheet">
+        <string notr="true"/>
+       </property>
+       <property name="minimum">
+        <number>0</number>
+       </property>
+       <property name="maximum">
+        <number>100</number>
+       </property>
+       <property name="value">
+        <number>50</number>
+       </property>
+       <property name="tracking">
+        <bool>true</bool>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="tickPosition">
+        <enum>QSlider::TicksBelow</enum>
+       </property>
+       <property name="tickInterval">
+        <number>25</number>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_lights">
+       <property name="text">
+        <string>Custom Lights</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="button_exit">
+       <property name="text">
+        <string>Exit Building</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QWidget" name="corner_widget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>34</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>34</width>
+       <height>16777215</height>
+      </size>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="content_widget" native="true"/>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

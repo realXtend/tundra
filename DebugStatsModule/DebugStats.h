@@ -86,10 +86,13 @@ namespace DebugStats
 
         /// Sends packet requesting kicking user out from the server.
         Console::CommandResult KickUser(const StringVector &params);
-        
+
         /// Dumps J2K decoded textures to PNG images in the viewer working directory.
         Console::CommandResult DumpTextures(const StringVector &params);
-        
+
+        /// Invokes action in entity.
+        Console::CommandResult Exec(const StringVector &params);
+
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
 

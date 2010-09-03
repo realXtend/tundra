@@ -260,4 +260,11 @@ namespace CoreUi
         connect(service_getter, SIGNAL(KeyBindingsChanged(Foundation::KeyBindings*)),
                 SLOT(UpdateKeyBindings(Foundation::KeyBindings*)));
     }
+
+    void UiStateMachine::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)
+    {
+        if (universal_widgets_.contains(name))
+            return;
+        universal_widgets_[name] = widget;
+    }
 }

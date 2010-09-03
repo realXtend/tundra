@@ -37,6 +37,8 @@ namespace Foundation
     class ThreadTaskManager;
     class Profiler;
     class Framework;
+    class KeyBindings;
+    class MainWindow;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;

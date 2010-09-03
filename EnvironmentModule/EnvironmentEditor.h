@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QVector>
 #include <QWidget>
+#include <QCheckBox>
 
 class QImage;
 class QColor;
@@ -341,6 +342,7 @@ namespace Environment
         //! Terrain actions (Flatten, Raise, Lower, Smooth, Roughen and Revert).
         ModifyLandAction action_;
 
+        QCheckBox *daytime_override_checkbox_;
         QSlider *timeof_day_slider_;
 
         QColorDialog* sun_color_picker_;

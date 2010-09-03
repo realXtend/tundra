@@ -170,4 +170,34 @@ namespace Scene
         else
             return "";
     }
+
+    void Entity::Exec(const QString &action)
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+            components_[i]->Exec(action);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param)
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+            components_[i]->Exec(action, param);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+            components_[i]->Exec(action, param1, param2);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+            components_[i]->Exec(action, param1, param2, param3);
+    }
+
+    void Entity::Exec(const QString &action, const QVector<QString> &params)
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+            components_[i]->Exec(action ,params);
+    }
 }

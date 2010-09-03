@@ -5,18 +5,26 @@
 #include "ModuleInterface.h"
 #include "ModuleManager.h"
 #include "Entity.h"
-#include "AssetInterface.h"
-//#include "SceneManager.h" //to emit ComponentInitialized signal via scene
+#include "LoggingFunctions.h"
 
-#include <map>
-//#include <qvariant.h>
-#include <QVariant>
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
+
 #include <QDomDocument>
-#include <QSet>
 
-#define LogError(msg) Poco::Logger::get("EC_DynamicComponent").error(std::string("Error: ") + msg);
-#define LogInfo(msg) Poco::Logger::get("EC_DynamicComponent").information(msg);
-#define LogWarning(msg) Poco::Logger::get("EC_DynamicComponent").warning(std::string("Warning: ") + msg);
+namespace
+{
+    //! Function that is used by std::sort algorithm to sort attributes by their name.
+    bool CmpAttributeByName(const Foundation::AttributeInterface *a, const Foundation::AttributeInterface *b)
+    {
+        return a->GetNameString() < b->GetNameString();
+    }
+
+    //! Function that is used by std::sort algorithm to sort DeserializeData by their name.
+    bool CmpAttributeDataByName(const EC_DynamicComponent::DeserializeData &a, const EC_DynamicComponent::DeserializeData &b)
+    {
+        return a.name_ < b.name_;
+    }
+}
 
 EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework())
@@ -25,7 +33,6 @@ EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module):
 
 EC_DynamicComponent::~EC_DynamicComponent()
 {
-
 }
 
 void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
@@ -35,7 +42,7 @@ void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_eleme
     Foundation::AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        WriteAttribute(doc, comp_element, (*iter)->GetNameString(), (*iter)->ToString(), (*iter)->TypenameToString());
+        WriteAttribute(doc, comp_element, (*iter)->GetNameString().c_str(), (*iter)->ToString().c_str(), (*iter)->TypenameToString().c_str());
         iter++;
     }
 }
@@ -402,14 +409,4 @@ bool EC_DynamicComponent::ContainAttribute(const QString &name) const
         iter++;
     }
     return false;
-}
-
-bool CmpAttributeByName(const Foundation::AttributeInterface *a, const Foundation::AttributeInterface *b)
-{
-    return a->GetNameString() < b->GetNameString();
-}
-
-bool CmpAttributeDataByName(const EC_DynamicComponent::DeserializeData &a, const EC_DynamicComponent::DeserializeData &b)
-{
-    return a.name_ < b.name_;
 }
