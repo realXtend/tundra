@@ -1,7 +1,7 @@
 import rexviewer as r
 
 import PythonQt
-from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QDoubleSpinBox, QPixmap
+from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
@@ -90,16 +90,27 @@ class ObjectEditWindow:
         soundRadius = self.getDoubleSpinBox("soundRadius", "Set sound radius", self.soundline)
         soundVolume = self.getDoubleSpinBox("soundVolume", "Set sound volume", self.soundline)
         
-        #box = self.mainTab.findChild("QHBoxLayout", "soundLine")
-        box = QHBoxLayout()
-        box.setContentsMargins(0,0,0,0)
-        box.addWidget(self.soundline)
-        box.addWidget(soundRadius)
-        box.addWidget(soundVolume)
-        box.addWidget(soundbutton_ok)
-        box.addWidget(soundbutton_cancel)
+        main_box = QVBoxLayout()
+        main_box.setContentsMargins(0,0,0,0)
+        box_buttons = QHBoxLayout()
+        box_buttons.setContentsMargins(0,0,0,0)
+        
+        self.label_radius = QLabel("Radius")
+        self.label_radius.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+        self.label_volume = QLabel("Volume")
+        self.label_volume.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+
+        box_buttons.addWidget(self.label_radius)
+        box_buttons.addWidget(soundRadius)
+        box_buttons.addWidget(self.label_volume)
+        box_buttons.addWidget(soundVolume)        
+        box_buttons.addWidget(soundbutton_ok)
+        box_buttons.addWidget(soundbutton_cancel)
+
+        main_box.addWidget(self.soundline)
+        main_box.addLayout(box_buttons)
         self.sound_widget = QWidget()
-        self.sound_widget.setLayout(box)
+        self.sound_widget.setLayout(main_box)
 
         # Properties, dead code really..
         self.propedit = r.getPropertyEditor()
@@ -303,7 +314,6 @@ class ObjectEditWindow:
         size = QSize(20, 20)
         button = buttons.PyPushButton()
         icon = QIcon(QPixmap(iconname).scaled(size))
-        #icon.actualSize(size)
         button.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Fixed)
         button.setMaximumSize(size)
         button.setMinimumSize(size)

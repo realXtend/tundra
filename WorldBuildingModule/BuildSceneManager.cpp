@@ -223,17 +223,21 @@ namespace WorldBuilding
         bool create_widgets = false;
         bool python_deletes = true;
         QString type_compare = type.toLower();
+        QString label_title = type;
         if (type_compare == "materials")
         {
             create_widgets = true;
+            label_title = "Textures";
         }
         else if (type_compare == "mesh")
         {
             create_widgets = true;
+            label_title = "3D Mesh Model";
         }
         else if (type_compare == "sound")
         {
             create_widgets = true;
+            label_title = "Attached Sound";
         }
 
         if (create_widgets)
@@ -242,7 +246,7 @@ namespace WorldBuilding
             int len = object_manip_ui.main_layout->count();
 
             // Make title and insert widget
-            QLabel *title = new QLabel(type);
+            QLabel *title = new QLabel(label_title);
             title->setStyleSheet(title_style);
             title->setIndent(0);
             object_manip_ui.main_layout->insertWidget(len-2, title);

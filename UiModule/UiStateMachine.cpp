@@ -151,17 +151,31 @@ namespace CoreUi
 
     void UiStateMachine::SwitchToInworldScene()
     {
-        SwitchToScene("Inworld");
+        CheckAndSwitch("Inworld");
     }
 
     void UiStateMachine::SwitchToEtherScene()
     {
-        SwitchToScene("Ether");
+        CheckAndSwitch("Ether");
     }
 
     void UiStateMachine::SwitchToBuildScene()
     {
-        SwitchToScene("WorldBuilding");
+        CheckAndSwitch("WorldBuilding");
+    }
+
+    void UiStateMachine::CheckAndSwitch(const QString scene_name)
+    {
+        if (current_scene_)
+        {
+            QString current_name = scene_map_.key(current_scene_);
+            if (current_name != scene_name)
+                SwitchToScene(scene_name);
+            else if (current_name.isEmpty() || current_name.isNull())
+                SwitchToScene(scene_name);
+        }
+        else
+            SwitchToScene(scene_name);
     }
 
     void UiStateMachine::ToggleEther()
@@ -173,11 +187,11 @@ namespace CoreUi
     void UiStateMachine::RegisterScene(const QString &name, QGraphicsScene *scene)
     {
         if (!scene_map_.contains(name))
+        {
             scene_map_[name] = scene;
-
-        // Scene spesific connections
-        if (name == "Ether")
-            connect(scene, SIGNAL( EtherSceneReadyForSwitch() ), SLOT( SwitchToInworldScene() ));
+            if (name == "Ether") // Ether notifies when its ready after connected
+                connect(scene, SIGNAL(EtherSceneReadyForSwitch()), SLOT(SwitchToInworldScene()));
+        }
     }
 
     bool UiStateMachine::UnregisterScene(const QString &name)
@@ -191,7 +205,6 @@ namespace CoreUi
     {
         if (!scene_map_.contains(name))
             return false;
-
         if (next_scene_name_ != name)
         {
             next_scene_name_ = name;
@@ -208,7 +221,7 @@ namespace CoreUi
             current_scene_->setSceneRect(view_->viewport()->rect());
             if (view_->scene() != current_scene_)
                 view_->setScene(current_scene_);
-                    
+
             connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
 
             if (animations_map_.contains(current_scene_))
@@ -222,7 +235,6 @@ namespace CoreUi
             emit SceneChanged(old_scene_name, current_scene_name_);
             emit SceneChangeComplete();
         }
-
         return true;
     }
 
@@ -244,7 +256,8 @@ namespace CoreUi
                 SwitchToEtherScene();
                 break;
             case UiServices::Connected:
-                SwitchToInworldScene();
+                // Ether notifies when its animations are done after we are connected
+                // and switch will happen then
                 break;
             case UiServices::Failed:
                 connection_state_ = UiServices::Disconnected;

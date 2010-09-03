@@ -71,6 +71,7 @@ namespace CoreUi
         UniversalWidgetMap GetUniversalWidgets() { return universal_widgets_; }
 
     private slots:
+        void CheckAndSwitch(const QString scene_name);
         void DelayedSceneChange();
         void SetTransitions();
         void ViewKeyEvent(QKeyEvent *key_event);
