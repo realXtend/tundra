@@ -14,6 +14,7 @@ from pychess.System.Log import log
 
 import pychess.widgets.ionest as i #current hack to get access to GameModel
 import parsemove #the own thing here for parsing move data from pychess
+import msg #talking to the parent process, called directly from parsemove too
 
 def initchess():
     p = pychess.Main.PyChess(None)
@@ -33,11 +34,12 @@ def updatechess():
 
     if g is None and i.globalgamemodel is not None:
         g = i.globalgamemodel
+        board = g.boards[-1]
+        msg.send("BEGIN:%s" % board.board.arBoard.tostring())
 
     if g is not None:
         #print g.players, id(g.boards[-1]), g.boards[-1]
         board = g.boards[-1]
-
         if board is not prev_board:
             #print "BOARD:", board
             if len(board.board.history) > 0:
