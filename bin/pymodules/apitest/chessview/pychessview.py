@@ -29,7 +29,8 @@ def updatechess():
     #print ".",
     global g, prev_board, prev_arBoard
 
-    gtk.main_iteration(block=False)
+    for _ in range(100):
+        gtk.main_iteration(block=False)
     #gtk.gdk.threads_enter()
 
     if g is None and i.globalgamemodel is not None:
