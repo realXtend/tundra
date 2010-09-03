@@ -23,7 +23,8 @@ namespace Ether
         EtherScene::EtherScene(QObject *parent, const QRectF &scene_rect)
             : QGraphicsScene(scene_rect, parent),
               supress_key_events_(false),
-              connected_(false)
+              connected_(false),
+              console_(0)
         {
 #ifdef DYNAMIC_LOGIN_SCENE
             bg_image_disconnected_ = QPixmap("./data/ui/images/ether/main_background_disconnected.png");
@@ -45,7 +46,6 @@ namespace Ether
             QGraphicsScene::keyPressEvent(ke);
             if (ke->isAccepted())
                 return;
-
             if (ke->isAutoRepeat() || supress_key_events_)
                 return;
 
@@ -73,8 +73,17 @@ namespace Ether
 
                 case Qt::Key_Return:
                 case Qt::Key_Enter:
-                    emit EnterPressed();
+                {
+                    if (console_)
+                    {
+                        if (!console_->isVisible())
+                            emit EnterPressed();
+                    }
+                    else
+                        emit EnterPressed();
                     break;
+                }
+
                 default:
                     break;
             }
@@ -133,6 +142,7 @@ namespace Ether
 
             addItem(widget);
             widget->hide();
+            console_ = widget;
         }
     }
 }

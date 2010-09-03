@@ -3,6 +3,8 @@
 #ifndef incl_UiModule_EtherScene_h
 #define incl_UiModule_EtherScene_h
 
+#include "QtInputKeyEvent.h"
+
 #include <QGraphicsScene>
 #include <QStateMachine>
 #include <QState>
@@ -28,10 +30,9 @@ namespace Ether
             EtherScene(QObject *parent, const QRectF &scene_rect);
             virtual ~EtherScene();
 
-            
             void EmitSwitchSignal();
             void SetConnectionStatus(bool connected);
-
+            
         protected:
             void keyPressEvent(QKeyEvent *ke);
             void mousePressEvent(QGraphicsSceneMouseEvent *mouse_event);
@@ -47,6 +48,7 @@ namespace Ether
             QPixmap bg_image_connected_, bg_image_disconnected_;
             bool supress_key_events_;
             bool connected_;
+            QGraphicsProxyWidget *console_;
 
         signals:
             void UpPressed();
@@ -54,9 +56,7 @@ namespace Ether
             void LeftPressed();
             void RightPressed();
             void EnterPressed();
-
             void ItemClicked(View::InfoCard *clicked_item);
-
             void EtherSceneReadyForSwitch();
         };
     }

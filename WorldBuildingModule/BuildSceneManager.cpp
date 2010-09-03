@@ -182,7 +182,7 @@ namespace WorldBuilding
             scene_->addItem(widget);
             toolbar_->AddButton(name, widget);
             // Set initial pos and hide
-            widget->setPos(object_manipulations_widget_->rect().width() + 25, 25);
+            widget->setPos(object_manipulations_widget_->rect().width() + 25, 60);
             widget->hide();
         }
     }
