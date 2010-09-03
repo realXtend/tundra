@@ -227,10 +227,10 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
     {
         //Ensure that mesh is requested only when it's has actualy changed.
         if(entity_)
-            if(entity_->getMesh()->getName() == meshResouceId_.Get())
+            if(QString::fromStdString(entity_->getMesh()->getName()) == meshResouceId_.Get())
                 return;
 
-        tag = RequestResource(meshResouceId_.Get(), OgreRenderer::OgreMeshResource::GetTypeStatic());
+        tag = RequestResource(meshResouceId_.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
             resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
                 boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
@@ -259,7 +259,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
     else if(QString::fromStdString(skeletonId_.GetNameString()) == attrName)
     {
         std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
-        tag = RequestResource(skeletonId_.Get(), resouceType);
+        tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
         if(tag)
             resRequestTags_[ResouceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
     }
@@ -357,7 +357,7 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventData
     OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
     //! @todo for some reason compiler will have linking error if we try to call ResourceInterface's GetId inline method
     //! remember to track the cause of this when I some extra time.
-    SetMesh(QString::fromStdString(meshResouceId_.Get()));
+    SetMesh(QString::fromStdString(meshResouceId_.Get().toStdString()));
 
     return true;
 }

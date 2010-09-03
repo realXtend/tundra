@@ -52,7 +52,7 @@ public:
     void DeleteParticleSystem();
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-    Foundation::Attribute<std::string>  particleId_;
+    Foundation::Attribute<QString>      particleId_;
     Foundation::Attribute<bool>         castShadows_;
     Foundation::Attribute<Real>         renderingDistance_;
 

@@ -142,12 +142,7 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
 
     if(attribute->GetNameString() == particleId_.GetNameString())
     {
-        /*if(particle_tag_)
-            return;*/
-        Foundation::Attribute<std::string> *particleAtt = dynamic_cast<Foundation::Attribute<std::string> *>(attribute);
-        if(!particleAtt)
-            return;
-        particle_tag_ = RequestResource(particleAtt->Get(), OgreRenderer::OgreParticleResource::GetTypeStatic());
+        particle_tag_ = RequestResource(particleId_.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
