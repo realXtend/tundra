@@ -75,8 +75,6 @@ class SceneDataManager:
 
     def addResourceDirToRenderer(self):
         r = naali.renderer
-        print dir(r)
-        print self.folderPath
         r.AddResourceDirectory(self.folderPath)
         pass
             
@@ -96,8 +94,6 @@ class SceneDataManager:
                 r.logInfo(fname)
                 olList.append(fname) # not removed when unloading
             
-    
-    
     def removeFiles(self):
         for m in self.meshes:
             if(self.olMeshes.__contains__(m)==False):
@@ -111,8 +107,7 @@ class SceneDataManager:
             if(self.olMaterials.__contains__(material)==False):
                 rmPath = MATERIAL_FOLDER + os.sep + material
                 os.remove(rmPath)
-            
-    
+                
     def readMeshes(self):
         alreadyAdded = []
         elems = self.xmlDoc.getElementsByTagName('entity')
@@ -121,10 +116,6 @@ class SceneDataManager:
             if(alreadyAdded.__contains__(meshfile)==False):
                 self.meshes.append(meshfile)
                 alreadyAdded.append(meshfile)
-        # print "-----------"
-        # print "self.meshes"
-        # print "-----------"
-        # print self.meshes
             
     def readTextures(self):
         #print self.materialFile
@@ -141,8 +132,3 @@ class SceneDataManager:
                         self.textures.append(split[1])
                         alreadyAdded.append(split[1])
                         
-        # print "-------------"
-        # print "self.textures"
-        # print "-------------"
-        # print self.textures
-    
