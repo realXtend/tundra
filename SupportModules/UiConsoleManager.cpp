@@ -35,7 +35,6 @@ namespace Console
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
-
         Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (ui)
         {
