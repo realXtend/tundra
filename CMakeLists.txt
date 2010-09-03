@@ -43,9 +43,7 @@ if (MSVC)
 endif (MSVC)
 
 # Generate profiling data.
-if (MSVC)
-   add_definitions (-DPROFILING)
-endif (MSVC)
+add_definitions (-DPROFILING)
 
 # Enable memory leak checking in all core modules.
 if (MSVC)
