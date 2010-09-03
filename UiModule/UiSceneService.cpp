@@ -22,7 +22,7 @@ namespace UiServices
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
                 this, SIGNAL(SceneChanged(const QString&, const QString&)));
-        connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
+        connect(owner_->GetUiStateMachine(), SIGNAL(SceneChangeComplete()),
                 this, SLOT(TranferWidgets()));
     }
 

@@ -19,6 +19,7 @@
 #include <QtInputKeyEvent.h>
 #include <QObject>
 #include <QTimer>
+#include <QPair>
 
 class QtAbstractPropertyBrowser;
 class QtProperty;
@@ -46,6 +47,7 @@ namespace WorldBuilding
     }
 
     typedef CoreUi::UiStateMachine StateMachine;
+    typedef QPair<QWidget*,QGraphicsProxyWidget*> TransferPair;
 
     class BuildSceneManager : public Foundation::WorldBuildingServiceInterface
     {
@@ -98,6 +100,7 @@ namespace WorldBuilding
         void ManipModeChanged(PythonParams::ManipulationMode mode);
 
         void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
+        void HandleTransfersBack();
         void HandlePythonWidget(const QString &type, QWidget *widget);
 
         void ToggleLights();
@@ -121,7 +124,6 @@ namespace WorldBuilding
         PythonHandler *python_handler_;
         
         PropertyEditorHandler *property_editor_handler_;
-        bool prim_selected_;
         Scene::Entity* selected_entity_;
 
         View::CameraHandler *camera_handler_;
@@ -131,8 +133,10 @@ namespace WorldBuilding
         QList<QWidget*> python_deleted_widgets_;
 
         QTimer *viewport_poller_;
-
         bool override_server_time_;
+        bool prim_selected_;
+
+        QMap<QString, TransferPair > tranfer_widgets_;
     };
 }
 

@@ -219,9 +219,8 @@ namespace CoreUi
                 animations->start();
             }
 
-            // Inform anyone who is interested that 
-            // we changed the currently viewed scene
             emit SceneChanged(old_scene_name, current_scene_name_);
+            emit SceneChangeComplete();
         }
 
         return true;

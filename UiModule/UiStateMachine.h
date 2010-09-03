@@ -108,6 +108,7 @@ namespace CoreUi
         void EtherTogglePressed();
         void SceneOutAnimationFinised();
         void SceneChanged(const QString &oldName, const QString &newName);
+        void SceneChangeComplete();
 
     };
 }
