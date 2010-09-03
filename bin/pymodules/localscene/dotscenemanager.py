@@ -13,7 +13,6 @@ class DotSceneManager:
     def __init__(self):
         self.nodes = {}
         self.flipZY = False
-        #self.scales = {}
         
     def setPosition(self, x, y ,z):
         """ set new position diff for nodes """
@@ -33,8 +32,6 @@ class DotSceneManager:
     def setOgreNodePosition(self, on, x, y ,z):
         e = on.naali_ent
         p = e.placeable
-        # print p.Position.x()        
-        #print "new location"
         onx = on.position[0]
         ony = on.position[1]
         onz = on.position[2]
@@ -47,11 +44,9 @@ class DotSceneManager:
     def setOgreNodeScale(self, on, x, y ,z):
         e = on.naali_ent
         p = e.placeable
-        #p.Scale = Vec(x + p.Scale.x(), y + p.Scale.y(), z + p.Scale.z())
         onx = on.scale[0]
         ony = on.scale[1]
         onz = on.scale[2]
-        #p.Scale = Vec(x, y, z)
         if(self.flipZY):
             p.Scale = Vec(x * onx, z * onz, y * ony)
         else:
