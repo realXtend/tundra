@@ -98,6 +98,10 @@ void DebugStatsModule::PostInitialize()
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
 
+    RegisterConsoleCommand(Console::CreateCommand("savescene",
+        "Saves scene (serializable entities) into an XML file. Usage: \"savescene(filename)\"",
+        Console::Bind(this, &DebugStatsModule::SaveScene)));
+        
     RegisterConsoleCommand(Console::CreateCommand("exec",
         "Invokes action execution in entity",
         Console::Bind(this, &DebugStatsModule::Exec)));
@@ -406,6 +410,19 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     return Console::ResultSuccess();
 }
 
+Console::CommandResult DebugStatsModule::SaveScene(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    bool success = scene->SaveScene(params[0]);
+    if (success)
+        return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Failed to write the file.");
+}
 
 Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
 {

@@ -90,6 +90,9 @@ namespace DebugStats
         /// Dumps J2K decoded textures to PNG images in the viewer working directory.
         Console::CommandResult DumpTextures(const StringVector &params);
 
+        /// Saves scene to an XML file
+        Console::CommandResult SaveScene(const StringVector &params);
+
         /// Invokes action in entity.
         Console::CommandResult Exec(const StringVector &params);
 
