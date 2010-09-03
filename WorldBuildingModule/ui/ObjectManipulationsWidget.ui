@@ -43,8 +43,8 @@ QLabel {
 }
 
 QLabel#editing_title {
-	font-size: 18px;
-	font-weight: bold;
+	font-size:18px;
+	font-weight:bold;
 }
 
 QLabel#label_rotate_z_title, #label_rotate_x_title, #label_rotate_y_title {
