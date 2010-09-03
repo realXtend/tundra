@@ -8,6 +8,8 @@
 
 struct MsgLogin;
 struct MsgLoginReply;
+struct MsgClientJoined;
+struct MsgClientLeft;
 class MessageConnection;
 
 typedef unsigned long message_id_t;
@@ -15,6 +17,7 @@ typedef unsigned long message_id_t;
 namespace KristalliProtocol
 {
     struct UserConnection;
+    class KristalliProtocolModule;
 }
 
 class TundraLogicModule : public Foundation::ModuleInterface
@@ -101,6 +104,12 @@ private:
     /// Client: Handle a loginreply message
     void ClientHandleLoginReply(MessageConnection* source, const MsgLoginReply& msg);
     
+    /// Client: Handle a client joined message
+    void ClientHandleClientJoined(MessageConnection* source, const MsgClientJoined& msg);
+    
+    /// Client: Handle a client left message
+    void ClientHandleClientLeft(MessageConnection* source, const MsgClientLeft& msg);
+    
     /// Client's connection/login state
     ClientLoginState loginstate_;
     
@@ -113,6 +122,8 @@ private:
     
     /// Kristalli event category
     event_category_id_t kristalliEventCategory_;
+    /// KristalliProtocolModule pointer
+    boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
     
     //! Type name of the module.
     static std::string type_name_static_;

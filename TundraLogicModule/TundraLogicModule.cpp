@@ -13,6 +13,8 @@
 #include "TundraMessages.h"
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
+#include "MsgClientJoined.h"
+#include "MsgClientLeft.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -70,10 +72,16 @@ void TundraLogicModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("disconnect", 
         "Disconnects from a server.",
         Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
+    
+    // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
+    kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock();
+    if (!kristalliModule_.get())
+        LogFatal("Could not get KristalliProtocolModule");
 }
 
 void TundraLogicModule::Uninitialize()
 {
+    kristalliModule_.reset();
 }
 
 void TundraLogicModule::Update(f64 frametime)
@@ -86,28 +94,20 @@ void TundraLogicModule::Update(f64 frametime)
 
 void TundraLogicModule::Login(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password)
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return;
-    
     username_ = username;
     password_ = password;
     
-    module->Connect(address.c_str(), port, use_udp ? SocketOverUDP : SocketOverTCP);
+    kristalliModule_->Connect(address.c_str(), port, use_udp ? SocketOverUDP : SocketOverTCP);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
 
 void TundraLogicModule::Logout()
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return;
-    
     if (loginstate_ != NotConnected)
     {
         LogInfo("Disconnected");
-        module->Disconnect();
+        kristalliModule_->Disconnect();
         loginstate_ = NotConnected;
         client_id_ = 0;
     }
@@ -116,7 +116,7 @@ void TundraLogicModule::Logout()
 void TundraLogicModule::HandleLogin()
 {
     MessageConnection* connection = GetClientConnection();
-        
+    
     switch (loginstate_)
     {
     case ConnectionPending:
@@ -142,18 +142,11 @@ void TundraLogicModule::HandleLogin()
 
 MessageConnection* TundraLogicModule::GetClientConnection()
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return 0;
-    return module->GetMessageConnection();
+    return kristalliModule_->GetMessageConnection();
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return Console::ResultFailure("No Kristalli module");
-    
     unsigned short port = 2345;
     SocketTransportLayer transport = SocketOverUDP;
     
@@ -167,18 +160,14 @@ Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector&
     }
     catch (...) {}
     
-    module->StartServer(port, transport);
+    kristalliModule_->StartServer(port, transport);
     
     return Console::ResultSuccess();
 }
 
 Console::CommandResult TundraLogicModule::ConsoleStopServer(const StringVector& params)
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return Console::ResultFailure("No Kristalli module");
-    
-    module->StopServer();
+    kristalliModule_->StopServer();
     
     return Console::ResultSuccess();
 }
@@ -243,8 +232,33 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
 
 void TundraLogicModule::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
 {
+    // If we are client, verify that the message comes from the server we're connected to
+    if (!kristalliModule_->IsServer())
+    {
+        if (source != GetClientConnection())
+        {
+            LogWarning("Client: dropping message " + ToString(id) + " from unknown source");
+            return;
+        }
+    }
+    else
+    {
+        // If we are server, only allow the login message from an unauthenticated user
+        if (id != cLoginMessage)
+        {
+            UserConnection* user = kristalliModule_->GetUserConnection(source);
+            if ((!user) || (!user->authenticated))
+            {
+                LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
+                //! \todo something more severe, like disconnecting the user
+                return;
+            }
+        }
+    }
+    
     switch (id)
     {
+        // Server
     case cLoginMessage:
         {
             MsgLogin msg(data, numBytes);
@@ -259,37 +273,73 @@ void TundraLogicModule::HandleKristalliMessage(MessageConnection* source, messag
             ClientHandleLoginReply(source, msg);
         }
         break;
+    case cClientJoinedMessage:
+        {
+            MsgClientJoined msg(data, numBytes);
+            ClientHandleClientJoined(source, msg);
+        }
+        break;
+    case cClientLeftMessage:
+        {
+            MsgClientLeft msg(data, numBytes);
+            ClientHandleClientLeft(source, msg);
+        }
+        break;
     }
 }
 
 void TundraLogicModule::ServerHandleLogin(MessageConnection* source, const MsgLogin& msg)
 {
-    KristalliProtocolModule *module = framework_->GetModuleManager()->GetModule<KristalliProtocolModule>().lock().get();
-    if(!module)
-        return;
-    
     // For now, automatically accept the connection if it's from a known user
-    UserConnection* user = module->GetUserConnection(source);
+    UserConnection* user = kristalliModule_->GetUserConnection(source);
     if (!user)
     {
         LogWarning("Login message from unknown user");
         return;
     }
     
-    LogInfo("User " + BufferToString(msg.userName) + " logging in");
+    user->userName = BufferToString(msg.userName);
     user->authenticated = true;
+    LogInfo("User " + user->userName + " logging in");
     
     MsgLoginReply reply;
     reply.success = 1;
-    reply.userID = user->id;
+    reply.userID = user->userID;
     user->connection->Send(reply);
     
-    /// \todo inform other clients of the user joining
+    // Tell everyone of the client joining (also the user who joined)
+    UserConnectionList users = kristalliModule_->GetAuthenticatedUsers();
+    MsgClientJoined joined;
+    joined.userID = user->userID;
+    joined.userName = msg.userName;
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+        iter->connection->Send(joined);
+    
+    // Advertise the users who already are in the world, to the new user
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    {
+        if (iter->userID != user->userID)
+        {
+            MsgClientJoined joined;
+            joined.userID = iter->userID;
+            joined.userName = StringToBuffer(iter->userName);
+            user->connection->Send(joined);
+        }
+    }
 }
 
 void TundraLogicModule::ServerHandleUserDisconnected(UserConnection* user)
 {
-    /// \todo inform other clients of the user leaving
+    // Tell everyone of the client leaving
+    MsgClientLeft left;
+    left.userID = user->userID;
+    left.userName = StringToBuffer(user->userName);
+    UserConnectionList users = kristalliModule_->GetAuthenticatedUsers();
+    for (UserConnectionList::const_iterator iter = users.begin(); iter != users.end(); ++iter)
+    {
+        if (iter->userID != user->userID)
+            iter->connection->Send(left);
+    }
 }
 
 void TundraLogicModule::ClientHandleLoginReply(MessageConnection* source, const MsgLoginReply& msg)
@@ -300,6 +350,16 @@ void TundraLogicModule::ClientHandleLoginReply(MessageConnection* source, const 
         client_id_ = msg.userID;
         LogInfo("Logged in successfully");
     }
+}
+
+void TundraLogicModule::ClientHandleClientJoined(MessageConnection* source, const MsgClientJoined& msg)
+{
+    LogInfo("User " + BufferToString(msg.userName) + " is inworld");
+}
+
+void TundraLogicModule::ClientHandleClientLeft(MessageConnection* source, const MsgClientLeft& msg)
+{
+     LogInfo("User " + BufferToString(msg.userName) + " left the world");
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
