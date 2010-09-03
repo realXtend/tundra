@@ -8,11 +8,6 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
-//#include "CoreDefines.h"
-//#include "ComponentFactoryInterface.h"
-//#include "ComponentRegistrarInterface.h"
-//#include "CoreModuleApi.h"
-
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
 #include "EventDataInterface.h"
@@ -48,7 +43,7 @@ namespace Foundation
 
     public:
         //! Constuctor.
-        ComponentInterface(Framework* framework);
+        explicit ComponentInterface(Framework* framework);
 
         //! Copy-constructor.
         ComponentInterface(const ComponentInterface& rhs);
@@ -58,7 +53,7 @@ namespace Foundation
 
         //! Returns type name of the component.
         virtual const QString &TypeName() const = 0;
-        
+
         //! Returns name of the component.
         const QString Name() const { return name_; }
 
@@ -77,8 +72,10 @@ namespace Foundation
 
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
+
         //! Get number of attributes in this component.
         int GetNumberOfAttributes() const { return attributes_.size(); }
+
         //! Return attributes of this component for reflection
         const AttributeVector& GetAttributes() const { return attributes_; }
 
@@ -125,16 +122,48 @@ namespace Foundation
         //! Deserialize from XML
         virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
-
-        /** Receives an event
-            Should return true if the event was handled and is not to be propagated further
-            Override in your own module if you want to receive events. Do not call.
-            See @ref EventSystem.
+        /** Handles an event. Override in your own module if you want to receive events. Do not call.
             @param category_id Category id of the event
             @param event_id Id of the event
             @param data Event data, or 0 if no data passed.
+            @return True if the event was handled and is not to be propagated further.
+            For more information, see @ref EventSystem.
         */
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
+
+public slots:
+        /** Executes an arbitrary action for the component.
+         *  The component may or may not handle the action.
+         *  param action Name of the action.
+         */
+        virtual void Exec(const QString &action) {}
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param Parameter for the action.
+         */
+        virtual void Exec(const QString &action, const QString &param) {}
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param param1 1st parameter for the action.
+         *  param param2 2nd parameter for the action.
+         */
+        virtual void Exec(const QString &action, const QString &param1, const QString &param2) {}
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param param1 1st parameter for the action.
+         *  param param2 2nd parameter for the action.
+         *  param param3 3rd parameter for the action.
+         */
+        virtual void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3) {}
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param params List of parameters for the action.
+         */
+        virtual void Exec(const QString &action, const QVector<QString> &params) {}
 
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC
@@ -158,17 +187,16 @@ namespace Foundation
         void ParentEntityDetached();
 
     protected:
-        //! Helper function for starting component serialization. Creates a component element with name, adds it to the document, and returns it
+        //! Helper function for starting component serialization.
+        /*! Creates a component element with name, adds it to the document, and returns it
+         */
         QDomElement BeginSerialization(QDomDocument& doc, QDomElement& base_element) const;
 
         //! Helper function for adding an attribute to the component xml serialization
-        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const;
+        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value) const;
 
         //! Helper function for adding an attribute and it's type to the component xml serialization.
-        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, 
-                                                const std::string& name, 
-                                                const std::string& value, 
-                                                const std::string &type) const;
+        void WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value, const QString &type) const;
 
         //! Helper function for starting deserialization. 
         /*! Checks that xml element contains the right kind of EC, and if it is right, sets the component name.
@@ -177,10 +205,10 @@ namespace Foundation
         bool BeginDeserialization(QDomElement& comp_element);
 
         //! Helper function for getting an attribute from serialized component
-        std::string ReadAttribute(QDomElement& comp_element, const std::string& name) const;
+        QString ReadAttribute(QDomElement& comp_element, const QString &name) const;
 
         //! Helper function for getting a attribute type from serialized component.
-        std::string ReadAttributeType(QDomElement& comp_element, const std::string& name) const;
+        QString ReadAttributeType(QDomElement& comp_element, const QString &name) const;
 
         //! Pointer to parent entity (null if not attached to any entity)
         Scene::Entity* parent_entity_;
@@ -196,7 +224,7 @@ namespace Foundation
 
         //! Framework pointer. Needed so that component is able to perform important uninitialization etc. even when not in an entity
         Framework* framework_;
-        
+
     private:
         //! Called by AttributeInterface on initialization of each attribute
         void AddAttribute(AttributeInterface* attr) { attributes_.push_back(attr); }

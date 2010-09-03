@@ -263,6 +263,40 @@ namespace Scene
             return ret;
         }
 
+public slots:
+        /** Executes an arbitrary action for all components of this entity.
+         *  The components may or may not handle the action.
+         *  param action Name of the action.
+         */
+        void Exec(const QString &action);
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param Parameter for the action.
+         */
+        void Exec(const QString &action, const QString &param);
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param param1 1st parameter for the action.
+         *  param param2 2nd parameter for the action.
+         */
+        void Exec(const QString &action, const QString &param1, const QString &param2);
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param param1 1st parameter for the action.
+         *  param param2 2nd parameter for the action.
+         *  param param3 3rd parameter for the action.
+         */
+        void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3);
+
+        /** This is an overloaded function.
+         *  param action Name of the action.
+         *  param params List of parameters for the action.
+         */
+        void Exec(const QString &action, const QVector<QString> &params);
+
     private:
         //! a list of all components
         ComponentVector components_;

@@ -34,7 +34,8 @@ namespace WorldBuilding
         prim_selected_(true),
         selected_entity_(0),
         selected_camera_id_(-1),
-        viewport_poller_(new QTimer(this))
+        viewport_poller_(new QTimer(this)),
+        override_server_time_(false)
     {
         setParent(parent);
         connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
@@ -82,6 +83,8 @@ namespace WorldBuilding
             ui->RegisterScene(scene_name_, scene_);
             connect(ui, SIGNAL(SceneChanged(const QString&, const QString &)),
                 SLOT(SceneChangedNotification(const QString&, const QString&)));
+            connect(ui, SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)),
+                SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
         }
 
         // Init info widget
@@ -117,6 +120,13 @@ namespace WorldBuilding
         object_manipulations_widget_->PrepWidget();
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_manipulations_widget_, SLOT(SceneRectChanged(const QRectF&)));
 
+        // Init the toolbar
+        toolbar_ = new Ui::BuildToolbar();
+        layout_->AnchorWidgetsHorizontally(object_info_widget_, toolbar_);
+        connect(toolbar_->button_exit, SIGNAL(clicked()), SLOT(HideBuildScene()));
+        connect(toolbar_->button_lights, SIGNAL(clicked()), SLOT(ToggleLights()));
+        connect(toolbar_->slider_lights, SIGNAL(sliderMoved(int)), SIGNAL(SetOverrideTime(int)));
+
         // Init python handler
         python_handler_ = new PythonHandler(this);
         connect(python_handler_, SIGNAL(WidgetRecieved(const QString&, QWidget*)), SLOT(HandlePythonWidget(const QString&, QWidget*)));
@@ -131,6 +141,25 @@ namespace WorldBuilding
 
         // Setup ui helper
         ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
+    }
+
+    void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
+    {
+        if (!widget)
+            return;
+        if (!scene_->isActive())
+            return;
+        if (widget->scene() == scene_)
+            return;
+
+        // Add to scene and toolbar
+        scene_->addItem(widget);
+        if (name != "Console")
+            toolbar_->AddButton(name, widget);
+
+        // Set initial pos and hide
+        widget->setPos(object_manipulations_widget_->rect().width() + 25, 25);
+        widget->hide();
     }
 
     void BuildSceneManager::HandlePythonWidget(const QString &type, QWidget *widget)
@@ -369,6 +398,7 @@ namespace WorldBuilding
         {
             ObjectSelected(false);
             python_handler_->EmitEditingActivated(false);
+            toolbar_->RemoveAllButtons();
         }
     }
 
@@ -385,6 +415,7 @@ namespace WorldBuilding
             camera_handler_->DestroyCamera(selected_camera_id_);
             selected_camera_id_ = -1;
         }
+        override_server_time_ = false;
     }
 
     void BuildSceneManager::ResetEditing()
@@ -502,5 +533,19 @@ namespace WorldBuilding
                 camera_handler_->RotateCamera(entity_ec_placable->GetPosition(),selected_camera_id_,x*acceleration_x,y*acceleration_y);
             }
         }
+    }
+
+    void BuildSceneManager::ToggleLights()
+    {
+        override_server_time_ = !override_server_time_;
+        emit OverrideServerTime((int)override_server_time_);
+        if (override_server_time_)
+        {
+            emit SetOverrideTime(toolbar_->slider_lights->value());
+            toolbar_->button_lights->setText("Disable Custom Lights");
+        }
+        else
+            toolbar_->button_lights->setText("Custom Lights");
+        toolbar_->slider_lights->setVisible(override_server_time_);
     }
 }

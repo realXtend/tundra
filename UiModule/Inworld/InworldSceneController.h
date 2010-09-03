@@ -194,6 +194,8 @@ namespace UiServices
         //! Deletes widget and the corresponding proxy widget if widget has WA_DeleteOnClose on.
         //! The caller of this slot is retrieved by using QObject::sender().
         void DeleteCallingWidgetOnClose();
+
+        void HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget);
     };
 }
 

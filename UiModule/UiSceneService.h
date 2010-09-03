@@ -90,6 +90,12 @@ namespace UiServices
         /// UiServiceInterface override.
         bool SwitchToScene(const QString &name);
 
+        /// UiServiceInterface override.
+        void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget);
+
+    private slots:
+        void TranferWidgets();
+
     private:
         /// Owner UI module.
         UiModule *owner_;
