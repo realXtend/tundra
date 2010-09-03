@@ -12,6 +12,9 @@
 #include "ComponentInterface.h"
 #include "ForwardDefines.h"
 
+#include <QDomDocument>
+#include <QFile>
+
 #include "MemoryLeakCheck.h"
 
 namespace Scene
@@ -166,6 +169,51 @@ namespace Scene
             ids.append(qv);
         }
         return ids;
+    }
+    
+    bool SceneManager::LoadScene(const std::string& filename)
+    {
+        return true;
+    }
+    
+    bool SceneManager::SaveScene(const std::string& filename)
+    {
+        QDomDocument scene_doc("Scene");
+        QDomElement scene_elem = scene_doc.createElement("scene");
+        EntityMap::iterator it = entities_.begin();
+        
+        while(it != entities_.end())
+        {
+            Scene::Entity *entity = it->second.get();
+            if (entity)
+            {
+                QDomElement entity_elem = scene_doc.createElement("entity");
+                
+                QString id_str;
+                id_str.setNum((int)entity->GetId());
+                entity_elem.setAttribute("id", id_str);
+
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                for(uint i = 0; i < components.size(); ++i)
+                    if (components[i]->IsSerializable())
+                        components[i]->SerializeTo(scene_doc, entity_elem);
+
+                scene_elem.appendChild(entity_elem);
+            }
+            ++it;
+        }
+        
+        scene_doc.appendChild(scene_elem);
+        
+        QByteArray bytes = scene_doc.toByteArray();
+        QFile scenefile(filename.c_str());
+        if (scenefile.open(QFile::WriteOnly))
+        {
+            scenefile.write(bytes);
+            scenefile.close();
+            return true;
+        }
+        else return false;
     }
 }
 
