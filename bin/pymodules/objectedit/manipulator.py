@@ -158,16 +158,14 @@ class Manipulator:
                 self.axisSubmesh = submeshid
                 u = results[-2]
                 v = results[-1]
-                #print "ARROW and UV", u, v
-                #print submeshid
                 self.grabbed = True
-                if submeshid in self.BLUEARROW or (u != 0.0 and u < 0.421875):
+                if submeshid in self.BLUEARROW:
                     #~ print "arrow is blue"
                     self.grabbed_axis = self.AXIS_BLUE
-                elif submeshid in self.GREENARROW or (u != 0.0 and u < 0.70703125):
+                elif submeshid in self.GREENARROW:
                     #~ print "arrow is green"
                     self.grabbed_axis = self.AXIS_GREEN
-                elif submeshid in self.REDARROW or (u != 0.0 and u <= 1.0):
+                elif submeshid in self.REDARROW:
                     #~ print "arrow is red"
                     self.grabbed_axis = self.AXIS_RED
                 else:
