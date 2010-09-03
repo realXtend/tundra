@@ -15,6 +15,15 @@ from pychess.Utils.const import * #for EMPTY and such in board making
 from PythonQt.QtGui import QVector3D as Vec3
 import circuits
 import rexviewer as r
+
+def index2pos(cord):
+    return cord / 8, cord % 8
+
+def worldpos(x, y):
+    wx = 120 + x
+    wy = 120 + y
+    wz = 25
+    return Vec3(wx, wy, wz)
     
 class SubprocessCommunicator(circuits.Process):
     def run(self):
@@ -48,6 +57,8 @@ class ChessViewControl(circuits.BaseComponent):
         self.subcomms.start()
 
         self.board = None
+        self.pos2piece = {}
+
         self.entidcount = 120000
 
         self.cmdhandlers = {
@@ -75,24 +86,32 @@ class ChessViewControl(circuits.BaseComponent):
 
         for cor, piece in enumerate(self.board):
             if piece != EMPTY:
-                x = cor / 8
-                y = cor % 8
+                x, y = index2pos(cor)
                 self.addpiece(x, y, piece)
 
     def addpiece(self, x, y, piece):
         ent = r.createEntity("axes.mesh", self.entidcount)
         self.entidcount += 1 #make the api func use next available id XXX
-        wx = 120 + x
-        wy = 120 + y
-        wz = 25
-        ent.placeable.Position = Vec3(wx, wy, wz)
+        ent.placeable.Position = worldpos(x, y)
         ent.placeable.Scale = Vec3(0.1, 0.1, 0.1)
+        self.pos2piece[(x, y)] = ent
 
     def move(self, movedata):
         print "MOVE:", movedata
+        fcord, tcord, piece, color = [int(i) for i in movedata.split(',')]
+        
+        fx, fy = index2pos(fcord)
+        piece = self.pos2piece.pop((fx, fy))
+        
+        tx, ty = index2pos(tcord)
+        piece.placeable.Position = worldpos(tx, ty)
+        self.pos2piece[(tx, ty)] = piece
 
     def remove(self, removedata):
         print "REMOVE:", removedata
+        cord, tpiece, opcolor = [int(i) for i in removedata.split(',')]
+        x, y = index2pos(cord)
+        self.pos2piece.pop((x, y))
 
     @circuits.handler("update")
     def update(self, t):
