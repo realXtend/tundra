@@ -73,11 +73,12 @@ namespace OgreRenderer
 			SM_INTERLACED_H,
 			/// Interlaced mode with a checkerboard pattern
 			SM_INTERLACED_CB,
-
+			///Shutter implementation
+			SM_SHUTTER,
 
 			/// max value of the enum
 			SM_LIMIT
-			//SM_SHUTTERGLASSES
+			
 		};
 
 		struct StereoModeDescription
@@ -110,6 +111,8 @@ namespace OgreRenderer
 			StereoManager *stereo_mngr_;
 			Ogre::Camera *camera_;
 			Ogre::Viewport *viewport_;
+
+			bool shutter_flip_left_;
 		public:
 			bool is_lefteye_;
 			void init(StereoManager *stereoMgr, Ogre::Viewport *viewport, bool isLeftCamera);
