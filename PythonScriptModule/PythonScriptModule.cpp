@@ -728,16 +728,6 @@ static PyObject* GetQWorldBuildingHandler(PyObject *self)
         Py_RETURN_NONE;
 }
 
-static PyObject* GetQRenderer(PyObject *self)
-{
-    OgreRenderer::Renderer* renderer = PythonScript::self()->GetFramework()->GetService<OgreRenderer::Renderer>();
-    if (renderer)
-        return PythonScriptModule::GetInstance()->WrapQObject(renderer);
-
-    PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
-    return NULL;
-}
-
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
     const char* filePath;
@@ -1849,22 +1839,6 @@ PyObject* GetCameraPosition(PyObject *self)
     Py_RETURN_NONE;
 }
 
-PyObject* GetScreenSize(PyObject *self) 
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float width = rexlogic->GetCameraViewportWidth();
-        float height = rexlogic->GetCameraViewportHeight();
-        return Py_BuildValue("ff", width, height);
-    }
-    Py_RETURN_NONE;
-}
-        
-//slider input
-/*    UpdateSliderEvents(input_state_);
-    UpdateSliderEvents(Input::State_All);*/
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -1994,9 +1968,6 @@ static PyMethodDef EmbMethods[] = {
     {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
     "Random test function."},
 
-    {"getQRenderer", (PyCFunction)GetQRenderer, METH_NOARGS,
-    "Gets the Renderer module as a QObject"},
-
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},
 
@@ -2054,9 +2025,6 @@ static PyMethodDef EmbMethods[] = {
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
     
-    {"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
-    "Get the size of the screen."},
-
     {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
     "Get the Field of View from the camera."},
 
