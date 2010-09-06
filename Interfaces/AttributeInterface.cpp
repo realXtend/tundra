@@ -12,6 +12,7 @@
 #include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
+#include "Transform.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -126,6 +127,28 @@ template<> std::string Attribute<std::vector<QVariant> >::ToString() const
     return stringValue;
 }
 
+template<> std::string Attribute<Transform>::ToString() const
+{
+    QString value("");
+    Transform transform = Get();
+    Vector3D<Real> editValues[3];
+    editValues[0] = transform.position;
+    editValues[1] = transform.rotation;
+    editValues[2] = transform.scale;
+
+    for(uint i = 0; i < 3; i++)
+    {
+        value += QString::number(editValues[i].x);
+        value += ",";
+        value += QString::number(editValues[i].y);
+        value += ",";
+        value += QString::number(editValues[i].z);
+        if(i < 2)
+            value += ",";
+    }
+    return value.toStdString();
+}
+
 // TYPENAMETOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<int>::TypenameToString() const
@@ -181,6 +204,11 @@ template<> std::string Attribute<QVariant>::TypenameToString() const
 template<> std::string Attribute<std::vector<QVariant> >::TypenameToString() const
 {
     return "qvariantarray";
+}
+
+template<> std::string Attribute<Transform>::TypenameToString() const
+{
+    return "transform";
 }
 
     // FROMSTRING TEMPLATE IMPLEMENTATIONS.
@@ -325,6 +353,27 @@ template<> void Attribute<std::vector<QVariant> >::FromString(const std::string&
         if(value[0] == "")
             value.pop_back();
     Set(value, change);
+}
+
+template<> void Attribute<Transform>::FromString(const std::string& str, AttributeChange::Type change)
+{
+    QString value = QString::fromStdString(str);
+    QStringList matrixElements = value.split(',');
+    Transform result;
+    if(matrixElements.size() == 9) //Ensure that we have right amount of elements.
+    {
+        Real values[9];
+        for(uint i = 0; i < 3; i++)
+        {
+            uint startIndex = 3 * i;
+            for(uint j = 0; j < 3; j++)
+                values[j + startIndex] = ParseString<Real>(matrixElements[j + startIndex].toStdString(), 0.0f);
+        }
+        result.SetPos(values[0], values[1], values[2]);
+        result.SetRot(values[3], values[4], values[5]);
+        result.SetScale(values[6], values[7], values[8]);
+    }
+    Set(result, change);
 }
 
 }

@@ -10,6 +10,7 @@
 #include "RexTypes.h"
 #include "ResourceInterface.h"
 #include "Quaternion.h"
+#include "Transform.h"
 
 #include <QVariant>
 
@@ -40,6 +41,7 @@ public:
     virtual bool IsSerializable() const { return true; }
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
 
+    Foundation::Attribute<Transform> nodePosition_;
     Foundation::Attribute<QString> meshResouceId_;
     Foundation::Attribute<QString> skeletonId_;
     Foundation::Attribute<std::vector<QVariant> > meshMaterial_;
