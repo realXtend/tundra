@@ -43,6 +43,7 @@ namespace OgreRenderer
 
 	void StereoController::EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width)
 	{
+		DisableStereo();
 		if(tech_type == "anaglyph")
 		{
 			QVector<Ogre::RenderWindow*> windows = getRenderWindows();
@@ -103,8 +104,36 @@ namespace OgreRenderer
 				number_of_views_++;
 				window->show();
 			}
-			
-			
+		}
+		if(tech_type == "active")
+		{
+			QVector<Ogre::RenderWindow*> windows = getRenderWindows();
+			for(int i=0; i< windows.size();i++)
+			{
+				QString name = prefix_;
+				name += QString::number(number_of_views_);
+				StereoManager* mngr = new StereoManager();
+				Ogre::RenderWindow *original_window = windows.at(i);
+				Ogre::Viewport *viewport = original_window->getViewport(0);
+
+
+				mngr->init(viewport,0,StereoManager::SM_SHUTTER);
+				mngr->setEyesSpacing(eye_dist);
+				mngr->setFocalLength(focal_l);
+				mngr->setPixelOffset(offset);
+				if(scrn_width > 0)
+				{
+					mngr->setScreenWidth(scrn_width);
+				}
+				/*else
+				{
+					mngr->setScreenWidth(original_window->getWidth());
+				}*/
+				
+				
+				stereo_views_[name] = mngr;
+				number_of_views_++;
+			}
 		}
 	}
 

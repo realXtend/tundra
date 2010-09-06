@@ -20,32 +20,18 @@
 18:05 < antont> yep was thinking of that too, there'd be some session service
                 thing or something by the new module
 
-rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
-18:16 < antont> ah it's world_stream_->GetInfo().inventory
-
 18:29 < antont> hm, there is also network sending code in rexlogic which we use
                 from py, like void Primitive::SendRexPrimData(entity_id_t
                 entityid)
 18:31 < antont> iirc there was some issue that 'cause the data for those is not
                 in rexlogic it makes the packets too, and not e.g. worldstream
                 which doesn't know EC_OpenSimPrim
-
-======================================================================================
-2010/04/21  Removed the RexLogicModule::GetInventory() dependency.
-            -Stinkfist
-2010/06/24  Removed the RexLogicModule::GetServerConnection() dependency. WorldStream
-            is now saved as PythonScriptModule member variable.
-            -Stinkfist
-======================================================================================
 */
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
 #include "PythonScriptModule.h"
-#include "Vector3Wrapper.h"
-#include "QuaternionWrapper.h"
-#include "QEC_Prim.h"
 #include "PyEntity.h"
 #include "RexPythonQt.h"
 
@@ -571,6 +557,20 @@ namespace PythonScript
 
         return 0;
     }
+
+    Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
+    {
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic) 
+        {
+            PythonQt::self()->registerClass(worldLogic->metaObject());
+            return worldLogic;
+        }
+        else
+            LogError("WorldLogicInterface service not available in py GetWorldLogic");
+
+        return 0;
+    }      
     
     OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
     {
@@ -1920,53 +1920,11 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 }
 */
 
-PyObject* RandomTest(PyObject* self, PyObject* args)
-{
-    /*
-    unsigned int starter;
-    ProtocolUtilities::NetMsgID id;
-
-    if(!PyArg_ParseTuple(args, "I", &starter))
-    {
-        PyErr_SetString(PyExc_ValueError, "param should be an integer.");
-        return NULL;   
-    }
-
-    id = (ProtocolUtilities::NetMsgID) starter;
-
-    if (id == 0xffff0087)
-        PythonScript::self()->LogDebug("Test successfull!!");
-    */
-    //QMap<QString, int> *map = new QMap<QString, int>;
-    QEC_Prim* prim = new QEC_Prim();
-    
-    prim->map["one"] = 1;
-    prim->map["three"] = 3;
-    
-    prim->setName("This is a Name!");
-    RexUUID uuid = RexUUID::CreateRandom();
-    //QString qstr(uuid.ToString());
-    //QVariant(
-    prim->setUUID(QString(uuid.ToString().c_str()));
-    
-    /*QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-    PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    pe->setObject(prim);
-    pe->show();
-    */
-    
-    return PythonScriptModule::GetInstance()->WrapQObject(prim);
-    //Py_RETURN_NONE;
-}
-
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
     {"sendChat", (PyCFunction)SendChat, METH_VARARGS,
     "Send the given text as an in-world chat message."},
-
-    {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
-    "Random test function."},
 
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},
