@@ -1839,22 +1839,6 @@ PyObject* GetCameraPosition(PyObject *self)
     Py_RETURN_NONE;
 }
 
-PyObject* GetScreenSize(PyObject *self) 
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float width = rexlogic->GetCameraViewportWidth();
-        float height = rexlogic->GetCameraViewportHeight();
-        return Py_BuildValue("ff", width, height);
-    }
-    Py_RETURN_NONE;
-}
-        
-//slider input
-/*    UpdateSliderEvents(input_state_);
-    UpdateSliderEvents(Input::State_All);*/
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -2041,9 +2025,6 @@ static PyMethodDef EmbMethods[] = {
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
     
-    {"getScreenSize", (PyCFunction)GetScreenSize, METH_VARARGS, 
-    "Get the size of the screen."},
-
     {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
     "Get the Field of View from the camera."},
 

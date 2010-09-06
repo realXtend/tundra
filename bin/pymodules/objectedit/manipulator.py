@@ -1,4 +1,9 @@
+from __future__ import division
+
 import rexviewer as r
+import naali
+rend = naali.renderer
+
 import math
 
 import PythonQt
@@ -201,7 +206,7 @@ class Manipulator:
             lengthx = 0
             lengthy = 0
             fov = r.getCameraFOV()
-            width, height = r.getScreenSize()
+            width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
             campos = Vector3(r.getCameraPosition())
             ent = ents[-1]
             qpos = ent.placeable.Position

@@ -18,6 +18,8 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 """
 
+from __future__ import division
+
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
@@ -28,7 +30,7 @@ from PythonQt.QtGui import QQuaternion as Quat
 
 import rexviewer as r
 import naali #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
-from naali import inputcontext
+from naali import inputcontext, renderer
 
 try:
     window
@@ -412,9 +414,9 @@ class ObjectEdit(Component):
             self.deselect_all()
             
     def dragStarted(self, mouseinfo):
-        width, height = r.getScreenSize()
-        normalized_width = 1/width
-        normalized_height = 1/height
+        width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
+        normalized_width = 1 / width
+        normalized_height = 1 / height
         mouse_abs_x = normalized_width * mouseinfo.x
         mouse_abs_y = normalized_height * mouseinfo.y
         self.prev_mouse_abs_x = mouse_abs_x
@@ -520,10 +522,9 @@ class ObjectEdit(Component):
         """dragging objects around - now free movement based on view,
         dragging different axis etc in the manipulator to be added."""
         if self.windowActive:
-            width, height = r.getScreenSize()
-            
-            normalized_width = 1/width
-            normalized_height = 1/height
+            width, height = renderer.GetWindowWidth(), renderer.GetWindowHeight()
+            normalized_width = 1 / width
+            normalized_height = 1 / height
             mouse_abs_x = normalized_width * mouseinfo.x
             mouse_abs_y = normalized_height * mouseinfo.y
                                 
@@ -538,7 +539,7 @@ class ObjectEdit(Component):
                     
                     rect = self.selection_rect.rect #0,0 - x, y
                     rect.translate(mouseinfo.x, mouseinfo.y)
-                    hits = naali.renderer.FrustumQuery(rect) #the wish
+                    hits = renderer.FrustumQuery(rect) #the wish
 
                 else:
                     ent = self.active
