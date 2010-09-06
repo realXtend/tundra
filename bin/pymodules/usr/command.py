@@ -59,7 +59,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 0: #test avatartracking, works :)
+if 1: #test avatartracking, works :)
     av_entid = r.getUserAvatarId()
     print "<:::",
     try:
