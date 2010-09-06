@@ -728,16 +728,6 @@ static PyObject* GetQWorldBuildingHandler(PyObject *self)
         Py_RETURN_NONE;
 }
 
-static PyObject* GetQRenderer(PyObject *self)
-{
-    OgreRenderer::Renderer* renderer = PythonScript::self()->GetFramework()->GetService<OgreRenderer::Renderer>();
-    if (renderer)
-        return PythonScriptModule::GetInstance()->WrapQObject(renderer);
-
-    PyErr_SetString(PyExc_RuntimeError, "OgreRenderer is missing.");
-    return NULL;
-}
-
 static PyObject* TakeScreenshot(PyObject *self, PyObject *args)
 {
     const char* filePath;
@@ -1993,9 +1983,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
     "Random test function."},
-
-    {"getQRenderer", (PyCFunction)GetQRenderer, METH_NOARGS,
-    "Gets the Renderer module as a QObject"},
 
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},

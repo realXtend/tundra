@@ -18,7 +18,6 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 
 """
 
-import rexviewer as r
 from circuits import Component
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
@@ -26,6 +25,9 @@ import conversions as conv
 reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QQuaternion as Quat
+
+import rexviewer as r
+import naali #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
 from naali import inputcontext
 
 try:
@@ -536,8 +538,7 @@ class ObjectEdit(Component):
                     
                     rect = self.selection_rect.rect #0,0 - x, y
                     rect.translate(mouseinfo.x, mouseinfo.y)
-                    rend = r.getQRenderer()
-                    hits = rend.FrustumQuery(rect) #the wish
+                    hits = naali.renderer.FrustumQuery(rect) #the wish
 
                 else:
                     ent = self.active
