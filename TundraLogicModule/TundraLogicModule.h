@@ -20,6 +20,9 @@ namespace KristalliProtocol
     class KristalliProtocolModule;
 }
 
+namespace TundraLogic
+{
+
 class TundraLogicModule : public Foundation::ModuleInterface
 {
     enum ClientLoginState
@@ -27,8 +30,7 @@ class TundraLogicModule : public Foundation::ModuleInterface
         NotConnected = 0,
         ConnectionPending,
         Connected,
-        LoggedIn,
-        LoginFailed
+        LoggedIn
     };
     
 public:
@@ -64,8 +66,15 @@ public:
     /// Connect and login
     void Login(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password);
     
-    /// Disconnect
-    void Logout();
+    /// Disconnect and delete client scene
+    /// \param fail True if logout was due to connection/login failure
+    void Logout(bool fail = false);
+    
+    /// Create server scene & start server
+    void StartServer(unsigned short port, bool use_udp);
+    
+    /// Stop server & delete server scene
+    void StopServer();
     
     /// Starts a server (console command)
     Console::CommandResult ConsoleStartServer(const StringVector &params);
@@ -112,6 +121,8 @@ private:
     
     /// Client's connection/login state
     ClientLoginState loginstate_;
+    /// Whether the connect attempt is a reconnect because of dropped connection
+    bool reconnect_;
     
     /// Stored username for login
     std::string username_;
@@ -122,11 +133,16 @@ private:
     
     /// Kristalli event category
     event_category_id_t kristalliEventCategory_;
+    /// Tundra event category
+    event_category_id_t tundraEventCategory_;
+    
     /// KristalliProtocolModule pointer
     boost::shared_ptr<KristalliProtocol::KristalliProtocolModule> kristalliModule_;
     
     //! Type name of the module.
     static std::string type_name_static_;
 };
+
+}
 
 #endif

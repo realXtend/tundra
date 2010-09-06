@@ -19,14 +19,17 @@ namespace KristalliProtocol
 
 namespace Events
 {
-    // This event is posted whenever a new inbound network message is received from a Kristalli peer.
+    // This event is posted whenever a new inbound network message is received from a Kristalli peer. KristalliNetMessageIn structure.
     static const event_id_t NETMESSAGE_IN = 1;
 
-    // This event is posted for a new user connection to a server
+    // This event is posted for a new user connection to a server. KristalliUserConnected structure.
     static const event_id_t USER_CONNECTED = 2;
     
-    // This event is posted for a new user connection to a server
+    // This event is posted for a new user connection to a server. KristalliUserDisconnected structure.
     static const event_id_t USER_DISCONNECTED = 3;
+    
+    // This event is posted when a connection attempt has failed so many times that we stop trying. No eventdata.
+    static const event_id_t CONNECTION_FAILED = 4;
     
     // The message received from a Kristalli server is wrapped in this Naali event structure.
     class KristalliNetMessageIn : public Foundation::EventDataInterface

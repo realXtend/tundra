@@ -96,6 +96,10 @@ public slots:
     /// Does nothing.
     bool SwitchToScene(const QString &name) { return false; }
 
+    /// UiServiceInterface override.
+    /// Does nothing.
+    void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) {}
+    
 private:
     /// Main graphics view.
     QGraphicsView *view_;

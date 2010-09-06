@@ -17,6 +17,7 @@
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "../ProtocolUtilities/NetworkEvents.h"
+#include "../TundraLogicModule/TundraEvents.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -88,6 +89,10 @@ void LoginScreenModule::PostInitialize()
             connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
                 login, SLOT(ProcessLoginData(const QMap<QString, QString> &)));
 
+            // Connect also to Tundra login
+            connect(window_, SIGNAL(Connect(const QMap<QString, QString> &)),
+                this, SLOT(ProcessTundraLogin(const QMap<QString, QString> &)));
+            
             connect(login, SIGNAL(LoginStarted()), window_, SLOT(StartProgressBar()));
 
             connect(login, SIGNAL(LoginFailed(const QString &)), window_, SLOT(StopProgressBar()));
@@ -98,6 +103,7 @@ void LoginScreenModule::PostInitialize()
     }
 
     framework_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+    tundra_category_ = framework_->GetEventManager()->QueryEventCategory("Tundra");
 }
 
 void LoginScreenModule::Uninitialize()
@@ -114,6 +120,8 @@ void LoginScreenModule::Update(f64 frametime)
 // virtual
 bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    
     if (category_id == framework_category_ && event_id == Foundation::NETWORKING_REGISTERED)
     {
         network_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
@@ -121,7 +129,6 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
     else if(category_id == network_category_)
     {
         using namespace ProtocolUtilities::Events;
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
         switch(event_id)
         {
         case EVENT_SERVER_CONNECTED:
@@ -143,6 +150,26 @@ bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t 
             break;
         }
     }
+    else if (category_id == tundra_category_)
+    {
+        switch(event_id)
+        {
+        case TundraLogic::Events::EVENT_TUNDRA_CONNECTED:
+            connected_ = true;
+            if (ui && window_)
+            {
+                window_->SetStatus("Connected");
+                ui->HideWidget(window_);
+            }
+            break;
+        case TundraLogic::Events::EVENT_TUNDRA_DISCONNECTED:
+            connected_ = false;
+            if (ui && window_)
+                ui->ShowWidget(window_);
+            break;
+        }
+    }
+    
     return false;
 }
 
@@ -161,6 +188,34 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
                 ui->ShowWidget(window_);
             else
                 ui->HideWidget(window_);
+    }
+}
+
+void LoginScreenModule::ProcessTundraLogin(const QMap<QString, QString> &data)
+{
+    if (data["AvatarType"] == "Tundra")
+    {
+        std::string worldAddress = data["WorldAddress"].toStdString();
+        unsigned short port = 0; // Use default if not specified
+        
+        size_t pos = worldAddress.find(':');
+        if (pos != std::string::npos)
+        {
+            try
+            {
+                port = ParseString<int>(worldAddress.substr(pos + 1));
+            }
+            catch (...) {}
+            worldAddress = worldAddress.substr(0, pos);
+        }
+        
+        TundraLogic::Events::TundraLoginEventData logindata;
+        logindata.address_ = worldAddress;
+        logindata.port_ = port;
+        logindata.username_ = data["Username"].toStdString();
+        logindata.password_ = data["Password"].toStdString();
+        LogInfo("Attempting Tundra connection to " + worldAddress + " as " + logindata.username_);
+        framework_->GetEventManager()->SendEvent(tundra_category_, TundraLogic::Events::EVENT_TUNDRA_LOGIN, &logindata);
     }
 }
 

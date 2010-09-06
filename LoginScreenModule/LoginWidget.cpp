@@ -45,15 +45,18 @@ LoginWidget::LoginWidget(const QMap<QString,QString> &login_data) :
 QMap<QString, QString> LoginWidget::GetLoginInfo() const
 {
     QMap<QString, QString> info;
-    info["account"] = lineEdit_Username->text();
-    info["password"] = lineEdit_Password->text();
-    info["loginurl"] = lineEdit_WorldAddress->text();
-    info["startlocation"] = lineEdit_StartLocation->text();
+    info["account"] = lineEdit_Username->text().trimmed();
+    info["password"] = lineEdit_Password->text().trimmed();
+    info["loginurl"] = lineEdit_WorldAddress->text().trimmed();
+    info["startlocation"] = lineEdit_StartLocation->text().trimmed();
 
     if (lineEdit_Username->text().contains('@'))
         info["avatartype"] = "realxtend";
-    else
+    else if (lineEdit_Username->text().trimmed().contains(' '))
         info["avatartype"] = "opensim";
+    else
+        // For now, use a single-part username to distinguish Tundra login
+        info["avatartype"] = "tundra";
 
     return info;
 }
@@ -73,10 +76,10 @@ void LoginWidget::ParseInputAndConnect()
     }
 
     QMap<QString, QString> map;
-    map["WorldAddress"] = lineEdit_WorldAddress->text();
+    map["WorldAddress"] = lineEdit_WorldAddress->text().trimmed();
     map["Username"] = lineEdit_Username->text().trimmed();
-    map["Password"] = lineEdit_Password->text();
-    map["StartLocation"] = lineEdit_StartLocation->text();
+    map["Password"] = lineEdit_Password->text().trimmed();
+    map["StartLocation"] = lineEdit_StartLocation->text().trimmed();
 
     if (lineEdit_Username->text().contains('@'))
     {
@@ -98,6 +101,12 @@ void LoginWidget::ParseInputAndConnect()
         if (map["Username"].count(" ") == 1)
         {
             map["AvatarType"] = "OpenSim";
+            emit Connect(map);
+        }
+        else
+        {
+            // For now, use a single-part username to distinguish Tundra login
+            map["AvatarType"] = "Tundra";
             emit Connect(map);
         }
     }
