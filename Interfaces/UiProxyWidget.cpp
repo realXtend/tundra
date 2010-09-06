@@ -112,6 +112,14 @@ void UiProxyWidget::hideEvent(QHideEvent *hide_event)
     emit Visible(false);
 }
 
+void UiProxyWidget::ToggleVisibility()
+{
+    if (isVisible())
+        AnimatedHide();
+    else
+        show();
+}
+
 void UiProxyWidget::AnimatedHide()
 {
     if (show_animation_enabled_ && animations_)
@@ -183,4 +191,3 @@ void UiProxyWidget::ungrabMouseEvent(QEvent *ungrab_event)
     emit ProxyUngrabbed(this, scenePos());
     QGraphicsProxyWidget::ungrabMouseEvent(ungrab_event);
 }
-

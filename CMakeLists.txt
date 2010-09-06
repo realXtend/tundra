@@ -150,6 +150,7 @@ add_subdirectory (EntityComponents/EC_SoundRuler)
 add_subdirectory (EntityComponents/EC_ParticleSystem)
 add_subdirectory (EntityComponents/EC_Sound)
 add_subdirectory (EntityComponents/EC_SoundListener)
+add_subdirectory (EntityComponents/EC_Mesh)
 
 # Add EC's declared by other modules here:
 # ...

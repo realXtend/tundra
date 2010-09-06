@@ -21,7 +21,7 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    Foundation::Attribute<std::string>  soundId_;
+    Foundation::Attribute<QString>      soundId_;
     Foundation::Attribute<Real>         soundInnerRadius_;
     Foundation::Attribute<Real>         soundOuterRadius_;
     Foundation::Attribute<Real>         soundGain_;
@@ -40,9 +40,8 @@ private slots:
 
 private:
     explicit EC_Sound(Foundation::ModuleInterface *module);
-    void FindPlaceable();
+    Foundation::ComponentPtr FindPlaceable() const;
 
-    Foundation::ComponentInterfacePtr placeable_;
     sound_id_t sound_id_;
 };
 

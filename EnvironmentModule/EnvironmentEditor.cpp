@@ -66,7 +66,9 @@ namespace Environment
         sun_color_picker_(0),
         ambient_color_picker_(0),
         manual_paint_object_(0),
-        manual_paint_node_(0)
+        manual_paint_node_(0),
+        timeof_day_slider_(0),
+        daytime_override_checkbox_(0)
     {
         // Those two arrays size should always be the same as how many terrain textures we are using.
         terrain_texture_id_list_.resize(cNumberOfTerrainTextures);
@@ -246,8 +248,9 @@ namespace Environment
 
         setWindowTitle(tr("Environment Editor"));
 
-        ui->AddWidgetToScene(this);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(this);
         ui->AddWidgetToMenu(this, tr("Environment Editor"), tr("World Tools"), "./data/ui/images/menus/edbutton_ENVED_normal");
+        ui->RegisterUniversalWidget("Environment", editor_proxy);
 
         // Tab window signals
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
@@ -623,13 +626,13 @@ namespace Environment
         if (environment != 0)
         {
             // Time of day override
-            QCheckBox *daytime_override_checkbox = editor_widget_->findChild<QCheckBox *>("serverTimeOverrideCheckBox");
+            daytime_override_checkbox_ = editor_widget_->findChild<QCheckBox *>("serverTimeOverrideCheckBox");
             timeof_day_slider_ = editor_widget_->findChild<QSlider *>("horizontalSliderTimeOfDay");
             
             timeof_day_slider_->setTracking(true);
             timeof_day_slider_->setEnabled(environment->GetTimeOverride());
 
-            connect(daytime_override_checkbox, SIGNAL( stateChanged(int) ), SLOT( TimeOfDayOverrideChanged(int) ));
+            connect(daytime_override_checkbox_, SIGNAL( stateChanged(int) ), SLOT( TimeOfDayOverrideChanged(int) ));
             connect(timeof_day_slider_, SIGNAL( sliderMoved(int) ), SLOT( TimeValueChanged(int) ));
 
             // Sun direction
@@ -2489,13 +2492,30 @@ namespace Environment
         EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
         if(!environment.get())
             return;
+        if (state == 1)
+            state = 2;
+        if (daytime_override_checkbox_)
+        {
+            if (daytime_override_checkbox_->checkState() != state)
+            {
+                if (state == 0)
+                    daytime_override_checkbox_->setCheckState(Qt::Unchecked);
+                else
+                    daytime_override_checkbox_->setCheckState(Qt::Checked);
+                return;
+            }
+        }
 
         bool enabled = false;
         if (state == Qt::Checked)
             enabled = true;
-        timeof_day_slider_->setEnabled(enabled);
+
         environment->SetTimeOverride(enabled);
-        TimeValueChanged(timeof_day_slider_->value());
+        if (timeof_day_slider_)
+        {
+            timeof_day_slider_->setEnabled(enabled);
+            TimeValueChanged(timeof_day_slider_->value());
+        }
     }
     
     void EnvironmentEditor::TimeValueChanged(int new_value)
@@ -2505,6 +2525,7 @@ namespace Environment
             return;
         if (!environment->GetTimeOverride())
             return;
+
         OgreRenderer::EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
         if (ec_ogre_env)
         {

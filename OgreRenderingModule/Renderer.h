@@ -4,13 +4,12 @@
 #define incl_OgreRenderer_Renderer_h
 
 #include "RenderServiceInterface.h"
-#include "LogListenerInterface.h"
-#include "ResourceInterface.h"
 #include "OgreModuleApi.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 #include "CAVEManager.h"
 #include "StereoController.h"
+#include "ForwardDefines.h"
 
 #include <QObject>
 #include <QVariant>
@@ -18,13 +17,6 @@
 #include <QRect>
 #include <QPixmap>
 #include <QImage>
-
-namespace Foundation
-{
-    class Framework;
-    class KeyBindings;
-    class MainWindow;
-}
 
 namespace Ogre
 {
@@ -34,6 +26,7 @@ namespace Ogre
     class RenderWindow;
     class RaySceneQuery;
     class Viewport;
+    class RenderTexture;
 }
 
 namespace OgreRenderer
@@ -44,19 +37,23 @@ namespace OgreRenderer
         Shadows_Low,
         Shadows_High // PSSM, Direct3D only
     };
-    
+
     enum TextureQuality
     {
         Texture_Low = 0, // Halved resolution
         Texture_Normal
     };
-    
+
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
     class RenderableListener;
     class QOgreUIView;
     class QOgreWorldView;
+    class CAVEManager;
+    class StereoManager;
+    class CompositionHandler;
+    class GaussianListener;
 
     typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
     typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
@@ -70,7 +67,7 @@ namespace OgreRenderer
     class OGRE_MODULE_API Renderer : public QObject, public Foundation::RenderServiceInterface
     {
         friend class RenderableListener;
-        
+
         Q_OBJECT
 
     public slots:
@@ -100,7 +97,7 @@ namespace OgreRenderer
         //! \param config Config filename.
         //! \param plugins Plugins filename.
         //! \param window_title Renderer window title.
-        Renderer( 
+        Renderer(
             Foundation::Framework* framework,
             const std::string& config,
             const std::string& plugins,
@@ -141,27 +138,15 @@ namespace OgreRenderer
         virtual void RepaintUi();
 
         //!Is window fullscreen?
-        bool IsFullScreen();
+        bool IsFullScreen() const;
 
         //! get visible entities last frame
         virtual const std::set<entity_id_t>& GetVisibleEntities() { return visible_entities_; }
-        
+
         //! Takes a screenshot and saves it to a file.
         //! \param filePath File path.
         //! \param fileName File name.
         virtual void TakeScreenshot(const std::string& filePath, const std::string& fileName);
-
-        //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
-        //! capture the world and avatar for ether ui when requested to worldfile and avatarfile
-        //! \param avatar_position Avatar's position.
-        //! \param avatar_orientation Avatar's orientation.
-        //! \param worldfile Worldfile's filename.
-        //! \param avatarfile Avatarfile's filename.
-        virtual void CaptureWorldAndAvatarToFile(
-            const Vector3Df &avatar_position,
-            const Quaternion &avatar_orientation,
-            const std::string& worldfile,
-            const std::string& avatarfile);
 
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request
@@ -169,7 +154,7 @@ namespace OgreRenderer
             \param type Resource type
             \return pointer to resource, or null if not found
          */
-        virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);   
+        virtual Foundation::ResourcePtr GetResource(const std::string& id, const std::string& type);
 
         //! Requests a renderer-specific resource to be downloaded from the asset system
         /*! A RESOURCE_READY event will be sent when the resource is ready to use
@@ -242,7 +227,7 @@ namespace OgreRenderer
         void SetCurrentCamera(Ogre::Camera* camera);
 
         //! returns the composition handler responsible of the post-processing effects
-        CompositionHandler &GetCompositionHandler() { return c_handler_; }
+        CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
         //! Update key bindings to QGraphicsView
         void UpdateKeyBindings(Foundation::KeyBindings *bindings);
@@ -255,13 +240,13 @@ namespace OgreRenderer
         QImage &GetBackBuffer() { return backBuffer; }
 
         //! Returns shadow quality
-        ShadowQuality GetShadowQuality() { return shadowquality_; }
+        ShadowQuality GetShadowQuality() const { return shadowquality_; }
         
         //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
         void SetShadowQuality(ShadowQuality newquality);
         
         //! Returns texture quality
-        TextureQuality GetTextureQuality() { return texturequality_; }
+        TextureQuality GetTextureQuality() const { return texturequality_; }
         
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
@@ -277,7 +262,7 @@ namespace OgreRenderer
         //! @todo make this focus non hard coded but as param
         virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation);
 
-        //! Prep the texture and entitys used in texture rendering
+        //! Prepapres the texture and entities used in texture rendering
         void PrepareImageRendering(int width, int height);
 
         //! Reset the texture
@@ -376,7 +361,7 @@ namespace OgreRenderer
         QOgreWorldView *q_ogre_world_view_;
 
         //! handler for post-processing effects
-        CompositionHandler c_handler_;
+        CompositionHandler *c_handler_;
 
         // Compositing back buffer
         QImage backBuffer;
@@ -388,9 +373,11 @@ namespace OgreRenderer
         //! resized dirty count
         int resized_dirty_;
 
+        //!Manager to handle Cave rendering
+        CAVEManager *cave_manager_;
 
-		//!Manager to handle Cave rendering
-        CAVEManager cave_manager_;
+        //!Manager to Handle Stereo rendering
+        StereoManager *stereo_manager_;
 
 		//!Manager to Handle Stereo rendering
 		StereoController stereo_manager_;
@@ -399,18 +386,18 @@ namespace OgreRenderer
         QImage ui_buffer_;
         QRect last_view_rect_;
         QTime ui_update_timer_;
-        
+
         //! Visible entities
         std::set<entity_id_t> visible_entities_;
-        
+
         //! Shadow quality
         ShadowQuality shadowquality_;
-        
+
         //! Texture quality
         TextureQuality texturequality_;
-        
+
         //! Soft shadow gaussian listeners
-        std::list<OgreRenderer::GaussianListener *> gaussianListeners_;
+        std::list<GaussianListener *> gaussianListeners_;
 
         //! RenderImage() services texture
         std::string image_rendering_texture_name_;

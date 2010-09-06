@@ -23,7 +23,8 @@ namespace Ether
         EtherScene::EtherScene(QObject *parent, const QRectF &scene_rect)
             : QGraphicsScene(scene_rect, parent),
               supress_key_events_(false),
-              connected_(false)
+              connected_(false),
+              console_(0)
         {
 #ifdef DYNAMIC_LOGIN_SCENE
             bg_image_disconnected_ = QPixmap("./data/ui/images/ether/main_background_disconnected.png");
@@ -43,6 +44,8 @@ namespace Ether
         void EtherScene::keyPressEvent(QKeyEvent *ke)
         {
             QGraphicsScene::keyPressEvent(ke);
+            if (ke->isAccepted())
+                return;
             if (ke->isAutoRepeat() || supress_key_events_)
                 return;
 
@@ -70,8 +73,16 @@ namespace Ether
 
                 case Qt::Key_Return:
                 case Qt::Key_Enter:
-                    emit EnterPressed();
+                {
+                    if (console_)
+                    {
+                        if (!console_->isVisible())
+                            emit EnterPressed();
+                    }
+                    else
+                        emit EnterPressed();
                     break;
+                }
 
                 default:
                     break;
@@ -116,6 +127,22 @@ namespace Ether
         void EtherScene::EmitSwitchSignal()
         {
             emit EtherSceneReadyForSwitch();
+        }
+
+        void EtherScene::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
+        {
+            if (!widget)
+                return;
+            if (!isActive())
+                return;
+            if (widget->scene() == this)
+                return;
+            if (name.toLower() != "console") // Ether only accepts the console
+                return;
+
+            addItem(widget);
+            widget->hide();
+            console_ = widget;
         }
     }
 }
