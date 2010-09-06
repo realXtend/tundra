@@ -110,6 +110,12 @@ namespace Scene
         */
         void RemoveEntity(entity_id_t id, AttributeChange::Type change = AttributeChange::LocalOnly);
 
+        //! Remove all entities
+        /*! The entities may not get deleted if dangling references to a pointer to them exist.
+            \param send_events whether to send events & signals of each delete
+         */
+        void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::LocalOnly);
+        
         //! Get the next free entity id. Can be used with CreateEntity().
         entity_id_t GetNextFreeId();
 
@@ -179,9 +185,11 @@ namespace Scene
         //! Load the scene (from an XML file for now, and only serializable components)
         /*! Note: will remove all existing entities
             \param filename File name
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+           
             \return true if successful
          */
-        bool LoadScene(const std::string& filename);
+        bool LoadScene(const std::string& filename, AttributeChange::Type change);
         
         //! Save the scene (into an XML file for now, and only serializable components)
         /*! \param filename File name
