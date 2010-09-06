@@ -7,8 +7,6 @@
 #include "OgreModuleApi.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
-#include "CAVEManager.h"
-#include "StereoController.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -51,7 +49,7 @@ namespace OgreRenderer
     class QOgreUIView;
     class QOgreWorldView;
     class CAVEManager;
-    class StereoManager;
+    class StereoController;
     class CompositionHandler;
     class GaussianListener;
 
@@ -377,10 +375,7 @@ namespace OgreRenderer
         CAVEManager *cave_manager_;
 
         //!Manager to Handle Stereo rendering
-        StereoManager *stereo_manager_;
-
-		//!Manager to Handle Stereo rendering
-		StereoController stereo_manager_;
+        StereoController *stereo_controller_;
 
         //! For render function
         QImage ui_buffer_;
