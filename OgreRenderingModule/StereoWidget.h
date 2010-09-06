@@ -18,6 +18,13 @@ namespace OgreRenderer
     public:
         StereoWidget( Foundation::Framework* framework, QWidget* parent=0 );
 
+	public slots:
+		void StereoOn();
+		void StereoOff();
+
+	signals:
+		void EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
+		void DisableStereo();
 
     private:
         Foundation::Framework* framework_;

@@ -117,6 +117,9 @@
        <property name="decimals">
         <number>0</number>
        </property>
+       <property name="minimum">
+        <double>-10000.000000000000000</double>
+       </property>
        <property name="maximum">
         <double>10000.000000000000000</double>
        </property>
@@ -140,7 +143,7 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_4">
      <item>
-      <widget class="QLabel" name="pixel_shift_label_2">
+      <widget class="QLabel" name="screen_width_label">
        <property name="font">
         <font>
          <weight>75</weight>
@@ -153,7 +156,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QDoubleSpinBox" name="pixel_shift_2">
+      <widget class="QDoubleSpinBox" name="screen_width">
        <property name="decimals">
         <number>0</number>
        </property>
@@ -187,44 +190,80 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout_5">
      <item>
-      <widget class="QRadioButton" name="anaglyph">
+      <widget class="QGroupBox" name="groupBox">
        <property name="font">
         <font>
          <weight>75</weight>
          <bold>true</bold>
         </font>
        </property>
+       <property name="title">
+        <string>Technique</string>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout_6">
+        <item>
+         <widget class="QRadioButton" name="anaglyph">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Anaglyph</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="passive">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Passive</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QRadioButton" name="active">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Active</string>
+          </property>
+          <property name="checkable">
+           <bool>true</bool>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_7">
+     <item>
+      <widget class="QPushButton" name="enable">
        <property name="text">
-        <string>Anaglyph</string>
+        <string>Enable stereo</string>
        </property>
       </widget>
      </item>
      <item>
-      <widget class="QRadioButton" name="passive">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
+      <widget class="QPushButton" name="disable">
        <property name="text">
-        <string>Passive</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QRadioButton" name="active">
-       <property name="font">
-        <font>
-         <weight>75</weight>
-         <bold>true</bold>
-        </font>
-       </property>
-       <property name="text">
-        <string>Active</string>
-       </property>
-       <property name="checkable">
-        <bool>true</bool>
+        <string>Disable stereo</string>
        </property>
       </widget>
      </item>

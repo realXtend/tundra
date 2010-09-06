@@ -1,4 +1,9 @@
+from __future__ import division
+
 import rexviewer as r
+import naali
+rend = naali.renderer
+
 import math
 
 import PythonQt
@@ -201,7 +206,7 @@ class Manipulator:
             lengthx = 0
             lengthy = 0
             fov = r.getCameraFOV()
-            width, height = r.getScreenSize()
+            width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
             campos = Vector3(r.getCameraPosition())
             ent = ents[-1]
             qpos = ent.placeable.Position
@@ -268,14 +273,13 @@ class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
     
-    BLUEARROW = [2]
     GREENARROW = [0]
     REDARROW = [1]
+    BLUEARROW = [2]
 
     AXIS_GREEN = 0
     AXIS_RED = 1
     AXIS_BLUE = 2
-    
     
     MATERIALNAMES = {
         0: "axis_green",
@@ -330,14 +334,18 @@ class ScaleManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "scale1.mesh"
 
     MATERIALNAMES = {
-        2: "axis_blue", 
         0: "axis_green",
-        1: "axis_red"
+        1: "axis_red",
+        2: "axis_blue"
     }
+
+    AXIS_GREEN = 0
+    AXIS_RED = 1
+    AXIS_BLUE = 2
     
-    BLUEARROW = [2]
-    REDARROW = [1]
     GREENARROW = [0]
+    REDARROW = [1]
+    BLUEARROW = [2]
     
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
         if self.grabbed:
@@ -387,14 +395,18 @@ class RotationManipulator(Manipulator):
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
     
     MATERIALNAMES = {
-        2: "axis_red",
-        3: "axis_blue", 
-        0: "axis_green"
+        0: "axis_green",
+        1: "axis_red",
+        2: "axis_blue"
     }
+
+    AXIS_GREEN = 0
+    AXIS_RED = 1
+    AXIS_BLUE = 2
     
-    REDARROW = [2]
-    BLUEARROW = [3] # we do green_axis actions
     GREENARROW = [0] # we do blue_axis actions
+    REDARROW = [1]
+    BLUEARROW = [2] # we do green_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):

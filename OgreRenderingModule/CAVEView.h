@@ -12,9 +12,9 @@ class QKeyEvent;
 //!this class is responsible of calculating the projection matrices and manage the render window and camera of the view
 namespace OgreRenderer
 {
-
+	class ExternalRenderWindow;
     class Renderer;
-    class CAVEView: public QWidget
+    class CAVEView: public QObject
     {
     public:
         CAVEView(Renderer* renderer);
@@ -49,24 +49,15 @@ namespace OgreRenderer
 		*/
         void ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
 
+		ExternalRenderWindow* GetExternalRenderWindow(){return render_window_;}
+
     protected:
         void resizeEvent(QResizeEvent *e);
         void keyPressEvent(QKeyEvent *e);
 
     private:
-
-		/*
-		creates a new renderwindow.
-		@param name of the view (must be unique)
-		@param window_width render window width
-		@param window_height render window height
-		@param left left coordinate of the topleft corner of the window
-		@param top top coordinate of the topleft corner of the window
-		@param fullscreen this is ignored at the moment.
-		*/
-        Ogre::RenderWindow* CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen);
         Ogre::Camera* camera_;
-        Ogre::RenderWindow* render_window_;
+        ExternalRenderWindow* render_window_;
         Renderer* renderer_;
     };
 }
