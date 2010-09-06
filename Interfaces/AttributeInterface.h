@@ -44,20 +44,23 @@ namespace Foundation
          *  \param max Maximum value.
          *  \param enum_desc Mapping of enumeration's signatures (in readable form) and actual values.
          */
-        AttributeMetadata(const std::string &desc, const std::string &min = "",
-            const std::string &max = "", const EnumDescMap_t &enum_desc= EnumDescMap_t()) {}
+        AttributeMetadata(const QString &desc, const QString &min = "",
+            const QString &max = "", const QString &step = "", const EnumDescMap_t &enum_desc= EnumDescMap_t()) {}
 
         //! Destructor.
         ~AttributeMetadata() {}
 
         //! Description.
-        std::string description;
+        QString description;
 
         //! Minimum value.
-        std::string min;
+        QString min;
 
         //! Maximum value.
-        std::string max;
+        QString max;
+
+        //! Step value.
+        QString step;
 
         //! Mapping of enumeration's signatures (in readable form) and actual values.
         EnumDescMap_t enums;

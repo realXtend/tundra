@@ -8,6 +8,7 @@
 #include "AttributeInterface.h"
 #include "ECAttributeEditor.h"
 #include "ComponentInterface.h"
+#include "Transform.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -43,6 +44,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<std::vector<QVariant> >(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Foundation::AssetReference> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
+        else if(dynamic_cast<const Foundation::Attribute<Transform> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<Transform>(browser, &attribute, editor);
         return attributeEditor;
     }
 

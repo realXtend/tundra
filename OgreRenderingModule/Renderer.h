@@ -5,6 +5,8 @@
 
 #include "RenderServiceInterface.h"
 #include "OgreModuleApi.h"
+#include "RenderServiceInterface.h"
+#include "CompositionHandler.h"
 #include "ForwardDefines.h"
 
 #include <QObject>
@@ -47,7 +49,7 @@ namespace OgreRenderer
     class QOgreUIView;
     class QOgreWorldView;
     class CAVEManager;
-    class StereoManager;
+    class StereoController;
     class CompositionHandler;
     class GaussianListener;
 
@@ -81,6 +83,12 @@ namespace OgreRenderer
         //! Shows world view
         void ShowCurrentWorldView();
 
+        //! Returns window width, or 0 if no render window
+        virtual int GetWindowWidth() const;
+
+        //! Returns window height, or 0 if no render window
+        virtual int GetWindowHeight() const;
+
         //! Adds a directory into the Ogre resource system, to be able to load local Ogre resources from there
         /*! \param directory Directory path to add
          */
@@ -112,12 +120,6 @@ namespace OgreRenderer
         */
         virtual Foundation::RaycastResult Raycast(int x, int y);
         
-        //! Returns window width, or 0 if no render window
-        virtual int GetWindowWidth() const;
-
-        //! Returns window height, or 0 if no render window
-        virtual int GetWindowHeight() const;
-
         //! Subscribe a listener to renderer log. Can be used before renderer is initialized.
         virtual void SubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
@@ -373,7 +375,7 @@ namespace OgreRenderer
         CAVEManager *cave_manager_;
 
         //!Manager to Handle Stereo rendering
-        StereoManager *stereo_manager_;
+        StereoController *stereo_controller_;
 
         //! For render function
         QImage ui_buffer_;

@@ -85,6 +85,8 @@ namespace DebugStats
         /// Sets network logging on/off
         void SetNetworkLogging(int value);
 
+        void ShowMeshAsset(QTreeWidgetItem* item, int column);
+
     protected:
         void resizeEvent(QResizeEvent *event);
 
@@ -154,6 +156,8 @@ namespace DebugStats
         QTreeWidget* tree_gpu_assets_;
         QTreeWidget* tree_font_assets_;
         QTextEdit* text_scenecomplexity_;
+
+        event_category_id_t asset_event_category_;
     };
 }
 

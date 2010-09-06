@@ -9,6 +9,8 @@
 #include "ComponentManager.h"
 #include "EC_Name.h"
 
+#include <QVector>
+
 namespace Scene
 {
     Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
@@ -173,26 +175,33 @@ namespace Scene
 
     void Entity::Exec(const QString &action)
     {
+        QVector<QString> params;
         for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action);
+            components_[i]->Exec(action, params);
     }
 
     void Entity::Exec(const QString &action, const QString &param)
     {
+        QVector<QString> params;
+        params << param;
         for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, param);
+            components_[i]->Exec(action, params);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
     {
+        QVector<QString> params;
+        params << param1 << param2;
         for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, param1, param2);
+            components_[i]->Exec(action, params);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
     {
+        QVector<QString> params; 
+        params << param1 << param2 << param3;
         for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, param1, param2, param3);
+            components_[i]->Exec(action, params);
     }
 
     void Entity::Exec(const QString &action, const QVector<QString> &params)

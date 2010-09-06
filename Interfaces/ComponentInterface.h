@@ -132,34 +132,9 @@ namespace Foundation
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
 
 public slots:
-        /** Executes an arbitrary action for the component.
-         *  The component may or may not handle the action.
-         *  param action Name of the action.
-         */
-        virtual void Exec(const QString &action) {}
-
-        /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param Parameter for the action.
-         */
-        virtual void Exec(const QString &action, const QString &param) {}
-
-        /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param param1 1st parameter for the action.
-         *  param param2 2nd parameter for the action.
-         */
-        virtual void Exec(const QString &action, const QString &param1, const QString &param2) {}
-
-        /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param param1 1st parameter for the action.
-         *  param param2 2nd parameter for the action.
-         *  param param3 3rd parameter for the action.
-         */
-        virtual void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3) {}
-
-        /** This is an overloaded function.
+        /** Executes an arbitrary action for the component. The component may or may not handle the action.
+         *  The default implemenation does nothing. Implement this function in your own EC in order to handle
+         *  entity actions.
          *  param action Name of the action.
          *  param params List of parameters for the action.
          */

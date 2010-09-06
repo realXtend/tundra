@@ -37,7 +37,6 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
-//#include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
