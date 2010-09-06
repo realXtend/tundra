@@ -14,7 +14,7 @@
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
 #include "CAVEManager.h"
-#include "StereoManager.h"
+#include "StereoController.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 
@@ -133,7 +133,7 @@ namespace OgreRenderer
         last_width_(0),
         last_height_(0),
         cave_manager_(new CAVEManager(this)),
-        stereo_manager_(new StereoManager(this)),
+        stereo_controller_(new StereoController(this)),
         resized_dirty_(0),
         view_distance_(500.0),
         shadowquality_(Shadows_High),
@@ -202,7 +202,7 @@ namespace OgreRenderer
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(q_ogre_world_view_);
-        SAFE_DELETE(stereo_manager_);
+        SAFE_DELETE(stereo_controller_);
         SAFE_DELETE(cave_manager_);
     }
 
@@ -370,8 +370,8 @@ namespace OgreRenderer
     void Renderer::PostInitialize()
     {
         resource_handler_->PostInitialize();
-        cave_manager_.InitializeUi();
-		stereo_manager_.InitializeUi();
+        cave_manager_->InitializeUi();
+		stereo_controller_->InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
