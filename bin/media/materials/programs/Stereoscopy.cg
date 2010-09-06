@@ -1,0 +1,79 @@
+/*
+-----------------------------------------------------------------------------
+This source is part of the Stereoscopy manager for OGRE
+    (Object-oriented Graphics Rendering Engine)
+For the latest info, see http://www.ogre3d.org/
+-----------------------------------------------------------------------------
+* Copyright (c) 2008, Mathieu Le Ber, AXYZ-IMAGES
+* All rights reserved.
+*
+* Redistribution and use in source and binary forms, with or without
+* modification, are permitted provided that the following conditions are met:
+*     * Redistributions of source code must retain the above copyright
+*       notice, this list of conditions and the following disclaimer.
+*     * Redistributions in binary form must reproduce the above copyright
+*       notice, this list of conditions and the following disclaimer in the
+*       documentation and/or other materials provided with the distribution.
+*     * Neither the name of the AXYZ-IMAGES nor the
+*       names of its contributors may be used to endorse or promote products
+*       derived from this software without specific prior written permission.
+*
+* THIS SOFTWARE IS PROVIDED BY Mathieu Le Ber ''AS IS'' AND ANY
+* EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+* WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+* DISCLAIMED. IN NO EVENT SHALL Mathieu Le Ber BE LIABLE FOR ANY
+* DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+* (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+* LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+* ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+* (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+* SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+-----------------------------------------------------------------------------
+*/
+
+float4 Interlace_fp
+(
+	// input
+	in float2 texCoord : TEXCOORD0,
+	
+	// parameters
+	uniform float4 screenSize,
+	uniform sampler2D LeftTex : register(s0),
+	uniform sampler2D RightTex : register(s1)
+
+) : COLOR
+{
+	// return 0 if the pixel position is even or 1 if it is odd 
+	float2 p = step(0.5f, frac(texCoord * screenSize.xy * 0.5f));
+	float4 left = tex2D(LeftTex, texCoord);
+	float4 right = tex2D(RightTex, texCoord);
+	
+	#ifndef HORIZ
+	p.y = 1;
+	#endif
+	#ifndef VERT
+	p.x = 1;
+	#endif
+	
+	float f = (p.x == p.y);  // 1-abs(p.x-p.y)
+	return lerp(left, right, f);
+}
+
+
+float4 Anaglyph_fp
+(
+	// input
+	in float2 texCoord : TEXCOORD0,
+	
+	// parameters
+	uniform sampler2D LeftTex : register(s0),
+	uniform sampler2D RightTex : register(s1)
+
+) : COLOR
+{
+	float4 left = tex2D(LeftTex, texCoord);
+	float4 right = tex2D(RightTex, texCoord);
+	
+//	return float4(left.r, right.g, right.b, 1);
+	return left * float4(LEFT_MASK) + right * float4(RIGHT_MASK);
+}

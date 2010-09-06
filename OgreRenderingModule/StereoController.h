@@ -1,0 +1,52 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#ifndef incl_OgreRenderingModule_StereoController_h
+#define incl_OgreRenderingModule_StereoController_h
+
+#include "Foundation.h"
+#include <QMap>
+#include <QVector>
+namespace Ogre
+{
+	class Viewport;
+	class RenderWindow;
+}
+
+namespace OgreRenderer
+{
+	class ExternalRenderWindow;
+	class StereoManager;
+    class Renderer;
+    class StereoWidget;
+    class StereoController: public QObject
+    {
+        Q_OBJECT
+        public:
+            StereoController(Renderer* r);
+            virtual ~StereoController();
+
+            
+        public slots:
+            void InitializeUi();
+			void EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
+			void DisableStereo();
+
+
+
+        private:
+
+			Ogre::RenderWindow* CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen);
+
+
+			QVector<Ogre::RenderWindow*> getRenderWindows();
+			QMap<QString,StereoManager*> stereo_views_;
+			QVector<ExternalRenderWindow*> windows_to_dispose_;
+            Renderer* renderer_;
+            StereoWidget* settings_widget_;
+			int number_of_views_;
+			QString prefix_;
+            
+    };
+}
+
+#endif
