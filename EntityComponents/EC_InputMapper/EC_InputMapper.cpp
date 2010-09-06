@@ -51,7 +51,7 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework())
 {
     ///\todo Generate random/unique name for input context?
-    input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 900);
+    input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
