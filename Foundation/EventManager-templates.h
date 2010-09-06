@@ -1,6 +1,7 @@
 #ifndef incl_Foundation_EventManager_h
 # error "Never use <EventManager-templates.h> directly; include <EventManager.h> instead."
 #endif
+#include <QDebug>
 
 namespace Foundation
 {
@@ -12,7 +13,7 @@ namespace Foundation
 
     template <typename T, typename U> bool EventManager::AddSubscriber(T* subscriber, QList<U>& subscribers, int priority)
     {
-        
+       
         for (unsigned int i = 0; i < subscribers.size(); ++i)
         {
           // If subscriber found, just readjust the priority
