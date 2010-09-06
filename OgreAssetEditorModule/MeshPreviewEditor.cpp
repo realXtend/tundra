@@ -97,6 +97,33 @@ namespace Naali
         setMouseTracking(true);
     }
 
+        MeshPreviewEditor::MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent): 
+        QWidget(parent),framework_(framework), lastPos_(QPointF()),
+        camAlphaAngle_(0), mouseDelta_(0),label_(0),
+        manager_(0),
+        camera_(0),
+        entity_(0),
+        scene_(0),
+        root_scene_(0),
+        newLight_(0),
+        render_texture_(0),
+        width_(400),
+        height_(400)
+    {
+       InitializeEditorWidget();
+       setMouseTracking(true);
+
+    }
+
+   void MeshPreviewEditor::Open(const QString &asset_id, const QString &type)
+     {
+        mesh_id_ = asset_id;
+         // Add widget to UI via ui services module
+        setWindowTitle((tr("Mesh: ")) + asset_id);
+        Update();
+
+     }
+
     MeshPreviewEditor::~MeshPreviewEditor()
     {
         // Does not own

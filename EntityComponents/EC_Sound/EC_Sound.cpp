@@ -29,6 +29,7 @@ EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
     {
         metaData.min = "0";
         metaData.max = "1";
+        metaData.step = "0.1";
         metadataInitialized = true;
     }
     soundGain_.SetMetadata(&metaData);

@@ -23,14 +23,7 @@ namespace Scene
 
     SceneManager::~SceneManager()
     {
-        EntityMap::iterator it = entities_.begin();
-        while (it != entities_.end())
-        {
-            // If entity somehow manages to live, at least it doesn't belong to the scene anymore
-            it->second->SetScene(0);
-            ++it;
-        }
-        entities_.clear();
+        RemoveAllEntities(false);
     }
     
     Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
@@ -89,14 +82,14 @@ namespace Scene
         if (it != entities_.end())
         {
             Scene::EntityPtr del_entity = it->second;
-
+            
             EmitEntityRemoved(del_entity.get(), change);
-        
+            
             // Send event.
             Events::SceneEventData event_data(id);
             event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
             framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
-
+            
             entities_.erase(it);
             // If entity somehow manages to live, at least it doesn't belong to the scene anymore
             del_entity->SetScene(0);
@@ -104,6 +97,27 @@ namespace Scene
         }
     }
 
+    void SceneManager::RemoveAllEntities(bool send_events, AttributeChange::Type change)
+    {
+        event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
+        EntityMap::iterator it = entities_.begin();
+        while (it != entities_.end())
+        {
+            // If entity somehow manages to live, at least it doesn't belong to the scene anymore
+            if (send_events)
+            {
+                EmitEntityRemoved(it->second.get(), change);
+                
+                // Send event.
+                Events::SceneEventData event_data(it->second->GetId());
+                framework_->GetEventManager()->SendEvent(cat_id, Events::EVENT_ENTITY_DELETED, &event_data);
+            }
+            it->second->SetScene(0);
+            ++it;
+        }
+        entities_.clear();
+    }
+    
     EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name)
     {
         std::list<EntityPtr> entities;
@@ -171,8 +185,53 @@ namespace Scene
         return ids;
     }
     
-    bool SceneManager::LoadScene(const std::string& filename)
+    bool SceneManager::LoadScene(const std::string& filename, AttributeChange::Type change)
     {
+        QDomDocument scene_doc("Scene");
+        
+        QFile file(filename.c_str());
+        if (!file.open(QIODevice::ReadOnly))
+            return false;
+        
+        if (!scene_doc.setContent(&file))
+        {
+            file.close();
+            return false;
+        }
+        
+        // Check for existence of the scene element before we begin
+        QDomElement scene_elem = scene_doc.firstChildElement("scene");
+        if (scene_elem.isNull())
+            return false;
+        
+        // Purge all old entities. Send events for the removal
+        RemoveAllEntities(true, change);
+        
+        QDomElement ent_elem = scene_elem.firstChildElement("entity");
+        while (!ent_elem.isNull())
+        {
+            QString id_str = ent_elem.attribute("id");
+            if (!id_str.isEmpty())
+            {
+                entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
+                EntityPtr entity = CreateEntity(id, QStringList(), change);
+                QDomElement comp_elem = ent_elem.firstChildElement("component");
+                while (!comp_elem.isNull())
+                {
+                    QString type_name = comp_elem.attribute("type");
+                    QString name = comp_elem.attribute("name");
+                    Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                    if (new_comp)
+                    {
+                        new_comp->DeserializeFrom(comp_elem, change);
+                        new_comp->ComponentChanged(change);
+                    }
+                    comp_elem = comp_elem.nextSiblingElement("component");
+                }
+            }
+            ent_elem = ent_elem.nextSiblingElement("entity");
+        }
+        
         return true;
     }
     

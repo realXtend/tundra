@@ -4,6 +4,7 @@
 #include "CAVEView.h"
 #include "Renderer.h"
 #include "CAVESettingsWidget.h"
+#include "ExternalRenderWindow.h"
 
 #include <QDebug>
 
@@ -60,9 +61,9 @@ namespace OgreRenderer
         
             view_map_[name] = view;
             if(enabled_)
-                view->show();
+				view->GetExternalRenderWindow()->show();
             else
-                view->hide();
+                view->GetExternalRenderWindow()->hide();
         }
     }
 
@@ -75,9 +76,9 @@ namespace OgreRenderer
             view->Initialize(name, top_left, bottom_left, bottom_right, eye_pos);
             view_map_[name] = view;
             if(enabled_)
-                view->show();
+                view->GetExternalRenderWindow()->show();
             else
-                view->hide();
+                view->GetExternalRenderWindow()->hide();
         }
 
     }
@@ -88,7 +89,7 @@ namespace OgreRenderer
         {
             foreach(CAVEView* view, view_map_.values())
             {
-                view->hide();
+                view->GetExternalRenderWindow()->hide();
                 delete view;
                 
             }
@@ -103,7 +104,7 @@ namespace OgreRenderer
         {
             foreach(CAVEView* view, view_map_.values())
             {
-                view->show();
+                view->GetExternalRenderWindow()->show();
             }
 
         }

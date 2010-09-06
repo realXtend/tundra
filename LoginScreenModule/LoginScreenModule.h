@@ -59,7 +59,7 @@ private:
     /// Login window.
     LoginWidget *window_;
 
-    /// Login window.
+    /// Input context for this module.
     boost::shared_ptr<InputContext> input_;
 
     /// "Framework" event category ID.
@@ -73,7 +73,7 @@ private:
 
 private slots:
     /** Handles key events from input service.
-     *  @apram key Key event.
+     *  @param key Key event.
      */
     void HandleKeyEvent(KeyEvent *key);
 

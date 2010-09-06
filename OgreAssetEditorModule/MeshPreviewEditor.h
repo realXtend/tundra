@@ -75,11 +75,15 @@ namespace Naali
                            const QString &name, 
                            const QString &assetID,
                            QWidget *parent = 0);
+
+        MeshPreviewEditor(Foundation::Framework *framework, QWidget* parent = 0);
+
         virtual ~MeshPreviewEditor();
 
         void HandleResouceReady(Resource::Events::ResourceReady *res);
         void RequestMeshAsset(const QString &asset_id);
         QImage ConvertToQImage(const u8 *raw_image_data, int width, int height, int channels);
+        void Open(const QString& asset_id, const QString& type);
 
     public slots:
         /// Close the window.
