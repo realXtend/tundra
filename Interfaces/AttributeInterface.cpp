@@ -40,10 +40,10 @@ void AttributeInterface::Changed(AttributeChange::Type change)
 
     // TOSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> std::string Attribute<std::string>::ToString() const
+template<> std::string Attribute<QString>::ToString() const
 {
     ///\todo decode/encode XML-risky characters
-    return Get();
+    return Get().toStdString();
 }
 
 template<> std::string Attribute<bool>::ToString() const
@@ -143,7 +143,7 @@ template<> std::string Attribute<Real>::TypenameToString() const
     return "real";
 }
 
-template<> std::string Attribute<std::string>::TypenameToString() const
+template<> std::string Attribute<QString>::TypenameToString() const
 {
     return "string";
 }
@@ -185,10 +185,10 @@ template<> std::string Attribute<std::vector<QVariant> >::TypenameToString() con
 
     // FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
-template<> void Attribute<std::string>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<QString>::FromString(const std::string& str, AttributeChange::Type change)
 {
     ///\todo decode/encode XML-risky characters
-    Set(str, change);
+    Set(QString::fromStdString(str), change);
 }
 
 template<> void Attribute<bool>::FromString(const std::string& str, AttributeChange::Type change)

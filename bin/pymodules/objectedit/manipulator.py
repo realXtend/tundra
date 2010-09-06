@@ -1,15 +1,53 @@
 import rexviewer as r
+import math
+
+import PythonQt
 import PythonQt.QtGui
+
+from PythonQt.QtCore import Qt
 from PythonQt.QtGui import QQuaternion as Quat
 from PythonQt.QtGui import QVector3D as Vec
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
-import math
 
+try:
+    qapp = PythonQt.Qt.QApplication.instance()
+except:
+    qapp = None
+
+def set_custom_cursor(cursor_shape):
+    if qapp == None:
+        return
+    cursor = PythonQt.QtGui.QCursor(cursor_shape)
+    current = qapp.overrideCursor()
+    if current != None:
+        if current.shape() != cursor_shape:
+            qapp.setOverrideCursor(cursor)
+    else:
+        qapp.setOverrideCursor(cursor)
+    
+def remove_custom_cursor(cursor_shape):
+    if qapp == None:
+        return
+    curr_cursor = qapp.overrideCursor()
+    if curr_cursor != None:
+        if curr_cursor.shape() == cursor_shape:
+            qapp.restoreOverrideCursor()
+
+def remove_custom_cursors():
+    if qapp == None:
+        return
+    curr_cursor = qapp.overrideCursor()
+    while curr_cursor != None:
+        qapp.restoreOverrideCursor()
+        curr_cursor = qapp.overrideCursor()
+    
 class Manipulator:
     NAME = "Manipulator"
     MANIPULATOR_MESH_NAME = "axes.mesh"
     USES_MANIPULATOR = True
+    CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
+    CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
     MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
     MANIPULATORSCALE = Vec(1, 1, 1)
@@ -60,6 +98,7 @@ class Manipulator:
     def stopManipulating(self):
         self.grabbed_axis = None
         self.grabbed = False
+        remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
     
     def initVisuals(self):
         #r.logInfo("initVisuals in manipulator " + str(self.NAME))
@@ -103,6 +142,7 @@ class Manipulator:
                 
                 self.grabbed_axis = None
                 self.grabbed = False
+                remove_custom_cursors()
                 
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
@@ -118,22 +158,25 @@ class Manipulator:
                 self.axisSubmesh = submeshid
                 u = results[-2]
                 v = results[-1]
-                #print "ARROW and UV", u, v
-                #print submeshid
                 self.grabbed = True
-                if submeshid in self.BLUEARROW or (u != 0.0 and u < 0.421875):
+                if submeshid in self.BLUEARROW:
                     #~ print "arrow is blue"
                     self.grabbed_axis = self.AXIS_BLUE
-                elif submeshid in self.GREENARROW or (u != 0.0 and u < 0.70703125):
+                elif submeshid in self.GREENARROW:
                     #~ print "arrow is green"
                     self.grabbed_axis = self.AXIS_GREEN
-                elif submeshid in self.REDARROW or (u != 0.0 and u <= 1.0):
+                elif submeshid in self.REDARROW:
                     #~ print "arrow is red"
                     self.grabbed_axis = self.AXIS_RED
                 else:
                     #~ print "arrow got screwed..."
                     self.grabbed_axis = None
                     self.grabbed = False
+                    
+                if self.grabbed_axis != None:
+                    set_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                else:
+                    remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -187,6 +230,7 @@ class Manipulator:
             
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos[0] < entpos[0], campos[1] < entpos[1])
+                self.controller.soundRuler(ent)
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -205,18 +249,26 @@ class Manipulator:
             
             submeshid = raycast_results[-3]
             if submeshid >= 0:
-                name =  self.MATERIALNAMES[submeshid]
+                try:
+                    name =  self.MATERIALNAMES[submeshid]
+                except KeyError:
+                    name = None
                 if name is not None:
                     name += str("_hi")
                     self.manipulator.mesh.SetMaterial(submeshid, name)
                     self.highlightedSubMesh = submeshid
+                    set_custom_cursor(self.CURSOR_HOVER_SHAPE)
 
     def resethighlight(self):
         if self.usesManipulator and self.highlightedSubMesh is not None:
-            name = self.MATERIALNAMES[self.highlightedSubMesh]
+            try:
+                name = self.MATERIALNAMES[self.highlightedSubMesh]
+            except KeyError:
+                name = None
             if name is not None:
                 self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
             self.highlightedSubMesh = None
+            remove_custom_cursors()
         
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
@@ -355,6 +407,11 @@ class RotationManipulator(Manipulator):
         if self.grabbed and self.grabbed_axis is not None:
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
+
+            if amountx < amounty:
+                amount = amounty
+            else:
+                amount = amountx
             
             ort = ent.placeable.Orientation
             euler = [0, 0, 0]
@@ -376,16 +433,16 @@ class RotationManipulator(Manipulator):
                 ort *= delta
             else:
                 if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    # print "green axis", self.grabbed_axis,
-                    mov = amountx * 30 * dir
+                    #print "green axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    # print "blue axis", self.grabbed_axis,
-                    mov = amountx * 30 * dir
+                    #print "blue axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[2] += mov
                 elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    # print "red axis", self.grabbed_axis,
-                    mov = amounty * 30 * dir
+                    #print "red axis", self.grabbed_axis,
+                    mov = amount * 30 * dir
                     euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)
                 # TODO: figure out the shifted members

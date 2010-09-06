@@ -81,6 +81,10 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventD
         owner_->ResetCameraState();
         break;
     }
+    case Events::MOUSE_DOUBLECLICK:
+    {
+        break;
+    }
     default:
         break;
     }

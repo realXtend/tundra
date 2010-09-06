@@ -20,6 +20,8 @@ from xml.dom.minidom import getDOMImplementation
 import constants
 from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_UPLOAD_FOLDER
 
+
+
 # MESH_MODEL_FOLDER = "media/models"
 # MATERIAL_FOLDER = "media/materials/scripts"
 # TEXTURE_FOLDER = "media/textures"
@@ -29,7 +31,7 @@ from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_U
 
 class SceneUploader:
 
-    def __init__(self, cap_url):
+    def __init__(self, cap_url, controller):
         self.host = None
         self.port = None
         self.path = None
@@ -37,7 +39,8 @@ class SceneUploader:
         self.cap_url = cap_url
         self.file = None
         self.headers = {}
-
+        self.progressBar = controller.window.progressBar
+        
         # poster init
         register_openers()
         
@@ -50,18 +53,49 @@ class SceneUploader:
         #self.httpclient = HTTPConnection(self.host, self.port)
         #self.httpclient.set_debuglevel(1) # f or figuring out what goes wrong
         
-    def uploadScene(self, filepath, dotScene):
+    def uploadScene(self, filepath, dotScene, regionName = None, publishName = None):
         f = None
         self.file = filepath + ".zip"
+        print "creating zip file"
+        self.progressBar.setValue(1)
+        self.progressBar.setFormat("progress: creating zip %p%")
         self.createZipFile(dotScene);
-        try:
-            datagen, headers = multipart_encode({"uploadscene": open(self.file, "rb")})
-            request = urllib2.Request(self.cap_url, datagen, headers) # post
-            #print "------"
-            r.logInfo(urllib2.urlopen(request).read())
-            #print "------"
-        except:
-            r.logInfo("uploadScene failed")
+        print "creating zip file done"
+        self.progressBar.setValue(2)
+        self.progressBar.setFormat("progress: zip created %p%")
+        #try:
+        datagen, headers = multipart_encode({"uploadscene": open(self.file, "rb")})
+        self.progressBar.setValue(3)
+        self.progressBar.setFormat("progress: headers, data encoded %p%")
+        #datagen, headers = multipart_encode({"uploadscene": open(self.file, "rb"), "USceneMethod":"Upload"})
+        headers['USceneMethod']='Upload'
+        if (not(regionName == None)):
+            print "not(regionName == None))"
+            headers['RegionName']=regionName
+        else:
+            headers['RegionName']=regionName
+        if (not(publishName == None)):
+            print "(not(publishName == None))"
+            headers['PublishName']=publishName
+        else:
+            headers['PublishName']=publishName
+        
+        
+        print headers
+        
+        request = urllib2.Request(self.cap_url, datagen, headers) # post
+        self.progressBar.setValue(5)
+        self.progressBar.setFormat("progress: sending request %p%")
+        #print "------"
+        r.logInfo(urllib2.urlopen(request).read())
+        self.progressBar.setValue(7)
+        self.progressBar.setFormat("progress: done %p%")
+        self.progressBar.setValue(0)
+        #self.progressBar.clear()
+        #print "------"
+
+        # except:
+            # r.logInfo("uploadScene failed")
 
     def testGetAddrInfo(self, host, port):
         #print "Fetch addr info for ", host, " with port ", port
@@ -103,7 +137,7 @@ class SceneUploader:
         self.copyfiles(dotScene)
         #relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
         allreadyread = []
-        #print "----------------"
+        print "----------------"
         #print self.file
         zf = zipfile.ZipFile(self.file, "w")
         for dirname, dirnames, filenames in os.walk(TEMP_UPLOAD_FOLDER):

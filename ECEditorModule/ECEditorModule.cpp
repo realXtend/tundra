@@ -16,6 +16,7 @@
 #include "ModuleManager.h"
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -139,8 +140,9 @@ namespace ECEditor
 
         editor_window_ = new ECEditorWindow(GetFramework());
 
-        ui->AddWidgetToScene(editor_window_);
+        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
         ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+        ui->RegisterUniversalWidget("Components", editor_proxy);
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));

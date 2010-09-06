@@ -46,7 +46,7 @@ namespace UiServices
         palette.setBrush(QPalette::AlternateBase, alternateBaseColor);
         palette.setBrush(QPalette::Highlight, highlight_lightgray);
         palette.setBrush(QPalette::ButtonText, white);
-        palette.setBrush(QPalette::HighlightedText, highlightedText);  
+        palette.setBrush(QPalette::HighlightedText, highlightedText);
 
         setTexture(palette, QPalette::Button, buttonImage);     
         setTexture(palette, QPalette::Mid, midImage);
@@ -69,6 +69,13 @@ namespace UiServices
 
         if (qobject_cast<QScrollArea *>(widget))
             widget->setBackgroundRole(QPalette::Base);
+
+        if (qobject_cast<QLineEdit *>(widget))
+        {
+            QPalette p = widget->palette();
+            setTexture(p, QPalette::Window, QPixmap());
+            widget->setPalette(p);
+        }
 
         if (qobject_cast<QWebView *>(widget))
             widget->setPalette(default_palette_);

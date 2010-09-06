@@ -53,7 +53,7 @@ InventoryItemModel::~InventoryItemModel()
 bool InventoryItemModel::canFetchMore(const QModelIndex & parent) const
 {
     AbstractInventoryItem *item = GetItem(parent);
-    if (item->GetItemType() == AbstractInventoryItem::Type_Folder)
+    if (item && item->GetItemType() == AbstractInventoryItem::Type_Folder)
     {
         InventoryFolder *folder = dynamic_cast<InventoryFolder*>(item);
         if (folder)
@@ -111,7 +111,7 @@ bool InventoryItemModel::setData(const QModelIndex &index, const QVariant &value
 
 QVariant InventoryItemModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole && dataModel_->GetRoot())
         return QVariant(dataModel_->GetRoot()->GetName());
 
     return QVariant();

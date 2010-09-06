@@ -283,9 +283,9 @@ namespace ECEditor
     template<> void ECAttributeEditor<Color>::Initialize();
     template<> void ECAttributeEditor<Color>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<std::string>::Update();
-    template<> void ECAttributeEditor<std::string>::Initialize();
-    template<> void ECAttributeEditor<std::string>::Set(QtProperty *property);
+    template<> void ECAttributeEditor<QString>::Update();
+    template<> void ECAttributeEditor<QString>::Initialize();
+    template<> void ECAttributeEditor<QString>::Set(QtProperty *property);
 
     template<> void ECAttributeEditor<QVariant>::Update();
     template<> void ECAttributeEditor<QVariant>::Initialize();

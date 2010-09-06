@@ -208,6 +208,15 @@ namespace ECEditor
                         compWeak.lock()->ComponentChanged(AttributeChange::Local);
                     }
                 }
+                else if(attr->TypenameToString() == "qstring")
+                {
+                    Foundation::Attribute<QString> *attribute = dynamic_cast<Foundation::Attribute<QString> *>(attr);
+                    if(attribute)
+                    {
+                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Local);
+                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                    }
+                }
                 else if(attr->TypenameToString() == "qvariant")
                 {
                     Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant> *>(attr);

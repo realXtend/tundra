@@ -36,13 +36,11 @@ ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
 ComponentInterface::~ComponentInterface()
 {
     // Removes itself from EventManager 
-    if ( framework_ != 0)
-    {       
+    if (framework_ != 0)
+    {
         boost::shared_ptr<EventManager> event_manager_ = framework_->GetEventManager();
-        if ( event_manager_ != 0 )
-        {
+        if (event_manager_ != 0)
             event_manager_->UnregisterEventSubscriber(this);
-        }
     }
 }
 
@@ -82,7 +80,7 @@ QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElemen
 {
     QDomElement comp_element = doc.createElement("component");
     comp_element.setAttribute("type", TypeName());
-    if (!name_.toStdString().empty()) //\todo convert to use qstring empty XXX
+    if (!name_.isEmpty())
         comp_element.setAttribute("name", name_);
     
     if (!base_element.isNull())
@@ -93,20 +91,20 @@ QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElemen
     return comp_element;
 }
 
-void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value) const
+void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value) const
 {
     QDomElement attribute_element = doc.createElement("attribute");
-    attribute_element.setAttribute("name", QString::fromStdString(name));
-    attribute_element.setAttribute("value", QString::fromStdString(value));
+    attribute_element.setAttribute("name", name);
+    attribute_element.setAttribute("value", value);
     comp_element.appendChild(attribute_element);
 }
 
-void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const std::string& name, const std::string& value, const std::string &type) const
+void ComponentInterface::WriteAttribute(QDomDocument& doc, QDomElement& comp_element, const QString& name, const QString& value, const QString &type) const
 {
     QDomElement attribute_element = doc.createElement("attribute");
-    attribute_element.setAttribute("name", QString::fromStdString(name));
-    attribute_element.setAttribute("value", QString::fromStdString(value));
-    attribute_element.setAttribute("type", QString::fromStdString(type));
+    attribute_element.setAttribute("name", name);
+    attribute_element.setAttribute("value", value);
+    attribute_element.setAttribute("type", type);
     comp_element.appendChild(attribute_element);
 }
 
@@ -121,36 +119,32 @@ bool ComponentInterface::BeginDeserialization(QDomElement& comp_element)
     return false;
 }
 
-std::string ComponentInterface::ReadAttribute(QDomElement& comp_element, const std::string& name) const
+QString ComponentInterface::ReadAttribute(QDomElement& comp_element, const QString &name) const
 {
-    QString name_str = QString::fromStdString(name);
-    
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while (!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name_str)
-            return attribute_element.attribute("value").toStdString();
+        if (attribute_element.attribute("name") == name)
+            return attribute_element.attribute("value");
         
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }
     
-    return std::string();
+    return QString();
 }
 
-std::string ComponentInterface::ReadAttributeType(QDomElement& comp_element, const std::string& name) const
+QString ComponentInterface::ReadAttributeType(QDomElement& comp_element, const QString &name) const
 {
-    QString name_str = QString::fromStdString(name);
-    
     QDomElement attribute_element = comp_element.firstChildElement("attribute");
     while (!attribute_element.isNull())
     {
-        if (attribute_element.attribute("name") == name_str)
-            return attribute_element.attribute("type").toStdString();
+        if (attribute_element.attribute("name") == name)
+            return attribute_element.attribute("type");
         
         attribute_element = attribute_element.nextSiblingElement("attribute");
     }
     
-    return std::string();
+    return QString();
 }
 
 void ComponentInterface::ComponentChanged(AttributeChange::Type change)
@@ -198,7 +192,7 @@ void ComponentInterface::SerializeTo(QDomDocument& doc, QDomElement& base_elemen
     QDomElement comp_element = BeginSerialization(doc, base_element);
 
     for (uint i = 0; i < attributes_.size(); ++i)
-        WriteAttribute(doc, comp_element, attributes_[i]->GetNameString(), attributes_[i]->ToString());
+        WriteAttribute(doc, comp_element, attributes_[i]->GetNameString().c_str(), attributes_[i]->ToString().c_str());
 }
 
 void ComponentInterface::DeserializeFrom(QDomElement& element, AttributeChange::Type change)
@@ -211,7 +205,7 @@ void ComponentInterface::DeserializeFrom(QDomElement& element, AttributeChange::
 
     for (uint i = 0; i < attributes_.size(); ++i)
     {
-        std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString());
+        std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
         attributes_[i]->FromString(attr_str, change);
     }
 }
