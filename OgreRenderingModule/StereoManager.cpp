@@ -41,8 +41,9 @@ For the latest info, see http://www.ogre3d.org/
 namespace OgreRenderer
 	{
 	//-------------- Stereo Camera listener -------------------------------
-	void StereoManager::StereoCameraListener::init(StereoManager *stereoMgr, Ogre::Viewport *viewport, bool isLeftEye)
+	void StereoManager::StereoCameraListener::init(StereoManager *stereoMgr, Ogre::Viewport *viewport, bool isLeftEye)	
 	{
+		shutter_flip_left_=false;
 		stereo_mngr_ = stereoMgr;
 		camera_ = NULL;
 		is_lefteye_ = isLeftEye;
@@ -60,6 +61,13 @@ namespace OgreRenderer
 
 		Ogre::SceneManager *sceneMgr = camera_->getSceneManager();
 		old_vis_mask_ = sceneMgr->getVisibilityMask();
+
+		if(stereo_mngr_->getStereoMode() == StereoManager::SM_SHUTTER)
+		{
+			is_lefteye_ = shutter_flip_left_;
+			shutter_flip_left_ = !shutter_flip_left_;
+		}
+
 
 		if(is_lefteye_)
 		{
@@ -170,6 +178,7 @@ namespace OgreRenderer
 		available_nodes_[SM_INTERLACED_CB] = StereoModeDescription("INTERLACED_CHECKBOARD", "Stereo/CheckboardInterlace");
 
 		available_nodes_[SM_DUALOUTPUT] = StereoModeDescription("DUALOUTPUT");
+		available_nodes_[SM_SHUTTER] = StereoModeDescription("SHUTTER");
 		available_nodes_[SM_NONE] = StereoModeDescription("NONE");
 	}
 
@@ -253,6 +262,7 @@ namespace OgreRenderer
 			rightViewport->getTarget()->addListener(&right_cam_listener_);
 			right_viewport_ = rightViewport;
 		}
+		
 	}
 
 	void StereoManager::shutdownListeners(void)
