@@ -93,6 +93,9 @@ namespace DebugStats
         /// Saves scene to an XML file
         Console::CommandResult SaveScene(const StringVector &params);
 
+        /// Loads scene from an XML file. Expect crashes and/or emptiness.
+        Console::CommandResult LoadScene(const StringVector &params);
+
         /// Invokes action in entity.
         Console::CommandResult Exec(const StringVector &params);
 
