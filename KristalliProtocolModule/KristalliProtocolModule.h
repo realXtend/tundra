@@ -110,6 +110,9 @@ namespace KristalliProtocol
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
         clb::PolledTimer reconnectTimer;
 
+        /// Amount of retries remaining for reconnection. Is low for the initial connection, higher for reconnection
+        int reconnectAttempts;
+
         void PerformConnection();
 
         /// Allocate a  connection ID for new connection

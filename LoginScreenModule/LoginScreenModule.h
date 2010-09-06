@@ -12,6 +12,7 @@
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
+#include <QMap>
 
 class KeyEvent;
 class InputContext;
@@ -68,6 +69,9 @@ private:
     /// "NetworkState" event category ID.
     event_category_id_t network_category_;
 
+    /// "Tundra" event category ID.
+    event_category_id_t tundra_category_;
+    
     /// Are we currently connected to world.
     bool connected_;
 
@@ -77,6 +81,9 @@ private slots:
      */
     void HandleKeyEvent(KeyEvent *key);
 
+    //! Handles Tundra login (send an event, which TundraLogicModule will handle)
+    void ProcessTundraLogin(const QMap<QString, QString> &data);
+    
     /// Exits the program.
     void Exit();
 };

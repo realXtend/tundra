@@ -83,10 +83,14 @@ namespace
 */
 }
 
+static const int cInitialAttempts = 1;
+static const int cReconnectAttempts = 5;
+
 KristalliProtocolModule::KristalliProtocolModule()
 :ModuleInterface(NameStatic())
 , serverConnection(0)
 , server(0)
+, reconnectAttempts(0)
 {
 }
 
@@ -141,12 +145,27 @@ void KristalliProtocolModule::Update(f64 frametime)
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
         {
-            PerformConnection();
+            if (reconnectAttempts)
+            {
+                PerformConnection();
+                --reconnectAttempts;
+            }
+            else
+            {
+                LogInfo("Failed to connect to " + serverIp + ":" + ToString(serverPort));
+                framework_->GetEventManager()->SendEvent(networkEventCategory, Events::CONNECTION_FAILED, 0);
+                reconnectTimer.Stop();
+                serverIp = "";
+            }
         }
         else if (!reconnectTimer.Enabled())
             reconnectTimer.StartMSecs(cReconnectTimeout);
     }
 
+    // If connection was made, enable a larger number of reconnection attempts in case it gets lost
+    if (serverConnection && serverConnection->GetConnectionState() == ConnectionOK)
+        reconnectAttempts = cReconnectAttempts;
+    
     RESETPROFILER;
 }
 
@@ -157,13 +176,14 @@ const std::string &KristalliProtocolModule::NameStatic()
 
 void KristalliProtocolModule::Connect(const char *ip, unsigned short port, SocketTransportLayer transport)
 {
+    if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
+        Disconnect();
+    
     serverIp = ip;
     serverPort = port;
     serverTransport = transport;
+    reconnectAttempts = cInitialAttempts; // Initial attempts when establishing connection
     
-    if (Connected() && serverConnection && serverConnection->GetEndPoint().ToString() != serverIp)
-        Disconnect();
-
     if (!Connected())
         PerformConnection(); // Start performing a connection attempt to the desired address/port/transport
 }
@@ -189,6 +209,7 @@ void KristalliProtocolModule::Disconnect()
 {
     if (serverConnection)
     {
+        serverConnection->Disconnect();
         network.CloseMessageConnection(serverConnection);
         serverConnection = 0;
     }
@@ -221,6 +242,7 @@ void KristalliProtocolModule::StopServer()
         network.StopServer();
         connections.clear();
         LogInfo("Stopped server");
+        server = 0;
     }
 }
 

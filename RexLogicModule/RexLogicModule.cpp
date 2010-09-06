@@ -1045,7 +1045,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     //divert y because after view/projection transforms, y increses upwards
     scr_y = -scr_y;
 
-    OgreRenderer::EC_OgreCamera * camera;
+    OgreRenderer::EC_OgreCamera * camera = 0;
 
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
     if (!current_scene.get())

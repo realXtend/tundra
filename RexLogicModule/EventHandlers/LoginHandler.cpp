@@ -109,7 +109,8 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogError("Could not find avatar type in login info map. Cannot proceed login.");
+            // Disabled, Tundra login uses "Tundra" avatartype
+            // RexLogicModule::LogError("Could not find avatar type in login info map. Cannot proceed login.");
         }
     }
 
