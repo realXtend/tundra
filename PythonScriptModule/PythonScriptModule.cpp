@@ -102,17 +102,17 @@
 
 #include <propertyeditor.h>
 
-// =========== Note py developers: MemoryLeakCheck must be the last include =========== //
+
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "QtInputKeyEvent.h"
 #include "QtInputMouseEvent.h"
 
-#include "MemoryLeakCheck.h"
-
-
 //#include <QDebug>
+
+//==== Note py developers: MemoryLeakCheck must be the last include in order to make it work fully ====//
+#include "MemoryLeakCheck.h"
 
 namespace PythonScript
 {
