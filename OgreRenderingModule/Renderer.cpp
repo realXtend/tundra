@@ -382,7 +382,7 @@ namespace OgreRenderer
     {
         resource_handler_->PostInitialize();
         cave_manager_.InitializeUi();
-		//stereo_manager_.InitializeUi();
+		stereo_manager_.InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
