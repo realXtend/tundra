@@ -42,8 +42,6 @@ public:
     ~EC_ParticleSystem();
 
     virtual bool IsSerializable() const { return true; }
-    Foundation::ComponentPtr GetPlaceable() const;
-    void SetPlaceable(Foundation::ComponentPtr comp);
 
     bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
@@ -54,7 +52,7 @@ public:
     void DeleteParticleSystem();
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-    Foundation::Attribute<std::string>  particleId_;
+    Foundation::Attribute<QString>      particleId_;
     Foundation::Attribute<bool>         castShadows_;
     Foundation::Attribute<Real>         renderingDistance_;
 
@@ -66,11 +64,9 @@ private slots:
 
 private:
     explicit EC_ParticleSystem(Foundation::ModuleInterface *module);
-    void FindPlaceable();
+    Foundation::ComponentPtr FindPlaceable() const;
     request_tag_t RequestResource(const std::string& id, const std::string& type);
 
-    Foundation::ComponentPtr placeable_;
-    Foundation::Framework *framework_;
     OgreRenderer::RendererWeakPtr renderer_;
     Ogre::ParticleSystem* particleSystem_;
     Ogre::SceneNode* node_;

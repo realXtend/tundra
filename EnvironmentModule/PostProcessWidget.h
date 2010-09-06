@@ -27,8 +27,8 @@ namespace Environment
 
     public:
         //! Constructor.
-        //! \param effects List of effect names
-        explicit PostProcessWidget(QVector<QString> &effects);
+        //! \param handler. Compostion handler. List of available effects are retrieved from the handler.
+        explicit PostProcessWidget(OgreRenderer::CompositionHandler *handler);
 
         //! Destructor.
         virtual ~PostProcessWidget();

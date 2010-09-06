@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>358</width>
-    <height>329</height>
+    <width>302</width>
+    <height>777</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -43,8 +43,8 @@ QLabel {
 }
 
 QLabel#editing_title {
-	font-size: 18px;
-	font-weight: bold;
+	font-size:18px;
+	font-weight:bold;
 }
 
 QLabel#label_rotate_z_title, #label_rotate_x_title, #label_rotate_y_title {
@@ -147,8 +147,8 @@ QPushButton#button_scale {
          <rect>
           <x>0</x>
           <y>0</y>
-          <width>351</width>
-          <height>327</height>
+          <width>295</width>
+          <height>775</height>
          </rect>
         </property>
         <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -555,13 +555,28 @@ QPushButton#button_scale {
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
+             <property name="sizeType">
+              <enum>QSizePolicy::Fixed</enum>
+             </property>
              <property name="sizeHint" stdset="0">
               <size>
-               <width>20</width>
-               <height>40</height>
+               <width>1</width>
+               <height>30</height>
               </size>
              </property>
             </spacer>
+           </item>
+           <item>
+            <widget class="QTabWidget" name="tab_widget">
+             <property name="currentIndex">
+              <number>0</number>
+             </property>
+             <widget class="QWidget" name="tab">
+              <attribute name="title">
+               <string>default</string>
+              </attribute>
+             </widget>
+            </widget>
            </item>
           </layout>
          </item>

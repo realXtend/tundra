@@ -145,11 +145,11 @@ void EC_Touchable::UpdateMaterial()
         return;
     try
     {
-        entityClone_->setMaterialName(materialName.Get());
+        entityClone_->setMaterialName(materialName.Get().toStdString());
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Could not set material \"" + materialName.Get() + "\": " + std::string(e.what()));
+        LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
         return;
     }
 }
@@ -267,11 +267,11 @@ void EC_Touchable::Create()
     try
     {
         //OgreRenderer::CloneMaterial("Touchable", materialName.Get());
-        entityClone_->setMaterialName(materialName.Get());
+        entityClone_->setMaterialName(materialName.Get().toStdString());
     }
     catch (Ogre::Exception &e)
     {
-        LogError("Could not set material \"" + materialName.Get() + "\": " + std::string(e.what()));
+        LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
         return;
     }
 

@@ -108,7 +108,7 @@ namespace ECEditor
 
     void ECEditorWindow::AddEntity(entity_id_t entity_id)
     {
-        if ((isVisible()) && (entity_list_))
+        if (entity_list_)
         {
             QString entity_id_str;
             entity_id_str.setNum((int)entity_id);
@@ -537,6 +537,7 @@ namespace ECEditor
         if(browserWidget)
         {
             browser_ = new ECBrowser(framework_, browserWidget);
+            browser_->setMinimumWidth(100);
             QVBoxLayout *property_layout = dynamic_cast<QVBoxLayout *>(browserWidget->layout());
             if (property_layout)
                 property_layout->addWidget(browser_);

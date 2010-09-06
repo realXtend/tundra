@@ -130,7 +130,7 @@ to be documented using the C++-style tags, but for larger sections, use C-style 
             \param count The number of bits to read, 0 <= count <= 32.
             \return The desired amount of bits packed in an u32, populating bits from the 
             least-significant-bits-end of the u32. The bits are filled in most-significant-bit first. */
-        Core::u32 ReadBits(int count);
+        u32 ReadBits(int count);
 
         /// Reads a single bit from the stream and advances the current stream position.
         /// \return The next bit in the stream, or 0 if there are no bits left in the stream.
@@ -139,7 +139,11 @@ to be documented using the C++-style tags, but for larger sections, use C-style 
 }
 \endverbatim
 
-See RexLogic::BitStream for the actual class in RealXtend documentation pages.
+See RexLogic::BitStream for the actual class in realXtend documentation pages.
+
+Full list of Doxygen commands: http://www.stack.nl/~dimitri/doxygen/commands.html
+
+Useful Doxygen examples: http://www.stack.nl/~dimitri/doxygen/docblocks.html
 
 <b>!! Important !!</b>
 

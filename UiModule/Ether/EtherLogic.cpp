@@ -18,6 +18,9 @@
 #include "View/VerticalMenu.h"
 #include "View/EtherScene.h"
 
+#include "UiServiceInterface.h"
+#include "InputServiceInterface.h"
+
 #include "CoreDefines.h"
 #include <QStringList>
 #include <QTimer>
@@ -59,6 +62,12 @@ namespace Ether
 
             // Create ether scene, store current scene
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
+            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            if (ui)
+            {
+                connect(ui.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), 
+                        scene_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
+            }
 
             // Initialise menus
             QPair<View::EtherMenu*, View::EtherMenu*> menus;

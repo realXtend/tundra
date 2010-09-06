@@ -595,9 +595,9 @@ namespace ECEditor
         }
     }
 
-    //-------------------------STD::STRING ATTRIBUTE TYPE-------------------------
+    //-------------------------QSTRING ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<std::string>::Initialize()
+    template<> void ECAttributeEditor<QString>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
@@ -620,13 +620,13 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<std::string>::Set(QtProperty *property)
+    template<> void ECAttributeEditor<QString>::Set(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
-            SetValue(property->valueText().toStdString());
+            SetValue(property->valueText());
     }
 
-    template<> void ECAttributeEditor<std::string>::Update()
+    template<> void ECAttributeEditor<QString>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -641,8 +641,8 @@ namespace ECEditor
             {
                 if (rootProperty_)
                 {
-                    Foundation::Attribute<std::string> *attribute = dynamic_cast<Foundation::Attribute<std::string>*>(*iter);
-                    qStringPropertyManager->setValue(rootProperty_, attribute->Get().c_str());
+                    Foundation::Attribute<QString> *attribute = dynamic_cast<Foundation::Attribute<QString>*>(*iter);
+                    qStringPropertyManager->setValue(rootProperty_, attribute->Get());
                 }
                 iter++;
             }
