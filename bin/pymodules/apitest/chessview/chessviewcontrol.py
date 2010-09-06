@@ -13,25 +13,31 @@ gettext.install("pychess", unicode=1)
 from pychess.Utils.const import * #for EMPTY and such in board making
 
 from PythonQt.QtGui import QVector3D as Vec3
+from PythonQt.QtGui import QQuaternion as Quat
+
 import circuits
 import rexviewer as r
 
+DISTANCE = 1.5 #between the pieces on the board
+HEIGHT = 23 #on world.realxtend.org:8002 - will probably be relateive to the entity which runs this
+AVROT = Quat(1, 1, 0, 0)
+
 piecevis = {
-    PAWN: ('axis1.mesh', Vec3(0.1, 0.1, 0.07)),
-    KNIGHT: ('axis1.mesh', Vec3(0.1, 0.1, 0.12)),
-    BISHOP: ('rotate1.mesh', Vec3(0.1, 0.1, 0.1)),
-    ROOK: ('scale1.mesh', Vec3(1.0, 1.0, 1.0)),
-    QUEEN: ('avatar.mesh', Vec3(1.0, 1.0, 1.0)),
-    KING: ('Jack.mesh', Vec3(1.0, 1.0, 1.0))
+    PAWN: ('axis1.mesh', Vec3(0.5, 0.5, 0.7), None),
+    KNIGHT: ('axis1.mesh', Vec3(0.6, 0.6, 0.85), None),
+    BISHOP: ('rotate1.mesh', Vec3(0.5, 0.5, 1.0), None),
+    ROOK: ('scale1.mesh', Vec3(0.5, 0.5, 0.92), None),
+    QUEEN: ('avatar.mesh', Vec3(1.0, 1.0, 1.0), AVROT),
+    KING: ('Jack.mesh', Vec3(1.0, 1.0, 1.0), AVROT)
 }
 
 def index2pos(cord):
     return cord / 8, cord % 8
 
 def worldpos(x, y):
-    wx = 120 + x
-    wy = 120 - y
-    wz = 25
+    wx = 120 + (x * DISTANCE)
+    wy = 120 - (y * DISTANCE)
+    wz = HEIGHT
     return Vec3(wx, wy, wz)
     
 class SubprocessCommunicator(circuits.Process):
@@ -95,16 +101,22 @@ class ChessViewControl(circuits.BaseComponent):
 
         for cor, piece in enumerate(self.board):
             if piece != EMPTY:
-                mesh, scale = piecevis[piece]
+                mesh, scale, rot = piecevis[piece]
                 x, y = index2pos(cor)
                 print "loading mesh", mesh, "with scale", scale
-                self.addpiece(x, y, piece, mesh, scale)
+                self.addpiece(x, y, piece, mesh, scale, rot)
 
-    def addpiece(self, x, y, piece, mesh, scale):
+    def addpiece(self, x, y, piece, mesh, scale, rot):
         ent = r.createEntity(mesh, self.entidcount)
         self.entidcount += 1 #make the api func use next available id XXX
-        ent.placeable.Position = worldpos(x, y)
-        ent.placeable.Scale = scale
+        p = ent.placeable
+        p.Position = worldpos(x, y)
+        p.Scale = scale
+        if rot is not None:
+            ort = p.Orientation #is a copy(?) so much get and assign the new one
+            ort *= rot
+            p.Orientation = rot
+
         self.pos2piece[(x, y)] = ent
 
     def move(self, movedata):
