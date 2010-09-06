@@ -26,6 +26,10 @@ namespace Asset
          */
         static const event_id_t ASSET_CANCELED = 3;
 
+        //! Sent when asset wants to be open. 
+ 
+        static const event_id_t ASSET_OPEN = 4;
+
         //! Asset ready event data
         /*! \ingroup AssetModuleClient
          */
@@ -106,6 +110,23 @@ namespace Asset
             //! Type of the asset whose transfer was canceled
             std::string asset_type_;
         };
+
+        /**
+         * Asset open event data. 
+         * @ingroup AssetModule
+         */
+        class AssetOpen : public Foundation::EventDataInterface
+        {
+            public: 
+                AssetOpen(const QString& asset_id, const QString& asset_type) : asset_id_(asset_id), asset_type_(asset_type) {}
+                virtual ~AssetOpen() {}
+
+                /// ID of the asset which is wanted to open
+                QString asset_id_;
+                /// Type of the asset which is wanted to open
+                QString asset_type_;
+        };
+
     }
 }
     
