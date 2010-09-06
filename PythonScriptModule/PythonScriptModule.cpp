@@ -43,9 +43,6 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 #include "DebugOperatorNew.h"
 
 #include "PythonScriptModule.h"
-#include "Vector3Wrapper.h"
-#include "QuaternionWrapper.h"
-#include "QEC_Prim.h"
 #include "PyEntity.h"
 #include "RexPythonQt.h"
 
@@ -1920,53 +1917,11 @@ PyObject* PyEventCallback(PyObject *self, PyObject *args){
 }
 */
 
-PyObject* RandomTest(PyObject* self, PyObject* args)
-{
-    /*
-    unsigned int starter;
-    ProtocolUtilities::NetMsgID id;
-
-    if(!PyArg_ParseTuple(args, "I", &starter))
-    {
-        PyErr_SetString(PyExc_ValueError, "param should be an integer.");
-        return NULL;   
-    }
-
-    id = (ProtocolUtilities::NetMsgID) starter;
-
-    if (id == 0xffff0087)
-        PythonScript::self()->LogDebug("Test successfull!!");
-    */
-    //QMap<QString, int> *map = new QMap<QString, int>;
-    QEC_Prim* prim = new QEC_Prim();
-    
-    prim->map["one"] = 1;
-    prim->map["three"] = 3;
-    
-    prim->setName("This is a Name!");
-    RexUUID uuid = RexUUID::CreateRandom();
-    //QString qstr(uuid.ToString());
-    //QVariant(
-    prim->setUUID(QString(uuid.ToString().c_str()));
-    
-    /*QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-    PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    pe->setObject(prim);
-    pe->show();
-    */
-    
-    return PythonScriptModule::GetInstance()->WrapQObject(prim);
-    //Py_RETURN_NONE;
-}
-
 // XXX NOTE: there apparently is a way to expose bound c++ methods? 
 // http://mail.python.org/pipermail/python-list/2004-September/282436.html
 static PyMethodDef EmbMethods[] = {
     {"sendChat", (PyCFunction)SendChat, METH_VARARGS,
     "Send the given text as an in-world chat message."},
-
-    {"randomTest", (PyCFunction)RandomTest, METH_VARARGS,
-    "Random test function."},
 
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},
