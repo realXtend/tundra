@@ -195,7 +195,14 @@ namespace RexLogic
         }
         if (event_id == Input::Events::MOUSE_DOUBLECLICK)
         {
-
+            if (current_state_ == FocusOnObject)
+            {
+                Radius -= (120 * zoom_sensitivity_) / 2.0;
+                if ( Radius > 0.5)
+                {
+                    FocusOnObjectZoom();
+                }
+            }
         }
         return false;
     }
