@@ -146,7 +146,7 @@ void EC_3DCanvasSource::RepaintCanvas()
 void EC_3DCanvasSource::UpdateWidget()
 {
     QString source = source_.Get();
-    if (source.isNull())
+    if (source.isEmpty())
     {
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
         return;

@@ -59,7 +59,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatartracking, works :)
+if 0: #test avatartracking, works :)
     av_entid = r.getUserAvatarId()
     print "<:::",
     try:
@@ -733,7 +733,7 @@ if 0:
     #print  dir(r.c.widget.move_button)
     r.c.widget.move_button.setChecked(False)
     
-if 1:
+if 0:
     fov = r.getCameraFOV()
     #rightvec = V3(r.getCameraRight())
     #campos = V3(r.getCameraPosition())
@@ -823,6 +823,11 @@ if 0: #getrexlogic test
     #class entity_id_t(int): pass
     #entid = entity_id_t(2)
     #l.SendRexPrimData(entid)
+    
+if 0: #rexlogic as service with qt mechanism
+    from __main__ import _naali
+    l = _naali.GetWorldLogic()
+    print dir(l)
     
 if 0: #undo tests
     e = r.getEntity(1752805599)

@@ -1,0 +1,45 @@
+compositor Stereo/BaseCompositor
+{
+    technique
+    {
+        // Temporary textures
+        texture Stereo/Left target_width target_height PF_R8G8B8
+        texture Stereo/Right target_width target_height PF_R8G8B8
+
+        target Stereo/Left
+        {
+            input none
+            pass clear
+			{
+			}
+            pass render_scene 
+            {
+            }
+        }
+        
+        target Stereo/Right
+        {
+            input none
+            pass clear
+			{
+			}
+			pass render_scene 
+            {
+            }
+        }
+
+        target_output
+        {
+            // Start with clear output
+            input none
+            pass render_quad
+            {
+                // Renders a fullscreen quad with a material
+                // redefined by the manager
+                material Stereo/BaseCompositorMaterial
+                input 0 Stereo/Left
+                input 1 Stereo/Right
+            }
+        }
+    }
+}
