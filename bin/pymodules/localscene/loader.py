@@ -56,7 +56,7 @@ class OgreNode:
         mo = self.orientation #mock to where dotscene was read
         o = Quat(mo.w, mo.x, mo.y, mo.z)
         #print dir(o)
-        o.__imul__(Quat(1, 1, 0, 0))
+        o.__imul__(Quat(1, 1, 0, 0)) #NOTE: *= should work now, with pythonqt 2.0 XXX
         #o.__imul__(Quat(1, 0, 1, 0))
         p.Orientation = o
         #print p.Orientation.toString(), o.toString()
