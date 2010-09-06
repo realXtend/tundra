@@ -20,23 +20,12 @@
 18:05 < antont> yep was thinking of that too, there'd be some session service
                 thing or something by the new module
 
-rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
-18:16 < antont> ah it's world_stream_->GetInfo().inventory
-
 18:29 < antont> hm, there is also network sending code in rexlogic which we use
                 from py, like void Primitive::SendRexPrimData(entity_id_t
                 entityid)
 18:31 < antont> iirc there was some issue that 'cause the data for those is not
                 in rexlogic it makes the packets too, and not e.g. worldstream
                 which doesn't know EC_OpenSimPrim
-
-======================================================================================
-2010/04/21  Removed the RexLogicModule::GetInventory() dependency.
-            -Stinkfist
-2010/06/24  Removed the RexLogicModule::GetServerConnection() dependency. WorldStream
-            is now saved as PythonScriptModule member variable.
-            -Stinkfist
-======================================================================================
 */
 
 #include "StableHeaders.h"
@@ -568,6 +557,20 @@ namespace PythonScript
 
         return 0;
     }
+
+    Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
+    {
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic) 
+        {
+            PythonQt::self()->registerClass(worldLogic->metaObject());
+            return worldLogic;
+        }
+        else
+            LogError("WorldLogicInterface service not available in py GetWorldLogic");
+
+        return 0;
+    }      
     
     OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
     {
