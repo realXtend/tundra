@@ -38,7 +38,8 @@ namespace ECEditor
         UsingEnums       = 1 << 0,
         UsingMaxValue    = 1 << 1,
         UsingMinValue    = 1 << 2,
-        UsingDescription = 1 << 3
+        UsingStepValue   = 1 << 3,
+        UsingDescription = 1 << 4
     };
 
     class AbstractAttributeUiElement

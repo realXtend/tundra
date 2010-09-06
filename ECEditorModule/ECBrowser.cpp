@@ -201,15 +201,6 @@ namespace ECEditor
                     continue;
                 if(attr->TypenameToString() == "string")
                 {
-                    Foundation::Attribute<std::string> *attribute = dynamic_cast<Foundation::Attribute<std::string> *>(attr);
-                    if(attribute)
-                    {
-                        attribute->Set(asset_id.toStdString(), AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
-                    }
-                }
-                else if(attr->TypenameToString() == "qstring")
-                {
                     Foundation::Attribute<QString> *attribute = dynamic_cast<Foundation::Attribute<QString> *>(attr);
                     if(attribute)
                     {

@@ -20,6 +20,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
+    nodePosition_(this, "Transform"),
     meshResouceId_(this, "Mesh id", ""),
     skeletonId_(this, "Skeleton id", ""),
     meshMaterial_(this, "Mesh materials"),
@@ -106,9 +107,20 @@ void EC_Mesh::SetMesh(const QString &name)
     }
     AttachEntity();
 
+    if(node_)
+    {
+        Transform newTransform = nodePosition_.Get();
+        node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
+        Quaternion adjust(DEGTORAD * newTransform.rotation.x,
+                          DEGTORAD * newTransform.rotation.y,
+                          DEGTORAD * newTransform.rotation.z);
+        adjust = Quaternion(PI/2, 0, PI) * adjust;
+        node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+        node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+    }
     // Convert orientation from Ogre space to Rex space.
-    Quaternion adjust(PI/2, 0, PI);
-    node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+    //Quaternion adjust(PI/2, 0, PI);
+    //node_->rotate(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));//setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
 
     // Check if new materials need to be requested.
     if(HasMaterialsChanged())
@@ -272,6 +284,20 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
     {
         if(entity_)
             entity_->setCastShadows(castShadows_.Get());
+    }
+    else if(QString::fromStdString(nodePosition_.GetNameString()) == attrName)
+    {
+        if(node_)
+        {
+            Transform newTransform = nodePosition_.Get();
+            node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
+            Quaternion adjust(DEGTORAD * newTransform.rotation.x,
+                              DEGTORAD * newTransform.rotation.y,
+                              DEGTORAD * newTransform.rotation.z);
+            adjust = Quaternion(PI/2, 0, PI) * adjust;
+            node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+            node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+        }
     }
 }
 
