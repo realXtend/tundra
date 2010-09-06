@@ -86,10 +86,19 @@ namespace DebugStats
 
         /// Sends packet requesting kicking user out from the server.
         Console::CommandResult KickUser(const StringVector &params);
-        
+
         /// Dumps J2K decoded textures to PNG images in the viewer working directory.
         Console::CommandResult DumpTextures(const StringVector &params);
-        
+
+        /// Saves scene to an XML file
+        Console::CommandResult SaveScene(const StringVector &params);
+
+        /// Loads scene from an XML file. Expect crashes and/or emptiness.
+        Console::CommandResult LoadScene(const StringVector &params);
+
+        /// Invokes action in entity.
+        Console::CommandResult Exec(const StringVector &params);
+
         /// A history of estimated frame times.
         std::vector<std::pair<uint64_t, double> > frameTimes;
 

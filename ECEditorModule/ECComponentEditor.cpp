@@ -33,8 +33,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<Vector3df>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Color>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<std::string> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<std::string>(browser, &attribute, editor);
+        else if(dynamic_cast<const Foundation::Attribute<QString> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<QString>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
             attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))

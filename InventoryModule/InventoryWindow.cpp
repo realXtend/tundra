@@ -27,6 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("InventoryWindow")
 #include <QFile>
 #include <QTreeView>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QPushButton>
 #include <QModelIndex>
 #include <QAbstractItemView>
@@ -436,13 +437,18 @@ void InventoryWindow::InitInventoryWindow()
     layout_->addWidget(mainWidget_);
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
-    QLineEdit *lineEditSearch_ = new QLineEdit(mainWidget_);
 
+    QHBoxLayout *line_layout = new QHBoxLayout();
+    line_layout->setContentsMargins(7, 0, 7, 0);
+    QLineEdit *lineEditSearch_ = new QLineEdit(mainWidget_);
+    lineEditSearch_->setText("Search...");
+    line_layout->addWidget(lineEditSearch_);
+    
     // Create inventory tree view.
     treeView_ = new InventoryTreeView(mainWidget_);
 //    QHBoxLayout *hlayout = mainWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
 //    hlayout->addWidget(treeView_);
-    layout_->addWidget(lineEditSearch_);
+    layout_->addLayout(line_layout);
     layout_->addWidget(treeView_);
 
     // Connect signals

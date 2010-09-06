@@ -3,8 +3,6 @@ from PythonQt.QtGui import QLineEdit
 
 PRIMTYPES_REVERSED = {
     "Material": "45",
-    "Wav": "17",
-    "Ogg": "1",
     "Texture": "0"
 }
 
@@ -96,7 +94,7 @@ class MeshAssetidEditline(DragDroppableEditline):
 
 class SoundAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        print "doaction in SoundAssetidEditline-class..."
+        #print "doaction in SoundAssetidEditline-class..."
         self.deactivateButtons()
     
     def applyAction(self):

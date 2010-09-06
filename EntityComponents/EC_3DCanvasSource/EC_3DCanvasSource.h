@@ -37,7 +37,7 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     //! Source
-    Foundation::Attribute<std::string> source_;
+    Foundation::Attribute<QString> source_;
 
     //! Position within source (for example scrollbar value, page number)
     Foundation::Attribute<int> position_;
@@ -95,7 +95,7 @@ private:
     QLineEdit* source_edit_;
     
     //! Last set source
-    std::string last_source_;
+    QString last_source_;
 };
 
 #endif

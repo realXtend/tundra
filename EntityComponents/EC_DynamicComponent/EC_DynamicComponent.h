@@ -7,12 +7,7 @@
 #include "AttributeInterface.h"
 #include "Declare_EC.h"
 
-class QDomDocument;
-class QDomElement;
-
 #include <QVariant>
-#include <map>
-#include <string>
 
 //! EC_DynamicComponent is a component where user can add or delete attributes in a runtime.
 /*! It's recommend to use attribute names while you set or get your attribute values cause 
@@ -90,9 +85,11 @@ public slots:
     //! Create new attribute that type is QVariant.
     void AddQVariantAttribute(const QString &name);
 
-    //! Get attribute value as QVariant. If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
-    //! @param index Index to attribute list.
-    //! @return Return attribute value as QVariant if attribute has been found, else return null QVariant (Use QVariant's isNull method to check if the variant value is initialized).
+    /** Get attribute value as QVariant. If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
+        @param index Index to attribute list.
+        @return Return attribute value as QVariant if attribute has been found, else return null QVariant.
+        Use QVariant's isNull method to check if the variant value is initialized.
+    */
     QVariant GetAttribute(int index) const;
     QVariant GetAttribute(const QString &name) const;
 
@@ -110,20 +107,16 @@ public slots:
     /// \todo Remove.
     /// quick hack, should use GetParentEntity in ComponentInterface and add qt things to Entity (and eventualy get rid of PyEntity)
     uint GetParentEntityId() const;
-    
+
     /// Remove attribute from the component.
     void RemoveAttribute(const QString &name);
 
     /// Check if component is hodling attribute by that name.
     /// @param name Name of attribute that we are looking for.
     bool ContainAttribute(const QString &name) const;
+
 private:
     explicit EC_DynamicComponent(Foundation::ModuleInterface *module);
 };
-
-//! Function that is used by std::sort algorithm to sort attributes by their name.
-bool CmpAttributeByName(const Foundation::AttributeInterface *a, const Foundation::AttributeInterface *b);
-//! Function that is used by std::Sort algorithm to sort DeserializeData by their name.
-bool CmpAttributeDataByName(const EC_DynamicComponent::DeserializeData &a, const EC_DynamicComponent::DeserializeData &b);
 
 #endif

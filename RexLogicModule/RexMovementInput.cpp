@@ -111,6 +111,10 @@ void RexMovementInput::HandleKeyEvent(KeyEvent *key)
         input->ReleaseAllKeys();
 		eventMgr->SendEvent("Input", Input::Events::CAMERA_TRIPOD, 0); 
     }
+    if (key->keyCode == Qt::Key_Alt && key->eventType == KeyEvent::KeyReleased)
+    {
+        eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK_REL, 0);
+    }
 }
 
 void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
@@ -155,11 +159,6 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
         // Coming out of a right mouse button drag, restore the mouse cursor to visible state.
         if (mouse->button == MouseEvent::RightButton)
             framework->Input().SetMouseCursorVisible(true);
-        
-        if (mouse->button == MouseEvent::LeftButton)
-        {
-            eventMgr->SendEvent("Input", Input::Events::ALT_LEFTCLICK_REL, 0);
-        }
         break;
     case MouseEvent::MouseMove:
         if (mouse->IsRightButtonDown()) // When RMB is down, post the Naali MOUSELOOK, which rotates the avatar/camera.
@@ -191,6 +190,11 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
         /// Would be nice to somehow detect which windows are interested in mouse scroll events, and give them priority.
         if (!mouse->itemUnderMouse)
             mouse->handled = true; 
+        break;
+    }
+    case MouseEvent::MouseDoubleClicked:
+    {
+        eventMgr->SendEvent("Input", Input::Events::MOUSE_DOUBLECLICK, &movement);
         break;
     }
     }

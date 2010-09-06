@@ -22,6 +22,8 @@ namespace UiServices
     {
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChanged(const QString&, const QString&)),
                 this, SIGNAL(SceneChanged(const QString&, const QString&)));
+        connect(owner_->GetUiStateMachine(), SIGNAL(SceneChangeComplete()),
+                this, SLOT(TranferWidgets()));
     }
 
     UiSceneService::~UiSceneService()
@@ -116,6 +118,23 @@ namespace UiServices
     bool UiSceneService::SwitchToScene(const QString &name)
     {
         return owner_->GetUiStateMachine()->SwitchToScene(name);
+    }
+
+    void UiSceneService::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)
+    {
+        return owner_->GetUiStateMachine()->RegisterUniversalWidget(name, widget);
+    }
+
+    void UiSceneService::TranferWidgets()
+    {
+        CoreUi::UniversalWidgetMap universal_widgets = owner_->GetUiStateMachine()->GetUniversalWidgets();
+        foreach(QString widget_name, universal_widgets.keys())
+        {
+            QGraphicsProxyWidget *widget = universal_widgets[widget_name];
+            if (!widget)
+                continue;
+            emit TransferRequest(widget_name, widget);
+        }
     }
 }
 

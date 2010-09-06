@@ -13,6 +13,7 @@ import window
 import loader
 import dotscenemanager
 import sceneuploader
+import sceneactions
 import scenedata
 
 import PythonQt
@@ -26,11 +27,10 @@ from scenedata import SceneDataManager
 
 from xml.dom.minidom import getDOMImplementation
 
-# import circuits
-# from circuits.core import handler
-# from circuits import Event, Manager, Debugger
+
 
 import Queue
+
         
 class LocalScene(Component):
     def __init__(self):
@@ -44,12 +44,13 @@ class LocalScene(Component):
         PythonQt.QtCore.QObject.connect(self.timer,
                            PythonQt.QtCore.SIGNAL("timeout()"),
                            self.periodicCall)
-        self.timer.start(2000)        
+        self.timer.start(1000)        
         self.window = LCwindow(self, self.queue, self.endApplication)
         
         self.isrunning = 1
         
         self.uploadThread = None
+        self.sceneActionThread = None
         
         self.xsift = 127
         self.ysift = 127
@@ -65,6 +66,11 @@ class LocalScene(Component):
         self.uploader = None
         self.filename = ""        
         self.scenedata = None
+
+        self.regionName = None
+        self.publishName = None
+        
+        self.sceneActions = None # sceneactions.SceneActions()
         pass
 
     def loadScene(self, filename):
@@ -80,7 +86,6 @@ class LocalScene(Component):
             if(filename!=""):
                 self.dotScene, self.dsManager = loader.load_dotscene(filename)
                 self.dsManager.setHighlight(self.highlight)
-                #enabled, xsift, ysift, zsift, xscale, yscale, zscale
                 self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
 
     def saveScene(self, filename):
@@ -96,6 +101,7 @@ class LocalScene(Component):
         pass
         
     def publishScene(self, filename=""):
+        print "publishScene"
         if(filename==""):
             filename = self.filename
         #print "publishing scene"
@@ -105,16 +111,12 @@ class LocalScene(Component):
         uploadcap_url = self.worldstream.GetCapability('UploadScene')
         if(uploadcap_url==None or uploadcap_url==""):
             self.queue.put(('No upload capability', 'Check your rights to upload scene'))
-            #self.window.displayMessage("No upload capability", "Check your rights to upload scene")
             return
-        #print str(uploadcap_url)
         if(self.uploader==None):
-            self.uploader=SUploader(uploadcap_url)
-        self.uploader.uploadScene(filename, self.dotScene)
+            self.uploader=SUploader(uploadcap_url, self)
+        self.uploader.uploadScene(filename, self.dotScene, self.regionName, self.publishName)
         print "unloading dot scene"
         self.queue.put(('__unload__', '__unload__scene__'))
-        #loader.unload_dotscene(self.dotScene)
-        #print "unloaded dot scene"
         self.queue.put(('scene upload', 'upload done'))
                 
     def setxpos(self, x):
@@ -154,9 +156,10 @@ class LocalScene(Component):
         pass
         
     def on_exit(self):
-        r.logInfo("LocalScene exiting..")
+        r.logInfo("Local Scene exiting...")
         self.window.on_exit()  
-        r.logInfo(".. done")
+        r.logInfo("Local Done exiting...")
+
         
     def on_hide(self, shown):
         #print "on hide"
@@ -168,28 +171,25 @@ class LocalScene(Component):
         pass
 
     def on_logout(self, id):
-        pass
-        #r.logInfo("Local scene Logout.")
+        r.logInfo("Local scene Logout.")
         
     def checkBoxHighlightToggled(self, enabled):
         self.highlight = enabled
         if(self.dsManager!=None):
             self.dsManager.setHighlight(enabled)
 
-    def startUpload(self, filename):
+    def startUpload(self, filename, regionName = None, publishName = None):
         self.filename = filename
+        self.regionName = regionName
+        self.publishName = publishName
+
         self.uploadThread = threading.Thread(target=self.publishScene)
         self.uploadThread.start()
         pass
     
     def periodicCall(self):
-        #Check every 2000 ms if there is something new in the queue.
-        #self.timer.stop()
-        #print "periodicCall"
+        #Check every 1000 ms if there is something new in the queue.
         self.window.processIncoming()
-        # if self.isrunning:
-            # print "starting periodicCall"
-            # self.timer.start(2000)
         if not self.isrunning:
             self.timer.stop()
 
@@ -198,6 +198,43 @@ class LocalScene(Component):
 
     def closeThread(self):
         pass
+
+    def checkSceneActions(self):
+        if(self.sceneActions==None):
+            if(self.worldstream==None):
+                self.worldstream = r.getServerConnection()
+            uploadcap_url = self.worldstream.GetCapability('UploadScene')
+            if(uploadcap_url==None or uploadcap_url==""):
+                self.queue.put(('No upload capability', 'Check your rights to upload scene'))
+                return False
+            self.sceneActions = sceneactions.SceneActions(uploadcap_url, self)
+            return True
+        else:
+            return True
+
+    # all http actions seem to need threads
+    def startSceneAction(self, action, param=None):
+        if(self.checkSceneActions()==True):
+            #if(self.sceneActions.currentSceneAction==""):
+            self.sceneActions.currentSceneAction=action
+            self.sceneActions.sceneActionParam=param
+            # update cap url, just incase we have teleported to another region
+            uploadcap_url = self.worldstream.GetCapability('UploadScene')
+            self.sceneActions.cap_url = uploadcap_url
+            self.sceneActionThread = threading.Thread(target=self.sceneActions.runSceneAction)
+            self.sceneActionThread.start()
+        pass
+                    
+    def getUploadSceneList(self):
+        if(self.checkSceneActions()==True):
+            self.sceneActions.GetUploadSceneList()
+        
+    def printOutCurrentCap(self):
+        if(self.worldstream==None):
+            self.worldstream = r.getServerConnection()
+        uploadcap_url = self.worldstream.GetCapability('UploadScene')
+        print uploadcap_url
+    
         
             
 class SceneSaver:
