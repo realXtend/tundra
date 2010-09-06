@@ -11,6 +11,12 @@
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
 
+namespace ProtocolUtilities
+{
+    class WorldStream;
+    typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+}
+
 /** Contains Entity Actions for moving entity with this component in scene.
  */
 class EC_Movable : public Foundation::ComponentInterface
@@ -21,6 +27,10 @@ class EC_Movable : public Foundation::ComponentInterface
 public:
     /// Destructor.
     ~EC_Movable();
+
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+
+    void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:
     /** ComponentInterface override.
@@ -39,6 +49,10 @@ private:
         @param module Declaring module.
      */
     explicit EC_Movable(Foundation::ModuleInterface *module);
+
+    event_category_id_t frameworkCategory_;
+
+    ProtocolUtilities::WorldStreamPtr worldStream_;
 };
 
 #endif

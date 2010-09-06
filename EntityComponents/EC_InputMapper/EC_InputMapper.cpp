@@ -16,23 +16,6 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_InputMapper")
 
-/*
-std::vector<ProtocolUtilities::MultiObjectUpdateInfo> updates;
-EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-OgreRenderer::EC_OgrePlaceable *ogre_pos = entity->GetComponent<OgreRenderer::EC_OgrePlaceable >().get();
-if (!prim && !ogre_pos)
-    return;
-
-ProtocolUtilities::MultiObjectUpdateInfo update;
-update.local_id_ = prim->LocalId;
-update.position_ = ogre_pos->GetPosition();
-update.orientation_ = ogre_pos->GetOrientation();
-update.scale_ = ogre_pos->GetScale();
-
-updates.push_back(new_info);
-
-worldStream->GetServerConnection()->SendMultipleObjectUpdatePacket(update_info_list);
-*/
 EC_InputMapper::~EC_InputMapper()
 {
     input_.reset();
@@ -64,7 +47,6 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
 {
-    LogDebug("HandleKeyEvent");
     // We only act on key presses that are not repeats.
 //    if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
 //        return;
