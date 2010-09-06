@@ -188,11 +188,11 @@ namespace ECEditor
             Foundation::AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
             if(metaData)
             {
-                if(!metaData->min.isNull())
+                if(!metaData->min.isEmpty())
                     metaDataFlag_ |= UsingMinValue;
-                if(!metaData->max.isNull())
+                if(!metaData->max.isEmpty())
                     metaDataFlag_ |= UsingMaxValue;
-                if(!metaData->step.isNull())
+                if(!metaData->step.isEmpty())
                     metaDataFlag_ |= UsingStepValue;
                 if((metaDataFlag_ & UsingMinValue) != 0)
                     realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<Real>(metaData->min.toStdString()));
@@ -286,14 +286,14 @@ namespace ECEditor
                     metaDataFlag_ |= UsingEnums;
                 else
                 {
-                    if(!metaData->min.isNull())
+                    if(!metaData->min.isEmpty())
                         metaDataFlag_ |= UsingMinValue;
-                    if(!metaData->max.isNull())
+                    if(!metaData->max.isEmpty())
                         metaDataFlag_ |= UsingMaxValue;
-                    if(!metaData->step.isNull())
+                    if(!metaData->step.isEmpty())
                         metaDataFlag_ |= UsingStepValue;
                 }
-                if(!metaData->description.isNull())
+                if(!metaData->description.isEmpty())
                     metaDataFlag_ |= UsingDescription;
             }
 

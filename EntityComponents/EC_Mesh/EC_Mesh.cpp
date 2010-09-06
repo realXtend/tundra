@@ -118,9 +118,6 @@ void EC_Mesh::SetMesh(const QString &name)
         node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
         node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
     }
-    // Convert orientation from Ogre space to Rex space.
-    //Quaternion adjust(PI/2, 0, PI);
-    //node_->rotate(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));//setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
 
     // Check if new materials need to be requested.
     if(HasMaterialsChanged())
@@ -270,10 +267,17 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
     }
     else if(QString::fromStdString(skeletonId_.GetNameString()) == attrName)
     {
-        std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
-        tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
-        if(tag)
-            resRequestTags_[ResouceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
+        if(!skeletonId_.Get().isEmpty())
+        {
+            // If same name skeleton has already setted no point to do it again.
+            if(skeleton_ && skeleton_->getName() == skeletonId_.Get().toStdString())
+                return;
+
+            std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
+            tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
+            if(tag)
+                resRequestTags_[ResouceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
+        }
     }
     else if(QString::fromStdString(drawDistance_.GetNameString()) == attrName)
     {
@@ -353,6 +357,27 @@ void EC_Mesh::DetachEntity()
     attached_ = false;
 }
 
+void EC_Mesh::AttachSkeleton(const QString &skeletonName)
+{
+    if(!entity_)
+        return;
+
+    try
+    {
+        Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeletonName.toStdString());
+        if(skel.get())
+        {
+            entity_->getMesh()->_notifySkeleton(skel);
+            LogDebug("Set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName());
+            emit OnSkeletonChanged(QString::fromStdString(skeleton_->getName()));
+        }
+    }
+    catch (Ogre::Exception& e)
+    {
+        LogError("Could not set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName() + ": " + std::string(e.what()));
+    }
+}
+
 bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
     if (event_id != Resource::Events::RESOURCE_READY)
@@ -390,35 +415,24 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventData
 
 bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
 {
+    if(!entity_)
+        return false;
+
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
 
     OgreRenderer::OgreSkeletonResource *skeletonRes = dynamic_cast<OgreRenderer::OgreSkeletonResource*>(res.get());
     if(skeletonRes)
     {
-        if(entity_)
-        {
-            skeleton_ = skeletonRes->GetSkeleton().get();
-            // If old skeleton is same as a new one no need to replace it.
-            if(!skeleton_ || !entity_->getSkeleton() || entity_->getSkeleton()->getName() ==  skeleton_->getName())
-                return false;
+        skeleton_ = skeletonRes->GetSkeleton().get();
+        if(!skeleton_)
+            return false;
 
-            try
-            {
-                Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeletonRes->GetSkeleton()->getName());
-                if(skel.get())
-                {
-                    entity_->getMesh()->_notifySkeleton(skel);
-                    LogDebug("Set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName());
-                    emit OnSkeletonChanged(QString::fromStdString(skeleton_->getName()));
-                }
-            }
-            catch (Ogre::Exception& e)
-            {
-                LogError("Could not set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName() + ": " + std::string(e.what()));
-                return false;
-            }
-        }
+        // If old skeleton is same as a new one no need to replace it.
+        if(entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton_->getName())
+            return false;
+
+        AttachSkeleton(QString::fromStdString(skeleton_->getName()));
     }
     return true;
 }
