@@ -254,10 +254,7 @@ class Manipulator:
             
             submeshid = raycast_results[-3]
             if submeshid >= 0:
-                try:
-                    name =  self.MATERIALNAMES[submeshid]
-                except KeyError:
-                    name = None
+                name =  self.MATERIALNAMES[submeshid]
                 if name is not None:
                     name += str("_hi")
                     self.manipulator.mesh.SetMaterial(submeshid, name)
@@ -266,10 +263,7 @@ class Manipulator:
 
     def resethighlight(self):
         if self.usesManipulator and self.highlightedSubMesh is not None:
-            try:
-                name = self.MATERIALNAMES[self.highlightedSubMesh]
-            except KeyError:
-                name = None
+            name = self.MATERIALNAMES[self.highlightedSubMesh]
             if name is not None:
                 self.manipulator.mesh.SetMaterial(self.highlightedSubMesh, name)
             self.highlightedSubMesh = None
