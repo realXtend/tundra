@@ -125,6 +125,7 @@ class ObjectEdit(Component):
             # Pass widgets
             self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
+            self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
             
     def on_keypressed(self, k):
