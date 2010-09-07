@@ -100,6 +100,11 @@ namespace Environment
         if(terrain.get() && editor_widget_)
         {
             Scene::EntityPtr entity = terrain->GetTerrainEntity().lock();
+            if (!entity)
+            {
+                environment_module_->LogWarning("Can't get access to terrain entity.");
+                return;
+            }
             EC_Terrain *terrain_component = entity->GetComponent<EC_Terrain>().get();
             if(!terrain_component)
             {
