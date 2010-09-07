@@ -189,8 +189,7 @@ class Manipulator:
 
         campos = naali.getCamera().placeable.Position
         ent = ents[-1]
-        qpos = ent.placeable.Position
-        entpos = Vec(qpos.x(), qpos.y(), qpos.z())
+        entpos = ent.placeable.Position
         length = (campos-entpos).length()
             
         v = self.MANIPULATORSCALE
