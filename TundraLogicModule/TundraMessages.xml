@@ -22,9 +22,51 @@
     <!-- Server to other clients when a client left or timed out -->
     <message id="103" name="ClientLeft" reliable="true" priority="100">
         <u8 name="userID" />
-        <s8 name="userName" dynamicCount="8" />        
+        <s8 name="userName" dynamicCount="8" />
     </message>
-    
+    <!-- Client to server -->
+    <message id="104" name="Logout" reliable="true" priority="100">
+    </message>
+
     <!-- SCENE REPLICATION -->
 
+    <!-- Create a new entity, possibly with components filled -->
+    <message id="110" name="CreateEntity" reliable="true" priority="100">
+        <u32 name="entityID" />
+        <struct name="initialComponents" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="32" />
+        </struct>
+    </message>
+
+    <!-- Remove an entity -->
+    <message id="111" name="RemoveEntity" reliable="true" priority="100">
+        <u32 name="entityID" />
+    </message>
+    
+    <!-- Update component(s) inside an existing entity -->
+    <message id="112" name="UpdateComponents" reliable="true" priority="100">
+        <u32 name="entityID" />
+        <struct name="components" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="32" />
+        </struct>
+    </message>
+
+    <!-- Remove component(s) from an entity -->
+    <message id="113" name="RemoveComponents" reliable="true" priority="100">
+        <u32 name="entityID" />
+        <struct name="components" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+        </struct>
+    </message>
+
+    <!-- Server to client: Entity ID collision has occurred when creating an entity. New ID is returned. -->
+    <message id="114" name="EntityIDCollision" reliable="true" priority="100">
+        <u32 name="oldEntityID" />
+        <u32 name="newEntityID" />
+    </message>
 </xml>
