@@ -298,7 +298,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
              return NULL;
         }
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-        //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
         return PythonScriptModule::GetInstance()->WrapQObject(ogremesh);
     }
     
