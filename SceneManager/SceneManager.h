@@ -50,8 +50,11 @@ namespace Scene
         //! copy constuctor
         SceneManager(const SceneManager &other);
 
-        //! Current global id for entities
-        static uint gid_;
+        //! Current global id for networked entities
+        uint gid_;
+
+        //! Current id for local entities
+        uint gid_local_;
 
     public slots:
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
@@ -81,12 +84,24 @@ namespace Scene
         //! Returns scene name
         const std::string &Name() const { return name_; }
 
+        //! Creates new local entity that contains the specified components
+        /*! Entities should never be created directly, but instead created with this function.
+
+            To create an empty entity omit components parameter.
+
+            \param id Id of the new entity. Use GetNextFreeId() or GetNextLocalFreeId()
+            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
+            \param change Origin of change regards to network replication
+        */
+        EntityPtr CreateLocalEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList(),
+             AttributeChange::Type change = AttributeChange::LocalOnly);
+
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
 
             To create an empty entity omit components parameter.
 
-            \param id Id of the new entity. Use GetNextFreeId().
+            \param id Id of the new entity. Use GetNextFreeId() or GetNextLocalFreeId()
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
@@ -116,8 +131,15 @@ namespace Scene
          */
         void RemoveAllEntities(bool send_events = true, AttributeChange::Type change = AttributeChange::LocalOnly);
         
-        //! Get the next free entity id. Can be used with CreateEntity().
+        //! Get the next free entity id. Can be used with CreateEntity(). 
+        /* These will be for networked entities, and should be assigned only by a point of authority (server)
+         */
         entity_id_t GetNextFreeId();
+
+        //! Get the next free local entity id. Can be used with CreateEntity().
+        /* As local entities will not be network synced, there should be no conflicts in assignment
+         */
+        entity_id_t GetNextFreeIdLocal();
 
         //! Returns iterator to the beginning of the entities.
         iterator begin() { return iterator(entities_.begin()); }
