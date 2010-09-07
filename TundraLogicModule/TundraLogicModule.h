@@ -18,10 +18,13 @@ namespace KristalliProtocol
 {
     struct UserConnection;
     class KristalliProtocolModule;
+    typedef std::list<UserConnection> UserConnectionList;
 }
 
 namespace TundraLogic
 {
+
+class SyncManager;
 
 class TundraLogicModule : public Foundation::ModuleInterface
 {
@@ -63,19 +66,6 @@ public:
     /// Returns name of this module. Needed for logging.
     static const std::string &NameStatic() { return type_name_static_; }
 
-    /// Connect and login
-    void Login(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password);
-    
-    /// Disconnect and delete client scene
-    /// \param fail True if logout was due to connection/login failure
-    void Logout(bool fail = false);
-    
-    /// Create server scene & start server
-    void StartServer(unsigned short port, bool use_udp);
-    
-    /// Stop server & delete server scene
-    void StopServer();
-    
     /// Starts a server (console command)
     Console::CommandResult ConsoleStartServer(const StringVector &params);
     
@@ -88,19 +78,35 @@ public:
     /// Disconnects from server (console command)
     Console::CommandResult ConsoleDisconnect(const StringVector &params);
     
+    /// Check whether we are a server (from KristalliProtocolModule)
+    bool IsServer() const;
+    
+    /// Create server scene & start server
+    void ServerStart(unsigned short port, bool use_udp);
+    
+    /// Stop server & delete server scene
+    void ServerStop();
+    
+    /// Get connected users from KristalliProtocolModule
+    KristalliProtocol::UserConnectionList& ServerGetUserConnections();
+    
+    /// Connect and login
+    void ClientLogin(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password);
+    
+    /// Disconnect and delete client scene
+    /// \param fail True if logout was due to connection/login failure
+    void ClientLogout(bool fail = false);
+    
     /// Get connection/login state
-    ClientLoginState GetLoginState() { return loginstate_; }
+    ClientLoginState ClientGetLoginState() { return loginstate_; }
     
     /// Get client message connection from KristalliProtocolModule
-    MessageConnection* GetClientConnection();
+    MessageConnection* ClientGetConnection();
     
     /// Get client connection ID (from loginreply message)
-    u8 GetClientConnectionID() { return client_id_; }
+    u8 ClientGetConnectionID() { return client_id_; }
     
 private:
-    /// Handle pending login to server
-    void HandleLogin();
-    
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
     
@@ -109,6 +115,9 @@ private:
     
     /// Server: Handle a login message
     void ServerHandleLogin(MessageConnection* source, const MsgLogin& msg);
+    
+    /// Client: handle pending login to server
+    void ClientCheckLogin();
     
     /// Client: Handle a loginreply message
     void ClientHandleLoginReply(MessageConnection* source, const MsgLoginReply& msg);
@@ -128,8 +137,11 @@ private:
     std::string username_;
     /// Stored password for login
     std::string password_;
-    /// User ID once known
+    /// User ID, once known
     u8 client_id_;
+    
+    /// Sync manager
+    boost::shared_ptr<SyncManager> syncManager_;
     
     /// Kristalli event category
     event_category_id_t kristalliEventCategory_;
