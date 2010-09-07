@@ -393,8 +393,9 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
     Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
     if (!mesh)
         return false;
-    if (anim->GetMeshEntity() != mesh)
-        anim->SetMeshEntity(mesh);
+    OgreRenderer::EC_OgreMesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+    if (anim->GetMeshEntity() != ogre_mesh)
+        anim->SetMeshEntity(ogre_mesh);
     
     try
     {
@@ -930,7 +931,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         OgreRenderer::EC_OgreAnimationController* anim =
             entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
         if (anim)
-            anim->SetMeshEntity(Foundation::ComponentPtr());
+            anim->SetMeshEntity(0);
 
         // Get/create custom (manual) object component 
         Foundation::ComponentPtr customptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
@@ -1158,8 +1159,9 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
             Foundation::ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
             if (!mesh)
                 return;
-            if (anim->GetMeshEntity() != mesh)
-                anim->SetMeshEntity(mesh);
+            OgreRenderer::EC_OgreMesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            if (anim->GetMeshEntity() != ogre_mesh)
+                anim->SetMeshEntity(ogre_mesh);
             
             // Check if any other animations than the supposed one is running, and stop them
             const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();

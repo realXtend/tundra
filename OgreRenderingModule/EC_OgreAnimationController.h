@@ -17,6 +17,9 @@ namespace Ogre
 
 namespace OgreRenderer
 {
+
+	class EC_OgreMesh;
+
     //! Ogre-specific mesh entity animation controller
     /*! Needs to be told of an EC_OgreMesh component to be usable
         \ingroup OgreRenderingModuleClient
@@ -32,6 +35,12 @@ namespace OgreRenderer
         bool EnableAnimation(const QString &name) { return EnableAnimation(name.toStdString(), false); }
         bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (Real)new_position); }
         QStringList GetAvailableAnimations();
+
+        //! Gets mesh entity component
+        OgreRenderer::EC_OgreMesh *GetMeshEntity() const { return mesh; }
+        
+        //! Gets mesh entity component
+        void SetMeshEntity(OgreRenderer::EC_OgreMesh *new_mesh);
 
     public:
         
@@ -88,12 +97,6 @@ namespace OgreRenderer
         typedef std::map<std::string, Animation> AnimationMap;
 
         virtual ~EC_OgreAnimationController();
-
-        //! Gets mesh entity component
-        Foundation::ComponentPtr GetMeshEntity() const { return mesh_entity_; }
-        
-        //! Gets mesh entity component
-        void SetMeshEntity(Foundation::ComponentPtr mesh_entity);
         
         //! Updates animation(s) by elapsed time
         void Update(f64 frametime);
@@ -163,7 +166,7 @@ namespace OgreRenderer
         void ResetState();
         
         //! Mesh entity component 
-        Foundation::ComponentPtr mesh_entity_;
+        EC_OgreMesh *mesh;
         
         //! Current mesh name
         std::string mesh_name_;
