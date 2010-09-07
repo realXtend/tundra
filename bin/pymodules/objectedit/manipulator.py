@@ -187,11 +187,11 @@ class Manipulator:
         if ents is None or len(ents) == 0: 
                 return
 
-        campos = Vector3(r.getCameraPosition())
+        campos = naali.getCamera().placeable.Position
         ent = ents[-1]
         qpos = ent.placeable.Position
-        entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
-        length = (campos-entpos).length
+        entpos = Vec(qpos.x(), qpos.y(), qpos.z())
+        length = (campos-entpos).length()
             
         v = self.MANIPULATORSCALE
         factor = length*.1
@@ -207,11 +207,10 @@ class Manipulator:
             lengthy = 0
             fov = r.getCameraFOV()
             width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
-            campos = Vector3(r.getCameraPosition())
+            campos = naali.getCamera().placeable.Position
             ent = ents[-1]
-            qpos = ent.placeable.Position
-            entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
-            length = (campos-entpos).length
+            entpos = ent.placeable.Position
+            length = (campos-entpos).length()
                 
             worldwidth = (math.tan(fov/2)*length) * 2
             worldheight = (height*worldwidth) / width
@@ -234,7 +233,7 @@ class Manipulator:
                 lengthx = mousex_on_arrow_projection.length * amountx
             
             for ent in ents:
-                self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos[0] < entpos[0], campos[1] < entpos[1])
+                self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos.x() < entpos.x(), campos.y() < entpos.y())
                 self.controller.soundRuler(ent)
                 
             if self.usesManipulator:

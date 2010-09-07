@@ -571,33 +571,7 @@ namespace PythonScript
 
         return 0;
     }      
-    
-    OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if (camentptr) {
-                OgreRenderer::EC_OgreCamera* camera = camentptr->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-                return camera;
-            }
-        }
-        return 0;
-    }
-    
-    Scene::Entity* PythonScriptModule::GetCameraEntity() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if(camentptr)
-                return camentptr.get();
-        }
-        return 0;
-    }
-
+        
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
@@ -1800,18 +1774,6 @@ PyObject* GetCameraFOV(PyObject *self)
     Py_RETURN_NONE;
 }
 
-PyObject* GetCameraPosition(PyObject *self) 
-{
-    Vector3df pos;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        pos = rexlogic->GetCameraPosition();
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -1958,9 +1920,6 @@ static PyMethodDef EmbMethods[] = {
     
     {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
     "Get the Field of View from the camera."},
-
-    {"getCameraPosition", (PyCFunction)GetCameraPosition, METH_VARARGS, 
-    "Get the position of the camera."},
 
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
