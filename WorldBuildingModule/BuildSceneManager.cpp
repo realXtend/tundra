@@ -239,6 +239,11 @@ namespace WorldBuilding
             create_widgets = true;
             label_title = "Attached Sound";
         }
+        else if (type_compare == "animation")
+        {
+            create_widgets = true;
+            label_title = "Skeleton Animation";
+        }
 
         if (create_widgets)
         {
