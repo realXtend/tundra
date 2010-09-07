@@ -22,14 +22,16 @@ namespace Foundation
 ComponentInterface::ComponentInterface(Framework* framework) :
     parent_entity_(0),
     framework_(framework),
-    change_(AttributeChange::None)
+    change_(AttributeChange::None),
+    network_sync_(true)
 {
 }
 
 ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
-    change_(AttributeChange::None)
+    change_(AttributeChange::None),
+    network_sync_(true)
 {
 }
 
@@ -68,6 +70,11 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
+void ComponentInterface::SetNetworkSyncEnabled(bool enabled)
+{
+    network_sync_ = enabled;
+}
+
 AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)
@@ -82,6 +89,8 @@ QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElemen
     comp_element.setAttribute("type", TypeName());
     if (!name_.isEmpty())
         comp_element.setAttribute("name", name_);
+    // Components with no network sync are never network-serialized. However we might be serializing to a file
+    comp_element.setAttribute("sync", QString::fromStdString(ToString<bool>(network_sync_)));
     
     if (!base_element.isNull())
         base_element.appendChild(comp_element);
@@ -114,6 +123,7 @@ bool ComponentInterface::BeginDeserialization(QDomElement& comp_element)
     if (type == TypeName())
     {
         SetName(comp_element.attribute("name"));
+        SetNetworkSyncEnabled(ParseString<bool>(comp_element.attribute("sync").toStdString(), true));
         return true;
     }
     return false;

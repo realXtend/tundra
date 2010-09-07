@@ -19,6 +19,9 @@ namespace Scene
 {
     class SceneManager;
 
+    //! Local entity ID flag (high bit)
+    static const entity_id_t LocalEntity = 0x80000000;
+    
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
         the entity is and what it does.
@@ -180,6 +183,9 @@ namespace Scene
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
 
+        //! Returns if this entity is local
+        bool IsLocal() const { return id_ & LocalEntity; }
+        
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
         std::string GetName() const;
 

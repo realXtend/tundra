@@ -19,11 +19,25 @@
 
 namespace Scene
 {
-    uint SceneManager::gid_ = 0;
-
+    SceneManager::SceneManager() :
+        gid_(0),
+        gid_local_(LocalEntity)
+    {
+    }
+    
     SceneManager::~SceneManager()
     {
         RemoveAllEntities(false);
+    }
+    
+    Scene::EntityPtr SceneManager::CreateLocalEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
+    {
+        // Figure out new entity id
+        if(id == 0)
+            id = GetNextFreeIdLocal();
+        else
+            id |= LocalEntity;
+        return CreateEntity(id, components, change);
     }
     
     Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
@@ -71,11 +85,17 @@ namespace Scene
     entity_id_t SceneManager::GetNextFreeId()
     {
         while(entities_.find(gid_) != entities_.end())
-            gid_ = (gid_ + 1) % static_cast<uint>(-1);
-
+            gid_ = (gid_ + 1) & (LocalEntity - 1);
         return gid_;
     }
 
+    entity_id_t SceneManager::GetNextFreeIdLocal()
+    {
+        while(entities_.find(gid_local_) != entities_.end())
+            gid_local_ = (gid_local_ + 1) | LocalEntity;
+        return gid_local_;
+    }
+    
     void SceneManager::RemoveEntity(entity_id_t id, AttributeChange::Type change)
     {
         EntityMap::iterator it = entities_.find(id);
