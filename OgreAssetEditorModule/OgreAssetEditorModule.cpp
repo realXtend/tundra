@@ -128,7 +128,7 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                                 editorManager_, SLOT(Delete(const QString &, asset_type_t)));
                         editorManager_->Add(id, name.toUInt(), editor);
                         editor->Open(id, name);
-                   
+                        return true;
                     }
                     else
                     {
@@ -142,11 +142,40 @@ bool OgreAssetEditorModule::HandleEvent(event_category_id_t category_id, event_i
                             if ( editorWidget != 0)
                                 editorWidget->Open(id, name);
                            
+                            return true;
                         }
                     }
 
                     break;
                
+                }
+            case RexTypes::RexAT_Texture:
+                {
+                  QString id = open->asset_id_;
+                  QString type = open->asset_type_;
+                  
+                  if(!editorManager_->Exists(id, type.toUInt()))
+                    {
+                        TexturePreviewEditor *editor = new TexturePreviewEditor(framework_);
+                        QObject::connect(editor, SIGNAL(Closed(const QString &, asset_type_t)),
+                                editorManager_, SLOT(Delete(const QString &, asset_type_t)));
+                        editorManager_->Add(id, type.toUInt(), editor);
+                        editor->RequestTextureAsset(id);
+                        return true;
+                    }
+                    else
+                    {
+                        // Editor already exists, bring it to front.
+                        QWidget *editor = editorManager_->GetEditor(id, type.toUInt());
+                        if (editor != 0)
+                        {
+                            uiService_.lock()->BringWidgetToFront(editor);
+                            return true;
+                        }
+                          
+                   }
+
+                    break;
                 }
             default:
                 break;

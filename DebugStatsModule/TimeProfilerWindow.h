@@ -86,6 +86,7 @@ namespace DebugStats
         void SetNetworkLogging(int value);
 
         void ShowMeshAsset(QTreeWidgetItem* item, int column);
+        void ShowTextureAsset(QTreeWidgetItem* item, int column);
 
     protected:
         void resizeEvent(QResizeEvent *event);

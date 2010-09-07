@@ -70,6 +70,26 @@ namespace Naali
 
     }
 
+
+    TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework, QWidget* parent) :
+        QWidget(parent),
+        framework_(framework),
+        inventoryId_(""),
+        assetId_(""),
+        assetType_(0),
+        mainWidget_(0),
+        okButtonName_(0),
+        headerLabel_(0),
+        imageLabel_(0),
+        scaleLabel_(0),
+        layout_(0),
+        request_tag_(0),
+        imageSize_(QSize(0,0)),
+        useOriginalImageSize_(true)
+    {
+         Initialize();
+    }
+
     void TexturePreviewEditor::Closed()
     {
         Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
