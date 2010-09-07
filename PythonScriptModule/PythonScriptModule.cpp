@@ -1765,18 +1765,6 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
     return NULL;
 }
 
-PyObject* GetUserAvatarId(PyObject* self)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        entity_id_t id = rexlogic->GetUserAvatarId();
-        return Py_BuildValue("I", id);
-    }
-
-    Py_RETURN_NONE;
-}
-
 PyObject* GetCameraId(PyObject* self)
 {
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
@@ -2011,9 +1999,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
-
-    {"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
-    "Returns the user's avatar's id."},
 
     {"getCameraId", (PyCFunction)GetCameraId, METH_VARARGS, 
     "Returns the camera entity id."},
