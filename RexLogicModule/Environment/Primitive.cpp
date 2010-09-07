@@ -38,6 +38,7 @@
 #include "WorldStream.h"
 #include "EC_HoveringText.h"
 #include "EC_OpenSimPrim.h"
+#include "EC_Movable.h"
 
 #include <OgreSceneNode.h>
 
@@ -107,13 +108,18 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     if (!scene)
         return Scene::EntityPtr();
 
-    QStringList defaultcomponents;
-    defaultcomponents.append(EC_OpenSimPrim::TypeNameStatic());
-    defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
-    defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    QStringList components;
+    components.append(EC_OpenSimPrim::TypeNameStatic());
+    components.append(EC_NetworkPosition::TypeNameStatic());
+    components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ///\todo This is just test code. Will be removed soon.
+    components.append(EC_Movable::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::Network); 
+
+    ///\todo This is just test code. Will be removed soon.
+    entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(rexlogicmodule_->GetServerConnection());
 
     return entity;
 }

@@ -10,6 +10,7 @@
 #include "RexTypes.h"
 #include "ResourceInterface.h"
 #include "Quaternion.h"
+#include "Transform.h"
 
 #include <QVariant>
 
@@ -28,6 +29,7 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
+//! Note if you are planning to remove the skeleton you need to relogin to the server.
 class EC_Mesh : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -40,6 +42,7 @@ public:
     virtual bool IsSerializable() const { return true; }
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
 
+    Foundation::Attribute<Transform> nodePosition_;
     Foundation::Attribute<QString> meshResouceId_;
     Foundation::Attribute<QString> skeletonId_;
     Foundation::Attribute<std::vector<QVariant> > meshMaterial_;
@@ -85,6 +88,8 @@ private:
     void AttachEntity();
     //! Detach entity from the scene node.
     void DetachEntity();
+    //! Attach skeleton to entity's mesh.
+    void AttachSkeleton(const QString &skeletonName);
 
     bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     bool HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);

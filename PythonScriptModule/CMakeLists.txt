@@ -8,7 +8,7 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h Vector3Wrapper.h QuaternionWrapper.h QEC_Prim.h NaaliQtWrapper.h)
+file (GLOB MOC_FILES PythonScriptModule.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
