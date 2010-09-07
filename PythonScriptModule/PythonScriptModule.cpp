@@ -1765,21 +1765,6 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
     return NULL;
 }
 
-PyObject* GetCameraId(PyObject* self)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-        if (!camentptr)
-          Py_RETURN_NONE;
-        entity_id_t id = camentptr->GetId();
-        return Py_BuildValue("I", id);
-    }
-
-    Py_RETURN_NONE;
-}
-
 PyObject* GetCameraUp(PyObject *self) 
 {
     Vector3df up;
@@ -1977,17 +1962,6 @@ static PyMethodDef EmbMethods[] = {
     {"getCameraPosition", (PyCFunction)GetCameraPosition, METH_VARARGS, 
     "Get the position of the camera."},
 
-    //from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
-
-    //{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
-    //"Create a new Qt canvas within the viewer"},
-
-    //{"closeAndDeleteCanvas", (PyCFunction)CloseAndDeleteCanvas, METH_VARARGS, 
-    //"closes and deletes the given canvas"},
-
-    //{"getQtModule", (PyCFunction)GetQtModule, METH_NOARGS, 
-    //"gets the qt module"},
-
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
 
@@ -1999,9 +1973,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
-
-    {"getCameraId", (PyCFunction)GetCameraId, METH_VARARGS, 
-    "Returns the camera entity id."},
 
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
     "Does a network update for the Scene."},

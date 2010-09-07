@@ -22,14 +22,20 @@ mediaplayerservice = _naali.GetMediaPlayerService()
 #helper funcs to hide api indirections/inconsistenties that were hard to fix,
 #-- these allow to remove the old corresponding hand written c funcs in pythonscriptmodule.cpp
 import rexviewer as r
-def getUserAvatar():
-    qent = worldlogic.GetUserAvatarEntityRaw()
+def _getAsPyEntity(qentget, errmsg):
+    qent = qentget()
     if qent is not None:
         #print qent.Id
         pyent = r.getEntity(qent.Id)
         #print pyent, pyent.id
         return pyent
     else:
-        raise ValueError, "No avatar. No scene, not logged in?"
+        raise ValueError, errmsg
+
+def getUserAvatar():
+    return _getAsPyEntity(worldlogic.GetUserAvatarEntityRaw, "No avatar. No scene, not logged in?")
+        
+def getCamera():
+    return _getAsPyEntity(worldlogic.GetCameraEntityRaw, "No default camera. No scene?")
         
     

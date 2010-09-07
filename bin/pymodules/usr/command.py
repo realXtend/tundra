@@ -60,7 +60,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatartracking, works :)
+if 0: #test avatartracking, works :)
     try:
         a = naali.getUserAvatar()
     except ValueError:
@@ -163,20 +163,23 @@ if 0: #camera pitch
     print r.getCameraYawPitch()
 
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
-    camid = r.getCameraId()
-    print "CAM:", camid
-    cament = r.getEntity(camid)
-    p = cament.placeable
-    print p.Position, p.Orientation
+    try:
+        cament = naali.getCamera()
+        print "CAM:", cament.id
+    except ValueError:
+        print "no CAM"
+    else:
+        p = cament.placeable
+        print p.Position, p.Orientation
 
-    import PythonQt.QtGui
-    from PythonQt.QtGui import QQuaternion as Quat
-    from PythonQt.QtGui import QVector3D as Vec
-    ort = p.Orientation
-    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
-    #ort *= Quat(0, -.707, 0, .707)
-    ort *= rot
-    p.Orientation = ort
+        import PythonQt.QtGui
+        from PythonQt.QtGui import QQuaternion as Quat
+        from PythonQt.QtGui import QVector3D as Vec
+        ort = p.Orientation
+        rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
+        #ort *= Quat(0, -.707, 0, .707)
+        ort *= rot
+        p.Orientation = ort
 
 if 0: #calcing the camera angle around up axis for web ui
     import PythonQt.QtGui
@@ -200,8 +203,7 @@ if 0: #calcing the camera angle around up axis for web ui
 
         return vec, ang
 
-    camid = r.getCameraId()
-    cament = r.getEntity(camid)
+    cament = naali.getCamera()
     p = cament.placeable
 
     #print toAngleAxis(p.Orientation)
@@ -612,7 +614,7 @@ if 0:
     worldstream = r.getServerConnection()
     worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
-if 1: #getUserAvatar 
+if 0: #getUserAvatar 
     ent = naali.getUserAvatar()
     print "User's avatar_id:", ent.id
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
@@ -823,7 +825,7 @@ if 0: #getrexlogic test
     #entid = entity_id_t(2)
     #l.SendRexPrimData(entid)
     
-if 1: #rexlogic as service with qt mechanism
+if 0: #rexlogic as service with qt mechanism
     #from __main__ import _naali
     #l = _naali.GetWorldLogic()
     #print l, dir(l)
