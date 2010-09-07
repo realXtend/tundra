@@ -32,6 +32,7 @@ namespace Scene
     class Entity : public QObject
     {
         Q_OBJECT
+        Q_PROPERTY (uint Id READ GetId)
 
         friend class SceneManager;
 

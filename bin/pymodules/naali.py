@@ -15,5 +15,21 @@ def getScene(name):
 
 # module variables
 renderer = _naali.GetRenderer()
+worldlogic = _naali.GetWorldLogic()
 inputcontext = _naali.GetInputContext()
 mediaplayerservice = _naali.GetMediaPlayerService()
+
+#helper funcs to hide api indirections/inconsistenties that were hard to fix,
+#-- these allow to remove the old corresponding hand written c funcs in pythonscriptmodule.cpp
+import rexviewer as r
+def getUserAvatar():
+    qent = worldlogic.GetUserAvatarEntityRaw()
+    if qent is not None:
+        #print qent.Id
+        pyent = r.getEntity(qent.Id)
+        #print pyent, pyent.id
+        return pyent
+    else:
+        raise ValueError, "No avatar. No scene, not logged in?"
+        
+    
