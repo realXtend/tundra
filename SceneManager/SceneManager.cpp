@@ -224,10 +224,15 @@ namespace Scene
                     if (new_comp)
                     {
                         new_comp->DeserializeFrom(comp_elem, change);
-                        new_comp->ComponentChanged(change);
                     }
                     comp_elem = comp_elem.nextSiblingElement("component");
                 }
+                
+                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                for(uint i = 0; i < components.size(); ++i)
+                    components[i]->ComponentChanged(change);
             }
             ent_elem = ent_elem.nextSiblingElement("entity");
         }

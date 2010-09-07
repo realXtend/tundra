@@ -72,7 +72,7 @@ void LoginScreenModule::PostInitialize()
 {
     input_ = framework_->Input().RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
-    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
     Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     if (ui)

@@ -26,9 +26,8 @@ namespace ECEditor
     class ECAttributeEditorBase;
 
     //! ECComponentEditor is responsible to create the all attribute editors for each component (Note! each component must contain same attributes).
-    /*! ECComponentEditor will only accept same type of components. When the object is first time initialized, user need tell the typename
-     *  of the component that we want to edit. ECComponentEditor is holding a GetAttributeEditor static method switch will check if 
-     *  component's attribute implementation is supported in ECAttributeEditor class. If the attribute is supported, mehtod will create a new 
+    /*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttribute object
+     *  and insert it to ECBrower object.
      *  ECAttributeEditor instance for that attribute type.
      *  \ingroup ECEditorModuleClient.
      */

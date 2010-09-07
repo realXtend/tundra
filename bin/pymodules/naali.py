@@ -17,4 +17,3 @@ def getScene(name):
 renderer = _naali.GetRenderer()
 inputcontext = _naali.GetInputContext()
 mediaplayerservice = _naali.GetMediaPlayerService()
-
