@@ -23,17 +23,12 @@ EC_InputMapper::~EC_InputMapper()
 
 void EC_InputMapper::RegisterMapping(const QString &action, const QKeySequence &keySeq)
 {
-//    QString inputActionName = input_->Name() + '.' + action;
-//    const QKeySequence &keyBinding = framework_->Input().KeyBinding(inputActionName, keySeq);
     mappings_[keySeq] = action;
-//    KeyEventSignal *signal = &input_->RegisterKeyEvent(keySeq);
-//    connect(signal, SIGNAL(SequencePressed(KeyEvent &)), SLOT(test()));
 }
 
 EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework())
 {
-    ///\todo Generate random/unique name for input context?
     input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
@@ -47,11 +42,7 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
 {
-    // We only act on key presses that are not repeats.
-//    if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
-//        return;
-
-    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode, key->modifiers));
+    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode | key->modifiers));
     if (it == mappings_.end())
         return;
 
@@ -69,7 +60,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
         return;
     }
 
-    LogDebug("Performing action " + action.toStdString() + "for entity " + ToString(entity->GetId()));
+    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
     entity->Exec(action);
 }
 

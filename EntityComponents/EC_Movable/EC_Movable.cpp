@@ -2,13 +2,12 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   EC_Movable.cpp
- *  @brief  
+ *  @brief  Contains Entity Actions for moving entity with this component in scene.
  */
 
 #include "StableHeaders.h"
 #include "EC_Movable.h"
 
-#include "EventManager.h"
 #include "NetworkEvents.h"
 #include "WorldStream.h"
 #include "Entity.h"
@@ -20,20 +19,6 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Movable")
 
 EC_Movable::~EC_Movable()
 {
-}
-
-bool EC_Movable::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
-{
-    if (category_id == frameworkCategory_)
-    {
-        if (event_id == Foundation::WORLD_STREAM_READY)
-        {
-            ProtocolUtilities::WorldStreamReadyEvent *event_data = static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
-            if (event_data)
-                worldStream_ = event_data->WorldStream;
-        }
-    }
-    return false;
 }
 
 void EC_Movable::SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream)
@@ -102,9 +87,5 @@ void EC_Movable::Exec(const QString &action, const QVector<QString> &params)
 EC_Movable::EC_Movable(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework())
 {
-    Foundation::EventManagerPtr eventMgr = framework_->GetEventManager();
-    eventMgr->RegisterEventSubscriber(this, 99);
-    frameworkCategory_ = eventMgr->QueryEventCategory("Framework");
-
 }
 

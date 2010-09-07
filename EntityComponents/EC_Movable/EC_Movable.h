@@ -28,8 +28,6 @@ public:
     /// Destructor.
     ~EC_Movable();
 
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
-
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:

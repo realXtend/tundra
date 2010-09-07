@@ -19,8 +19,8 @@ class KeyEvent;
 class InputContext;
 
 /** Registers an InputContext from the Naali Input subsystem and uses it to translate
- *  given set of keys to Entity Actions on the entity the component is part of.
- */
+    given set of keys to Entity Actions on the entity the component is part of.
+*/
 class EC_InputMapper : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_InputMapper);
@@ -34,15 +34,16 @@ public:
 
 public slots:
     /** Register new key sequence - action mapping for this input mapper.
-     *  @param action Name of the action.
-     *  @param keySeq Key sequence.
+        @param action Name of the action.
+        @param keySeq Key sequence.
+        @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
      */
     void RegisterMapping(const QString &action, const QKeySequence &keySeq);
 
 private:
     /** Constructor.
-     *  @param module Declaring module.
-     */
+        @param module Declaring module.
+    */
     explicit EC_InputMapper(Foundation::ModuleInterface *module);
 
     /// Input context for this EC.
@@ -53,9 +54,9 @@ private:
 
 private slots:
     /** Handles key events from input service.
-     *  Performs entity action for for the parent entity if action mapping is registered for the key event.
-     *  @param key Key event.
-     */
+        Performs entity action for for the parent entity if action mapping is registered for the key event.
+        @param key Key event.
+    */
     void HandleKeyEvent(KeyEvent *key);
 };
 
