@@ -637,30 +637,6 @@ void RexLogicModule::EntityHovered(Scene::Entity* entity)
         scene_handler_->ClearHovers(0);
 }
 
-Vector3df RexLogicModule::GetCameraPosition() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetPosition();
-    else
-        return Vector3df();
-}
-
-Quaternion RexLogicModule::GetCameraOrientation() const
-{
-    if (camera_entity_.expired())
-        return Quaternion::IDENTITY;
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetOrientation();
-    else
-        return Quaternion::IDENTITY;
-}
-
 Real RexLogicModule::GetCameraViewportWidth() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
@@ -995,7 +971,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3Df camera_position = this->GetCameraPosition();
+        Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 

@@ -213,10 +213,6 @@ namespace RexLogic
         Vector3df GetCameraUp() const;
         ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
         Vector3df GetCameraRight() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraPosition() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Quaternion GetCameraOrientation() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
         Real GetCameraViewportWidth() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.

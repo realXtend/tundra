@@ -180,6 +180,11 @@ if 0: #camera entity - it is an entity nowadays, and there is EC cam even
         #ort *= Quat(0, -.707, 0, .707)
         ort *= rot
         p.Orientation = ort
+        
+        #ec cam stuff:
+        print "FOV:", cament.camera.GetVerticalFov()
+        
+        
 
 if 0: #calcing the camera angle around up axis for web ui
     import PythonQt.QtGui
@@ -737,7 +742,7 @@ if 0:
 if 0:
     fov = r.getCameraFOV()
     #rightvec = V3(r.getCameraRight())
-    #campos = V3(r.getCameraPosition())
+    campos = naali.getCamera().placeable.Position
     #ent = naali.getUserAvatar()
     #entpos = V3(ent.pos)
     #width, height = r.getScreenSize()

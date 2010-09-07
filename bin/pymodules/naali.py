@@ -7,8 +7,6 @@ from __main__ import _naali
 #or is it better to just call the slots directly
 # module methods
 runjs = _naali.RunJavascriptString
-getCamera = _naali.GetCamera
-getCameraEntity = _naali.GetCameraEntity
 
 def getScene(name):
     return _naali.GetScene(name)
