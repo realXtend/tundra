@@ -42,7 +42,7 @@ public:
     void Update();
     
     //! Replicate the whole scene to a new user
-    void NewUser(KristalliProtocol::UserConnection* connection);
+    void NewUserConnected(KristalliProtocol::UserConnection* connection);
     
 private:
     //! Owning module

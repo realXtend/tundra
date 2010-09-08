@@ -23,7 +23,7 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     localDirtyEntities_.clear();
 }
 
-void SyncManager::NewUser(KristalliProtocol::UserConnection* connection)
+void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* connection)
 {
 }
 

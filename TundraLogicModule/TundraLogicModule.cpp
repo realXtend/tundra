@@ -69,13 +69,13 @@ void TundraLogicModule::PostInitialize()
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
 
     RegisterConsoleCommand(Console::CreateCommand("startserver", 
-        "Starts a server. Usage: \"startserver(port,tcp|udp)\"",
+        "Starts a server. Usage: \"startserver(port)\"",
         Console::Bind(this, &TundraLogicModule::ConsoleStartServer)));
     RegisterConsoleCommand(Console::CreateCommand("stopserver", 
         "Stops the server",
         Console::Bind(this, &TundraLogicModule::ConsoleStopServer)));
     RegisterConsoleCommand(Console::CreateCommand("connect", 
-        "Connects to a server. Usage: \"connect( address,[port],[tcp|udp],[username],[password])\"",
+        "Connects to a server. Usage: \"connect( address,[port],[username],[password])\"",
         Console::Bind(this, &TundraLogicModule::ConsoleConnect)));
     RegisterConsoleCommand(Console::CreateCommand("disconnect", 
         "Disconnects from a server.",
@@ -110,19 +110,15 @@ void TundraLogicModule::Update(f64 frametime)
 Console::CommandResult TundraLogicModule::ConsoleStartServer(const StringVector& params)
 {
     unsigned short port = cDefaultPort;
-    bool use_udp = true;
     
     try
     {
         if (params.size() > 0)
             port = ParseString<int>(params[0]);
-        if (params.size() > 1)
-            if (params[1] == "tcp")
-                use_udp = false;
     }
     catch (...) {}
     
-    ServerStart(port, use_udp);
+    ServerStart(port);
     
     return Console::ResultSuccess();
 }
@@ -140,7 +136,6 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
         return Console::ResultFailure("No address specified");
     
     unsigned short port = cDefaultPort;
-    bool use_udp = true;
     std::string username = "test";
     std::string password = "test";
     
@@ -149,16 +144,13 @@ Console::CommandResult TundraLogicModule::ConsoleConnect(const StringVector& par
         if (params.size() > 1)
             port = ParseString<int>(params[1]);
         if (params.size() > 2)
-            if (params[2] == "tcp")
-                use_udp = false;
+            username = params[2];
         if (params.size() > 3)
-            username = params[3];
-        if (params.size() > 4)
-            password = params[4];
+            password = params[3];
     }
     catch (...) {}
     
-    ClientLogin(params[0], port, use_udp, username, password);
+    ClientLogin(params[0], port, username, password);
     
     return Console::ResultSuccess();
 }
@@ -175,7 +167,7 @@ bool TundraLogicModule::IsServer() const
     return kristalliModule_->IsServer();
 }
 
-void TundraLogicModule::ClientLogin(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password)
+void TundraLogicModule::ClientLogin(const std::string& address, unsigned short port, const std::string& username, const std::string& password)
 {
     if (kristalliModule_->IsServer())
     {
@@ -187,7 +179,7 @@ void TundraLogicModule::ClientLogin(const std::string& address, unsigned short p
     password_ = password;
     reconnect_ = false;
     
-    kristalliModule_->Connect(address.c_str(), port, use_udp ? SocketOverUDP : SocketOverTCP);
+    kristalliModule_->Connect(address.c_str(), port, SocketOverTCP);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
@@ -245,11 +237,11 @@ MessageConnection* TundraLogicModule::ClientGetConnection()
     return kristalliModule_->GetMessageConnection();
 }
 
-void TundraLogicModule::ServerStart(unsigned short port, bool use_udp)
+void TundraLogicModule::ServerStart(unsigned short port)
 {
     if (!kristalliModule_->IsServer())
     {
-        if (!kristalliModule_->StartServer(port, use_udp ? SocketOverUDP : SocketOverTCP))
+        if (!kristalliModule_->StartServer(port, SocketOverTCP))
             return;
         Scene::ScenePtr scene = framework_->CreateScene("TundraServer");
         framework_->SetDefaultWorldScene(scene);
@@ -278,10 +270,8 @@ bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t 
     {
         if (event_id == Events::EVENT_TUNDRA_LOGIN)
         {
-            // Note: here UDP is chosen in a hardcoded way
-            bool use_udp = true;
             Events::TundraLoginEventData* event_data = checked_static_cast<Events::TundraLoginEventData*>(data);
-            ClientLogin(event_data->address_, event_data->port_ ? event_data->port_ : cDefaultPort, use_udp, event_data->username_, event_data->password_);
+            ClientLogin(event_data->address_, event_data->port_ ? event_data->port_ : cDefaultPort, event_data->username_, event_data->password_);
         }
     }
     
