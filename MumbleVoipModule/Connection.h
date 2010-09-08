@@ -58,6 +58,7 @@ namespace MumbleLib
         Q_PROPERTY(bool sending_audio) // \todo implement
         Q_PROPERTY(bool receiving_audio) // \todo implement
         Q_PROPERTY(bool sending_position) // \todo implement
+        
     public:
         enum State { STATE_CONNECTING, STATE_AUTHENTICATING, STATE_OPEN, STATE_CLOSED, STATE_ERROR };
 
@@ -222,7 +223,7 @@ namespace MumbleLib
         QReadWriteLock lock_users_;
         
     signals:
-        void StateChanged(MumbleLib::Connection::State state);
+        void StateChanged(MumbleLib::Connection::State state); // \todo register meta data or use int type..
         void TextMessageReceived(QString &text); 
         void AudioDataAvailable(short* data, int size);
 

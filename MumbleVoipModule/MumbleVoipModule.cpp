@@ -82,8 +82,7 @@ namespace MumbleVoip
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         if (event_category_framework_ == 0)
             LogError("Unable to find event category for Framework");
-
-        SetupSettingsWidget();
+       SetupSettingsWidget();
     }
 
     void MumbleVoipModule::Uninitialize()
@@ -344,7 +343,7 @@ namespace MumbleVoip
         if (!ui)
             return;
 
-        settings_widget_ = new SettingsWidget(&settings_);
+        settings_widget_ = new SettingsWidget(in_world_voice_provider_, &settings_);
 
         //QUiLoader loader;
         //QFile file("./data/ui/soundsettings.ui");

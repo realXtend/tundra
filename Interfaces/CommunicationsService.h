@@ -244,10 +244,11 @@ namespace Communications
             Q_OBJECT
         public:
             enum State {STATE_CLOSED, STATE_INITIALIZING, STATE_OPEN, STATE_ERROR};
-
             virtual ~SessionInterface() {};
-            virtual QString Description() const = 0;
 
+        public slots:
+            
+            virtual QString Description() const = 0;
             virtual void Close() = 0;
             virtual State GetState() const = 0;
             virtual QString Reason() const = 0;

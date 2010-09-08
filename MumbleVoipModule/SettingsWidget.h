@@ -3,20 +3,19 @@
 #ifndef incl_MumbleVoipModule_SettingsWidget_h
 #define incl_MumbleVoipModule_SettingsWidget_h
 
-//#include "CommunicationsService.h"
-//#include <QGraphicsProxyWidget>
 #include "ui_VoiceSettings.h"
 
 namespace MumbleVoip
 {
     class Settings;
+    class Provider;
 
     /// Provide UI for Mumble Voip module settings. The widget is used with Settings service.
     class SettingsWidget : public QWidget, private Ui::VoiceSettings
     {
         Q_OBJECT
     public:
-        SettingsWidget(Settings* settings);
+        SettingsWidget(Provider* provider, Settings* settings);
         virtual ~SettingsWidget();
 
     private:
@@ -30,9 +29,10 @@ namespace MumbleVoip
         virtual void ApplyMicrophoneLevel();
         virtual void ApplyChanges();
         virtual void UpdateUI();
+        virtual void UpdateMicrophoneLevel();
     private:
         Settings* settings_;
-
+        Provider* provider_;
     };
 } // MumbleVoip
 

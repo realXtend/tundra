@@ -33,6 +33,7 @@ namespace MumbleVoip
     public:
         Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings);
         virtual ~Session();
+    public slots:
 
         virtual void Close();
         virtual State GetState() const;
@@ -67,6 +68,7 @@ namespace MumbleVoip
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
+        void ApplyMicrophoneLevel(PCMAudioFrame* frame);
 
         Foundation::Framework* framework_;
         State state_;
@@ -87,6 +89,7 @@ namespace MumbleVoip
         QMap<int, sound_id_t> audio_playback_channels_;
         std::string recording_device_;
         Settings* settings_;
+        bool local_echo_mode_; // if true then acudio is only played locally
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);

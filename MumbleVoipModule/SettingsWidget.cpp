@@ -4,16 +4,16 @@
 #include "DebugOperatorNew.h"
 
 #include "SettingsWidget.h"
-#include <QSettings>
+//#include <QSettings>
 #include "Settings.h"
+#include "Provider.h"
 
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
 {
-    SettingsWidget::SettingsWidget(Settings* settings) : QWidget(), settings_(settings)
+    SettingsWidget::SettingsWidget(Provider* provider, Settings* settings) : QWidget(), provider_(provider), settings_(settings)
     {
-        settings_->Load();
         InitializeUI();
         UpdateUI();
     }
@@ -21,7 +21,6 @@ namespace MumbleVoip
     SettingsWidget::~SettingsWidget()
     {
         ApplyChanges();
-        settings_->Save();
     }
 
     void SettingsWidget::InitializeUI()
@@ -29,9 +28,8 @@ namespace MumbleVoip
         setupUi(this);
 
         QStringList items;
-        items.append("Allways Off");
-        items.append("Allways On");
-//        items.append("Push-To-Talk"); // \todo Implement the ptt mode first
+        items.append("Mute");
+        items.append("Continuous Transmission");
         this->defaultVoiceMode->addItems(items);
 
         LoadInitialState();
@@ -43,6 +41,8 @@ namespace MumbleVoip
         connect(this->encodeQualitySlider, SIGNAL(valueChanged(int)), this, SLOT(UpdateUI()));
         connect(this->defaultVoiceMode, SIGNAL(currentIndexChanged(int)), this, SLOT(ApplyChanges()));
         connect(this->microphoneLevelSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
+        connect(this->positionalAudioCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyChanges()));
+        connect(settings_, SIGNAL(MicrophoneLevelChanged(double)), this, SLOT(UpdateMicrophoneLevel()));
     }
 
     void SettingsWidget::LoadInitialState()
@@ -51,12 +51,22 @@ namespace MumbleVoip
         this->encodeQualitySlider->setValue(settings_->GetEncodeQuality()*100);
         this->defaultVoiceMode->setCurrentIndex(static_cast<int>(settings_->GetDefaultVoiceMode()));
         this->microphoneLevelSlider->setValue(settings_->GetMicrophoneLevel()*100);
-        this->enabledCheckBox->setChecked(settings_->GetEnabled());
+        if (settings_->GetPositionalAudioEnabled())
+            this->positionalAudioCheckBox->setCheckState(Qt::Checked);
+        else
+            this->positionalAudioCheckBox->setCheckState(Qt::Unchecked);
+    }
+
+    void SettingsWidget::UpdateMicrophoneLevel()
+    {
+        this->microphoneLevelSlider->setValue(settings_->GetMicrophoneLevel()*100);
+        UpdateUI();
     }
 
     void SettingsWidget::OpenMicrophoneAdjustmentWidget()
     {
-        // \todo Show the widget
+        if (provider_)
+            provider_->ShowMicrophoneAdjustmentDialog();
     }
 
     void SettingsWidget::ApplyChanges()
@@ -65,10 +75,11 @@ namespace MumbleVoip
         settings_->SetEncodeQuality( this->encodeQualitySlider->value()*0.01 );
         settings_->SetDefaultVoiceMode( Settings::VoiceMode(this->defaultVoiceMode->currentIndex()) );
         settings_->SetMicrophoneLevel( this->microphoneLevelSlider->value()*0.01 );
-        settings_->SetEnabled( this->enabledCheckBox->isChecked() );
+        if (this->positionalAudioCheckBox->checkState() == Qt::Checked)
+            settings_->SetPositionalAudioEnabled(true);
+        else
+            settings_->SetPositionalAudioEnabled(false);
         settings_->Save();
-
-        settings_->property("playback_buffer_size_ms") = this->playbackBufferSlider->value();
 
         UpdateUI();
     }
