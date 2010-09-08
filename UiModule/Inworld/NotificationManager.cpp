@@ -155,7 +155,7 @@ namespace UiServices
             // Start notification
             notification_widget->Start();
         }
-		emit ShowNotificationCalled(notification_widget->GetMessageW());
+		emit ShowNotificationCalled(notification_widget->GetMessage());
     }
 
     void NotificationManager::SetConnectionState(UiServices::ConnectionState connection_state)
