@@ -62,8 +62,8 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
     {
         ///\todo Better protection agains malformed action strings?
         int idx = action.indexOf('(');
-        QString &act = action.left(idx);
-        QString &parsedAction = action.mid(idx + 1);
+        QString act = action.left(idx);
+        QString parsedAction = action.mid(idx + 1);
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringVector parameters = parsedAction.split(',').toVector();
