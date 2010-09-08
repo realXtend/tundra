@@ -22,6 +22,7 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #include <vector>
 #include <list>
 
+typedef signed char s8;
 typedef unsigned char u8;
 typedef unsigned char uchar;
 typedef unsigned short u16;

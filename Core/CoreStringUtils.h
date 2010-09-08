@@ -11,6 +11,8 @@
 #include "CoreDefines.h"
 #include "CoreTypes.h"
 
+#include <QString>
+
 static std::wstring ToWString(const std::string &str)
 {
     std::wstring w_str(str.length(), L' ');
@@ -103,6 +105,12 @@ void ReplaceSubstringInplace(std::string &str, const std::string &replace_this, 
     \param replace_with Char to replace with
  */
 void ReplaceCharInplace(std::string& str, char replace_this, char replace_with);    
+
+//! Convert vector to string
+std::string BufferToString(const std::vector<s8>& buffer);
+
+//! Convert string to vector
+std::vector<s8> StringToBuffer(const std::string& str);
 
 #endif
 
