@@ -137,24 +137,23 @@ namespace MumbleVoip
             session_->DisableAudioReceiving();
         }
 
+        
         microphone_adjustment_widget_ = new MicrophoneAdjustmentWidget(framework_, settings_);
-        UiProxyWidget* proxy = ui_service->AddWidgetToScene(microphone_adjustment_widget_, Qt::Dialog);
-        proxy->setWindowTitle("Local Test Mode");
         microphone_adjustment_widget_->setWindowTitle("Local Test Mode");
-//        ui_service->AddWidgetToScene(microphone_adjustment_widget_, Qt::Widget);
-        ui_service->ShowWidget(microphone_adjustment_widget_);
-        ui_service->BringWidgetToFront(microphone_adjustment_widget_);
+        microphone_adjustment_widget_->setAttribute(Qt::WA_DeleteOnClose, true);
+        microphone_adjustment_widget_->show();
+        connect(microphone_adjustment_widget_, SIGNAL(destroyed()), this, SLOT(OnMicrophoneAdjustmentWidgetDestroyed()));
 
-        connect(microphone_adjustment_widget_, SIGNAL(destroyed()), this, SLOT(ClearMicrophoneAdjustmentWidget()));
         if (audio_sending_was_enabled)
             connect(microphone_adjustment_widget_, SIGNAL(destroyed()), session_, SLOT(EnableAudioSending()));
         if (audio_receiving_was_enabled)
             connect(microphone_adjustment_widget_, SIGNAL(destroyed()), session_, SLOT(EnableAudioReceiving()));
     }
 
-    void Provider::ClearMicrophoneAdjustmentWidget()
+    void Provider::OnMicrophoneAdjustmentWidgetDestroyed()
     {
         microphone_adjustment_widget_ = 0;
     }
+
 
 } // MumbleVoip

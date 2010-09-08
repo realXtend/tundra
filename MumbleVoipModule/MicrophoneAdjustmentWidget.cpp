@@ -174,12 +174,5 @@ namespace MumbleVoip
     {
         microphone_level_ = static_cast<double>(microphoneLevelSlider->value()*0.01);
     }
-
-    void MicrophoneAdjustmentWidget::close()
-    {
-        QWidget::close();
-        emit Closed(true);
-        deleteLater();
-    }
-
+ 
 } // MumbleVoip

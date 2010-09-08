@@ -50,7 +50,7 @@ namespace MumbleVoip
 
     private slots:
         void OnMumbleServerInfoReceived(ServerInfo info);
-        void ClearMicrophoneAdjustmentWidget();
+        void OnMicrophoneAdjustmentWidgetDestroyed();
     };
 
 } // MumbleVoip
