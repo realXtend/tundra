@@ -10,6 +10,9 @@
 
 #include "ComponentInterface.h"
 #include "Declare_EC.h"
+#include "Vector3d.h"
+
+class Quaternion;
 
 namespace ProtocolUtilities
 {
@@ -31,7 +34,7 @@ public:
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:
-    /** ComponentInterface override.
+    /*
         This component supports the following actions:
         -MoveForward
         -MoveBackward
@@ -40,17 +43,24 @@ public slots:
         -RotateLeft
         -RotateRight
     */
-    void Exec(const QString &action, const QVector<QString> &params);
+    void Move(const QString &direction);
 
+    void Rotate(const QString &direction);
 private:
     /** Constructor.
         @param module Declaring module.
      */
     explicit EC_Movable(Foundation::ModuleInterface *module);
 
+    void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
+
     event_category_id_t frameworkCategory_;
 
     ProtocolUtilities::WorldStreamPtr worldStream_;
+
+private slots:
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif

@@ -34,11 +34,12 @@ public:
 
 public slots:
     /** Register new key sequence - action mapping for this input mapper.
-        @param action Name of the action.
         @param keySeq Key sequence.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        "More(Forward)" or "Move(Forward,100)" etc.
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
      */
-    void RegisterMapping(const QString &action, const QKeySequence &keySeq);
+    void RegisterMapping( const QKeySequence &keySeq, const QString &action);
 
 private:
     /** Constructor.

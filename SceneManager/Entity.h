@@ -9,15 +9,12 @@
 #include "AttributeInterface.h"
 
 #include <QObject>
-
-namespace Foundation
-{
-    class Framework;
-}
+#include <QMap>
 
 namespace Scene
 {
     class SceneManager;
+    class Action;
 
     //! Represents an entity in the world. 
     /*! An entity is just a collection of components, the components define what
@@ -61,6 +58,9 @@ namespace Scene
     public:
         //! component container
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
+
+        //! Action container
+        typedef QMap<QString, Action *> ActionMap;
 
         //! destructor
         ~Entity();
@@ -182,10 +182,10 @@ namespace Scene
         entity_id_t GetId() const { return id_; }
 
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
-        std::string GetName() const;
+        QString GetName() const;
 
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
-        std::string GetDescription() const;
+        QString GetDescription() const;
 
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const { return components_; }
@@ -264,39 +264,54 @@ namespace Scene
             return ret;
         }
 
+        //! Returns actions map for introspection/reflection.
+        const ActionMap &Actions() const { return actions_; }
+
 public slots:
+        /** Creates and registers new action for this entity, or returns an existing action.
+            @param name Name of the action.
+        */
+        Action *RegisterAction(const QString &name);
+
+        /** Connects action with a spesific name to a receiver object with member slot.
+            @param name Name of the action.
+            @param receiver Receiver object.
+            @param member Member slot.
+        */
+        void ConnectAction(const QString &name, const QObject *receiver, const char *member);
+
         /** Executes an arbitrary action for all components of this entity.
-         *  The components may or may not handle the action.
-         *  param action Name of the action.
-         */
+            The components may or may not handle the action.
+            @param action Name of the action.
+        */
         void Exec(const QString &action);
 
         /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param Parameter for the action.
-         */
+            @param action Name of the action.
+            @param Parameter for the action.
+        */
         void Exec(const QString &action, const QString &param);
 
         /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param param1 1st parameter for the action.
-         *  param param2 2nd parameter for the action.
-         */
+            @param action Name of the action.
+            @param param1 1st parameter for the action.
+            @param param2 2nd parameter for the action.
+        */
         void Exec(const QString &action, const QString &param1, const QString &param2);
 
         /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param param1 1st parameter for the action.
-         *  param param2 2nd parameter for the action.
-         *  param param3 3rd parameter for the action.
-         */
+            @param action Name of the action.
+            @param param1 1st parameter for the action.
+            @param param2 2nd parameter for the action.
+            @param param3 3rd parameter for the action.
+        */
         void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3);
 
         /** This is an overloaded function.
-         *  param action Name of the action.
-         *  param params List of parameters for the action.
-         */
-        void Exec(const QString &action, const QVector<QString> &params);
+            @param action Name of the action.
+            @param params List of parameters for the action.
+        */
+        void Exec(const QString &action, const QStringVector &params);
 
     private:
         //! a list of all components
@@ -310,6 +325,9 @@ public slots:
 
         //! Pointer to scene
         SceneManager* scene_;
+
+        //! Map of registered entity actions.
+        ActionMap actions_;
    };
 }
 

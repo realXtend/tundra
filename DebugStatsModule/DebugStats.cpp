@@ -522,7 +522,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
 
-    QVector<QString> execParameters;
+    QStringVector execParameters;
     for(size_t i = 2; i < params.size(); ++i)
         execParameters << params[i].c_str();
 
