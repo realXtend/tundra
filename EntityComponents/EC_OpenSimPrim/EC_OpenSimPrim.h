@@ -38,7 +38,7 @@ typedef std::map<uint8_t, Color> ColorMap;
 typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 
 //! Map for holding prim face uv parameter info
-typedef std::map<uint8_t, Real> UVParamMap;
+typedef std::map<uint8_t, float> UVParamMap;
 
 //! Each scene entity representing a prim in OpenSim sense has this component.
 class EC_OpenSimPrim : public Foundation::ComponentInterface
@@ -340,8 +340,8 @@ public:
     uint8_t DrawType; //enum!
     Foundation::Attribute<bool> IsVisible;
     Foundation::Attribute<bool> CastShadows;
-    Foundation::Attribute<Real> DrawDistance;
-    Foundation::Attribute<Real> LOD;
+    Foundation::Attribute<float> DrawDistance;
+    Foundation::Attribute<float> LOD;
 
     //bool IsVisible; 
     //bool CastShadows; 
@@ -372,11 +372,11 @@ public:
     uint8_t PrimDefaultMaterialType;
     MaterialTypeMap PrimMaterialTypes; //not a property
 
-    Real PrimDefaultRepeatU;
-    Real PrimDefaultRepeatV;
-    Real PrimDefaultOffsetU;
-    Real PrimDefaultOffsetV;
-    Real PrimDefaultUVRotation;
+    float PrimDefaultRepeatU;
+    float PrimDefaultRepeatV;
+    float PrimDefaultOffsetU;
+    float PrimDefaultOffsetV;
+    float PrimDefaultUVRotation;
     UVParamMap PrimRepeatU;
     UVParamMap PrimRepeatV;
     UVParamMap PrimOffsetU;
@@ -387,22 +387,22 @@ public:
     Foundation::Attribute<int> PathCurve;
     Foundation::Attribute<int> ProfileCurve;
 
-    Foundation::Attribute<Real> PathBegin;
-    Foundation::Attribute<Real> PathEnd;
-    Foundation::Attribute<Real> PathScaleX;
-    Foundation::Attribute<Real> PathScaleY;
-    Foundation::Attribute<Real> PathShearX;
-    Foundation::Attribute<Real> PathShearY;
-    Foundation::Attribute<Real> PathTwist;
-    Foundation::Attribute<Real> PathTwistBegin;
-    Foundation::Attribute<Real> PathRadiusOffset;
-    Foundation::Attribute<Real> PathTaperX;
-    Foundation::Attribute<Real> PathTaperY;
-    Foundation::Attribute<Real> PathRevolutions;
-    Foundation::Attribute<Real> PathSkew;
-    Foundation::Attribute<Real> ProfileBegin;
-    Foundation::Attribute<Real> ProfileEnd;
-    Foundation::Attribute<Real> ProfileHollow;
+    Foundation::Attribute<float> PathBegin;
+    Foundation::Attribute<float> PathEnd;
+    Foundation::Attribute<float> PathScaleX;
+    Foundation::Attribute<float> PathScaleY;
+    Foundation::Attribute<float> PathShearX;
+    Foundation::Attribute<float> PathShearY;
+    Foundation::Attribute<float> PathTwist;
+    Foundation::Attribute<float> PathTwistBegin;
+    Foundation::Attribute<float> PathRadiusOffset;
+    Foundation::Attribute<float> PathTaperX;
+    Foundation::Attribute<float> PathTaperY;
+    Foundation::Attribute<float> PathRevolutions;
+    Foundation::Attribute<float> PathSkew;
+    Foundation::Attribute<float> ProfileBegin;
+    Foundation::Attribute<float> ProfileEnd;
+    Foundation::Attribute<float> ProfileHollow;
 
     /*uint8_t PathCurve; 
     uint8_t ProfileCurve;

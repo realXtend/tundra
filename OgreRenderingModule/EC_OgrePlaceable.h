@@ -66,15 +66,15 @@ namespace OgreRenderer
         //! yaws the node
         /*! \param radians how many radians to yaw
          */
-        void SetYaw(Real radians);
+        void SetYaw(float radians);
         //! pitches the node
         /*! \param radians how many radians to pitch
          */
-        void SetPitch(Real radians);
+        void SetPitch(float radians);
         //! rolls the node
         /*! \param radians how many radians to roll
          */
-        void SetRoll(Real radians);
+        void SetRoll(float radians);
 
         //! get the yaw of the node
         float GetYaw() const;

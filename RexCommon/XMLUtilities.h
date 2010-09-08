@@ -8,7 +8,7 @@ class QDomElement;
 
 namespace RexTypes
 {
-    Real ParseReal(const std::string& text, Real default_value = 0.0f);
+    float ParseReal(const std::string& text, float default_value = 0.0f);
     int ParseInt(const std::string& text, int default_value = 0);
     Color ParseColor(const std::string& text);
     Vector3df ParseVector3(const std::string& text);
@@ -16,7 +16,7 @@ namespace RexTypes
     Quaternion ParseEulerAngles(const std::string& text);
     
     std::string WriteBool(bool value);
-    std::string WriteReal(Real value);
+    std::string WriteReal(float value);
     std::string WriteInt(int value);
     std::string WriteVector3(const Vector3df& vector);
     std::string WriteColor(const Color& color);
@@ -25,7 +25,7 @@ namespace RexTypes
 
     void SetAttribute(QDomElement& elem, const std::string& name, const char* value);
     void SetAttribute(QDomElement& elem, const std::string& name, const std::string& value);
-    void SetAttribute(QDomElement& elem, const std::string& name, Real value);
+    void SetAttribute(QDomElement& elem, const std::string& name, float value);
     void SetAttribute(QDomElement& elem, const std::string& name, bool value);
     void SetAttribute(QDomElement& elem, const std::string& name, int value);
 }

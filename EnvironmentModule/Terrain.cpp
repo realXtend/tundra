@@ -491,7 +491,7 @@ namespace Environment
             RequestTerrainTextures();
     }
 
-    void Terrain::SetTerrainHeightValues(const Real start_heights[num_terrain_textures], const Real height_ranges[num_terrain_textures])
+    void Terrain::SetTerrainHeightValues(const float start_heights[num_terrain_textures], const float height_ranges[num_terrain_textures])
     {
         for(int i = 0; i < num_terrain_textures; ++i)
         {
@@ -522,15 +522,15 @@ namespace Environment
                     Ogre::GpuProgramParametersSharedPtr params = pass->getVertexProgramParameters();
                     if(!params.isNull())
                     {
-                        Real lowest_height = 65535;
+                        float lowest_height = 65535;
                         for(uint i = 0; i < num_terrain_textures; i++)
                         {
-                            Real startHeight = start_heights[i];
-                            Real endHeight = height_ranges[i];
+                            float startHeight = start_heights[i];
+                            float endHeight = height_ranges[i];
                             if(startHeight < lowest_height)
                                 lowest_height = startHeight;
 
-                            Real heightDelta = endHeight - startHeight;
+                            float heightDelta = endHeight - startHeight;
                             Ogre::Vector4 detailRegion(startHeight, startHeight+heightDelta/4, startHeight+((heightDelta*3)/4), endHeight);
                             params->setNamedConstant("detailRegion" + Ogre::StringConverter::toString(i), detailRegion);
                         }
@@ -544,22 +544,22 @@ namespace Environment
         emit TerrainTextureChanged();
     }
 
-    const Real &Terrain::GetTerrainTextureStartHeight(int index) const
+    const float &Terrain::GetTerrainTextureStartHeight(int index) const
     {
         if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
         return start_heights_[index];
     }
 
-    const Real &Terrain::GetTerrainTextureHeightRange(int index) const
+    const float &Terrain::GetTerrainTextureHeightRange(int index) const
     {
         if(index > num_terrain_textures - 1) index = num_terrain_textures - 1;
         return height_ranges_[index];
     }
 
-    Real Terrain::GetLowestTerrainHeight()
+    float Terrain::GetLowestTerrainHeight()
     {
-        Real small = 65535;
-        Real current_value = 0;
+        float small = 65535;
+        float current_value = 0;
         Scene::EntityPtr entity = GetTerrainEntity().lock();
         assert(entity.get());
         EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();

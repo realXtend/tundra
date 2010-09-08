@@ -778,8 +778,8 @@ namespace OgreRenderer
         if (!initialized_)
             return result;
 
-        Real screenx = x / (Real)renderwindow_->getWidth();
-        Real screeny = y / (Real)renderwindow_->getHeight();
+        float screenx = x / (float)renderwindow_->getWidth();
+        float screeny = y / (float)renderwindow_->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
         ray_query_->setRay(ray);

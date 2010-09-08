@@ -126,7 +126,7 @@ namespace RexLogic
                 buttonsbillboardSet_->setVisible(false);
     }
 
-    void EC_HoveringWidget::SetCameraDistance(Real dist)
+    void EC_HoveringWidget::SetCameraDistance(float dist)
     {
         if (!detached_)
         {
@@ -245,7 +245,7 @@ namespace RexLogic
         }*/
     }
 
-    void EC_HoveringWidget::WidgetClicked(Real x, Real y)
+    void EC_HoveringWidget::WidgetClicked(float x, float y)
     {
         if(buttons_visible_ && !buttons_disabled_)
             buttonswidget_->ForwardMouseClickEvent(x,y);

@@ -22,9 +22,9 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     Foundation::Attribute<QString>      soundId_;
-    Foundation::Attribute<Real>         soundInnerRadius_;
-    Foundation::Attribute<Real>         soundOuterRadius_;
-    Foundation::Attribute<Real>         soundGain_;
+    Foundation::Attribute<float>         soundInnerRadius_;
+    Foundation::Attribute<float>         soundOuterRadius_;
+    Foundation::Attribute<float>         soundGain_;
     Foundation::Attribute<bool>         loopSound_;
     Foundation::Attribute<bool>         triggerSound_;
 
