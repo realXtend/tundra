@@ -577,7 +577,7 @@ Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(Real newyaw)
+void RexLogicModule::SetAvatarYaw(float newyaw)
 {
     avatar_controllable_->SetYaw(newyaw);
 }
@@ -587,7 +587,7 @@ void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
     avatar_controllable_->SetRotation(newrot);
 }
 
-void RexLogicModule::SetCameraYawPitch(Real newyaw, Real newpitch)
+void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
 {
     camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
@@ -637,7 +637,7 @@ void RexLogicModule::EntityHovered(Scene::Entity* entity)
         scene_handler_->ClearHovers(0);
 }
 
-Real RexLogicModule::GetCameraViewportWidth() const
+float RexLogicModule::GetCameraViewportWidth() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
     if (renderer.get())
@@ -646,7 +646,7 @@ Real RexLogicModule::GetCameraViewportWidth() const
         return 0;
 }
 
-Real RexLogicModule::GetCameraViewportHeight() const
+float RexLogicModule::GetCameraViewportHeight() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
     if (renderer.get())
@@ -655,7 +655,7 @@ Real RexLogicModule::GetCameraViewportHeight() const
         return 0;
 }
 
-Real RexLogicModule::GetCameraFOV() const
+float RexLogicModule::GetCameraFOV() const
 {
     if (camera_entity_.expired())
         return 0.0f;
@@ -828,9 +828,9 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         return;
 
     // Damping interpolation factor, dependent on frame time
-    Real factor = pow(2.0, -frametime * movement_damping_constant_);
+    float factor = pow(2.0, -frametime * movement_damping_constant_);
     clamp(factor, 0.0f, 1.0f);
-    Real rev_factor = 1.0 - factor;
+    float rev_factor = 1.0 - factor;
 
     found_avatars_.clear();
 
@@ -1014,8 +1014,8 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     bool ret_val = false;
     QList<EC_HoveringWidget*> visible_widgets;
 
-    Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
-    Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
+    float scr_x = x/(float)GetOgreRendererPtr()->GetWindowWidth();
+    float scr_y = y/(float)GetOgreRendererPtr()->GetWindowHeight();
 
     //expand to range -1 -> 1
     scr_x = (scr_x*2)-1;

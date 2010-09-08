@@ -104,7 +104,7 @@ namespace RexLogic
         //! called when the widget is clicked in 3D scene
         //! @param x coordinate (clamped in 0-1) 
         //! @param y coordinate (clamped in 0-1)
-        void WidgetClicked(Real x, Real y);
+        void WidgetClicked(float x, float y);
 
         /// Hides the hovering text
         void Hide();
@@ -125,10 +125,10 @@ namespace RexLogic
         void AddButton(QPushButton &button);
 
         //! set widgets distance from the camera
-        void SetCameraDistance(Real dist);
+        void SetCameraDistance(float dist);
 
         //! get widgets distance from the camera
-        Real GetCameraDistance(){return cam_distance_;}
+        float GetCameraDistance(){return cam_distance_;}
 
         //! Adjust what to show, might disable button or set the widget invisible.
         void AdjustWidgetinfo();
@@ -216,9 +216,9 @@ namespace RexLogic
 
         QPointF name_scr_pos_;
 
-        Real cam_distance_;
+        float cam_distance_;
 
-        Real bb_rel_posy;
+        float bb_rel_posy;
     };
 }
 #endif

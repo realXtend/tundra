@@ -64,7 +64,7 @@ namespace Environment
          * @param start_heights array contains 4 different terrain texture start height value in meters.
          * @param height_ranges array contains 4 different terrain texture end height value in meters.
          */
-        void SetTerrainHeightValues(const Real start_heights[num_terrain_textures], const Real height_ranges[num_terrain_textures]);
+        void SetTerrainHeightValues(const float start_heights[num_terrain_textures], const float height_ranges[num_terrain_textures]);
 
         //! Request new terrain textures from the server.
         void RequestTerrainTextures();
@@ -85,14 +85,14 @@ namespace Environment
 
         //! Get terrain texture start height in meters.
         //! @param switch texture height value need to return range[0-3].
-        const Real &GetTerrainTextureStartHeight(int index) const;
+        const float &GetTerrainTextureStartHeight(int index) const;
 
         //! Get terrain texture height ranges in meters.
         //! @param switch texture height value need to return range[0-3].
-        const Real &GetTerrainTextureHeightRange(int index) const;
+        const float &GetTerrainTextureHeightRange(int index) const;
 
         //! Iterates throught whole heightmap and return the lowest value on that map.
-        Real GetLowestTerrainHeight();
+        float GetLowestTerrainHeight();
 
     signals:
         //! Signal is sended when height map values have changed.
@@ -121,10 +121,10 @@ namespace Environment
         RexTypes::RexAssetID terrain_textures_[num_terrain_textures];
 
         /// Array of terrain texture start heights.
-        Real start_heights_[num_terrain_textures];
+        float start_heights_[num_terrain_textures];
 
         /// Array of terrain texture end heights.
-        Real height_ranges_[num_terrain_textures];
+        float height_ranges_[num_terrain_textures];
 
         Scene::EntityWeakPtr cachedTerrainEntity_;
     };

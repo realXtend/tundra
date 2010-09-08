@@ -33,8 +33,7 @@ typedef unsigned int uint;
 typedef unsigned long ulong;
 typedef short s16;
 typedef int s32;
-typedef float Real;
-typedef Real f32;
+typedef float f32;
 typedef double f64;
 
 // etc... add more

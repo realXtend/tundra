@@ -23,7 +23,7 @@ namespace HttpUtilities
         //! Http method
         HttpUtilities::HttpRequest::Method method_;
         //! Connection timeout
-        Real timeout_;
+        float timeout_;
         //! Data content type. Only has significance if data exists
         std::string content_type_;
         //! Data to be sent in the request

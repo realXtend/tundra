@@ -123,7 +123,7 @@ void EC_OgreSky::CreateSky(bool show)
     }
 }
 
-/*bool EC_OgreSky::SetSkyBox(const std::string& material_name, Real distance)
+/*bool EC_OgreSky::SetSkyBox(const std::string& material_name, float distance)
 {
     if (renderer_.expired())
         return false;

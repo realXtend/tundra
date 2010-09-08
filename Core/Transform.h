@@ -6,9 +6,9 @@
 
 struct Transform
 {
-    Vector3D<Real> position;
-    Vector3D<Real> rotation;
-    Vector3D<Real> scale;
+    Vector3D<float> position;
+    Vector3D<float> rotation;
+    Vector3D<float> scale;
 
     Transform():
         position(0),
@@ -24,21 +24,21 @@ struct Transform
     {
     }
 
-    Transform(const Vector3D<Real> &pos, const Vector3D<Real> &rot, const Vector3D<Real> &scale):
+    Transform(const Vector3D<float> &pos, const Vector3D<float> &rot, const Vector3D<float> &scale):
         position(pos),
         rotation(rot),
         scale(scale)
     {
     }
 
-    void SetPos(Real x, Real y, Real z)
+    void SetPos(float x, float y, float z)
     {
         position.x = x;
         position.y = y;
         position.z = z;
     }
 
-    void SetRot(Real x, Real y, Real z)
+    void SetRot(float x, float y, float z)
     {
         rotation.x = x;
         rotation.y = y;
@@ -46,7 +46,7 @@ struct Transform
     }
 
     //! Set scale. Note! scale cannot contain zero value.
-    void SetScale(Real x, Real y, Real z)
+    void SetScale(float x, float y, float z)
     {
         scale.x = x;
         scale.y = y;

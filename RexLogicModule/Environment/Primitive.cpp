@@ -1849,7 +1849,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     std::string asset_id = msg.ReadUUID().ToString();
     RexUUID entityid = msg.ReadUUID();
     msg.ReadUUID(); // OwnerID
-    Real gain = msg.ReadF32();
+    float gain = msg.ReadF32();
     u8 flags = msg.ReadU8();
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
@@ -1890,7 +1890,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     msg.ResetReading();
 
     RexUUID entityid = msg.ReadUUID();
-    Real gain = msg.ReadF32();
+    float gain = msg.ReadF32();
 
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity)

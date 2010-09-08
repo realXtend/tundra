@@ -219,7 +219,7 @@ namespace Asset
                 if (i->second.get() == asset)
                 {
                     total_size -= asset->GetSize();
-                    AssetModule::LogDebug("Removed cached asset " + asset->GetId() + " age " + ToString<Real>(asset->GetAge()));
+                    AssetModule::LogDebug("Removed cached asset " + asset->GetId() + " age " + ToString<float>(asset->GetAge()));
                     assets_.erase(i);
                     oldest_assets.erase(oldest_assets.begin());
                     break;

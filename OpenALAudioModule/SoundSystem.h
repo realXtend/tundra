@@ -48,19 +48,19 @@ namespace OpenALAudio
         //! Sets master gain of whole sound system
         /*! \param master_gain New master gain, in range 0.0 - 1.0
          */
-        virtual void SetMasterGain(Real master_gain);
+        virtual void SetMasterGain(float master_gain);
         
         //! Sets master gain of certain sound types
         /*! \param type Sound channel type to adjust
             \param master_gain New master gain, in range 0.0 - 1.0
          */
-        virtual void SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, Real master_gain);
+        virtual void SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, float master_gain);
         
         //! Gets master gain of whole sound system
-        virtual Real GetMasterGain();
+        virtual float GetMasterGain();
         
         //! Sets master gain of certain sound types
-        virtual Real GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type);        
+        virtual float GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type);        
         
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
@@ -130,13 +130,13 @@ namespace OpenALAudio
         /*! \param id Channel id
             \param pitch Pitch relative to sound's original pitch (1.0 = original)
          */
-        virtual void SetPitch(sound_id_t id, Real pitch);
+        virtual void SetPitch(sound_id_t id, float pitch);
         
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
          */
-        virtual void SetGain(sound_id_t id, Real gain);
+        virtual void SetGain(sound_id_t id, float gain);
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
@@ -165,7 +165,7 @@ namespace OpenALAudio
             If outer_radius is 0, there will be no attenuation (sound is always played at gain)
             Also, for non-positional channels the range parameters have no effect.
          */
-        virtual void SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff); 
+        virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff); 
 
         //! Get recording device names
         virtual StringVector GetRecordingDevices();
@@ -265,9 +265,9 @@ namespace OpenALAudio
         Quaternion listener_orientation_;
         
         //! Master gain for whole sound system
-        Real master_gain_;
+        float master_gain_;
         //! Master gain for individual sound types
-        std::map<Foundation::SoundServiceInterface::SoundType, Real> sound_master_gain_;
+        std::map<Foundation::SoundServiceInterface::SoundType, float> sound_master_gain_;
 
         boost::mutex mutex;
     };

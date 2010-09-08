@@ -21,10 +21,14 @@ namespace OgreRenderer
 	public slots:
 		void StereoOn();
 		void StereoOff();
+		void ColorLeftChanged();
+		void ColorRightChanged();
 
 	signals:
 		void EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
 		void DisableStereo();
+		void ChangeColorLeft(qreal r, qreal g, qreal b);
+		void ChangeColorRight(qreal r, qreal g, qreal b);
 
     private:
         Foundation::Framework* framework_;

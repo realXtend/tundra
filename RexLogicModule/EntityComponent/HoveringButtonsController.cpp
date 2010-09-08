@@ -24,11 +24,11 @@ namespace RexLogic
         RexLogicModule::LogInfo( "Poke!" );
     }
 
-    void HoveringButtonsController::ForwardMouseClickEvent(Real x, Real y)
+    void HoveringButtonsController::ForwardMouseClickEvent(float x, float y)
     { 
         //To widgetspace
-        Real x_widgetspace = x*(Real)this->width();
-        Real y_widgetspace = y*(Real)this->height();
+        float x_widgetspace = x*(float)this->width();
+        float y_widgetspace = y*(float)this->height();
 
         QPoint pos(x_widgetspace,y_widgetspace);
 
