@@ -121,18 +121,18 @@ namespace RexLogic
             
         try
         {
-            float profileBegin = primitive.ProfileBegin;
-            float profileEnd = 1.0f - primitive.ProfileEnd;
-            float profileHollow = primitive.ProfileHollow;
+            float profileBegin = primitive.ProfileBegin.Get();
+            float profileEnd = 1.0f - primitive.ProfileEnd.Get();
+            float profileHollow = primitive.ProfileHollow.Get();
 
             int sides = 4;
-            if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_EQUILATERAL_TRIANGLE)
+            if ((primitive.ProfileCurve.Get() & 0x07) == RexTypes::SHAPE_EQUILATERAL_TRIANGLE)
                 sides = 3;
-            else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_CIRCLE)
+            else if ((primitive.ProfileCurve.Get() & 0x07) == RexTypes::SHAPE_CIRCLE)
                 // Reduced prim lod!!!
                 sides = 12;
                 //sides = 24;
-            else if ((primitive.ProfileCurve & 0x07) == RexTypes::SHAPE_HALF_CIRCLE)
+            else if ((primitive.ProfileCurve.Get() & 0x07) == RexTypes::SHAPE_HALF_CIRCLE)
             {
                 // half circle, prim is a sphere
                 // Reduced prim lod!!!
@@ -144,40 +144,40 @@ namespace RexLogic
             }
 
             int hollowSides = sides;
-            if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_CIRCLE)
+            if ((primitive.ProfileCurve.Get() & 0xf0) == RexTypes::HOLLOW_CIRCLE)
                 // Reduced prim lod!!!
                 hollowSides = 12;
                 //hollowSides = 24;
-            else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_SQUARE)
+            else if ((primitive.ProfileCurve.Get() & 0xf0) == RexTypes::HOLLOW_SQUARE)
                 hollowSides = 4;
-            else if ((primitive.ProfileCurve & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
+            else if ((primitive.ProfileCurve.Get() & 0xf0) == RexTypes::HOLLOW_TRIANGLE)
                 hollowSides = 3;
             
             PrimMesher::PrimMesh primMesh(sides, profileBegin, profileEnd, profileHollow, hollowSides);
-            primMesh.topShearX = primitive.PathShearX;
-            primMesh.topShearY = primitive.PathShearY;
-            primMesh.pathCutBegin = primitive.PathBegin;
-            primMesh.pathCutEnd = 1.0f - primitive.PathEnd;
+            primMesh.topShearX = primitive.PathShearX.Get();
+            primMesh.topShearY = primitive.PathShearY.Get();
+            primMesh.pathCutBegin = primitive.PathBegin.Get();
+            primMesh.pathCutEnd = 1.0f - primitive.PathEnd.Get();
 
-            if (primitive.PathCurve == RexTypes::EXTRUSION_STRAIGHT)
+            if (primitive.PathCurve.Get() == RexTypes::EXTRUSION_STRAIGHT)
             {
-                primMesh.twistBegin = primitive.PathTwistBegin * 180;
-                primMesh.twistEnd = primitive.PathTwist * 180;
-                primMesh.taperX = primitive.PathScaleX - 1.0f;
-                primMesh.taperY = primitive.PathScaleY - 1.0f;
+                primMesh.twistBegin = primitive.PathTwistBegin.Get() * 180;
+                primMesh.twistEnd = primitive.PathTwist.Get() * 180;
+                primMesh.taperX = primitive.PathScaleX.Get() - 1.0f;
+                primMesh.taperY = primitive.PathScaleY.Get() - 1.0f;
                 primMesh.ExtrudeLinear();
             }
             else
             {
-                primMesh.holeSizeX = (2.0f - primitive.PathScaleX);
-                primMesh.holeSizeY = (2.0f - primitive.PathScaleY);
-                primMesh.radius = primitive.PathRadiusOffset;
-                primMesh.revolutions = primitive.PathRevolutions;
-                primMesh.skew = primitive.PathSkew;
-                primMesh.twistBegin = primitive.PathTwistBegin * 360;
-                primMesh.twistEnd = primitive.PathTwist * 360;
-                primMesh.taperX = primitive.PathTaperX;
-                primMesh.taperY = primitive.PathTaperY;
+                primMesh.holeSizeX = (2.0f - primitive.PathScaleX.Get());
+                primMesh.holeSizeY = (2.0f - primitive.PathScaleY.Get());
+                primMesh.radius = primitive.PathRadiusOffset.Get();
+                primMesh.revolutions = primitive.PathRevolutions.Get();
+                primMesh.skew = primitive.PathSkew.Get();
+                primMesh.twistBegin = primitive.PathTwistBegin.Get() * 360;
+                primMesh.twistEnd = primitive.PathTwist.Get() * 360;
+                primMesh.taperX = primitive.PathTaperX.Get();
+                primMesh.taperY = primitive.PathTaperY.Get();
                 primMesh.ExtrudeCircular();
             }
             
