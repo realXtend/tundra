@@ -23,6 +23,7 @@ namespace MumbleVoip
     class ServerInfo;
     class PCMAudioFrame;
     class Participant;
+    class Settings;
 
     typedef QList<Participant*> ParticipantList;
 
@@ -30,8 +31,9 @@ namespace MumbleVoip
     {
         Q_OBJECT
     public:
-        Session(Foundation::Framework* framework, const ServerInfo &server_info);
+        Session(Foundation::Framework* framework, const ServerInfo &server_info, Settings* settings);
         virtual ~Session();
+    public slots:
 
         virtual void Close();
         virtual State GetState() const;
@@ -66,6 +68,7 @@ namespace MumbleVoip
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
         boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
+        void ApplyMicrophoneLevel(PCMAudioFrame* frame);
 
         Foundation::Framework* framework_;
         State state_;
@@ -85,6 +88,8 @@ namespace MumbleVoip
         QString channel_name_;
         QMap<int, sound_id_t> audio_playback_channels_;
         std::string recording_device_;
+        Settings* settings_;
+        bool local_echo_mode_; // if true then acudio is only played locally
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);
@@ -94,6 +99,8 @@ namespace MumbleVoip
         void UpdateSpeakerActivity(PCMAudioFrame*);
         void CheckChannel(MumbleLib::User*);
         void CheckConnectionState();
+        void SetPlaybackBufferSizeMs(int);
+        void SetEncodeQuality(double);
     };
 
 } // MumbleVoip

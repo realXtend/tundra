@@ -413,6 +413,8 @@ namespace CoreUi
                 connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
                 connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
                 connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()));
+                
+                in_world_speak_mode_on_ = in_world_voice_session_->IsAudioSendingEnabled();
             }
         }
 
