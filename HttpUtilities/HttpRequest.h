@@ -53,7 +53,7 @@ namespace HttpUtilities
         //! Sets timeout for request. Default is 5 seconds.
         /*! \param seconds Timeout in seconds
          */
-        void SetTimeout(Real seconds);
+        void SetTimeout(float seconds);
         
         //! Performs the request
         void Perform();
@@ -68,7 +68,7 @@ namespace HttpUtilities
         const std::vector<u8>& GetRequestData() const { return request_data_; }
         
         //! Returns timeout
-        Real GetTimeout() const { return timeout_; }
+        float GetTimeout() const { return timeout_; }
         
         //! Returns if succeeded
         bool GetSuccess() const { return success_; }
@@ -85,7 +85,7 @@ namespace HttpUtilities
         //! Method.
         Method method_;
         //! Http connection timeout
-        Real timeout_;
+        float timeout_;
         //! Request data to be send
         std::vector<u8> request_data_;
         //! Request data content type

@@ -208,7 +208,7 @@ namespace ProtocolUtilities
          *  @param seconds How long terrain has been modified on viewer (delta time).
          *  @param height Previous height value on spesific world position.
          */
-        void SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height);
+        void SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
         /** Send a new terrain texture that we want to use.
          *  @param new_texture_id id for asset resouce that we want to use as our terrain texture.
@@ -222,7 +222,7 @@ namespace ProtocolUtilities
          *  @param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE)
          *          Note: in Rex this variable will only tell what texture height values we are changing.
          */
-        void SendTextureHeightsMessage(Real start_height, Real height_range, uint corner);
+        void SendTextureHeightsMessage(float start_height, float height_range, uint corner);
 
         /// Request new region information from the server(RegionHandshake is sented every client on that server)
         /// ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures,

@@ -23,7 +23,7 @@ using namespace RexTypes;
 
 namespace Asset
 {
-    const Real UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
+    const float UDPAssetProvider::DEFAULT_ASSET_TIMEOUT = 120.0;
 
     UDPAssetProvider::UDPAssetProvider(Foundation::Framework* framework) :
         framework_(framework)

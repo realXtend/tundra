@@ -5,12 +5,12 @@
 
 namespace RexTypes
 {
-    Real ParseReal(const std::string& text, Real default_value)
+    float ParseReal(const std::string& text, float default_value)
     {
-        Real ret_value = default_value;
+        float ret_value = default_value;
         try
         {
-            ret_value = ParseString<Real>(text);
+            ret_value = ParseString<float>(text);
         }
         catch (boost::bad_lexical_cast)
         {
@@ -40,9 +40,9 @@ namespace RexTypes
         {
             try
             {
-                vec.x = ParseString<Real>(components[0]);
-                vec.y = ParseString<Real>(components[1]);
-                vec.z = ParseString<Real>(components[2]);
+                vec.x = ParseString<float>(components[0]);
+                vec.y = ParseString<float>(components[1]);
+                vec.z = ParseString<float>(components[2]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -60,9 +60,9 @@ namespace RexTypes
         {
             try
             {
-                color.r = ParseString<Real>(components[0]);
-                color.g = ParseString<Real>(components[1]);
-                color.b = ParseString<Real>(components[2]);
+                color.r = ParseString<float>(components[0]);
+                color.g = ParseString<float>(components[1]);
+                color.b = ParseString<float>(components[2]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -72,10 +72,10 @@ namespace RexTypes
         {
             try
             {
-                color.r = ParseString<Real>(components[0]);
-                color.g = ParseString<Real>(components[1]);
-                color.b = ParseString<Real>(components[2]);
-                color.a = ParseString<Real>(components[3]);
+                color.r = ParseString<float>(components[0]);
+                color.g = ParseString<float>(components[1]);
+                color.b = ParseString<float>(components[2]);
+                color.a = ParseString<float>(components[3]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -93,10 +93,10 @@ namespace RexTypes
         {
             try
             {
-                quat.w = ParseString<Real>(components[0]);
-                quat.x = ParseString<Real>(components[1]);
-                quat.y = ParseString<Real>(components[2]);
-                quat.z = ParseString<Real>(components[3]);
+                quat.w = ParseString<float>(components[0]);
+                quat.x = ParseString<float>(components[1]);
+                quat.y = ParseString<float>(components[2]);
+                quat.z = ParseString<float>(components[3]);
             }
             catch (boost::bad_lexical_cast)
             {
@@ -114,11 +114,11 @@ namespace RexTypes
         {
             try
             {
-                Real xrad = degToRad(ParseString<Real>(components[0]));
-                Real yrad = degToRad(ParseString<Real>(components[1]));
-                Real zrad = degToRad(ParseString<Real>(components[2]));
+                float xrad = degToRad(ParseString<float>(components[0]));
+                float yrad = degToRad(ParseString<float>(components[1]));
+                float zrad = degToRad(ParseString<float>(components[2]));
                 
-                Real angle = yrad * 0.5;
+                float angle = yrad * 0.5;
                 double cx = cos(angle);
                 double sx = sin(angle);
 
@@ -153,9 +153,9 @@ namespace RexTypes
             return "false";
     }
     
-    std::string WriteReal(Real value)
+    std::string WriteReal(float value)
     {
-        return ToString<Real>(value);
+        return ToString<float>(value);
     }
     
     std::string WriteInt(int value)
@@ -165,25 +165,25 @@ namespace RexTypes
     
     std::string WriteVector3(const Vector3df& vector)
     {
-        return ToString<Real>(vector.x) + " " +
-            ToString<Real>(vector.y) + " " +
-            ToString<Real>(vector.z);
+        return ToString<float>(vector.x) + " " +
+            ToString<float>(vector.y) + " " +
+            ToString<float>(vector.z);
     }
     
     std::string WriteQuaternion(const Quaternion& quat)
     {
-        return ToString<Real>(quat.w) + " " +
-            ToString<Real>(quat.x) + " " +
-            ToString<Real>(quat.y) + " " +
-            ToString<Real>(quat.z);
+        return ToString<float>(quat.w) + " " +
+            ToString<float>(quat.x) + " " +
+            ToString<float>(quat.y) + " " +
+            ToString<float>(quat.z);
     }
     
     std::string WriteColor(const Color& color)
     {
-        return ToString<Real>(color.r) + " " +
-            ToString<Real>(color.g) + " " +
-            ToString<Real>(color.b) + " " +
-            ToString<Real>(color.a);
+        return ToString<float>(color.r) + " " +
+            ToString<float>(color.g) + " " +
+            ToString<float>(color.b) + " " +
+            ToString<float>(color.a);
     }
     
     std::string WriteEulerAngles(const Quaternion& quat)
@@ -191,9 +191,9 @@ namespace RexTypes
         Vector3df radians;
         quat.toEuler(radians);
         
-        return ToString<Real>(radians.x * RADTODEG) + " " +
-            ToString<Real>(radians.y * RADTODEG) + " " + 
-            ToString<Real>(radians.z * RADTODEG);
+        return ToString<float>(radians.x * RADTODEG) + " " +
+            ToString<float>(radians.y * RADTODEG) + " " + 
+            ToString<float>(radians.z * RADTODEG);
         
         //Ogre::Matrix3 rotMatrix;
         //Ogre::Quaternion value = OgreRenderer::ToOgreQuaternion(quat);
@@ -203,14 +203,14 @@ namespace RexTypes
         //Ogre::Radian anglez;
         //rotMatrix.ToEulerAnglesXYZ(anglex, angley, anglez);
 
-        //Real angles[3];
+        //float angles[3];
         //angles[0] = anglex.valueDegrees();
         //angles[1] = angley.valueDegrees();
         //angles[2] = anglez.valueDegrees();
         //
-        //return ToString<Real>(angles[0]) + " " +
-        //    ToString<Real>(angles[1]) + " " + 
-        //    ToString<Real>(angles[2]);
+        //return ToString<float>(angles[0]) + " " +
+        //    ToString<float>(angles[1]) + " " + 
+        //    ToString<float>(angles[2]);
     }
 
     void SetAttribute(QDomElement& elem, const std::string& name, const char* value)
@@ -223,9 +223,9 @@ namespace RexTypes
         elem.setAttribute(QString::fromStdString(name), QString::fromStdString(value));
     }
      
-    void SetAttribute(QDomElement& elem, const std::string& name, Real value)
+    void SetAttribute(QDomElement& elem, const std::string& name, float value)
     {
-        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(ToString<Real>(value)));
+        elem.setAttribute(QString::fromStdString(name), QString::fromStdString(ToString<float>(value)));
     }
     
     void SetAttribute(QDomElement& elem, const std::string& name, bool value)

@@ -54,10 +54,10 @@ namespace OpenALAudio
     {
         Uninitialize();
 
-        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "master_gain", master_gain_);
-        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "triggered_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Triggered]);
-        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "ambient_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Ambient]);
-        framework_->GetDefaultConfig().SetSetting<Real>("SoundSystem", "voice_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Voice]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "master_gain", master_gain_);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Triggered]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Ambient]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Voice]);
     }
 
     StringVector SoundSystem::GetPlaybackDevices()
@@ -311,7 +311,7 @@ namespace OpenALAudio
         i->second->Stop();
     }
     
-    void SoundSystem::SetPitch(sound_id_t id, Real pitch)
+    void SoundSystem::SetPitch(sound_id_t id, float pitch)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -320,7 +320,7 @@ namespace OpenALAudio
         i->second->SetPitch(pitch);
     }
     
-    void SoundSystem::SetGain(sound_id_t id, Real gain)
+    void SoundSystem::SetGain(sound_id_t id, float gain)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -356,7 +356,7 @@ namespace OpenALAudio
         i->second->SetPosition(position);
     }
     
-    void SoundSystem::SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff)
+    void SoundSystem::SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff)
     {
         SoundChannelMap::iterator i = channels_.find(id);
         if (i == channels_.end())
@@ -592,24 +592,24 @@ namespace OpenALAudio
         return false;
     }
     
-    void SoundSystem::SetMasterGain(Real master_gain)
+    void SoundSystem::SetMasterGain(float master_gain)
     {
         master_gain_ = master_gain;
         ApplyMasterGain();
     }
     
-    Real SoundSystem::GetMasterGain()
+    float SoundSystem::GetMasterGain()
     {
         return master_gain_;
     }
     
-    void SoundSystem::SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, Real master_gain)
+    void SoundSystem::SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, float master_gain)
     {
         sound_master_gain_[type] = master_gain;
         ApplyMasterGain();
     }
     
-    Real SoundSystem::GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type)
+    float SoundSystem::GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type)
     {
         return sound_master_gain_[type];
     }

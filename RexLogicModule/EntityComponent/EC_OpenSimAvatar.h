@@ -45,7 +45,7 @@ namespace RexLogic
 
         //! yaw the avatar (-1 for left, 1 for right)
 		//NOTE: changed experimentally to float to support 'analog' rotating, via e.g. joystick?
-		Real yaw;
+		float yaw;
 
         //! set state
         void SetState(State state);

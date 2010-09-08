@@ -338,7 +338,7 @@ namespace UiServices
         Vector3Df avatar_position = ec_placeable->GetPosition();
         Quaternion avatar_orientation = ec_placeable->GetOrientation();
         Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
-        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        float adjustheight = ec_mesh->GetAdjustPosition().z;
         Vector3df avatar_head_position;
 
         QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");

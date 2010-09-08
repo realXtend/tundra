@@ -66,22 +66,22 @@ public:
     Foundation::Attribute<bool> castShadowsAttr_;
     
     //! Light range
-    Foundation::Attribute<Real> rangeAttr_;
+    Foundation::Attribute<float> rangeAttr_;
     
     //! Light constant attenuation
-    Foundation::Attribute<Real> constAttenAttr_;
+    Foundation::Attribute<float> constAttenAttr_;
     
     //! Light linear attenuation
-    Foundation::Attribute<Real> linearAttenAttr_;
+    Foundation::Attribute<float> linearAttenAttr_;
     
     //! Light quadratic attenuation
-    Foundation::Attribute<Real> quadraAttenAttr_;
+    Foundation::Attribute<float> quadraAttenAttr_;
     
     //! Spotlight inner angle (degrees)
-    Foundation::Attribute<Real> innerAngleAttr_;
+    Foundation::Attribute<float> innerAngleAttr_;
     
     //! Spotlight outer angle (degrees)
-    Foundation::Attribute<Real> outerAngleAttr_;
+    Foundation::Attribute<float> outerAngleAttr_;
     
 
 private slots:
