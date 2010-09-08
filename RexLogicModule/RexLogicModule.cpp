@@ -655,18 +655,6 @@ float RexLogicModule::GetCameraViewportHeight() const
         return 0;
 }
 
-float RexLogicModule::GetCameraFOV() const
-{
-    if (camera_entity_.expired())
-        return 0.0f;
-
-    OgreRenderer::EC_OgreCamera* camera = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-    if (camera)
-        return camera->GetVerticalFov();
-    else
-        return 0.0f;
-}
-
 void RexLogicModule::LogoutAndDeleteWorld()
 {
     emit AboutToDeleteWorld();

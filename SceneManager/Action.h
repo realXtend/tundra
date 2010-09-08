@@ -2,7 +2,11 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   Action.h
- *  @brief  
+ *  @brief  Represent an executable command on an Entity.
+ *
+ *          Components (or other instances) can register to these actions by using Entity::ConnectAction().
+ *          Actions allow more complicated in-world logic to be built in slightly more data-driven fashion.
+ *          Actions cannot be created directly, they're created by Entity::RegisterAction().
  */
 
 #ifndef incl_SceneManager_Action_h
@@ -16,7 +20,12 @@ namespace Scene
 {
     class Entity;
 
-    /** 
+    /** Represent an executable command on an Entity.
+
+        Components (or other instances) can register to these actions by using Entity::ConnectAction().
+        Actions allow more complicated in-world logic to be built in slightly more data-driven fashion.
+        Actions cannot be created directly, they're created by Entity::RegisterAction().
+
         @ingroup Scene_group
     */
     class Action : public QObject
