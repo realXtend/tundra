@@ -29,17 +29,20 @@ for modname, compname, cfg in read_inis():
     m = freshimport(modname)
     if m is not None: #loaded succesfully. if not, freshload logged traceback
         c = getattr(m, compname)
-        modules.append(c)
+        modules.append((c, cfg))
 
 def load(circuitsmanager):
-    for klass in modules:
+    for klass, cfg in modules:
         #~ modinst = klass()
         #~ circuitsmanager += modinst
         #print klass
         try:
-            modinst = klass()            
+            if cfg:
+                modinst = klass(cfsection=cfg)
+            else:
+                modinst = klass()
         except Exception, exc:
-            r.logInfo("failed to instansciate pymodule %s" % klass)
+            r.logInfo("failed to instantiate pymodule %s" % klass)
             r.logInfo(traceback.format_exc())
         else:
             circuitsmanager += modinst # Equivalent to: tm.register(m)
