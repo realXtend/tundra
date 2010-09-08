@@ -24,7 +24,7 @@ modulenames = [
     ("mediaurlhandler.mediaurlhandler", "MediaURLHandler"),
     #("apitest.testrunner", "TestLoginLogoutExit",
     #("webserver.webcontroller", "WebServer"),
-    ("websocketserver", "NaaliWebsocketServer"),
+    #("websocketserver", "NaaliWebsocketServer"),
     ("localscene.localscene", "LocalScene"),
     ("objectedit.objectedit", "ObjectEdit"),
     ("estatemanagement.estatemanagement", "EstateManagement"),

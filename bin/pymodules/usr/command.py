@@ -60,7 +60,7 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatartracking, works :)
+if 0: #test avatartracking, works :)
     try:
         a = naali.getUserAvatar()
     except ValueError:

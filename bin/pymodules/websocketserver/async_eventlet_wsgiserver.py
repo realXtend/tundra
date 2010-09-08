@@ -8,6 +8,7 @@ import socket
 
 import eventlet.wsgi as wsgiserver
 import eventlet.greenpool as greenpool
+from eventlet.support import get_errno
 
 def server(sock, site,
            log=None,

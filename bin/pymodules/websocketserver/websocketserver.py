@@ -1,10 +1,13 @@
 import math
 import random
 import json
+import socket #just for exception handling for restarts here
 
 import circuits
 import eventlet
+import naali
 from eventlet import websocket
+
 
 import async_eventlet_wsgiserver
 
@@ -19,9 +22,9 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def __init__(self):
         circuits.BaseComponent.__init__(self)
         print "websocket listen.."
-        sock = eventlet.listen(('0.0.0.0', 9999))
+        self.sock = eventlet.listen(('0.0.0.0', 9999))
         print "..done"
-        self.server = async_eventlet_wsgiserver.server(sock, hello_world)
+        self.server = async_eventlet_wsgiserver.server(self.sock, hello_world)
         print "websocket server started."
 
         NaaliWebsocketServer.instance = self
@@ -46,7 +49,15 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def update(self, t):
         #print "websocket server"
         #print "x"
-        self.server.next()
+        if self.server is not None:
+            self.server.next()
+
+    @circuits.handler("on_exit")
+    def on_exit(self):
+        for client in clients:
+            client.socket.close()
+        self.sock.close()
+        self.server = None
 
 clients = set()
        
@@ -62,7 +73,10 @@ def hello_world(ws):
     
     while True:
             
-        msg = ws.wait()
+        try:
+            msg = ws.wait()
+        except socket.error:
+            break
         print msg
         if msg is None:
             break
@@ -98,10 +112,10 @@ def hello_world(ws):
             elif function == 'right':
                 angle += math.pi/16
             elif function == 'up':
-                speed = max(-5, speed - 1)
+                speed = max(-2, speed - 1)
               
             elif function == 'down':
-                speed = min(5, speed + 1)
+                speed = min(2, speed + 1)
 
             sendAll(['updateShip',
                      {'id': id,
@@ -123,22 +137,12 @@ def hello_world(ws):
                 angle = data.get('angle')
                 speed = data.get('speed')
 
-                if x < 25 or x >= 175:
+                if x < 3 or x >= x_max - 3:
                     speed *= -1
 
-                if y < 25 or y > 175:
+                if y < 3 or y > y_max - 3:
                     speed *= -1
 
-                if y < 25:
-                    y = 25
-                elif y > 175:
-                    y = 175
-
-                if x < 25:
-                    x = 25
-                elif y > 175:
-                    x = 175
-                    
                 
                 dx = -round(math.cos(-(angle - math.pi/2)) * speed, 3)
                 dy = -round(math.sin(angle - math.pi/2) * speed, 3)
@@ -147,15 +151,24 @@ def hello_world(ws):
                 y += dy
                 NaaliWebsocketServer.instance.updateclient(myid, (x, y))
 
-                sendAll(['updateShip',
-                         {'id': id,
-                          'angle': angle,
-                          'x': x,
-                          'y': y,
-                          'dx': dx,
-                          'dy': dy,
-                          'speed': speed,
-                          }])
+                s = naali.getScene("World")
+                ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
+                ents = [r.getEntity(id) for id in ids]
+                
+                for ent in ents:
+                    x = ent.placeable.Position.x()
+                    y = ent.placeable.Position.y()
+                    id = ent.id
+
+                    sendAll(['updateShip',
+                             {'id': id,
+                              'angle': angle,
+                              'x': x,
+                              'y': y,
+                              'dx': dx,
+                              'dy': dy,
+                              'speed': speed,
+                              }])
 
                 
         elif function == 'setSize':
