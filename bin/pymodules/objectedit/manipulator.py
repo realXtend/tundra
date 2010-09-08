@@ -246,7 +246,7 @@ class Manipulator:
             changevec = rightvec - upvec
             
             for ent in ents:
-                self._manipulate(ent, amountx, amounty, changevec, campos.x() < entpos.x(), campos.y() < entpos.y())
+                self._manipulate(ent, amountx, amounty, changevec)
                 self.controller.soundRuler(ent)
                 
             if self.usesManipulator:
@@ -299,7 +299,7 @@ class MoveManipulator(Manipulator):
         2: "axis_blue"
     }
 
-    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed:
 #            rightvec = get_right(naali.getCamera())
 #            upvec = get_up(naali.getCamera())
@@ -345,7 +345,7 @@ class ScaleManipulator(Manipulator):
     REDARROW = [1]
     BLUEARROW = [2]
     
-    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed:
             if self.grabbed_axis == self.AXIS_BLUE:
                 changevec.setX(0)
@@ -370,7 +370,7 @@ class FreeMoveManipulator(Manipulator):
     USES_MANIPULATOR = False
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
-    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec):
 #        rightvec = get_right(naali.getCamera())
 #        upvec = get_up(naali.getCamera())
 #
@@ -400,7 +400,7 @@ class RotationManipulator(Manipulator):
     BLUEARROW = [2] # we do green_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
-    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed and self.grabbed_axis is not None:
             local = self.controller.useLocalTransform
             mov = changevec.length() * 30
