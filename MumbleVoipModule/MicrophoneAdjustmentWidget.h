@@ -36,7 +36,6 @@ namespace MumbleVoip
         virtual void SaveSettings();
         virtual void ApplySliderValue();
         virtual void StartAudioRecording();
-        virtual void close();
     private:
         static const int AUDIO_RECORDING_BUFFER_MS_ = 500;
 
@@ -46,8 +45,6 @@ namespace MumbleVoip
         sound_id_t sound_id_;
         double voice_activity_level_;
         double microphone_level_;
-    signals:
-        void Closed(bool save_settings);
     };
 } // MumbleVoip
 
