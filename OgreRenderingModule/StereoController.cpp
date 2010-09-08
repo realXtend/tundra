@@ -33,6 +33,7 @@ namespace OgreRenderer
 	{
 		QVector<Ogre::RenderWindow*> vec;
 		vec.append(renderer_->GetCurrentRenderWindow());
+		vec += renderer_->GetCAVERenderWindows();
 		return vec;
 	}
 

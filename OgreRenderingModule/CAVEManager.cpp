@@ -98,6 +98,16 @@ namespace OgreRenderer
         view_map_.clear();
     }
 
+	QVector<Ogre::RenderWindow*> CAVEManager::getExternalWindows()
+	{
+		QVector<Ogre::RenderWindow*> windows;
+		foreach(CAVEView *view, view_map_.values())
+		{
+			windows.push_back(view->GetExternalRenderWindow()->getRenderWindow());
+		}
+		return windows;
+	}
+
     void CAVEManager::EnableCAVE()
     {
         if(!view_map_.empty())
