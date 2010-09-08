@@ -597,32 +597,6 @@ entity_id_t RexLogicModule::GetUserAvatarId() const
     return GetAvatarHandler()->GetUserAvatar()->GetId();
 }
 
-Vector3df RexLogicModule::GetCameraUp() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        //! \todo check if Ogre or OpenSim axis convention should actually be used
-        return placeable->GetOrientation() * Vector3df(0.0f,1.0f,0.0f);
-    else
-        return Vector3df();
-}
-
-Vector3df RexLogicModule::GetCameraRight() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        //! \todo check if Ogre or OpenSim axis convention should actually be used
-        return placeable->GetOrientation() * Vector3df(1.0f,0.0f,0.0f);
-    else
-        return Vector3df();
-}
-
 void RexLogicModule::EntityHovered(Scene::Entity* entity)
 {
     // Check if raycast result gave a valid entity

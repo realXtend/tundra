@@ -1739,30 +1739,6 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
     return NULL;
 }
 
-PyObject* GetCameraUp(PyObject *self) 
-{
-    Vector3df up;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        up = rexlogic->GetCameraUp();
-        return Py_BuildValue("fff", up.x, up.y, up.z);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraRight(PyObject *self) 
-{
-    Vector3df right;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        right = rexlogic->GetCameraRight();
-        return Py_BuildValue("fff", right.x, right.y, right.z);
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -1900,12 +1876,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-
-    {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
-    "Get the right-vector for the camera."},
-    
-    {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
-    "Get the up-vector for the camera."},
     
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
