@@ -50,9 +50,15 @@ void EC_Movable::Rotate(const QString &direction)
 {
     Quaternion orientation;
     if (direction == "Left")
-        orientation;
+    {
+        orientation.z = 0.7071f;
+        orientation.w = 0.7071f;
+    }
     else if (direction == "Right")
-        orientation;
+    {
+        orientation.z = -0.7071f;
+        orientation.w = 0.7071f;
+    }
     else
     {
         LogWarning("Invalid direction for Rotate action: " + direction.toStdString());
@@ -82,7 +88,7 @@ void EC_Movable::SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const
         ProtocolUtilities::MultiObjectUpdateInfo update;
         update.local_id_ = prim->LocalId;
         update.position_ = ogre_pos->GetPosition() + deltaPos;
-        update.orientation_ = ogre_pos->GetOrientation() + deltaOri;
+        update.orientation_ = ogre_pos->GetOrientation() * deltaOri;
         update.scale_ = ogre_pos->GetScale();
         updates.push_back(update);
 
