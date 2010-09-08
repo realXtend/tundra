@@ -204,7 +204,7 @@ class Manipulator:
         if ents is not None:
             lengthx = 0
             lengthy = 0
-            fov = r.getCameraFOV()
+            fov = naali.getCamera().camera.GetVerticalFov()
             width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
             campos = naali.getCamera().placeable.Position
             ent = ents[-1]
