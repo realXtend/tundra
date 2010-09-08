@@ -739,7 +739,7 @@ if 0:
     #print  dir(r.c.widget.move_button)
     r.c.widget.move_button.setChecked(False)
     
-if 1: #camera FOV
+if 0: #camera FOV
     #fov = r.getCameraFOV()
     #rightvec = V3(r.getCameraRight())
     fov = naali.getCamera().camera.GetVerticalFov()
