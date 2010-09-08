@@ -1,9 +1,5 @@
 """the modules that are to be loaded when the viewer starts.
-
-add your module *class* (the circuits Component)
-to the list called 'modules'. you need to import your pymodule
-to have access here to the class, of course, and that can do
-whatever loading that you want (in your module i.e. .py file).
+add your module *class* (the circuits Component) to a .ini file in this directory.
 """
 import rexviewer as r
 import sys, os
