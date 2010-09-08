@@ -402,39 +402,39 @@ class RotationManipulator(Manipulator):
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
     def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
         if self.grabbed and self.grabbed_axis is not None:
-            if amountx < amounty:
-                amount = amounty
-            else:
-                amount = amountx
-            
+            local = self.controller.useLocalTransform
+            mov = changevec.length() * 30
             ort = ent.placeable.Orientation
-            euler = [0, 0, 0]
 
-            dir = 1
+            if amountx < 0 and amounty < 0:
+                dir = -1
+            elif amountx < 0 and amounty >= 0:
+                dir = 1
+                if not local and self.grabbed_axis == self.AXIS_BLUE:
+                    dir *= -1
+            elif amountx >= 0 and amounty < 0:
+                dir = -1
+            elif amountx >= 0 and amounty >= 0:
+                dir = 1
+
+            mov *= dir
             
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
-                    mov = amounty * 30
                     axis = Vec(1, 0, 0)
                 elif self.grabbed_axis == self.AXIS_GREEN:
-                    mov = amountx * 30 
                     axis = Vec(0, 1, 0)
                 elif self.grabbed_axis == self.AXIS_BLUE:
-                    mov = amountx * 30
                     axis = Vec(0, 0, 1)
-
-                delta = Quat.fromAxisAndAngle(axis, dir)
-                ort *= delta
+                ort *= Quat.fromAxisAndAngle(axis, mov)
             else:
-                if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    mov = amount * 30 * dir
+                euler = [0, 0, 0]
+                if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
+                    euler[0] -= mov
+                elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    mov = amount * 30 * dir
                     euler[2] += mov
-                elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    mov = amount * 30 * dir
-                    euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)
                 # TODO: figure out the shifted members
                 ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
