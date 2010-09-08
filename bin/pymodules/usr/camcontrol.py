@@ -19,8 +19,7 @@ class CameraController(Component):
 
     def update(self, t):
         if self.cam is None and self.scene is not None:
-            camid = r.getCameraId()
-            cament = r.getEntity(camid)
+            cament = naali.getCamera()
             self.cam = cament
             r.switchCameraState() #supposes that FREECAM was off, turns it on.
             #old quick hack reused for now, good idea is probably to create an own cam ent for this

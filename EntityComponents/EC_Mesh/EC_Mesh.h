@@ -29,6 +29,7 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
+//! Note if you are planning to remove the skeleton you need to relogin to the server.
 class EC_Mesh : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -87,6 +88,8 @@ private:
     void AttachEntity();
     //! Detach entity from the scene node.
     void DetachEntity();
+    //! Attach skeleton to entity's mesh.
+    void AttachSkeleton(const QString &skeletonName);
 
     bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     bool HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);

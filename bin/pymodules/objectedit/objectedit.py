@@ -125,6 +125,7 @@ class ObjectEdit(Component):
             # Pass widgets
             self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
+            self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
             
     def on_keypressed(self, k):
@@ -494,7 +495,7 @@ class ObjectEdit(Component):
             
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
-            if id != r.getUserAvatarId(): #add other avatar id's check
+            if id != naali.worldlogic.GetUserAvatarEntityRaw().Id: #XXX add other avatar id's check
                 if not self.manipulator.compareIds(id):  #and id != self.selection_box.id:
                     return True
         return False
@@ -585,9 +586,8 @@ class ObjectEdit(Component):
             self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
     def createObject(self):
-        avatar_id = r.getUserAvatarId()
-        avatar = r.getEntity(avatar_id)
-        pos = avatar.placeable.Position#r.getUserAvatarPos()
+        avatar = naali.getUserAvatar()
+        pos = avatar.placeable.Position
 
         # TODO determine what is right in front of avatar and use that instead
         start_x = pos.x() + .7

@@ -1,6 +1,7 @@
 """this is executed when you press '.' in the ogre window, the viewer main window.
 used for quick testing of py commands."""
 
+import naali
 import rexviewer as r
 import math
 
@@ -59,15 +60,14 @@ if 0: #get entity
     rotate(e)
     #move(e)
 
-if 1: #test avatartracking, works :)
-    av_entid = r.getUserAvatarId()
-    print "<:::",
+if 0: #test avatartracking, works :)
     try:
-        a = r.getEntity(av_entid)
-    except:
-        print "could find the avatar with the given id", av_entid
+        a = naali.getUserAvatar()
+    except ValueError:
+        print "could find the user avatar"
     else:
-        print "Avatar pos:", a.placeable.Position
+        print "<:::",
+        print "Avatar pos:", a.placeable.Position,
         print ":::>"
         """
         perhaps some local script could track movement?
@@ -114,7 +114,7 @@ st/shared_ptr.hpp, line 419
     print "Testing entity creation"
     meshname = "axes.mesh"
     
-    avatar = r.getEntity(r.getUserAvatarId())
+    avatar = naali.getUserAvatar()
     ent = r.createEntity(meshname, 12345681)
     #print "New entity created:", ent, ent.pos
     ent.placeable.Position = avatar.placeable.Position
@@ -163,20 +163,28 @@ if 0: #camera pitch
     print r.getCameraYawPitch()
 
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
-    camid = r.getCameraId()
-    print "CAM:", camid
-    cament = r.getEntity(camid)
-    p = cament.placeable
-    print p.Position, p.Orientation
+    try:
+        cament = naali.getCamera()
+        print "CAM:", cament.id
+    except ValueError:
+        print "no CAM"
+    else:
+        p = cament.placeable
+        print p.Position, p.Orientation
 
-    import PythonQt.QtGui
-    from PythonQt.QtGui import QQuaternion as Quat
-    from PythonQt.QtGui import QVector3D as Vec
-    ort = p.Orientation
-    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
-    #ort *= Quat(0, -.707, 0, .707)
-    ort *= rot
-    p.Orientation = ort
+        import PythonQt.QtGui
+        from PythonQt.QtGui import QQuaternion as Quat
+        from PythonQt.QtGui import QVector3D as Vec
+        ort = p.Orientation
+        rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 10)
+        #ort *= Quat(0, -.707, 0, .707)
+        ort *= rot
+        p.Orientation = ort
+        
+        #ec cam stuff:
+        print "FOV:", cament.camera.GetVerticalFov()
+        
+        
 
 if 0: #calcing the camera angle around up axis for web ui
     import PythonQt.QtGui
@@ -200,8 +208,7 @@ if 0: #calcing the camera angle around up axis for web ui
 
         return vec, ang
 
-    camid = r.getCameraId()
-    cament = r.getEntity(camid)
+    cament = naali.getCamera()
     p = cament.placeable
 
     #print toAngleAxis(p.Orientation)
@@ -613,9 +620,8 @@ if 0:
     worldstream.SendObjectAddPacket(start_x, start_y, start_z)
 
 if 0: #getUserAvatar 
-    id = r.getUserAvatarId()
-    ent = r.getEntity(id)
-    print "User's avatar_id:", id
+    ent = naali.getUserAvatar()
+    print "User's avatar_id:", ent.id
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
     #ent.mesh = "cruncah1.mesh"
     
@@ -704,7 +710,7 @@ if 0: #old deprecated wrapper - testing vector3/quat wrapping
     print "quat from eulers", euler
     
 if 0:
-    avatar = r.getEntity(r.getUserAvatarId())
+    avatar = naali.getUserAvatar()
     avatar.text = "Swoot"
     import PythonQt as qt
     ent = r.getEntity(1392229722)
@@ -733,11 +739,11 @@ if 0:
     #print  dir(r.c.widget.move_button)
     r.c.widget.move_button.setChecked(False)
     
-if 1:
+if 0:
     fov = r.getCameraFOV()
     #rightvec = V3(r.getCameraRight())
-    #campos = V3(r.getCameraPosition())
-    #ent = r.getEntity(r.getUserAvatarId())
+    campos = naali.getCamera().placeable.Position
+    #ent = naali.getUserAvatar()
     #entpos = V3(ent.pos)
     #width, height = r.getScreenSize()
     import naali
@@ -769,7 +775,7 @@ if 1:
 if 0: #bounding box tests
     #robo 1749872183
     #ogrehead 1749872798
-    ent = r.getEntity(1749871222)#r.getUserAvatarId())
+    ent = r.getEntity(1749871222)#naali.getUserAvatar()
     from editgui.vector3 import Vector3 as V3
     #~ print ent.boundingbox
     bb = list(ent.boundingbox)
@@ -823,6 +829,17 @@ if 0: #getrexlogic test
     #class entity_id_t(int): pass
     #entid = entity_id_t(2)
     #l.SendRexPrimData(entid)
+    
+if 0: #rexlogic as service with qt mechanism
+    #from __main__ import _naali
+    #l = _naali.GetWorldLogic()
+    #print l, dir(l)
+    import naali
+    qent = naali.worldlogic.GetUserAvatarEntityRaw()
+    if qent is not None:
+        print qent.Id
+        pyent = r.getEntity(qent.Id)
+        print pyent, pyent.id
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
@@ -1303,8 +1320,7 @@ if 0:
         print "swoot"
 
 if 0:
-    avid = r.getUserAvatarId()
-    e = r.getEntity(avid)
+    e = naali.getUserAvatar()
     try:
         e.sound
     except AttributeError:
@@ -1321,8 +1337,7 @@ if 0:
         print "sound removed successfully"
 
 if 0: #create a new component, hilight
-    avid = r.getUserAvatarId()
-    e = r.getEntity(avid)
+    e = naali.getUserAvatar()
     try:
         e.highlight
     except AttributeError:
@@ -1342,9 +1357,7 @@ if 0: #create a new component, hilight
         print "not"
         
 if 0: #create a new component, touchable
-    entid = r.getUserAvatarId()
-    #entid = 2979274737
-    e = r.getEntity(entid)
+    e = naali.getUserAvatar()
     try:
         t = e.touchable
     except AttributeError:
@@ -1373,7 +1386,6 @@ if 0: #create a new component, touchable
 
 
 if 0: #test adding a dynamiccomponent
-    #entid = r.getUserAvatarId()
     entid = 2394749782
     ent = r.getEntity(entid)
 
@@ -1415,8 +1427,7 @@ if 0: #the new DynamicComponent with individual attrs etc
     print jssrc
 
 if 0: #animation control
-    avid = r.getUserAvatarId()
-    ent = r.getEntity(avid)
+    ent = naali.getUserAvatar()
     try:
         ent.animationcontroller
     except AttributeError:

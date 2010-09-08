@@ -510,30 +510,30 @@ void WorldStream::SendObjectShapeUpdate(const EC_OpenSimPrim &prim)
 
     // ObjectData
     m->AddU32(prim.LocalId);
-    m->AddU8(prim.PathCurve);
-    m->AddU8(prim.ProfileCurve);
+    m->AddU8(prim.PathCurve.Get());
+    m->AddU8(prim.ProfileCurve.Get());
 
-    m->AddU16(prim.PathBegin / 0.00002f);
-    m->AddU16(prim.PathEnd / 0.00002f);
+    m->AddU16(prim.PathBegin.Get() / 0.00002f);
+    m->AddU16(prim.PathEnd.Get() / 0.00002f);
 
-    m->AddU8(prim.PathScaleX / 0.01f);
-    m->AddU8(prim.PathScaleY / 0.01f);
-    m->AddU8((int8_t)(prim.PathShearX / 0.01f));
-    m->AddU8((int8_t)(prim.PathShearY / 0.01f));
+    m->AddU8(prim.PathScaleX.Get() / 0.01f);
+    m->AddU8(prim.PathScaleY.Get() / 0.01f);
+    m->AddU8((int8_t)(prim.PathShearX.Get() / 0.01f));
+    m->AddU8((int8_t)(prim.PathShearY.Get() / 0.01f));
 
-    m->AddS8(prim.PathTwist / 0.01f);
-    m->AddS8(prim.PathTwistBegin / 0.01f);
-    m->AddS8(prim.PathRadiusOffset / 0.01f);
-    m->AddS8(prim.PathTaperX / 0.01f);
-    m->AddS8(prim.PathTaperY / 0.01f);
+    m->AddS8(prim.PathTwist.Get() / 0.01f);
+    m->AddS8(prim.PathTwistBegin.Get() / 0.01f);
+    m->AddS8(prim.PathRadiusOffset.Get() / 0.01f);
+    m->AddS8(prim.PathTaperX.Get() / 0.01f);
+    m->AddS8(prim.PathTaperY.Get() / 0.01f);
 
     // prim.PathRevolutions - skip this, has to be 0.015 steps, no editing in ui either
     m->AddU8(1 - 0.015f);
-    m->AddS8(prim.PathSkew / 0.01f);
+    m->AddS8(prim.PathSkew.Get() / 0.01f);
 
-    m->AddU16(prim.ProfileBegin / 0.00002f);
-    m->AddU16(prim.ProfileEnd / 0.00002f);
-    m->AddU16(prim.ProfileHollow / 0.00002f);
+    m->AddU16(prim.ProfileBegin.Get() / 0.00002f);
+    m->AddU16(prim.ProfileEnd.Get() / 0.00002f);
+    m->AddU16(prim.ProfileHollow.Get() / 0.00002f);
 
     // Send
     FinishMessageBuilding(m);

@@ -83,9 +83,7 @@ class WebController(Controller):
         return "Hello World!"
 
     def camcontrol(self, rotate=None, move=None):
-        camid = r.getCameraId()
-        #print "CAM:", camid
-        cament = r.getEntity(camid)
+        cament = naali.getCamera()
         p = cament.placeable
         #print p.Position, p.Orientation
 
@@ -108,8 +106,7 @@ class WebController(Controller):
 
     def render(self, camposx=None, camposy=None, camposz=None, camang=None):
 #, camortx=None, camorty=None, camortz=None, camortw=None):
-        camid = r.getCameraId()
-        cament = r.getEntity(camid)
+        cament = naali.getCamera()
         p = cament.placeable
 
         if camposx is not None:
@@ -147,8 +144,7 @@ class WebController(Controller):
                           )
 
     def _renderimgurl(self, camposx=None, camposy=None, camposz=None, camortx=None, camorty=None, camortz=None, camortw=None):
-        camid = r.getCameraId()
-        cament = r.getEntity(camid)
+        cament = naali.getCamera()
         p = cament.placeable
         orgpos = Vec(0, 0, 0)
         orgort = Quat(1, 0, 0, 0)
