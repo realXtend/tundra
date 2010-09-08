@@ -709,6 +709,19 @@ class ObjectEdit(Component):
         inputcontext.disconnectAll()
         self.deselect_all()
         self.window.on_exit()
+
+        self.cpp_python_handler.disconnect('ActivateEditing(bool)', self.on_activate_editing)
+        self.cpp_python_handler.disconnect('ManipulationMode(int)', self.on_manupulation_mode_change)
+        self.cpp_python_handler.disconnect('RemoveHightlight()', self.deselect_all)
+        self.cpp_python_handler.disconnect('RotateValuesChangedToNetwork(int, int, int)', self.changerot_cpp)
+        self.cpp_python_handler.disconnect('CreateObject()', self.createObject)
+        self.cpp_python_handler.disconnect('DuplicateObject()', self.duplicate)
+        self.cpp_python_handler.disconnect('DeleteObject()', self.deleteObject)
+        # Pass widgets
+        #self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
+        #self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
+        #self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
+        #self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
         r.logInfo(".. done")
 
     def on_hide(self, shown):
