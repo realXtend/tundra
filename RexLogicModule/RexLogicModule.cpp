@@ -655,18 +655,6 @@ float RexLogicModule::GetCameraViewportHeight() const
         return 0;
 }
 
-float RexLogicModule::GetCameraFOV() const
-{
-    if (camera_entity_.expired())
-        return 0.0f;
-
-    OgreRenderer::EC_OgreCamera* camera = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-    if (camera)
-        return camera->GetVerticalFov();
-    else
-        return 0.0f;
-}
-
 void RexLogicModule::LogoutAndDeleteWorld()
 {
     emit AboutToDeleteWorld();
@@ -1221,6 +1209,10 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::Compon
 //        connect(listener, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
+    }
+    else if (component->TypeName() == EC_Movable::TypeNameStatic())
+    {
+        entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
 }
 

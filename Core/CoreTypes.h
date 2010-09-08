@@ -22,6 +22,9 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 #include <vector>
 #include <list>
 
+#include <QString>
+#include <QVector>
+
 typedef unsigned char u8;
 typedef unsigned char uchar;
 typedef unsigned short u16;
@@ -52,6 +55,8 @@ typedef std::vector<request_tag_t> RequestTagVector;
 
 typedef std::vector<std::string> StringVector;
 typedef boost::shared_ptr<StringVector> StringVectorPtr;
+
+typedef QVector<QString> QStringVector;
 
 typedef std::list<std::string> StringList;
 typedef boost::shared_ptr<StringList> StringListPtr;

@@ -114,14 +114,9 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(EC_OpenSimPrim::TypeNameStatic());
     components.append(EC_NetworkPosition::TypeNameStatic());
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    ///\todo This is just test code. Will be removed soon.
-    components.append(EC_Movable::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
     Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::Network); 
-
-    ///\todo This is just test code. Will be removed soon.
-    entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(rexlogicmodule_->GetServerConnection());
 
     return entity;
 }
@@ -360,10 +355,7 @@ void Primitive::HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes)
 
 bool Primitive::HandleRexGM_RexMediaUrl(ProtocolUtilities::NetworkEventInboundData* data)
 {
-    /// \todo tucofixme
-    //RexLogicModule::LogInfo("MediaURL GM received"); // + prim.MediaUrl);
-    //handled now in pymodules/mediaurlhandler/
-            
+    // handled now in pymodules/mediaurlhandler/
     return false;
 }
 
@@ -2103,7 +2095,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
-            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(QString::fromStdString(type_name), QString::fromStdString(name)); //\todo just convert to use qstring all over here, not convert back & forth XXX
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str());
             if (new_comp)
             {
                 new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
