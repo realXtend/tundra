@@ -498,7 +498,7 @@ QModelIndex InventoryItemModel::parent(const QModelIndex &index) const
 
 int InventoryItemModel::rowCount(const QModelIndex &parent) const
 {
-    if (parent.column() > 0)
+    if (parent.column() > 0 || !dataModel_->GetRoot())
         return 0;
 
     if (!parent.isValid())

@@ -11,7 +11,7 @@ communication/ - telepathy using messaging, backend for CommunicationModule
 apitest/ - unit test like viewer api usage tests, work as examples too
 */ - individual modules (python packages) which implement some feature. some enabled by default, some not.
 
-To make your module to be loaded at viewer start, add it to autoload.py .
+To make your module to be loaded at viewer start, add it to default.ini or make a similar my.ini .
 For it to be able to receive events from the viewer (now: keyboard presses, mouse input data, incoming in-world chat messages) it has to be be a component using the circuits library.
 
 This system is now somewhat mature, and is used to implement some of the default ('core') features in the viewer, like mediaurl handling and 3d manipulation of objects. It has been also used in 3rd party project for custom UI tools etc. However, the API is still under heavy development and some of the first early hacks made here will be cleaned up during September-October 2010 or so. This will change those old parts of the API but adopting to the new ways should be simple.
