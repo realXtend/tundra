@@ -30,25 +30,13 @@ void EC_Movable::Move(const QString &direction)
 {
     Vector3df change, orientation;
     if (direction == "Forward")
-    {
-        LogDebug("Move Forward");
         change.x += 1;
-    }
     else if (direction == "Backward")
-    {
-        LogDebug("Move Backward");
         change.x -= 1;
-    }
     else if (direction == "Left")
-    {
         change.y -= 1;
-        LogDebug("Move Left");
-    }
     else if (direction == "Right")
-    {
-        LogDebug("Move Right");
         change.y += 1;
-    }
     else
     {
         LogWarning("Invalid direction for Move action: " + direction.toStdString());
@@ -62,15 +50,9 @@ void EC_Movable::Rotate(const QString &direction)
 {
     Quaternion orientation;
     if (direction == "Left")
-    {
-        //orientation
-        LogDebug("Rotate Left");
-    }
+        orientation;
     else if (direction == "Right")
-    {
-        //orientation
-        LogDebug("Rotate Right");
-    }
+        orientation;
     else
     {
         LogWarning("Invalid direction for Rotate action: " + direction.toStdString());
