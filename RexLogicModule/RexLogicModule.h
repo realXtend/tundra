@@ -217,8 +217,6 @@ namespace RexLogic
         float GetCameraViewportWidth() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
         float GetCameraViewportHeight() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera.
-        float GetCameraFOV() const;
 
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         void SetAllTextOverlaysVisible(bool visible);
