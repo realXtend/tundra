@@ -6,6 +6,8 @@
 #include <QVector>
 #include <QDebug>
 #include "ExternalRenderWindow.h"
+#include "OgreRenderingModule.h"
+
 
 
 
@@ -24,7 +26,7 @@ namespace OgreRenderer
 
 	StereoController::~StereoController()
 	{
-
+		
 	}
 
 	QVector<Ogre::RenderWindow*> StereoController::getRenderWindows()
@@ -34,11 +36,43 @@ namespace OgreRenderer
 		return vec;
 	}
 
+	void StereoController::ChangeShaderColour(qreal r, qreal g, qreal b,const Ogre::String& name)
+	{
+		try
+		{
+			Ogre::MaterialPtr mat = Ogre::MaterialManager::getSingleton().getByName("Stereo/Anaglyph");
+			Ogre::Pass* pass = mat->getTechnique(0)->getPass(0);
+			Ogre::GpuProgramParametersSharedPtr param = pass->getFragmentProgramParameters();
+			Ogre::ColourValue colour(r,g,b,1);
+			param->setNamedConstant(name, colour);
+			
+		}catch (Ogre::Exception &e)
+        {
+            OgreRenderingModule::LogWarning(e.what());
+            OgreRenderingModule::LogWarning("Failed to set Anaglyph shader constant.");
+		}
+	}
+
+
+	void StereoController::ChangeColorLeft(qreal r, qreal g, qreal b)
+	{
+		Ogre::String str("left_colour");
+		ChangeShaderColour(r,g,b,str);
+	}
+
+	void StereoController::ChangeColorRight(qreal r, qreal g, qreal b)
+	{
+		Ogre::String str("right_colour");
+		ChangeShaderColour(r,g,b,str);
+	}
+
     void StereoController::InitializeUi()
     {
        settings_widget_ = new StereoWidget(renderer_->GetFramework());
 	   QObject::connect(settings_widget_, SIGNAL(EnableStereo(QString&, qreal, qreal, qreal, qreal)), this,SLOT(EnableStereo(QString&, qreal, qreal, qreal, qreal) )); 
 	   QObject::connect(settings_widget_, SIGNAL(DisableStereo()), this, SLOT(DisableStereo()));
+	   QObject::connect(settings_widget_, SIGNAL(ChangeColorLeft(qreal, qreal, qreal)), this, SLOT(ChangeColorLeft(qreal, qreal, qreal)));
+	   QObject::connect(settings_widget_, SIGNAL(ChangeColorRight(qreal, qreal, qreal)), this, SLOT(ChangeColorRight(qreal, qreal, qreal)));
     }
 
 	void StereoController::EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width)
@@ -52,7 +86,7 @@ namespace OgreRenderer
 				StereoManager* mngr = new StereoManager();
 				Ogre::RenderWindow *original_window = windows.at(i);
 				Ogre::Viewport * viewport = original_window->getViewport(0);
-				mngr->init(viewport,0,StereoManager::SM_ANAGLYPH_RC);
+				mngr->init(viewport,0,StereoManager::SM_ANAGLYPH);
 				mngr->setEyesSpacing(eye_dist);
 				mngr->setFocalLength(focal_l);
 				mngr->setPixelOffset(offset);
