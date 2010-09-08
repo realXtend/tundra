@@ -1210,6 +1210,10 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::Compon
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }
+    else if (component->TypeName() == EC_Movable::TypeNameStatic())
+    {
+        entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
+    }
 }
 
 void RexLogicModule::ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
