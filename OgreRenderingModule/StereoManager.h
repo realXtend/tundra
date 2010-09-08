@@ -61,10 +61,8 @@ namespace OgreRenderer
 		enum StereoMode
 		{
 			SM_NONE,
-			/// Anaglyph red/cyan
-			SM_ANAGLYPH_RC,
-			/// Anaglyph yellow/blue
-			SM_ANAGLYPH_YB,
+			/// Anaglyph 
+			SM_ANAGLYPH,
 			/// Dual output off-axis mode : suitable for two projectors with polarized filters or head mounted display
 			SM_DUALOUTPUT,
 			/// Verticaly interlaced mode

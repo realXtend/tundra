@@ -34,20 +34,16 @@ fragment_program Stereo/Interlace_CB_fp cg
    }
 }
 
-fragment_program Stereo/Anaglyph_RC_fp cg
+fragment_program Stereo/Anaglyph_fp cg
 {
    source Stereoscopy.cg
    profiles ps_2_0 arbfp1
    entry_point Anaglyph_fp
-   compile_arguments -DLEFT_MASK=1,0,0,1 -DRIGHT_MASK=0,1,1,1
-}
-
-fragment_program Stereo/Anaglyph_YB_fp cg
-{
-   source Stereoscopy.cg
-   profiles ps_2_0 arbfp1
-   entry_point Anaglyph_fp
-   compile_arguments -DLEFT_MASK=1,1,0,1 -DRIGHT_MASK=0,0,1,1
+   default_params
+   {
+		param_named left_colour float4 1 0 0 1
+		param_named right_colour float4 0 1 1 1
+   }
 }
 
 material Stereo/BaseCompositorMaterial
@@ -118,26 +114,14 @@ material Stereo/CheckboardInterlace : Stereo/BaseCompositorMaterial
 	}
 }
 
-material Stereo/YellowBlueAnaglyph : Stereo/BaseCompositorMaterial
-{
-	technique
-	{
-		pass
-		{		
-			fragment_program_ref Stereo/Anaglyph_YB_fp
-			{
-			}
-		}
-	}
-}
 
-material Stereo/RedCyanAnaglyph : Stereo/BaseCompositorMaterial
+material Stereo/Anaglyph : Stereo/BaseCompositorMaterial
 {
 	technique
 	{
 		pass
 		{		
-			fragment_program_ref Stereo/Anaglyph_RC_fp
+			fragment_program_ref Stereo/Anaglyph_fp
 			{
 			}
 		}
