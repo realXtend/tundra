@@ -242,7 +242,7 @@ QPushButton::pressed{
                 </font>
                </property>
                <property name="text">
-                <string>Sound</string>
+                <string>Animation</string>
                </property>
               </widget>
              </item>
