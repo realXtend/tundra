@@ -22,7 +22,7 @@
 
 namespace Asset
 {
-    const Real XMLRPCAssetProvider::DEFAULT_ASSET_TIMEOUT = 10.0;
+    const float XMLRPCAssetProvider::DEFAULT_ASSET_TIMEOUT = 10.0;
         
     XMLRPCAssetProvider::XMLRPCAssetProvider(Foundation::Framework* framework) :
         framework_(framework),
@@ -95,7 +95,7 @@ namespace Asset
             }
             HttpUtilities::HttpTaskRequestPtr new_http_request(new HttpUtilities::HttpTaskRequest);
             new_http_request->url_ = asset_id;
-            new_http_request->timeout_ = (Real)asset_timeout_;
+            new_http_request->timeout_ = (float)asset_timeout_;
             new_request.http_request_tag_ = manager_.AddRequest<HttpUtilities::HttpTaskRequest>(host, new_http_request);
             
             requests_[asset_id] = new_request;

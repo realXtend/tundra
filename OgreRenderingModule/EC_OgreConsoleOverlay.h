@@ -102,10 +102,10 @@ namespace OgreRenderer
         Ogre::Overlay *overlay_;
 
         //! Height of the console overlay
-        const Real height_;
+        const float height_;
 
         //! font height
-        const Real char_height_;
+        const float char_height_;
 
         //! is the console visible
         bool visible_;
@@ -120,10 +120,10 @@ namespace OgreRenderer
         Mutex mutex_;
 
         //! console position for animation
-        Real position_;
+        float position_;
 
         //! animation speed
-        const Real speed_;
+        const float speed_;
 
         //! the renderer, need reference to check if renderer is still alive
         RendererWeakPtr renderer_;

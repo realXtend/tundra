@@ -54,7 +54,7 @@ public:
 
     Foundation::Attribute<QString>      particleId_;
     Foundation::Attribute<bool>         castShadows_;
-    Foundation::Attribute<Real>         renderingDistance_;
+    Foundation::Attribute<float>         renderingDistance_;
 
 public slots:
     void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);

@@ -29,7 +29,7 @@ namespace RexLogic
         void AddButton(QPushButton *button);
 
         //notifies the widget that is clicked (if any)
-        void ForwardMouseClickEvent(Real x, Real y);
+        void ForwardMouseClickEvent(float x, float y);
 
 
 
@@ -38,7 +38,7 @@ namespace RexLogic
         void ButtonPressed();
 
     private:
-        Real text_padding_;
+        float text_padding_;
 
 
     };

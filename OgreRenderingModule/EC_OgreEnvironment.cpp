@@ -37,7 +37,7 @@ const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
 namespace OgreRenderer
 {
 /// Utility tool for clamping fog distance
-void ClampFog(Real& start, Real& end, Real farclip)
+void ClampFog(float& start, float& end, float farclip)
 {
     if (farclip < 10.0) 
         farclip = 10.0;
@@ -258,7 +258,7 @@ void EC_OgreEnvironment::SetSunCastShadows(const bool &enabled)
         sunlight_->setCastShadows(enabled);
 }
 
-void EC_OgreEnvironment::SetTime(Real time)
+void EC_OgreEnvironment::SetTime(float time)
 {
     if (time < 0.0)
         time += 1.0;
@@ -345,8 +345,8 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     if (!water)
     {
         // No water entity, set fog value.
-        Real fogStart = fogStart_;
-        Real fogEnd = fogEnd_;
+        float fogStart = fogStart_;
+        float fogEnd = fogEnd_;
         ClampFog(fogStart, fogEnd, cameraFarClip_);
         
         sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001f, fogStart, fogEnd);
@@ -358,8 +358,8 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         if(camera->getDerivedPosition().z >= water->getParentNode()->getPosition().z)
         {        
             // We're above the water.
-            Real fogStart = fogStart_;
-            Real fogEnd = fogEnd_;
+            float fogStart = fogStart_;
+            float fogEnd = fogEnd_;
             ClampFog(fogStart, fogEnd, cameraFarClip_);
         
 #ifdef CAELUM
@@ -373,9 +373,9 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         else
         {
             // We're below the water.
-            Real fogStart = waterFogStart_;
-            Real fogEnd = waterFogEnd_;
-            Real farClip = waterFogEnd_ + 10.f;
+            float fogStart = waterFogStart_;
+            float fogEnd = waterFogEnd_;
+            float farClip = waterFogEnd_ + 10.f;
             if (farClip > cameraFarClip_)
                 farClip = cameraFarClip_;            
             ClampFog(fogStart, fogEnd, farClip);            
