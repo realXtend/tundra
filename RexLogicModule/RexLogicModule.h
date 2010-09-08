@@ -209,10 +209,6 @@ namespace RexLogic
 
         ///\todo Remove. Get this information using WorldStream and/or EC_OpenSimPresence.
         entity_id_t GetUserAvatarId() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraUp() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraRight() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
         float GetCameraViewportWidth() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.

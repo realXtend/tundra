@@ -20,6 +20,26 @@ try:
 except:
     qapp = None
 
+# according Quaternion*Vector from irrlicht (see Core\Quaternion.h)
+def quat_mult_vec(quat, v):
+    qvec = quat.vector()
+    uv = Vec.crossProduct(qvec, v)
+    uuv = Vec.crossProduct(qvec, uv)
+    uv = uv * 2.0 * quat.scalar()
+    uuv = uuv * 2.0
+
+    return v + uv + uuv
+
+# replacement for r.GetCameraUp()
+def get_up(entity):
+    v = Vec(0.0, 1.0, 0.0)
+    return quat_mult_vec(entity.placeable.Orientation, v)
+    
+# replacement for r.GetCameraRight()
+def get_right(entity):
+    v = Vec(1.0, 0.0, 0.0)
+    return quat_mult_vec(entity.placeable.Orientation, v)
+
 def set_custom_cursor(cursor_shape):
     if qapp == None:
         return
@@ -202,8 +222,6 @@ class Manipulator:
                     
     def manipulate(self, ents, movedx, movedy):
         if ents is not None:
-            lengthx = 0
-            lengthy = 0
             fov = naali.getCamera().camera.GetVerticalFov()
             width, height = rend.GetWindowWidth(), rend.GetWindowHeight()
             campos = naali.getCamera().placeable.Position
@@ -220,19 +238,15 @@ class Manipulator:
 
             self.setManipulatorScale(ents)
 
-            if self.usesManipulator and self.grabbed_axis is not None:
-                rightvec = Vector3(r.getCameraRight())
-                upvec = Vector3(r.getCameraUp())
-                temp = [0,0,0]
-                temp[self.grabbed_axis] = 1
-                axis_vec = Vector3(temp)
-                mousey_on_arrow_projection = upvec.dot(axis_vec) * axis_vec
-                lengthy = mousey_on_arrow_projection.length * amounty
-                mousex_on_arrow_projection = rightvec.dot(axis_vec) * axis_vec
-                lengthx = mousex_on_arrow_projection.length * amountx
+            rightvec = get_right(naali.getCamera())
+            upvec = get_up(naali.getCamera())
+
+            rightvec *= amountx
+            upvec *= amounty
+            changevec = rightvec - upvec
             
             for ent in ents:
-                self._manipulate(ent, amountx, amounty, lengthx, lengthy, campos.x() < entpos.x(), campos.y() < entpos.y())
+                self._manipulate(ent, amountx, amounty, changevec, campos.x() < entpos.x(), campos.y() < entpos.y())
                 self.controller.soundRuler(ent)
                 
             if self.usesManipulator:
@@ -285,33 +299,33 @@ class MoveManipulator(Manipulator):
         2: "axis_blue"
     }
 
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
         if self.grabbed:
-            rightvec = Vector3(r.getCameraRight())
-            upvec = Vector3(r.getCameraUp())
-            qpos = ent.placeable.Position
-            changevec = (amountx * rightvec) - (amounty * upvec)
-
-            entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
-            newpos = entpos + changevec
-            newpos = Vec(newpos.x, newpos.y, newpos.z)
+#            rightvec = get_right(naali.getCamera())
+#            upvec = get_up(naali.getCamera())
+#            rightvec *= amountx
+#            upvec *= amounty
+#            changevec = rightvec - upvec
 
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
-                    ent.network.Position = ent.placeable.translate(0, -mov)
+                    ent.network.Position = ent.placeable.translate(0, -changevec.x())
                 elif self.grabbed_axis == self.AXIS_GREEN:
-                    ent.network.Position = ent.placeable.translate(1, -mov)
+                    ent.network.Position = ent.placeable.translate(1, -changevec.y())
                 elif self.grabbed_axis == self.AXIS_BLUE:
-                    ent.network.Position = ent.placeable.translate(2, -lengthy)
+                    ent.network.Position = ent.placeable.translate(2, changevec.z())
             else:
                 if self.grabbed_axis == self.AXIS_BLUE:
-                    qpos.setZ(newpos.z())
-                elif self.grabbed_axis == self.AXIS_GREEN:
-                    qpos.setY(newpos.y())
+                    changevec.setX(0)
+                    changevec.setY(0)
                 elif self.grabbed_axis == self.AXIS_RED:
-                    qpos.setX(newpos.x())
-                ent.placeable.Position = qpos
-                ent.network.Position = qpos
+                    changevec.setZ(0)
+                    changevec.setY(0)
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    changevec.setZ(0)
+                    changevec.setX(0)
+                ent.placeable.Position += changevec
+                ent.network.Position += changevec
 
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
@@ -327,52 +341,45 @@ class ScaleManipulator(Manipulator):
     AXIS_RED = 1
     AXIS_BLUE = 2
     
-    GREENARROW = [1]
-    REDARROW = [0]
+    GREENARROW = [0]
+    REDARROW = [1]
     BLUEARROW = [2]
     
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
         if self.grabbed:
-            qscale = ent.placeable.Scale
-            scale = list((qscale.x(), qscale.y(), qscale.z()))
-            rightvec = Vector3(r.getCameraRight())
-            upvec = Vector3(r.getCameraUp())
-            
             if self.grabbed_axis == self.AXIS_BLUE:
-                mov = lengthy
-                scale[self.grabbed_axis] -= mov
-            else:
-                mov = lengthx
-                div = abs(rightvec[self.grabbed_axis])
-                if div == 0:
-                    div = 0.01 #not the best of ideas but...
-                mov *= rightvec[self.grabbed_axis]/div
-                scale[self.grabbed_axis] += mov
+                changevec.setX(0)
+                changevec.setY(0)
+            elif self.grabbed_axis == self.AXIS_RED:
+                changevec.setZ(0)
+                changevec.setY(0)
+            elif self.grabbed_axis == self.AXIS_GREEN:
+                changevec.setX(0)
+                changevec.setZ(0)
             
-            newscale = Vec(scale[0], scale[1], scale[2])
-            ent.placeable.Scale = newscale
+            ent.placeable.Scale += changevec
             qprim = ent.prim
             if qprim is not None:
                 children = qprim.GetChildren()
                 for child_id in children: #XXX this might not be the wanted behaviour with linksets! .. when just scaling the rootpart.
                     child = r.getEntity(int(child_id))
-                    child.placeable.Scale = newscale
+                    child.placeable.Scale += changevec
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
     USES_MANIPULATOR = False
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
-        rightvec = Vector3(r.getCameraRight())
-        upvec = Vector3(r.getCameraUp())
-        changevec = (amountx * rightvec) - (amounty * upvec)
-        qpos = ent.placeable.Position
-        entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
-        newpos = entpos + changevec
-        newpos = Vec(newpos.x, newpos.y, newpos.z)
-        ent.placeable.Position = newpos
-        ent.network.Position = newpos
+    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
+#        rightvec = get_right(naali.getCamera())
+#        upvec = get_up(naali.getCamera())
+#
+#        rightvec *= amountx
+#        upvec *= amounty
+#        changevec = rightvec - upvec
+
+        ent.placeable.Position += changevec
+        ent.network.Position += changevec
         
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
@@ -393,11 +400,8 @@ class RotationManipulator(Manipulator):
     BLUEARROW = [2] # we do green_axis actions
     
     """ Using Qt's QQuaternion. This bit has some annoying stuttering aswell... """
-    def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
+    def _manipulate(self, ent, amountx, amounty, changevec, xsmaller, ysmaller):
         if self.grabbed and self.grabbed_axis is not None:
-            rightvec = Vector3(r.getCameraRight())
-            upvec = Vector3(r.getCameraUp())
-
             if amountx < amounty:
                 amount = amounty
             else:
@@ -423,15 +427,12 @@ class RotationManipulator(Manipulator):
                 ort *= delta
             else:
                 if self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    #print "green axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[1] += mov
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    #print "blue axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[2] += mov
                 elif self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    #print "red axis", self.grabbed_axis,
                     mov = amount * 30 * dir
                     euler[0] -= mov
                 rotationQuat = euler_to_quat(euler)

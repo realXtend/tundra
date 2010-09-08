@@ -626,8 +626,10 @@ if 0: #getUserAvatar
     #ent.mesh = "cruncah1.mesh"
     
 if 0:
-    print r.getCameraUp()
-    print r.getCameraRight()
+    # code for camup/right in manipulator.py
+    # maybe move to naali module?
+    #print r.getCameraUp()
+    #print r.getCameraRight()
 
 if 0: #test changing the mesh asset a prim is using
     ent_id = 1659586053 #penkki, arkku was: 2461025163
