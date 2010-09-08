@@ -16,6 +16,9 @@
 #include "Provider.h"
 #include "ApplicationManager.h"
 #include "MumbleLibrary.h"
+#include "SettingsWidget.h"
+#include "UiServiceInterface.h"
+
 
 #include "MemoryLeakCheck.h"
 
@@ -30,7 +33,8 @@ namespace MumbleVoip
           in_world_voice_provider_(0),
           time_from_last_update_ms_(0),
           use_camera_position_(false),
-          use_native_mumble_client_(false)
+          use_native_mumble_client_(false),
+          settings_widget_(0)
     {
         QStringList arguments = QCoreApplication::arguments();
         foreach(QString arg, arguments)
@@ -45,6 +49,7 @@ namespace MumbleVoip
         SAFE_DELETE(link_plugin_);
         SAFE_DELETE(server_info_provider_);
         SAFE_DELETE(in_world_voice_provider_);
+        SAFE_DELETE(settings_widget_);
     }
 
     void MumbleVoipModule::Load()
@@ -56,7 +61,7 @@ namespace MumbleVoip
         }
         else
         {
-            in_world_voice_provider_ = new Provider(framework_);
+            in_world_voice_provider_ = new Provider(framework_, &settings_);
         }
 
         link_plugin_ = new LinkPlugin();
@@ -77,6 +82,7 @@ namespace MumbleVoip
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
         if (event_category_framework_ == 0)
             LogError("Unable to find event category for Framework");
+       SetupSettingsWidget();
     }
 
     void MumbleVoipModule::Uninitialize()
@@ -329,6 +335,30 @@ namespace MumbleVoip
         }
         QString message = QString("");
         return Console::ResultSuccess(message.toStdString());
+    }
+
+    void MumbleVoipModule::SetupSettingsWidget()
+    {
+        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui)
+            return;
+
+        settings_widget_ = new SettingsWidget(in_world_voice_provider_, &settings_);
+
+        //QUiLoader loader;
+        //QFile file("./data/ui/soundsettings.ui");
+
+        //if (!file.exists())
+        //{
+        //    OpenALAudioModule::LogError("Cannot find sound settings .ui file.");
+        //    return;
+        //}
+
+        //settings_widget_ = loader.load(&file); 
+        //if (!settings_widget_)
+        //    return;
+
+        ui->AddSettingsWidget(settings_widget_, "Voice");
     }
 
 //    Console::CommandResult MumbleVoipModule::OnConsoleEnableVoiceActivityDetector(const StringVector &params)

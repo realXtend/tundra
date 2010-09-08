@@ -97,9 +97,11 @@ namespace MumbleLib
 
         void SetChannel(MumbleLib::Channel* channel);
 
+        void SetPlaybackBufferMaxLengthMs(int value);
+
     private:
         static const int SPEAKING_TIMEOUT_MS = 100; // time to emit StopSpeaking after las audio packet is received
-        static const int PLAYBACK_BUFFER_MAX_LENGTH_MS_= 200;
+        static const int DEFAUL_PLAYBACK_BUFFER_MAX_LENGTH_MS_= 200;
 
         const MumbleClient::User& user_;
         bool speaking_;
@@ -112,7 +114,7 @@ namespace MumbleLib
         int received_voice_packet_count_;
         int voice_packet_drop_count_;
         QTime last_audio_frame_time_;
-
+        int playback_buffer_max_length_ms;
     signals:
         //! Emited when user has left from server
         void Left();
