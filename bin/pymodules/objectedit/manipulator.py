@@ -341,8 +341,8 @@ class ScaleManipulator(Manipulator):
     AXIS_RED = 1
     AXIS_BLUE = 2
     
-    GREENARROW = [0]
-    REDARROW = [1]
+    GREENARROW = [1]
+    REDARROW = [0]
     BLUEARROW = [2]
     
     def _manipulate(self, ent, amountx, amounty, lengthx, lengthy, xsmaller, ysmaller):
