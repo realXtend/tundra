@@ -1,48 +1,35 @@
 """the modules that are to be loaded when the viewer starts.
-
-add your module *class* (the circuits Component)
-to the list called 'modules'. you need to import your pymodule
-to have access here to the class, of course, and that can do
-whatever loading that you want (in your module i.e. .py file).
+add your module *class* (the circuits Component) to a .ini file in this directory.
 """
 import rexviewer as r
-import sys
+import sys, os
 import traceback
+from glob import glob
+from ConfigParser import ConfigParser
 
 from core.freshimport import freshimport
 
-#TODO: add reading these from a .ini file or something to ease custom modding
-modulenames = [
-    #("usr.sleeper", "Sleeper"),
-    #("usr.camcontrol", "CameraController"),
-    #("apitest.circuits_testmodule", "TestModule"),
-    #("apitest.pythonqt_gui", "TestGui"),
-    #("apitest.thread_test", "TestThread"),
-    #("usr.chathandler", ChatHandler),
-    ("usr.keycommands", "KeyCommander"),
-    ("loadurlhandler", "LoadURLHandler"),
-    ("mediaurlhandler.mediaurlhandler", "MediaURLHandler"),
-    #("apitest.testrunner", "TestLoginLogoutExit",
-    #("webserver.webcontroller", "WebServer"),
-    #("websocketserver", "NaaliWebsocketServer"),
-    ("localscene.localscene", "LocalScene"),
-    ("objectedit.objectedit", "ObjectEdit"),
-    ("estatemanagement.estatemanagement", "EstateManagement"),
-    ("apitest.componenthandler", "ComponenthandlerRegistry"),
-    #("apitest.animsync", "AnimationSync"), #these are loadeed in that Registry now
-    #("apitest.door", "DoorHandler"),
-    #("apitest.jscomponent", "JavascriptHandler")
-    #("apitest.chessview.chessviewcontrol", "ChessViewControl")
-    ]
+def read_inis():
+    thisdir = os.path.split(os.path.abspath(__file__))[0]
+    for inifile in glob(os.path.join(thisdir, "*.ini")):
+        cp = ConfigParser()
+        cp.read([inifile])
+        for s in cp.sections():
+            cfdict = dict(cp.items(s))
+            try:
+                modname, compname = s.rsplit('.', 1)
+            except ValueError:
+                r.logInfo("bad config section in " + inifile + ": " + s)
+                continue
 
+            yield modname, compname, cfdict
+        
 modules = []
-for modname, compname in modulenames:
+for modname, compname, cfg in read_inis():
     m = freshimport(modname)
     if m is not None: #loaded succesfully. if not, freshload logged traceback
         c = getattr(m, compname)
         modules.append(c)
-
-#modules.append(headtrack.control.HeadTrack)
 
 def load(circuitsmanager):
     for klass in modules:
