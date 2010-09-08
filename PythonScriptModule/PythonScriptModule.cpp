@@ -1763,17 +1763,6 @@ PyObject* GetCameraRight(PyObject *self)
     Py_RETURN_NONE;
 }
 
-PyObject* GetCameraFOV(PyObject *self) 
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float fovy = rexlogic->GetCameraFOV();
-        return Py_BuildValue("f", fovy);
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -1918,9 +1907,6 @@ static PyMethodDef EmbMethods[] = {
     {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
     "Get the up-vector for the camera."},
     
-    {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
-    "Get the Field of View from the camera."},
-
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
 
