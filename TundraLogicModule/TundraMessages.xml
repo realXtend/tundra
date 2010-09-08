@@ -24,9 +24,6 @@
         <u8 name="userID" />
         <s8 name="userName" dynamicCount="8" />
     </message>
-    <!-- Client to server -->
-    <message id="104" name="Logout" reliable="true" priority="100">
-    </message>
 
     <!-- SCENE REPLICATION -->
 

@@ -82,7 +82,7 @@ public:
     bool IsServer() const;
     
     /// Create server scene & start server
-    void ServerStart(unsigned short port, bool use_udp);
+    void ServerStart(unsigned short port);
     
     /// Stop server & delete server scene
     void ServerStop();
@@ -91,7 +91,7 @@ public:
     KristalliProtocol::UserConnectionList& ServerGetUserConnections();
     
     /// Connect and login
-    void ClientLogin(const std::string& address, unsigned short port, bool use_udp, const std::string& username, const std::string& password);
+    void ClientLogin(const std::string& address, unsigned short port, const std::string& username, const std::string& password);
     
     /// Disconnect and delete client scene
     /// \param fail True if logout was due to connection/login failure
