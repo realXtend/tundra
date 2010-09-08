@@ -382,6 +382,14 @@ namespace OgreRenderer
             main_window_->showNormal();
     }
 
+
+	QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
+	{
+		
+		return cave_manager_->getExternalWindows();
+
+	}
+
     void Renderer::SetShadowQuality(ShadowQuality newquality)
     {
         // We cannot effect the new setting immediately, so save only to config

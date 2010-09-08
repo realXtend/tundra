@@ -249,6 +249,8 @@ namespace OgreRenderer
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
+		QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+
     public slots:
         //! Toggles fullscreen
         void SetFullScreen(bool value);
