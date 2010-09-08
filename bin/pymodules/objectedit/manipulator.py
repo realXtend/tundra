@@ -290,23 +290,11 @@ class MoveManipulator(Manipulator):
             rightvec = Vector3(r.getCameraRight())
             upvec = Vector3(r.getCameraUp())
             qpos = ent.placeable.Position
+            changevec = (amountx * rightvec) - (amounty * upvec)
 
-            mov = lengthx 
-            div = abs(rightvec[self.grabbed_axis])
-            if div == 0:
-                div = 0.00001 #not the best of ideas but...
-            mov *= rightvec[self.grabbed_axis]/div
-
-            if xsmaller and ysmaller:
-                dir = 1
-            elif xsmaller and not ysmaller:
-                dir = -1
-            elif not xsmaller and ysmaller:
-                dir = -1
-            else:
-                dir = 1
-
-            mov *= dir
+            entpos = Vector3(qpos.x(), qpos.y(), qpos.z())
+            newpos = entpos + changevec
+            newpos = Vec(newpos.x, newpos.y, newpos.z)
 
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
@@ -317,13 +305,11 @@ class MoveManipulator(Manipulator):
                     ent.network.Position = ent.placeable.translate(2, -lengthy)
             else:
                 if self.grabbed_axis == self.AXIS_BLUE:
-                    mov = lengthy
-                    qpos.setZ(qpos.z()-mov)
-                else:
-                    if self.grabbed_axis == self.AXIS_GREEN:
-                        qpos.setY(qpos.y()-mov)
-                    else:
-                        qpos.setX(qpos.x()-mov)
+                    qpos.setZ(newpos.z())
+                elif self.grabbed_axis == self.AXIS_GREEN:
+                    qpos.setY(newpos.y())
+                elif self.grabbed_axis == self.AXIS_RED:
+                    qpos.setX(newpos.x())
                 ent.placeable.Position = qpos
                 ent.network.Position = qpos
 
