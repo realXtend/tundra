@@ -44,6 +44,8 @@ namespace UiServices
 
         void ToggleNotificationBrowser();
 
+	signals:
+		void ShowNotificationCalled(QString& msg);
     private:
         InworldSceneController *inworld_scene_controller_;
         QGraphicsScene *scene_;
