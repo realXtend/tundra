@@ -17,6 +17,11 @@
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
 #include "MsgClientLeft.h"
+#include "MsgCreateEntity.h"
+#include "MsgRemoveEntity.h"
+#include "MsgUpdateComponents.h"
+#include "MsgRemoveComponents.h"
+#include "MsgEntityIDCollision.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -26,23 +31,6 @@ namespace TundraLogic
 std::string TundraLogicModule::type_name_static_ = "TundraLogic";
 
 static const unsigned short cDefaultPort = 2345;
-
-std::string BufferToString(const std::vector<s8>& buffer)
-{
-    if (buffer.size())
-        return std::string((const char*)&buffer[0], buffer.size());
-    else
-        return std::string();
-}
-
-std::vector<s8> StringToBuffer(const std::string& str)
-{
-    std::vector<s8> ret;
-    ret.resize(str.size());
-    if (str.size())
-        memcpy(&ret[0], &str[0], str.size());
-    return ret;
-}
 
 TundraLogicModule::TundraLogicModule() : ModuleInterface(type_name_static_),
     loginstate_(NotConnected),
@@ -314,7 +302,7 @@ void TundraLogicModule::HandleKristalliMessage(MessageConnection* source, messag
         // If we are server, only allow the login message from an unauthenticated user
         if (id != cLoginMessage)
         {
-            KristalliProtocol::UserConnection* user = kristalliModule_->GetUserConnection(source);
+            KristalliProtocol::UserConnection* user = GetUserConnection(source);
             if ((!user) || (!user->authenticated))
             {
                 LogWarning("Server: dropping message " + ToString(id) + " from unauthenticated user");
@@ -353,13 +341,55 @@ void TundraLogicModule::HandleKristalliMessage(MessageConnection* source, messag
             ClientHandleClientLeft(source, msg);
         }
         break;
+        
+        // Scene network sync, both client & server
+    case cCreateEntityMessage:
+        {
+            MsgCreateEntity msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleCreateEntity(source, msg);
+        }
+        break;
+    case cRemoveEntityMessage:
+        {
+            MsgRemoveEntity msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleRemoveEntity(source, msg);
+        }
+        break;
+    case cUpdateComponentsMessage:
+        {
+            MsgUpdateComponents msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleUpdateComponents(source, msg);
+        }
+        break;
+    case cRemoveComponentsMessage:
+        {
+            MsgRemoveComponents msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleRemoveComponents(source, msg);
+        }
+        break;
+    case cEntityIDCollisionMessage:
+        {
+            MsgEntityIDCollision msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleEntityIDCollision(source, msg);
+        }
+        break;
     }
+}
+
+KristalliProtocol::UserConnection* TundraLogicModule::GetUserConnection(MessageConnection* source)
+{
+    return kristalliModule_->GetUserConnection(source);
 }
 
 void TundraLogicModule::ServerHandleLogin(MessageConnection* source, const MsgLogin& msg)
 {
     // For now, automatically accept the connection if it's from a known user
-    KristalliProtocol::UserConnection* user = kristalliModule_->GetUserConnection(source);
+    KristalliProtocol::UserConnection* user = GetUserConnection(source);
     if (!user)
     {
         LogWarning("Login message from unknown user");

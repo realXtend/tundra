@@ -87,6 +87,9 @@ public:
     /// Stop server & delete server scene
     void ServerStop();
     
+    /// Get matching userconnection from a messageconnection, or null if unknown
+    KristalliProtocol::UserConnection* GetUserConnection(MessageConnection* source);
+    
     /// Get connected users from KristalliProtocolModule
     KristalliProtocol::UserConnectionList& ServerGetUserConnections();
     

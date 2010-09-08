@@ -108,6 +108,14 @@ namespace Scene
         EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList(),
              AttributeChange::Type change = AttributeChange::LocalOnly);
 
+        //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
+        /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
+            and this change in itself will not be replicated
+            \param old_id Old id of the existing entity
+            \param new_id New id to set
+         */ 
+        void ChangeEntityId(entity_id_t old_id, entity_id_t new_id);
+        
         //! Returns entity with the specified id
         /*!
             \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,

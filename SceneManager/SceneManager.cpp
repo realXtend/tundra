@@ -96,6 +96,26 @@ namespace Scene
         return gid_local_;
     }
     
+    void SceneManager::ChangeEntityId(entity_id_t old_id, entity_id_t new_id)
+    {
+        if (old_id == new_id)
+            return;
+        
+        Scene::EntityPtr old_entity = GetEntity(old_id);
+        if (!old_entity)
+            return;
+        
+        if (GetEntity(new_id))
+        {
+            Foundation::RootLogWarning("Warning: purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request");
+            RemoveEntity(new_id, AttributeChange::LocalOnly);
+        }
+        
+        old_entity->SetNewId(old_id);
+        entities_.erase(old_id);
+        entities_[new_id] = old_entity;
+    }
+    
     void SceneManager::RemoveEntity(entity_id_t id, AttributeChange::Type change)
     {
         EntityMap::iterator it = entities_.find(id);

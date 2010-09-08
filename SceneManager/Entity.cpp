@@ -155,6 +155,12 @@ namespace Scene
         return false;
     }
 
+    void Entity::ResetChange()
+    {
+        for (size_t i = 0; i < components_.size(); ++i)
+            components_[i]->ResetChange();
+    }
+    
     std::string Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
