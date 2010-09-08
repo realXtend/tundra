@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Form</class>
- <widget class="QWidget" name="Form">
+ <class>MicrophoneAdjustmentWidget</class>
+ <widget class="QWidget" name="MicrophoneAdjustmentWidget">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -17,12 +17,18 @@
    <item>
     <widget class="QLabel" name="label_4">
      <property name="text">
-      <string>Set the microphone level so that you can hear your own voice with proper level</string>
+      <string>Set the microphone level so that you can hear your own voice with desired level</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
     </widget>
    </item>
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
+     <item>
+      <widget class="QWidget" name="widget" native="true"/>
+     </item>
      <item>
       <widget class="QLabel" name="label">
        <property name="text">
@@ -31,40 +37,17 @@
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
+      <widget class="QSlider" name="microphoneLevelSlider">
+       <property name="maximum">
+        <number>100</number>
        </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QSlider" name="horizontalSlider">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>
        </property>
       </widget>
      </item>
      <item>
-      <spacer name="horizontalSpacer_2">
-       <property name="orientation">
-        <enum>Qt::Horizontal</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>20</width>
-         <height>20</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
-      <widget class="QLabel" name="label_3">
+      <widget class="QLabel" name="microphoneLevelLabel">
        <property name="text">
         <string>50%</string>
        </property>
@@ -75,20 +58,13 @@
    <item>
     <widget class="QGroupBox" name="groupBox">
      <property name="title">
-      <string>Playback</string>
+      <string>Microphone input</string>
      </property>
      <layout class="QVBoxLayout" name="verticalLayout_2">
       <item>
        <layout class="QVBoxLayout" name="verticalLayout">
         <item>
-         <widget class="QCheckBox" name="checkBox">
-          <property name="text">
-           <string>enabled</string>
-          </property>
-         </widget>
-        </item>
-        <item>
-         <widget class="QProgressBar" name="progressBar">
+         <widget class="QProgressBar" name="audioLevelProgressBar">
           <property name="value">
            <number>24</number>
           </property>
@@ -97,6 +73,53 @@
        </layout>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_2">
+     <item>
+      <spacer name="horizontalSpacer">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="cancelButton">
+       <property name="text">
+        <string>Cancel</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="saveButton">
+       <property name="text">
+        <string>Save</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <widget class="QLabel" name="label_2">
+     <property name="font">
+      <font>
+       <weight>75</weight>
+       <bold>true</bold>
+      </font>
+     </property>
+     <property name="text">
+      <string>Audio is only played locally and any of audio data is not transmitted to network</string>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
+     </property>
     </widget>
    </item>
    <item>

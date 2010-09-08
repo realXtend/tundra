@@ -38,7 +38,8 @@ namespace MumbleVoip
         speaker_voice_activity_(0),
         server_info_(server_info),
         connection_(0),
-        settings_(settings)
+        settings_(settings),
+        local_echo_mode_(false)
     {
         channel_name_ = server_info.channel;
         OpenConnection(server_info);
@@ -85,7 +86,7 @@ namespace MumbleVoip
         
         MumbleLib::MumbleLibrary::Start();
 
-        if (settings_->GetEnabled())
+        if (settings_->GetDefaultVoiceMode() == Settings::ContinuousTransmission)
             EnableAudioSending();
         else
             DisableAudioSending();
@@ -449,6 +450,7 @@ namespace MumbleVoip
             int bytes_to_read = SAMPLES_IN_FRAME*SAMPLE_WIDTH/8;
             PCMAudioFrame* frame = new PCMAudioFrame(SAMPLE_RATE, SAMPLE_WIDTH, NUMBER_OF_CHANNELS, bytes_to_read );
             int bytes = sound_service->GetRecordedSoundData(frame->DataPtr(), bytes_to_read);
+            ApplyMicrophoneLevel(frame);
             UpdateSpeakerActivity(frame);
             assert(bytes_to_read == bytes);
 
@@ -463,8 +465,8 @@ namespace MumbleVoip
             //}
             if (audio_sending_enabled_)
                 connection_->SendAudioFrame(frame, avatar_position);
-
-            delete frame;
+            else
+                delete frame;
         }
     }
 
@@ -520,17 +522,28 @@ namespace MumbleVoip
         else
             sound_buffer.stereo_ = false;
 
-        QMutexLocker user_locker(user);
-        if (audio_playback_channels_.contains(user->Session()))
-            if (user->PositionKnown())
-                sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+        if (!user)
+        {
+            const int source_id = 0;
+            if (audio_playback_channels_.contains(source_id))
+                sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[0]);
             else
-                sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
+                audio_playback_channels_[0] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+        }
         else
-            if (user->PositionKnown())
-                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+        {
+            QMutexLocker user_locker(user);
+            if (audio_playback_channels_.contains(user->Session()))
+                if (user->PositionKnown() && settings_->GetPositionalAudioEnabled())
+                    sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), audio_playback_channels_[user->Session()]);
+                else
+                    sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channels_[user->Session()]);
             else
-                audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+                if (user->PositionKnown() && settings_->GetPositionalAudioEnabled())
+                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer3D(sound_buffer, Foundation::SoundServiceInterface::Voice, user->Position(), 0);
+                else
+                    audio_playback_channels_[user->Session()] = sound_service->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, 0);
+        }
 
         delete frame;
     }
@@ -592,6 +605,16 @@ namespace MumbleVoip
     void Session::SetEncodeQuality(double quality)
     {
         connection_->SetEncodingQuality(quality);
+    }
+
+    void Session::ApplyMicrophoneLevel(PCMAudioFrame* frame)
+    {
+        frame->DataPtr();
+        for(int i = 0; i < frame->SampleCount(); ++i)
+        {
+            int sample = static_cast<int>((frame->SampleAt(i))*settings_->GetMicrophoneLevel());
+            frame->SetSampleAt(i, sample);
+        }
     }
 
 } // MumbleVoip

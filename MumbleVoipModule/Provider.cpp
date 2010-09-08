@@ -9,6 +9,9 @@
 #include "ServerInfoProvider.h"
 #include "EventManager.h"
 #include "NetworkEvents.h" // For network events
+#include "MicrophoneAdjustmentWidget.h"
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -20,7 +23,8 @@ namespace MumbleVoip
         session_(0),
         server_info_(0),
         server_info_provider_(0),
-        settings_(settings)
+        settings_(settings),
+        microphone_adjustment_widget_(0)
     {
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
@@ -111,6 +115,46 @@ namespace MumbleVoip
         }
         else
             return session_->Statistics();
+    }
+
+    void Provider::ShowMicrophoneAdjustmentDialog()
+    {
+        Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+        if (!ui_service)
+            return;
+
+        if (microphone_adjustment_widget_)
+            return;
+
+        bool audio_sending_was_enabled = false;
+        bool audio_receiving_was_enabled = false;
+        if (session_)
+        {
+            audio_sending_was_enabled = session_->IsAudioSendingEnabled();
+            audio_receiving_was_enabled = session_->IsAudioReceivingEnabled();
+
+            session_->DisableAudioSending();
+            session_->DisableAudioReceiving();
+        }
+
+        microphone_adjustment_widget_ = new MicrophoneAdjustmentWidget(framework_, settings_);
+        UiProxyWidget* proxy = ui_service->AddWidgetToScene(microphone_adjustment_widget_, Qt::Dialog);
+        proxy->setWindowTitle("Local Test Mode");
+        microphone_adjustment_widget_->setWindowTitle("Local Test Mode");
+//        ui_service->AddWidgetToScene(microphone_adjustment_widget_, Qt::Widget);
+        ui_service->ShowWidget(microphone_adjustment_widget_);
+        ui_service->BringWidgetToFront(microphone_adjustment_widget_);
+
+        connect(microphone_adjustment_widget_, SIGNAL(destroyed()), this, SLOT(ClearMicrophoneAdjustmentWidget()));
+        if (audio_sending_was_enabled)
+            connect(microphone_adjustment_widget_, SIGNAL(destroyed()), session_, SLOT(EnableAudioSending()));
+        if (audio_receiving_was_enabled)
+            connect(microphone_adjustment_widget_, SIGNAL(destroyed()), session_, SLOT(EnableAudioReceiving()));
+    }
+
+    void Provider::ClearMicrophoneAdjustmentWidget()
+    {
+        microphone_adjustment_widget_ = 0;
     }
 
 } // MumbleVoip

@@ -15,22 +15,7 @@
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_5">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout_3">
-     <item>
-      <widget class="QCheckBox" name="enabledCheckBox">
-       <property name="text">
-        <string>Enable in-world voice</string>
-       </property>
-      </widget>
-     </item>
-    </layout>
-   </item>
-   <item>
-    <widget class="QLabel" name="label">
-     <property name="text">
-      <string>When enabled a connection to voice server is automatically established when user login to voice enabled world</string>
-     </property>
-    </widget>
+    <layout class="QVBoxLayout" name="verticalLayout_3"/>
    </item>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_4">
@@ -153,10 +138,10 @@
               <item row="7" column="4">
                <widget class="QPushButton" name="testMicrophoneButton">
                 <property name="enabled">
-                 <bool>false</bool>
+                 <bool>true</bool>
                 </property>
                 <property name="text">
-                 <string>Test microphone</string>
+                 <string>Local test mode</string>
                 </property>
                 <property name="checkable">
                  <bool>false</bool>
@@ -190,6 +175,20 @@
                <widget class="QPushButton" name="applyEncodeQualityButton">
                 <property name="text">
                  <string>Apply</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Positional audio</string>
+                </property>
+               </widget>
+              </item>
+              <item row="8" column="1">
+               <widget class="QCheckBox" name="positionalAudioCheckBox">
+                <property name="text">
+                 <string>enabled</string>
                 </property>
                </widget>
               </item>

@@ -14,32 +14,32 @@ namespace MumbleVoip
 
     Settings::Settings()
     {
-
+        Load();
     }
     
     Settings::~Settings()
     {
-
+        Save();
     }
 
     void Settings::Load()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
-        enabled_ = settings.value("MumbleVoice/enabled", false).toBool();
         encode_quality_ = settings.value("MumbleVoice/encode_quality", 0.5).toDouble();
         microphone_level_ = settings.value("MumbleVoice/microphone_level", 0.5).toDouble();
         playback_buffer_size_ms_ = settings.value("MumbleVoice/playback_buffer_size", 200).toInt();
-        default_voice_mode_ = VoiceMode(settings.value("MumbleVoice/default_voice_mode", AllwaysOff).toInt());
+        default_voice_mode_ = VoiceMode(settings.value("MumbleVoice/default_voice_mode", Mute).toInt());
+        positional_audio_enabled_ = settings.value("MumbleVoice/positional_audio_enabled", true).toBool();
     }
 
     void Settings::Save()
     {
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, SETTINGS_HEADER_);
-        settings.setValue("MumbleVoice/enabled", QVariant(enabled_));
         settings.setValue("MumbleVoice/encode_quality",encode_quality_);
         settings.setValue("MumbleVoice/microphone_level", microphone_level_);
         settings.setValue("MumbleVoice/playback_buffer_size", playback_buffer_size_ms_);
         settings.setValue("MumbleVoice/default_voice_mode", static_cast<int>(default_voice_mode_));
+        settings.setValue("MumbleVoice/positional_audio_enabled", QVariant(positional_audio_enabled_));
         settings.sync();
     }
 
