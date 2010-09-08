@@ -52,7 +52,7 @@ namespace RexLogic
         void AddTime(f64 frametime);
 
         //! Sets the yaw of the avatar, experimental for py api
-        void SetYaw(Real newyaw);
+        void SetYaw(float newyaw);
 
         //! Sets the rotation of the avatar, experimental for py api
         void SetRotation(const Quaternion &newrot);
@@ -107,7 +107,7 @@ namespace RexLogic
         WorldStreamPtr connection_;
 
         //! default speed for avatar rotation
-        Real rotation_sensitivity_;
+        float rotation_sensitivity_;
 
         //! First or third person mode
         State current_state_;
@@ -116,13 +116,13 @@ namespace RexLogic
         bool net_dirty_;
 
         //! mouse look yaw
-        Real drag_yaw_;
+        float drag_yaw_;
 
         //! interval in seconds how often updates are send to server
-        Real net_updateinterval_;
+        float net_updateinterval_;
 
         //! Tracks time between network updates
-        Real net_movementupdatetime_;
+        float net_movementupdatetime_;
 
         Foundation::Framework *framework_;
 

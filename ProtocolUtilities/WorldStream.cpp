@@ -182,11 +182,11 @@ void WorldStream::SendAgentThrottlePacket()
     if (!connected_)
         return;
 
-    Real max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting(
+    float max_bits_per_second = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "max_bits_per_second", 1000000.0f);
 
     int idx = 0;
-    static const size_t size = 7 * sizeof(Real);
+    static const size_t size = 7 * sizeof(float);
     u8 throttle_block[size];
 
     WriteFloatToBytes(max_bits_per_second * 0.1f, throttle_block, idx); // resend
@@ -752,7 +752,7 @@ void WorldStream::SendAgentSetAppearancePacket()
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height)
+void WorldStream::SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, float seconds, float height)
 {
     if (!connected_)
         return;
@@ -809,7 +809,7 @@ void WorldStream::SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, 
     FinishMessageBuilding(m);
 }
 
-void WorldStream::SendTextureHeightsMessage(Real start_height, Real height_range, uint corner)
+void WorldStream::SendTextureHeightsMessage(float start_height, float height_range, uint corner)
 {
     if (!connected_)
         return;

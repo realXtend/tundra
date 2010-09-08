@@ -240,9 +240,9 @@ namespace OgreRenderer
             {   
                 try
                 {
-                    Real x = ParseString<Real>(line_vec[1]);
-                    Real y = ParseString<Real>(line_vec[2]);
-                    Real z = ParseString<Real>(line_vec[3]);
+                    float x = ParseString<float>(line_vec[1]);
+                    float y = ParseString<float>(line_vec[2]);
+                    float z = ParseString<float>(line_vec[3]);
 
                     // For compatibility with old rex assets, the Z coord has to be reversed
                     std::stringstream s;

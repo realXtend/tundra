@@ -387,7 +387,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     msg.ReadUUID(); // ParentID
     msg.ReadU64(); // Regionhandle, todo handle
     Vector3df position = msg.ReadVector3(); // Position
-    Real gain = msg.ReadF32(); // Gain
+    float gain = msg.ReadF32(); // Gain
 
     // Because sound triggers are not supposed to stop the previous sound, like attached sounds do, 
     // it is easy to spam with 100's of sound trigger requests.

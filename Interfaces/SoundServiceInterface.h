@@ -67,19 +67,19 @@ namespace Foundation
         //! Sets master gain of whole sound system
         /*! \param master_gain New master gain, in range 0.0 - 1.0
          */
-        virtual void SetMasterGain(Real master_gain) = 0;
+        virtual void SetMasterGain(float master_gain) = 0;
         
         //! Sets master gain of certain sound types
         /*! \param type Sound channel type to adjust
             \param master_gain New master gain, in range 0.0 - 1.0
          */
-        virtual void SetSoundMasterGain(SoundType type, Real master_gain) = 0;
+        virtual void SetSoundMasterGain(SoundType type, float master_gain) = 0;
         
         //! Gets master gain of whole sound system
-        virtual Real GetMasterGain() = 0;
+        virtual float GetMasterGain() = 0;
         
         //! Sets master gain of certain sound types
-        virtual Real GetSoundMasterGain(SoundType type) = 0;
+        virtual float GetSoundMasterGain(SoundType type) = 0;
                 
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
@@ -151,13 +151,13 @@ namespace Foundation
         /*! \param id Channel id
             \param pitch Pitch relative to sound's original pitch (1.0 = original)
          */
-        virtual void SetPitch(sound_id_t id, Real pitch) = 0;
+        virtual void SetPitch(sound_id_t id, float pitch) = 0;
         
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
          */
-        virtual void SetGain(sound_id_t id, Real gain) = 0;
+        virtual void SetGain(sound_id_t id, float gain) = 0;
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
@@ -186,7 +186,7 @@ namespace Foundation
             If outer_radius is 0, there will be no attenuation (sound is always played at gain)
             Also, for non-positional channels the range parameters have no effect.
          */
-        virtual void SetRange(sound_id_t id, Real inner_radius, Real outer_radius, Real rolloff) = 0;
+        virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff) = 0;
 
         //! Get recording device names
         virtual StringVector GetRecordingDevices() = 0;

@@ -439,7 +439,7 @@ namespace Environment
         msg.SkipToNextVariable(); // IsEstateManager
 
         // Water height.
-        Real water_height = msg.ReadF32();
+        float water_height = msg.ReadF32();
         if(water_.get())
             water_->SetWaterHeight(water_height);
 
@@ -455,13 +455,13 @@ namespace Environment
         terrain[2] = msg.ReadUUID().ToString();
         terrain[3] = msg.ReadUUID().ToString();
 
-        Real TerrainStartHeights[4];
+        float TerrainStartHeights[4];
         TerrainStartHeights[0] = msg.ReadF32();
         TerrainStartHeights[1] = msg.ReadF32();
         TerrainStartHeights[2] = msg.ReadF32();
         TerrainStartHeights[3] = msg.ReadF32();
 
-        Real TerrainStartRanges[4];
+        float TerrainStartRanges[4];
         TerrainStartRanges[0] = msg.ReadF32();
         TerrainStartRanges[1] = msg.ReadF32();
         TerrainStartRanges[2] = msg.ReadF32();
@@ -496,13 +496,13 @@ namespace Environment
         return water_;
     }
 
-    void EnvironmentModule::SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height)
+    void EnvironmentModule::SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height)
     {
         if (currentWorldStream_.get())
             currentWorldStream_->SendModifyLandPacket(x, y, brush, action, seconds, height);
     }
 
-    void EnvironmentModule::SendTextureHeightMessage(Real start_height, Real height_range, uint corner)
+    void EnvironmentModule::SendTextureHeightMessage(float start_height, float height_range, uint corner)
     {
         if (currentWorldStream_.get())
         {

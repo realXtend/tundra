@@ -46,27 +46,27 @@ namespace OgreRenderer
         /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
             \param nearclip new near clip distance
          */ 
-        void SetNearClip(Real nearclip);
+        void SetNearClip(float nearclip);
         
         //! sets far clip distance
         /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
             \param farclip new far clip distance
          */         
-        void SetFarClip(Real farclip);
+        void SetFarClip(float farclip);
         
         //! sets vertical fov 
         /*! \param fov new vertical fov in radians 
          */
-        void SetVerticalFov(Real fov);
+        void SetVerticalFov(float fov);
         
         //! returns near clip distance
-        Real GetNearClip() const;
+        float GetNearClip() const;
         
         //! returns far clip distance
-        Real GetFarClip() const;
+        float GetFarClip() const;
         
         //! returns vertical fov as radians
-        Real GetVerticalFov() const;
+        float GetVerticalFov() const;
         
         //! returns whether camera is active in the viewport
         bool IsActive() const;

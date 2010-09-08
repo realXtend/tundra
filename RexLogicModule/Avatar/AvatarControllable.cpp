@@ -22,7 +22,7 @@ namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
-    uint32_t SetFPControlFlags(uint32_t control_flags, Real pitch)
+    uint32_t SetFPControlFlags(uint32_t control_flags, float pitch)
     {
         uint32_t net_controlflags = control_flags;
 
@@ -80,7 +80,7 @@ namespace RexLogic
         control_flags_[RA::MoveDown] = RexTypes::AGENT_CONTROL_UP_NEG;
 
         rotation_sensitivity_ = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "rotation_speed", 1.1f);
-        Real updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
+        float updates_per_second = framework_->GetDefaultConfig().DeclareSetting("RexAvatar", "updates_per_second", 20.0f);
         if (updates_per_second <= 0.f) updates_per_second = 1.f;
         net_updateinterval_ = 1.0f / updates_per_second;
         
@@ -252,7 +252,7 @@ namespace RexLogic
 
         if (movement_.x_.rel_ != 0)
         {
-            drag_yaw_ = static_cast <Real> (movement_.x_.rel_) * -0.005f;
+            drag_yaw_ = static_cast <float> (movement_.x_.rel_) * -0.005f;
             net_dirty_ = true;
             movement_.x_.rel_ = 0;
         }
@@ -274,7 +274,7 @@ namespace RexLogic
         {
             EC_NetworkPosition *netpos = avatarentity->GetComponent<EC_NetworkPosition>().get();
 
-            Quaternion rotchange(0, 0, (-avatar->yaw * (Real)frametime + drag_yaw_) * rotation_sensitivity_);
+            Quaternion rotchange(0, 0, (-avatar->yaw * (float)frametime + drag_yaw_) * rotation_sensitivity_);
             netpos->orientation_ = rotchange * netpos->orientation_;
             netpos->Updated();
 
@@ -282,7 +282,7 @@ namespace RexLogic
         }
 
         //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
-        Real pitch = rexlogic_->GetCameraControllable()->GetPitch();
+        float pitch = rexlogic_->GetCameraControllable()->GetPitch();
         
         uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
         if (net_controlflags != avatar->cached_controlflags)
@@ -292,7 +292,7 @@ namespace RexLogic
 
         SendScheduledMovementToServer(net_controlflags);
 
-        net_movementupdatetime_ += (Real)frametime;
+        net_movementupdatetime_ += (float)frametime;
     }
 
     const Quaternion &AvatarControllable::GetBodyRotation() const
@@ -362,7 +362,7 @@ namespace RexLogic
         netpos->Updated();    
     }    
 
-    void AvatarControllable::SetYaw(Real newyaw)
+    void AvatarControllable::SetYaw(float newyaw)
     {
         //keys left/right set to -1/1 .. but this can use fractions too, right?
         //and is seeminly not overridden by anything at least in AddTime.

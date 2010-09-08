@@ -127,10 +127,10 @@ namespace OgreRenderer
         virtual void UnsubscribeLogListener(const Foundation::LogListenerPtr &listener);
 
         //! set maximum view distance
-        virtual void SetViewDistance(Real distance) { view_distance_ = distance; }
+        virtual void SetViewDistance(float distance) { view_distance_ = distance; }
 
         //! get maximum view distance
-        virtual Real GetViewDistance()const { return view_distance_; }
+        virtual float GetViewDistance()const { return view_distance_; }
 
         //! force UI repaint
         virtual void RepaintUi();
@@ -307,7 +307,7 @@ namespace OgreRenderer
         Ogre::Camera* camera_;
 
         //! Maximum view distance
-        Real view_distance_;
+        float view_distance_;
 
         //! Viewport
         Ogre::Viewport* viewport_;

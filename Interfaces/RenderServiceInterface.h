@@ -32,9 +32,9 @@ namespace Foundation
         //! Submesh index in entity, starting from 0
         uint submesh_;
         //! U coord in entity. 0 if no texture mapping
-        Real u_;
+        float u_;
         //! V coord in entity. 0 if no texture mapping
-        Real v_;
+        float v_;
     };
 
     //! Render service interface.
@@ -87,10 +87,10 @@ namespace Foundation
         virtual void UnsubscribeLogListener(const LogListenerPtr &listener) = 0;
 
         //! set maximum view distance
-        virtual void SetViewDistance(Real distance) = 0;
+        virtual void SetViewDistance(float distance) = 0;
 
         //! get maximum view distance
-        virtual Real GetViewDistance() const = 0;
+        virtual float GetViewDistance() const = 0;
 
         //! force UI repaint
         virtual void RepaintUi() = 0;

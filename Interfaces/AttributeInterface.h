@@ -216,7 +216,7 @@ namespace Foundation
     template<> std::string Attribute<bool>::ToString() const;
     template<> std::string Attribute<int>::ToString() const;
     template<> std::string Attribute<uint>::ToString() const;
-    template<> std::string Attribute<Real>::ToString() const;
+    template<> std::string Attribute<float>::ToString() const;
     template<> std::string Attribute<Vector3df>::ToString() const;
     template<> std::string Attribute<Quaternion>::ToString() const;
     template<> std::string Attribute<Color>::ToString() const;
@@ -227,7 +227,7 @@ namespace Foundation
     template<> void Attribute<bool>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<int>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<uint>::FromString(const std::string& str, ChangeType change);
-    template<> void Attribute<Real>::FromString(const std::string& str, ChangeType change);
+    template<> void Attribute<float>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
     template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);

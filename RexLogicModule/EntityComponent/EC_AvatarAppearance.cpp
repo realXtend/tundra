@@ -84,7 +84,7 @@ namespace RexLogic
         properties_[name] = value;
     }
         
-    void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, Real value)
+    void EC_AvatarAppearance::SetMasterModifierValue(const std::string& name, float value)
     {
         if (value < 0.0) value = 0.0;
         if (value > 1.0) value = 1.0;
@@ -106,7 +106,7 @@ namespace RexLogic
         }                 
     }
     
-    void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceModifier::ModifierType type, Real value)
+    void EC_AvatarAppearance::SetModifierValue(const std::string& name, AppearanceModifier::ModifierType type, float value)
     {
         if (value < 0.0) value = 0.0;
         if (value > 1.0) value = 1.0;
@@ -219,7 +219,7 @@ namespace RexLogic
         samples_ = 0;
     }
     
-    void AppearanceModifier::AccumulateValue(Real value, bool use_average)
+    void AppearanceModifier::AccumulateValue(float value, bool use_average)
     {
         sum_ += value;
         samples_++;
@@ -241,7 +241,7 @@ namespace RexLogic
         }            
     }
                 
-    Real SlaveModifier::GetMappedValue(Real master_value)
+    float SlaveModifier::GetMappedValue(float master_value)
     {
         // If no positions to interpolate, map master slider directly to modifier pos
         if (mapping_.size() < 2)

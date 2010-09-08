@@ -46,7 +46,7 @@ public:
     Foundation::Attribute<QString> meshResouceId_;
     Foundation::Attribute<QString> skeletonId_;
     Foundation::Attribute<std::vector<QVariant> > meshMaterial_;
-    Foundation::Attribute<Real> drawDistance_;
+    Foundation::Attribute<float> drawDistance_;
     Foundation::Attribute<bool> castShadows_;
 
 public slots:
