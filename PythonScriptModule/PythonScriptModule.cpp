@@ -458,7 +458,7 @@ namespace PythonScript
     //    rexlogic_->GetServerConnection()->IsConnected();
     //    rexlogic_->GetCameraControllable()->GetPitch();
     //    
-    //    Real newyaw = 0.1;
+    //    float newyaw = 0.1;
     //    //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //    rexlogic_->SetAvatarYaw(newyaw);
     //    //rexlogic_->GetAvatarControllable()->AddTime(0.1);
@@ -630,7 +630,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     if (PythonScript::self()->worldstream)
         PythonScript::self()->worldstream->SendChatFromViewerPacket(msg);
     //rexlogic_->GetServerConnection()->IsConnected();
-    //Real newyaw = 0.1;
+    //float newyaw = 0.1;
     //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //rexlogic_->GetCameraControllable()->GetPitch();
     //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
@@ -1437,14 +1437,14 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 //XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
 PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Real newyaw, newpitch;
+    float newyaw, newpitch;
     float y, p;
     if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
         PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
         return NULL;
     }
-    newyaw = (Real) y;
-    newpitch = (Real) p;
+    newyaw = (float) y;
+    newpitch = (float) p;
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     RexLogic::RexLogicModule *rexlogic_;
@@ -1453,7 +1453,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
         //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
-        //cam->AddTime((Real) 0.1);
+        //cam->AddTime((float) 0.1);
         //cam->SetPitch(p); //have a linking prob with this
         rexlogic_->SetCameraYawPitch(y, p);
     }
@@ -1475,7 +1475,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 
 PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Real yaw, pitch;
+    float yaw, pitch;
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
     {
@@ -1539,14 +1539,14 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
 
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
-    Real newyaw;
+    float newyaw;
 
     float y;
     if(!PyArg_ParseTuple(args, "f", &y)) {
         PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
         return NULL;
     }
-    newyaw = (Real) y;
+    newyaw = (float) y;
 
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)

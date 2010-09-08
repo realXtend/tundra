@@ -61,9 +61,9 @@ public:
     //! Local or global space
     Foundation::Attribute<bool> localAttr_;
     
-    Foundation::Attribute<Real> radiusAttr_;
+    Foundation::Attribute<float> radiusAttr_;
     
-    Foundation::Attribute<Real> segmentsAttr_;
+    Foundation::Attribute<float> segmentsAttr_;
 
 public slots:
     /// Shows the highlighting effect.

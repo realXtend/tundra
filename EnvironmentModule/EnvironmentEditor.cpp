@@ -1654,8 +1654,8 @@ namespace Environment
 
         for(uint i = 0; i < cNumberOfTerrainTextures; i++)
         {
-            Real start_height_value = terrain->GetTerrainTextureStartHeight(i);
-            Real height_range_value = terrain->GetTerrainTextureHeightRange(i);
+            float start_height_value = terrain->GetTerrainTextureStartHeight(i);
+            float height_range_value = terrain->GetTerrainTextureHeightRange(i);
 
             QString start_height_name("Texture_height_doubleSpinBox_" + QString("%1").arg(i + 1));
             QString height_range_name("Texture_height_range_doubleSpinBox_" + QString("%1").arg(i + 1));

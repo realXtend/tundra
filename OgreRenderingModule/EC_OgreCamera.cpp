@@ -61,12 +61,12 @@ namespace OgreRenderer
         AttachCamera();
     }
     
-    void EC_OgreCamera::SetNearClip(Real nearclip)
+    void EC_OgreCamera::SetNearClip(float nearclip)
     {
         camera_->setNearClipDistance(nearclip);    
     }
     
-    void EC_OgreCamera::SetFarClip(Real farclip)
+    void EC_OgreCamera::SetFarClip(float farclip)
     {
         // Enforce that farclip doesn't go past renderer's view distance
         if (renderer_.expired())
@@ -77,7 +77,7 @@ namespace OgreRenderer
         camera_->setFarClipDistance(farclip);
     }
     
-    void EC_OgreCamera::SetVerticalFov(Real fov)
+    void EC_OgreCamera::SetVerticalFov(float fov)
     {
         camera_->setFOVy(Ogre::Radian(fov));
     }
@@ -90,17 +90,17 @@ namespace OgreRenderer
         renderer->SetCurrentCamera(camera_);
     }
     
-    Real EC_OgreCamera::GetNearClip() const
+    float EC_OgreCamera::GetNearClip() const
     {
         return camera_->getNearClipDistance();
     }
 
-    Real EC_OgreCamera::GetFarClip() const
+    float EC_OgreCamera::GetFarClip() const
     {
         return camera_->getFarClipDistance();
     }
     
-    Real EC_OgreCamera::GetVerticalFov() const
+    float EC_OgreCamera::GetVerticalFov() const
     {
         return camera_->getFOVy().valueRadians();
     }  

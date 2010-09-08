@@ -108,7 +108,7 @@ namespace OgreRenderer
 
         /// Set the time of day
         /// @param time as float between 0-1 where 0.0 = midnight and 0.5 = midday
-        void SetTime(Real time);
+        void SetTime(float time);
 
         /// @return Ogre light pointer
         Ogre::Light* GetSunlight() const { return sunlight_; }

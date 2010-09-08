@@ -45,8 +45,8 @@
 
 using namespace RexTypes;
 
-static const Real FIXED_HEIGHT_OFFSET = -0.87f;
-static const Real OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
+static const float FIXED_HEIGHT_OFFSET = -0.87f;
+static const float OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 static const uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
 namespace RexLogic
@@ -503,7 +503,7 @@ namespace RexLogic
         }
     }
     
-    void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Real value)
+    void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, float value)
     {
         OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
         
@@ -575,12 +575,12 @@ namespace RexLogic
         
         // Translation
         {
-            Real sx = modifier.start_.position_.x;
-            Real sy = modifier.start_.position_.y;
-            Real sz = modifier.start_.position_.z;
-            Real ex = modifier.end_.position_.x;
-            Real ey = modifier.end_.position_.y;
-            Real ez = modifier.end_.position_.z;
+            float sx = modifier.start_.position_.x;
+            float sy = modifier.start_.position_.y;
+            float sz = modifier.start_.position_.z;
+            float ex = modifier.end_.position_.x;
+            float ey = modifier.end_.position_.y;
+            float ez = modifier.end_.position_.z;
             
             Ogre::Vector3 trans, base;
             trans = bone->getInitialPosition();
@@ -607,12 +607,12 @@ namespace RexLogic
         // Scale
         {
             Ogre::Vector3 scale = bone->getInitialScale();
-            Real sx = modifier.start_.scale_.x;
-            Real sy = modifier.start_.scale_.y;
-            Real sz = modifier.start_.scale_.z;
-            Real ex = modifier.end_.scale_.x;
-            Real ey = modifier.end_.scale_.y;
-            Real ez = modifier.end_.scale_.z;
+            float sx = modifier.start_.scale_.x;
+            float sy = modifier.start_.scale_.y;
+            float sz = modifier.start_.scale_.z;
+            float ex = modifier.end_.scale_.x;
+            float ey = modifier.end_.scale_.y;
+            float ez = modifier.end_.scale_.z;
             
             if (sx != 1 || ex != 1)
                 scale.x = sx * (1.0 - value) + ex * value;

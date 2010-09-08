@@ -174,7 +174,7 @@ namespace ECEditor
 
     //-------------------------REAL ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<Real>::Initialize()
+    template<> void ECAttributeEditor<float>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
@@ -195,11 +195,11 @@ namespace ECEditor
                 if(!metaData->step.isEmpty())
                     metaDataFlag_ |= UsingStepValue;
                 if((metaDataFlag_ & UsingMinValue) != 0)
-                    realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<Real>(metaData->min.toStdString()));
+                    realPropertyManager->setAttribute(rootProperty_, "minimum", ::ParseString<float>(metaData->min.toStdString()));
                 if((metaDataFlag_ & UsingMaxValue) != 0)
-                    realPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<Real>(metaData->max.toStdString()));
+                    realPropertyManager->setAttribute(rootProperty_, "maximum", ::ParseString<float>(metaData->max.toStdString()));
                 if((metaDataFlag_ & UsingStepValue) != 0)
-                    realPropertyManager->setAttribute(rootProperty_, "singleStep", ::ParseString<Real>(metaData->step.toStdString()));
+                    realPropertyManager->setAttribute(rootProperty_, "singleStep", ::ParseString<float>(metaData->step.toStdString()));
             }
 
             if(rootProperty_)
@@ -216,7 +216,7 @@ namespace ECEditor
     }
 
 
-    template<> void ECAttributeEditor<Real>::Update()
+    template<> void ECAttributeEditor<float>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -230,7 +230,7 @@ namespace ECEditor
             {
                 if(rootProperty_)
                 {
-                    Foundation::Attribute<Real> *attribute = dynamic_cast<Foundation::Attribute<Real>*>(*iter);
+                    Foundation::Attribute<float> *attribute = dynamic_cast<Foundation::Attribute<float>*>(*iter);
                     realPropertyManager->setValue(rootProperty_, attribute->Get());
                 }
             }
@@ -239,11 +239,11 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    template<> void ECAttributeEditor<Real>::Set(QtProperty *property)
+    template<> void ECAttributeEditor<float>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
-            Real newValue = ParseString<Real>(property->valueText().toStdString());
+            float newValue = ParseString<float>(property->valueText().toStdString());
             SetValue(newValue);
         }
     }
@@ -494,11 +494,11 @@ namespace ECEditor
                 Vector3df newValue = attribute->Get();
                 QString propertyName = property->propertyName();
                 if(propertyName == "x")
-                    newValue.x = ParseString<Real>(property->valueText().toStdString());
+                    newValue.x = ParseString<float>(property->valueText().toStdString());
                 else if(propertyName == "y")
-                    newValue.y = ParseString<Real>(property->valueText().toStdString());
+                    newValue.y = ParseString<float>(property->valueText().toStdString());
                 else if(propertyName == "z")
-                    newValue.z = ParseString<Real>(property->valueText().toStdString());
+                    newValue.z = ParseString<float>(property->valueText().toStdString());
                 SetValue(newValue);
             }
         }
@@ -1006,7 +1006,7 @@ namespace ECEditor
                 if(foundIndex != -1)
                 {
                     bool success = false;
-                    Real value = property->valueText().toFloat(&success);
+                    float value = property->valueText().toFloat(&success);
                     if(!success)
                     {
                         ECEditorModule::LogError("Failed to convert the property value in float format.");
