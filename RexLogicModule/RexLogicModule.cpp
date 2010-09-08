@@ -37,7 +37,6 @@
 #include "EntityComponent/EC_Controllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_HoveringWidget.h"
-//#include "EntityComponent/EC_Mesh.h" //! @todo remove EC_Mesh from rex logic when linking error has been fixed.
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
@@ -88,6 +87,8 @@
 #include "EC_SoundListener.h"
 #include "EC_Sound.h"
 #include "EC_Mesh.h"
+#include "EC_InputMapper.h"
+#include "EC_Movable.h"
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -153,6 +154,8 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_SoundListener);
     DECLARE_MODULE_EC(EC_Sound);
     DECLARE_MODULE_EC(EC_Mesh);
+    DECLARE_MODULE_EC(EC_InputMapper);
+    DECLARE_MODULE_EC(EC_Movable);
 }
 
 // virtual
@@ -634,30 +637,6 @@ void RexLogicModule::EntityHovered(Scene::Entity* entity)
         scene_handler_->ClearHovers(0);
 }
 
-Vector3df RexLogicModule::GetCameraPosition() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetPosition();
-    else
-        return Vector3df();
-}
-
-Quaternion RexLogicModule::GetCameraOrientation() const
-{
-    if (camera_entity_.expired())
-        return Quaternion::IDENTITY;
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetOrientation();
-    else
-        return Quaternion::IDENTITY;
-}
-
 Real RexLogicModule::GetCameraViewportWidth() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
@@ -992,7 +971,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3Df camera_position = this->GetCameraPosition();
+        Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 
@@ -1045,7 +1024,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     //divert y because after view/projection transforms, y increses upwards
     scr_y = -scr_y;
 
-    OgreRenderer::EC_OgreCamera * camera;
+    OgreRenderer::EC_OgreCamera * camera = 0;
 
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
     if (!current_scene.get())

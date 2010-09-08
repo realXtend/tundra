@@ -584,7 +584,7 @@ namespace RexLogic
         if (animctrlptr && meshptr)
         {
             EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
-            animctrl->SetMeshEntity(meshptr);
+            animctrl->SetMeshEntity(dynamic_cast<EC_OgreMesh*>(meshptr.get()));
         }
     }
     

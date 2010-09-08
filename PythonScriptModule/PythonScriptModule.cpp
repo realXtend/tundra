@@ -20,23 +20,12 @@
 18:05 < antont> yep was thinking of that too, there'd be some session service
                 thing or something by the new module
 
-rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
-18:16 < antont> ah it's world_stream_->GetInfo().inventory
-
 18:29 < antont> hm, there is also network sending code in rexlogic which we use
                 from py, like void Primitive::SendRexPrimData(entity_id_t
                 entityid)
 18:31 < antont> iirc there was some issue that 'cause the data for those is not
                 in rexlogic it makes the packets too, and not e.g. worldstream
                 which doesn't know EC_OpenSimPrim
-
-======================================================================================
-2010/04/21  Removed the RexLogicModule::GetInventory() dependency.
-            -Stinkfist
-2010/06/24  Removed the RexLogicModule::GetServerConnection() dependency. WorldStream
-            is now saved as PythonScriptModule member variable.
-            -Stinkfist
-======================================================================================
 */
 
 #include "StableHeaders.h"
@@ -113,17 +102,17 @@ rexlogic_->GetInventory()->GetFirstChildFolderByName("Trash");
 
 #include <propertyeditor.h>
 
-// =========== Note py developers: MemoryLeakCheck must be the last include =========== //
+
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
 #include "QtInputKeyEvent.h"
 #include "QtInputMouseEvent.h"
 
-#include "MemoryLeakCheck.h"
-
-
 //#include <QDebug>
+
+//==== Note py developers: MemoryLeakCheck must be the last include in order to make it work fully ====//
+#include "MemoryLeakCheck.h"
 
 namespace PythonScript
 {
@@ -568,33 +557,21 @@ namespace PythonScript
 
         return 0;
     }
-    
-    OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if (camentptr) {
-                OgreRenderer::EC_OgreCamera* camera = camentptr->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-                return camera;
-            }
-        }
-        return 0;
-    }
-    
-    Scene::Entity* PythonScriptModule::GetCameraEntity() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if(camentptr)
-                return camentptr.get();
-        }
-        return 0;
-    }
 
+    Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
+    {
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic) 
+        {
+            PythonQt::self()->registerClass(worldLogic->metaObject());
+            return worldLogic;
+        }
+        else
+            LogError("WorldLogicInterface service not available in py GetWorldLogic");
+
+        return 0;
+    }      
+        
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
@@ -1762,33 +1739,6 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
     return NULL;
 }
 
-PyObject* GetUserAvatarId(PyObject* self)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        entity_id_t id = rexlogic->GetUserAvatarId();
-        return Py_BuildValue("I", id);
-    }
-
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraId(PyObject* self)
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-        if (!camentptr)
-          Py_RETURN_NONE;
-        entity_id_t id = camentptr->GetId();
-        return Py_BuildValue("I", id);
-    }
-
-    Py_RETURN_NONE;
-}
-
 PyObject* GetCameraUp(PyObject *self) 
 {
     Vector3df up;
@@ -1820,18 +1770,6 @@ PyObject* GetCameraFOV(PyObject *self)
     {
         float fovy = rexlogic->GetCameraFOV();
         return Py_BuildValue("f", fovy);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraPosition(PyObject *self) 
-{
-    Vector3df pos;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        pos = rexlogic->GetCameraPosition();
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
     }
     Py_RETURN_NONE;
 }
@@ -1983,20 +1921,6 @@ static PyMethodDef EmbMethods[] = {
     {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
     "Get the Field of View from the camera."},
 
-    {"getCameraPosition", (PyCFunction)GetCameraPosition, METH_VARARGS, 
-    "Get the position of the camera."},
-
-    //from RexPythonQt.cpp now .. except got the fricken staticframework == null prob!
-
-    //{"createCanvas", (PyCFunction)CreateCanvas, METH_VARARGS, 
-    //"Create a new Qt canvas within the viewer"},
-
-    //{"closeAndDeleteCanvas", (PyCFunction)CloseAndDeleteCanvas, METH_VARARGS, 
-    //"closes and deletes the given canvas"},
-
-    //{"getQtModule", (PyCFunction)GetQtModule, METH_NOARGS, 
-    //"gets the qt module"},
-
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
 
@@ -2008,12 +1932,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"sendRexPrimData", (PyCFunction)SendRexPrimData, METH_VARARGS,
     "updates prim data to the server - now for applying a mesh to an object"},
-
-    {"getUserAvatarId", (PyCFunction)GetUserAvatarId, METH_VARARGS, 
-    "Returns the user's avatar's id."},
-
-    {"getCameraId", (PyCFunction)GetCameraId, METH_VARARGS, 
-    "Returns the camera entity id."},
 
     {"networkUpdate", (PyCFunction)NetworkUpdate, METH_VARARGS, 
     "Does a network update for the Scene."},
@@ -2105,6 +2023,7 @@ namespace PythonScript
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
+            PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);

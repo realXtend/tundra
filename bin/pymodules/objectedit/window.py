@@ -1,7 +1,7 @@
 import rexviewer as r
 
 import PythonQt
-from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel
+from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
 import conversions as conv
@@ -93,6 +93,7 @@ class ObjectEditWindow:
         box_buttons = QHBoxLayout()
         box_buttons.setContentsMargins(0,0,0,0)
         
+        # TODO no need for self?
         self.label_radius = QLabel("Radius")
         self.label_radius.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         self.label_volume = QLabel("Volume")
@@ -109,6 +110,35 @@ class ObjectEditWindow:
         main_box.addLayout(box_buttons)
         self.sound_widget = QWidget()
         self.sound_widget.setLayout(main_box)
+
+        # Animation line edit and buttons
+        self.animationline = lines.AnimationAssetidEditline(controller)
+        self.animationline.name = "animationLineEdit"
+        animation_combobox = self.getCombobox("AnimationName", "Animation Name", self.animationline)
+        animationbutton_ok = self.getButton("Apply", self.ICON_OK, self.animationline, self.animationline.applyAction)
+        animationbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.animationline, self.animationline.cancelAction)
+        animationRate = self.getDoubleSpinBox("animationRate", "Set animation rate", self.animationline)
+
+        animationbox = QVBoxLayout()
+        animationbox.setContentsMargins(0,0,0,0)
+        self.anim_box_buttons = QHBoxLayout()
+        self.anim_box_buttons.name = "AnimBoxButtons"
+        self.anim_box_buttons.setContentsMargins(0,0,0,0)
+
+        label_rate = QLabel("Animation Rate")
+        label_rate.name = "Animation Rate"
+        label_rate.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
+
+        self.anim_box_buttons.addWidget(label_rate)
+        self.anim_box_buttons.addWidget(animation_combobox)
+        self.anim_box_buttons.addWidget(animationRate)
+        self.anim_box_buttons.addWidget(animationbutton_ok)
+        self.anim_box_buttons.addWidget(animationbutton_cancel)
+
+        animationbox.addWidget(self.animationline)
+        animationbox.addLayout(self.anim_box_buttons)
+        self.animation_widget = QWidget()
+        self.animation_widget.setLayout(animationbox)
 
         # Properties, dead code really..
         self.propedit = r.getPropertyEditor()
@@ -145,9 +175,11 @@ class ObjectEditWindow:
         self.proxywidget.connect('Visible(bool)', self.controller.on_hide)
         #self.tabwidget.connect('currentChanged(int)', self.tabChanged)
 
+        # mesh buttons
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
 
+        # audio buttons
         self.soundline.connect('textEdited(QString)', soundbutton_ok.lineValueChanged)
         self.soundline.connect('textEdited(QString)', soundbutton_cancel.lineValueChanged)
         soundRadius.connect('valueChanged(double)', soundbutton_ok.lineValueChanged)
@@ -155,17 +187,25 @@ class ObjectEditWindow:
         soundVolume.connect('valueChanged(double)', soundbutton_ok.lineValueChanged)
         soundVolume.connect('valueChanged(double)', soundbutton_cancel.lineValueChanged)
 
-        
+        # animation buttons
+        self.animationline.connect('textEdited(QString)', animationbutton_ok.lineValueChanged)
+        self.animationline.connect('textEdited(QString)', animationbutton_cancel.lineValueChanged)
+        animationRate.connect('valueChanged(double)', animationbutton_ok.lineValueChanged)
+        animationRate.connect('valueChanged(double)', animationbutton_cancel.lineValueChanged)
+        animation_combobox.connect('currentIndexChanged(int)', animationbutton_ok.lineValueChanged)
+        animation_combobox.connect('currentIndexChanged(int)', animationbutton_cancel.lineValueChanged)
+
+        # actions
         self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.controller.createObject)
         self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.controller.deleteObject)
         self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.controller.duplicate)
         
         self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.controller.undo)
         
+        # transforms
         self.mainTab.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
         self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
         self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
-
         self.mainTab.useLocalTransform.connect('toggled(bool)', self.controller.setUseLocalTransform)
 
         self.mainTabList = {}
@@ -225,11 +265,10 @@ class ObjectEditWindow:
         
         self.meshline.update_text("")
         self.soundline.update_text("")
+        self.animationline.update_text("")
 
         self.reset_guivals()
-        
         self.untoggleButtons()
-        
         self.unsetSelection()
         
     def unsetSelection(self):
@@ -245,7 +284,46 @@ class ObjectEditWindow:
                 tuple = self.mainTabList[listid]
                 tWid = tuple[1]
                 tWid.setSelected(False)
-            
+
+    def updateAnimation(self, ent):
+        combobox = self.animationline.combobox
+        combobox.clear()
+        self.animationline.update_text('')
+        self.animationline.update_animationrate(0.0)
+        self.animation_widget.setEnabled(False)
+        if not ent:
+            return
+
+        try:
+            ent.mesh
+        except:
+            # TODO put in some nice text field what's going on
+            print "no mesh = no animation goodies"
+            return
+
+        self.animation_widget.setEnabled(True)
+        self.animationline.update_text(ent.prim.AnimationPackageID)
+        self.animationline.update_animationrate(ent.prim.AnimationRate)
+
+        if ent.prim.AnimationPackageID in (u'', '00000000-0000-0000-0000-000000000000'):
+            return
+
+        try:
+            ac = ent.animationcontroller
+        except:
+            ent.createComponent('EC_OgreAnimationController')
+            ac = ent.animationcontroller
+            ac.SetMeshEntity(ent.mesh)
+
+        current_animation = ent.prim.AnimationName
+        available_animations = ac.GetAvailableAnimations()
+        for anim in available_animations:
+            combobox.addItem(anim)
+
+        if current_animation in available_animations:
+            idx = combobox.findText(current_animation)
+            combobox.setCurrentIndex(idx)
+
     def updateMaterialTab(self, ent):
         #ent = self.controller.active
         if ent is not None:
@@ -332,6 +410,14 @@ class ObjectEditWindow:
         spinner.setEnabled(True)
         line.spinners.append(spinner)
         return spinner
+
+    def getCombobox(self, name, tooltip, line):
+        combobox = QComboBox()
+        combobox.name = name
+        combobox.toolTip = tooltip
+        combobox.setEnabled(True)
+        line.combobox = combobox
+        return combobox
 
     def manipulator_move(self):
         ent = self.controller.active
@@ -423,6 +509,7 @@ class ObjectEditWindow:
         self.soundline.update_text(ent.prim.SoundID)
         self.soundline.update_soundradius(ent.prim.SoundRadius)
         self.soundline.update_soundvolume(ent.prim.SoundVolume)
+        self.updateAnimation(ent)
         self.updateMaterialTab(ent)
         self.updatePropertyEditor(ent)
         self.updatingSelection = True

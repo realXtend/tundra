@@ -70,6 +70,8 @@ namespace Naali
                              QWidget *parent = 0);
         virtual ~TexturePreviewEditor();
 
+        TexturePreviewEditor(Foundation::Framework *framework, QWidget* parent = 0);
+
     public slots:
         /// Close the window.
         void Closed();

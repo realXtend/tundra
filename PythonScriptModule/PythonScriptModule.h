@@ -46,6 +46,7 @@ namespace Scene
 namespace Foundation
 {
     class Framework;
+    class WorldLogicInterface;
 }
 
 namespace ProtocolUtilities
@@ -73,12 +74,11 @@ namespace PythonScript
 
     public slots: //things for the py side to call.
         OgreRenderer::Renderer* GetRenderer() const;
+        Foundation::WorldLogicInterface* GetWorldLogic() const;
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
-        OgreRenderer::EC_OgreCamera* GetCamera() const;
-        Scene::Entity* GetCameraEntity() const;
 
     public:
         PythonScriptModule();

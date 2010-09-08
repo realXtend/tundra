@@ -214,6 +214,7 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
     logDirectory_.cd(DEFAULT_LOG_DIR);
 
     QObject::connect(tree_mesh_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
+    QObject::connect(tree_texture_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0)
@@ -224,6 +225,17 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Mesh));
+    boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
+    if ( event_manager_ != 0 )
+    {
+        event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
+    }
+
+}
+
+void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
+{
+    Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
     boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {

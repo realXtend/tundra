@@ -21,6 +21,18 @@ namespace Foundation
     {
         Q_OBJECT
 
+    public slots:
+        /// Returns user's avatar entity, as a QObject* which works for py & js which don't know about boost shared pointers
+        virtual Scene::Entity* GetUserAvatarEntityRaw() const 
+        {
+            return GetUserAvatarEntity().get();
+        }
+
+        virtual Scene::Entity* GetCameraEntityRaw() const 
+        {
+            return GetCameraEntity().get();
+        }
+
     public:
         /// Default constructor.
         WorldLogicInterface() {}
