@@ -55,7 +55,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
     }
 
     QString &action = it.value();
-    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
+//    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
 
     // If the action has parameters, parse them from the action string.
     if (action.contains('(') || action.contains(')') || action.contains(','))
