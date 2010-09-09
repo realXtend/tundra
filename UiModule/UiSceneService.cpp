@@ -15,7 +15,7 @@
 #include "UiStateMachine.h"
 #include "UiProxyWidget.h"
 #include "Inworld/Menus/MenuManager.h"
-#include "InWorld/NotificationManager.h"
+#include "Inworld/NotificationManager.h"
 
 namespace UiServices
 {
