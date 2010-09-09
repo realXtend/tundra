@@ -13,7 +13,6 @@ from PythonQt.QtCore import Qt
 from PythonQt.QtGui import QQuaternion as Quat
 from PythonQt.QtGui import QVector3D as Vec
 from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
-from conversions import quat_to_euler, euler_to_quat #for euler - quat -euler conversions
 
 try:
     qapp = PythonQt.Qt.QApplication.instance()
@@ -29,6 +28,48 @@ def quat_mult_vec(quat, v):
     uuv = uuv * 2.0
 
     return v + uv + uuv
+
+# QQuaternion to euler [x,y,z]
+def quat_to_euler(quat):
+    euler = [0, 0, 0]
+    sqw = quat.scalar() * quat.scalar()
+    sqx = quat.x() * quat.x()
+    sqy = quat.y() * quat.y()
+    sqz = quat.z() * quat.z()
+    
+    euler[2] = math.atan2(2.0 * (quat.x()*quat.y() +quat.z()*quat.scalar()),(sqx - sqy - sqz + sqw))
+    euler[0] = math.atan2(2.0 * (quat.y()*quat.z() +quat.x()*quat.scalar()),(-sqx - sqy + sqz + sqw))
+    yval = math.asin(-2.0 * (quat.x()*quat.z() - quat.y()*quat.scalar()))
+    if yval < -1.0:
+        yval = -1.0
+    elif yval > 1.0:
+        yval = 1.0
+    euler[1] = yval
+    
+    return euler
+
+# euler [x,y,z] to QQuaternion
+def euler_to_quat(euler):
+    ang = euler[0] * 0.5
+    sr = math.sin(ang)
+    cr = math.cos(ang)
+
+    ang = euler[1] * 0.5
+    sp = math.sin(ang)
+    cp = math.cos(ang)
+
+    ang = euler[2] * 0.5
+    sy = math.sin(ang)
+    cy = math.cos(ang)
+
+    cpcy = cp * cy
+    spcy = sp * cy
+    cpsy = cp * sy
+    spsy = sp * sy
+
+    quat = Quat(cr*cpcy + sr*spsy, sr * cpcy - cr*spsy, cr*spcy + sr * cpsy, cr * cpsy - sr * spcy)
+    quat.normalize()
+    return quat
 
 # replacement for r.GetCameraUp()
 def get_up(entity):
@@ -418,27 +459,28 @@ class RotationManipulator(Manipulator):
                 dir = 1
 
             mov *= dir
-            
-            if self.controller.useLocalTransform:
+
+            if local:
                 if self.grabbed_axis == self.AXIS_RED:
                     axis = Vec(1, 0, 0)
                 elif self.grabbed_axis == self.AXIS_GREEN:
                     axis = Vec(0, 1, 0)
                 elif self.grabbed_axis == self.AXIS_BLUE:
                     axis = Vec(0, 0, 1)
-                ort *= Quat.fromAxisAndAngle(axis, mov)
+
+                ort = ort * Quat.fromAxisAndAngle(axis, mov)
             else:
-                euler = [0, 0, 0]
+                euler = quat_to_euler(ort)
+
                 if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
-                    euler[0] -= mov
+                    euler[0] -= math.radians(mov)
                 elif self.grabbed_axis == self.AXIS_GREEN: #rotate around y-axis
-                    euler[1] += mov
+                    euler[1] += math.radians(mov)
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
-                    euler[2] += mov
-                rotationQuat = euler_to_quat(euler)
-                # TODO: figure out the shifted members
-                ort *= Quat(rotationQuat[3], rotationQuat[1], rotationQuat[2], rotationQuat[0])
-            
+                    euler[2] += math.radians(mov)
+
+                ort = euler_to_quat(euler)
+
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
 
