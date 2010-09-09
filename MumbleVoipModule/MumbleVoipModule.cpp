@@ -19,7 +19,6 @@
 #include "SettingsWidget.h"
 #include "UiServiceInterface.h"
 
-
 #include "MemoryLeakCheck.h"
 
 namespace MumbleVoip
