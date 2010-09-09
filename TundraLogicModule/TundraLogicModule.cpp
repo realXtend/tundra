@@ -69,6 +69,13 @@ void TundraLogicModule::PostInitialize()
         "Disconnects from a server.",
         Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
     
+    RegisterConsoleCommand(Console::CreateCommand("savescene",
+        "Saves scene into an XML file. Usage: \"savescene(filename)\"",
+        Console::Bind(this, &TundraLogicModule::ConsoleSaveScene)));
+    RegisterConsoleCommand(Console::CreateCommand("loadscene",
+        "Loads scene from an XML file. Usage: \"loadscene(filename)\"",
+        Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
+    
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
@@ -149,6 +156,36 @@ Console::CommandResult TundraLogicModule::ConsoleDisconnect(const StringVector& 
     
     return Console::ResultSuccess();
 }
+
+Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    bool success = scene->SaveScene(params[0]);
+    if (success)
+        return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Failed to save the scene.");
+}
+
+Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    // Do the scene load as replicable only if we are a server
+    bool success = scene->LoadScene(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+    if (success)
+        return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Failed to load the scene.");
+}
+
 
 bool TundraLogicModule::IsServer() const
 {
@@ -398,7 +435,7 @@ void TundraLogicModule::ServerHandleLogin(MessageConnection* source, const MsgLo
     
     user->userName = BufferToString(msg.userName);
     user->authenticated = true;
-    LogInfo("User " + user->userName + " logging in");
+    LogInfo("User " + user->userName + " logging in, connection ID " + ToString<int>(user->userID));
     
     MsgLoginReply reply;
     reply.success = 1;
@@ -424,6 +461,10 @@ void TundraLogicModule::ServerHandleLogin(MessageConnection* source, const MsgLo
             user->connection->Send(joined);
         }
     }
+    
+    // Send the scene to the new user
+    if (syncManager_)
+        syncManager_->NewUserConnected(user);
 }
 
 void TundraLogicModule::ServerHandleUserDisconnected(KristalliProtocol::UserConnection* user)

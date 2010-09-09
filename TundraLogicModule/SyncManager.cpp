@@ -31,6 +31,8 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     createdEntities_.clear();
     dirtyEntities_.clear();
     removedComponents_.clear();
+    removedEntities_.clear();
+    pendingComponentUpdates_.clear();
     
     connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
         this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
@@ -47,6 +49,9 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
     // Sync all non-local entities
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
@@ -54,7 +59,7 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
         connections.push_back(user->connection);
         Scene::EntityPtr entity = *iter;
         if (!entity->IsLocal())
-            EntitySync(connections, entity, true, true);
+            SerializeAndSendComponents(connections, entity, true, true);
     }
 }
 
@@ -76,7 +81,7 @@ std::vector<MessageConnection*> SyncManager::GetConnectionsToSyncTo()
     return connections;
 }
 
-void SyncManager::EntitySync(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity, bool allComponents)
+void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity, bool allComponents)
 {
     QDomDocument temp_doc;
     QDomElement entity_elem = temp_doc.createElement("entity");
@@ -95,6 +100,7 @@ void SyncManager::EntitySync(const std::vector<MessageConnection*>& connections,
             }
         }
     }
+    temp_doc.appendChild(entity_elem);
     
     // If there were no components, and we're not sending a CreateEntity message, do not send anything
     if ((no_components) && (!createEntity))
@@ -121,6 +127,33 @@ void SyncManager::EntitySync(const std::vector<MessageConnection*>& connections,
         
         for (unsigned i = 0; i < connections.size(); ++i)
             connections[i]->Send(msg);
+    }
+}
+
+void SyncManager::DeserializeComponents(QDomDocument& doc, Scene::EntityPtr entity, AttributeChange::Type change)
+{
+    QDomElement entity_elem = doc.firstChildElement("entity");
+    if (!entity_elem.isNull())
+    {
+        QDomElement comp_elem = entity_elem.firstChildElement("component");
+        while (!comp_elem.isNull())
+        {
+            std::string type_name = comp_elem.attribute("type").toStdString();
+            std::string name = comp_elem.attribute("name").toStdString();
+            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(QString::fromStdString(type_name), QString::fromStdString(name)); //\todo just convert to use qstring all over here, not convert back & forth XXX
+            if (new_comp)
+            {
+                new_comp->DeserializeFrom(comp_elem, change);
+                new_comp->ComponentChanged(change);
+                
+                // If changetype is Network, reset it from the component now so that it won't show "dirty" status which may be confusing
+                if (change == AttributeChange::Network)
+                    new_comp->ResetChange();
+            }
+            else
+                TundraLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
     }
 }
 
@@ -200,6 +233,9 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     if (entity->IsLocal())
         return;
     
+    // Remove pending component updates for this entity, if any
+    pendingComponentUpdates_[entity->GetId()].clear();
+    
     createdEntities_.erase(entity->GetId());
     dirtyEntities_.erase(entity->GetId());
     removedComponents_.erase(entity->GetId()); // Individual component removals do not matter at this point
@@ -209,8 +245,13 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
 void SyncManager::Update()
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
     
     std::vector<MessageConnection*> connections = GetConnectionsToSyncTo();
+    
+    // Apply pending component updates, if they're possible to apply now
+    ApplyPendingComponentUpdates();
     
     // Process first the created entities
     std::set<entity_id_t>::const_iterator i = createdEntities_.begin();
@@ -219,7 +260,7 @@ void SyncManager::Update()
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (entity)
         {
-            EntitySync(connections, entity, true, false);
+            SerializeAndSendComponents(connections, entity, true, false);
             entity->ResetChange();
         }
         ++i;
@@ -233,7 +274,7 @@ void SyncManager::Update()
         Scene::EntityPtr entity = scene->GetEntity(*i);
         if (entity)
         {
-            EntitySync(connections, entity, false, false);
+            SerializeAndSendComponents(connections, entity, false, false);
             entity->ResetChange();
         }
         ++i;
@@ -276,25 +317,216 @@ void SyncManager::Update()
     removedEntities_.clear();
 }
 
+bool SyncManager::ValidateAction(MessageConnection* source, unsigned messageID, entity_id_t entityID)
+{
+    if (entityID & Scene::LocalEntity)
+    {
+        TundraLogicModule::LogWarning("Received an entity sync message for a local entity. Disregarding.");
+        return false;
+    }
+    
+    // For now, always trust scene actions from server
+    if (!owner_->IsServer())
+        return true;
+    
+    // And for now, always also trust scene actions from clients, if they are known and authenticated
+    KristalliProtocol::UserConnection* user = owner_->GetUserConnection(source);
+    if ((!user) || (!user->authenticated))
+        return false;
+    
+    return true;
+}
+
 void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg)
 {
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    entity_id_t entityID = msg.entityID;
+    if (!ValidateAction(source, msg.MessageID(), entityID))
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    
+    // Check for ID collision
+    if (isServer)
+    {
+        if (scene->GetEntity(entityID))
+        {
+            entity_id_t newEntityID = scene->GetNextFreeId();
+            // Send information to the creator that the ID was taken. The reserved ID will never get replicated to others
+            MsgEntityIDCollision collisionMsg;
+            collisionMsg.oldEntityID = entityID;
+            collisionMsg.newEntityID = newEntityID;
+            source->Send(collisionMsg);
+            entityID = newEntityID;
+        }
+    }
+    else
+    {
+        // If a client gets a entity that already exists, destroy it forcibly
+        if (scene->GetEntity(entityID))
+        {
+            TundraLogicModule::LogDebug("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
+            scene->RemoveEntity(entityID, change);
+        }
+    }
+    
+    Scene::EntityPtr entity = scene->CreateEntity(entityID);
+    if (!entity)
+    {
+        TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+        return;
+    }
+    
+    QDomDocument temp_doc;
+    if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&msg.componentData[0], msg.componentData.size())))
+    {
+        TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
+        return;
+    }
+    
+    DeserializeComponents(temp_doc, entity, change);
 }
 
 void SyncManager::HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg)
 {
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    entity_id_t entityID = msg.entityID;
+    if (!ValidateAction(source, msg.MessageID(), entityID))
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    
+    scene->RemoveEntity(entityID, change);
 }
 
 void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg)
 {
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    entity_id_t entityID = msg.entityID;
+    if (!ValidateAction(source, msg.MessageID(), entityID))
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    
+    // See if we can find the entity. If not, put to pending updates
+    // (we could also force in-order component update messages, but that order would then apply to all entities, possibly slowing update down in case of lost packets)
+    Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
+    if (!entity)
+    {
+        pendingComponentUpdates_[entity->GetId()].push_back(msg.componentData);
+        return;
+    }
+    
+    QDomDocument temp_doc;
+    if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&msg.componentData[0], msg.componentData.size())))
+    {
+        TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
+        return;
+    }
+    
+    DeserializeComponents(temp_doc, entity, change);
 }
 
 void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg)
 {
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    entity_id_t entityID = msg.entityID;
+    if (!ValidateAction(source, msg.MessageID(), entityID))
+        return;
+        
+    bool isServer = owner_->IsServer();
+    
+    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    
+    Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
+    if (!entity)
+        return;
+    
+    for (unsigned i = 0; i < msg.components.size(); ++i)
+    {
+        QString componentName = QString::fromStdString(BufferToString(msg.components[i].componentName));
+        QString componentTypeName = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        
+        Foundation::ComponentInterfacePtr comp = entity->GetComponent(componentTypeName, componentName);
+        if (comp)
+        {
+            entity->RemoveComponent(comp, change);
+            comp.reset();
+        }
+    }
 }
 
 void SyncManager::HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg)
 {
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    if (owner_->IsServer())
+    {
+        TundraLogicModule::LogWarning("Received a EntityIDCollision from a client, disregarding.");
+        return;
+    }
+    
+    TundraLogicModule::LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
+    scene->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
 }
 
+void SyncManager::ApplyPendingComponentUpdates()
+{
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+    
+    bool isServer = owner_->IsServer();
+    
+    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    
+    std::map<entity_id_t, std::vector<std::vector<unsigned char> > >::iterator i = pendingComponentUpdates_.begin();
+    while (i != pendingComponentUpdates_.end())
+    {
+        Scene::EntityPtr entity = scene->GetEntity(i->first);
+        if (entity)
+        {
+            std::vector<std::vector<unsigned char> >& updates = i->second;
+            for (unsigned j = 0; j < updates.size(); ++j)
+            {
+                QDomDocument temp_doc;
+                if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&updates[j][0], updates[j].size())))
+                {
+                    TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
+                    continue;
+                }
+                
+                DeserializeComponents(temp_doc, entity, change);
+            }
+        }
+        i->second.clear();
+        ++i;
+    }
+}
 
 }

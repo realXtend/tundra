@@ -97,14 +97,6 @@ void DebugStatsModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand("dumptextures",
         "Dumps all currently existing J2K decoded textures as PNG files into the viewer working directory.",
         Console::Bind(this, &DebugStatsModule::DumpTextures)));
-
-    RegisterConsoleCommand(Console::CreateCommand("savescene",
-        "Saves scene (serializable entities) into an XML file. Usage: \"savescene(filename)\"",
-        Console::Bind(this, &DebugStatsModule::SaveScene)));
-    
-    RegisterConsoleCommand(Console::CreateCommand("loadscene",
-        "Loads scene (serializable entities) from an XML file. Usage: \"loadscene(filename)\"",
-        Console::Bind(this, &DebugStatsModule::LoadScene)));
         
     RegisterConsoleCommand(Console::CreateCommand("exec",
         "Invokes action execution in entity",
@@ -412,34 +404,6 @@ Console::CommandResult DebugStatsModule::KickUser(const StringVector &params)
     current_world_stream_->SendGodKickUserPacket(user_presence->agentId, "God doesn't want you here.");
 
     return Console::ResultSuccess();
-}
-
-Console::CommandResult DebugStatsModule::SaveScene(const StringVector &params)
-{
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    if (!scene)
-        return Console::ResultFailure("No active scene found.");
-    if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
-    bool success = scene->SaveScene(params[0]);
-    if (success)
-        return Console::ResultSuccess();
-    else
-        return Console::ResultFailure("Failed to save the scene.");
-}
-
-Console::CommandResult DebugStatsModule::LoadScene(const StringVector &params)
-{
-    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
-    if (!scene)
-        return Console::ResultFailure("No active scene found.");
-    if (params.size() < 1)
-        return Console::ResultFailure("No filename given.");
-    bool success = scene->LoadScene(params[0], AttributeChange::LocalOnly);
-    if (success)
-        return Console::ResultSuccess();
-    else
-        return Console::ResultFailure("Failed to load the scene.");
 }
 
 Console::CommandResult DebugStatsModule::DumpTextures(const StringVector &params)
