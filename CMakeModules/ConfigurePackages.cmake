@@ -145,15 +145,6 @@ macro (configure_python_qt)
     sagase_configure_report (PYTHON_QT)
 endmacro (configure_python_qt)
 
-macro (configure_ois)
-    sagase_configure_package (OIS 
-        NAMES Ois ois OIS 
-        COMPONENTS OIS
-        PREFIXES ${ENV_NAALI_DEP_PATH})
-
-    sagase_configure_report (OIS)
-endmacro (configure_ois)
-
 macro (configure_ogre)
     if (APPLE)
 	FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
