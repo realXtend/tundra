@@ -43,7 +43,11 @@ namespace WorldBuilding
         void EmitEditingActivated(bool activated);
         void EmitRemoveHightlight();
         void SetRotateValues(int x, int y, int z);
+        void SetScaleValues(double x, double y, double z);
+        void SetPosValues(double x, double y, double z);
         void EmitRotateChange(int x, int y, int z);
+        void EmitScaleChange(double x, double y, double z);
+        void EmitPosChange(double x, double y, double z);
         void EmitObjectAction(PythonParams::ObjectAction action);
 
         void PassWidget(const QString &type, QWidget *widget);
@@ -58,8 +62,12 @@ namespace WorldBuilding
         void ManipulationMode(int);
         void ActivateEditing(bool);
         void RemoveHightlight();
-        void RotateValuesChangedToUi(int x, int y, int z);
-        void RotateValuesChangedToNetwork(int x, int y, int z);
+        void RotateValuesToUi(int x, int y, int z);
+        void ScaleValuesToUi(double x, double y, double z);
+        void PosValuesToUi(double x, double y, double z);
+        void RotateValuesToNetwork(int x, int y, int z);
+        void ScaleValuesToNetwork(double x, double y, double z);
+        void PosValuesToNetwork(double x, double y, double z);
         void CreateObject();
         void DuplicateObject();
         void DeleteObject();

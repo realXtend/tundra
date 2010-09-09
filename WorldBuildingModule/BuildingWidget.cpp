@@ -15,9 +15,20 @@ namespace WorldBuilding
             internal_widget_(new QWidget()),
             tool_position_(tool_position),
             resizing_(false),
+            scrolled_to_side_(false),
             view_(0)
         {
-            internal_widget_->setMouseTracking(true);
+            QPropertyAnimation *animation_max = new QPropertyAnimation(internal_widget_, "maximumWidth");
+            animation_max->setDuration(300);
+            animation_max->setEasingCurve(QEasingCurve::InOutSine);
+            QPropertyAnimation *animation_min = new QPropertyAnimation(internal_widget_, "minimumWidth");
+            animation_min->setDuration(300);
+            animation_min->setEasingCurve(QEasingCurve::InOutSine);
+            
+            animations_ = new QParallelAnimationGroup();
+            animations_->addAnimation(animation_max);
+            animations_->addAnimation(animation_min);
+            connect(animations_, SIGNAL(finished()), SLOT(OnFinishedAnimation()));
         }
 
         BuildingWidget::~BuildingWidget()
@@ -27,7 +38,13 @@ namespace WorldBuilding
         void BuildingWidget::PrepWidget()
         {
             setWidget(internal_widget_);
-            min_width_ = internal_widget_->minimumWidth(); // 15px for toolbar
+            min_width_ = internal_widget_->minimumWidth();
+            last_width_ = min_width_;
+        }
+        
+        void BuildingWidget::SetVisibilityButton(QPushButton *button)
+        {
+            visib_button_ = button;
         }
 
         void BuildingWidget::CheckSize()
@@ -38,8 +55,7 @@ namespace WorldBuilding
                 QRect w_rect = widget()->rect();
                 if (tool_position_ == Right && scene())
                     setPos(scene()->sceneRect().width() - min_width_, 0);
-                widget()->setMinimumWidth(min_width_);
-                widget()->setGeometry(w_rect.x(), w_rect.y(), min_width_, w_rect.height());
+                SetWidth(min_width_);
                 if (view_)
                 {
                     view_->setMinimumWidth(10);
@@ -68,10 +84,13 @@ namespace WorldBuilding
                     change_cursor = true;
             }
 
-            if (change_cursor && !QApplication::overrideCursor())
-                QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
-            else if (!change_cursor && QApplication::overrideCursor())
-                QApplication::restoreOverrideCursor();
+            if (!scrolled_to_side_)
+            {
+                if (change_cursor && !QApplication::overrideCursor())
+                    QApplication::setOverrideCursor(QCursor(Qt::SizeHorCursor));
+                else if (!change_cursor && QApplication::overrideCursor())
+                    QApplication::restoreOverrideCursor();
+            }
             
             if (view_)
             {
@@ -108,7 +127,7 @@ namespace WorldBuilding
         {
             if (QApplication::overrideCursor())
             {
-                if (!resizing_ && QApplication::overrideCursor()->shape() == Qt::SizeHorCursor)
+                if (!resizing_ && !scrolled_to_side_ && QApplication::overrideCursor()->shape() == Qt::SizeHorCursor)
                 {
                     resizing_ = true;
                     mouse_press_event->accept();
@@ -137,18 +156,18 @@ namespace WorldBuilding
                         if (QApplication::overrideCursor())
                             if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
                                 QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
-                        widget()->setMinimumWidth(scene()->sceneRect().width() / 2);
+                        SetWidth(scene()->sceneRect().width() / 2);
                     }
                     else
                     {
                         if (scene_pos.x() >= min_width_)
                         {
-                            widget()->setMinimumWidth(scene_pos.x());
+                            SetWidth(scene_pos.x());
                             resized = true;
                         }
                         else
                         {
-                            widget()->setMinimumWidth(min_width_);
+                            SetWidth(min_width_);
                             if (QApplication::overrideCursor())
                                 if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
                                     QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
@@ -162,7 +181,7 @@ namespace WorldBuilding
                         if (QApplication::overrideCursor())
                             if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
                                 QApplication::setOverrideCursor(QCursor(Qt::ForbiddenCursor));
-                        widget()->setMinimumWidth(scene()->sceneRect().width() / 2);
+                        SetWidth(scene()->sceneRect().width() / 2);
                         setPos(scene()->sceneRect().width() / 2, 0);
                     }
                     else
@@ -170,13 +189,13 @@ namespace WorldBuilding
                         int width = scene()->sceneRect().width() - scene_pos.x();
                         if (width >= min_width_)
                         {
-                            widget()->setMinimumWidth(width);
+                            SetWidth(width);
                             setPos(scene_pos.x(), 0);
                             resized = true;
                         }
                         else
                         {
-                            widget()->setMinimumWidth(min_width_);
+                            SetWidth(min_width_);
                             setPos(scene()->sceneRect().width() - min_width_, 0);
                             if (QApplication::overrideCursor())
                                 if (QApplication::overrideCursor()->shape() != Qt::ForbiddenCursor)
@@ -202,6 +221,12 @@ namespace WorldBuilding
             QGraphicsProxyWidget::mouseReleaseEvent(mouse_release_event);
         }
 
+        void BuildingWidget::SetWidth(int width)
+        {
+            widget()->setMinimumWidth(width);
+            widget()->setMaximumWidth(width);
+        }
+
         void BuildingWidget::SceneRectChanged(const QRectF &new_rect)
         {
             int scene_half_width = new_rect.width() / 2;
@@ -209,9 +234,65 @@ namespace WorldBuilding
             {
                 if (tool_position_ == Right)
                     setPos(scene_half_width, 0);
-                widget()->setMinimumWidth(scene_half_width);
+                SetWidth(scene_half_width);
                 if (view_)
                     view_->setMaximumWidth(scene_half_width-25);
+            }
+        }
+
+        void BuildingWidget::ToggleVisibility()
+        {
+            OnStartAnimation();
+        }
+
+        void BuildingWidget::OnStartAnimation()
+        {
+            if (animations_->state() == QAbstractAnimation::Running)
+                return;
+            
+            // Get the min/max animations
+            QPropertyAnimation *max = dynamic_cast<QPropertyAnimation*>(animations_->animationAt(0));
+            QPropertyAnimation *min = dynamic_cast<QPropertyAnimation*>(animations_->animationAt(1));
+            if (!max || !min)
+                return;
+
+            // Start value
+            max->setStartValue(internal_widget_->width());
+            min->setStartValue(internal_widget_->width());
+            if (!scrolled_to_side_)
+                last_width_ = internal_widget_->width();
+
+            // End value
+            int end_width = 0;
+            if (scrolled_to_side_)
+                end_width = last_width_;
+            max->setEndValue(end_width);
+            min->setEndValue(end_width);
+
+            // Start
+            animations_->start();
+        }
+
+        void BuildingWidget::OnFinishedAnimation()
+        {
+            if (!visib_button_)
+                return;
+
+            // Change button style accordingly
+            scrolled_to_side_ = !scrolled_to_side_;
+            if (scrolled_to_side_)
+            {
+                if (tool_position_ == Right)
+                    visib_button_->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");
+                else
+                    visib_button_->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");
+            }
+            else
+            {
+                if (tool_position_ == Right)
+                    visib_button_->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");    
+                else
+                    visib_button_->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");
             }
         }
     }

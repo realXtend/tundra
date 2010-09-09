@@ -15,7 +15,12 @@
 #include <QtVariantProperty>
 
 #include "CustomLineEditFactory.h"
+
+#include "PythonHandler.h"
+#include "AnchorLayout.h"
+#include "BuildingWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
+#include "ui_ObjectInfoWidget.h"
 
 namespace WorldBuilding
 {
@@ -42,14 +47,24 @@ namespace WorldBuilding
         public slots:
             QString CheckUiValue(QString value);
             QString CheckUiValue(unsigned int value);
+            void SetManipMode(PythonParams::ManipulationMode mode) { manip_mode_ = mode; }
 
             QtTreePropertyBrowser *CreatePropertyBrowser(QWidget *parent, QObject *controller, EC_OpenSimPrim *prim);
 
-            void SetupRotateControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler);
+            void SetupManipControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler);
+
             void SetRotateValues(int x, int y, int z);
             void RotateXChanged(int value);
             void RotateYChanged(int value);
             void RotateZChanged(int value);
+
+            void SetScaleValues(double x, double y, double z);
+            void OnScaleChanged(double value);
+
+            void SetPosValues(double x, double y, double z);
+            void OnPosChanged(double value);
+
+            void SetupVisibilityButtons(AnchorLayout *layout, Ui::BuildingWidget *manip_ui, Ui::BuildingWidget *info_ui);
 
         private slots:
             void CollapseSubGroups(QtBrowserItem *main_group);
@@ -59,6 +74,8 @@ namespace WorldBuilding
             QtProperty *CreateShapeGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
   
         signals:
+            void PosChanged(double x, double y, double z);
+            void ScaleChanged(double x, double y, double z);
             void RotationChanged(int x, int y, int z);
 
         private:
@@ -70,7 +87,9 @@ namespace WorldBuilding
             QObject *python_handler_;
             Ui_ObjectManipulationsWidget *manip_ui_;
 
-            bool ignore_rotate_value_changes_;
+            bool ignore_manip_changes_;
+
+            PythonParams::ManipulationMode manip_mode_;
         };
     }
 }

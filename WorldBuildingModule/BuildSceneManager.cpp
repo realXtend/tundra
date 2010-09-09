@@ -120,6 +120,9 @@ namespace WorldBuilding
         object_manipulations_widget_->PrepWidget();
         connect(scene_, SIGNAL(sceneRectChanged(const QRectF&)), object_manipulations_widget_, SLOT(SceneRectChanged(const QRectF&)));
 
+        // Visibility button
+        ui_helper_->SetupVisibilityButtons(layout_, object_manipulations_widget_, object_info_widget_);
+
         // Init the toolbar
         toolbar_ = new Ui::BuildToolbar();
         layout_->AnchorWidgetsHorizontally(object_info_widget_, toolbar_);
@@ -140,7 +143,7 @@ namespace WorldBuilding
         connect(world_object_view_, SIGNAL(Zoom(qreal)), SLOT(Zoom(qreal))); 
 
         // Setup ui helper
-        ui_helper_->SetupRotateControls(&object_manip_ui, python_handler_);
+        ui_helper_->SetupManipControls(&object_manip_ui, python_handler_);
     }
 
     void BuildSceneManager::HandleWidgetTransfer(const QString &name, QGraphicsProxyWidget *widget)
@@ -384,8 +387,11 @@ namespace WorldBuilding
     void BuildSceneManager::ManipModeChanged(PythonParams::ManipulationMode mode)
     {
         python_handler_->EmitManipulationModeChange(mode);
+        ui_helper_->SetManipMode(mode);
 
         bool show_rotate_controls = false;
+        bool show_scale_controls = false;
+        bool show_pos_controls = false;
         QString selected_style = "background-color: qlineargradient(spread:pad, x1:0, y1:0.165, x2:0, y2:0.864, stop:0 rgba(248, 248, 248, 255), stop:1 rgba(232, 232, 232, 255));"
                                  "border: 1px solid grey; border-radius: 0px; color: black; font-weight: bold; padding-top: 5px; padding-bottom: 4px;";
         switch (mode)
@@ -394,11 +400,13 @@ namespace WorldBuilding
                 object_manip_ui.button_move->setStyleSheet(selected_style);
                 object_manip_ui.button_scale->setStyleSheet("");
                 object_manip_ui.button_rotate->setStyleSheet("");
+                show_pos_controls = true;
                 break;
             case PythonParams::MANIP_SCALE:
                 object_manip_ui.button_scale->setStyleSheet(selected_style);
                 object_manip_ui.button_move->setStyleSheet("");
                 object_manip_ui.button_rotate->setStyleSheet("");
+                show_scale_controls = true;
                 break;
             case PythonParams::MANIP_ROTATE:
                 object_manip_ui.button_rotate->setStyleSheet(selected_style);
@@ -415,6 +423,8 @@ namespace WorldBuilding
                 break;
         }
         object_manip_ui.rotate_frame->setVisible(show_rotate_controls);
+        object_manip_ui.scale_frame->setVisible(show_scale_controls);
+        object_manip_ui.pos_frame->setVisible(show_pos_controls);
     }
 
     QObject *BuildSceneManager::GetPythonHandler() const
