@@ -120,7 +120,9 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('ActivateEditing(bool)', self.on_activate_editing)
             self.cpp_python_handler.connect('ManipulationMode(int)', self.on_manupulation_mode_change)
             self.cpp_python_handler.connect('RemoveHightlight()', self.deselect_all)
-            self.cpp_python_handler.connect('RotateValuesChangedToNetwork(int, int, int)', self.changerot_cpp)
+            self.cpp_python_handler.connect('RotateValuesToNetwork(int, int, int)', self.changerot_cpp)
+            self.cpp_python_handler.connect('ScaleValuesToNetwork(double, double, double)', self.changescale_cpp)
+            self.cpp_python_handler.connect('PosValuesToNetwork(double, double, double)', self.changepos_cpp)
             self.cpp_python_handler.connect('CreateObject()', self.createObject)
             self.cpp_python_handler.connect('DuplicateObject()', self.duplicate)
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
@@ -634,7 +636,6 @@ class ObjectEdit(Component):
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
         #print "pos index %i changed to: %f" % (i, v)
         ent = self.active
-        
         if ent is not None:
             qpos = ent.placeable.Position
             pos = list((qpos.x(), qpos.y(), qpos.z())) #should probably wrap Vector3, see test_move.py for refactoring notes. 
@@ -675,10 +676,7 @@ class ObjectEdit(Component):
                 #self.window.update_scalevals(scale)
                 self.modified = True
                 #self.updateSelectionBox(ent)
-            
-    def changerot_cpp(self, x, y, z):
-        self.changerot(0, (x, y, z))
-        
+                
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
@@ -699,6 +697,19 @@ class ObjectEdit(Component):
                 
             self.modified = True
 
+    def changerot_cpp(self, x, y, z):
+        self.changerot(0, (x, y, z))
+        
+    def changescale_cpp(self, x, y, z):
+        self.changescale(0, x)
+        self.changescale(1, y)
+        self.changescale(2, z)
+        
+    def changepos_cpp(self, x, y, z):
+        self.changepos(0, x)
+        self.changepos(1, y)
+        self.changepos(2, z)
+        
     def getActive(self):
         if len(self.sels) > 0:
             ent = self.sels[-1]

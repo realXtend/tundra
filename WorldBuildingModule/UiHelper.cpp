@@ -12,7 +12,7 @@ namespace WorldBuilding
             variant_manager(0),
             browser(0),
             manip_ui_(0),
-            ignore_rotate_value_changes_(false)
+            ignore_manip_changes_(false)
         {
             information_items << "Name" << "Description";
 
@@ -285,20 +285,31 @@ namespace WorldBuilding
             return title_group;
         }
 
-        void UiHelper::SetupRotateControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler)
+        void UiHelper::SetupManipControls(Ui_ObjectManipulationsWidget *manip_ui, QObject *python_handler)
         {
             manip_ui_ = manip_ui;
             
-            connect(python_handler, SIGNAL(RotateValuesChangedToUi(int, int, int)), SLOT(SetRotateValues(int, int, int)));
+            connect(python_handler, SIGNAL(RotateValuesToUi(int, int, int)), SLOT(SetRotateValues(int, int, int)));
             connect(this, SIGNAL(RotationChanged(int, int, int)), python_handler, SLOT(EmitRotateChange(int, int, int)));
             connect(manip_ui_->slider_rotate_x, SIGNAL(valueChanged(int)), SLOT(RotateXChanged(int)));
             connect(manip_ui_->slider_rotate_y, SIGNAL(valueChanged(int)), SLOT(RotateYChanged(int)));
             connect(manip_ui_->slider_rotate_z, SIGNAL(valueChanged(int)), SLOT(RotateZChanged(int)));
+
+            connect(python_handler, SIGNAL(ScaleValuesToUi(double, double, double)), SLOT(SetScaleValues(double, double, double)));
+            connect(this, SIGNAL(ScaleChanged(double, double, double)), python_handler, SLOT(EmitScaleChange(double, double, double)));
+            connect(manip_ui_->doubleSpinBox_scale_x, SIGNAL(valueChanged(double)), SLOT(OnScaleChanged(double)));
+            connect(manip_ui_->doubleSpinBox_scale_y, SIGNAL(valueChanged(double)), SLOT(OnScaleChanged(double)));
+            connect(manip_ui_->doubleSpinBox_scale_z, SIGNAL(valueChanged(double)), SLOT(OnScaleChanged(double)));
+
+            connect(python_handler, SIGNAL(PosValuesToUi(double, double, double)), SLOT(SetPosValues(double, double, double)));
+            connect(this, SIGNAL(PosChanged(double, double, double)), python_handler, SLOT(EmitPosChange(double, double, double)));
+            connect(manip_ui_->doubleSpinBox_pos_x, SIGNAL(valueChanged(double)), SLOT(OnPosChanged(double)));
+            connect(manip_ui_->doubleSpinBox_pos_y, SIGNAL(valueChanged(double)), SLOT(OnPosChanged(double)));
+            connect(manip_ui_->doubleSpinBox_pos_z, SIGNAL(valueChanged(double)), SLOT(OnPosChanged(double)));
         }
 
         void UiHelper::SetRotateValues(int x, int y, int z)
         {
-            
             if (x < 0)
                 x += 360;
             if (y < 0)
@@ -306,35 +317,96 @@ namespace WorldBuilding
             if (z < 0)
                 z += 360;
 
-            ignore_rotate_value_changes_ = true;
+            ignore_manip_changes_ = true;
             manip_ui_->slider_rotate_z->setValue(z);
             manip_ui_->slider_rotate_x->setValue(x);
             manip_ui_->slider_rotate_y->setValue(y);
-            ignore_rotate_value_changes_ = false;
+            ignore_manip_changes_ = false;
         }
 
         void UiHelper::RotateXChanged(int value)
         {
-            if (ignore_rotate_value_changes_)
-                return;
             manip_ui_->label_rotate_x_value->setText(QString("%1 °").arg(QString::number(value)));
-            emit RotationChanged(value, manip_ui_->slider_rotate_y->value(), manip_ui_->slider_rotate_z->value());
+            if (!ignore_manip_changes_)
+                emit RotationChanged(value, manip_ui_->slider_rotate_y->value(), manip_ui_->slider_rotate_z->value());
         }
 
         void UiHelper::RotateYChanged(int value)
         {
-            if (ignore_rotate_value_changes_)
-            return;
             manip_ui_->label_rotate_y_value->setText(QString("%1 °").arg(QString::number(value)));
-            emit RotationChanged(manip_ui_->slider_rotate_x->value(), value, manip_ui_->slider_rotate_z->value());
+            if (!ignore_manip_changes_)
+                emit RotationChanged(manip_ui_->slider_rotate_x->value(), value, manip_ui_->slider_rotate_z->value());
         }
 
         void UiHelper::RotateZChanged(int value)
         {
-            if (ignore_rotate_value_changes_)
-                return;
             manip_ui_->label_rotate_z_value->setText(QString("%1 °").arg(QString::number(value)));
-            emit RotationChanged(manip_ui_->slider_rotate_x->value(), manip_ui_->slider_rotate_y->value(), value);
+            if (!ignore_manip_changes_)           
+                emit RotationChanged(manip_ui_->slider_rotate_x->value(), manip_ui_->slider_rotate_y->value(), value);
+        }
+
+        void UiHelper::SetScaleValues(double x, double y, double z)
+        {
+            ignore_manip_changes_ = true;
+            manip_ui_->doubleSpinBox_scale_x->setValue(x);
+            manip_ui_->doubleSpinBox_scale_y->setValue(y);
+            manip_ui_->doubleSpinBox_scale_z->setValue(z);
+            ignore_manip_changes_ = false;
+        }
+
+        void UiHelper::OnScaleChanged(double value)
+        {
+            if (ignore_manip_changes_)
+                return;
+            emit ScaleChanged(manip_ui_->doubleSpinBox_scale_x->value(), manip_ui_->doubleSpinBox_scale_y->value(), manip_ui_->doubleSpinBox_scale_z->value());
+        }
+
+        void UiHelper::SetPosValues(double x, double y, double z)
+        {
+            ignore_manip_changes_ = true;
+            manip_ui_->doubleSpinBox_pos_x->setValue(x);
+            manip_ui_->doubleSpinBox_pos_y->setValue(y);
+            manip_ui_->doubleSpinBox_pos_z->setValue(z);
+            ignore_manip_changes_ = false;
+        }
+
+        void UiHelper::OnPosChanged(double value)
+        {
+            if (ignore_manip_changes_)
+                return;
+            emit PosChanged(manip_ui_->doubleSpinBox_pos_x->value(), manip_ui_->doubleSpinBox_pos_y->value(), manip_ui_->doubleSpinBox_pos_z->value());
+        }
+
+        void UiHelper::SetupVisibilityButtons(AnchorLayout *layout, Ui::BuildingWidget *manip_ui, Ui::BuildingWidget *info_ui)
+        {
+            if (!manip_ui->scene())
+                return;
+
+            // Manip hide
+            QPushButton *vibility_button = new QPushButton();
+            vibility_button->setFlat(true);
+            vibility_button->setFixedSize(32,32);
+            vibility_button->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-back_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");
+            
+            manip_ui->SetVisibilityButton(vibility_button);
+            connect(vibility_button, SIGNAL(clicked()), manip_ui, SLOT(ToggleVisibility()));
+
+            QGraphicsProxyWidget *proxy = manip_ui->scene()->addWidget(vibility_button);
+            layout->AnchorWidgetsHorizontally(proxy, manip_ui);
+            layout->AnchorItemToLayout(proxy, Qt::AnchorBottom, Qt::AnchorBottom);
+
+            // Info hide
+            vibility_button = new QPushButton();
+            vibility_button->setFlat(true);
+            vibility_button->setFixedSize(32,32);
+            vibility_button->setStyleSheet("QPushButton { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward.png'); } QPushButton::hover { background-color: transparent; background-image: url('./data/ui/images/worldbuilding/draw-arrow-forward_bright.png'); } QPushButton::pressed { background-color: transparent; border: 0px; }");
+            
+            info_ui->SetVisibilityButton(vibility_button);
+            connect(vibility_button, SIGNAL(clicked()), info_ui, SLOT(ToggleVisibility()));
+
+            proxy = manip_ui->scene()->addWidget(vibility_button);
+            layout->AnchorWidgetsHorizontally(info_ui, proxy);
+            layout->AnchorItemToLayout(proxy, Qt::AnchorBottom, Qt::AnchorBottom);
         }
     }
 }

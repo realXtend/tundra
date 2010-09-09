@@ -223,12 +223,16 @@ class ObjectEditWindow:
         self.mainTab.scalex.setValue(scale.x())
         self.mainTab.scaley.setValue(scale.y())
         self.mainTab.scalez.setValue(scale.z())
-        
+        if self.controller.cpp_python_handler != None:
+            self.controller.cpp_python_handler.SetScaleValues(scale.x(), scale.y(), scale.z())
+
     def update_posvals(self, pos):
         self.mainTab.xpos.setValue(pos.x())
         self.mainTab.ypos.setValue(pos.y())
         self.mainTab.zpos.setValue(pos.z())
-        
+        if self.controller.cpp_python_handler != None:
+            self.controller.cpp_python_handler.SetPosValues(pos.x(), pos.y(), pos.z())
+
     def update_rotvals(self, placeable):
         # We use now pitch, yaw and roll we get directly from placeable
         # this ensures we don't have to do weird conversions with all
