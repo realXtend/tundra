@@ -27,6 +27,9 @@ public:
     ~ScriptModule();
 
     /// ModuleInterface override.
+    void Load();
+
+    /// ModuleInterface override.
     void PreInitialize();
 
     /// ModuleInterface override.

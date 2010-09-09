@@ -9,6 +9,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ScriptModule.h"
+#include "EC_Script.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -22,6 +23,12 @@ ScriptModule::ScriptModule() :
 ScriptModule::~ScriptModule()
 {
 }
+
+void ScriptModule::Load()
+{
+    DECLARE_MODULE_EC(EC_Script);
+}
+
 
 void ScriptModule::PreInitialize()
 {

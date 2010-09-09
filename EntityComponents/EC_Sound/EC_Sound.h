@@ -29,7 +29,6 @@ public:
     Foundation::Attribute<bool>         triggerSound_;
 
 public slots:
-    void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);
     void PlaySound();
     void StopSound();
     //! Get each attribute values and update sound's parameters if it's in playing state.
@@ -37,6 +36,7 @@ public slots:
 
 private slots:
     void UpdateSignals();
+    void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);
 
 private:
     explicit EC_Sound(Foundation::ModuleInterface *module);
