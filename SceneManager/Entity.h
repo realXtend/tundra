@@ -54,8 +54,30 @@ namespace Scene
 
         //! Set new scene
         void SetScene(SceneManager* scene) { scene_ = scene; }
-
+    
     public:
+        //! Returns a component with type 'type_name' or empty pointer if component was not found
+        /*! If there are several components with the specified type, returns the first component found (arbitrary).
+
+            \param type_name type of the component
+        */
+        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name) const;
+
+        //! Returns a component with specific type and name, or empty pointer if component was not found
+        /*! 
+            \param type_name type of the component
+            \param name name of the component
+        */
+        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
+
+        //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
+        /*! 
+            \param type_name type of the component
+            \param change Change type for network replication, in case component has to be created
+        */
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+
         //! component container
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
 
@@ -90,13 +112,6 @@ namespace Scene
         */
         void RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
-        //! Returns a component with type 'type_name' or empty pointer if component was not found
-        /*! If there are several components with the specified type, returns the first component found (arbitrary).
-
-            \param type_name type of the component
-        */
-        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name) const;
-
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
 
@@ -114,21 +129,6 @@ namespace Scene
                     ret.push_back(components_[i]);
             return ret;
         }
-
-        //! Returns a component with specific type and name, or empty pointer if component was not found
-        /*! 
-            \param type_name type of the component
-            \param name name of the component
-        */
-        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
-
-        //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
-        /*! 
-            \param type_name type of the component
-            \param change Change type for network replication, in case component has to be created
-        */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with certain type, already cast to correct type, or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
@@ -166,26 +166,11 @@ namespace Scene
             return boost::dynamic_pointer_cast<T>(GetComponent(T::TypeNameStatic(), name));
         }
 
-        //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name Type of the component.
-        bool HasComponent(const QString &type_name) const;
-
-        //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name type of the component
-        //! \param name name of the component
-        bool HasComponent(const QString &type_name, const QString &name) const;
-
         //! Return entity's shared pointer.
         EntityPtr GetSharedPtr() const;
 
         //! Returns the unique id of this entity
         entity_id_t GetId() const { return id_; }
-
-        //! Returns name of this entity if EC_Name is available, empty string otherwise.
-        QString GetName() const;
-
-        //! Returns description of this entity if EC_Name is available, empty string otherwise.
-        QString GetDescription() const;
 
         //! introspection for the entity, returns all components
         const ComponentVector &GetComponentVector() const { return components_; }
@@ -264,10 +249,31 @@ namespace Scene
             return ret;
         }
 
+    public slots:
+        Foundation::ComponentInterface* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
+        Foundation::ComponentInterface* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
+        
+        Foundation::ComponentInterface* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, change).get(); }
+        Foundation::ComponentInterface* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, name, change).get(); }
+
+        //! Returns whether or not this entity has a component with certain type and name.
+        //! \param type_name Type of the component.
+        bool HasComponent(const QString &type_name) const;
+
+        //! Returns whether or not this entity has a component with certain type and name.
+        //! \param type_name type of the component
+        //! \param name name of the component
+        bool HasComponent(const QString &type_name, const QString &name) const;
+
+        //! Returns name of this entity if EC_Name is available, empty string otherwise.
+        QString GetName() const;
+
+        //! Returns description of this entity if EC_Name is available, empty string otherwise.
+        QString GetDescription() const;
+
         //! Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }
 
-public slots:
         /** Creates and registers new action for this entity, or returns an existing action.
             @param name Name of the action.
         */

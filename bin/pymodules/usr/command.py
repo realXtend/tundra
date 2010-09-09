@@ -626,10 +626,8 @@ if 0: #getUserAvatar
     #ent.mesh = "cruncah1.mesh"
     
 if 0:
-    # code for camup/right in manipulator.py
-    # maybe move to naali module?
-    #print r.getCameraUp()
-    #print r.getCameraRight()
+    print r.getCameraUp()
+    print r.getCameraRight()
 
 if 0: #test changing the mesh asset a prim is using
     ent_id = 1659586053 #penkki, arkku was: 2461025163
@@ -844,6 +842,21 @@ if 0: #rexlogic as service with qt mechanism
         print qent.Id
         pyent = r.getEntity(qent.Id)
         print pyent, pyent.id
+        
+if 0: #using entity directly to get components, without PyEntity
+    import naali
+    qent = naali.worldlogic.GetUserAvatarEntityRaw()
+    if qent is not None:
+        print qent.Id
+        print dir(qent)
+        p = qent.GetComponentRaw("EC_OgrePlaceable")
+        print p, p.Position
+        
+        #ent = naali.Entity(qent)
+        #print ent, ent.placeable, ent.placeable.Position
+        
+        ent = naali.getEntity(qent.Id)
+        print ent, ent.placeable, ent.placeable.Position
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
