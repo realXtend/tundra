@@ -279,7 +279,7 @@ namespace RexLogic
                 }
                 else
                 {
-                    if (facenum != 0 && i % 2 == 0)
+                    if (i % 2 == 0)
                     {
                         if (indices)
                             prim_manual_object->end();
