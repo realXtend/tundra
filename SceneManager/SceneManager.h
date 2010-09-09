@@ -55,6 +55,7 @@ namespace Scene
 
     public slots:
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
+        Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
 
     public:
         //! destructor

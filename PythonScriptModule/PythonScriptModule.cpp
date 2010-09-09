@@ -2001,6 +2001,7 @@ namespace PythonScript
             mainModule.addObject("_naali", this);
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            //add placeable and friends when PyEntity goes? PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
