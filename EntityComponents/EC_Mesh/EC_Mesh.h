@@ -54,6 +54,8 @@ public slots:
     void SetMesh(const QString &name);
     void RemoveMesh();
     bool SetMaterial(uint index, const QString &material_name);
+    //! Attach skeleton to entity.
+    void AttachSkeleton(const QString &skeletonName);
 
 private slots:
     //! Emitted when the parrent entity has been setted.
@@ -65,6 +67,7 @@ signals:
     void OnMeshChanged();
     void OnMaterialChanged(uint index, const QString &material_name);
     void OnSkeletonChanged(QString skeleton_name);
+    
 
 private:
     //! Constuctor.
@@ -88,9 +91,7 @@ private:
     void AttachEntity();
     //! Detach entity from the scene node.
     void DetachEntity();
-    //! Attach skeleton to entity's mesh.
-    void AttachSkeleton(const QString &skeletonName);
-
+    
     bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     bool HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
     bool HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);

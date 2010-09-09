@@ -45,11 +45,6 @@ public:
 
     bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
-    //! Create a new particle system. System name will be same as component name.
-    /*! \return true if successful
-    */
-    void CreateParticleSystem(const QString &systemName);
-    void DeleteParticleSystem();
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
     Foundation::Attribute<QString>      particleId_;
@@ -57,10 +52,15 @@ public:
     Foundation::Attribute<float>         renderingDistance_;
 
 public slots:
-    void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);
+        //! Create a new particle system. System name will be same as component name.
+    /*! \return true if successful
+    */
+    void CreateParticleSystem(const QString &systemName);
+    void DeleteParticleSystem();
 
 private slots:
     void UpdateSignals();
+    void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);
 
 private:
     explicit EC_ParticleSystem(Foundation::ModuleInterface *module);
