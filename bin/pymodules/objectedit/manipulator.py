@@ -12,7 +12,6 @@ import PythonQt.QtGui
 from PythonQt.QtCore import Qt
 from PythonQt.QtGui import QQuaternion as Quat
 from PythonQt.QtGui import QVector3D as Vec
-from vector3 import Vector3 #for view based editing calcs now that Vector3 not exposed from internals
 
 try:
     qapp = PythonQt.Qt.QApplication.instance()
