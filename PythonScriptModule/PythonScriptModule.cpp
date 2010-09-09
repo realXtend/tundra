@@ -504,6 +504,7 @@ namespace PythonScript
 
         engine_->Uninitialize();
 
+        created_inputs_.clear();
         em_.reset();
         engine_.reset();
         inventory.reset();
@@ -593,6 +594,19 @@ namespace PythonScript
             js->RunString(codestr, context);
         else
             LogError("Javascript script service not available in py RunJavascriptString");
+    }
+
+    InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
+    { 
+        InputContextPtr new_input = framework_->Input().RegisterInputContext(name.toStdString().c_str(), priority);
+        if (new_input)
+        {
+            LogDebug("Created new input context with name: " + name.toStdString());
+            created_inputs_ << new_input; // Need to store these otherwise we get scoped ptr crash after return
+            return new_input.get();
+        }
+        else
+            return 0;
     }
 }
 
