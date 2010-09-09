@@ -15,6 +15,7 @@
 #include "UiStateMachine.h"
 #include "UiProxyWidget.h"
 #include "Inworld/Menus/MenuManager.h"
+#include "InWorld/NotificationManager.h"
 
 namespace UiServices
 {
@@ -24,6 +25,8 @@ namespace UiServices
                 this, SIGNAL(SceneChanged(const QString&, const QString&)));
         connect(owner_->GetUiStateMachine(), SIGNAL(SceneChangeComplete()),
                 this, SLOT(TranferWidgets()));
+
+        connect(owner_->GetNotificationManager(), SIGNAL(ShowNotificationCalled(const QString&)), this, SIGNAL(Notification(const QString&)));
     }
 
     UiSceneService::~UiSceneService()
@@ -123,6 +126,11 @@ namespace UiServices
     void UiSceneService::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)
     {
         return owner_->GetUiStateMachine()->RegisterUniversalWidget(name, widget);
+    }
+
+    void UiSceneService::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
+    {
+        owner_->GetNotificationManager()->ShowNotification(notification_widget);
     }
 
     void UiSceneService::TranferWidgets()

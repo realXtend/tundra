@@ -275,7 +275,6 @@ namespace UiServices
             {
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
-                inworld_notification_manager_->SetConnectionState(connection_state);
 
                 // Send welcome message to notification manager
                 if (current_world_stream_.get())
@@ -291,7 +290,7 @@ namespace UiServices
             }
             case Disconnected:
             {
-                inworld_notification_manager_->SetConnectionState(connection_state);
+                inworld_notification_manager_->ClearHistory();
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;

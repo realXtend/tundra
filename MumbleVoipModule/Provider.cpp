@@ -120,6 +120,7 @@ namespace MumbleVoip
     void Provider::ShowMicrophoneAdjustmentDialog()
     {
         Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+
         if (!ui_service)
             return;
 
@@ -136,7 +137,6 @@ namespace MumbleVoip
             session_->DisableAudioSending();
             session_->DisableAudioReceiving();
         }
-
         
         microphone_adjustment_widget_ = new MicrophoneAdjustmentWidget(framework_, settings_);
         microphone_adjustment_widget_->setWindowTitle("Local Test Mode");
