@@ -314,6 +314,12 @@ public slots:
         void Exec(const QString &action, const QStringVector &params);
 
     private:
+        /** Validates that the action has receivers. If not, deletes the action and removes it from
+            the registered actions.
+            @param action Action to be validated.
+        */
+        bool HasReceivers(Action *action);
+
         //! a list of all components
         ComponentVector components_;
 

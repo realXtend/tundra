@@ -32,6 +32,7 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+
     // Register some hardcoded mappings for testing purposes;
     RegisterMapping(Qt::Key_I, "Move(Forward)");
     RegisterMapping(Qt::Key_K, "Move(Backward)");
