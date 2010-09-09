@@ -22,7 +22,7 @@ namespace Scene
     //! Local entity ID flag (high bit)
     static const entity_id_t LocalEntity = 0x80000000;
     
-    //! Represents an entity in the world. 
+    //! Represents an entity in the world.
     /*! An entity is just a collection of components, the components define what
         the entity is and what it does.
         Entities should not be directly created, instead use SceneManager::CreateEntity().

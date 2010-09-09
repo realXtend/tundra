@@ -17,6 +17,8 @@ struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
 
+class QDomDocument;
+
 namespace KristalliProtocol
 {
     struct UserConnection;
@@ -27,13 +29,13 @@ class MessageConnection;
 namespace TundraLogic
 {
 
+class TundraLogicModule;
+
 struct RemovedComponent
 {
     QString typename_;
     QString name_;
 };
-
-class TundraLogicModule;
 
 class SyncManager : public QObject
 {
@@ -85,7 +87,11 @@ private:
     std::vector<MessageConnection*> GetConnectionsToSyncTo();
     
     //! Validate the scene manipulation action. If returns false, it is ignored
-    bool ValidateAction(MessageConnection* source);
+    /*! \param source Where the action came from
+        \param messageID Network message id
+        \param entityID What entity it affects
+     */
+    bool ValidateAction(MessageConnection* source, unsigned messageID, entity_id_t entityID);
     
     //! Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
     /*! \param connections MessageConnection(s) to use
@@ -94,7 +100,15 @@ private:
         \param allComponents Whether to send all components, or only those that are dirty
         Note: This will not reset any changeflags in the components or attributes!
      */
-    void EntitySync(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
+    void SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
+    
+    //! Deserialize components from an XML document
+    void DeserializeComponents(QDomDocument& doc, Scene::EntityPtr entity, AttributeChange::Type change);
+    
+    //! Apply pending component updates to entities.
+    /*! Note: all of these updates have already been approved
+     */
+    void ApplyPendingComponentUpdates();
     
     //! Owning module
     TundraLogicModule* owner_;
@@ -113,6 +127,9 @@ private:
     
     //! Components that have been removed from specific entities on the frame
     std::map<entity_id_t, std::vector<RemovedComponent> > removedComponents_;
+    
+    //! Buffered component updates for entities that do not exist yet and cannot thus be applied
+    std::map<entity_id_t, std::vector<std::vector<unsigned char> > > pendingComponentUpdates_;
 };
 
 }

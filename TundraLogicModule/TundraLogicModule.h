@@ -77,7 +77,13 @@ public:
     
     /// Disconnects from server (console command)
     Console::CommandResult ConsoleDisconnect(const StringVector &params);
-    
+
+    /// Saves scene to an XML file
+    Console::CommandResult ConsoleSaveScene(const StringVector &params);
+
+    /// Loads scene from an XML file.
+    Console::CommandResult ConsoleLoadScene(const StringVector &params);
+
     /// Check whether we are a server (from KristalliProtocolModule)
     bool IsServer() const;
     
