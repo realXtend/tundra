@@ -480,13 +480,13 @@ namespace WorldBuilding
             camera_handler_->DestroyCamera(selected_camera_id_);
             selected_camera_id_ = -1;
         }
-        override_server_time_ = false;
     }
 
     void BuildSceneManager::ResetEditing()
     {
         ObjectSelected(false);
         property_editor_handler_->ClearCurrentPrim();
+        override_server_time_ = false;
     }
     
     void BuildSceneManager::ObjectDeselected()
