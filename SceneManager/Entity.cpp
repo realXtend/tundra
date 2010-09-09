@@ -200,27 +200,47 @@ namespace Scene
 
     void Entity::Exec(const QString &action)
     {
-        RegisterAction(action)->Trigger();
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger();
     }
 
     void Entity::Exec(const QString &action, const QString &param)
     {
-        RegisterAction(action)->Trigger(param);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
     {
-        RegisterAction(action)->Trigger(param1, param2);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param1, param2);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
     {
-        RegisterAction(action)->Trigger(param1, param2, param3);
+        Action *act = RegisterAction(action);
+        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param1, param2, param3);
     }
 
     void Entity::Exec(const QString &action, const QStringVector &params)
     {
         Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
         if (params.size() == 0)
             act->Trigger();
         else if (params.size() == 1)
@@ -231,5 +251,19 @@ namespace Scene
             act->Trigger(params[0], params[1], params[2]);
         else if (params.size() >= 4)
             act->Trigger(params[0], params[1], params[2], params.mid(3));
+    }
+
+    bool Entity::HasReceivers(Action *action)
+    {
+        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        if (receivers == 0)
+        {
+            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
+            actions_.remove(action->Name());
+            SAFE_DELETE(action);
+            return false;
+        }
+
+        return true;
     }
 }
