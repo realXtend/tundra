@@ -120,7 +120,9 @@ namespace PythonScript
 
     PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
 
-    PythonScriptModule::PythonScriptModule() : ModuleInterface(type_name_static_)
+    PythonScriptModule::PythonScriptModule()
+    :ModuleInterface(type_name_static_),
+    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
@@ -145,6 +147,8 @@ namespace PythonScript
     {
         pythonScriptModuleInstance_ = 0;
         input.reset();
+
+        pmmModule = pmmDict = pmmClass = pmmInstance = 0;
     }
 
     void PythonScriptModule::PostInitialize()
@@ -211,6 +215,11 @@ namespace PythonScript
             treeiter->set_value(0, ss.str());
         } */
 
+        if (!pmmClass)
+        {
+            LogError("PythonScriptModule::Initialize was not successful! PostInit not proceeding.");
+            return;
+        }
         //now that the event constants etc are there, can instanciate the manager which triggers the loading of components
         if (PyCallable_Check(pmmClass)) {
             pmmInstance = PyObject_CallObject(pmmClass, NULL); 
