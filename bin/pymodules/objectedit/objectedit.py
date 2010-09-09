@@ -30,7 +30,7 @@ from PythonQt.QtGui import QQuaternion as Quat
 
 import rexviewer as r
 import naali #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
-from naali import inputcontext, renderer
+from naali import renderer
 
 try:
     window
@@ -80,13 +80,15 @@ class ObjectEdit(Component):
         }
 
         # Connect to key pressed signal from input context
-        inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
+        self.edit_inputcontext = naali.createInputContext("object-edit", 100)
+        self.edit_inputcontext.SetTakeMouseEventsOverQt(True)
+        self.edit_inputcontext.connect('KeyPressed(KeyEvent*)', self.on_keypressed)
 
         # Connect to mouse events
-        inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
-        inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
-        inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
-        inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
+        self.edit_inputcontext.connect('MouseScroll(MouseEvent*)', self.on_mousescroll)
+        self.edit_inputcontext.connect('MouseLeftPressed(MouseEvent*)', self.on_mouseleftpressed)
+        self.edit_inputcontext.connect('MouseLeftReleased(MouseEvent*)', self.on_mouseleftreleased)
+        self.edit_inputcontext.connect('MouseMove(MouseEvent*)', self.on_mousemove)
         
         self.resetManipulators()
         
@@ -367,6 +369,8 @@ class ObjectEdit(Component):
 
     def on_mouseleftpressed(self, mouseinfo):
         if not self.windowActive:
+            return
+        if mouseinfo.IsItemUnderMouse():
             return
 
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
@@ -706,7 +710,7 @@ class ObjectEdit(Component):
     def on_exit(self):
         r.logInfo("Object Edit exiting..")
         # Connect to key pressed signal from input context
-        inputcontext.disconnectAll()
+        self.edit_inputcontext.disconnectAll()
         self.deselect_all()
         self.window.on_exit()
 

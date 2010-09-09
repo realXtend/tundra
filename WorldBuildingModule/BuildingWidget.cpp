@@ -17,6 +17,7 @@ namespace WorldBuilding
             resizing_(false),
             view_(0)
         {
+            internal_widget_->setMouseTracking(true);
         }
 
         BuildingWidget::~BuildingWidget()

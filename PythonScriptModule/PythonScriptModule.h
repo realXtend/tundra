@@ -78,6 +78,7 @@ namespace PythonScript
         Scene::SceneManager* GetScene(const QString &name) const;
         void RunJavascriptString(const QString &codestr, const QVariantMap &context = QVariantMap());
         InputContext* GetInputContext() const { return input.get(); }
+        InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
 
     public:
@@ -173,6 +174,8 @@ namespace PythonScript
         /// The default input context for python code to access. This context operates below
         /// the Qt windowing priority.
         InputContextPtr input;
+
+        QList<InputContextPtr> created_inputs_;
     };
 
     static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }

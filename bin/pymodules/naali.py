@@ -11,6 +11,9 @@ runjs = _naali.RunJavascriptString
 def getScene(name):
     return _naali.GetScene(name)
 
+def createInputContext(name, priority):
+    return _naali.CreateInputContext(name, priority)
+
 # module variables
 renderer = _naali.GetRenderer()
 worldlogic = _naali.GetWorldLogic()
@@ -36,4 +39,3 @@ def getUserAvatar():
 def getCamera():
     return _getAsPyEntity(worldlogic.GetCameraEntityRaw, "No default camera. No scene?")
         
-    
