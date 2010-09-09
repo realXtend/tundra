@@ -280,8 +280,16 @@ namespace WorldBuilding
             return;
         }
 
+        // Below are only taken in if scene is active and we have a selected object
         if (!scene_->isActive() || !property_editor_handler_->HasCurrentPrim() || !prim_selected_)
             return;
+
+        // Delete object
+        if (key->keyCode == Qt::Key_Delete)
+        {
+            DeleteObjectClicked();
+            return;
+        }
 
         PythonParams::ManipulationMode mode = PythonParams::MANIP_NONE;
         if (key->HasCtrlModifier())

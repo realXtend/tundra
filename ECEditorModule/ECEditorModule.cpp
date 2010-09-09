@@ -69,6 +69,7 @@ namespace ECEditor
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
+        network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
 
         AddEditorWindowToUI();
     }
@@ -87,9 +88,6 @@ namespace ECEditor
 
     bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
     {
-        if (category_id == framework_event_category_ && event_id == Foundation::NETWORKING_REGISTERED)
-            network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
-
         if (category_id == scene_event_category_)
         {
             switch(event_id)
