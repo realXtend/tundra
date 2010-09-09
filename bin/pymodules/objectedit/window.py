@@ -298,7 +298,6 @@ class ObjectEditWindow:
             ent.mesh
         except:
             # TODO put in some nice text field what's going on
-            print "no mesh = no animation goodies"
             return
 
         self.animation_widget.setEnabled(True)
