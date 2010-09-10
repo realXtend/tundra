@@ -28,7 +28,7 @@ namespace Foundation
     */
     class ComponentInterface : public QObject
     {
-        friend class AttributeInterface;
+        friend class ::AttributeInterface;
 
         Q_OBJECT
         Q_PROPERTY(QString Name READ Name)
