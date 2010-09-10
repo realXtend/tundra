@@ -1545,3 +1545,38 @@ if 0: #webview as 3dcanvas
     #r.applyUICanvasToSubmeshes(avid, [0], webview, refreshrate)
 
     print webview
+
+if 0: #old PyEntity - doesn't crash when is removed
+    try:
+        newent = r.newent
+    except:
+        newent = r.newent = r.createEntity("axes.mesh", 1234567)
+        print "Created newent:", newent
+    else:
+        print "Found newent", newent
+
+    if 0:
+        r.removeEntity(newent.id)
+        print "Deleted newent"
+
+    print newent.id
+    print newent.placeable
+
+if 0:
+    del r.newent
+
+if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's removed? no!
+    try:
+        newent = r.newent
+    except:
+        newent = r.newent = naali.createEntity()
+        print "Created newent:", newent
+    else:
+        print "Found newent", newent
+
+    if 0:
+        r.removeEntity(newent.Id) #uh i'm an idiot, forgot to expose RemoveEntity in SM
+        print "Deleted newent"
+
+    print newent.Id
+    print newent.GetComponentRaw("EC_OgrePlaceable")

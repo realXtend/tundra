@@ -31,26 +31,31 @@ inputcontext = _naali.GetInputContext()
 mediaplayerservice = _naali.GetMediaPlayerService()
 
 class Entity:
+    compnames = {
+        'placeable': 'EC_OgrePlaceable',
+        'camera': 'EC_OgreCamera'
+        }   
+ 
     def __init__(self, qent):
         self.qent = qent
+
+    def getComponent(self, typename, idname=None):
+        """To allow getting components for which there is no shortcut in py Entity helper"""
+
+        if idname is None: #the right qt slot is found based on the amount of params given
+            return self.qent.GetComponentRaw(typename)
+        else:
+            return self.qent.GetComponentRaw(typename, idname)
         
-    #note: it's possible to write a getter class that is reused for all these,
-    #so per component we just define 'placeable: EC_OgrePlaceable' or so.
-    #but these two copypasted here first as a test while experimenting with this whole idea
-    def get_placeable(self):
-        p = self.qent.GetComponentRaw("EC_OgrePlaceable")
-        if p is None:
-            raise AttributeError, "No placeable component"
-        return p
-    placeable = property(get_placeable)
-    
-    def get_camera(self):
-        c = self.qent.GetComponentRaw("EC_OgreCamera")
-        if c is None:
-            raise AttributeError, "No camera component"
-        return c
-    camera = property(get_camera)
-    
+    def __getattr__(self, name):
+        if name in Entity.compnames:
+            fullname = Entity.compnames[name]
+            comp = self.qent.GetComponentRaw(fullname)
+            if comp is None:
+                raise AttributeError, "The entity does not have a %s component" % fullname
+            return comp
+        raise AttributeError
+
 def getEntity(entid):
     qent = getScene("World").GetEntityRaw(entid)
     if qent is None:
@@ -59,12 +64,12 @@ def getEntity(entid):
 
 #helper funcs to hide api indirections/inconsistenties that were hard to fix,
 #-- these allow to remove the old corresponding hand written c funcs in pythonscriptmodule.cpp
-import rexviewer as r
+#.. and now am working towards removal of PyEntity.cpp too
 def _getAsPyEntity(qentget, errmsg):
     qent = qentget()
     if qent is not None:
         #print qent.Id
-        pyent = r.getEntity(qent.Id)
+        pyent = Entity(qent)
         #print pyent, pyent.id
         return pyent
     else:
