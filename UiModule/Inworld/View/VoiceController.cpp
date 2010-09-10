@@ -114,7 +114,7 @@ namespace CommUI
 
         QObject::connect(ShowListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
 
-        QObject::connect(muteAllCheckBox, SIGNAL(clicked())
+        QObject::connect(muteAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyMuteAllSelection()));
     }
 
     VoiceControllerWidget::~VoiceControllerWidget()
@@ -130,6 +130,18 @@ namespace CommUI
     void VoiceControllerWidget::OpenParticipantListWidget()
     {
 
+    }
+
+    void VoiceControllerWidget::ApplyMuteAllSelection()
+    {
+        if (muteAllCheckBox->checkState() == Qt::Checked)
+        {
+            GetSession()->DisableAudioReceiving();
+        }
+        else
+        {
+            GetSession()->EnableAudioReceiving();
+        }
     }
 
 } // CommUI
