@@ -11,6 +11,9 @@ runjs = _naali.RunJavascriptString
 def getScene(name):
     return _naali.GetScene(name)
 
+def createInputContext(name, priority = 100):
+    return _naali.CreateInputContext(name, priority)
+
 # module variables
 renderer = _naali.GetRenderer()
 worldlogic = _naali.GetWorldLogic()
