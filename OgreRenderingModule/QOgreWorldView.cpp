@@ -101,7 +101,8 @@ namespace OgreRenderer
         Ogre::TextureManager &mgr = Ogre::TextureManager::getSingleton();
         Ogre::TexturePtr texture = mgr.getByName(texture_name_);
         assert(texture.get());
-        texture->getBuffer()->blitFromMemory(ui);
+        if (!texture->getBuffer().isNull())
+            texture->getBuffer()->blitFromMemory(ui);
     }
 
     void QOgreWorldView::ShowUiOverlay()

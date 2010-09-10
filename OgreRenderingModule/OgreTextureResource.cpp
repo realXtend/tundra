@@ -154,13 +154,15 @@ namespace OgreRenderer
                 Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)source->GetData(), source->GetDataSize(), false));
                 tempImage.loadRawData(stream, source->GetWidth(), source->GetHeight(), 1, pixel_format);
                 tempImage.resize(source->GetWidth() / 2, source->GetHeight() / 2);
-                ogre_texture_->getBuffer()->blitFromMemory(tempImage.getPixelBox());
+                if (!ogre_texture_->getBuffer().isNull())
+                    ogre_texture_->getBuffer()->blitFromMemory(tempImage.getPixelBox());
             }
             else
             {
                 Ogre::Box dimensions(0,0, source->GetWidth(), source->GetHeight());
                 Ogre::PixelBox pixel_box(dimensions, pixel_format, (void*)source->GetData());
-                ogre_texture_->getBuffer()->blitFromMemory(pixel_box);
+                if (!ogre_texture_->getBuffer().isNull())
+                    ogre_texture_->getBuffer()->blitFromMemory(pixel_box);
             }
         }
         catch (Ogre::Exception &e)

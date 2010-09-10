@@ -62,6 +62,12 @@ namespace Foundation
         //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
         Scene::Entity* GetParentEntity() const;
 
+        //! Sets network sync enabled/disabled. By default on.
+        void SetNetworkSyncEnabled(bool enabled);
+
+        //! Gets whether network enabled/disabled.
+        bool GetNetworkSyncEnabled() { return network_sync_; }
+
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
 
@@ -75,13 +81,7 @@ namespace Foundation
         /*! If attribute with same name is found return attribute interface pointer, else return null.
          *  @param name Attribute name.
          */
-        AttributeInterface* GetAttribute(const std::string &name) const
-        {
-            for(unsigned int i = 0; i < attributes_.size(); ++i)
-            if(attributes_[i]->GetNameString() == name)
-                return attributes_[i];
-            return 0;
-        }
+        AttributeInterface* GetAttribute(const std::string &name) const;
 
         /*! Return pointer to atribute with spesific name and typename/class or null if the attribute not found.
             \param T Typename/class of the attribute.
@@ -186,6 +186,9 @@ namespace Foundation
         //! Change status for the component itself
         AttributeChange::Type change_;
 
+        //! Network sync enable flag
+        bool network_sync_;
+        
         //! Framework pointer. Needed so that component is able to perform important uninitialization etc. even when not in an entity
         Framework* framework_;
 
