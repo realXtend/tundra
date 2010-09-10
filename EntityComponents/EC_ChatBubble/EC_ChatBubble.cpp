@@ -243,7 +243,8 @@ void EC_ChatBubble::Refresh()
     // Update texture buffer
     Ogre::Box update_box(0,0, buffer.width(), buffer.height());
     Ogre::PixelBox pixel_box(update_box, Ogre::PF_A8R8G8B8, (void*)buffer.bits());
-    texture->getBuffer()->blitFromMemory(pixel_box, update_box);
+    if (!texture->getBuffer().isNull())
+        texture->getBuffer()->blitFromMemory(pixel_box, update_box);
 }
 
 void EC_ChatBubble::Update()

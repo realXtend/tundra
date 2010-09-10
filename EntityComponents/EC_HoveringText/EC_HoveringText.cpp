@@ -264,7 +264,8 @@ void EC_HoveringText::Redraw()
 
         Ogre::Box dimensions(0,0, img.width(), img.height());
         Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
-        texPtr->getBuffer()->blitFromMemory(pixel_box);
+        if (!texPtr->getBuffer().isNull())
+            texPtr->getBuffer()->blitFromMemory(pixel_box);
     }
     catch (Ogre::Exception &e)
     {
