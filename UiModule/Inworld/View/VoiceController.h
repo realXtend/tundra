@@ -34,6 +34,7 @@ namespace CommUI
         virtual void SetTransmissionMode(TransmissionMode mode);
         virtual void SetPushToTalkOn();
         virtual void SetPushToTalkOff();
+        virtual Communications::InWorldVoice::SessionInterface* GetSession() { return in_world_voice_session_; }
         //virtual void SetVoiceActivityOn();
         //virtual void SetVoiceActivityOff();
         //virtual TransmissionMode GetTransmissionMode();
@@ -61,9 +62,11 @@ namespace CommUI
     public:
         VoiceControllerWidget(Communications::InWorldVoice::SessionInterface* voice_session);
         virtual ~VoiceControllerWidget();
+
     private slots:
         void ApplyTransmissionModeSelection(int selection);
         void OpenParticipantListWidget();
+        void ApplyMuteAllSelection();
     };
 
 } // CommUI
