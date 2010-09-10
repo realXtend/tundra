@@ -100,7 +100,7 @@ namespace Asset
         f64 asset_timeout_;
         
         //! Default asset transfer timeout 
-        static const Real DEFAULT_ASSET_TIMEOUT;
+        static const float DEFAULT_ASSET_TIMEOUT;
         
         //! Asset event category
         event_category_id_t event_category_;

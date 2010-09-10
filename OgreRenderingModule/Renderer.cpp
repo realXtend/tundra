@@ -382,6 +382,14 @@ namespace OgreRenderer
             main_window_->showNormal();
     }
 
+
+	QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
+	{
+		
+		return cave_manager_->getExternalWindows();
+
+	}
+
     void Renderer::SetShadowQuality(ShadowQuality newquality)
     {
         // We cannot effect the new setting immediately, so save only to config
@@ -778,8 +786,8 @@ namespace OgreRenderer
         if (!initialized_)
             return result;
 
-        Real screenx = x / (Real)renderwindow_->getWidth();
-        Real screeny = y / (Real)renderwindow_->getHeight();
+        float screenx = x / (float)renderwindow_->getWidth();
+        float screeny = y / (float)renderwindow_->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
         ray_query_->setRay(ray);

@@ -146,7 +146,7 @@ namespace OgreRenderer
         Color fontColor_;
 
         //! Font height
-//        const Real char_height_;
+//        const float char_height_;
 
         //! Is the text visible
         bool visible_;

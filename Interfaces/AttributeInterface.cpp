@@ -65,38 +65,38 @@ template<> std::string Attribute<uint>::ToString() const
     return ::ToString<uint>(Get());
 }
 
-template<> std::string Attribute<Real>::ToString() const
+template<> std::string Attribute<float>::ToString() const
 {
-    return ::ToString<Real>(Get());
+    return ::ToString<float>(Get());
 }
 
 template<> std::string Attribute<Vector3df>::ToString() const
 {
     Vector3df value = Get();
     
-    return ::ToString<Real>(value.x) + " " +
-        ::ToString<Real>(value.y) + " " +
-        ::ToString<Real>(value.z);
+    return ::ToString<float>(value.x) + " " +
+        ::ToString<float>(value.y) + " " +
+        ::ToString<float>(value.z);
 }
     
 template<> std::string Attribute<Quaternion>::ToString() const
 {
     Quaternion value = Get();
     
-    return ::ToString<Real>(value.w) + " " +
-        ::ToString<Real>(value.x) + " " +
-        ::ToString<Real>(value.y) + " " +
-        ::ToString<Real>(value.z);
+    return ::ToString<float>(value.w) + " " +
+        ::ToString<float>(value.x) + " " +
+        ::ToString<float>(value.y) + " " +
+        ::ToString<float>(value.z);
 }
 
 template<> std::string Attribute<Color>::ToString() const
 {
     Color value = Get();
     
-    return ::ToString<Real>(value.r) + " " +
-        ::ToString<Real>(value.g) + " " +
-        ::ToString<Real>(value.b) + " " +
-        ::ToString<Real>(value.a);
+    return ::ToString<float>(value.r) + " " +
+        ::ToString<float>(value.g) + " " +
+        ::ToString<float>(value.b) + " " +
+        ::ToString<float>(value.a);
 }
 
 template<> std::string Attribute<AssetReference>::ToString() const
@@ -131,7 +131,7 @@ template<> std::string Attribute<Transform>::ToString() const
 {
     QString value("");
     Transform transform = Get();
-    Vector3D<Real> editValues[3];
+    Vector3D<float> editValues[3];
     editValues[0] = transform.position;
     editValues[1] = transform.rotation;
     editValues[2] = transform.scale;
@@ -161,7 +161,7 @@ template<> std::string Attribute<uint>::TypenameToString() const
     return "uint";
 }
 
-template<> std::string Attribute<Real>::TypenameToString() const
+template<> std::string Attribute<float>::TypenameToString() const
 {
     return "real";
 }
@@ -248,11 +248,11 @@ template<> void Attribute<uint>::FromString(const std::string& str, AttributeCha
     catch (...) {}
 }
 
-template<> void Attribute<Real>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<float>::FromString(const std::string& str, AttributeChange::Type change)
 {
     try
     {
-        Real value = ParseString<Real>(str);
+        float value = ParseString<float>(str);
         Set(value, change);
     }
     catch (...) {}
@@ -266,9 +266,9 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, Attribu
         try
         {
             Vector3df value;
-            value.x = ParseString<Real>(components[0]);
-            value.y = ParseString<Real>(components[1]);
-            value.z = ParseString<Real>(components[2]);
+            value.x = ParseString<float>(components[0]);
+            value.y = ParseString<float>(components[1]);
+            value.z = ParseString<float>(components[2]);
             Set(value, change);
         }
         catch (...) {}
@@ -283,9 +283,9 @@ template<> void Attribute<Color>::FromString(const std::string& str, AttributeCh
     {
         try
         {
-            value.r = ParseString<Real>(components[0]);
-            value.g = ParseString<Real>(components[1]);
-            value.b = ParseString<Real>(components[2]);
+            value.r = ParseString<float>(components[0]);
+            value.g = ParseString<float>(components[1]);
+            value.b = ParseString<float>(components[2]);
             Set(value, change);
         }
         catch (...) {}
@@ -294,10 +294,10 @@ template<> void Attribute<Color>::FromString(const std::string& str, AttributeCh
     {
         try
         {
-            value.r = ParseString<Real>(components[0]);
-            value.g = ParseString<Real>(components[1]);
-            value.b = ParseString<Real>(components[2]);
-            value.a = ParseString<Real>(components[3]);
+            value.r = ParseString<float>(components[0]);
+            value.g = ParseString<float>(components[1]);
+            value.b = ParseString<float>(components[2]);
+            value.a = ParseString<float>(components[3]);
             Set(value, change);
         }
         catch (...) {}
@@ -312,10 +312,10 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
         try
         {
             Quaternion value;
-            value.w = ParseString<Real>(components[0]);
-            value.x = ParseString<Real>(components[1]);
-            value.y = ParseString<Real>(components[2]);
-            value.z = ParseString<Real>(components[3]);
+            value.w = ParseString<float>(components[0]);
+            value.x = ParseString<float>(components[1]);
+            value.y = ParseString<float>(components[2]);
+            value.z = ParseString<float>(components[3]);
             Set(value, change);
         }
         catch (...) {}
@@ -362,12 +362,12 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
     Transform result;
     if(matrixElements.size() == 9) //Ensure that we have right amount of elements.
     {
-        Real values[9];
+        float values[9];
         for(uint i = 0; i < 3; i++)
         {
             uint startIndex = 3 * i;
             for(uint j = 0; j < 3; j++)
-                values[j + startIndex] = ParseString<Real>(matrixElements[j + startIndex].toStdString(), 0.0f);
+                values[j + startIndex] = ParseString<float>(matrixElements[j + startIndex].toStdString(), 0.0f);
         }
         result.SetPos(values[0], values[1], values[2]);
         result.SetRot(values[3], values[4], values[5]);

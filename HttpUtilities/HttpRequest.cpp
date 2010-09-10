@@ -40,7 +40,7 @@ namespace HttpUtilities
             url_ = url;
     }
     
-    void HttpRequest::SetTimeout(Real seconds)
+    void HttpRequest::SetTimeout(float seconds)
     {
         if (seconds < 0.0f)
             seconds = 0.0f;

@@ -10,8 +10,8 @@
 class OgreShadowCameraSetupFocusedPSSM: public Ogre::FocusedShadowCameraSetup
 {
 public:
-    typedef std::vector<Real> SplitPointList;
-    typedef std::vector<Real> OptimalAdjustFactorList;
+    typedef std::vector<float> SplitPointList;
+    typedef std::vector<float> OptimalAdjustFactorList;
 
     /// Constructor, defaults to 3 splits
     OgreShadowCameraSetupFocusedPSSM();
@@ -25,7 +25,7 @@ public:
     @param farDist The far plane to use for the last split
     @param lambda Factor to use to reduce the split size 
     */
-    void calculateSplitPoints(size_t splitCount, Real nearDist, Real farDist, Real lambda = 0.95);
+    void calculateSplitPoints(size_t splitCount, float nearDist, float farDist, float lambda = 0.95);
 
     /** Manually configure a new splitting scheme.
     @param newSplitPoints A list which is splitCount + 1 entries long, containing the
@@ -38,12 +38,12 @@ public:
     /** Set the padding factor to apply to the near & far distances when matching up
         splits to one another, to avoid 'cracks'.
     */
-    void setSplitPadding(Real pad) { mSplitPadding = pad; }
+    void setSplitPadding(float pad) { mSplitPadding = pad; }
 
     /** Get the padding factor to apply to the near & far distances when matching up
         splits to one another, to avoid 'cracks'.
     */
-    Real getSplitPadding() const { return mSplitPadding; }
+    float getSplitPadding() const { return mSplitPadding; }
 
     /// Get the number of splits. 
     size_t getSplitCount() const { return mSplitCount; }
@@ -55,16 +55,16 @@ public:
     inline const SplitPointList& getSplitPoints() const { return mSplitPoints; }
 
     /// Returns the optimal adjust factor for a given split.
-    inline Real getOptimalAdjustFactor(size_t splitIndex) const { return mOptimalAdjustFactors[splitIndex]; }
+    inline float getOptimalAdjustFactor(size_t splitIndex) const { return mOptimalAdjustFactors[splitIndex]; }
 
     /// Overridden, recommended internal use only since depends on current iteration
-    Real getOptimalAdjustFactor() const;
+    float getOptimalAdjustFactor() const;
 
 protected:
     size_t mSplitCount;
     SplitPointList mSplitPoints;
     OptimalAdjustFactorList mOptimalAdjustFactors;
-    Real mSplitPadding;
+    float mSplitPadding;
     mutable size_t mCurrentIteration;
 };
 

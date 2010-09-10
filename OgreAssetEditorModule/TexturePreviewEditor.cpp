@@ -43,12 +43,12 @@ namespace Naali
                                                const QString &inventory_id,
                                                const asset_type_t &asset_type,
                                                const QString &name,
-                                               const QString &assetID,
+                                               const QString &asset_id,
                                                QWidget *parent):
     QWidget(parent),
     framework_(framework),
     inventoryId_(inventory_id),
-    assetId_(assetID),
+    assetId_(asset_id),
     assetType_(asset_type),
     mainWidget_(0),
     okButtonName_(0),
@@ -112,7 +112,6 @@ namespace Naali
                     service_manager->GetService<Foundation::TextureServiceInterface>(Foundation::Service::ST_Texture).lock();
                 if(!texture_service)
                     return;
-
                 // Request texture assets.
                 request_tag_ = texture_service->RequestTexture(asset_id.toStdString());
             }
@@ -242,7 +241,7 @@ namespace Naali
         
         QLabel *assetIdLabel = mainWidget_->findChild<QLabel *>("imageAssetIdLabel");
         if(assetIdLabel)
-            assetIdLabel->setText(assetId_);
+            assetIdLabel->setText(inventoryId_);
 
         imageLabel_ = new TextureLabel();
         imageLabel_->setObjectName("previewImageLabel");

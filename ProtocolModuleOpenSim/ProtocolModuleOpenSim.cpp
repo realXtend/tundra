@@ -18,6 +18,7 @@
 #include <Poco/Net/NetException.h>
 
 #include <QUrl>
+#include <QDebug>
 #include <QStringList>
 
 #include "MemoryLeakCheck.h"
@@ -42,6 +43,13 @@ namespace OpenSimProtocol
     void ProtocolModuleOpenSim::Initialize()
     {
         loginWorker_.SetFramework(GetFramework());
+        eventManager_.reset();
+
+        // Register event categories
+        eventManager_ = framework_->GetEventManager();
+        networkStateEventCategory_ = eventManager_->RegisterEventCategory("NetworkState");
+        networkEventInCategory_ = eventManager_->RegisterEventCategory("NetworkIn");
+        networkEventOutCategory_ = eventManager_->RegisterEventCategory("NetworkOut");
     }
 
     // virtual 
@@ -61,16 +69,9 @@ namespace OpenSimProtocol
     void ProtocolModuleOpenSim::RegisterNetworkEvents()
     {
         const char *filename = "./data/message_template.msg";
-
         networkManager_ = boost::shared_ptr<ProtocolUtilities::NetMessageManager>(new ProtocolUtilities::NetMessageManager(filename));
         assert(networkManager_);
         networkManager_->RegisterNetworkListener(this);
-
-        // Register event categories.
-        eventManager_ = framework_->GetEventManager();
-        networkStateEventCategory_ = eventManager_->RegisterEventCategory("NetworkState");
-        networkEventInCategory_ = eventManager_->RegisterEventCategory("NetworkIn");
-        networkEventOutCategory_ = eventManager_->RegisterEventCategory("NetworkOut");
 
         // Send event that other modules can query above categories
         boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> thisModule = framework_->GetModuleManager()->GetModule<ProtocolModuleOpenSim>().lock();
@@ -79,7 +80,6 @@ namespace OpenSimProtocol
             event_category_id_t framework_category_id = eventManager_->QueryEventCategory("Framework");
             ProtocolUtilities::NetworkingRegisteredEvent event_data(thisModule);
             eventManager_->SendEvent(framework_category_id, Foundation::NETWORKING_REGISTERED, &event_data);
-            LogDebug("Sending Networking Registered event");
         }
     }
 

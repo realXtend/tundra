@@ -7,7 +7,8 @@ user, pwd, server = "Test Bot", "test", "world.realxtend.org:9000"
 #user, pwd, server = "d d", "d", "world.evocativi.com:8002"
 
 class TestRunner(circuits.Component):
-    def __init__(self):
+    def __init__(self, cfsection=None):
+        self.config = cfsection or dict()
         circuits.Component.__init__(self)
         self.testgen = self.run()
 
@@ -16,7 +17,7 @@ class TestRunner(circuits.Component):
         try:
             status = self.testgen.next()
             if status:
-                print "Test state", status
+                r.logInfo("Test state: " + str(status))
                 prev = status
             #else:
                 #print "Test state", prev, "still running"
@@ -34,9 +35,8 @@ class TestRunner(circuits.Component):
             
 
 class TestLoginLogoutExit(TestRunner):
-    wait_time = 30
-
     def run(self):
+        self.wait_time = int(self.config.get("wait_time", 30))
         yield "login"
         self.timer_start()
         r.startLoginOpensim(user, pwd, server)

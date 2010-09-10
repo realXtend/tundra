@@ -21,46 +21,32 @@ EC_InputMapper::~EC_InputMapper()
     input_.reset();
 }
 
-void EC_InputMapper::RegisterMapping(const QString &action, const QKeySequence &keySeq)
+void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &action)
 {
-//    QString inputActionName = input_->Name() + '.' + action;
-//    const QKeySequence &keyBinding = framework_->Input().KeyBinding(inputActionName, keySeq);
     mappings_[keySeq] = action;
-//    KeyEventSignal *signal = &input_->RegisterKeyEvent(keySeq);
-//    connect(signal, SIGNAL(SequencePressed(KeyEvent &)), SLOT(test()));
 }
 
 EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework())
 {
-    ///\todo Generate random/unique name for input context?
     input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
     // Register some hardcoded mappings for testing purposes;
-    RegisterMapping("MoveForward", Qt::Key_I);
-    RegisterMapping("MoveBackward", Qt::Key_K);
-    RegisterMapping("MoveLeft", Qt::Key_J);
-    RegisterMapping("MoveRight", Qt::Key_L);
+    RegisterMapping(Qt::Key_I, "Move(Forward)");
+    RegisterMapping(Qt::Key_K, "Move(Backward)");
+    RegisterMapping(Qt::Key_J, "Move(Left)");
+    RegisterMapping(Qt::Key_L, "Move(Right)");
+    RegisterMapping(Qt::Key_U, "Rotate(Left)");
+    RegisterMapping(Qt::Key_O, "Rotate(Right)");
 }
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
 {
-    // We only act on key presses that are not repeats.
-//    if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
-//        return;
-
-    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode, key->modifiers));
+    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode | key->modifiers));
     if (it == mappings_.end())
         return;
-
-    const QString &action = it.value();
-    if (action.isEmpty())
-    {
-        LogWarning("");
-        return;
-    }
 
     Scene::Entity *entity = GetParentEntity();
     if (!entity)
@@ -69,7 +55,22 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
         return;
     }
 
-    LogDebug("Performing action " + action.toStdString() + "for entity " + ToString(entity->GetId()));
-    entity->Exec(action);
+    QString &action = it.value();
+//    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
+
+    // If the action has parameters, parse them from the action string.
+    if (action.contains('(') || action.contains(')') || action.contains(','))
+    {
+        ///\todo Better protection agains malformed action strings?
+        int idx = action.indexOf('(');
+        QString act = action.left(idx);
+        QString parsedAction = action.mid(idx + 1);
+        parsedAction.remove('(');
+        parsedAction.remove(')');
+        QStringVector parameters = parsedAction.split(',').toVector();
+        entity->Exec(act, parameters);
+    }
+    else
+        entity->Exec(action);
 }
 

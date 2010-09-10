@@ -11,26 +11,18 @@
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
 #include "EventDataInterface.h"
+#include "CoreTypes.h"
+#include "ForwardDefines.h"
 
 #include <QObject>
 
-#include <vector>
 #include <set>
 
 class QDomDocument;
 class QDomElement;
 
-namespace Scene
-{
-    class Entity;
-}
-
 namespace Foundation
 {
-    class Framework;
-    class AttributeInterface;
-    typedef std::vector<AttributeInterface*> AttributeVector;
-
     //! Base class for all components. Inherit from this class when creating new components.
     /*! Use the ComponentInterface typedef to refer to the abstract component type.
     */
@@ -138,15 +130,6 @@ namespace Foundation
             For more information, see @ref EventSystem.
         */
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
-
-public slots:
-        /** Executes an arbitrary action for the component. The component may or may not handle the action.
-         *  The default implemenation does nothing. Implement this function in your own EC in order to handle
-         *  entity actions.
-         *  param action Name of the action.
-         *  param params List of parameters for the action.
-         */
-        virtual void Exec(const QString &action, const QVector<QString> &params) {}
 
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC

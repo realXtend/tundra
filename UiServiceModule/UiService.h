@@ -100,6 +100,10 @@ public slots:
     /// Does nothing.
     void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) {}
     
+    /// UiServiceInterface override.
+    /// Does nothing.
+    void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) {}
+    
 private:
     /// Main graphics view.
     QGraphicsView *view_;

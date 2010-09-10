@@ -26,7 +26,8 @@ namespace MumbleLib
           left_(false),
           channel_(channel),
           received_voice_packet_count_(0),
-          voice_packet_drop_count_(0)
+          voice_packet_drop_count_(0),
+          playback_buffer_max_length_ms(DEFAUL_PLAYBACK_BUFFER_MAX_LENGTH_MS_)
     {
         last_audio_frame_time_.start(); // initialize time state so that restart is possible later
     }
@@ -88,7 +89,7 @@ namespace MumbleLib
     {
         received_voice_packet_count_++;
         // Buffer overflow handling: We drop the oldest packet in the buffer
-        if (PlaybackBufferLengthMs() > PLAYBACK_BUFFER_MAX_LENGTH_MS_)
+        if (PlaybackBufferLengthMs() > playback_buffer_max_length_ms )
         {
             MumbleVoip::PCMAudioFrame* frame = GetAudioFrame();
             SAFE_DELETE(frame);
@@ -169,6 +170,11 @@ namespace MumbleLib
             return user_.channel.lock()->id;
         else
             return -1;
+    }
+
+    void User::SetPlaybackBufferMaxLengthMs(int value)
+    {
+        playback_buffer_max_length_ms = value;
     }
 
 } // namespace MumbleLib

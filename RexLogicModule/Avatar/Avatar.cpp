@@ -378,9 +378,9 @@ namespace RexLogic
             ReplaceCharInplace(params[i], ',', '.');
 
         RexUUID avatarid(params[0]);
-        Real rate = ParseString<Real>(params[2], 1.0f);
-        Real fadein = ParseString<Real>(params[3], 0.0f);
-        Real fadeout = ParseString<Real>(params[4], 0.0f);
+        float rate = ParseString<float>(params[2], 1.0f);
+        float fadein = ParseString<float>(params[3], 0.0f);
+        float fadeout = ParseString<float>(params[4], 0.0f);
         int repeats = ParseString<int>(params[5], 1);
         bool stopflag = ParseBool(params[6]);
 
@@ -584,7 +584,7 @@ namespace RexLogic
         if (animctrlptr && meshptr)
         {
             EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
-            animctrl->SetMeshEntity(meshptr);
+            animctrl->SetMeshEntity(dynamic_cast<EC_OgreMesh*>(meshptr.get()));
         }
     }
     
@@ -665,7 +665,7 @@ namespace RexLogic
             // If animation is velocity-adjusted, adjust animation speed by network position speed (horizontal plane movement only)
             if (def.use_velocity_)
             {
-                Real speed = Vector3df(netpos->velocity_.x, netpos->velocity_.y, 0).getLength() * 0.5;
+                float speed = Vector3df(netpos->velocity_.x, netpos->velocity_.y, 0).getLength() * 0.5;
                 animctrl->SetAnimationSpeed(anim->first, def.speedfactor_ * speed);
             }
             

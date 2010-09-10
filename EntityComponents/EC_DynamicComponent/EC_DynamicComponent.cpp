@@ -237,7 +237,7 @@ QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
         //do this trick for real/floats too
         else if(attribute->TypenameToString() == "real")
         {
-            Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
+            Foundation::Attribute<float> *realAttribute = dynamic_cast<Foundation::Attribute<float>*>(attribute);
             value = QVariant(realAttribute->Get());
             return value;
         }
@@ -277,7 +277,7 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
                 }
             }
             //and for real/floats..
-            Foundation::Attribute<Real> *realAttribute = dynamic_cast<Foundation::Attribute<Real>*>(attribute);
+            Foundation::Attribute<float> *realAttribute = dynamic_cast<Foundation::Attribute<float>*>(attribute);
             if(realAttribute)
             {
                 if (value.type() == QVariant::Double)

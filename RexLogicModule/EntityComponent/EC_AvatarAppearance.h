@@ -78,15 +78,15 @@ namespace RexLogic
         //! Manual state. If true, master modifiers have no effect
         bool manual_;
         //! Modifier influence value (0.0 - 1.0)
-        Real value_;
+        float value_;
 
         //! Sum of data accumulated so far
-        Real sum_;
+        float sum_;
         //! Number of samples accumulated
         int samples_;
 
         void ResetAccumulation();
-        void AccumulateValue(Real value, bool use_average);
+        void AccumulateValue(float value, bool use_average);
                 
         AppearanceModifier(ModifierType type = Undefined) : 
             manual_(false),
@@ -171,8 +171,8 @@ namespace RexLogic
         //! Defines a point in master-slaver modifier value mapping
         struct ValueMapping
         {
-            Real master_;
-            Real slave_;
+            float master_;
+            float slave_;
             
             bool operator < (const ValueMapping &rhs) const
             {
@@ -180,7 +180,7 @@ namespace RexLogic
             }
         };
 
-        Real GetMappedValue(Real master_value);
+        float GetMappedValue(float master_value);
         
         //! Value accumulation mode
         AccumulationMode mode_;
@@ -202,7 +202,7 @@ namespace RexLogic
     struct REXLOGIC_MODULE_API MasterModifier
     {
         //! Current position value (0.0 - 1.0)
-        Real value_;
+        float value_;
         //! Name
         std::string name_;
         //! Category description
@@ -231,13 +231,13 @@ namespace RexLogic
         //! Always restart animation when it starts playing?
         bool always_restart_;
         //! Blend-in period in seconds
-        Real fadein_;
+        float fadein_;
         //! Blend-out period in seconds
-        Real fadeout_;
+        float fadeout_;
         //! Speed modification (1.0 original)
-        Real speedfactor_;
+        float speedfactor_;
         //! Weight modification (1.0 full)
-        Real weightfactor_;
+        float weightfactor_;
         
         AnimationDefinition() :
             looped_(true),
@@ -300,8 +300,8 @@ namespace RexLogic
         void SetAttachments(const AvatarAttachmentVector& attachments);
         void SetTransform(const Transform& transform);
         void SetProperty(const std::string& name, const std::string& value);
-        void SetMasterModifierValue(const std::string& name, Real value);
-        void SetModifierValue(const std::string& name, AppearanceModifier::ModifierType, Real value);
+        void SetMasterModifierValue(const std::string& name, float value);
+        void SetModifierValue(const std::string& name, AppearanceModifier::ModifierType, float value);
         void ClearProperties();
         void Clear();
         

@@ -33,8 +33,12 @@ namespace UiServices
         virtual ~NotificationManager();
 
     public slots:
+        /// @param notification_widget The widget to show
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
-        void SetConnectionState(UiServices::ConnectionState connection_state);
+
+        /// Clear the notification history.
+        /// Call after login or another logical context switch.
+        void ClearHistory();
 
     private slots:
         void InitSelf();
@@ -44,6 +48,8 @@ namespace UiServices
 
         void ToggleNotificationBrowser();
 
+	signals:
+		void ShowNotificationCalled(const QString& msg);
     private:
         InworldSceneController *inworld_scene_controller_;
         QGraphicsScene *scene_;
