@@ -6,6 +6,8 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/smart_ptr.hpp>
 
+#include <vector>
+
 namespace Scene
 {
     class Entity;
@@ -15,7 +17,7 @@ namespace Scene
     typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
     typedef boost::weak_ptr<Entity> EntityWeakPtr;
     typedef boost::shared_ptr<Entity> EntityPtr;
-} 
+}
 
 namespace Console
 {
@@ -53,6 +55,9 @@ namespace Foundation
     typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
     typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
     typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
+
+    class AttributeInterface;
+    typedef std::vector<AttributeInterface*> AttributeVector;
 
     void RootLogFatal(const std::string &msg);
     void RootLogCritical(const std::string &msg);

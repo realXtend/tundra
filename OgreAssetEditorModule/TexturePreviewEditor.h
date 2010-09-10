@@ -66,7 +66,7 @@ namespace Naali
                              const QString &inventory_id,
                              const asset_type_t &asset_type,
                              const QString &name,
-                             const QString &assetID,
+                             const QString &asset_id,
                              QWidget *parent = 0);
         virtual ~TexturePreviewEditor();
 

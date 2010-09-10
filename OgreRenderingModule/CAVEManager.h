@@ -8,6 +8,7 @@
 
 namespace Ogre
 {
+	class RenderWindow;
     class Vector3;
 }
 namespace OgreRenderer
@@ -28,6 +29,9 @@ namespace OgreRenderer
             void DisableCAVE();
 			//!Enable cave
             void EnableCAVE();
+
+			//! get windows used by cavemanager. NOTE: when cave is shutdown, the manager will destroy the windows
+			QVector<Ogre::RenderWindow*> getExternalWindows();
             
         public slots:
 			//initializes ui

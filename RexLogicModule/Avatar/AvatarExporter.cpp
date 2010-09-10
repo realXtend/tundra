@@ -15,7 +15,7 @@
 using namespace RexTypes;
 
 // Time in which to reauthenticate if export has lasted long, in seconds
-static const Real REAUTHENTICATION_TIME = 60.0f;
+static const float REAUTHENTICATION_TIME = 60.0f;
 
 namespace RexLogic
 {

@@ -12,7 +12,7 @@ OgreShadowCameraSetupFocusedPSSM::~OgreShadowCameraSetupFocusedPSSM()
 {
 }
 
-void OgreShadowCameraSetupFocusedPSSM::calculateSplitPoints(size_t splitCount, Real nearDist, Real farDist, Real lambda)
+void OgreShadowCameraSetupFocusedPSSM::calculateSplitPoints(size_t splitCount, float nearDist, float farDist, float lambda)
 {
     if (splitCount < 2)
         OGRE_EXCEPT(Ogre::Exception::ERR_INVALIDPARAMS, "Cannot specify less than 2 splits", 
@@ -25,8 +25,8 @@ void OgreShadowCameraSetupFocusedPSSM::calculateSplitPoints(size_t splitCount, R
     mSplitPoints[0] = nearDist;
     for (size_t i = 1; i < mSplitCount; i++)
     {
-        Real fraction = (Real)i / (Real)mSplitCount;
-        Real splitPoint = lambda * nearDist * Ogre::Math::Pow(farDist / nearDist, fraction) +
+        float fraction = (float)i / (float)mSplitCount;
+        float splitPoint = lambda * nearDist * Ogre::Math::Pow(farDist / nearDist, fraction) +
             (1.0 - lambda) * (nearDist + fraction * (farDist - nearDist));
 
         mSplitPoints[i] = splitPoint;
@@ -44,7 +44,7 @@ void OgreShadowCameraSetupFocusedPSSM::setSplitPoints(const SplitPointList& newS
     mOptimalAdjustFactors.resize(mSplitCount);
 }
 
-Real OgreShadowCameraSetupFocusedPSSM::getOptimalAdjustFactor() const
+float OgreShadowCameraSetupFocusedPSSM::getOptimalAdjustFactor() const
 {
     // simplifies the overriding of the LiSPSM opt adjust factor use
     return mOptimalAdjustFactors[mCurrentIteration];
@@ -53,8 +53,8 @@ Real OgreShadowCameraSetupFocusedPSSM::getOptimalAdjustFactor() const
 void OgreShadowCameraSetupFocusedPSSM::getShadowCamera(const Ogre::SceneManager *sm, const Ogre::Camera *cam,const Ogre::Viewport *vp, const Ogre::Light *light, Ogre::Camera *texCam, size_t iteration) const
 {
     // apply the right clip distance.
-    Real nearDist = mSplitPoints[iteration];
-    Real farDist = mSplitPoints[iteration + 1];
+    float nearDist = mSplitPoints[iteration];
+    float farDist = mSplitPoints[iteration + 1];
 
     // Add a padding factor to internal distances so that the connecting split point will not have bad artifacts.
     if (iteration > 0)
@@ -67,8 +67,8 @@ void OgreShadowCameraSetupFocusedPSSM::getShadowCamera(const Ogre::SceneManager 
     // Ouch, I know this is hacky, but it's the easiest way to re-use LiSPSM / Focussed
     // functionality right now without major changes
     Ogre::Camera* _cam = const_cast<Ogre::Camera*>(cam);
-    Real oldNear = _cam->getNearClipDistance();
-    Real oldFar = _cam->getFarClipDistance();
+    float oldNear = _cam->getNearClipDistance();
+    float oldFar = _cam->getFarClipDistance();
     _cam->setNearClipDistance(nearDist);
     _cam->setFarClipDistance(farDist);
 

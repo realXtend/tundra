@@ -107,7 +107,7 @@ namespace Environment
         //! @todo Seems like older OpenSim server (tested 0.6.5) won't inform all the users that terrain heights has been updated,
         //! if needed add custom code that will Request a new ReqionInfo message from the server. 
         //! That message contain all the infomation releated to environment like terrain and water.
-        void SendTextureHeightMessage(Real start_height, Real height_range, uint corner);
+        void SendTextureHeightMessage(float start_height, float height_range, uint corner);
 
         /*! Sends modify land message into the server.
          *  @param x coordinate of terrain texture.
@@ -118,7 +118,7 @@ namespace Environment
          *  @param seconds how long has the modify land operation been executed.
          *  @param previous height value for spesific texture coordinate
          */
-        void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, Real seconds, Real height);
+        void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
         MODULE_LOGGING_FUNCTIONS
 

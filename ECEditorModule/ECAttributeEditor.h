@@ -264,9 +264,9 @@ namespace ECEditor
         }
     };
 
-    template<> void ECAttributeEditor<Real>::Update();
-    template<> void ECAttributeEditor<Real>::Initialize();
-    template<> void ECAttributeEditor<Real>::Set(QtProperty *property);
+    template<> void ECAttributeEditor<float>::Update();
+    template<> void ECAttributeEditor<float>::Initialize();
+    template<> void ECAttributeEditor<float>::Set(QtProperty *property);
 
     template<> void ECAttributeEditor<int>::Update();
     template<> void ECAttributeEditor<int>::Initialize();

@@ -120,7 +120,9 @@ namespace PythonScript
 
     PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
 
-    PythonScriptModule::PythonScriptModule() : ModuleInterface(type_name_static_)
+    PythonScriptModule::PythonScriptModule()
+    :ModuleInterface(type_name_static_),
+    pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
     {
         pythonqt_inited = false;
         inboundCategoryID_ = 0;
@@ -145,6 +147,8 @@ namespace PythonScript
     {
         pythonScriptModuleInstance_ = 0;
         input.reset();
+
+        pmmModule = pmmDict = pmmClass = pmmInstance = 0;
     }
 
     void PythonScriptModule::PostInitialize()
@@ -211,6 +215,11 @@ namespace PythonScript
             treeiter->set_value(0, ss.str());
         } */
 
+        if (!pmmClass)
+        {
+            LogError("PythonScriptModule::Initialize was not successful! PostInit not proceeding.");
+            return;
+        }
         //now that the event constants etc are there, can instanciate the manager which triggers the loading of components
         if (PyCallable_Check(pmmClass)) {
             pmmInstance = PyObject_CallObject(pmmClass, NULL); 
@@ -458,7 +467,7 @@ namespace PythonScript
     //    rexlogic_->GetServerConnection()->IsConnected();
     //    rexlogic_->GetCameraControllable()->GetPitch();
     //    
-    //    Real newyaw = 0.1;
+    //    float newyaw = 0.1;
     //    //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //    rexlogic_->SetAvatarYaw(newyaw);
     //    //rexlogic_->GetAvatarControllable()->AddTime(0.1);
@@ -504,6 +513,7 @@ namespace PythonScript
 
         engine_->Uninitialize();
 
+        created_inputs_.clear();
         em_.reset();
         engine_.reset();
         inventory.reset();
@@ -571,33 +581,7 @@ namespace PythonScript
 
         return 0;
     }      
-    
-    OgreRenderer::EC_OgreCamera* PythonScriptModule::GetCamera() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if (camentptr) {
-                OgreRenderer::EC_OgreCamera* camera = camentptr->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-                return camera;
-            }
-        }
-        return 0;
-    }
-    
-    Scene::Entity* PythonScriptModule::GetCameraEntity() const
-    {
-        RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-        if (rexlogic)
-        {
-            Scene::EntityPtr camentptr = rexlogic->GetCameraEntity();
-            if(camentptr)
-                return camentptr.get();
-        }
-        return 0;
-    }
-
+        
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
@@ -619,6 +603,19 @@ namespace PythonScript
             js->RunString(codestr, context);
         else
             LogError("Javascript script service not available in py RunJavascriptString");
+    }
+
+    InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
+    { 
+        InputContextPtr new_input = framework_->Input().RegisterInputContext(name.toStdString().c_str(), priority);
+        if (new_input)
+        {
+            LogDebug("Created new input context with name: " + name.toStdString());
+            created_inputs_ << new_input; // Need to store these otherwise we get scoped ptr crash after return
+            return new_input.get();
+        }
+        else
+            return 0;
     }
 }
 
@@ -656,7 +653,7 @@ PyObject* SendChat(PyObject *self, PyObject *args)
     if (PythonScript::self()->worldstream)
         PythonScript::self()->worldstream->SendChatFromViewerPacket(msg);
     //rexlogic_->GetServerConnection()->IsConnected();
-    //Real newyaw = 0.1;
+    //float newyaw = 0.1;
     //rexlogic_->GetAvatarControllable()->SetYaw(newyaw);
     //rexlogic_->GetCameraControllable()->GetPitch();
     //rexlogic_->GetAvatarControllable()->HandleAgentMovementComplete(Vector3(128, 128, 25), Vector3(129, 129, 24));
@@ -1463,14 +1460,14 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 //XXX logic CameraControllable has GetPitch, perhaps should have SetPitch too
 PyObject* SetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Real newyaw, newpitch;
+    float newyaw, newpitch;
     float y, p;
     if(!PyArg_ParseTuple(args, "ff", &y, &p)) {
         PyErr_SetString(PyExc_ValueError, "New camera yaw and pitch expected as float, float.");
         return NULL;
     }
-    newyaw = (Real) y;
-    newpitch = (Real) p;
+    newyaw = (float) y;
+    newpitch = (float) p;
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     RexLogic::RexLogicModule *rexlogic_;
@@ -1479,7 +1476,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
         //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
-        //cam->AddTime((Real) 0.1);
+        //cam->AddTime((float) 0.1);
         //cam->SetPitch(p); //have a linking prob with this
         rexlogic_->SetCameraYawPitch(y, p);
     }
@@ -1501,7 +1498,7 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
 
 PyObject* GetCameraYawPitch(PyObject *self, PyObject *args) 
 {
-    Real yaw, pitch;
+    float yaw, pitch;
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
     {
@@ -1565,14 +1562,14 @@ PyObject* PyLogError(PyObject *self, PyObject *args)
 
 PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 {
-    Real newyaw;
+    float newyaw;
 
     float y;
     if(!PyArg_ParseTuple(args, "f", &y)) {
         PyErr_SetString(PyExc_ValueError, "New avatar yaw expected as float.");
         return NULL;
     }
-    newyaw = (Real) y;
+    newyaw = (float) y;
 
     RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic)
@@ -1765,53 +1762,6 @@ PyObject* GetTrashFolderId(PyObject* self, PyObject* args)
     return NULL;
 }
 
-PyObject* GetCameraUp(PyObject *self) 
-{
-    Vector3df up;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        up = rexlogic->GetCameraUp();
-        return Py_BuildValue("fff", up.x, up.y, up.z);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraRight(PyObject *self) 
-{
-    Vector3df right;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        right = rexlogic->GetCameraRight();
-        return Py_BuildValue("fff", right.x, right.y, right.z);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraFOV(PyObject *self) 
-{
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        float fovy = rexlogic->GetCameraFOV();
-        return Py_BuildValue("f", fovy);
-    }
-    Py_RETURN_NONE;
-}
-
-PyObject* GetCameraPosition(PyObject *self) 
-{
-    Vector3df pos;
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-    {
-        pos = rexlogic->GetCameraPosition();
-        return Py_BuildValue("fff", pos.x, pos.y, pos.z);
-    }
-    Py_RETURN_NONE;
-}
-
 PyObject* NetworkUpdate(PyObject *self, PyObject *args)
 {   
     //PythonScript::self()->LogDebug("NetworkUpdate");
@@ -1949,19 +1899,7 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-
-    {"getCameraRight", (PyCFunction)GetCameraRight, METH_VARARGS, 
-    "Get the right-vector for the camera."},
     
-    {"getCameraUp", (PyCFunction)GetCameraUp, METH_VARARGS, 
-    "Get the up-vector for the camera."},
-    
-    {"getCameraFOV", (PyCFunction)GetCameraFOV, METH_VARARGS, 
-    "Get the Field of View from the camera."},
-
-    {"getCameraPosition", (PyCFunction)GetCameraPosition, METH_VARARGS, 
-    "Get the position of the camera."},
-
     {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
     "Gets the Naali-Qt UI scene manager"},
 
@@ -2063,6 +2001,7 @@ namespace PythonScript
             mainModule.addObject("_naali", this);
             
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            //add placeable and friends when PyEntity goes? PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);

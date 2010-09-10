@@ -17,15 +17,42 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
 
 EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     Foundation::ComponentInterface(module->GetFramework()),
-    editor_(0)
+    editor_(0),
+    // GENERIC
+    Name(this, "Name"),
+    Description(this, "Description"),
+    // SHAPE ATTRIBUTES
+    PathCurve(this, "Path curve", 16),
+    ProfileCurve(this, "Profile curve", 1),
+    PathBegin(this, "Path begin", 0.0f),
+    PathEnd(this, "Path end", 0.0f),
+    PathScaleX(this, "Path scale x", 1.0f),
+    PathScaleY(this, "Path scale y", 1.0f),
+    PathShearX(this, "Path shape x", 0.0f),
+    PathShearY(this, "Path shape y", 0.0f),
+    PathTwist(this, "Path twist", 0.0f),
+    PathTwistBegin(this, "Path twist begin", 0.0f),
+    PathRadiusOffset(this, "Path rad offset", 0.0f),
+    PathTaperX(this, "Path taper x", 0.0f),
+    PathTaperY(this, "Path taper y", 0.0f),
+    PathRevolutions(this, "Path revolutions", 1.0f),
+    PathSkew(this, "path skew", 0.0f),
+    ProfileBegin(this, "Profile begin", 0.0f),
+    ProfileEnd(this, "Profile end", 0.0f),
+    ProfileHollow(this, "Path hollow", 0.0f),
+    // PRIMITIVE ATTRIBUTES
+    IsVisible(this, "Is visible", true),
+    CastShadows(this, "Cast shadows", false),
+    DrawDistance(this, "Draw distance", 0.0f),
+    LOD(this, "LOD", 0.0f)
 {
     RegionHandle = 0;
     LocalId = 0;
     FullId.SetNull();
     ParentId = 0; 
 
-    Name = "";
-    Description = "";
+    //Name = "";
+    //Description = "";
     HoveringText = "";
     MediaUrl = "";
     State = 0;
@@ -57,13 +84,13 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     Flags= 0;
 
     DrawType = RexTypes::DRAWTYPE_PRIM;
-    IsVisible = true;
-    CastShadows = false;
+    //IsVisible = true;
+    //CastShadows = false;
     LightCreatesShadows = false;
     DescriptionTexture = false;
     ScaleToPrim = true;
-    DrawDistance = 0;
-    LOD = 0;
+    //DrawDistance = 0;
+    //LOD = 0;
 
     HasPrimShapeData = false;
 
@@ -77,7 +104,7 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
 
     Materials.clear();
 
-    PathCurve = 16;
+    /*PathCurve = 16; 
     ProfileCurve = 1;
     PathBegin = 0;
     PathEnd = 0;
@@ -94,7 +121,7 @@ EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
     PathSkew = 0;
     ProfileBegin = 0;
     ProfileEnd = 0;
-    ProfileHollow = 0;
+    ProfileHollow = 0;*/
     
     PrimDefaultRepeatU = 1.0;
     PrimDefaultRepeatV = 1.0;
@@ -251,8 +278,8 @@ void EC_OpenSimPrim::PrintDebug()
     LogInfo("FullId:" + FullId.ToString());
     LogInfo("ParentId:" + ToString(ParentId));
 
-    LogInfo("Name:" + Name);
-    LogInfo("Description:" + Description);
+    LogInfo("Name:" + Name.Get().toStdString());
+    LogInfo("Description:" + Description.Get().toStdString());
     LogInfo("HoveringText:" + HoveringText);
     LogInfo("MediaUrl:" + MediaUrl);
     

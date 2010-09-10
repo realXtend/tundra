@@ -61,10 +61,8 @@ namespace OgreRenderer
 		enum StereoMode
 		{
 			SM_NONE,
-			/// Anaglyph red/cyan
-			SM_ANAGLYPH_RC,
-			/// Anaglyph yellow/blue
-			SM_ANAGLYPH_YB,
+			/// Anaglyph 
+			SM_ANAGLYPH,
 			/// Dual output off-axis mode : suitable for two projectors with polarized filters or head mounted display
 			SM_DUALOUTPUT,
 			/// Verticaly interlaced mode
@@ -174,7 +172,7 @@ namespace OgreRenderer
 		void initListeners(Ogre::Viewport* leftViewport, Ogre::Viewport* rightViewport);
 		void shutdownListeners(void);
 		
-		void updateCamera(Real delta);
+		void updateCamera(float delta);
 
 		void init(Ogre::Viewport* leftViewport, Ogre::Viewport* rightViewport);
 
@@ -233,7 +231,7 @@ namespace OgreRenderer
 		
 		/** Returns the focal length. 
 			Will return std::numeric_limits<Real>::infinity() if you used setFocalLengthInfinite(true) */
-		Real getFocalLength(void) const;
+        Ogre::Real getFocalLength(void) const;
 
 		/** Sets the focal length to infinite. Usefull if you use Head Mounted Displays because you need parallel frustums. 
 			The position of the debug plane will no longer be consistent with the focal length when it is set to infinite.

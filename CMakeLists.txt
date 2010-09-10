@@ -43,9 +43,7 @@ if (MSVC)
 endif (MSVC)
 
 # Generate profiling data.
-if (MSVC)
-   add_definitions (-DPROFILING)
-endif (MSVC)
+add_definitions (-DPROFILING)
 
 # Enable memory leak checking in all core modules.
 if (MSVC)
@@ -153,6 +151,7 @@ add_subdirectory (EntityComponents/EC_SoundListener)
 add_subdirectory (EntityComponents/EC_Mesh)
 add_subdirectory (EntityComponents/EC_InputMapper)
 add_subdirectory (EntityComponents/EC_Movable)
+add_subdirectory (EntityComponents/EC_Script)
 
 # Add EC's declared by other modules here:
 # ...

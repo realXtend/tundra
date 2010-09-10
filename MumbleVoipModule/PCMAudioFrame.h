@@ -23,7 +23,8 @@ namespace MumbleVoip
 
         virtual ~PCMAudioFrame();
         virtual char* DataPtr();
-        virtual int SampleAt(int i);
+        virtual inline int SampleAt(int i);
+        virtual inline void SetSampleAt(int i, int sample);
         virtual int Channels();
         virtual int SampleRate();
         virtual int SampleWidth();

@@ -44,6 +44,7 @@ init_target (MumbleVoipModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h )
 file (GLOB XML_FILES *.xml)
+file (GLOB UI_FILES ui/*.ui)
 file (GLOB RESOURCE_FILES resource/*.qrc)
 
 # Qt4 Moc files to subgroup "CMake Moc"

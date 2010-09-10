@@ -185,9 +185,9 @@ namespace Scene
             //! Submesh index in entity, starting from 0
             uint submesh;
             //! U coord in entity. 0 if no texture mapping
-            Real u;
+            float u;
             //! V coord in entity. 0 if no texture mapping
-            Real v;
+            float v;
         };
 
         class EntityClickedData : public SceneEventData

@@ -577,7 +577,7 @@ Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
-void RexLogicModule::SetAvatarYaw(Real newyaw)
+void RexLogicModule::SetAvatarYaw(float newyaw)
 {
     avatar_controllable_->SetYaw(newyaw);
 }
@@ -587,7 +587,7 @@ void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
     avatar_controllable_->SetRotation(newrot);
 }
 
-void RexLogicModule::SetCameraYawPitch(Real newyaw, Real newpitch)
+void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
 {
     camera_controllable_->SetYawPitch(newyaw, newpitch);
 }
@@ -595,32 +595,6 @@ void RexLogicModule::SetCameraYawPitch(Real newyaw, Real newpitch)
 entity_id_t RexLogicModule::GetUserAvatarId() const
 {
     return GetAvatarHandler()->GetUserAvatar()->GetId();
-}
-
-Vector3df RexLogicModule::GetCameraUp() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        //! \todo check if Ogre or OpenSim axis convention should actually be used
-        return placeable->GetOrientation() * Vector3df(0.0f,1.0f,0.0f);
-    else
-        return Vector3df();
-}
-
-Vector3df RexLogicModule::GetCameraRight() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        //! \todo check if Ogre or OpenSim axis convention should actually be used
-        return placeable->GetOrientation() * Vector3df(1.0f,0.0f,0.0f);
-    else
-        return Vector3df();
 }
 
 void RexLogicModule::EntityHovered(Scene::Entity* entity)
@@ -637,31 +611,7 @@ void RexLogicModule::EntityHovered(Scene::Entity* entity)
         scene_handler_->ClearHovers(0);
 }
 
-Vector3df RexLogicModule::GetCameraPosition() const
-{
-    if (camera_entity_.expired())
-        return Vector3df();
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetPosition();
-    else
-        return Vector3df();
-}
-
-Quaternion RexLogicModule::GetCameraOrientation() const
-{
-    if (camera_entity_.expired())
-        return Quaternion::IDENTITY;
-
-    OgreRenderer::EC_OgrePlaceable *placeable = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    if (placeable)
-        return placeable->GetOrientation();
-    else
-        return Quaternion::IDENTITY;
-}
-
-Real RexLogicModule::GetCameraViewportWidth() const
+float RexLogicModule::GetCameraViewportWidth() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
     if (renderer.get())
@@ -670,25 +620,13 @@ Real RexLogicModule::GetCameraViewportWidth() const
         return 0;
 }
 
-Real RexLogicModule::GetCameraViewportHeight() const
+float RexLogicModule::GetCameraViewportHeight() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
     if (renderer.get())
         return renderer->GetViewport()->getActualHeight();
     else
         return 0;
-}
-
-Real RexLogicModule::GetCameraFOV() const
-{
-    if (camera_entity_.expired())
-        return 0.0f;
-
-    OgreRenderer::EC_OgreCamera* camera = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-    if (camera)
-        return camera->GetVerticalFov();
-    else
-        return 0.0f;
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()
@@ -852,9 +790,9 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         return;
 
     // Damping interpolation factor, dependent on frame time
-    Real factor = pow(2.0, -frametime * movement_damping_constant_);
+    float factor = pow(2.0, -frametime * movement_damping_constant_);
     clamp(factor, 0.0f, 1.0f);
-    Real rev_factor = 1.0 - factor;
+    float rev_factor = 1.0 - factor;
 
     found_avatars_.clear();
 
@@ -995,7 +933,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3Df camera_position = this->GetCameraPosition();
+        Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 
@@ -1038,8 +976,8 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     bool ret_val = false;
     QList<EC_HoveringWidget*> visible_widgets;
 
-    Real scr_x = x/(Real)GetOgreRendererPtr()->GetWindowWidth();
-    Real scr_y = y/(Real)GetOgreRendererPtr()->GetWindowHeight();
+    float scr_x = x/(float)GetOgreRendererPtr()->GetWindowWidth();
+    float scr_y = y/(float)GetOgreRendererPtr()->GetWindowHeight();
 
     //expand to range -1 -> 1
     scr_x = (scr_x*2)-1;
@@ -1245,6 +1183,10 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::Compon
 //        connect(listener, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
+    }
+    else if (component->TypeName() == EC_Movable::TypeNameStatic())
+    {
+        entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
 }
 

@@ -180,6 +180,11 @@ if 0: #camera entity - it is an entity nowadays, and there is EC cam even
         #ort *= Quat(0, -.707, 0, .707)
         ort *= rot
         p.Orientation = ort
+        
+        #ec cam stuff:
+        print "FOV:", cament.camera.GetVerticalFov()
+        
+        
 
 if 0: #calcing the camera angle around up axis for web ui
     import PythonQt.QtGui
@@ -734,10 +739,12 @@ if 0:
     #print  dir(r.c.widget.move_button)
     r.c.widget.move_button.setChecked(False)
     
-if 0:
-    fov = r.getCameraFOV()
+if 0: #camera FOV
+    #fov = r.getCameraFOV()
     #rightvec = V3(r.getCameraRight())
-    #campos = V3(r.getCameraPosition())
+    fov = naali.getCamera().camera.GetVerticalFov()
+    print "FOV:", fov
+    campos = naali.getCamera().placeable.Position
     #ent = naali.getUserAvatar()
     #entpos = V3(ent.pos)
     #width, height = r.getScreenSize()
@@ -835,6 +842,21 @@ if 0: #rexlogic as service with qt mechanism
         print qent.Id
         pyent = r.getEntity(qent.Id)
         print pyent, pyent.id
+        
+if 0: #using entity directly to get components, without PyEntity
+    import naali
+    qent = naali.worldlogic.GetUserAvatarEntityRaw()
+    if qent is not None:
+        print qent.Id
+        print dir(qent)
+        p = qent.GetComponentRaw("EC_OgrePlaceable")
+        print p, p.Position
+        
+        #ent = naali.Entity(qent)
+        #print ent, ent.placeable, ent.placeable.Position
+        
+        ent = naali.getEntity(qent.Id)
+        print ent, ent.placeable, ent.placeable.Position
     
 if 0: #undo tests
     e = r.getEntity(1752805599)
