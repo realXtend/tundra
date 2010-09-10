@@ -115,6 +115,10 @@ namespace CommUI
         QObject::connect(ShowListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
 
         QObject::connect(muteAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyMuteAllSelection()));
+
+        QObject::connect(GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
+        QObject::connect(GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
+        UpdateUI();
     }
 
     VoiceControllerWidget::~VoiceControllerWidget()
@@ -143,6 +147,15 @@ namespace CommUI
             GetSession()->EnableAudioReceiving();
         }
     }
+
+    void VoiceControllerWidget::UpdateUI()
+    {
+        if (GetSession()->Participants().length() > 0)
+            participantsCountLabel->setText(QString("%1 participants").arg(GetSession()->Participants().length()));
+        else
+            participantsCountLabel->setText("No participants");
+    }
+
 
 } // CommUI
 

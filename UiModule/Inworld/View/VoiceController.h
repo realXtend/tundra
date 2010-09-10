@@ -44,9 +44,10 @@ namespace CommUI
         void TransmittingAudioStopped();
         void TransmissionModeChanged(TransmissionMode new_mode);
 
-    protected:
+    protected slots:
         void SetTransmissionState();
 
+    private:
         TransmissionMode transmission_mode_;
         bool transmitting_audio_;
         bool push_to_talk_on_;
@@ -67,6 +68,7 @@ namespace CommUI
         void ApplyTransmissionModeSelection(int selection);
         void OpenParticipantListWidget();
         void ApplyMuteAllSelection();
+        void UpdateUI();
     };
 
 } // CommUI
