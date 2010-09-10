@@ -14,6 +14,7 @@
 
 #include <QMap>
 #include <QKeySequence>
+//#include <QVariant>
 
 class KeyEvent;
 class InputContext;
@@ -30,6 +31,21 @@ public:
     /// Destructor.
     ~EC_InputMapper();
 
+    /// ComponentInterface override. This component is serializable.
+    virtual bool IsSerializable() const { return true; }
+
+    /// This input mapper's input context priority.
+    Attribute<QString> contextName;
+
+    /// This input mapper's input context priority.
+    Attribute<int> contextPriority;
+
+    /// This input mapper's input context priority.
+    Attribute<bool> takeKeyboardEventsOverQt;
+
+    /// Key sequence - action name mappings.
+//    Attribute<QVector<QVariant> > mappings;
+
     typedef QMap<QKeySequence, QString> Mappings_t;
 
 public slots:
@@ -39,7 +55,7 @@ public slots:
         "More(Forward)" or "Move(Forward,100)" etc.
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
      */
-    void RegisterMapping( const QKeySequence &keySeq, const QString &action);
+    void RegisterMapping(const QKeySequence &keySeq, const QString &action);
 
 private:
     /** Constructor.
@@ -54,6 +70,12 @@ private:
     Mappings_t mappings_;
 
 private slots:
+    /** 
+        @param attribute Changed attribute.
+        @param change Change type.
+    */
+    void AttributeUpdated(AttributeInterface *, AttributeChange::Type change);
+
     /** Handles key events from input service.
         Performs entity action for for the parent entity if action mapping is registered for the key event.
         @param key Key event.

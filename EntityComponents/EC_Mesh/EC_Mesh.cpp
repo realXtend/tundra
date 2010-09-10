@@ -32,7 +32,7 @@ EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     skeleton_(0),
     attached_(false)
 {
-    static Foundation::AttributeMetadata drawDistanceData;
+    static AttributeMetadata drawDistanceData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
@@ -213,17 +213,17 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*)));
 }
 
-void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
+void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
 {
     if(component != this)
         return;

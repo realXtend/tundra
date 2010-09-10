@@ -21,30 +21,31 @@ namespace ECEditor
     // static
     //! @todo Replace this more practical implementation where new attribute type support would be more pratical.
     //! Like somesort of factory that is ownd by ComponentManager.
-    ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(QtAbstractPropertyBrowser *browser, 
-                                                                    ECComponentEditor *editor, 
-                                                                    Foundation::AttributeInterface &attribute)
+    ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
+        QtAbstractPropertyBrowser *browser,
+        ECComponentEditor *editor,
+        AttributeInterface &attribute)
     {
         ECAttributeEditorBase *attributeEditor = 0;
-        if(dynamic_cast<const Foundation::Attribute<float> *>(&attribute))
+        if(dynamic_cast<const Attribute<float> *>(&attribute))
             attributeEditor = new ECAttributeEditor<float>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
+        else if(dynamic_cast<const Attribute<int> *>(&attribute))
             attributeEditor = new ECAttributeEditor<int>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))
+        else if(dynamic_cast<const Attribute<Vector3df> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Vector3df>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<Color> *>(&attribute))
+        else if(dynamic_cast<const Attribute<Color> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Color>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<QString> *>(&attribute))
+        else if(dynamic_cast<const Attribute<QString> *>(&attribute))
             attributeEditor = new ECAttributeEditor<QString>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<bool> *>(&attribute))
+        else if(dynamic_cast<const Attribute<bool> *>(&attribute))
             attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<QVariant> *>(&attribute))
+        else if(dynamic_cast<const Attribute<QVariant> *>(&attribute))
             attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<std::vector<QVariant> > *>(&attribute))
+        else if(dynamic_cast<const Attribute<std::vector<QVariant> > *>(&attribute))
             attributeEditor = new ECAttributeEditor<std::vector<QVariant> >(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<Foundation::AssetReference> *>(&attribute))
+        else if(dynamic_cast<const Attribute<Foundation::AssetReference> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
-        else if(dynamic_cast<const Foundation::Attribute<Transform> *>(&attribute))
+        else if(dynamic_cast<const Attribute<Transform> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Transform>(browser, &attribute, editor);
         return attributeEditor;
     }
@@ -55,8 +56,8 @@ namespace ECEditor
         groupPropertyManager_(0),
         propertyBrowser_(propertyBrowser)
     {
-        typeName_   = component->TypeName();
-        name_       = component->Name();
+        typeName_ = component->TypeName();
+        name_ = component->Name();
         InitializeEditor(component);
     }
     
@@ -89,7 +90,7 @@ namespace ECEditor
 
     void ECComponentEditor::CreateAttriubteEditors(Foundation::ComponentInterfacePtr component)
     {
-        Foundation::AttributeVector attributes = component->GetAttributes();
+        AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
             ECAttributeEditorBase *attributeEditor = ECComponentEditor::CreateAttributeEditor(propertyBrowser_, this, *attributes[i]);
@@ -141,7 +142,7 @@ namespace ECEditor
         AttributeEditorMap::iterator iter = attributeEditors_.begin();
         while(iter != attributeEditors_.end())
         {
-            Foundation::AttributeInterface *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
+            AttributeInterface *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
             if(attribute)
                 iter->second->AddNewAttribute(attribute);
             iter++;
@@ -167,7 +168,7 @@ namespace ECEditor
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
-                    Foundation::AttributeInterface *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
+                    AttributeInterface *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
                     if(attribute)
                         attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;
@@ -223,7 +224,7 @@ namespace ECEditor
         if(component->TypeName() != typeName_)
             return;
 
-        Foundation::AttributeVector attributes = component->GetAttributes();
+        AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
         {
             if(attributes[i]->IsDirty())

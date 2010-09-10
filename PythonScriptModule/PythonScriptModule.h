@@ -69,6 +69,10 @@ namespace PythonScript
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
 
+        /**
+        */
+        void RunScript(const QString &filename);
+
     public:
         PythonScriptModule();
         virtual ~PythonScriptModule();

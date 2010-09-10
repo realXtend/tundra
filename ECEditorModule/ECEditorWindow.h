@@ -16,12 +16,6 @@
 
 extern std::vector<std::string> AttributeTypenames;
 
-namespace Foundation
-{
-    class Framework;
-    class AttributeInterface;
-}
-
 QT_BEGIN_NAMESPACE;
 class QPushButton;
 class QListWidget;

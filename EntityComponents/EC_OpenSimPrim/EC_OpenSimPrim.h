@@ -356,22 +356,22 @@ public:
     DEFINE_QPROPERTY_ATTRIBUTE(int, PathCurve);
     DEFINE_QPROPERTY_ATTRIBUTE(int, ProfileCurve);
 
-    Foundation::Attribute<float> PathBegin;
-    Foundation::Attribute<float> PathEnd;
-    Foundation::Attribute<float> PathScaleX;
-    Foundation::Attribute<float> PathScaleY;
-    Foundation::Attribute<float> PathShearX;
-    Foundation::Attribute<float> PathShearY;
-    Foundation::Attribute<float> PathTwist;
-    Foundation::Attribute<float> PathTwistBegin;
-    Foundation::Attribute<float> PathRadiusOffset;
-    Foundation::Attribute<float> PathTaperX;
-    Foundation::Attribute<float> PathTaperY;
-    Foundation::Attribute<float> PathRevolutions;
-    Foundation::Attribute<float> PathSkew;
-    Foundation::Attribute<float> ProfileBegin;
-    Foundation::Attribute<float> ProfileEnd;
-    Foundation::Attribute<float> ProfileHollow;
+    Attribute<float> PathBegin;
+    Attribute<float> PathEnd;
+    Attribute<float> PathScaleX;
+    Attribute<float> PathScaleY;
+    Attribute<float> PathShearX;
+    Attribute<float> PathShearY;
+    Attribute<float> PathTwist;
+    Attribute<float> PathTwistBegin;
+    Attribute<float> PathRadiusOffset;
+    Attribute<float> PathTaperX;
+    Attribute<float> PathTaperY;
+    Attribute<float> PathRevolutions;
+    Attribute<float> PathSkew;
+    Attribute<float> ProfileBegin;
+    Attribute<float> ProfileEnd;
+    Attribute<float> ProfileHollow;
 
     /*uint8_t PathCurve; 
     uint8_t ProfileCurve;

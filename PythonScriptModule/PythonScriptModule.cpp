@@ -360,10 +360,11 @@ namespace PythonScript
 
         else if (category_id == inboundCategoryID_)
         {
-            ProtocolUtilities::NetworkEventInboundData *event_data = static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
-            ProtocolUtilities::NetMsgID msgID = event_data->messageID;
-            ProtocolUtilities::NetInMessage *msg = event_data->message;
-            const ProtocolUtilities::NetMessageInfo *info = event_data->message->GetMessageInfo();
+            using namespace ProtocolUtilities;
+            NetworkEventInboundData *event_data = static_cast<NetworkEventInboundData *>(data);
+            NetMsgID msgID = event_data->messageID;
+            NetInMessage *msg = event_data->message;
+            const NetMessageInfo *info = event_data->message->GetMessageInfo();
             //std::vector<ProtocolUtilities::NetMessageBlock> vec = info->blocks;
 
             //Vector3df data = event_data->message->GetData();
@@ -381,8 +382,8 @@ namespace PythonScript
                 if (!stringlist)
                     return false;
 
-                std::string cxxmsgname = ProtocolUtilities::ParseGenericMessageMethod(*msg);
-                StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*msg);
+                std::string cxxmsgname = ParseGenericMessageMethod(*msg);
+                StringVector params = ParseGenericMessageParameters(*msg);
 
                 for (uint i = 0; i < params.size(); ++i)
                 {
@@ -572,7 +573,7 @@ namespace PythonScript
     Foundation::WorldLogicInterface* PythonScriptModule::GetWorldLogic() const
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
-        if (worldLogic) 
+        if (worldLogic)
         {
             PythonQt::self()->registerClass(worldLogic->metaObject());
             return worldLogic;
@@ -619,23 +620,49 @@ namespace PythonScript
             return 0;
     }
 
+    MediaPlayer::ServiceInterface* PythonScriptModule::GetMediaPlayerService() const
+    {
+        Foundation::Framework* framework = PythonScript::self()->GetFramework();
+        if (!framework)
+        {
+            PythonScriptModule::LogCritical("Framework object doesn't exist!");
+            return 0;
+        }
+
+        MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
+        if (player_service)
+        {
+            PythonQt::self()->registerClass(player_service->metaObject());
+            return player_service;
+        }
+        else
+            PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+        return 0;
+    }
+
+    void PythonScriptModule::RunScript(const QString &filename)
+    {
+    /*
+            check if py script
+            mikä oli vanha? jos vanha ->delete se
+            PythonQtObjectPtr context = PythonQt::self()->createUniqueModule();
+            foreach(naaliCoreFeat, NaaliCoreFeats)
+                context->addObject(const QString& name, QObject* object);
+            miten saadaan/saadanko:
+            1) python system moduulit
+            2) muut contextit
+            3) naalin /bin/pymodules/*.*
+            context->evalFile(const QString& filename);
+    */
+    }
+
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
     {
-/*
         if (component->TypeName() == EC_Script::TypeNameStatic())
         {
-        check if py script
-        mikä oli vanha? jos vanha ->delete se
-        PythonQtObjectPtr context = createUniqueModule();
-        foreach(naaliCoreFeat, NaaliCoreFeats)
-            context->addObject(const QString& name, QObject* object);
-        miten saadaan/saadanko:
-        1) python system moduulit
-        2) muut contextit
-        3) naalin /bin/pymodules/*.*
-        context->evalFile(const QString& filename);
+            EC_Script *script = static_cast<EC_Script *>(component);
+            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(RunScript(const QString &)));
         }
-*/
     }
 
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
@@ -652,7 +679,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 using namespace PythonScript;
 
 POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
-   POCO_EXPORT_CLASS(PythonScriptModule)
+    POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
 
 #ifdef __cplusplus
@@ -723,7 +750,8 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         Foundation::RaycastResult result = render->Raycast(x, y);
 
         if (result.entity_)
-            return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z, result.submesh_, float(result.u_), float(result.v_));
+            return Py_BuildValue("IfffIff", result.entity_->GetId(), result.pos_.x, result.pos_.y, result.pos_.z,
+                result.submesh_, float(result.u_), float(result.v_));
         else
             Py_RETURN_NONE;
     }
@@ -742,9 +770,9 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
 
 static PyObject* GetQWorldBuildingHandler(PyObject *self)
 {
-    Foundation::WorldBuildingServicePtr wb_service =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>(Foundation::Service::ST_WorldBuilding).lock();
-    if (wb_service)
-        return PythonScriptModule::GetInstance()->WrapQObject(wb_service->GetPythonHandler());
+    Foundation::WorldBuildingServiceInterface *wb =  PythonScript::self()->GetFramework()->GetService<Foundation::WorldBuildingServiceInterface>();
+    if (wb)
+        return PythonScriptModule::GetInstance()->WrapQObject(wb->GetPythonHandler());
     else
         Py_RETURN_NONE;
 }
@@ -801,7 +829,6 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     else
         std::cout << "failed..." << std::endl;
 
-    
     Py_RETURN_TRUE;
 }
 
@@ -906,31 +933,31 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
     RexUUID texture_uuid = RexUUID();
     texture_uuid.FromString(std::string(uuidstr));
-    
-    // Get RexLogic and Scene
-    RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
 
-    if (!scene) 
-    { 
+    Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+    {
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        Py_RETURN_NONE;   
+        Py_RETURN_NONE;
+    }
+
+    Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
+    if (worldLogic)
+    {
+        PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
+        Py_RETURN_NONE;
     }
 
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
     QList<entity_id_t> affected_entitys_;
-    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+    foreach(Scene::EntityPtr e, prims)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *e.get();
         submeshes_.clear();
 
-        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
-        if (!primentity) 
-            continue;
-        
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
+        EC_OpenSimPrim &prim = *entity.GetComponent<EC_OpenSimPrim>().get();
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
@@ -994,7 +1021,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
             if (submeshes_.size() > 0)
             {
-                PythonScriptModule::Add3DCanvasComponents(primentity.get(), qwidget_ptr, submeshes_, refresh_rate);
+                PythonScriptModule::Add3DCanvasComponents(&entity, qwidget_ptr, submeshes_, refresh_rate);
                 affected_entitys_.append(entity.GetId());
             }
         }
@@ -1010,7 +1037,7 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
             PyList_SET_ITEM(py_ent_ptr_list, i, owner->entity_create(entity_id));
             ++i;
         }
-        return py_ent_ptr_list;            
+        return py_ent_ptr_list;
     }
     else
         Py_RETURN_NONE;
@@ -1325,7 +1352,7 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
                 PyList_SET_ITEM(py_submeshes, i, Py_BuildValue("I", submesh));
                 ++i;
             }
-            return py_submeshes;            
+            return py_submeshes;
         }
     }
 
@@ -1340,27 +1367,6 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     return PyString_FromString(cache_path.c_str());
     //return QString(cache_path.c_str());
 }
-
-MediaPlayer::ServiceInterface* PythonScriptModule::GetMediaPlayerService() const
-{
-    Foundation::Framework* framework = PythonScript::self()->GetFramework();
-    if (!framework)
-    {
-        PythonScriptModule::LogCritical("Framework object doesn't exist!");
-        return 0;
-    }
-
-    MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
-    if (player_service)
-    {
-        PythonQt::self()->registerClass(player_service->metaObject());
-        return player_service;
-    }
-    else
-        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
-    return 0;
-}
-
 
 //returns the internal Entity that's now a QObject, 
 //with no manual wrapping (just PythonQt exposing qt things)

@@ -190,7 +190,7 @@ namespace ECEditor
                     names << item->parent()->text(0);
 
                 // Try to find the right attribute.
-                Foundation::AttributeInterface *attr = 0;
+                AttributeInterface *attr = 0;
                 for(uint i = 0; i < names.size(); i++)
                 {
                     attr = compWeak.lock()->GetAttribute(names[i].toStdString());
@@ -201,7 +201,7 @@ namespace ECEditor
                     continue;
                 if(attr->TypenameToString() == "string")
                 {
-                    Foundation::Attribute<QString> *attribute = dynamic_cast<Foundation::Attribute<QString> *>(attr);
+                    Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                     if(attribute)
                     {
                         attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Local);
@@ -210,7 +210,7 @@ namespace ECEditor
                 }
                 else if(attr->TypenameToString() == "qvariant")
                 {
-                    Foundation::Attribute<QVariant> *attribute = dynamic_cast<Foundation::Attribute<QVariant> *>(attr);
+                    Attribute<QVariant> *attribute = dynamic_cast<Attribute<QVariant> *>(attr);
                     if(attribute)
                     {
                         if(attribute->Get().type() == QVariant::String)
@@ -222,7 +222,7 @@ namespace ECEditor
                 }
                 else if(attr->TypenameToString() == "qvariantarray")
                 {
-                    Foundation::Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Foundation::Attribute<std::vector<QVariant> > *>(attr);
+                    Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> > *>(attr);
                     if(attribute)
                     {
                         // We asume that item's name is form of "[0]","[1]" etc. We need to cut down those first and last characters
