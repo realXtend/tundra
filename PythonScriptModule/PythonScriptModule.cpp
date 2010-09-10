@@ -44,7 +44,7 @@
 #include "InputServiceInterface.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h" //is this needed here?
-#include "WorldStream.h" //for SendObjectAddPacket
+#include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
 #include "InputEvents.h" //handling input events
@@ -86,7 +86,7 @@
 
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
-
+#include "EC_Script.h"
 
 //for py_print
 //#include <stdio.h>
@@ -140,6 +140,7 @@ namespace PythonScript
     void PythonScriptModule::Load()
     {
         DECLARE_MODULE_EC(EC_DynamicComponent);
+        DECLARE_MODULE_EC(EC_Script);
     }
 
     // virtual
@@ -241,7 +242,7 @@ namespace PythonScript
 
         RegisterConsoleCommand(Console::CreateCommand(
             "PyReset", "Resets the Python interpreter - should free all it's memory, and clear all state.", 
-            Console::Bind(this, &PythonScriptModule::ConsoleReset))); 
+            Console::Bind(this, &PythonScriptModule::ConsoleReset)));
     }
 
     bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
@@ -263,6 +264,16 @@ namespace PythonScript
             {
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
+
+                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName);
+                assert(scene.get());
+                if (scene)
+                {
+                    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+                        SLOT(OnComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
+                    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+                        SLOT(OnComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+                }
             }
 
             /*
@@ -440,17 +451,12 @@ namespace PythonScript
     Console::CommandResult PythonScriptModule::ConsoleRunString(const StringVector &params)
     {
         if (params.size() != 1)
-        {            
             return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
-        }
 
-        else
-        {
-            engine_->RunString(QString::fromStdString(params[0]));
-            return Console::ResultSuccess();
-        }
+        engine_->RunString(QString::fromStdString(params[0]));
+        return Console::ResultSuccess();
     }
 
     //void PythonScriptModule::x()
@@ -477,17 +483,12 @@ namespace PythonScript
     //}
 
     Console::CommandResult PythonScriptModule::ConsoleRunFile(const StringVector &params)
-    {        
+    {
         if (params.size() != 1)
-        {            
             return Console::ResultFailure("Usage: PyLoad(mypymodule) (to run mypymodule.py by importing it)");
-        }
 
-        else
-        {
-            engine_->RunScript(QString::fromStdString(params[0]));
-            return Console::ResultSuccess();
-        }
+        engine_->RunScript(QString::fromStdString(params[0]));
+        return Console::ResultSuccess();
     }
 
     Console::CommandResult PythonScriptModule::ConsoleReset(const StringVector &params)
@@ -497,11 +498,11 @@ namespace PythonScript
         Initialize();
 
         return Console::ResultSuccess();
-    }    
+    }
 
     // virtual 
     void PythonScriptModule::Uninitialize()
-    {        
+    {
         framework_->GetServiceManager()->UnregisterService(engine_);
 
         if (pmmInstance != NULL) //sometimes when devving it can be, when there was a bug - this helps to be able to reload it
@@ -580,12 +581,11 @@ namespace PythonScript
             LogError("WorldLogicInterface service not available in py GetWorldLogic");
 
         return 0;
-    }      
-        
+    }
+
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
         Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
-
         if (sptr)
         {
             Scene::SceneManager* scene = sptr.get();
@@ -598,7 +598,8 @@ namespace PythonScript
 
     void PythonScriptModule::RunJavascriptString(const QString &codestr, const QVariantMap &context)
     {
-        boost::shared_ptr<Foundation::ScriptServiceInterface> js = framework_->GetService<Foundation::ScriptServiceInterface>(Foundation::Service::ST_JavascriptScripting).lock();
+        using namespace Foundation;
+        boost::shared_ptr<ScriptServiceInterface> js = framework_->GetService<ScriptServiceInterface>(Service::ST_JavascriptScripting).lock();
         if (js)
             js->RunString(codestr, context);
         else
@@ -606,7 +607,7 @@ namespace PythonScript
     }
 
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
-    { 
+    {
         InputContextPtr new_input = framework_->Input().RegisterInputContext(name.toStdString().c_str(), priority);
         if (new_input)
         {
@@ -616,6 +617,29 @@ namespace PythonScript
         }
         else
             return 0;
+    }
+
+    void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    {
+/*
+        if (component->TypeName() == EC_Script::TypeNameStatic())
+        {
+        check if py script
+        mikä oli vanha? jos vanha ->delete se
+        PythonQtObjectPtr context = createUniqueModule();
+        foreach(naaliCoreFeat, NaaliCoreFeats)
+            context->addObject(const QString& name, QObject* object);
+        miten saadaan/saadanko:
+        1) python system moduulit
+        2) muut contextit
+        3) naalin /bin/pymodules/*.*
+        context->evalFile(const QString& filename);
+        }
+*/
+    }
+
+    void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    {
     }
 }
 
@@ -1627,26 +1651,6 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 //    return can;
 //}
 
-/*
-PyObject* CreateUiWidgetProperty(PyObject *self, PyObject *args)
-{
-    if (!PythonScript::self()->GetFramework())//PythonScript::staticframework)
-    {
-        //std::cout << "Oh crap staticframework is not there! (py)" << std::endl;
-        PythonScript::self()->LogInfo("PythonScript's framework is not present!");
-        return NULL;
-    }
-    Qt::WindowFlags type;
-    if(!PyArg_ParseTuple(args, "i", &type))
-    {
-        return NULL;
-    }
-
-//    UiServices::UiWidgetProperties* prop = new UiServices::UiWidgetProperties("");
-    return PythonScriptModule::GetInstance()->WrapQObject(prop);
-}
-*/
-
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
     Foundation::UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
@@ -1936,9 +1940,6 @@ static PyMethodDef EmbMethods[] = {
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
 
-//    {"createUiWidgetProperty", (PyCFunction)CreateUiWidgetProperty, METH_VARARGS, 
-//    "creates a new UiWidgetProperty"},
-
     {"createUiProxyWidget", (PyCFunction)CreateUiProxyWidget, METH_VARARGS, 
     "creates a new UiProxyWidget"},
 
@@ -1962,7 +1963,6 @@ static PyMethodDef EmbMethods[] = {
 
     {NULL, NULL, 0, NULL}
 };
-
 
 namespace PythonScript
 {

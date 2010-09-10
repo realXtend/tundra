@@ -14,6 +14,12 @@ def getScene(name):
 def getDefaultScene():
     #XXX should use framework GetDefaultWorldScene
     return getScene("World")
+    
+def createEntity():
+    s = getDefaultScene()
+    newid = s.NextFreeId()
+    ent = s.CreateEntityRaw(newid)
+    return ent
 
 def createInputContext(name, priority = 100):
     return _naali.CreateInputContext(name, priority)

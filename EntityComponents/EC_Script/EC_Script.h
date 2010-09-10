@@ -4,9 +4,9 @@
 #define incl_EC_Script_EC_Script_h
 
 #include "ComponentInterface.h"
-//#include "AttributeInterface.h"
 #include "Declare_EC.h"
-#include "CoreTypes.h"
+
+class IScriptInstance;
 
 using Foundation::AttributeInterface;
 
@@ -14,21 +14,49 @@ class EC_Script: public Foundation::ComponentInterface
 {
     Q_OBJECT
     DECLARE_EC(EC_Script)
+
 public:
+    /// Destructor.
     ~EC_Script();
 
+    /// ComponentInterface override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
-    Foundation::Attribute<QString> scriptRef_;
+    /// Reference to a script file.
+    Foundation::Attribute<QString> scriptRef;
+
+    /// Type of the script as string (js/py)
+    Foundation::Attribute<QString> type;
+
+    /** Sets new script instance. Unloads and deletes possible already existing script instance.
+        @param instance Script instance.
+    */
+    void SetScriptInstance(IScriptInstance *instance);
+
+    /// Returns the current script instance.
+    IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
 
 signals:
-    void onScriptRefChanged(const QString &newValue);
+    /** Emitted when script reference changes.
+        @newRef New script reference.
+    */
+    void ScriptRefChanged(const QString &newRef);
 
 private slots:
+    /**
+        @param attribute Attribute that changed.
+        @param change Change type.
+    */
     void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
 
 private:
+    /** Constuctor.
+        @param module Declaring module.
+    */
     explicit EC_Script(Foundation::ModuleInterface *module);
+
+    /// Script instance.
+    IScriptInstance *scriptInstance_;
 };
 
 #endif
