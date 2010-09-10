@@ -89,6 +89,7 @@ namespace RexLogic
         isRotating = false;
         isUpDown= false;
         mouse_position_map.clear();
+        isDoubleClickZoom = false;
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -197,11 +198,8 @@ namespace RexLogic
         {
             if (current_state_ == FocusOnObject)
             {
-                Radius -= (120 * zoom_sensitivity_) / 2.0;
-                if ( Radius > 0.5)
-                {
-                    FocusOnObjectZoom();
-                }
+                isDoubleClickZoom = true;
+                doubleClickZoomDistance = Radius / 2.0;
             }
         }
         return false;
@@ -423,6 +421,17 @@ namespace RexLogic
                                 rotation_direction = -1;
                                 RotateCameraAroundObject();
                             }
+                        }
+                    }
+                    if (isDoubleClickZoom)
+                    {
+                        Radius -= (100 * zoom_sensitivity_) / 2.0;
+                        if ( Radius > 1.0)
+                        {
+                            FocusOnObjectZoom();
+                        }else
+                        {
+                            isDoubleClickZoom = false;
                         }
                     }
                 }
