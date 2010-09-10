@@ -26,8 +26,8 @@ namespace ECEditor
                                                                     Foundation::AttributeInterface &attribute)
     {
         ECAttributeEditorBase *attributeEditor = 0;
-        if(dynamic_cast<const Foundation::Attribute<Real> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Real>(browser, &attribute, editor);
+        if(dynamic_cast<const Foundation::Attribute<float> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<float>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<int> *>(&attribute))
             attributeEditor = new ECAttributeEditor<int>(browser, &attribute, editor);
         else if(dynamic_cast<const Foundation::Attribute<Vector3df> *>(&attribute))

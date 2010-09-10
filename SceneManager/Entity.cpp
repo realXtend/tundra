@@ -1,15 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ComponentInterface.h"
+#include "DebugOperatorNew.h"
+
 #include "Entity.h"
-#include "Framework.h"
 #include "SceneManager.h"
+#include "EC_Name.h"
+#include "Action.h"
+
+#include "Framework.h"
+#include "ComponentInterface.h"
 #include "CoreStringUtils.h"
 #include "ComponentManager.h"
-#include "EC_Name.h"
+#include "LoggingFunctions.h"
 
-#include <QVector>
+DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
+
+#include "MemoryLeakCheck.h"
 
 namespace Scene
 {
@@ -33,6 +40,7 @@ namespace Scene
             components_[i]->SetParentEntity(0);
         
         components_.clear();
+        qDeleteAll(actions_);
     }
 
     void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
@@ -63,7 +71,7 @@ namespace Scene
             }
             else
             {
-                Foundation::RootLogWarning("Failed to remove component: " + component->TypeName().toStdString() + " from entity: " + ToString(GetId()));
+                LogWarning("Failed to remove component: " + component->TypeName().toStdString() + " from entity: " + ToString(GetId()));
             }
         }
     }
@@ -160,59 +168,108 @@ namespace Scene
         for (size_t i = 0; i < components_.size(); ++i)
             components_[i]->ResetChange();
     }
-    
-    std::string Entity::GetName() const
+
+    QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
         if (name)
-            return name->name.Get().toStdString();
+            return name->name.Get();
         else
             return "";
     }
 
-    std::string Entity::GetDescription() const
+    QString Entity::GetDescription() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
         if (name)
-            return name->description.Get().toStdString();
+            return name->description.Get();
         else
             return "";
+    }
+
+    Action *Entity::RegisterAction(const QString &name)
+    {
+        if (actions_.contains(name))
+            return actions_[name];
+
+        Action *action = new Action(name);
+        actions_.insert(name, action);
+        return action;
+    }
+
+    void Entity::ConnectAction(const QString &name, const QObject *receiver, const char *member)
+    {
+        Action *action = RegisterAction(name);
+        assert(action);
+        connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
     }
 
     void Entity::Exec(const QString &action)
     {
-        QVector<QString> params;
-        for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, params);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger();
     }
 
     void Entity::Exec(const QString &action, const QString &param)
     {
-        QVector<QString> params;
-        params << param;
-        for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, params);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
     {
-        QVector<QString> params;
-        params << param1 << param2;
-        for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, params);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param1, param2);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
     {
-        QVector<QString> params; 
-        params << param1 << param2 << param3;
-        for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action, params);
+        Action *act = RegisterAction(action);
+        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        if (!HasReceivers(act))
+            return;
+
+        act->Trigger(param1, param2, param3);
     }
 
-    void Entity::Exec(const QString &action, const QVector<QString> &params)
+    void Entity::Exec(const QString &action, const QStringVector &params)
     {
-        for(size_t i = 0; i < components_.size() ; ++i)
-            components_[i]->Exec(action ,params);
+        Action *act = RegisterAction(action);
+        if (!HasReceivers(act))
+            return;
+
+        if (params.size() == 0)
+            act->Trigger();
+        else if (params.size() == 1)
+            act->Trigger(params[0]);
+        else if (params.size() == 2)
+            act->Trigger(params[0], params[1]);
+        else if (params.size() == 3)
+            act->Trigger(params[0], params[1], params[2]);
+        else if (params.size() >= 4)
+            act->Trigger(params[0], params[1], params[2], params.mid(3));
+    }
+
+    bool Entity::HasReceivers(Action *action)
+    {
+        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        if (receivers == 0)
+        {
+            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
+            actions_.remove(action->Name());
+            SAFE_DELETE(action);
+            return false;
+        }
+
+        return true;
     }
 }

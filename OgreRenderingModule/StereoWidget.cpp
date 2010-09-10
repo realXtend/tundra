@@ -4,6 +4,8 @@
 #include "ServiceManager.h"
 #include "UiServiceInterface.h"
 #include "Framework.h"
+#include <QColorDialog>
+
 namespace OgreRenderer
 {
 
@@ -20,6 +22,8 @@ namespace OgreRenderer
         ui->AddSettingsWidget(this, "Stereo");
 		QObject::connect(this->enable, SIGNAL(clicked()), this, SLOT(StereoOn()));
 		QObject::connect(this->disable, SIGNAL(clicked()), this, SLOT(StereoOff()));
+		QObject::connect(this->left_color, SIGNAL(clicked()), this, SLOT(ColorLeftChanged()));
+		QObject::connect(this->right_color, SIGNAL(clicked()), this, SLOT(ColorRightChanged()));
     }
 
 
@@ -48,5 +52,24 @@ namespace OgreRenderer
 	void StereoWidget::StereoOff()
 	{
 		emit DisableStereo();
+	}
+
+	void StereoWidget::ColorLeftChanged()
+	{
+		QColorDialog dialog(QColor(1,0,0));
+		QColor col = dialog.getColor();
+		if(col.isValid())
+		{	
+			emit ChangeColorLeft(col.redF(), col.greenF(), col.blueF());
+		}
+	}
+	void StereoWidget::ColorRightChanged()
+	{
+		QColorDialog dialog(QColor(0,1,1));
+		QColor col = dialog.getColor();
+		if(col.isValid())
+		{	
+			emit ChangeColorRight(col.redF(), col.greenF(), col.blueF());
+		}
 	}
 }

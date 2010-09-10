@@ -41,7 +41,8 @@ public:
     globalX(-1),globalY(-1),
     otherButtons(0),
     modifiers(0),
-    handled(false)
+    handled(false),
+    itemUnderMouse(0)
     {
     }
 	virtual ~MouseEvent() {}
@@ -174,6 +175,9 @@ public slots:
 	bool HasCtrlModifier() const { return (modifiers & Qt::ControlModifier) != 0; }
     bool HasAltModifier() const { return (modifiers & Qt::AltModifier) != 0; }
 	bool HasMetaModifier() const { return (modifiers & Qt::MetaModifier) != 0; } // On windows, this is associated to the Win key.
+
+    // Returns if mouse is over a graphics item in the scene
+    bool IsItemUnderMouse() const { if (itemUnderMouse) return true; else return false; }
 
 public:
 

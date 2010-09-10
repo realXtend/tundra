@@ -66,6 +66,8 @@ float4 Anaglyph_fp
 	in float2 texCoord : TEXCOORD0,
 	
 	// parameters
+	uniform float4 left_colour,
+	uniform float4 right_colour,
 	uniform sampler2D LeftTex : register(s0),
 	uniform sampler2D RightTex : register(s1)
 
@@ -75,5 +77,5 @@ float4 Anaglyph_fp
 	float4 right = tex2D(RightTex, texCoord);
 	
 //	return float4(left.r, right.g, right.b, 1);
-	return left * float4(LEFT_MASK) + right * float4(RIGHT_MASK);
+	return left * left_colour + right * right_colour;
 }

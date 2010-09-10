@@ -203,26 +203,16 @@ namespace RexLogic
         //! XXX have linking probs to AvatarController so trying this wrapper
         //! \todo figure workarounds for these functions so that dependency to RexLogicModule
         //! is not needed anymore.
-        void SetAvatarYaw(Real newyaw);
+        void SetAvatarYaw(float newyaw);
         void SetAvatarRotation(const Quaternion &newrot);
-        void SetCameraYawPitch(Real newyaw, Real newpitch);
+        void SetCameraYawPitch(float newyaw, float newpitch);
 
         ///\todo Remove. Get this information using WorldStream and/or EC_OpenSimPresence.
         entity_id_t GetUserAvatarId() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraUp() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraRight() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Vector3df GetCameraPosition() const;
-        ///\todo Remove. Get this information from other modules using EC_OgrePlaceable and/or EC_OgreCamera.
-        Quaternion GetCameraOrientation() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        Real GetCameraViewportWidth() const;
+        float GetCameraViewportWidth() const;
         ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        Real GetCameraViewportHeight() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera.
-        Real GetCameraFOV() const;
+        float GetCameraViewportHeight() const;
 
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         void SetAllTextOverlaysVisible(bool visible);
@@ -323,7 +313,7 @@ namespace RexLogic
         WorldStreamPtr world_stream_;
 
         //! Movement damping constant
-        Real movement_damping_constant_;
+        float movement_damping_constant_;
 
         //! How long to keep doing dead reckoning
         f64 dead_reckoning_time_;

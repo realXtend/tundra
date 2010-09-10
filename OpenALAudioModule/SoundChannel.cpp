@@ -6,10 +6,10 @@
 
 namespace OpenALAudio
 {
-    static const Real MINIMUM_ROLLOFF = 0.1f;
-    static const Real DEFAULT_ROLLOFF = 2.0f;
-    static const Real DEFAULT_INNER_RADIUS = 1.0f;
-    static const Real DEFAULT_OUTER_RADIUS = 50.0f;
+    static const float MINIMUM_ROLLOFF = 0.1f;
+    static const float DEFAULT_ROLLOFF = 2.0f;
+    static const float DEFAULT_INNER_RADIUS = 1.0f;
+    static const float DEFAULT_OUTER_RADIUS = 50.0f;
     
     SoundChannel::SoundChannel(Foundation::SoundServiceInterface::SoundType type) :
         type_(type),
@@ -182,14 +182,14 @@ namespace OpenALAudio
             alSourcei(handle_, AL_LOOPING, looped_ ? AL_TRUE : AL_FALSE);
     }
     
-    void SoundChannel::SetPitch(Real pitch)
+    void SoundChannel::SetPitch(float pitch)
     {
         pitch_ = pitch;
         if (handle_)
             alSourcef(handle_, AL_PITCH, pitch_);
     }
     
-    void SoundChannel::SetGain(Real gain)
+    void SoundChannel::SetGain(float gain)
     {
         if (gain < 0.0f) 
             gain = 0.0f;
@@ -199,7 +199,7 @@ namespace OpenALAudio
         gain_ = gain;
     }
     
-    void SoundChannel::SetMasterGain(Real master_gain)
+    void SoundChannel::SetMasterGain(float master_gain)
     {
         if (master_gain < 0.0f) 
             master_gain = 0.0f;
@@ -209,7 +209,7 @@ namespace OpenALAudio
         master_gain_ = master_gain;
     }    
     
-    void SoundChannel::SetRange(Real inner_radius, Real outer_radius, Real rolloff)
+    void SoundChannel::SetRange(float inner_radius, float outer_radius, float rolloff)
     {
         if (rolloff < MINIMUM_ROLLOFF) 
             rolloff = MINIMUM_ROLLOFF;
@@ -251,7 +251,7 @@ namespace OpenALAudio
             return;
         }
           
-        Real distance = (position_ - listener_pos).getLength();
+        float distance = (position_ - listener_pos).getLength();
         if (distance <= inner_radius_)
         {
             attenuation_ = 1.0f;

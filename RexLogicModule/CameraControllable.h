@@ -81,9 +81,9 @@ namespace RexLogic
         void SetCameraEntity(Scene::EntityPtr camera);
 
         //! returns camera pitch
-        Real GetPitch() const { return firstperson_pitch_; }
-        Real GetYaw() const { return firstperson_yaw_; }
-        void SetYawPitch(Real newyaw, Real newpitch); //experimental for py api
+        float GetPitch() const { return firstperson_pitch_; }
+        float GetYaw() const { return firstperson_yaw_; }
+        void SetYawPitch(float newyaw, float newpitch); //experimental for py api
 
         //! returns current state of camera
         State GetState() const { return current_state_; }
@@ -137,13 +137,13 @@ namespace RexLogic
         Scene::EntityWeakPtr camera_entity_;
 
         //! current camera distance from target
-        Real camera_distance_;
+        float camera_distance_;
 
         //! minimum camera distance from target
-        Real camera_min_distance_;
+        float camera_min_distance_;
 
         //! maximum camera distance from target
-        Real camera_max_distance_;
+        float camera_max_distance_;
 
         //! third person camera offset
         Vector3Df camera_offset_;
@@ -152,25 +152,25 @@ namespace RexLogic
         Vector3df camera_offset_firstperson_;
 
         //! move speed
-        Real sensitivity_;
+        float sensitivity_;
 
         //! zoom speed
-        Real zoom_sensitivity_;
+        float zoom_sensitivity_;
 
         //! camera pitch when dragging
-        Real firstperson_pitch_;
+        float firstperson_pitch_;
 
         //! camera yaw when dragging
-        Real firstperson_yaw_;
+        float firstperson_yaw_;
 
         //! mouse look sensitivity
-        Real firstperson_sensitivity_;
+        float firstperson_sensitivity_;
 
         //! drag pitch
-        Real drag_pitch_;
+        float drag_pitch_;
 
         //! drag yaw
-        Real drag_yaw_;
+        float drag_yaw_;
 
         //! cached value for event category
         event_category_id_t action_event_category_;

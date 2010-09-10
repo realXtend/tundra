@@ -703,7 +703,7 @@ namespace ECEditor
             newItem = (*changeList.begin());
         else
         {
-            ECEditorModule::LogError("Added a new component editor, but for some reason the editor's widget was not added to browser widget."
+            ECEditorModule::LogError("Failed to add a new component to ECEditor, for some reason the QTreeWidgetItem was not created."
                                      " Make sure that ECComponentEditor was intialized properly.");
             return;
         }
@@ -723,6 +723,9 @@ namespace ECEditor
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         if(compGroup)
             componentGroups_.push_back(compGroup);
+
+        if(treeWidget_)
+            treeWidget_->collapseItem(newItem);
     }
 
     void ECBrowser::RemoveComponentFromGroup(Foundation::ComponentInterface *comp)

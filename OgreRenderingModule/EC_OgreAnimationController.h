@@ -17,6 +17,9 @@ namespace Ogre
 
 namespace OgreRenderer
 {
+
+	class EC_OgreMesh;
+
     //! Ogre-specific mesh entity animation controller
     /*! Needs to be told of an EC_OgreMesh component to be usable
         \ingroup OgreRenderingModuleClient
@@ -30,8 +33,14 @@ namespace OgreRenderer
     public slots:
 	//! Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
         bool EnableAnimation(const QString &name) { return EnableAnimation(name.toStdString(), false); }
-        bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (Real)new_position); }
+        bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (float)new_position); }
         QStringList GetAvailableAnimations();
+
+        //! Gets mesh entity component
+        OgreRenderer::EC_OgreMesh *GetMeshEntity() const { return mesh; }
+        
+        //! Gets mesh entity component
+        void SetMeshEntity(OgreRenderer::EC_OgreMesh *new_mesh);
 
     public:
         
@@ -52,16 +61,16 @@ namespace OgreRenderer
             bool auto_stop_;
 
             //! Time in milliseconds it takes to fade in/out an animation completely
-            Real fade_period_;
+            float fade_period_;
             
             //! Weight of an animation in animation blending, maximum 1.0
-            Real weight_;
+            float weight_;
 
             //! Weight adjust
-            Real weight_factor_;
+            float weight_factor_;
 
             //! How an animation is sped up or slowed down, default 1.0 (original speed)
-            Real speed_factor_;
+            float speed_factor_;
 
             //! loop animation through num_repeats times, or loop if zero
             uint num_repeats_;
@@ -88,21 +97,15 @@ namespace OgreRenderer
         typedef std::map<std::string, Animation> AnimationMap;
 
         virtual ~EC_OgreAnimationController();
-
-        //! Gets mesh entity component
-        Foundation::ComponentPtr GetMeshEntity() const { return mesh_entity_; }
-        
-        //! Gets mesh entity component
-        void SetMeshEntity(Foundation::ComponentPtr mesh_entity);
         
         //! Updates animation(s) by elapsed time
         void Update(f64 frametime);
         
         //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
-        bool EnableAnimation(const std::string& name, bool looped = true, Real fadein = 0.0f, bool high_priority = false);
+        bool EnableAnimation(const std::string& name, bool looped = true, float fadein = 0.0f, bool high_priority = false);
 
         //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
-        bool EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein = 0.0f, Real fadeout = 0.0f, bool high_priority = false);
+        bool EnableExclusiveAnimation(const std::string& name, bool looped, float fadein = 0.0f, float fadeout = 0.0f, bool high_priority = false);
 
         //! Checks whether non-looping animation has finished
         /*! If looping, returns always false
@@ -114,25 +117,25 @@ namespace OgreRenderer
         bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
 
         //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
-        bool DisableAnimation(const std::string& name, Real fadeout = 0.0f);
+        bool DisableAnimation(const std::string& name, float fadeout = 0.0f);
 
         //! Disables all animations with the same fadeout period
-        void DisableAllAnimations(Real fadeout = 0.0f);
+        void DisableAllAnimations(float fadeout = 0.0f);
 
         //! Forwards animation to end, useful if animation is played in reverse
         void SetAnimationToEnd(const std::string& name);
 
         //! Sets relative speed of active animation. Once disabled, the speed is forgotten! Returns true if success (animation exists)
-        bool SetAnimationSpeed(const std::string& name, Real speedfactor);
+        bool SetAnimationSpeed(const std::string& name, float speedfactor);
 
         //! Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-        bool SetAnimationWeight(const std::string& name, Real weight);
+        bool SetAnimationWeight(const std::string& name, float weight);
         
         //! Changes animation priority. Can lead to fun visual effects, but provided for completeness
         bool SetAnimationPriority(const std::string& name, bool high_priority);
 
         //! Sets time position of an active animation.
-        bool SetAnimationTimePosition(const std::string& name, Real new_position);
+        bool SetAnimationTimePosition(const std::string& name, float new_position);
 
         //! Sets autostop on animation
         bool SetAnimationAutoStop(const std::string& name, bool enable);
@@ -163,7 +166,7 @@ namespace OgreRenderer
         void ResetState();
         
         //! Mesh entity component 
-        Foundation::ComponentPtr mesh_entity_;
+        EC_OgreMesh *mesh;
         
         //! Current mesh name
         std::string mesh_name_;

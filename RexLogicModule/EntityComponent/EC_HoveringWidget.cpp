@@ -126,7 +126,7 @@ namespace RexLogic
                 buttonsbillboardSet_->setVisible(false);
     }
 
-    void EC_HoveringWidget::SetCameraDistance(Real dist)
+    void EC_HoveringWidget::SetCameraDistance(float dist)
     {
         if (!detached_)
         {
@@ -245,7 +245,7 @@ namespace RexLogic
         }*/
     }
 
-    void EC_HoveringWidget::WidgetClicked(Real x, Real y)
+    void EC_HoveringWidget::WidgetClicked(float x, float y)
     {
         if(buttons_visible_ && !buttons_disabled_)
             buttonswidget_->ForwardMouseClickEvent(x,y);
@@ -515,11 +515,13 @@ namespace RexLogic
 
             Ogre::Box dimensions1(0,0, img1.width(), img1.height());
             Ogre::PixelBox pixel_box1(dimensions1, Ogre::PF_A8R8G8B8, (void*)img1.bits());
-            texPtr1->getBuffer()->blitFromMemory(pixel_box1);
+            if (!texPtr1->getBuffer().isNull())
+                texPtr1->getBuffer()->blitFromMemory(pixel_box1);
 
             Ogre::Box dimensions2(0,0, img2.width(), img2.height());
             Ogre::PixelBox pixel_box2(dimensions2, Ogre::PF_A8R8G8B8, (void*)img2.bits());
-            texPtr2->getBuffer()->blitFromMemory(pixel_box2);
+            if (!texPtr2->getBuffer().isNull())
+                texPtr2->getBuffer()->blitFromMemory(pixel_box2);
         }
         catch (Ogre::Exception &e)
         {

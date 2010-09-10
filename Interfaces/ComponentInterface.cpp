@@ -14,6 +14,7 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EventManager.h"
+
 #include <QDomDocument>
 
 namespace Foundation

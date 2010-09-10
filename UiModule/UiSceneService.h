@@ -93,6 +93,9 @@ namespace UiServices
         /// UiServiceInterface override.
         void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget);
 
+        /// UiServiceInterface override.
+        void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
+
     private slots:
         void TranferWidgets();
 

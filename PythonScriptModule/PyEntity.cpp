@@ -8,11 +8,11 @@
 #include "PythonScriptModule.h"
 #include "RexLogicModule.h" //for getting prim component data
 #include "SceneManager.h"
-
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreCamera.h"
 #include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
@@ -298,7 +298,6 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
              return NULL;
         }
         OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
-        //placeable = checked_static_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());       
         return PythonScriptModule::GetInstance()->WrapQObject(ogremesh);
     }
     
@@ -459,6 +458,22 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         else
         {
             PyErr_SetString(PyExc_AttributeError, "Entity does not have an AnimationController component.");
+            return NULL;
+        }
+    }
+
+    else if (s_name.compare("camera") == 0)
+    {
+        const Foundation::ComponentInterfacePtr camera_ptr = entity->GetComponent("EC_OgreCamera");
+        OgreRenderer::EC_OgreCamera* camera = 0;
+        if (camera_ptr)
+        {
+            camera = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(camera);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a camera component.");
             return NULL;
         }
     }

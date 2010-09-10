@@ -19,23 +19,22 @@ namespace OgreRenderer
     {
     }
     
-    void EC_OgreAnimationController::SetMeshEntity(Foundation::ComponentPtr mesh_entity)
-    {           
-        if ((mesh_entity.get()) && (!dynamic_cast<EC_OgreMesh*>(mesh_entity.get())))
-        {
-            OgreRenderingModule::LogError("Attempted to set mesh entity which is not " + EC_OgreMesh::TypeNameStatic().toStdString());
-            return;
-        }
-        
-        mesh_entity_ = mesh_entity;     
+    void EC_OgreAnimationController::SetMeshEntity(EC_OgreMesh *new_mesh)
+    {
+        mesh = new_mesh;
     }
     
     QStringList EC_OgreAnimationController::GetAvailableAnimations()
     {
         QStringList availableList;
-        for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
-        {
-            availableList << QString(i->first.c_str());
+        Ogre::Entity* entity = GetEntity();
+        if (!entity) return availableList;
+            
+        Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
+        Ogre::AnimationStateIterator i = anims->getAnimationStateIterator();
+        while(i.hasMoreElements()) {
+            Ogre::AnimationState *animstate = i.getNext();
+            availableList << QString(animstate->getAnimationName().c_str());
         }
         
         return availableList;
@@ -209,11 +208,10 @@ namespace OgreRenderer
     
     Ogre::Entity* EC_OgreAnimationController::GetEntity()
     {
-        if (!mesh_entity_)
+        if (!mesh)
             return 0;
         
-        OgreRenderer::EC_OgreMesh &mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh_entity_.get());
-        Ogre::Entity* entity = mesh.GetEntity();
+        Ogre::Entity* entity = mesh->GetEntity();
         if (!entity)
             return 0;
         
@@ -246,7 +244,7 @@ namespace OgreRenderer
             return 0;
     }
     
-    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, Real fadein, Real fadeout, bool high_priority)
+    bool EC_OgreAnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, float fadein, float fadeout, bool high_priority)
     {
         // Disable all other active animations
         AnimationMap::iterator i = animations_.begin();
@@ -265,7 +263,7 @@ namespace OgreRenderer
         return EnableAnimation(name, looped, fadein, high_priority);
     }
 
-    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, Real fadein, bool high_priority)
+    bool EC_OgreAnimationController::EnableAnimation(const std::string& name, bool looped, float fadein, bool high_priority)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -364,7 +362,7 @@ namespace OgreRenderer
         return false;
     }
 
-    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, Real fadeout)
+    bool EC_OgreAnimationController::DisableAnimation(const std::string& name, float fadeout)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -377,7 +375,7 @@ namespace OgreRenderer
         return false;
     }
 
-    void EC_OgreAnimationController::DisableAllAnimations(Real fadeout)
+    void EC_OgreAnimationController::DisableAllAnimations(float fadeout)
     {
         AnimationMap::iterator i = animations_.begin();
         while (i != animations_.end())
@@ -401,7 +399,7 @@ namespace OgreRenderer
         }
     }
 
-    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, Real speedfactor)
+    bool EC_OgreAnimationController::SetAnimationSpeed(const std::string& name, float speedfactor)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -413,7 +411,7 @@ namespace OgreRenderer
         return false;
     }
 
-    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, Real weight)
+    bool EC_OgreAnimationController::SetAnimationWeight(const std::string& name, float weight)
     {
         AnimationMap::iterator i = animations_.find(name);
         if (i != animations_.end())
@@ -437,7 +435,7 @@ namespace OgreRenderer
         return false;
     }    
 
-    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, Real newPosition)
+    bool EC_OgreAnimationController::SetAnimationTimePosition(const std::string& name, float newPosition)
     {
         Ogre::Entity* entity = GetEntity();
         Ogre::AnimationState* animstate = GetAnimationState(entity, name);

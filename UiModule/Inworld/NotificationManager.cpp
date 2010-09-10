@@ -155,26 +155,18 @@ namespace UiServices
             // Start notification
             notification_widget->Start();
         }
+		QString msg(notification_widget->GetMessage());
+		emit ShowNotificationCalled(msg);
     }
 
-    void NotificationManager::SetConnectionState(UiServices::ConnectionState connection_state)
+    void NotificationManager::ClearHistory()
     {
-        switch (connection_state)
-        {
-            case Connected:
-                break;
-
-            case Disconnected:
-            {
-                foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
-                    SAFE_DELETE(notification);
-                notifications_history_.clear();
-                visible_notifications_.clear();
-                
-                browser_widget_->hide();
-                browser_widget_->ClearAllContent();
-                break;
-            }
-        }
+        foreach(CoreUi::NotificationBaseWidget *notification, notifications_history_)
+            SAFE_DELETE(notification);
+        notifications_history_.clear();
+        visible_notifications_.clear();
+        
+        browser_widget_->hide();
+        browser_widget_->ClearAllContent();
     }
 }

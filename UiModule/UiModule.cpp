@@ -275,7 +275,6 @@ namespace UiServices
             {
                 ui_state_machine_->SetConnectionState(connection_state);
                 ether_logic_->SetConnectionState(connection_state);
-                inworld_notification_manager_->SetConnectionState(connection_state);
 
                 // Send welcome message to notification manager
                 if (current_world_stream_.get())
@@ -291,7 +290,7 @@ namespace UiServices
             }
             case Disconnected:
             {
-                inworld_notification_manager_->SetConnectionState(connection_state);
+                inworld_notification_manager_->ClearHistory();
                 ether_logic_->SetConnectionState(connection_state);
                 ui_state_machine_->SetConnectionState(connection_state);
                 break;
@@ -338,7 +337,7 @@ namespace UiServices
         Vector3Df avatar_position = ec_placeable->GetPosition();
         Quaternion avatar_orientation = ec_placeable->GetOrientation();
         Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
-        Real adjustheight = ec_mesh->GetAdjustPosition().z;
+        float adjustheight = ec_mesh->GetAdjustPosition().z;
         Vector3df avatar_head_position;
 
         QString view_bone_name = worldLogic->GetAvatarAppearanceProperty("headbone");

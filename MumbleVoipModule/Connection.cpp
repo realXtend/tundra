@@ -77,7 +77,7 @@ namespace MumbleLib
         connection->MarkUserLeft(user);
     }
 
-    Connection::Connection(MumbleVoip::ServerInfo &info) :
+    Connection::Connection(MumbleVoip::ServerInfo &info, int playback_buffer_length_ms) :
             client_(0),
             authenticated_(false),
             celt_mode_(0),
@@ -88,7 +88,8 @@ namespace MumbleLib
             frame_sequence_(0),
             encoding_quality_(0),
             state_(STATE_CONNECTING),
-            send_position_(false)
+            send_position_(false),
+            playback_buffer_length_ms_(playback_buffer_length_ms)
     {
         // BlockingQueuedConnection for cross thread signaling
         QObject::connect(this, SIGNAL(UserObjectCreated(User*)), SLOT(AddToUserList(User*)), Qt::BlockingQueuedConnection);
@@ -225,6 +226,7 @@ namespace MumbleLib
             return;
         }
 
+        QMutexLocker encoder_locker(&mutex_encoder_);
         celt_encoder_ = celt_encoder_create(celt_mode_,MumbleVoip::NUMBER_OF_CHANNELS, NULL );
         if (!celt_encoder_)
         {
@@ -246,6 +248,7 @@ namespace MumbleLib
 
     void Connection::UninitializeCELT()
     {
+        QMutexLocker encoder_locker(&mutex_encoder_);
         celt_encoder_destroy(celt_encoder_);
         celt_encoder_ = 0;
         celt_decoder_destroy(celt_decoder_);
@@ -377,6 +380,8 @@ namespace MumbleLib
         
         if (encode_queue_.size() < MumbleVoip::FRAMES_PER_PACKET)
             return;
+
+        QMutexLocker encoder_locker(&mutex_encoder_);
 
         for (int i = 0; i < MumbleVoip::FRAMES_PER_PACKET; ++i)
         {
@@ -600,6 +605,7 @@ namespace MumbleLib
             return;
         }
         User* user = new User(mumble_user, channel);
+        user->SetPlaybackBufferMaxLengthMs(playback_buffer_length_ms_);
         user->moveToThread(this->thread()); //! @todo Do we need this?
         
         emit UserObjectCreated(user);
@@ -727,12 +733,16 @@ namespace MumbleLib
 
     void Connection::SetEncodingQuality(double quality)
     {
-        QMutexLocker locker(&mutex_encoding_quality_);
+        mutex_encoding_quality_.lock();
         if (quality < 0)
             quality = 0;
         if (quality > 1.0)
             quality = 1.0;
         encoding_quality_ = quality;
+        mutex_encoding_quality_.unlock();
+
+        QMutexLocker encoder_locker(&mutex_encoder_);
+        celt_encoder_ctl(celt_encoder_, CELT_SET_VBR_RATE(BitrateForDecoder()));
     }
     
     int Connection::BitrateForDecoder()
@@ -750,6 +760,18 @@ namespace MumbleLib
             user->CheckSpeakingState();
             Channel* channel = ChannelById(user->CurrentChannelID());
             user->SetChannel(channel);
+        }
+        lock_users_.unlock();
+    }
+
+    void Connection::SetPlaybackBufferMaxLengthMs(int length)
+    {
+        playback_buffer_length_ms_ = length;
+        lock_users_.lockForRead();
+        foreach(User* user, users_)
+        {
+            QMutexLocker user_locker(user);
+            user->SetPlaybackBufferMaxLengthMs(length);
         }
         lock_users_.unlock();
     }

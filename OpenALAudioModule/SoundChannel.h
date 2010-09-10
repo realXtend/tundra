@@ -32,13 +32,13 @@ namespace OpenALAudio
         //! Set position
         void SetPosition(const Vector3df& pos);
         //! Set pitch.
-        void SetPitch(Real pitch);
+        void SetPitch(float pitch);
         //! Set gain.
-        void SetGain(Real gain);
+        void SetGain(float gain);
         //! Set master gain.
-        void SetMasterGain(Real master_gain);
+        void SetMasterGain(float master_gain);
         //! Set range parameters
-        void SetRange(Real inner_radius, Real outer_radius, Real rolloff);
+        void SetRange(float inner_radius, float outer_radius, float rolloff);
         //! Stop.
         void Stop();
         //! Per-frame update with new listener position
@@ -75,19 +75,19 @@ namespace OpenALAudio
         //! Currently playing sound buffers
         std::vector<SoundPtr> playing_sounds_;
         //! Pitch
-        Real pitch_;
+        float pitch_;
         //! Gain
-        Real gain_;
+        float gain_;
         //! Master gain. Final sound volume = gain * master gain * possible distance attenuation
-        Real master_gain_;
+        float master_gain_;
         //! Inner radius
-        Real inner_radius_;
+        float inner_radius_;
         //! Outer radius
-        Real outer_radius_;
+        float outer_radius_;
         //! Rolloff power factor
-        Real rolloff_;
+        float rolloff_;
         //! Last calculated attenuation factor
-        Real attenuation_;
+        float attenuation_;
         //! Looped flag
         bool looped_;
         //! Positional flag
