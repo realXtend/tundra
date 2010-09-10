@@ -106,37 +106,37 @@ public:
     Ogre::Light* GetLight() const { return light_; }
     
     //! Light direction
-    Foundation::Attribute<Vector3df> directionAttr_;
+    Attribute<Vector3df> directionAttr_;
     
     //! Light type
-    Foundation::Attribute<int> typeAttr_;
+    Attribute<int> typeAttr_;
     
     //! Light diffuse color
-    Foundation::Attribute<Color> diffColorAttr_;
+    Attribute<Color> diffColorAttr_;
     
     //! Light specular color
-    Foundation::Attribute<Color> specColorAttr_;
+    Attribute<Color> specColorAttr_;
     
     //! Cast shadows flag
-    Foundation::Attribute<bool> castShadowsAttr_;
+    Attribute<bool> castShadowsAttr_;
     
     //! Light range
-    Foundation::Attribute<float> rangeAttr_;
+    Attribute<float> rangeAttr_;
     
     //! Light constant attenuation
-    Foundation::Attribute<float> constAttenAttr_;
+    Attribute<float> constAttenAttr_;
     
     //! Light linear attenuation
-    Foundation::Attribute<float> linearAttenAttr_;
+    Attribute<float> linearAttenAttr_;
     
     //! Light quadratic attenuation
-    Foundation::Attribute<float> quadraAttenAttr_;
+    Attribute<float> quadraAttenAttr_;
     
     //! Spotlight inner angle (degrees)
-    Foundation::Attribute<float> innerAngleAttr_;
+    Attribute<float> innerAngleAttr_;
     
     //! Spotlight outer angle (degrees)
-    Foundation::Attribute<float> outerAngleAttr_;
+    Attribute<float> outerAngleAttr_;
     
 
 private slots:

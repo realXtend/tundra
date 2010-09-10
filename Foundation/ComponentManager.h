@@ -9,10 +9,6 @@
 
 namespace Foundation
 {
-    class Framework;
-    class AttributeInterface;
-    class ComponentInterface;
-
     //! Scenegraph, entity and component model that together form a generic, extendable, lightweight scene model.
     /*! See \ref SceneModelPage "Scenes, entities and components" for details about the viewer's scene model.
     
@@ -27,13 +23,13 @@ namespace Foundation
     {
     public:
         typedef std::list<ComponentWeakPtr> ComponentList;
-        typedef std::map< std::string, ComponentList > ComponentTypeMap;
+        typedef std::map<std::string, ComponentList> ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
         typedef std::map<QString, ComponentFactoryInterfacePtr> ComponentFactoryMap;
 
         //! default constructor
-        ComponentManager(Framework *framework);// : framework_(framework) {}
+        ComponentManager(Framework *framework);
 
         //! destructor
         ~ComponentManager() { }
@@ -41,16 +37,16 @@ namespace Foundation
         //! register factory for the component
         void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory)
         {
-            assert(factories_.find(component) == factories_.end());
-            factories_[component] = factory;
+            if (factories_.find(component) == factories_.end())
+                factories_[component] = factory;
         }
 
         //! Unregister the component. Removes the factory.
         void UnregisterFactory(const QString &component)
         {
             ComponentFactoryMap::iterator iter = factories_.find(component);
-            assert(iter != factories_.end());
-            factories_.erase(iter);
+            if (iter != factories_.end())
+                factories_.erase(iter);
         }
 
         //! Returns true if component can be created (a factory for the component has registered itself)
@@ -82,14 +78,18 @@ namespace Foundation
 
         //! Create new attribute for spesific component.
         AttributeInterface *CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name);
+
+        //! Returns list of supported attribute types.
         StringVector GetAttributeTypes() const;
 
         //! Get all component factories
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
     private:
-        //! map of component factories
+        //! Map of component factories
         ComponentFactoryMap factories_;
+
+        //! List of supported attribute types.
         StringVector attributeTypes_;
 
         //! Framework

@@ -75,7 +75,13 @@ namespace Foundation
         /*! If attribute with same name is found return attribute interface pointer, else return null.
          *  @param name Attribute name.
          */
-        AttributeInterface* GetAttribute(const std::string &name) const;
+        AttributeInterface* GetAttribute(const std::string &name) const
+        {
+            for(unsigned int i = 0; i < attributes_.size(); ++i)
+            if(attributes_[i]->GetNameString() == name)
+                return attributes_[i];
+            return 0;
+        }
 
         /*! Return pointer to atribute with spesific name and typename/class or null if the attribute not found.
             \param T Typename/class of the attribute.

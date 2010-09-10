@@ -133,7 +133,7 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
+void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
 {
     if(component != this)
         return;
@@ -158,14 +158,14 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
 }
 
 Foundation::ComponentPtr EC_ParticleSystem::FindPlaceable() const

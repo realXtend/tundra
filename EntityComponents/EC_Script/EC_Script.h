@@ -8,8 +8,6 @@
 
 class IScriptInstance;
 
-using Foundation::AttributeInterface;
-
 class EC_Script: public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -23,10 +21,10 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     /// Reference to a script file.
-    Foundation::Attribute<QString> scriptRef;
+    Attribute<QString> scriptRef;
 
     /// Type of the script as string (js/py)
-    Foundation::Attribute<QString> type;
+    Attribute<QString> type;
 
     /** Sets new script instance. Unloads and deletes possible already existing script instance.
         @param instance Script instance.

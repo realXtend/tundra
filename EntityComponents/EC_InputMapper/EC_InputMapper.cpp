@@ -9,6 +9,7 @@
 #include "StableHeaders.h"
 #include "EC_InputMapper.h"
 
+#include "AttributeInterface.h"
 #include "InputServiceInterface.h"
 #include "Entity.h"
 
@@ -27,10 +28,17 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
 }
 
 EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework())
+    Foundation::ComponentInterface(module->GetFramework()),
+    contextName(this, "Input context name", "EC_InputMapper"),
+    contextPriority(this, "Input context priority", 90),
+    takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", true)
+//    mappings(this, "Mappings")
 {
-    input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
-    input_->SetTakeKeyboardEventsOverQt(true);
+    connect(this, SIGNAL(AttributeChanged(AttributeInterface *, AttributeChange::Type)),
+        SLOT(AttributeUpdated(AttributeInterface *, AttributeChange::Type)));
+
+    input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
     // Register some hardcoded mappings for testing purposes;
@@ -40,6 +48,12 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     RegisterMapping(Qt::Key_L, "Move(Right)");
     RegisterMapping(Qt::Key_U, "Rotate(Left)");
     RegisterMapping(Qt::Key_O, "Rotate(Right)");
+}
+
+void EC_InputMapper::AttributeUpdated(AttributeInterface *attribute, AttributeChange::Type change)
+{
+    const QString &name = attribute->GetNameString().c_str();
+    //if(name == meshResouceId_.GetNameString()))
 }
 
 void EC_InputMapper::HandleKeyEvent(KeyEvent *key)

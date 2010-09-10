@@ -36,7 +36,7 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     innerAngleAttr_(this, "light inner angle", 30.0f),
     outerAngleAttr_(this, "light outer angle", 40.0f)
 {
-    static Foundation::AttributeMetadata typeAttrData;
+    static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {

@@ -23,7 +23,7 @@ EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
     triggerSound_(this, "Trigger sound", false),
     soundGain_(this, "Sound gain", 1.0f)
 {
-    static Foundation::AttributeMetadata metaData;
+    static AttributeMetadata metaData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
@@ -42,7 +42,7 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
+void EC_Sound::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
 {
     if(component != this)
         return;
@@ -112,13 +112,13 @@ void EC_Sound::UpdateSoundSettings()
 
 void EC_Sound::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
     if(GetParentEntity())
     {
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
     }
 }
 

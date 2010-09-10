@@ -3,24 +3,18 @@
 #ifndef incl_SceneManager_SceneManager_h
 #define incl_SceneManager_SceneManager_h
 
+#include "ForwardDefines.h"
 #include "CoreStdIncludes.h"
 #include "CoreAnyIterator.h"
 #include "Entity.h"
 #include "ComponentInterface.h"
-#include <QObject>
-#include <qvariant.h>
-#include <QStringList>
 
-namespace Foundation
-{
-    class AttributeInterface;
-}
+#include <QObject>
+#include <QVariant>
+#include <QStringList>
 
 namespace Scene
 {
-    class SceneManager;
-    typedef boost::shared_ptr<SceneManager> ScenePtr;
-    typedef boost::weak_ptr<SceneManager> SceneWeakPtr;
     typedef std::list<EntityPtr> EntityList;
     typedef std::list<EntityPtr>::iterator EntityListIterator;
 
@@ -35,7 +29,7 @@ namespace Scene
     class SceneManager : public QObject
     {
         Q_OBJECT
-        
+
         friend class Foundation::Framework;
     private:
         //! default constructor
@@ -158,7 +152,7 @@ namespace Scene
             \param attribute Attribute pointer
             \param change Type of change (local, from network...)
          */
-        void EmitAttributeChanged(Foundation::ComponentInterface* comp, Foundation::AttributeInterface* attribute, AttributeChange::Type change);
+        void EmitAttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
@@ -225,7 +219,7 @@ namespace Scene
         void ComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
 
         //! Signal when an attribute of a component has changed
-        void AttributeChanged(Foundation::ComponentInterface* comp, Foundation::AttributeInterface* attribute, AttributeChange::Type change);
+        void AttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this

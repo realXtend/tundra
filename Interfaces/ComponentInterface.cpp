@@ -69,14 +69,6 @@ Scene::Entity* ComponentInterface::GetParentEntity() const
     return parent_entity_;
 }
 
-AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) const
-{
-    for(unsigned int i = 0; i < attributes_.size(); ++i)
-        if(attributes_[i]->GetNameString() == name)
-            return attributes_[i];
-    return 0;
-}
-
 QDomElement ComponentInterface::BeginSerialization(QDomDocument& doc, QDomElement& base_element) const
 {
     QDomElement comp_element = doc.createElement("component");
@@ -163,7 +155,7 @@ void ComponentInterface::ComponentChanged(AttributeChange::Type change)
     emit OnChanged();
 }
 
-void ComponentInterface::AttributeChanged(Foundation::AttributeInterface* attribute, AttributeChange::Type change)
+void ComponentInterface::AttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
 {
     // Trigger scenemanager signal
     if (parent_entity_)
