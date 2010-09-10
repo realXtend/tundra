@@ -62,6 +62,12 @@ namespace Foundation
         //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
         Scene::Entity* GetParentEntity() const;
 
+        //! Sets network sync enabled/disabled. By default on.
+        void SetNetworkSyncEnabled(bool enabled);
+        
+        //! Gets whether network enabled/disabled.
+        bool GetNetworkSyncEnabled() { return network_sync_; }
+        
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
 
@@ -180,6 +186,9 @@ namespace Foundation
         //! Change status for the component itself
         AttributeChange::Type change_;
 
+        //! Network sync enable flag
+        bool network_sync_;
+        
         //! Framework pointer. Needed so that component is able to perform important uninitialization etc. even when not in an entity
         Framework* framework_;
 

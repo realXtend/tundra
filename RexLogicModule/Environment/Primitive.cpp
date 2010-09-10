@@ -2060,7 +2060,7 @@ void Primitive::SerializeECsToNetwork()
         
         for (uint j = 0; j < components.size(); ++j)
         {
-            if (components[j]->IsSerializable())
+            if ((components[j]->IsSerializable()) && (components[j]->GetNetworkSyncEnabled()))
                 components[j]->SerializeTo(temp_doc, entity_elem);
             // Clear the change flag now that component has been processed
             components[j]->ResetChange();
@@ -2096,7 +2096,8 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             type_names.push_back(type_name);
             names.push_back(name);
             Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str());
-            if (new_comp)
+            // If it's an existing component, and has network sync disabled, skip
+            if ((new_comp) && (new_comp->GetNetworkSyncEnabled()))
             {
                 new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
                 new_comp->ComponentChanged(AttributeChange::Network);
@@ -2112,7 +2113,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     Scene::Entity::ComponentVector all_components = entity->GetComponentVector();
     for (uint i = 0; i < all_components.size(); ++i)
     {
-        if (all_components[i]->IsSerializable())
+        if ((all_components[i]->IsSerializable()) && (all_components[i]->GetNetworkSyncEnabled()))
         {
             bool found = false;
             for (uint j = 0; j < type_names.size(); ++j)

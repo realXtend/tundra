@@ -23,14 +23,16 @@ namespace Foundation
 ComponentInterface::ComponentInterface(Framework* framework) :
     parent_entity_(0),
     framework_(framework),
-    change_(AttributeChange::None)
+    change_(AttributeChange::None),
+    network_sync_(true)
 {
 }
 
 ComponentInterface::ComponentInterface(const ComponentInterface &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
-    change_(AttributeChange::None)
+    change_(AttributeChange::None),
+    network_sync_(true)
 {
 }
 
@@ -67,6 +69,11 @@ void ComponentInterface::SetParentEntity(Scene::Entity* entity)
 Scene::Entity* ComponentInterface::GetParentEntity() const
 {
     return parent_entity_;
+}
+
+void ComponentInterface::SetNetworkSyncEnabled(bool enabled)
+{
+    network_sync_ = enabled;
 }
 
 AttributeInterface* ComponentInterface::GetAttribute(const std::string &name) const
