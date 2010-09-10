@@ -53,10 +53,17 @@ namespace Scene
         //! Current global id for entities
         static uint gid_;
 
+    //overrides that use native and qt types, so can be called from pythonqt and qtscript.'
+    //for docs see the implementing plain c++ public methods below. 
     public slots:
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
-        QVariantList GetEntityIdsWithComponent(const QString &type_name);
+        uint NextFreeId() { return (uint)GetNextFreeId(); }
+
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList(),
+            AttributeChange::Type change = AttributeChange::LocalOnly) { return CreateEntity((entity_id_t)id, components, change).get(); }
+
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
+        QVariantList GetEntityIdsWithComponent(const QString &type_name);
 
     public:
         //! destructor

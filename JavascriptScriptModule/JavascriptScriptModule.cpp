@@ -156,10 +156,10 @@ namespace JavascriptScript
         engine.evaluate(codestr);
         }*/
 
-    void JavascriptScriptModule::RunString(QString codestr, QVariantMap context)
+    void JavascriptScriptModule::RunString(const QString &codestr, const QVariantMap &context)
     {
         QMapIterator<QString, QVariant> i(context);
-        while (i.hasNext()) 
+        while (i.hasNext())
         {
             i.next();
             //LogInfo(i.key().toStdString());
@@ -170,7 +170,7 @@ namespace JavascriptScript
         engine.evaluate(codestr);
     }
 
-    void JavascriptScriptModule::RunScript(QString scriptFileName)
+    void JavascriptScriptModule::RunScript(const QString &scriptFileName)
     {
       //QFile scriptFile("jsmodules/intensity_js/intensity/" + scriptFileName);
         QFile scriptFile(scriptFileName);

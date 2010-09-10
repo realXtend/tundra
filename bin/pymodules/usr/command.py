@@ -2,6 +2,7 @@
 used for quick testing of py commands."""
 
 import naali
+naali = reload(naali) #hopefully allows devving naali.py without naali restarts
 import rexviewer as r
 import math
 
@@ -1482,6 +1483,13 @@ if 0: #local object creation, testing if local previews of .scenes would work
     e.placeable.Position = Vec3(128, 128, 60)
     e.placeable.Scale = Vec3(5, 5, 5)
     e.placeable.Orientation = Quat(0, 0, 0, 1)
+
+if 0: #createentity directly from the c++ scenemanager where it's a qt slot now
+    #s = naali.getDefaultScene()
+    #id = s.NextFreeId()
+    #ent = s.CreateEntityRaw(id)
+    ent = naali.createEntity()
+    print "new entity created:", ent, ent.Id
 
 if 0: #running localscene dotscene loader
     import localscene.loader

@@ -3,7 +3,6 @@
 #ifndef incl_PythonScriptModule_PythonScriptModule_h
 #define incl_PythonScriptModule_PythonScriptModule_h
 
-#include "Core.h"
 #include "Foundation.h"
 #include "ModuleInterface.h"
 #include "ModuleLoggingFunctions.h"
@@ -27,25 +26,13 @@
 
 class EC_OpenSimPrim;
 
-class InputContext;
-typedef boost::shared_ptr<InputContext> InputContextPtr;
-class KeyEvent;
-class MouseEvent;
-
 namespace OgreRenderer
 {
     class Renderer;
-    class EC_OgreCamera;
-}
-
-namespace Scene
-{
-    class SceneManager;
 }
 
 namespace Foundation
 {
-    class Framework;
     class WorldLogicInterface;
 }
 
@@ -55,6 +42,7 @@ namespace ProtocolUtilities
     class WorldStream;
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
+
 namespace MediaPlayer
 {
     class ServiceInterface;
@@ -134,8 +122,6 @@ namespace PythonScript
         ProtocolUtilities::WorldStreamPtr worldstream;
 
     private:
-        //void SendObjectAddPacket(float start_x, start_y, start_z, float end_x, end_y, end_z);
-
         //! Type name of the module.
         static std::string type_name_static_;
 
@@ -145,19 +131,12 @@ namespace PythonScript
         PythonEnginePtr engine_;
         bool pythonqt_inited;
 
-        //basic feats
-        void RunString(const char* codestr);
-        void RunFile(const std::string &modulename);
-
-        //void Reset();
-
         //a testing place
         void x();
-        
+
         PyObject *apiModule; //the module made here that exposes the c++ side / api, 'rexviewer'
 
         // the hook to the python-written module manager that passes events on
-        
         PyObject *pmmModule, *pmmDict, *pmmClass, *pmmInstance;
         PyObject *pmmArgs, *pmmValue;
 
@@ -176,6 +155,21 @@ namespace PythonScript
         InputContextPtr input;
 
         QList<InputContextPtr> created_inputs_;
+
+    private slots:
+        /** Called when new component is added to the active scene.
+            Currently used for handling EC_Script.
+            @param entity Entity for which the component was added.
+            @param component The added component.
+         */
+        void OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+
+        /** Called when component is removed from the active scene.
+            Currently used for handling EC_Script.
+            @param entity Entity from which the component was removed.
+            @param component The removed component.
+        */
+        void OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
     };
 
     static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }
