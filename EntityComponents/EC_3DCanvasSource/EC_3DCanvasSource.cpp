@@ -279,7 +279,6 @@ void EC_3DCanvasSource::ChangeLanguage()
     {
         QString title = tr("3DCanvas Controls");
         widget_->setWindowTitle(title);
-        widget_->graphicsProxyWidget()->setWindowTitle(title);
     }
 }
 

@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
@@ -7,7 +9,6 @@
 #include "EC_OgrePlaceable.h"
 #include "OgreParticleResource.h"
 #include "SceneManager.h"
-#include "OgreRenderingModule.h"
 #include "RexUUID.h"
 #include "EventManager.h"
 
@@ -26,10 +27,7 @@ EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
     castShadows_(this, "Cast shadows", false),
     renderingDistance_(this, "Rendering distance", 0.0f)
 {
-    OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-    if(!rendererModule)
-        return;
-    renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+    renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)

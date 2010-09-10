@@ -277,16 +277,10 @@ namespace Environment
 
     void EnvironmentEditor::changeEvent(QEvent* e)
     {
-       if (e->type() == QEvent::LanguageChange)
-        {
-            QString text = tr("Environment Editor");
-            setWindowTitle(text);
-            graphicsProxyWidget()->setWindowTitle(text);
-        }
+        if (e->type() == QEvent::LanguageChange)
+            setWindowTitle(tr("Environment Editor"));
         else
-        {
             QWidget::changeEvent(e);
-        }
     }
 
     void EnvironmentEditor::InitializeTabs()

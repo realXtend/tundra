@@ -35,6 +35,7 @@ class ObjectEditWindow:
     def __init__(self, controller):
         self.controller = controller
         loader = QUiLoader()
+        loader.setLanguageChangeEnabled(True)
         uifile = QFile(self.UIFILE)
 
         ui = loader.load(uifile)

@@ -127,7 +127,6 @@ void InventoryWindow::changeEvent(QEvent* e)
     {
         QString text = QApplication::translate("Inventory::InventoryWindow", "Inventory");
         setWindowTitle(text);
-        graphicsProxyWidget()->setWindowTitle(text);
     }
     else
     {
