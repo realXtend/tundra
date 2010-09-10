@@ -129,7 +129,7 @@ void EC_Mesh::SetMesh(const QString &name)
             request_tag_t tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
             if(tag)
             {
-                resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
+                resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
                     boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
                 materialRequestTags_[i] = tag; 
             }
@@ -238,7 +238,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
 
         tag = RequestResource(meshResouceId_.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
-            resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
+            resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
                 boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
         else
             RemoveMesh();
@@ -256,7 +256,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
             tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
             if(tag)
             {
-                resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
+                resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
                     boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
                 materialRequestTags_[i] = tag;
             }
@@ -273,7 +273,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
             std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
             tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
             if(tag)
-                resRequestTags_[ResouceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
+                resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
         }
     }
     else if(QString::fromStdString(drawDistance_.GetNameString()) == attrName)
@@ -382,7 +382,7 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
 
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
 
-    ResouceKeyPair event_key(event_data->tag_, event_data->resource_->GetType());
+    ResourceKeyPair event_key(event_data->tag_, event_data->resource_->GetType());
     MeshResourceHandlerMap::iterator iter2 = resRequestTags_.find(event_key);
     if(iter2 != resRequestTags_.end())
     {

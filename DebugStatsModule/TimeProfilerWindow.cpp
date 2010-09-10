@@ -706,6 +706,7 @@ void TimeProfilerWindow::DumpNodeData()
 
 void TimeProfilerWindow::DoThresholdLogging()
 {
+#ifdef PROFILING
     using namespace Foundation;
 
      QPushButton* button = findChild<QPushButton* >("loggerApply");
@@ -797,6 +798,7 @@ void TimeProfilerWindow::DoThresholdLogging()
     }
 
     profiler.Release();
+#endif
 }
 
 void TimeProfilerWindow::LogNetInMessage(const ProtocolUtilities::NetInMessage *msg)
@@ -1203,6 +1205,7 @@ void TimeProfilerWindow::RefreshProfilingData()
 
 void TimeProfilerWindow::RefreshProfilingDataTree()
 {
+#ifdef PROFILING
     using namespace Foundation;
 
 //    Foundation::Profiler *profiler = Foundation::ProfilerSection::GetProfiler();
@@ -1252,6 +1255,7 @@ void TimeProfilerWindow::RefreshProfilingDataTree()
         FillProfileTimingWindow(item, node);
     }
     profiler.Release();
+#endif
 }
 
 void TimeProfilerWindow::CollectProfilerNodes(Foundation::ProfilerNodeTree *node, std::vector<const Foundation::ProfilerNode *> &dst)
@@ -1277,6 +1281,7 @@ bool ProfilingNodeLessThan(const Foundation::ProfilerNode *a, const Foundation::
 
 void TimeProfilerWindow::RefreshProfilingDataList()
 {
+#ifdef PROFILING
     using namespace Foundation;
 
     Profiler &profiler = framework_->GetProfiler();
@@ -1320,6 +1325,7 @@ void TimeProfilerWindow::RefreshProfilingDataList()
     }
 
     profiler.Release();
+#endif
 }
 
 void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
