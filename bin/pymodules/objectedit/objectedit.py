@@ -45,6 +45,14 @@ else:
     window = reload(window)
     manipulator = reload(manipulator)
     
+def editable(ent): #removed this from PyEntity
+    try:
+        ent.prim
+    except AttributeError:
+        return False
+    else:
+        return True
+    
 class ObjectEdit(Component):
     EVENTHANDLED = False
  
@@ -198,7 +206,7 @@ class ObjectEdit(Component):
                 # get the parent entity, and if it is editable set it to ent.
                 # on next loop we get prim from it and from that we get children.
                 temp_ent = r.getEntity(qprim.ParentId)
-                if not temp_ent.editable:
+                if not editable(temp_ent):
                     # not a prim, so not selecting all children
                     break
                 else:
@@ -240,9 +248,10 @@ class ObjectEdit(Component):
             self.soundRuler(child)
             #self.sels.append(child)
             
-    def deselect(self, ent):
-        self.remove_highlight(ent)
-        self.removeSoundRuler(ent)
+    def deselect(self, ent, valid=True):
+        if valid: #the ent is still there, not already deleted by someone else
+            self.remove_highlight(ent)
+            self.removeSoundRuler(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.id == ent.id:
                 self.sels.remove(_ent)
@@ -399,7 +408,7 @@ class ObjectEdit(Component):
 
         if ent is not None:
             #print "Got entity:", ent, ent.editable
-            if not self.manipulator.compareIds(ent.id) and ent.editable: #ent.id != self.selection_box.id and 
+            if not self.manipulator.compareIds(ent.id) and editable(ent): #ent.id != self.selection_box.id and 
                 r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
@@ -781,6 +790,16 @@ class ObjectEdit(Component):
             self.time += time
             if self.sels:
                 ent = self.active
+                #try:
+                #    ent.prim
+                #except ValueError:
+                #that would work also, but perhaps this is nicer:
+                s = naali.getDefaultScene()
+                if not s.HasEntityId(ent.id):
+                    #my active entity was removed from the scene by someone else
+                    self.deselect(ent, valid=False)
+                    return
+                    
                 if self.time > self.UPDATE_INTERVAL:
                     try:
                         #sel_pos = self.selection_box.placeable.Position
