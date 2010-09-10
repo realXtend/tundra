@@ -67,7 +67,11 @@ namespace Foundation
     void RootLogInfo(const std::string &msg);
     void RootLogTrace(const std::string &msg);
     void RootLogDebug(const std::string &msg);
-
 }
+
+class KeyEvent;
+class MouseEvent;
+class InputContext;
+typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 #endif
