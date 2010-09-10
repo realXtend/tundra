@@ -8,7 +8,6 @@
 #include "StableHeaders.h"
 
 #include "ComponentInterface.h"
-#include "AttributeInterface.h"
 
 #include "Framework.h"
 #include "Entity.h"

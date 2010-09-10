@@ -8,11 +8,11 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
+#include "ForwardDefines.h"
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
 #include "EventDataInterface.h"
 #include "CoreTypes.h"
-#include "ForwardDefines.h"
 
 #include <QObject>
 
