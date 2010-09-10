@@ -70,6 +70,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
     UIFILE = "pymodules/estatemanagement/estatemanagement.ui"
     def __init__(self, controller, queue):
         loader = QUiLoader()
+        loader.setLanguageChangeEnabled(True)
         #uifile = QFile("pymodules/estatemanagement/estatemanagement.ui")
         uifile = QFile(EstateManagementWindow.UIFILE)
         self.gui = loader.load(uifile)

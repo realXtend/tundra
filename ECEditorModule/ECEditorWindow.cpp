@@ -487,7 +487,7 @@ namespace ECEditor
         if (e->type() == QEvent::LanguageChange)
         {
             QString title = QApplication::translate("ECEditor", "Entity-component Editor");
-            graphicsProxyWidget()->setWindowTitle(title);
+            setWindowTitle(title);
         }
         else
            QWidget::changeEvent(e);

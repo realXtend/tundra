@@ -1,9 +1,10 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
 
-#include "OgreRenderingModule.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonResource.h"
@@ -40,11 +41,7 @@ EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     }
     drawDistance_.SetMetadata(&drawDistanceData);
 
-    OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-    if(!rendererModule)
-        return;
-
-    renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+    renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
     if(!renderer_.expired())
     {
         Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();

@@ -91,22 +91,24 @@ namespace PythonScript
     }*/
 
     //void PythonEngine::RunString(QString codestr, QMap<QString, QObject*> context)
-    void PythonEngine::RunString(QString codestr, QVariantMap context)
+    void PythonEngine::RunString(const QString &codestr, const QVariantMap &context)
     {
         PyRun_SimpleString(codestr.toAscii().data());
         //\note: doesn't handle extra context given, that was added to the interface for js
         //can be added here too if needed.
     }
 
-    void PythonEngine::RunScript(QString scriptname)
+    void PythonEngine::RunScript(const QString &scriptname)
     {
         FILE *fp = fopen(scriptname.toAscii().data(), "r");
-	if (!fp) {
+        if (!fp)
+        {
             PythonScriptModule::LogInfo("Failed to open script " + scriptname.toStdString());
-	    return;
-	}
-	PyRun_SimpleFile(fp, scriptname.toAscii().data());
-	fclose(fp);
+            return;
+        }
+
+        PyRun_SimpleFile(fp, scriptname.toAscii().data());
+        fclose(fp);
     }
 
     //===============================================================================================//

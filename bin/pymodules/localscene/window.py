@@ -17,6 +17,7 @@ class ToolBarWindow():
     def __init__(self, uistring, queue, endApplication, controller):
         self.controller = controller
         loader = QUiLoader()
+        loader.setLanguageChangeEnabled(True)
         uifile = QFile(uistring)
         ui = loader.load(uifile)
         self.gui = ui

@@ -44,9 +44,9 @@ namespace PythonScript
         virtual void NotifyScriptEvent(const std::string& key, const std::string& message);
         */
 
-        virtual void RunScript(QString scriptname);
+        virtual void RunScript(const QString &scriptname);
         //virtual void RunString(QString codestr, QMap<QString, QObject*> context = QMap<QString, QObject*>());
-        virtual void RunString(QString codestr, QVariantMap context = QVariantMap());
+        virtual void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
         // generic script wrapper interface
         /*
