@@ -54,6 +54,7 @@ namespace Scene
         static uint gid_;
 
     public slots:
+        bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
 

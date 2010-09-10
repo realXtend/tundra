@@ -10,6 +10,10 @@ runjs = _naali.RunJavascriptString
 
 def getScene(name):
     return _naali.GetScene(name)
+    
+def getDefaultScene():
+    #XXX should use framework GetDefaultWorldScene
+    return getScene("World")
 
 def createInputContext(name, priority = 100):
     return _naali.CreateInputContext(name, priority)
