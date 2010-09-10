@@ -11,6 +11,7 @@
 #include "Inworld/InworldSceneController.h"
 #include "VoiceUsersWidget.h"
 #include "VoiceControl.h"
+#include "VoiceController.h"
 
 #include <CommunicationsService.h>
 #include <QWidget>
@@ -86,7 +87,8 @@ namespace CoreUi
         voice_users_info_widget_(0),
         voice_users_widget_(0),
         voice_users_proxy_widget_(0),
-        in_world_chat_session_(0)
+        in_world_chat_session_(0),
+        voice_controller_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -143,6 +145,7 @@ namespace CoreUi
                 connect(comm, SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
             }
         }
+
     }
 
     void CommunicationWidget::ShowVoiceControls()
@@ -220,11 +223,19 @@ namespace CoreUi
         if (!in_world_voice_session_)
             return;
 
-        in_world_speak_mode_on_ = !in_world_speak_mode_on_;
-        if (in_world_speak_mode_on_)
-            in_world_voice_session_->EnableAudioSending();
-        else
-            in_world_voice_session_->DisableAudioSending();
+        if (voice_controller_widget_)
+        {
+            if (voice_controller_widget_->isHidden())
+                voice_controller_widget_->show();
+            else
+                voice_controller_widget_->hide();
+        }
+
+        //in_world_speak_mode_on_ = !in_world_speak_mode_on_;
+        //if (in_world_speak_mode_on_)
+        //    in_world_voice_session_->EnableAudioSending();
+        //else
+        //    in_world_voice_session_->DisableAudioSending();
     }
 
     void CommunicationWidget::ToggleVoiceUsers()
@@ -457,6 +468,19 @@ namespace CoreUi
             }
         }
         UpdateInWorldVoiceIndicator();
+
+        // @todo FIX new/delete
+        voice_controller_widget_ = new CommUI::VoiceControllerWidget(in_world_voice_session_);
+        //SAFE_DELETE(voice_controller_);
+        //voice_controller_ = new CommUI::VoiceController(in_world_voice_session_);
+        voice_controller_widget_->SetTransmissionMode(CommUI::VoiceController::PushToTalk);
+        if (framework_)
+        {
+            input_context_ = framework_->Input().RegisterInputContext("CommunicationWidget", 90);
+            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent *)), static_cast<CommUI::VoiceController*>(voice_controller_widget_), SLOT(SetPushToTalkOn()));
+            connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent *)), static_cast<CommUI::VoiceController*>(voice_controller_widget_), SLOT(SetPushToTalkOff()));
+        }
+        
     }
 
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
