@@ -6,11 +6,7 @@
 #include "Foundation.h"
 #include <QMap>
 #include <QVector>
-namespace Ogre
-{
-	class Viewport;
-	class RenderWindow;
-}
+#include <Ogre.h>
 
 namespace OgreRenderer
 {
@@ -30,11 +26,14 @@ namespace OgreRenderer
             void InitializeUi();
 			void EnableStereo(QString& tech_type, qreal eye_dist, qreal focal_l, qreal offset, qreal scrn_width);
 			void DisableStereo();
+			void ChangeColorLeft(qreal r, qreal g, qreal b);
+			void ChangeColorRight(qreal r, qreal g, qreal b);
 
 
 
         private:
 
+			void ChangeShaderColour(qreal r, qreal g, qreal b,const Ogre::String& name);
 			Ogre::RenderWindow* CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen);
 
 

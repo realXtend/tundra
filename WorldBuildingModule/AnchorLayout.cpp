@@ -77,6 +77,12 @@ namespace WorldBuilding
         addAnchor(first_item, Qt::AnchorLeft, second_item, Qt::AnchorRight);
     }
 
+    void AnchorLayout::AnchorItemToLayout(QGraphicsLayoutItem *item, Qt::AnchorPoint item_point, Qt::AnchorPoint layout_point)
+    {
+        addAnchor(this, layout_point, item, item_point);
+        CheckVisibility(item);
+    }
+
     void AnchorLayout::AddItemToScene(QGraphicsWidget *graphics_widget)
     {
         scene_->addItem(graphics_widget);

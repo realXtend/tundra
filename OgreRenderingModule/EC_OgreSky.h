@@ -195,7 +195,7 @@ namespace OgreRenderer
          *  @return true if successful
          *  @todo use material/texture asset reference when asset system exists
          */
-        //bool SetSkyBox(const std::string& material_name, Real distance);
+        //bool SetSkyBox(const std::string& material_name, float distance);
 
         /// @return material texture string array.
         StringVector GetMaterialTextureNames();

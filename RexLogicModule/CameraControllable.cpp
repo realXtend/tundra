@@ -211,7 +211,7 @@ namespace RexLogic
         {
             if (current_state_ == FocusOnObject)
             {
-                Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
+                float value = checked_static_cast<CameraZoomEvent*>(data)->amount;
                 Radius -= (value * zoom_sensitivity_) / 2.0;
                 if ( Radius > 0.5)
                 {
@@ -219,7 +219,7 @@ namespace RexLogic
                 }
             } else             
             {
-                Real value = checked_static_cast<CameraZoomEvent*>(data)->amount;
+                float value = checked_static_cast<CameraZoomEvent*>(data)->amount;
                 camera_distance_ -= (value * zoom_sensitivity_) / 2.0;
                 camera_distance_ = clamp(camera_distance_, camera_min_distance_, camera_max_distance_);
             }
@@ -263,8 +263,8 @@ namespace RexLogic
 
     void CameraControllable::AddTime(f64 frametime)
     {
-        drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
-        drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
+        drag_yaw_ = static_cast<float>(movement_.x_.rel_) * -0.005f;
+        drag_pitch_ = static_cast<float>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
 
@@ -310,7 +310,7 @@ namespace RexLogic
                             Ogre::SkeletonInstance* skel = ent->getSkeleton();
                             
                             std::string view_bone_name;
-                            Real adjustheight = mesh->GetAdjustPosition().z;
+                            float adjustheight = mesh->GetAdjustPosition().z;
                             
                             if (appearance->HasProperty("viewbone"))
                             {
@@ -465,7 +465,7 @@ namespace RexLogic
     }
 
     //experimental for py api
-    void CameraControllable::SetYawPitch(Real newyaw, Real newpitch)
+    void CameraControllable::SetYawPitch(float newyaw, float newpitch)
     {
         firstperson_yaw_ = newyaw;
         firstperson_pitch_ = newpitch;
@@ -546,8 +546,8 @@ namespace RexLogic
 
     void CameraControllable::RotateCameraAroundObject()
     {
-        drag_yaw_ = static_cast<Real>(movement_.x_.rel_) * -0.005f;
-        drag_pitch_ = static_cast<Real>(movement_.y_.rel_) * -0.005f;
+        drag_yaw_ = static_cast<float>(movement_.x_.rel_) * -0.005f;
+        drag_pitch_ = static_cast<float>(movement_.y_.rel_) * -0.005f;
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
 

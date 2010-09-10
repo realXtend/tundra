@@ -33,13 +33,16 @@ namespace WorldBuilding
     // Module interface
 
     void WorldBuildingModule::Initialize()
-    {
-        // Get all category id's that we are interested in
-        SubscribeToEventCategories();
-        
+    {        
         // Init building scene manager and register as service
         build_scene_manager_ = BuildServicePtr(new BuildSceneManager(this, GetFramework()));
         GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldBuilding, build_scene_manager_);
+    }
+
+    void WorldBuildingModule::PostInitialize()
+    {
+        // Get all category id's that we are interested in
+        SubscribeToEventCategories();
 
         // Register building key context
         input_context_ = GetFramework()->Input().RegisterInputContext("WorldBuildingContext", 90);

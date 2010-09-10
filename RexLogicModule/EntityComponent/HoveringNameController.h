@@ -23,7 +23,7 @@ namespace RexLogic
         void SetText(const QString& text);
 
     private:
-        Real text_padding_;
+        float text_padding_;
 
 
     };

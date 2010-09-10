@@ -9,20 +9,20 @@
 class Color
 {
 public:
-    Real r;
-    Real g;
-    Real b;
-    Real a;
+    float r;
+    float g;
+    float b;
+    float a;
     
     Color() : r(0.0), g(0.0), b(0.0), a(1.0)
     {
     }
     
-    Color(Real nr, Real ng, Real nb) : r(nr), g(ng), b(nb), a(1.0)
+    Color(float nr, float ng, float nb) : r(nr), g(ng), b(nb), a(1.0)
     {
     }
     
-    Color(Real nr, Real ng, Real nb, Real na) : r(nr), g(ng), b(nb), a(na)
+    Color(float nr, float ng, float nb, float na) : r(nr), g(ng), b(nb), a(na)
     {
     }
 };

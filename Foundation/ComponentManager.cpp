@@ -73,7 +73,7 @@ namespace Foundation
         else if(typeName == "int")
             attribute = new Attribute<int>(owner, name.c_str());
         else if(typeName == "real")
-            attribute = new Attribute<Real>(owner, name.c_str());
+            attribute = new Attribute<float>(owner, name.c_str());
         else if(typeName == "color")
             attribute = new Attribute<Color>(owner, name.c_str());
         else if(typeName == "vector3df")

@@ -64,11 +64,8 @@ namespace Asset
     {
         protocolModule_ = currentProtocolModule;
         udp_asset_provider_->SetCurrentProtocolModule(protocolModule_);
-
         network_state_category_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
-
         inboundcategory_id_ = framework_->GetEventManager()->QueryEventCategory("NetworkIn");
-        LogInfo("System " + Name() + " subscribed to network events [NetworkIn]");
     }
 
     void AssetModule::UnsubscribeNetworkEvents()

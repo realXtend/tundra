@@ -73,6 +73,28 @@ namespace MumbleVoip
         }
     }
 
+    void PCMAudioFrame::SetSampleAt(int i, int sample)
+    {
+        switch(sample_width_)
+        {
+        case 8:
+            {
+                char* data = (char*)data_;
+                data[i] = static_cast<char>(sample);
+            }
+            break;
+        case 16:
+            {
+                ((short*)data_)[i] = sample;
+                //short* data = (short*)data_;
+                //data[i] = static_cast<short>(sample);
+            }
+            break;
+        default:
+            throw std::exception("Sample witdth is not supported");
+        }
+    }
+
     int PCMAudioFrame::Channels()
     {
         return channels_;
@@ -90,7 +112,7 @@ namespace MumbleVoip
         
     int PCMAudioFrame::SampleCount()
     {
-        return data_size_ / sample_width_;
+        return data_size_ * 8 / sample_width_;
     }
 
     int PCMAudioFrame::LengthMs()

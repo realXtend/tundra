@@ -19,6 +19,11 @@ class QGraphicsScene;
 
 class UiProxyWidget;
 
+namespace CoreUi
+{
+    class NotificationBaseWidget;
+}
+
 namespace Foundation
 {
     class UiServiceInterface;
@@ -165,6 +170,11 @@ namespace Foundation
          */
         virtual void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget) = 0;
 
+        /** Request notification manager to show given notificaiton widget
+            @todo move NotificationBaseWidget class to an public interface.
+         */
+        virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
+
     signals:
         /** Emitted when scene is changed.
          *  @param oldName Name of the old scene.
@@ -178,6 +188,11 @@ namespace Foundation
          *  @param widget The transfering widget
          */
         void TransferRequest(const QString &widget_name, QGraphicsProxyWidget *widget);
+
+        /** Emitted when ShowNotification get called.
+            @param message The textual message of NotificationBaseWidget showed
+         */  
+        void Notification(const QString &message);
     };
 }
 

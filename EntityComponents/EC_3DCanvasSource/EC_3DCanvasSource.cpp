@@ -223,7 +223,7 @@ void EC_3DCanvasSource::UpdateCanvas()
     if ((!entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic())) && 
         (!entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic())))
     {
-        LogInfo("Mesh or prim did not exist yet, retrying");
+        //LogInfo("Mesh or prim did not exist yet, retrying");
         QTimer::singleShot(1000, this, SLOT(UpdateCanvas()));
         return;
     }

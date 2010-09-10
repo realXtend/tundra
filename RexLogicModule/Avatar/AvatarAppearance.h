@@ -132,7 +132,7 @@ namespace RexLogic
         void ResetBones(Scene::EntityPtr entity);
         
         //! Applies a bone modifier
-        void ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, Real value);
+        void ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, float value);
         
         //! Hides vertices from an entity's mesh. Mesh should be cloned from the base mesh and this must not be called more than once for the entity.
         void HideVertices(Ogre::Entity*, std::set<uint> vertices_to_hide);

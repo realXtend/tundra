@@ -269,12 +269,12 @@ bool OpenSimInventoryDataModel::OpenItem(AbstractInventoryItem *item)
         switch(asset_type)
         {
         case RexAT_Texture:
-        {
+        /*{
             TextureServiceInterface *texture_service = owner_->GetFramework()->GetService<TextureServiceInterface>();
             if (texture_service)
                 tag = texture_service->RequestTexture(asset_id);
             break;
-        }
+        }*/
         case RexAT_MaterialScript:
         case RexAT_ParticleScript:
         case RexAT_SoundVorbis:
@@ -432,8 +432,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     }
 }
 
-/*
-void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
+/*void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
 {
     ///\todo    It seems that we don't necessarily need to handle ResourceReady.
     ///         Ogre seems to be able to create files from AssetReady events.
@@ -473,8 +472,7 @@ void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterfa
     InventoryModule::LogInfo("File " + i.value().toStdString() + " succesfully saved.");
 
     downloadRequests_.erase(i);
-}
-*/
+}*/
 
 void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDataInterface *data)
 {
@@ -540,35 +538,39 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
 
 void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInterface *data)
 {
-    Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
-    request_tag_t tag = assetReady->tag_;
-    asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
+    //Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
+    Asset::Events::AssetReady *assetReady = dynamic_cast<Asset::Events::AssetReady*>(data);
+    if(assetReady)
+    {
+        request_tag_t tag = assetReady->tag_;
+        asset_type_t asset_type = RexTypes::GetAssetTypeFromTypeName(assetReady->asset_type_);
 
-    QPair<request_tag_t, QString> key = qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_));
-    AssetRequestMap::iterator i = openRequests_.find(key);
-    if (i == openRequests_.end())
-        return;
+        QPair<request_tag_t, QString> key = qMakePair(tag, STD_TO_QSTR(assetReady->asset_id_));
+        AssetRequestMap::iterator i = openRequests_.find(key);
+        if (i == openRequests_.end())
+            return;
 
-    emit DownloadCompleted(assetReady->asset_id_.c_str());
+        emit DownloadCompleted(assetReady->asset_id_.c_str());
 
-    // Send InventoryItemDownloaded event.
-    Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
-    event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
+        // Send InventoryItemDownloaded event.
+        Foundation::EventManagerPtr event_mgr = owner_->GetFramework()->GetEventManager();
+        event_category_id_t event_category = event_mgr->QueryEventCategory("Inventory");
 
-    AbstractInventoryItem *item = GetChildById(i.value());
-    assert(item);
-    if (!item)
-        return;
+        AbstractInventoryItem *item = GetChildById(i.value());
+        assert(item);
+        if (!item)
+            return;
 
-    InventoryItemDownloadedEventData itemDownloaded;
-    itemDownloaded.inventoryId = QSTR_TO_UUID(i.value());
-    itemDownloaded.asset = assetReady->asset_;
-    itemDownloaded.name = item->GetName().toStdString();
-    itemDownloaded.requestTag = tag;
-    itemDownloaded.assetType = asset_type;
-    event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
+        InventoryItemDownloadedEventData itemDownloaded;
+        itemDownloaded.inventoryId = QSTR_TO_UUID(i.value());
+        itemDownloaded.asset = assetReady->asset_;
+        itemDownloaded.name = item->GetName().toStdString();
+        itemDownloaded.requestTag = tag;
+        itemDownloaded.assetType = asset_type;
+        event_mgr->SendEvent(event_category, Inventory::Events::EVENT_INVENTORY_ITEM_DOWNLOADED, &itemDownloaded);
 
-    openRequests_.erase(i);
+        openRequests_.erase(i);
+    }
 }
 
 void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventDataInterface *data)

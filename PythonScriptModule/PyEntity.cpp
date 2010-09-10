@@ -8,11 +8,11 @@
 #include "PythonScriptModule.h"
 #include "RexLogicModule.h" //for getting prim component data
 #include "SceneManager.h"
-
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMesh.h"
+#include "EC_OgreCamera.h"
 #include "EC_OgreAnimationController.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
@@ -260,22 +260,29 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     }
 
     PyEntity *eob = (PyEntity*) self;
-    Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
-    EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-
-    RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
-
+    //id is stored in the wrapper itself, and is return even if the entity is not in the scene anymore, for selection removal code to work in obedit.
     if (s_name.compare("id") == 0)
     {
         return Py_BuildValue("I", eob->ent_id); //unsigned int - is verified to be correct, same as c++ shows (at least in GetEntity debug print)
     }
+
+    Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
+
+    if (!entity)
+    {
+        PyErr_SetString(PyExc_ValueError, "This entity does not exist in the scene anymore. Was deleted by someone / something else?");
+        return NULL;
+    }
+
+
     else if (s_name.compare("prim") == 0)
     {
+        EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
+
         if (!prim)
         {
-            PyErr_SetString(PyExc_AttributeError, "prim not found.");
+            PyErr_SetString(PyExc_AttributeError, "This entity does not have a prim component.");
             return NULL;   
         }  
         /*
@@ -303,21 +310,25 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     
     else if (s_name.compare("placeable") == 0)
     {    
+        OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        if (!placeable)
+        {
+            PyErr_SetString(PyExc_AttributeError, "This entity does not have a placeable component.");
+            return NULL;   
+        }  
+
         return PythonScriptModule::GetInstance()->WrapQObject(placeable);
     }
     
     else if (s_name.compare("network") == 0)
     {
+        RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
+        if (!networkpos)
+        {
+            PyErr_SetString(PyExc_AttributeError, "This entity does not have a networkpos component.");
+            return NULL;   
+        }  
         return PythonScriptModule::GetInstance()->WrapQObject(networkpos);
-    }
-
-    else if(s_name.compare("editable") == 0)
-    {
-        // refactor to take into account permissions etc aswell later?
-        if(!prim || !placeable)
-            Py_RETURN_FALSE;
-        else
-            Py_RETURN_TRUE;
     }
     
     else if (s_name.compare("sound") == 0)
@@ -361,11 +372,13 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     //XXX make the getter in EC_Mesh a qt slot and switch to using that
     else if (s_name.compare("boundingbox") == 0)
     {
+        OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
         if (!placeable)
         {
-            PyErr_SetString(PyExc_AttributeError, "placeable not found.");
-            return NULL;  
-        }
+            PyErr_SetString(PyExc_AttributeError, "This entity does not have a placeable component.");
+            return NULL;   
+        }  
+
         Foundation::ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
         if (meshptr)
         {
@@ -458,6 +471,22 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         else
         {
             PyErr_SetString(PyExc_AttributeError, "Entity does not have an AnimationController component.");
+            return NULL;
+        }
+    }
+
+    else if (s_name.compare("camera") == 0)
+    {
+        const Foundation::ComponentInterfacePtr camera_ptr = entity->GetComponent("EC_OgreCamera");
+        OgreRenderer::EC_OgreCamera* camera = 0;
+        if (camera_ptr)
+        {
+            camera = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera_ptr.get());
+            return PythonScriptModule::GetInstance()->WrapQObject(camera);
+        }
+        else
+        {
+            PyErr_SetString(PyExc_AttributeError, "Entity does not have a camera component.");
             return NULL;
         }
     }

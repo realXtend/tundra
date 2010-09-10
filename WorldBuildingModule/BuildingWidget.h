@@ -6,7 +6,9 @@
 #include <QGraphicsProxyWidget>
 #include <QGraphicsSceneMouseEvent>
 #include <QGraphicsSceneHoverEvent>
-
+#include <QParallelAnimationGroup>
+#include <QPropertyAnimation>
+#include <QPushButton>
 
 namespace WorldBuilding
 {
@@ -32,23 +34,34 @@ namespace WorldBuilding
             void mousePressEvent(QGraphicsSceneMouseEvent *mouse_press_event);
             void mouseMoveEvent(QGraphicsSceneMouseEvent *mouse_move_event);
             void mouseReleaseEvent(QGraphicsSceneMouseEvent *mouse_release_event);
-
+        
         public slots:
             void PrepWidget();
             void CheckSize();
+            void SetVisibilityButton(QPushButton *button);
             QWidget *GetInternal() { return internal_widget_; }
             void SetWorldObjectView(WorldObjectView* view);
+            void ToggleVisibility();
 
         private slots:
+            void SetWidth(int width);
             void SceneRectChanged(const QRectF &new_rect);
-        
-        private:
-            WorldObjectView *view_;
-            QWidget *internal_widget_;
-            ToolPosition tool_position_;
-            bool resizing_;
-            int min_width_;
+            void OnStartAnimation();
+            void OnFinishedAnimation();
 
+        private:
+            QWidget *internal_widget_;
+            WorldObjectView *view_;            
+            ToolPosition tool_position_;
+            
+            bool resizing_;
+            bool scrolled_to_side_;
+            
+            int min_width_;
+            int last_width_;
+
+            QPushButton *visib_button_;
+            QParallelAnimationGroup *animations_;           
         };
     }
 }
