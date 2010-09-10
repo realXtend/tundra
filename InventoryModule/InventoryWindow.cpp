@@ -437,25 +437,25 @@ void InventoryWindow::InitInventoryWindow()
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
+///\todo Disable crappy search line edit feature for now. Maybe do better some day.
+/*
     QHBoxLayout *line_layout = new QHBoxLayout();
     line_layout->setContentsMargins(7, 0, 7, 0);
     QLineEdit *lineEditSearch_ = new QLineEdit(mainWidget_);
+    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
     lineEditSearch_->setText("Search...");
     line_layout->addWidget(lineEditSearch_);
-    
+*/
     // Create inventory tree view.
     treeView_ = new InventoryTreeView(mainWidget_);
-//    QHBoxLayout *hlayout = mainWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
-//    hlayout->addWidget(treeView_);
-    layout_->addLayout(line_layout);
+
+//    layout_->addLayout(line_layout);
     layout_->addWidget(treeView_);
 
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
 //    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
-
-    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
 
     CreateActions();
 }
