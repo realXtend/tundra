@@ -33,6 +33,7 @@ namespace Foundation
     
     void Profiler::StartBlock(const std::string &name)
     {
+#ifdef PROFILING
         // Get the current topmost profiling node in the stack, or 
         // if none exists, get the root node or create a new root node.
         // This will be the parent node of the new block we're starting.
@@ -71,10 +72,12 @@ namespace Foundation
 
             checked_static_cast<ProfilerNode*>(node)->block_.Start();
         }
+#endif
     }
 
     void Profiler::EndBlock(const std::string &name)
     {
+#ifdef PROFILING
         using namespace std;
 
         ProfilerNodeTree *treeNode = current_node_.get();
@@ -107,6 +110,7 @@ namespace Foundation
             current_node_.release();
             current_node_.reset(node->Parent());
         }
+#endif
     }
 
     ProfilerNodeTree *Profiler::GetThreadRootBlock()
@@ -116,9 +120,10 @@ namespace Foundation
 
     ProfilerNodeTree *Profiler::GetOrCreateThreadRootBlock()
     { 
+#ifdef PROFILING // If not profiling, never create the root block so the getter will always return 0.
         if (!thread_specific_root_.get())
             return CreateThreadRootBlock();
-
+#endif
         return thread_specific_root_.get();
     }
 
@@ -129,6 +134,7 @@ namespace Foundation
 
     ProfilerNodeTree *Profiler::CreateThreadRootBlock()
     {
+#ifdef PROFILING
         ProfilerBlock::QueryCapability();
         
         std::string rootObjectName = GetThisThreadRootBlockName();
@@ -146,10 +152,14 @@ namespace Foundation
         thread_root_nodes_.push_back(root);
         mutex_.unlock();
         return root;
+#else
+        return 0;
+#endif
     }
 
     void Profiler::RemoveThreadRootBlock(ProfilerNodeTree *rootBlock)
     {
+#ifdef PROFILING
         mutex_.lock();
         for(std::list<ProfilerNodeTree*>::iterator iter = thread_root_nodes_.begin(); iter != thread_root_nodes_.end(); ++iter)
             if (*iter == rootBlock)
@@ -161,6 +171,7 @@ namespace Foundation
 
         std::cout << "Warning: Tried to delete a nonexisting thread root block!" << std::endl;
         mutex_.unlock();
+#endif
     }
 
     void Profiler::ThreadedReset()
@@ -176,8 +187,11 @@ namespace Foundation
 
     void ProfilerNodeTree::RemoveThreadRootBlock()
     {
+#ifdef PROFILING
         assert(owner_);
-        owner_->RemoveThreadRootBlock(this);
+#endif
+        if (owner_)
+            owner_->RemoveThreadRootBlock(this);
     }
 
     Profiler::~Profiler()

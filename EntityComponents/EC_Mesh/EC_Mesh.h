@@ -107,9 +107,9 @@ private:
     typedef std::vector<request_tag_t> AssetRequestArray;
     AssetRequestArray materialRequestTags_;
 
-    typedef std::pair<request_tag_t, std::string> ResouceKeyPair;
+    typedef std::pair<request_tag_t, std::string> ResourceKeyPair;
     typedef boost::function<bool(event_id_t,Foundation::EventDataInterface*)> MeshEventHandlerFunction;
-    typedef std::map<ResouceKeyPair, MeshEventHandlerFunction> MeshResourceHandlerMap;
+    typedef std::map<ResourceKeyPair, MeshEventHandlerFunction> MeshResourceHandlerMap;
     MeshResourceHandlerMap resRequestTags_;
 };
 
