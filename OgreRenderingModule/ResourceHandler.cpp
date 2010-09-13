@@ -242,9 +242,17 @@ namespace OgreRenderer
             }
         }
         
-        // See if already have in the cache with a superior (non-J2K) format
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        
+        // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
+        if ((id.find("file://") == 0) && (asset_service))
+        {
+            // This request tag is unnecessary... as the asset should be loaded immediately if it exists
+            request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+        }
+        
+        // See if already have in the cache with a superior (non-J2K) format
         if (asset_service)
         {
             Foundation::AssetPtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
@@ -266,6 +274,8 @@ namespace OgreRenderer
                     framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
                     return tag;
                 }
+                else
+                    OgreRenderingModule::LogInfo("Failed to set imagetexturedata");
             }
         }
         
