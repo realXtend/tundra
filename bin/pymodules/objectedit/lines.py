@@ -102,7 +102,7 @@ class SoundAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applyaudio(ent, self.text, self.spinners[0].value, self.spinners[1].value)
             self.deactivateButtons()
-            self.mainedit.updateAnimation(ent)
+            self.mainedit.window.updateAnimation(ent)
 
     def update_soundradius(self, radius):
         ent = self.mainedit.active
