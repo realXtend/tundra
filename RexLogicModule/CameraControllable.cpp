@@ -254,7 +254,8 @@ namespace RexLogic
         {
             if (current_state_ == FocusOnObject)
             {
-                current_state_ = ThirdPerson;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
             }
         }
 
