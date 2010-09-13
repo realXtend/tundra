@@ -29,6 +29,7 @@ PRIMTYPES = {
 class ObjectEditWindow:
     UIFILE = "pymodules/objectedit/editobject.ui"
     
+    ICON_FOLDER = "pymodules/objectedit/folder.png"
     ICON_OK = "pymodules/objectedit/ok-small.png"
     ICON_CANCEL = "pymodules/objectedit/cancel-small.png" 
     
@@ -71,11 +72,12 @@ class ObjectEditWindow:
 
         button_ok = self.getButton("Apply", self.ICON_OK, self.meshline, self.meshline.applyAction)
         button_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.meshline, self.meshline.cancelAction)
+        button_browse = self.getButton("Browse", self.ICON_FOLDER, None, None)
         
-        #box = self.mainTab.findChild("QHBoxLayout", "meshLine")
         box = QHBoxLayout()
         box.setContentsMargins(0,0,0,0)
         box.addWidget(self.meshline)
+        box.addWidget(button_browse)
         box.addWidget(button_ok)
         box.addWidget(button_cancel)
         self.mesh_widget = QWidget()
@@ -86,6 +88,7 @@ class ObjectEditWindow:
         self.soundline.name = "soundLineEdit"
         soundbutton_ok = self.getButton("Apply", self.ICON_OK, self.soundline, self.soundline.applyAction)
         soundbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.soundline, self.soundline.cancelAction)
+        soundbutton_browse = self.getButton("Browse", self.ICON_FOLDER, None, None)
         soundRadius = self.getDoubleSpinBox("soundRadius", "Set sound radius", self.soundline)
         soundVolume = self.getDoubleSpinBox("soundVolume", "Set sound volume", self.soundline)
         
@@ -95,6 +98,8 @@ class ObjectEditWindow:
         box_buttons.setContentsMargins(0,0,0,0)
         
         # TODO no need for self?
+        # crashed always if didnt put self to second label :P you can try to remove them...
+        # basically the qwidget ptr must stay somewhere in py otherwise will crash when gets to painting -Pforce
         self.label_radius = QLabel("Radius")
         self.label_radius.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
         self.label_volume = QLabel("Volume")
@@ -103,7 +108,8 @@ class ObjectEditWindow:
         box_buttons.addWidget(self.label_radius)
         box_buttons.addWidget(soundRadius)
         box_buttons.addWidget(self.label_volume)
-        box_buttons.addWidget(soundVolume)        
+        box_buttons.addWidget(soundVolume)
+        box_buttons.addWidget(soundbutton_browse)        
         box_buttons.addWidget(soundbutton_ok)
         box_buttons.addWidget(soundbutton_cancel)
 
@@ -118,6 +124,7 @@ class ObjectEditWindow:
         animation_combobox = self.getCombobox("AnimationName", "Animation Name", self.animationline)
         animationbutton_ok = self.getButton("Apply", self.ICON_OK, self.animationline, self.animationline.applyAction)
         animationbutton_cancel = self.getButton("Cancel", self.ICON_CANCEL, self.animationline, self.animationline.cancelAction)
+        animationbutton_browse = self.getButton("Browse", self.ICON_FOLDER, None, None)
         animationRate = self.getDoubleSpinBox("animationRate", "Set animation rate", self.animationline)
 
         animationbox = QVBoxLayout()
@@ -126,13 +133,14 @@ class ObjectEditWindow:
         self.anim_box_buttons.name = "AnimBoxButtons"
         self.anim_box_buttons.setContentsMargins(0,0,0,0)
 
-        label_rate = QLabel("Animation Rate")
+        label_rate = QLabel("Rate")
         label_rate.name = "Animation Rate"
         label_rate.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Preferred)
 
-        self.anim_box_buttons.addWidget(label_rate)
         self.anim_box_buttons.addWidget(animation_combobox)
+        self.anim_box_buttons.addWidget(label_rate)
         self.anim_box_buttons.addWidget(animationRate)
+        self.anim_box_buttons.addWidget(animationbutton_browse)
         self.anim_box_buttons.addWidget(animationbutton_ok)
         self.anim_box_buttons.addWidget(animationbutton_cancel)
 
@@ -298,7 +306,6 @@ class ObjectEditWindow:
         self.animation_widget.setEnabled(False)
         if not ent:
             return
-
         try:
             ent.mesh
         except:
@@ -308,7 +315,6 @@ class ObjectEditWindow:
         self.animation_widget.setEnabled(True)
         self.animationline.update_text(ent.prim.AnimationPackageID)
         self.animationline.update_animationrate(ent.prim.AnimationRate)
-
         if ent.prim.AnimationPackageID in (u'', '00000000-0000-0000-0000-000000000000'):
             return
 
@@ -401,9 +407,11 @@ class ObjectEditWindow:
         button.name = name
         button.setIcon(icon)
         button.setFlat(True)
-        button.setEnabled(False)
-        button.connect('clicked()', action)
-        line.buttons.append(button)
+        if action != None:
+            button.connect('clicked()', action)
+        if line != None:
+            button.setEnabled(False)
+            line.buttons.append(button)
         return button
 
     def getDoubleSpinBox(self, name, tooltip, line):

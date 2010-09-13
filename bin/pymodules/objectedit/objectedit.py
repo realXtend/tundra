@@ -475,7 +475,6 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
 
     def on_multiselect(self, mouseinfo):
-        r.logInfo("on_multiselect()")
         if self.windowActive:           
             results = []
             results = r.rayCast(mouseinfo.x, mouseinfo.y)
