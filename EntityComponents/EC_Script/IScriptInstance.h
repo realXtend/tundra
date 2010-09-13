@@ -19,10 +19,16 @@ public:
     virtual ~IScriptInstance() {}
 
     /// Loads/reload this script instance.
-    virtual bool Reload() = 0;
+    virtual void Reload() = 0;
 
     /// Unloads this script instance.
-    virtual bool Unload() = 0;
+    virtual void Unload() = 0;
+
+    /// Starts this script instance.
+    virtual void Run() = 0;
+
+    /// Stops this script instance.
+    virtual void Stop() = 0;
 };
 
 #endif

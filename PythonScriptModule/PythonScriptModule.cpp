@@ -34,6 +34,7 @@
 #include "PythonScriptModule.h"
 #include "PyEntity.h"
 #include "RexPythonQt.h"
+#include "PythonScriptInstance.h"
 
 #include "ModuleManager.h"
 #include "EventManager.h"
@@ -642,6 +643,16 @@ namespace PythonScript
 
     void PythonScriptModule::RunScript(const QString &filename)
     {
+        EC_Script *script = dynamic_cast<EC_Script *>(sender());
+        if (!script)
+            return;
+
+        if (script->type.Get() != "py")
+            return;
+
+        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
+        script->SetScriptInstance(pyInstance);
+        script->Run();
     /*
             check if py script
             mikä oli vanha? jos vanha ->delete se
