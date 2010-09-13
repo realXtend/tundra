@@ -51,6 +51,7 @@ class Entity:
         'animationcontroller': 'EC_OgreAnimationController',
         'highlight': 'EC_Highlight',
         'touchable': 'EC_Touchable',
+        'soundruler': 'EC_SoundRuler',
         }   
  
     def __init__(self, qent):
