@@ -1,14 +1,23 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "EventManager.h"
+
+#include "InventoryModule.h"
+#include "InventoryService.h"
+#include "AbstractInventoryDataModel.h"
+#include "InventoryFolder.h"
+#include "InventoryAsset.h"
+
 #include "UiHelper.h"
 
 namespace WorldBuilding
 {
     namespace Helpers
     {
-        UiHelper::UiHelper(QObject *parent) :
+        UiHelper::UiHelper(QObject *parent, Foundation::Framework *framework) :
             QObject(parent),
+            framework_(framework),
             variant_manager(0),
             browser(0),
             manip_ui_(0),
@@ -34,6 +43,9 @@ namespace WorldBuilding
             shape_limiter_minushalf_to_plushalf << "PathShearX" << "PathShearY";
 
             shape_limiter_zero_to_three << "PathRevolutions";
+
+            mapper_ = new QSignalMapper(this);
+            connect(mapper_, SIGNAL(mapped(QWidget*)), SLOT(BrowseClicked(QWidget*)));
         }
 
         // Public helper slots
@@ -407,6 +419,101 @@ namespace WorldBuilding
             proxy = manip_ui->scene()->addWidget(vibility_button);
             layout->AnchorWidgetsHorizontally(info_ui, proxy);
             layout->AnchorItemToLayout(proxy, Qt::AnchorBottom, Qt::AnchorBottom);
+        }
+
+        void UiHelper::AddBrowsePair(QString name, QPushButton *button, QWidget *tool_widget)
+        {
+            if (browser_pairs_.contains(name))
+                return;
+            browser_pairs_[name] = QPair<QPushButton*,QWidget*>(button,tool_widget);
+            mapper_->setMapping(button, button);
+            connect(button, SIGNAL(clicked()), mapper_, SLOT(map()));
+        }
+
+        void UiHelper::BrowseClicked(QWidget *widget_ptr)
+        {
+            foreach (QString key, browser_pairs_.keys())
+            {
+                QPair<QPushButton*,QWidget*> pair = browser_pairs_[key];
+                if (pair.first == widget_ptr)
+                {
+                    if (key == "mesh")
+                        BrowserAndUpload(key, "mesh", "3D Models", pair.second);
+                    else if (key == "animation")
+                        BrowserAndUpload(key, "skeleton", "Animations", pair.second);
+                    else if (key == "sound")
+                        BrowserAndUpload(key, "ogg", "Sounds", pair.second);
+                }
+            }
+        }
+
+        void UiHelper::BrowserAndUpload(QString category, QString filter, QString upload_to, QWidget *tool_widget)
+        {
+            using namespace Inventory;
+
+            // Get inventory module
+            boost::shared_ptr<InventoryModule> inv_module = framework_->GetModuleManager()->GetModule<InventoryModule>().lock();
+            if (!inv_module)
+                return;
+
+            // Get data model and service
+            InventoryPtr inv_data = inv_module->GetInventoryPtr();
+            InventoryService *inv_serv = inv_module->GetInventoryService();
+            InventoryModule::InventoryDataModelType inv_type = inv_module->GetInventoryType();
+            if (!inv_data || !inv_serv)
+                return;
+
+            disconnect(inv_data.get(), SIGNAL(UploadCompleted(const QString&, const QString&)),
+                       this, SLOT(AssetUploadCompleted(const QString&, const QString&)));
+            connect(inv_data.get(), SIGNAL(UploadCompleted(const QString&, const QString&)),
+                    this, SLOT(AssetUploadCompleted(const QString&, const QString&)));
+
+            QString filename = QFileDialog::getOpenFileName(0, "Setting " + category + " to object", QString(), "*." + filter);
+            if (filename.isEmpty())
+                return;
+            QString only_name = filename.right(filename.length() - (filename.lastIndexOf("/")+1));
+
+            // Check for parent folder
+            AbstractInventoryItem *upload_folder = inv_data->GetFirstChildFolderByName(upload_to);
+            if (!upload_folder)
+            {
+                upload_folder = inv_data->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *inv_data->GetFirstChildFolderByName("My Inventory"), upload_to);
+                if (!upload_folder)
+                    return; // i'll get me coat sir
+            }
+            filename = filename.replace("/", "\\"); // webdav lib requires this
+            
+            pending_uploads_[only_name] = QPair<QWidget*, QString>(tool_widget, category);
+            inv_data->UploadFile(filename, upload_folder); // upload
+        }
+
+        void UiHelper::AssetUploadCompleted(const QString &filename, const QString &asset_ref)
+        {
+            if (!pending_uploads_.contains(filename))
+                return;
+
+            QPair<QWidget*, QString> data_pair = pending_uploads_[filename];
+            QWidget *tool_widget = data_pair.first;
+            QString category = data_pair.second;
+
+            if (tool_widget)
+            {
+                QLineEdit *line_edit = tool_widget->findChild<QLineEdit*>(category + "LineEdit");
+                QPushButton *apply_button = tool_widget->findChild<QPushButton*>("Apply");
+                if (line_edit && apply_button)
+                {
+                    line_edit->setText(asset_ref);
+                    if (category == "sound")
+                    {
+                        QDoubleSpinBox *dsp = tool_widget->findChild<QDoubleSpinBox*>("soundVolume");
+                        if (dsp)
+                            dsp->setValue(1.0);
+                    }
+                    apply_button->setEnabled(true);
+                    apply_button->click();
+                }
+            }
+            pending_uploads_.remove(filename);
         }
     }
 }

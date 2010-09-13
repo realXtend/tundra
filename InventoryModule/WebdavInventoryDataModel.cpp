@@ -89,8 +89,8 @@ namespace Inventory
                 if (result[0] == "True")
                 {
                     parent->SetDirty(true);
-                    //FetchInventoryDescendents(parent);
                     InventoryModule::LogDebug(QString("Webdav | Created folder named %1 to path %2\n").arg(newFolderName, parentPath).toStdString());
+                    FetchInventoryDescendents(parent);
                     return parent->GetFirstChildFolderByName(newFolderName);
                 }
                 else
@@ -208,7 +208,7 @@ namespace Inventory
             }
         }
 
-        InventoryModule::LogDebug(QString("Webdav | Fetched %1 children to path /%2").arg(QString::number(childMap.count()), itemPath).toStdString());
+        //InventoryModule::LogDebug(QString("Webdav | Fetched %1 children to path /%2").arg(QString::number(childMap.count()), itemPath).toStdString());
 
         selected->SetDirty(false);
         return true;
@@ -307,7 +307,12 @@ namespace Inventory
             if (result[0] == "True")
             {
                 parentFolder->SetDirty(true);
-                //FetchInventoryDescendents(parent_folder);
+                FetchInventoryDescendents(parent_folder);
+                InventoryAsset *asset = parentFolder->GetChildAssetById(parentFolder->GetName() + "/" + filename);
+                if (asset)
+                    emit UploadCompleted(filename, asset->GetAssetReference());
+                else
+                    emit UploadCompleted(filename, "");
                 InventoryModule::LogDebug(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filePath, parentPath, filename).toStdString());
             }
             else
@@ -331,7 +336,12 @@ namespace Inventory
             if (result[0] == "True")
             {
                 parentFolder->SetDirty(true);
-                //FetchInventoryDescendents(parent_folder);
+                FetchInventoryDescendents(parent_folder);
+                InventoryAsset *asset = parentFolder->GetChildAssetById(parentFolder->GetName() + "/" + filename);
+                if (asset)
+                    emit UploadCompleted(filename, asset->GetAssetReference());
+                else
+                    emit UploadCompleted(filename, "");
                 InventoryModule::LogDebug(QString("Webdav | Upload of file %1 to path %2%3 succeeded\n").arg(filename, parentPath, filename).toStdString());
             }
             else

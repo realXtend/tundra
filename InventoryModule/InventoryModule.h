@@ -84,6 +84,8 @@ namespace Inventory
         /// @param save_changes Do we want to save changes.
         void CloseItemPropertiesWindow(const QString &inventory_id, bool save_changes = false);
 
+        InventoryDataModelType GetInventoryType() const { return inventoryType_; }
+
     private:
         Q_DISABLE_COPY(InventoryModule);
 

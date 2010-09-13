@@ -9,6 +9,7 @@
 #define incl_InventoryModule_InventoryAsset_h
 
 #include "AbstractInventoryItem.h"
+#include "InventoryModuleApi.h"
 #include "RexUUID.h"
 
 namespace Inventory
@@ -16,7 +17,7 @@ namespace Inventory
     class InventoryFolder;
 
     /// A class representing asset in inventory.
-    class InventoryAsset : public AbstractInventoryItem
+    class INVENTORY_MODULE_API InventoryAsset : public AbstractInventoryItem
     {
         Q_OBJECT
         Q_PROPERTY(QString assetReference_ READ GetAssetReference WRITE SetAssetReference)
