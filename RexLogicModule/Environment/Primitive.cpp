@@ -118,6 +118,11 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     // Note: we assume prim entity is created because of a message from network
     Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::Network); 
 
+    // Now switch networksync off from the placeable, before we do any damage
+    Foundation::ComponentInterfacePtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    if (placeable)
+        placeable->SetNetworkSyncEnabled(false);
+
     return entity;
 }
 

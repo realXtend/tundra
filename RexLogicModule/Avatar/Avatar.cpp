@@ -118,6 +118,9 @@ namespace RexLogic
             //ShowAvatarNameOverlay(entityid);
             CreateWidgetOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
+            
+            // Now switch networksync off from the placeable, before we do any damage
+            placeable->SetNetworkSyncEnabled(false);
         }
 
         return entity;
