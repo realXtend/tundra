@@ -299,7 +299,7 @@ class ObjectEdit(Component):
             h.Hide()
 
     def soundRuler(self, ent):
-        if ent.prim.SoundID:
+        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
                 ent.soundruler
             except AttributeError:
