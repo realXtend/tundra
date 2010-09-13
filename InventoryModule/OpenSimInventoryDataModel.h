@@ -157,9 +157,9 @@ namespace Inventory
             @param name User-defined name.
             @param description User-defined description.
             @param folder_id Id of the destination folder for this item.
-            @return true if successful
+            @return UploadResult (bool and QString asset ref)
          */
-        bool UploadFile(
+        UploadResult UploadFile(
             const asset_type_t asset_type,
             std::string filename,
             const std::string &name,
@@ -173,9 +173,9 @@ namespace Inventory
             @param description User-defined description.
             @param folder_id Id of the destination folder for this item.
             @param data buffer
-            @return true if successful
+            @return UploadResult (bool and QString asset ref)
          */
-        bool UploadBuffer(
+        UploadResult UploadBuffer(
             const asset_type_t asset_type,
             const std::string &filename,
             const std::string &name,

@@ -304,7 +304,20 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
             InventoryUploadEventData *upload_data = checked_static_cast<InventoryUploadEventData *>(data);
             if (!upload_data)
                 return false;
-            inventory_->UploadFiles(upload_data->filenames, upload_data->names, 0);
+
+            // Check for parent folder
+            AbstractInventoryItem *upload_folder = 0;
+            if (!upload_data->upload_folder.isEmpty() && !upload_data->upload_folder.isNull())
+            {
+                upload_folder = inventory_->GetFirstChildFolderByName(upload_data->upload_folder);
+                if (!upload_folder)
+                {
+                    upload_folder = inventory_->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *inventory_->GetFirstChildFolderByName("My Inventory"), upload_data->upload_folder);
+                    if (!upload_folder)
+                        return false; // fatal fail, lol np
+                }
+            }
+            inventory_->UploadFiles(upload_data->filenames, upload_data->names, upload_folder);
             break;
         }
         case Events::EVENT_INVENTORY_UPLOAD_BUFFER:
