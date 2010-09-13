@@ -5,7 +5,10 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QPoint>
 #include "ui_VoiceControl.h"
+
+class QMouseEvent;
 
 namespace Communications
 {
@@ -55,7 +58,7 @@ namespace CommUI
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
     };
 
-    class VoiceControllerWidget : public QObject, public VoiceController, private Ui::VoiceControl, public QWidget
+    class VoiceControllerWidget : public QObject, public QWidget, private Ui::VoiceControl, public VoiceController
     {
         Q_OBJECT
     public:
@@ -67,11 +70,20 @@ namespace CommUI
         virtual void SetPushToTalkOff();
         virtual void Toggle();
 
+    protected:
+        virtual void mouseMoveEvent(QMouseEvent *);
+        virtual void mousePressEvent(QMouseEvent *);
+        virtual void mouseReleaseEvent(QMouseEvent *);
+
     private slots:
         void ApplyTransmissionModeSelection(int selection);
         void OpenParticipantListWidget();
         void ApplyMuteAllSelection();
         void UpdateUI();
+
+    private:
+        QPoint mouse_last_pos_;
+        bool mouse_dragging_;
     };
 
 } // CommUI

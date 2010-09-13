@@ -11,6 +11,7 @@
 
 #include "VoiceController.h"
 #include <CommunicationsService.h>
+#include <QMouseEvent>
 
 #include "DebugOperatorNew.h"
 
@@ -180,6 +181,26 @@ namespace CommUI
     void VoiceControllerWidget::Toggle()
     {
         VoiceController::Toggle();
+    }
+
+    void VoiceControllerWidget::mouseMoveEvent(QMouseEvent *e)
+    {
+        QPoint pos = e->globalPos();
+        QPoint move = pos - mouse_last_pos_;
+        this->move(this->pos() +  move);
+        mouse_last_pos_ = pos;
+        QWidget::mouseMoveEvent(e);
+    }
+
+    void VoiceControllerWidget::mousePressEvent(QMouseEvent *e)
+    {
+        mouse_last_pos_ = e->globalPos();
+        mouse_dragging_ = true;
+    }
+
+    void VoiceControllerWidget::mouseReleaseEvent(QMouseEvent *e)
+    {
+        mouse_dragging_ = false;
     }
 
 } // CommUI
