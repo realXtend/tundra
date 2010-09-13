@@ -26,13 +26,34 @@ public:
     /// Type of the script as string (js/py)
     Attribute<QString> type;
 
+    /// Is the script run as soon as the script reference is set/loaded.
+    Attribute<bool> runOnLoad;
+
     /** Sets new script instance. Unloads and deletes possible already existing script instance.
         @param instance Script instance.
+        @note Takes ownership of the script instace.
     */
     void SetScriptInstance(IScriptInstance *instance);
 
     /// Returns the current script instance.
     IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
+
+public slots:
+    /// Runs the script instance.
+    void Run();
+
+    /** This is an overloaded function.
+        @param name Name of the script. The script is ran only if the script name matches.
+    */
+    void Run(const QString &name);
+
+    /// Stops the script instance.
+    void Stop();
+
+    /** This is an overloaded function.
+        @param name Name of the script. The script is ran only if the script name matches.
+    */
+    void Stop(const QString &name);
 
 signals:
     /** Emitted when script reference changes.
@@ -47,6 +68,9 @@ private slots:
     */
     void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
 
+    /// Registers the actions this component provides when parent entity is set.
+    void RegisterActions();
+
 private:
     /** Constuctor.
         @param module Declaring module.
@@ -55,6 +79,9 @@ private:
 
     /// Script instance.
     IScriptInstance *scriptInstance_;
+
+    /// Last reference. We're keeping track so that we don't send multiple changed signals.
+    QString lastRef_;
 };
 
 #endif

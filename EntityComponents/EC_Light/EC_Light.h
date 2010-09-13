@@ -9,14 +9,12 @@
 #include "Vector3D.h"
 #include "Color.h"
 
-class QDomDocument;
-class QDomElement;
-
 namespace Ogre
 {
     class Light;
 }
 
+/// Makes the entity a light source.
 /**
 
 <table style="margin: 20px;">
