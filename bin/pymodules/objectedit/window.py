@@ -43,26 +43,13 @@ class ObjectEditWindow:
         width = ui.size.width()
         height = ui.size.height()
         
-        #if not DEV:
         uism = r.getUiSceneManager()
-        #uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
-        #uiprops.name_ = "Object Edit"
-        #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
-        self.proxywidget = r.createUiProxyWidget(ui)
-        self.proxywidget.setWindowTitle("Object Edit")
-
-        if not uism.AddWidgetToScene(self.proxywidget):
-            r.logInfo("Adding ProxyWidget failed.")
-
-        uism.AddWidgetToMenu(self.proxywidget, "Object Edit", "", "./data/ui/images/menus/edbutton_OBJED_normal.png")
 
         self.widget = ui
-        self.tabwidget = ui.findChild("QTabWidget", "MainTabWidget")
 
         # Tabs
         self.mainTab = ui.findChild("QWidget", "MainFrame")
         self.materialTab = ui.findChild("QWidget", "MaterialsTab")
-        self.tabwidget.setTabEnabled(1, False)
         self.materialTabFormWidget = self.materialTab.formLayoutWidget
         self.mainTab.label.text = "<none>"
 
@@ -149,41 +136,8 @@ class ObjectEditWindow:
         self.animation_widget = QWidget()
         self.animation_widget.setLayout(animationbox)
 
-        # Properties, dead code really..
-        self.propedit = r.getPropertyEditor()
-        self.tabwidget.addTab(self.propedit, "Properties")
-        self.tabwidget.setTabEnabled(2, False)
-
         self.updatingSelection = False
         
-        def poschanger(i):
-            def pos_at_index(v):
-                self.controller.changepos(i, v)
-            return pos_at_index
-        for i, poswidget in enumerate([self.mainTab.xpos, self.mainTab.ypos, self.mainTab.zpos]):
-            poswidget.connect('valueChanged(double)', poschanger(i))
-
-        def rotchanger(i):
-            def rot_at_index(v):
-                if not self.controller.usingManipulator and not self.updatingSelection:
-                    self.controller.changerot(i, (self.mainTab.rot_x.value, self.mainTab.rot_y.value, self.mainTab.rot_z.value))
-            return rot_at_index
-        for i, rotwidget in enumerate([self.mainTab.rot_x, self.mainTab.rot_y, self.mainTab.rot_z]):
-            rotwidget.connect('valueChanged(double)', rotchanger(i))
-        
-        def scalechanger(i):
-            def scale_at_index(v):
-                self.controller.changescale(i, v)
-            return scale_at_index
-        for i, scalewidget in enumerate([self.mainTab.scalex, self.mainTab.scaley, self.mainTab.scalez]):
-            scalewidget.connect('valueChanged(double)', scalechanger(i))
-        
-        self.mainTab.treeWidget.connect('clicked(QModelIndex)', self.itemActivated)
-        self.mainTab.treeWidget.connect('activated(QModelIndex)', self.itemActivated)
-        
-        self.proxywidget.connect('Visible(bool)', self.controller.on_hide)
-        #self.tabwidget.connect('currentChanged(int)', self.tabChanged)
-
         # mesh buttons
         self.meshline.connect('textEdited(QString)', button_ok.lineValueChanged)
         self.meshline.connect('textEdited(QString)', button_cancel.lineValueChanged)
@@ -204,19 +158,6 @@ class ObjectEditWindow:
         animation_combobox.connect('currentIndexChanged(int)', animationbutton_ok.lineValueChanged)
         animation_combobox.connect('currentIndexChanged(int)', animationbutton_cancel.lineValueChanged)
 
-        # actions
-        self.mainTab.findChild("QPushButton", "newObject").connect('clicked()', self.controller.createObject)
-        self.mainTab.findChild("QPushButton", "deleteObject").connect('clicked()', self.controller.deleteObject)
-        self.mainTab.findChild("QPushButton", "duplicate").connect('clicked()', self.controller.duplicate)
-        
-        self.mainTab.findChild("QPushButton", "undo").connect('clicked()', self.controller.undo)
-        
-        # transforms
-        self.mainTab.findChild("QToolButton", "move_button").connect('clicked()', self.manipulator_move)
-        self.mainTab.findChild("QToolButton", "scale_button").connect('clicked()', self.manipulator_scale)
-        self.mainTab.findChild("QToolButton", "rotate_button").connect('clicked()', self.manipulator_rotate)
-        self.mainTab.useLocalTransform.connect('toggled(bool)', self.controller.setUseLocalTransform)
-
         self.mainTabList = {}
         
         self.currentlySelectedTreeWidgetItem = []
@@ -229,16 +170,10 @@ class ObjectEditWindow:
             #self.controller.updateSelectionBox(ent) #PositionAndOrientation(ent)
         
     def update_scalevals(self, scale):
-        self.mainTab.scalex.setValue(scale.x())
-        self.mainTab.scaley.setValue(scale.y())
-        self.mainTab.scalez.setValue(scale.z())
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetScaleValues(scale.x(), scale.y(), scale.z())
 
     def update_posvals(self, pos):
-        self.mainTab.xpos.setValue(pos.x())
-        self.mainTab.ypos.setValue(pos.y())
-        self.mainTab.zpos.setValue(pos.z())
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetPosValues(pos.x(), pos.y(), pos.z())
 
@@ -252,36 +187,14 @@ class ObjectEditWindow:
         x_val = math.degrees(placeable.Pitch)
         y_val = math.degrees(placeable.Yaw)
         z_val = math.degrees(placeable.Roll)
-        self.mainTab.rot_x.setValue(x_val)
-        self.mainTab.rot_y.setValue(y_val)
-        self.mainTab.rot_z.setValue(z_val)
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
-    def reset_guivals(self):
-        self.mainTab.xpos.setValue(0)
-        self.mainTab.ypos.setValue(0)
-        self.mainTab.zpos.setValue(0)
-
-        self.mainTab.scalex.setValue(0)
-        self.mainTab.scaley.setValue(0)
-        self.mainTab.scalez.setValue(0)
-
-        self.mainTab.rot_x.setValue(0)
-        self.mainTab.rot_y.setValue(0)
-        self.mainTab.rot_z.setValue(0)
-    
     def deselected(self):
-        self.mainTab.label.text = "<none>"
-        self.tabwidget.setTabEnabled(1, False)
-        self.tabwidget.setTabEnabled(2, False)
-        
         self.meshline.update_text("")
         self.soundline.update_text("")
         self.animationline.update_text("")
 
-        self.reset_guivals()
-        self.untoggleButtons()
         self.unsetSelection()
         
     def unsetSelection(self):
@@ -373,8 +286,6 @@ class ObjectEditWindow:
                 box.addWidget(cancelButton)
                 
                 self.materialTabFormWidget.materialFormLayout.addRow(combobox, box)
-                
-            self.tabwidget.setTabEnabled(1, True)
 
     def clearDialogForm(self):
         children = self.materialTabFormWidget.children()
@@ -388,14 +299,6 @@ class ObjectEditWindow:
             self.materialTabFormWidget.materialFormLayout.removeItem(child)
             child.delete()
 
-    def itemActivated(self, item=None): #the item from signal is not used, same impl used by click
-        #print "Got the following item index...", item, dir(item), item.data, dir(item.data) #we has index, now what? WIP
-        current = self.mainTab.treeWidget.currentItem()
-        text = current.text(0)
-        if self.mainTabList.has_key(text):
-            ent = self.mainTabList[text][0]
-            self.controller.select(ent)
-    
     def getButton(self, name, iconname, line, action):
         size = QSize(20, 20)
         button = buttons.PyPushButton()
@@ -530,9 +433,7 @@ class ObjectEditWindow:
         self.controller.soundRuler(ent)
 
     def updatePropertyEditor(self, ent):
-        qprim = ent.prim
-        if qprim is not None:
-            self.tabwidget.setTabEnabled(2, True)
+        pass
             
     def untoggleButtons(self):
         self.mainTab.move_button.setChecked(False)
