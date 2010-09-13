@@ -64,6 +64,10 @@ namespace CommUI
         VoiceControllerWidget(Communications::InWorldVoice::SessionInterface* voice_session);
         virtual ~VoiceControllerWidget();
 
+    public slots:
+        virtual void SetPushToTalkOn();
+        virtual void SetPushToTalkOff();
+
     private slots:
         void ApplyTransmissionModeSelection(int selection);
         void OpenParticipantListWidget();
