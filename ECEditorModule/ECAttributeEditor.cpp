@@ -123,6 +123,8 @@ namespace ECEditor
         if(attributes_.size() > 1)
         {
             AttributeList::const_iterator iter = attributes_.begin();
+            if ((*iter) == 0)
+                return false;
             std::string value = (*iter)->ToString();
             while(iter != attributes_.end())
             {
