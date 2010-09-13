@@ -31,9 +31,21 @@ void EC_Script::Run()
         scriptInstance_->Run();
 }
 
+void EC_Script::Run(const QString &name)
+{
+    if (name == scriptRef.Get() && scriptInstance_)
+        scriptInstance_->Run();
+}
+
 void EC_Script::Stop()
 {
     if (scriptInstance_)
+        scriptInstance_->Stop();
+}
+
+void EC_Script::Stop(const QString &name)
+{
+    if (name == scriptRef.Get() && scriptInstance_)
         scriptInstance_->Stop();
 }
 
@@ -41,6 +53,7 @@ EC_Script::EC_Script(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
     scriptRef(this, "Script ref"),
     type(this, "Type"),
+    runOnLoad(this, "Run on load"),
     scriptInstance_(0)
 {
     connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
@@ -51,15 +64,11 @@ EC_Script::EC_Script(Foundation::ModuleInterface *module):
 void EC_Script::HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
 {
     if (attribute->GetNameString() == scriptRef.GetNameString())
-        emit ScriptRefChanged(scriptRef.Get());
-}
-
-void EC_Script::Run(const QString &name)
-{
-}
-
-void EC_Script::Stop(const QString &name)
-{
+        if (scriptRef.Get() != lastRef_)
+        {
+            emit ScriptRefChanged(scriptRef.Get());
+            lastRef_ = scriptRef.Get();
+        }
 }
 
 void EC_Script::RegisterActions()

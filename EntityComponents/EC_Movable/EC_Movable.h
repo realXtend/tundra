@@ -20,8 +20,17 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
-/** Contains Entity Actions for moving entity with this component in scene.
- */
+/// Contains Entity Actions for moving entity with this component in scene.
+/**
+        Currently this EC is pretty much for testing and debugging purposes only.
+        Supports the following actions:
+        -Move(Forward)
+        -Move(Backward)
+        -Move(Left)
+        -Move(Right)
+        -Rotate(Left)
+        -Rotate(Right)
+*/
 class EC_Movable : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_Movable);
@@ -34,18 +43,16 @@ public:
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:
-    /*
-        This component supports the following actions:
-        -MoveForward
-        -MoveBackward
-        -MoveLeft
-        -MoveRight
-        -RotateLeft
-        -RotateRight
+    /** Moves the entity this component is attached to.
+        @param direction Forward, Backward, Left or Right
     */
     void Move(const QString &direction);
 
+    /** Rotates the entity this component is attached to.
+        @param direction Left or Right
+    */
     void Rotate(const QString &direction);
+
 private:
     /** Constructor.
         @param module Declaring module.
@@ -53,8 +60,6 @@ private:
     explicit EC_Movable(Foundation::ModuleInterface *module);
 
     void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
-
-    event_category_id_t frameworkCategory_;
 
     ProtocolUtilities::WorldStreamPtr worldStream_;
 
