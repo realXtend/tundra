@@ -43,6 +43,11 @@ namespace CommUI
             emit TransmissionModeChanged(transmission_mode_);
     }
 
+    //TransmissionMode VoiceController::GetTransmissionMode()
+    //{
+    //    return transmission_mode_;
+    //}
+
     void VoiceController::SetPushToTalkOn()
     {
         push_to_talk_on_ = true;
@@ -52,6 +57,12 @@ namespace CommUI
     void VoiceController::SetPushToTalkOff()
     {
         push_to_talk_on_ = false;
+        SetTransmissionState();
+    }
+    
+    void VoiceController::Toggle()
+    {
+        toggle_mode_on_ = !toggle_mode_on_;
         SetTransmissionState();
     }
 
@@ -164,6 +175,11 @@ namespace CommUI
     void VoiceControllerWidget::SetPushToTalkOff()
     {
         VoiceController::SetPushToTalkOff();
+    }
+
+    void VoiceControllerWidget::Toggle()
+    {
+        VoiceController::Toggle();
     }
 
 } // CommUI
