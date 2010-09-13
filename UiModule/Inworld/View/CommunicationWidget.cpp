@@ -88,7 +88,7 @@ namespace CoreUi
         voice_users_widget_(0),
         voice_users_proxy_widget_(0),
         in_world_chat_session_(0),
-        voice_controller_widget_(0)
+        voice_controller_proxy_widget_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -223,12 +223,12 @@ namespace CoreUi
         if (!in_world_voice_session_)
             return;
 
-        if (voice_controller_widget_)
+        if (voice_controller_proxy_widget_)
         {
-            if (voice_controller_widget_->isHidden())
-                voice_controller_widget_->show();
+            if (voice_controller_proxy_widget_->isVisible())
+                voice_controller_proxy_widget_->hide();
             else
-                voice_controller_widget_->hide();
+                voice_controller_proxy_widget_->show();
         }
 
         //in_world_speak_mode_on_ = !in_world_speak_mode_on_;
@@ -469,17 +469,24 @@ namespace CoreUi
         }
         UpdateInWorldVoiceIndicator();
 
-        // @todo FIX new/delete
-        voice_controller_widget_ = new CommUI::VoiceControllerWidget(in_world_voice_session_);
-        //SAFE_DELETE(voice_controller_);
-        //voice_controller_ = new CommUI::VoiceController(in_world_voice_session_);
-        voice_controller_widget_->SetTransmissionMode(CommUI::VoiceController::PushToTalk);
-        if (framework_)
+        boost::shared_ptr<UiServices::UiModule> ui_module = framework_->GetModuleManager()->GetModule<UiServices::UiModule>().lock();
+        if (ui_module.get())
         {
-            input_context_ = framework_->Input().RegisterInputContext("CommunicationWidget", 90);
-            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
-            connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
-            connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
+            CommUI::VoiceControllerWidget* voice_controller_widget_ = new CommUI::VoiceControllerWidget(in_world_voice_session_);
+
+            if (voice_controller_proxy_widget_)
+                ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(voice_controller_proxy_widget_);
+
+            voice_controller_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_controller_widget_);
+            voice_controller_proxy_widget_->hide();
+            voice_controller_widget_->SetTransmissionMode(CommUI::VoiceController::PushToTalk);
+            if (framework_)
+            {
+                input_context_ = framework_->Input().RegisterInputContext("CommunicationWidget", 90);
+                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
+                connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
+                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
+            }
         }
     }
 
