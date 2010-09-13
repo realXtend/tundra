@@ -17,12 +17,8 @@
 #include <QVector>
 #include <QVariant>
 
-class KeyEvent;
-class InputContext;
-
-/** Registers an InputContext from the Naali Input subsystem and uses it to translate
-    given set of key and mouse sequences to Entity Actions on the entity the component is part of.
-*/
+/// Registers an InputContext from the Naali Input subsystem and uses it to translate
+/// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 class EC_InputMapper : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_InputMapper);
@@ -58,7 +54,7 @@ public slots:
         @param action Name of the action. If you want to use parameters the string should look the following: 
         "More(Forward)" or "Move(Forward,100)" etc.
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
-     */
+    */
     void RegisterMapping(const QKeySequence &keySeq, const QString &action);
 
     /// Returns the input context of this input mapper.
@@ -77,7 +73,7 @@ private:
     Mappings_t mappings_;
 
 private slots:
-    /** 
+    /** Alters input context's parameters when attributes are changed.
         @param attribute Changed attribute.
         @param change Change type.
     */
