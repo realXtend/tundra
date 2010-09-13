@@ -9,6 +9,7 @@
 
 EC_Script::~EC_Script()
 {
+    SAFE_DELETE(scriptInstance_);
 }
 
 void EC_Script::SetScriptInstance(IScriptInstance *instance)
@@ -16,6 +17,7 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     // If we already have a script instance, unload and delete it.
     if (scriptInstance_)
     {
+        scriptInstance_->Stop();
         scriptInstance_->Unload();
         SAFE_DELETE(scriptInstance_);
     }

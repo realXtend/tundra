@@ -28,6 +28,7 @@ public:
 
     /** Sets new script instance. Unloads and deletes possible already existing script instance.
         @param instance Script instance.
+        @note Takes ownership of the script instace.
     */
     void SetScriptInstance(IScriptInstance *instance);
 
