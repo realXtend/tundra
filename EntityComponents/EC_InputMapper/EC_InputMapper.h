@@ -3,7 +3,7 @@
  *
  *  @file   InputMapper.h
  *  @brief  Registers an InputContext from the Naali Input subsystem and uses it to translate
- *          given set of keys to Entity Actions on the entity the component is part of.
+ *          given set of key and mouse sequences to Entity Actions on the entity the component is part of.
  */
 
 #ifndef incl_EC_InputMapper_EC_InputMapper_h
@@ -14,13 +14,14 @@
 
 #include <QMap>
 #include <QKeySequence>
-//#include <QVariant>
+#include <QVector>
+#include <QVariant>
 
 class KeyEvent;
 class InputContext;
 
 /** Registers an InputContext from the Naali Input subsystem and uses it to translate
-    given set of keys to Entity Actions on the entity the component is part of.
+    given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 */
 class EC_InputMapper : public Foundation::ComponentInterface
 {
@@ -40,11 +41,14 @@ public:
     /// This input mapper's input context priority.
     Attribute<int> contextPriority;
 
-    /// This input mapper's input context priority.
+    /// Does the mapper receive keyboard input events even when a Qt widget has focus.
     Attribute<bool> takeKeyboardEventsOverQt;
 
+    /// Does the mapper receive mouse input events even when a Qt widget has focus.
+    Attribute<bool> takeMouseEventsOverQt;
+
     /// Key sequence - action name mappings.
-//    Attribute<QVector<QVariant> > mappings;
+    Attribute<std::vector<QVariant> > mappings;
 
     typedef QMap<QKeySequence, QString> Mappings_t;
 
@@ -56,6 +60,9 @@ public slots:
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
      */
     void RegisterMapping(const QKeySequence &keySeq, const QString &action);
+
+    /// Returns the input context of this input mapper.
+    InputContext *GetInputContext() const { return input_.get(); }
 
 private:
     /** Constructor.
@@ -78,9 +85,15 @@ private slots:
 
     /** Handles key events from input service.
         Performs entity action for for the parent entity if action mapping is registered for the key event.
-        @param key Key event.
+        @param e Key event.
     */
-    void HandleKeyEvent(KeyEvent *key);
+    void HandleKeyEvent(KeyEvent *e);
+
+    /** Handles mouse events from input service.
+        Performs entity action for for the parent entity if action mapping is registered for the mouse event.
+        @param e Mouse event.
+    */
+    void HandleMouseEvent(MouseEvent *e);
 };
 
 #endif

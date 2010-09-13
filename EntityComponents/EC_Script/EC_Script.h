@@ -34,6 +34,13 @@ public:
     /// Returns the current script instance.
     IScriptInstance *GetScriptInstance() const { return scriptInstance_; }
 
+public slots:
+    ///
+    void Run();
+
+    ///
+    void Stop();
+
 signals:
     /** Emitted when script reference changes.
         @newRef New script reference.
@@ -46,6 +53,18 @@ private slots:
         @param change Change type.
     */
     void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+
+    /**
+        @param name
+    */
+    void Run(const QString &name);
+
+    /**
+        @param name
+    */
+    void Stop(const QString &name);
+
+    void RegisterActions();
 
 private:
     /** Constuctor.
