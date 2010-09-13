@@ -60,8 +60,9 @@ void Environment::CreateEnvironment()
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
+    active_scene->EmitEntityCreated(entity);
     activeEnvEntity_ = entity;
-
+    
 }
 
 bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
