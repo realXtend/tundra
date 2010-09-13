@@ -26,7 +26,7 @@ namespace Scene
         RemoveAllEntities(false);
     }
     
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -49,8 +49,6 @@ namespace Scene
 
         entities_[entity->GetId()] = entity;
 
-        EmitEntityCreated(entity.get(), change);
-        
         // Send event.
         Events::SceneEventData event_data(entity->GetId());
         event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
@@ -162,6 +160,11 @@ namespace Scene
     {
         emit EntityCreated(entity, change);
     }
+
+    void SceneManager::EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change)
+    {
+        emit EntityCreated(entity.get(), change);
+    }
     
     void SceneManager::EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
     {
@@ -214,7 +217,7 @@ namespace Scene
             if (!id_str.isEmpty())
             {
                 entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                EntityPtr entity = CreateEntity(id, QStringList(), change);
+                EntityPtr entity = CreateEntity(id, QStringList());
                 QDomElement comp_elem = ent_elem.firstChildElement("component");
                 while (!comp_elem.isNull())
                 {
@@ -227,7 +230,7 @@ namespace Scene
                     }
                     comp_elem = comp_elem.nextSiblingElement("component");
                 }
-                
+                EmitEntityCreated(entity, change);
                 // Kind of a "hack", call OnChanged to the components only after all components have been loaded
                 // This allows to resolve component references to the same entity (for example to the Placeable) at this point
                 const Scene::Entity::ComponentVector &components = entity->GetComponentVector();

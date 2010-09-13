@@ -116,8 +116,8 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
     // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::Network); 
-
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components); 
+    scene->EmitEntityCreated(entity, AttributeChange::Network);
     return entity;
 }
 
