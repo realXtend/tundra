@@ -312,9 +312,8 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
                 upload_folder = inventory_->GetFirstChildFolderByName(upload_data->upload_folder);
                 if (!upload_folder)
                 {
+                    // If this finds the folder, its a valid pointer, if not its 0 as before in this implementation and the file will go into root dir
                     upload_folder = inventory_->GetOrCreateNewFolder(RexUUID::CreateRandom().ToQString(), *inventory_->GetFirstChildFolderByName("My Inventory"), upload_data->upload_folder);
-                    if (!upload_folder)
-                        return false; // fatal fail, lol np
                 }
             }
             inventory_->UploadFiles(upload_data->filenames, upload_data->names, upload_folder);
