@@ -78,7 +78,7 @@
          </widget>
         </item>
         <item>
-         <widget class="QPushButton" name="ShowListButton">
+         <widget class="QPushButton" name="showListButton">
           <property name="text">
            <string>Show List</string>
           </property>

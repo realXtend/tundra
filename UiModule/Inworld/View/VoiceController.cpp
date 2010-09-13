@@ -112,7 +112,7 @@ namespace CommUI
         transmissionModeComboBox->addItems(options);   
         QObject::connect(transmissionModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(ApplyTransmissionModeSelection(int)));
 
-        QObject::connect(ShowListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
+        QObject::connect(showListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
 
         QObject::connect(muteAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyMuteAllSelection()));
 
@@ -156,6 +156,14 @@ namespace CommUI
             participantsCountLabel->setText("No participants");
     }
 
+    void VoiceControllerWidget::SetPushToTalkOn()
+    {
+        VoiceController::SetPushToTalkOn();
+    }
+
+    void VoiceControllerWidget::SetPushToTalkOff()
+    {
+        VoiceController::SetPushToTalkOff();
+    }
 
 } // CommUI
-
