@@ -34,11 +34,10 @@ namespace CommUI
         virtual void SetTransmissionMode(TransmissionMode mode);
         virtual void SetPushToTalkOn();
         virtual void SetPushToTalkOff();
+        virtual void Toggle();
         virtual Communications::InWorldVoice::SessionInterface* GetSession() { return in_world_voice_session_; }
-        //virtual void SetVoiceActivityOn();
-        //virtual void SetVoiceActivityOff();
-        //virtual TransmissionMode GetTransmissionMode();
-        //virtual void SetTransmissionMode(TransmissionMode mode);
+//        virtual TransmissionMode GetTransmissionMode();
+
     signals:
         void TransmittingAudioStarted();
         void TransmittingAudioStopped();
@@ -54,7 +53,6 @@ namespace CommUI
         bool toggle_mode_on_;
         int voice_activity_timeout_ms_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
-//        QTime last_voice_activity_time_;
     };
 
     class VoiceControllerWidget : public QObject, public VoiceController, private Ui::VoiceControl, public QWidget
@@ -67,6 +65,7 @@ namespace CommUI
     public slots:
         virtual void SetPushToTalkOn();
         virtual void SetPushToTalkOff();
+        virtual void Toggle();
 
     private slots:
         void ApplyTransmissionModeSelection(int selection);
