@@ -2,9 +2,12 @@
 set -e
 set -x
 
-# script to build naali and most deps. first manually add the
-# following ppa sources using add-apt-repository or the software
-# sources gui tool: ppa:mapopa/qt4.6
+# script to build naali and most deps.
+#
+# if you want to use caelum, install ogre and nvidia cg from
+# ppa:andrewfenn/ogredev and change the caelum setting to 1 in
+# top-level CMakeLists.txt
+
 
 viewer=$(dirname $(readlink -f $0))/..
 deps=$viewer/../naali-deps
