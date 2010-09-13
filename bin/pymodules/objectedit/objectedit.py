@@ -25,7 +25,7 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
 import conversions as conv
 reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
-from PythonQt.QtGui import QVector3D as Vec
+from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QQuaternion as Quat
 
 import rexviewer as r
@@ -80,9 +80,6 @@ class ObjectEdit(Component):
         self.shortcuts = {
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
             (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
-            (Qt.Key_S, Qt.AltModifier) : self.window.manipulator_scale,
-            (Qt.Key_M, Qt.AltModifier) : self.window.manipulator_move,
-            (Qt.Key_R, Qt.AltModifier) : self.window.manipulator_rotate,
             (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
@@ -338,8 +335,8 @@ class ObjectEdit(Component):
 #     def hideSelector(self):
 #         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
 #             if self.selection_box is not None:
-#                 self.selection_box.placeable.Scale = Vec(0.0, 0.0, 0.0)
-#                 self.selection_box.placeable.Position = Vec(0.0, 0.0, 0.0)
+#                 self.selection_box.placeable.Scale = QVector3D(0.0, 0.0, 0.0)
+#                 self.selection_box.placeable.Position = QVector3D(0.0, 0.0, 0.0)
 #         except RuntimeError, e:
 #             r.logDebug("hideSelector failed")
         
@@ -621,7 +618,6 @@ class ObjectEdit(Component):
             self.sels = []
             
     def float_equal(self, a,b):
-        #print abs(a-b), abs(a-b)<0.01
         if abs(a-b)<0.01:
             return True
         else:
@@ -630,23 +626,23 @@ class ObjectEdit(Component):
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
-        #print "pos index %i changed to: %f" % (i, v)
         ent = self.active
         if ent is not None:
-            qpos = ent.placeable.Position
-            pos = list((qpos.x(), qpos.y(), qpos.z())) #should probably wrap Vector3, see test_move.py for refactoring notes. 
-    
-            if not self.float_equal(pos[i],v):
-                pos[i] = v
-                #converted to list to have it mutable
-                newpos = Vec(pos[0], pos[1], pos[2])
-                ent.placeable.Position = newpos
-                ent.network.Position = newpos
-                self.manipulator.moveTo(self.sels)
+            qpos = QVector3D(ent.placeable.Position)
+            if i == 0:
+                qpos.setX(v)
+            elif i == 1:
+                qpos.setY(v)
+            elif i == 2:
+                qpos.setZ(v)
 
-                self.modified = True
-                if not self.dragging:
-                    r.networkUpdate(ent.id)
+            ent.placeable.Position = qpos
+            ent.network.Position = qpos
+            self.manipulator.moveTo(self.sels)
+
+            self.modified = True
+            if not self.dragging:
+                r.networkUpdate(ent.id)
             
     def changescale(self, i, v):
         ent = self.active
@@ -665,7 +661,7 @@ class ObjectEdit(Component):
                         if index != i:
                             scale[index] += diff
                 
-                ent.placeable.Scale = Vec(scale[0], scale[1], scale[2])
+                ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
