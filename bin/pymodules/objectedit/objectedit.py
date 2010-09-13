@@ -275,18 +275,6 @@ class ObjectEdit(Component):
 
             self.window.deselected()
             
-    # def updateSelectionBox(self, ent): 
-#         if ent is not None:
-#             bb = list(ent.boundingbox)
-#             height = abs(bb[4] - bb[1]) 
-#             width = abs(bb[3] - bb[0])
-#             depth = abs(bb[5] - bb[2])
-
-#             self.selection_box.placeable.Position = ent.placeable.Position
-            
-#             self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
-#             self.selection_box.placeable.Orientation = ent.placeable.Orientation
-                
     def highlight(self, ent):
         try:
             ent.highlight
