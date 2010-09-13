@@ -4,9 +4,11 @@
 #define incl_OgreRenderer_EC_OgrePlaceable_h
 
 #include "ComponentInterface.h"
+#include "AttributeInterface.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
+#include "Transform.h"
 #include "Declare_EC.h"
 #include <QtGui/qquaternion.h>
 #include <QtGui/qvector3d.h>
@@ -18,6 +20,8 @@ namespace Ogre
 
 namespace OgreRenderer
 {
+    using Foundation::AttributeInterface;
+
     class Renderer;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
@@ -43,6 +47,12 @@ namespace OgreRenderer
 
     public:
         virtual ~EC_OgrePlaceable();
+        
+        //! Set component as serializable.
+        /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
+            as EC_NetworkPosition controls the actual authoritative position (including interpolation)
+         */
+        virtual bool IsSerializable() const { return true; }
         
         //! sets parent placeable
         /*! set null placeable to attach to scene root (the default)
@@ -144,6 +154,11 @@ namespace OgreRenderer
         //! get node scale
         void SetQScale(const QVector3D newscale);
 
+        //! Transform attribute
+        /*! When this changes, syncs the Ogre scene node position to the attribute. Note that sync the other way around will not be done
+            Also RexLogic code does not use the attribute.
+         */
+        Foundation::Attribute<Transform> transform_;
 
     public slots:
         //! translate
@@ -153,6 +168,13 @@ namespace OgreRenderer
         //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
         void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
+    private slots:
+        //! Handle attributechange
+        /*! \param attribute Attribute that changed.
+            \param change Change type.
+         */
+        void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+    
     private:
         //! constructor
         /*! \param module renderer module
