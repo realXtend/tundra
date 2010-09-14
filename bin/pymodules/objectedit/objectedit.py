@@ -219,7 +219,6 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
-        self.window.selected(ent, False) 
         self.canmove = True
         
         # Not needed at this point, c++ module gets selected entitys itself
@@ -232,18 +231,13 @@ class ObjectEdit(Component):
     def multiselect(self, ent):
         self.sels.append(ent)
         ent, children = self.baseselect(ent)
-        self.window.selected(ent, True) 
-        
         self.highlightChildren(children)
     
     def highlightChildren(self, children):
         for child_id in children:
             child = r.getEntity(int(child_id))
-            self.window.addToList(child)
-            self.window.highlightEntityFromList(child)
             self.highlight(child)
             self.soundRuler(child)
-            #self.sels.append(child)
             
     def deselect(self, ent, valid=True):
         if valid: #the ent is still there, not already deleted by someone else
@@ -252,7 +246,6 @@ class ObjectEdit(Component):
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.id == ent.id:
                 self.sels.remove(_ent)
-                self.window.deselectSelection(_ent.id)
             
     def deselect_all(self):
         if len(self.sels) > 0:
@@ -269,8 +262,6 @@ class ObjectEdit(Component):
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
             self.canmove = False
-
-            self.window.deselected()
             
     def highlight(self, ent):
         try:
@@ -602,13 +593,9 @@ class ObjectEdit(Component):
                 ent, children = self.parentalCheck(ent)
                 for child_id in children:
                     child = r.getEntity(int(child_id))
-                    #~ self.window.addToList(child)
-                    #~ print "deleting", child
                     #~ self.worldstream.SendObjectDeRezPacket(child.id, r.getTrashFolderId())
-                    self.window.objectDeleted(str(child.id))
                 #~ if len(children) == 0:
                 self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
-                self.window.objectDeleted(str(ent.id))
                 #~ else:
                     #~ r.logInfo("trying to delete a parent, need to fix this!")
             
@@ -653,21 +640,19 @@ class ObjectEdit(Component):
                 
             if not self.float_equal(scale[i],v):
                 scale[i] = v
-                if self.window.mainTab.scale_lock.checked:
-                    #XXX BUG does wrong thing - the idea was to maintain aspect ratio
-                    diff = scale[i] - oldscale[i]
-                    for index in range(len(scale)):
-                        #print index, scale[index], index == i
-                        if index != i:
-                            scale[index] += diff
+#                if self.window.mainTab.scale_lock.checked:
+#                    #XXX BUG does wrong thing - the idea was to maintain aspect ratio
+#                    diff = scale[i] - oldscale[i]
+#                    for index in range(len(scale)):
+#                        #print index, scale[index], index == i
+#                        if index != i:
+#                            scale[index] += diff
                 
                 ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
-                #self.window.update_scalevals(scale)
                 self.modified = True
-                #self.updateSelectionBox(ent)
                 
     def changerot(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
@@ -715,7 +700,6 @@ class ObjectEdit(Component):
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
-        self.window.on_exit()
 
         self.cpp_python_handler.disconnect('ActivateEditing(bool)', self.on_activate_editing)
         self.cpp_python_handler.disconnect('ManipulationMode(int)', self.on_manupulation_mode_change)
