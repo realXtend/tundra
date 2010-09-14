@@ -47,11 +47,8 @@ class ObjectEditWindow:
 
         self.widget = ui
 
-        # Tabs
-        self.mainTab = ui.findChild("QWidget", "MainFrame")
-        self.materialTab = ui.findChild("QWidget", "MaterialsTab")
-        self.materialTabFormWidget = self.materialTab.formLayoutWidget
-        self.mainTab.label.text = "<none>"
+        # Material/Texture widgets
+        self.materialTabFormWidget = ui.findChild("QWidget", "MaterialsTab").formLayoutWidget
 
         # Mesh line edit and buttons
         self.meshline = lines.MeshAssetidEditline(controller) 
@@ -195,22 +192,6 @@ class ObjectEditWindow:
         self.soundline.update_text("")
         self.animationline.update_text("")
 
-        self.unsetSelection()
-        
-    def unsetSelection(self):
-        for tuples in self.mainTabList.values():
-            tWid = tuples[1]
-            tWid.setSelected(False)
-        
-        self.currentlySelectedTreeWidgetItem = []
-        
-    def deselectSelection(self, id):
-        for listid in self.mainTabList.keys():
-            if listid == str(id):
-                tuple = self.mainTabList[listid]
-                tWid = tuple[1]
-                tWid.setSelected(False)
-
     def updateAnimation(self, ent):
         combobox = self.animationline.combobox
         combobox.clear()
@@ -335,69 +316,13 @@ class ObjectEditWindow:
         return combobox
 
     def selected(self, ent, keepold=False):
-        self.untoggleButtons()
-        
-        if not keepold:
-            self.unsetSelection()
-        
-        self.addToList(ent)
-        self.highlightEntityFromList(ent)
-        self.showName(ent)
         self.meshline.update_text(ent.prim.MeshID)
         self.soundline.update_text(ent.prim.SoundID)
         self.soundline.update_soundradius(ent.prim.SoundRadius)
         self.soundline.update_soundvolume(ent.prim.SoundVolume)
         self.updateAnimation(ent)
         self.updateMaterialTab(ent)
-        self.updatePropertyEditor(ent)
         self.updatingSelection = True
         self.update_guivals(ent)
         self.updatingSelection = False
         self.controller.soundRuler(ent)
-
-    def updatePropertyEditor(self, ent):
-        pass
-            
-    def untoggleButtons(self):
-        self.mainTab.move_button.setChecked(False)
-        self.mainTab.rotate_button.setChecked(False)
-        self.mainTab.scale_button.setChecked(False)
-        
-    def highlightEntityFromList(self, ent):
-        if self.mainTabList.has_key(str(ent.id)):
-            tWid = self.mainTabList[str(ent.id)][1]
-            tWid.setSelected(True)
-        
-    def addToList(self, ent):
-        if not self.mainTabList.has_key(str(ent.id)):
-           tWid = QTreeWidgetItem(self.mainTab.treeWidget)
-           id = ent.id
-           tWid.setText(0, id)
-            
-           self.mainTabList[str(id)] = (ent, tWid)
-           return True
-        return False
-        
-    def showName(self, ent):
-        """show the id and name of the object. name is sometimes empty it seems. 
-        swoot: actually, seems like the name just isn't gotten fast enough or 
-        something.. next time you click on the same entity, it has a name."""
-            
-        name = ent.prim.Name
-
-        if name == "":
-            self.mainTab.label.text = "%d" % (ent.id)
-        else:
-            self.mainTab.label.text = "%d Name: %s" % (ent.id, name)
-        
-    def on_exit(self):
-        self.proxywidget.hide()
-        uism = r.getUiSceneManager()
-        uism.RemoveWidgetFromMenu(self.proxywidget)
-        uism.RemoveWidgetFromScene(self.proxywidget)
-        
-    def objectDeleted(self, ent_id): #XXX not the best way of doing this
-        if self.mainTabList.has_key(ent_id):
-            id, tWid = self.mainTabList.pop(ent_id)
-            tWid.delete()
-            
