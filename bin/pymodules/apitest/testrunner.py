@@ -6,12 +6,13 @@ import time
 user, pwd, server = "Test Bot", "test", "world.realxtend.org:9000"
 #user, pwd, server = "d d", "d", "world.evocativi.com:8002"
 
-class TestRunner(circuits.Component):
+class TestRunner(circuits.BaseComponent):
     def __init__(self, cfsection=None):
         self.config = cfsection or dict()
-        circuits.Component.__init__(self)
+        circuits.BaseComponent.__init__(self)
         self.testgen = self.run()
-
+    
+    @circuits.handler("update")
     def update(self, deltatime):
         prev = None
         try:
@@ -31,9 +32,6 @@ class TestRunner(circuits.Component):
 
     def elapsed(self, n):
         return (time.time() - self.timer_started) > n
-
-    def sceneadded(self, name):
-        r.logInfo("TestRunner sceneadded called")
 
 class TestLoginLogoutExit(TestRunner):
     def run(self):
@@ -72,7 +70,7 @@ class TestCreateDestroy(TestRunner):
         else:
             return
         yield "waiting for scene"
-        if 0:
+        if 1:
             self.scene = None
             while not self.scene and not self.elapsed(self.wait_time):
                 yield None
@@ -91,6 +89,7 @@ class TestCreateDestroy(TestRunner):
         yield "exiting"
         r.exit()
 
+    @circuits.handler("on_sceneadded")
     def sceneadded(self, name):
         #r.logInfo("CreateDestroy sceneadded called")
         self.scene = naali.getScene(name)
