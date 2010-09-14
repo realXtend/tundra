@@ -52,6 +52,7 @@ class Entity:
         'highlight': 'EC_Highlight',
         'touchable': 'EC_Touchable',
         'soundruler': 'EC_SoundRuler',
+        'netpos': 'EC_NetworkPosition',
         }   
  
     def __init__(self, qent):

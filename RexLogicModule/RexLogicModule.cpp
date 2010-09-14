@@ -323,6 +323,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
         entity->AddComponent(placeable);
         entity->AddComponent(camera);
         entity->AddComponent(sound_listener);
+        activeScene_->EmitEntityCreated(entity);
         
         OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
         camera_ptr->SetPlaceable(placeable);

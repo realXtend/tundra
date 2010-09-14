@@ -1483,7 +1483,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         ogremesh.SetPlaceable(placeable);
         ogremesh.SetMesh(meshname, true);
-    
+        scene->EmitEntityCreated(entity);
         return owner->entity_create(ent_id); //return the py wrapper for the new entity
     }
     
