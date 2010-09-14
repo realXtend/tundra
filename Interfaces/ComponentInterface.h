@@ -31,7 +31,8 @@ namespace Foundation
         friend class ::AttributeInterface;
 
         Q_OBJECT
-        Q_PROPERTY(QString Name READ Name)
+        Q_PROPERTY(QString Name READ Name WRITE SetName)
+        Q_PROPERTY(QString TypeName READ TypeName)
 
     public:
         //! Constuctor.
