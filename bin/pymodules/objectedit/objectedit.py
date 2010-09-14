@@ -133,8 +133,8 @@ class ObjectEdit(Component):
             self.cpp_python_handler.connect('DeleteObject()', self.deleteObject)
             # Pass widgets
             self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
-            self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
+            self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
             
     def on_keypressed(self, k):
@@ -700,7 +700,7 @@ class ObjectEdit(Component):
         # Connect to key pressed signal from input context
         self.edit_inputcontext.disconnectAll()
         self.deselect_all()
-
+        # Disconnect cpp python handler
         self.cpp_python_handler.disconnect('ActivateEditing(bool)', self.on_activate_editing)
         self.cpp_python_handler.disconnect('ManipulationMode(int)', self.on_manupulation_mode_change)
         self.cpp_python_handler.disconnect('RemoveHightlight()', self.deselect_all)
@@ -708,11 +708,8 @@ class ObjectEdit(Component):
         self.cpp_python_handler.disconnect('CreateObject()', self.createObject)
         self.cpp_python_handler.disconnect('DuplicateObject()', self.duplicate)
         self.cpp_python_handler.disconnect('DeleteObject()', self.deleteObject)
-        # Pass widgets
-        #self.cpp_python_handler.PassWidget("Mesh", self.window.mesh_widget)
-        #self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
-        #self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
-        #self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
+        # Clean widgets
+        self.cpp_python_handler.CleanPyWidgets()
         r.logInfo(".. done")
 
     def on_hide(self, shown):

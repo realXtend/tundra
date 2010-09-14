@@ -103,6 +103,9 @@ class ObjectEditWindow:
         self.sound_widget.setLayout(main_box)
 
         # Animation line edit and buttons
+        self.animation_title = QLabel("Skeleton Animation")
+        self.animation_title.setStyleSheet("font-size:18px;font-weight:bold;padding-top:5px;")
+        self.animation_title.setIndent(0)
         self.animationline = lines.AnimationAssetidEditline(controller)
         self.animationline.name = "animationLineEdit"
         animation_combobox = self.getCombobox("AnimationName", "Animation Name", self.animationline)
@@ -128,10 +131,12 @@ class ObjectEditWindow:
         self.anim_box_buttons.addWidget(animationbutton_ok)
         self.anim_box_buttons.addWidget(animationbutton_cancel)
 
+        animationbox.addWidget(self.animation_title)
         animationbox.addWidget(self.animationline)
         animationbox.addLayout(self.anim_box_buttons)
         self.animation_widget = QWidget()
         self.animation_widget.setLayout(animationbox)
+        self.animation_widget.hide()
 
         self.updatingSelection = False
         
@@ -190,43 +195,46 @@ class ObjectEditWindow:
     def deselected(self):
         self.meshline.update_text("")
         self.soundline.update_text("")
-        self.animationline.update_text("")
+        self.updateAnimation()
 
-    def updateAnimation(self, ent):
+    def updateAnimation(self, ent = None):
+        # Hide by default
+        self.animation_widget.setVisible(False)
+        self.animationline.update_text("")
+        self.animationline.update_animationrate(0.0)
         combobox = self.animationline.combobox
         combobox.clear()
-        self.animationline.update_text('')
-        self.animationline.update_animationrate(0.0)
-        self.animation_widget.setEnabled(False)
+        # Return if no mesh
         if not ent:
             return
         try:
             ent.mesh
         except:
-            # TODO put in some nice text field what's going on
             return
-
-        self.animation_widget.setEnabled(True)
+        # Show, update animation id and rate
+        self.animation_widget.setVisible(True)
         self.animationline.update_text(ent.prim.AnimationPackageID)
         self.animationline.update_animationrate(ent.prim.AnimationRate)
+        # Down update other elements if no asset ref in place
         if ent.prim.AnimationPackageID in (u'', '00000000-0000-0000-0000-000000000000'):
             return
-
+        # Get anim component
         try:
             ac = ent.animationcontroller
         except:
             ent.createComponent('EC_OgreAnimationController')
             ac = ent.animationcontroller
             ac.SetMeshEntity(ent.mesh)
-
+        # Update rest of the ui
         current_animation = ent.prim.AnimationName
         available_animations = ac.GetAvailableAnimations()
         for anim in available_animations:
             combobox.addItem(anim)
-
         if current_animation in available_animations:
             idx = combobox.findText(current_animation)
             combobox.setCurrentIndex(idx)
+        # Deactivate as this is the current data, no changes made
+        self.animationline.deactivateButtons()
 
     def updateMaterialTab(self, ent):
         #ent = self.controller.active
