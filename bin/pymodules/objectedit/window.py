@@ -161,9 +161,25 @@ class ObjectEditWindow:
         animation_combobox.connect('currentIndexChanged(int)', animationbutton_cancel.lineValueChanged)
 
         self.mainTabList = {}
-        
         self.currentlySelectedTreeWidgetItem = []
 
+    def selected(self, ent, keepold=False):
+        self.meshline.update_text(ent.prim.MeshID)
+        self.soundline.update_text(ent.prim.SoundID)
+        self.soundline.update_soundradius(ent.prim.SoundRadius)
+        self.soundline.update_soundvolume(ent.prim.SoundVolume)
+        self.updateAnimation(ent)
+        self.updateMaterialTab(ent)
+        self.updatingSelection = True
+        self.update_guivals(ent)
+        self.updatingSelection = False
+        self.controller.soundRuler(ent)
+        
+    def deselected(self):
+        self.meshline.update_text("")
+        self.soundline.update_text("")
+        self.updateAnimation()
+        
     def update_guivals(self, ent):
         if ent is not None:
             self.update_posvals(ent.placeable.Position)
@@ -192,11 +208,6 @@ class ObjectEditWindow:
         if self.controller.cpp_python_handler != None:
             self.controller.cpp_python_handler.SetRotateValues(x_val, y_val, z_val)
     
-    def deselected(self):
-        self.meshline.update_text("")
-        self.soundline.update_text("")
-        self.updateAnimation()
-
     def updateAnimation(self, ent = None):
         # Hide by default
         self.animation_widget.setVisible(False)
@@ -322,15 +333,3 @@ class ObjectEditWindow:
         combobox.setEnabled(True)
         line.combobox = combobox
         return combobox
-
-    def selected(self, ent, keepold=False):
-        self.meshline.update_text(ent.prim.MeshID)
-        self.soundline.update_text(ent.prim.SoundID)
-        self.soundline.update_soundradius(ent.prim.SoundRadius)
-        self.soundline.update_soundvolume(ent.prim.SoundVolume)
-        self.updateAnimation(ent)
-        self.updateMaterialTab(ent)
-        self.updatingSelection = True
-        self.update_guivals(ent)
-        self.updatingSelection = False
-        self.controller.soundRuler(ent)

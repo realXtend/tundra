@@ -41,12 +41,15 @@ namespace WorldBuilding
 
     public slots:
         void CleanPyWidgets();
+        bool IsBuildingActive();
         void EmitManipulationModeChange(int mode);
         void EmitEditingActivated(bool activated);
         void EmitRemoveHightlight();
+        
         void SetRotateValues(int x, int y, int z);
         void SetScaleValues(double x, double y, double z);
         void SetPosValues(double x, double y, double z);
+        
         void EmitRotateChange(int x, int y, int z);
         void EmitScaleChange(double x, double y, double z);
         void EmitPosChange(double x, double y, double z);

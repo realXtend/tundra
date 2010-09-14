@@ -69,7 +69,10 @@ class ToolBarWindow():
         """ for receiving input message events from other threads """
         while(self.inputQueue.qsize()):
             try:
-                title, msg = self.inputQueue.get(0)
+                try:
+                    title, msg = self.inputQueue.get(0)
+                except ValueError:
+                    return
                 if(title=="__end__"):
                     self.controller.isrunning = 0
                     return

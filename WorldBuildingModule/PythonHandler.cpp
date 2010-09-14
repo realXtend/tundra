@@ -25,6 +25,11 @@ namespace WorldBuilding
         build_manager_->CleanPyWidgets();
     }
 
+    bool PythonHandler::IsBuildingActive()
+    {
+        return build_manager_->IsBuildingActive();
+    }
+
     void PythonHandler::EmitManipulationModeChange(int mode)
     {
         current_mode_ = (PythonParams::ManipulationMode)mode;
