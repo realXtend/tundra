@@ -8,7 +8,8 @@ compshorthand = {
     'EC_OgreCamera': 'camera',
     'EC_OgreAnimationController': 'animationcontroller',
     'EC_Highlight': 'highlight',
-    'EC_Touchable': 'touchable'
+    'EC_Touchable': 'touchable',
+    'EC_AttachedSound': 'sound',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
