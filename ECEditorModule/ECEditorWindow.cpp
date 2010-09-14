@@ -268,7 +268,8 @@ namespace ECEditor
                 ECEditorModule::LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
                 return;
             }
-            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            Scene::EntityPtr entity = scene->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
             assert(entity.get());
             if(!entity.get())
                 return;
@@ -303,6 +304,7 @@ namespace ECEditor
                 entityPlacer->setObjectName("EntityPlacer");
             }
             AddEntity(entity->GetId());
+            scene->EmitEntityCreated(entity);
         }
     }
 
