@@ -89,6 +89,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
         CheckPendingRexFreeData(entityid);
+        scene->EmitEntityCreated(entity, AttributeChange::Network);
         return entity;
     }
 
@@ -117,7 +118,6 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 
     // Note: we assume prim entity is created because of a message from network
     Scene::EntityPtr entity = scene->CreateEntity(entityid, components); 
-    scene->EmitEntityCreated(entity, AttributeChange::Network);
     return entity;
 }
 
