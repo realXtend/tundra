@@ -57,7 +57,7 @@ if 0:
     
 if 0: #get entity
     #idnum = new_id
-    idnum = naali.getCamera().id
+    idnum = naali.getCamera().Id
     print "Getting entity id", idnum,
     e = naali.getEntity(idnum)
     print "got:", e
@@ -163,7 +163,7 @@ if 0: #camera pitch
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
-        print "CAM:", cament.id
+        print "CAM:", cament.Id
     except ValueError:
         print "no CAM"
     else:
@@ -607,23 +607,6 @@ if 0: #testing the removal of canvases
     print bool
     
 if 0:
-    print "Testing..."
-    e = r.getEntity(8880001)  
-    print e
-    start_x = e.pos[0]
-    start_y = e.pos[1]
-    start_z = e.pos[2]
-        
-    worldstream = r.getServerConnection()
-    worldstream.SendObjectAddPacket(start_x, start_y, start_z)
-
-if 0: #getUserAvatar 
-    ent = naali.getUserAvatar()
-    print "User's avatar_id:", ent.id
-    #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
-    #ent.mesh = "cruncah1.mesh"
-    
-if 0:
     print r.getCameraUp()
     print r.getCameraRight()
 
@@ -641,7 +624,7 @@ if 0: #test changing the mesh asset a prim is using
     print "new mesh set:", ent.mesh
     
     print "sending prim data update to server"
-    r.sendRexPrimData(ent.id) #arkku
+    r.sendRexPrimData(ent.Id) #arkku
     print "..done", ent.mesh
     
 if 0: #property editor tests
@@ -804,7 +787,7 @@ if 0: #updateflag checks, duplicate tests
     ws = r.getServerConnection()
     #print dir(ws)
     #x, y, z = e.placeable.Position.x(), ... #didn't port this unused line to new version
-    ws.SendObjectDuplicatePacket(e.id, e.prim.UpdateFlags, 1, 1, 1)
+    ws.SendObjectDuplicatePacket(e.Id, e.prim.UpdateFlags, 1, 1, 1)
     
 if 0: #proxywidget signal connecting
     #~ from PythonQt.QtUiTools import QUiLoader
@@ -1256,12 +1239,13 @@ if 0:
     print a == b, a.toString(), b.toString()
     
 
-if 0:
+if 0: #sound add&remove
     e = naali.getUserAvatar()
     try:
         e.sound
     except AttributeError:
-        print e.createComponent("EC_AttachedSound")
+        #print e.createComponent("EC_AttachedSound")
+        print naali.createComponent(e, "EC_AttachedSound") #temp workaround XXX
         print "created a new Sound component"
 
     s = e.sound
@@ -1369,7 +1353,7 @@ if 0: #local object creation, testing if local previews of .scenes would work
     from PythonQt.QtGui import QQuaternion as Quat
 
     print "hep"
-    e = r.createEntity("Jack.mesh", 1515)
+    e = naali.createMeshEntity("Jack.mesh")
     print e
     e.placeable.Position = Vec3(128, 128, 60)
     e.placeable.Scale = Vec3(5, 5, 5)
