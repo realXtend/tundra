@@ -144,6 +144,8 @@ namespace PythonScript
         input.reset();
 
         pmmModule = pmmDict = pmmClass = pmmInstance = 0;
+        foreach(UiProxyWidget *proxy, proxyWidgets)
+            SAFE_DELETE(proxy);
     }
 
     void PythonScriptModule::PostInitialize()
@@ -1050,48 +1052,40 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
 PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 {
-    char* uuidstr;
-
+    const char* uuidstr;
     if(!PyArg_ParseTuple(args, "s", &uuidstr))
         return NULL;
 
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
-    
-    // Get RexLogic and Scene
-    RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
+    RexUUID texture_uuid(uuidstr);
 
-    if (!scene) 
-    { 
+    /// Get scene
+    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+    {
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        return NULL;   
+        return NULL;
     }
 
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
     bool submeshes_found_ = false;
-    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+    foreach(Scene::EntityPtr e, prims)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *e.get();
         submeshes_.clear();
 
-        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
-        if (!primentity) 
-            continue;
-        
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
+        EC_OpenSimPrim &prim = *entity.GetComponent<EC_OpenSimPrim>();
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
             Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
             Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
-            
+
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
-            if (mesh) 
+            if (mesh)
             {
                 meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
                 if (!meshptr)
@@ -1260,33 +1254,32 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     // Read params from py: entid as uint, textureuuid as string
     unsigned int ent_id_int;
-    char* uuidstr;
+    const char* uuidstr;
     entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "Is", &ent_id_int, &uuidstr))
-        return NULL;   
+        return NULL;
 
     ent_id = (entity_id_t)ent_id_int;
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
+    RexUUID texture_uuid(uuidstr);
 
-    RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-
-    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
-    if (!primentity) 
+    Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetFramework()->GetService<Foundation::WorldLogicInterface>();
+    if (!worldLogic)
         Py_RETURN_NONE;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(primentity->GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
-    
+    Scene::EntityPtr primentity = worldLogic->GetEntityWithComponent(ent_id, EC_OpenSimPrim::TypeNameStatic());
+    if (!primentity)
+        Py_RETURN_NONE;
+
+    EC_OpenSimPrim &prim = *primentity->GetComponent<EC_OpenSimPrim>();
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
         Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         Foundation::ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
-        
+
         OgreRenderer::EC_OgreMesh *meshptr = 0;
-        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;            
+        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
         if (mesh)
         {
@@ -1686,6 +1679,7 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     QWidget* widget = (QWidget*)widget_ptr;
 
     UiProxyWidget* proxy = new UiProxyWidget(widget);
+    PythonScriptModule::GetInstance()->proxyWidgets << proxy;
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
