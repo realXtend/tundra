@@ -12,6 +12,11 @@ class TestRunner(circuits.BaseComponent):
         circuits.BaseComponent.__init__(self)
         self.testgen = self.run()
     
+
+    @circuits.handler("on_sceneadded")
+    def sceneadded(self, name):
+        r.logInfo("base class sceneadded callback")
+
     @circuits.handler("update")
     def update(self, deltatime):
         prev = None
@@ -54,8 +59,13 @@ class TestLoginLogoutExit(TestRunner):
         r.exit()
 
 class TestCreateDestroy(TestRunner):
+    def __init__(self, *args, **kw):
+        self.finished = False
+        self.scene = None
+        TestRunner.__init__(self, *args, **kw)
+
     def run(self):
-        self.wait_time = int(self.config.get("wait_time", 300))
+        self.wait_time = int(self.config.get("wait_time", 60))
         yield "doing login"
         self.timer_start()
         r.startLoginOpensim(user, pwd, server)
@@ -70,34 +80,36 @@ class TestCreateDestroy(TestRunner):
         else:
             return
         yield "waiting for scene"
-        if 1:
-            self.scene = None
-            while not self.scene and not self.elapsed(self.wait_time):
-                yield None
-        else:
-            # for some reason our sceneadded doesn't get called,
-            # so fake it
-            self.sceneadded("World")
+        while not self.scene and not self.elapsed(self.wait_time):
+            yield None
 
         yield "creating object"
         r.getServerConnection().SendObjectAddPacket(42, 42, 22)
-        self.done = False
         yield "waiting for EntityCreated"
-        while not self.done and not self.elapsed(self.wait_time):
+        while (not self.finished) and (not self.elapsed(self.wait_time)):
             yield None
-        yield "test result: " + str(self.done)
         yield "exiting"
         r.exit()
+        if self.finished:
+            yield "success"
+        else:
+            yield "failure"
 
     @circuits.handler("on_sceneadded")
     def sceneadded(self, name):
         #r.logInfo("CreateDestroy sceneadded called")
         self.scene = naali.getScene(name)
+
         self.scene.connect("EntityCreated(Scene::Entity*, AttributeChange::Type)", self.handle_entity_created)
         r.logInfo("EntityCreated callback registered")
 
     # qt slot
     def handle_entity_created(self, ent, changetype):
+        # fun fact: since we are called for every entity and
+        # self.finished checked only every "update" event,
+        # this often cleans up >1 test objects (in case any
+        # are left over from failed tests)
+
         ent_id = ent.Id
         ent = naali.getEntity(ent.Id)
         try:
@@ -109,8 +121,8 @@ class TestCreateDestroy(TestRunner):
 
             # for some reason z coord ends up as 22.25
             if p.x() == 42.0 and p.y() == 42.0 and int(p.z()) == 22:
-                r.logInfo("found created test prim, deleting")
+                r.logInfo("found created test prim, deleting (finished=%s)" % self.finished)
                 r.getServerConnection().SendObjectDeRezPacket(
                     ent_id, r.getTrashFolderId())
-                self.done = True
+                self.finished = True
 
