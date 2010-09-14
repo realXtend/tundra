@@ -112,7 +112,7 @@ namespace ECEditor
         {
             QString entity_id_str;
             entity_id_str.setNum((int)entity_id);
-            
+            entity_list_->clearSelection();
             entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
         }
     }
