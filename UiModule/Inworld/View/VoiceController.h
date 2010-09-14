@@ -6,6 +6,7 @@
 #include <QObject>
 #include <QWidget>
 #include <QPoint>
+#include <QTimer>
 #include "ui_VoiceControl.h"
 
 class QMouseEvent;
@@ -83,6 +84,7 @@ namespace CommUI
 
     private:
         QPoint mouse_last_pos_;
+        QTimer update_timer_;
         bool mouse_dragging_;
     };
 

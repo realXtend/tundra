@@ -25,7 +25,6 @@ namespace CommUI
         push_to_talk_on_(false),
         toggle_mode_on_(false)
     {
-
     }
 
     VoiceController::~VoiceController()
@@ -131,6 +130,8 @@ namespace CommUI
         QObject::connect(GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         QObject::connect(GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         UpdateUI();
+        QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
+        update_timer_.start(200);
     }
 
     VoiceControllerWidget::~VoiceControllerWidget()
@@ -166,6 +167,9 @@ namespace CommUI
             participantsCountLabel->setText(QString("%1 participants").arg(GetSession()->Participants().length()));
         else
             participantsCountLabel->setText("No participants");
+
+        averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithOut())/1024,'f',1)));
+        averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithIn())/1024,'f',1)));
     }
 
     void VoiceControllerWidget::SetPushToTalkOn()
