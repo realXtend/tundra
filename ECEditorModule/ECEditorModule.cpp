@@ -110,9 +110,9 @@ namespace ECEditor
                 break;
             case Scene::Events::EVENT_ENTITY_DELETED:
             {
-                Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-                if(editor_window_ && entity_clicked_data)
-                    editor_window_->RemoveEntity(entity_clicked_data->entity->GetId());
+                Scene::Events::SceneEventData *entity_clicked_data = dynamic_cast<Scene::Events::SceneEventData*>(data);
+                if (editor_window_ && entity_clicked_data)
+                    editor_window_->RemoveEntity(entity_clicked_data->localID);
                 break;
             }
             default:
