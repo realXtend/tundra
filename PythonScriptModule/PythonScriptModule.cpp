@@ -76,8 +76,6 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
-//#include "UiModule.h"
-//#include "Inworld/InworldSceneController.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
@@ -90,9 +88,6 @@
 #include "EC_DynamicComponent.h"
 #include "EC_Script.h"
 
-//for py_print
-//#include <stdio.h>
-
 #include <PythonQt.h>
 
 #include <QGroupBox> //just for testing addObject
@@ -101,9 +96,6 @@
 #include <QGraphicsView>
 #include <QWebView>
 //#include <QDebug>
-
-#include <propertyeditor.h>
-
 
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
@@ -1697,13 +1689,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
-PyObject* GetPropertyEditor(PyObject *self)
-{
-    QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-    PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    return PythonScriptModule::GetInstance()->WrapQObject(pe); 
-}
-
 PyObject* GetUiSceneManager(PyObject *self)
 {
     Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
@@ -1953,9 +1938,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"getServerConnection", (PyCFunction)GetServerConnection, METH_NOARGS,
     "Gets the server connection."},    
-
-    {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
-    "get property editor"},
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},
