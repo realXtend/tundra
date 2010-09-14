@@ -219,6 +219,7 @@ class ObjectEdit(Component):
         self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
+        self.window.selected(ent, False)
         self.canmove = True
         
         # Not needed at this point, c++ module gets selected entitys itself
@@ -246,6 +247,7 @@ class ObjectEdit(Component):
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.id == ent.id:
                 self.sels.remove(_ent)
+                self.window.deselectSelection(_end.id)
             
     def deselect_all(self):
         if len(self.sels) > 0:
@@ -262,6 +264,7 @@ class ObjectEdit(Component):
             self.prev_mouse_abs_x = 0
             self.prev_mouse_abs_y = 0
             self.canmove = False
+            self.window.deselected()
             
     def highlight(self, ent):
         try:
