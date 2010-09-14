@@ -24,10 +24,10 @@ namespace ECEditor
 
         virtual bool IsSerializable() const { return true; }
         
-        Foundation::Attribute<Vector3df> attr1_;
-        Foundation::Attribute<Quaternion> attr2_;
-        Foundation::Attribute<QString> attr3_;
-        Foundation::Attribute<Foundation::AssetReference> attr4_;
+        Attribute<Vector3df> attr1_;
+        Attribute<Quaternion> attr2_;
+        Attribute<QString> attr3_;
+        Attribute<Foundation::AssetReference> attr4_;
         
     private:
         EC_SerializationTest(Foundation::ModuleInterface* module);

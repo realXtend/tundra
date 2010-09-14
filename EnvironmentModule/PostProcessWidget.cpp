@@ -36,13 +36,7 @@ namespace Environment
     {
         if (e->type() == QEvent::LanguageChange)
         {
-            // Because of widget propertie contains orginal strings we will use them for base of translations.
-            // if we would use directly proxy widget info (example title) translations to english to finnish 
-            // would produce that finnish to German would left it as Finnish so we use as a base language English.
-           
-            QString title = qApp->translate("PostProcessWidget", "Post-processing");
-            graphicsProxyWidget()->setWindowTitle(title);
-
+            setWindowTitle("Post-processing");
             // Then set this widget to right state for each widget which is created from ui - file this must be called! 
             widget_.retranslateUi(this);
         }
@@ -108,10 +102,7 @@ namespace Environment
     void NamedCheckBox::changeEvent(QEvent *e)
     {
         if (e->type() == QEvent::LanguageChange) 
-        {
-            QString text = qApp->translate("CompositionHandler", objectName().toStdString().c_str());
-            setText(text);
-        }
+            setText(QApplication::translate("CompositionHandler", objectName().toStdString().c_str()));
         else
            QCheckBox::changeEvent(e);
     }

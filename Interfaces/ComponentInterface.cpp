@@ -8,7 +8,6 @@
 #include "StableHeaders.h"
 
 #include "ComponentInterface.h"
-#include "AttributeInterface.h"
 
 #include "Framework.h"
 #include "Entity.h"
@@ -173,7 +172,7 @@ void ComponentInterface::ComponentChanged(AttributeChange::Type change)
     emit OnChanged();
 }
 
-void ComponentInterface::AttributeChanged(Foundation::AttributeInterface* attribute, AttributeChange::Type change)
+void ComponentInterface::AttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
 {
     // Trigger scenemanager signal
     if (parent_entity_)

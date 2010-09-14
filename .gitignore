@@ -34,6 +34,10 @@ moc_*.cxx_parameters
 qrc_*.cxx
 ui_*.h
 
+# Generated documentation
+doc/html/
+*.tmp
+
 # Python files
 *.pyc
 

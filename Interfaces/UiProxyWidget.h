@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   UiProxyWidget.h
- *  @brief  
+ *  @brief  Represents Naali UI widget created by embedding QWidget to the same
+ *          canvas as the in-world 3D scene.
  */
 
 #ifndef incl_Interfaces_UiProxyWidget_h
@@ -14,28 +15,26 @@ class QTimeLine;
 class QParallelAnimationGroup;
 class QPropertyAnimation;
 
-/**
- *
- */
+/// Represents Naali UI widget created by embedding QWidget to the same canvas as the in-world 3D scene.
 class UiProxyWidget : public QGraphicsProxyWidget
 {
     Q_OBJECT
 
 public:
     /** Constructor.
-     *  @param  widget The widget which will be embedded to the proxy widget.
-     *  @param  flags Window flags. Qt::Dialog is used as default.
-     *          It creates movable proxy widget which has title bar and frames.
-     *          If you want add widget without title bar and frames, use Qt::Widget.
-     *          For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
-     */
+        @param  widget The widget which will be embedded to the proxy widget.
+        @param  flags Window flags. Qt::Dialog is used as default.
+        It creates movable proxy widget which has title bar and frames.
+        If you want add widget without title bar and frames, use Qt::Widget.
+        For further information, see @see http://doc.qt.nokia.com/4.6/qt.html#WindowType-enum
+    */
     UiProxyWidget(QWidget *widget, Qt::WindowFlags flags = Qt::Dialog);
 
     /// Destructor.
     ~UiProxyWidget();
 
     /** Sets opacity for unfocused state.
-     *  @param opacity Opacity value between 0 and 100.
+        @param opacity Opacity value between 0 and 100.
      */
     void SetUnfocusedOpacity(int opacity);
 
@@ -47,6 +46,13 @@ public:
     /// Brings to front in the scene, sets focus and shows this proxy widget.
     /// @todo Seems that isn't working properly.
     void BringToFront();
+
+    /** OObject override.
+        Used for changing the proxy widget's window title when application language changes.
+        @note Retrieves the name from the embedded QWidget so the QWidget's window title must
+        be set properly.
+    */
+    bool eventFilter(QObject *obj, QEvent *e);
 
 public slots:
     /// Toggles visibility with show/hide
@@ -60,61 +66,75 @@ signals:
     void Closed();
 
     /** Emitted when visibility of the proxy changes.
-     *  @param visible Visiblity.
-     */
+        @param visible Visiblity.
+    */
     void Visible(bool visible);
 
     /** Emitted when visibility of the proxy changes.
-     *  @param visible Visiblity.
-     */
+        @param visible Visiblity.
+    */
     void BringProxyToFrontRequest(QGraphicsProxyWidget *widget);
 
     /** Emitted when proxy widget has moved.
-     *  @param widget Widget.
-     *  @param pos New position.
-     */
+        @param widget Widget.
+        @param pos New position.
+    */
     void ProxyMoved(QGraphicsProxyWidget *widget, const QPointF &pos);
 
     /** Emitted when proxy widget has been ungrabbed.
-     *  @param widget
-     *  @param pos New Position.
-     */
+        @param widget
+        @param pos New Position.
+    */
     void ProxyUngrabbed(QGraphicsProxyWidget *widget, const QPointF &pos);
 
 protected:
-    /// QGraphicsProxyWidget override.
-    void showEvent(QShowEvent *show_event);
+    /** QGraphicsProxyWidget override.
+        Emits Visible(true) signal.
+    */
+    void showEvent(QShowEvent *e);
 
-    /// QGraphicsProxyWidget override.
-    void hideEvent(QHideEvent *hide_event);
+    /** QGraphicsProxyWidget override.
+        Emits Visible(false) signal.
+    */
+    void hideEvent(QHideEvent *e);
 
-    /// QGraphicsProxyWidget override.
-    void closeEvent(QCloseEvent *close_event);
+    /** QGraphicsProxyWidget override.
+        Emits Closed() signal.
+    */
+    void closeEvent(QCloseEvent *e);
 
-    /// QGraphicsProxyWidget override.
-    void focusInEvent(QFocusEvent *focus_event);
+    /** QGraphicsProxyWidget override.
+        Alters opacity of the proxy widget.
+    */
+    void focusInEvent(QFocusEvent *e);
 
-    /// QGraphicsProxyWidget override.
-    void focusOutEvent(QFocusEvent *focus_event);
+    /** QGraphicsProxyWidget override.
+        Alters opacity of the proxy widget.
+    */
+    void focusOutEvent(QFocusEvent *e);
 
     /// QGraphicsProxyWidget override.
     QVariant itemChange(GraphicsItemChange change, const QVariant &value);
 
-    /// QGraphicsProxyWidget override.
-    void moveEvent(QGraphicsSceneMoveEvent * event);
+    /** QGraphicsProxyWidget override.
+        Emits Moved() signal.
+    */
+    void moveEvent(QGraphicsSceneMoveEvent * e);
 
-    /// QGraphicsProxyWidget override.
-    void ungrabMouseEvent(QEvent *event);
+    /** QGraphicsProxyWidget override.
+        Emits ProxyUngrabbed() signal.
+    */
+    void ungrabMouseEvent(QEvent *e);
 
 private slots:
-    /// Finishes (hides) proxy widget after animated hide.
+    /// Hides proxy widget after animated hide is complete.
     void FinishHide();
 
 private:
-    ///
+    /// Group of parallel animations.
     QParallelAnimationGroup *animations_;
 
-    ///
+    /// Fade animation.
     QPropertyAnimation *fade_animation_;
 
     /// Opacity in unfocused state, 0.0-1.0.

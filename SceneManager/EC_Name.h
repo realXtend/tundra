@@ -25,13 +25,13 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     /// Name.
-    Foundation::Attribute<QString> name;
+    Attribute<QString> name;
 
     /// Description.
-    Foundation::Attribute<QString> description;
+    Attribute<QString> description;
 
     /// Boolean which indicates that the current name value is defined by the user and should not be set programmatically.
-    Foundation::Attribute<bool> userDefined;
+    Attribute<bool> userDefined;
 
 private:
     /// Constructor. Sets name and description to empty strings.

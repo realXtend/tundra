@@ -1,21 +1,401 @@
 /*! \mainpage
  
-    \section intro_sec Introduction
+\section intro_sec Introduction
+
+Welcome to the Naali developer documentation. This page is a site map that assembles together all the major features offered by Naali.
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>Download</h2>
+Obtain Naali from
+<ul>
+<li>A binary distribution. Changelog.
+<li>Source repository.
+<li>3rd party library repository.   
+</ul>
+Naali distribution license.
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>Getting Started</h2>
+Follow these first steps.
+<ul>
+<li>Getting started with Naali.
+<li>Building the sources.
+<li>Configuring which modules to build and load. 
+</ul>
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>Community</h2>
+Contact Naali developers and users at
+<ul>
+<li>Developer mailing list.
+<li>End-user mailing list.
+<li>Naali community wiki.
+<li>IRC channel.
+<li>Bug tracker.
+</ul>
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>Technical Guidelines</h2>
+See the following pages for help on working on Naali codebase.  
+<ul>
+<li>Coding conventions.
+<li>Header usage best practices.
+<li>Qt documentation.
+<li>Ogre documentation.
+</ul>
+</td>
+</tr>
+
+</table>
+
+The functionality built into Naali is subdivided into core libraries and optional subsystems. The core libraries are sets of APIs that each expose some functionality of the Naali system to native C++ code or scripted modules or scene entities. 
+These interfaces are accessible directly through the root Framework object. The individual subsystems are accessible by querying the appropriate modules using the Module API.     
+
+The root object for accessing all Naali features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
+- the Framework class.
+- Naali frame update tick.
+
+<h2>Core</h2>
+The Naali SDK consists of the following set of core APIs that are accessible from client modules, components and scripts.
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Module</h3>
+The \subpage ModuleArchitecture "Module" API gives access to all the modules registered in the system. For working with modules, see the following topics:
+- Accessing modules in your code.
+- Creating a new module using C++.
+- Creating a new module using Python.
+- Setting up cmake files and PCHs for your module.
+- Module load orders.
+- Supporting localization in your module. 
+
+Classes:
+<ul>
+<li>Foundation::ModuleManager
+<li>Foundation::ModuleInterface
+</ul>  
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Event</h3>
+The Naali event pipe is a channel for system-wide inter-module messaging.
+
+Information:
+<ul>
+<li>\subpage EventSystem "Viewer event system."
+<li>Why avoid events?
+</ul>
+
+Classes:
+<ul>
+<li>Foundation::EventDataInterface
+<li>Foundation::EventManager
+</ul>
+   
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Config</h3>
+Implements a uniform mechanism for modules to store their configuration data.
+
+More information:
+- Reading and writing configuration data.
+- Using default values.
+
+Classes:
+- Foundation::ConfigurationManager.
+   
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Debug</h3>
+Contains useful development-time mechanisms like memory tracking and execution time profiling.
+
+Topics:
+- Detecting memory leaks.
+- Using the Naali execution time profiler.
+- Performing automated network testing.
+
+Classes:
+- Foundation::Profiler.
+- Foundation::ProfilerBlock.   
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Input</h3>
+Provides access to Qt input devices in a contextual order.
+
+Follow these topics to learn more:
+- Reading input through an InputContext.
+- Providing reconfigurable key bindings with keyboard mappings.
+- InputContext priorities and playing nice with Qt.
+- Polling for input. 
+</td>
+
+Classes:
+- InputContext.
+- KeyEvent.
+- MouseEvent.
+- QtInputService.
+
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>UI</h3>
+Exposes the Naali main window and allows clients to create and show their own Qt-based windows.
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Scene</h3>
+Gives access to the Naali 3D scene structure: entities, components and attributes.
+Topics:
+<ul>
+<li>\subpage SceneModelPage "Scenes, entities and components."
+<li>Attributes and attribute metadata.
+<li>Entity actions.
+<li>Accessing scene contents from C++ code.
+<li>Working with multiple scenes.
+<li>Accessing entity attributes using JavaScript.   
+<li>Accessing entity attributes using Python.
+<li>Creating new component types.
+<li>Creating new attribute types.
+<li>Entity attribute replication model.      
+</ul>
+Classes:
+<ul>
+<li>Foundation::AttributeInterface
+<li>Foundation::AttributeMetadata
+<li>Foundation::ComponentManager
+<li>Foundation::ComponentInterface
+<li>Scene::SceneManager
+<li>Scene::Entity
+<li>Scene::Action
+</ul>
+  
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Asset</h3>
+Implements the Naali asset system and a pluggable asset provider architecture for streaming in asset data files.
+
+For more information, see
+- \subpage AssetModule "Using the asset module".
+- \subpage Resources "Using resources".
+- \subpage TextureDecoderModule "Texture decoding".
+- Assets on localhost.
+- HTTP asset provider.
+- Implementing a new asset provider plugin.
+- Naali asset cache structure.
+</td>
+
+Classes:
+- Foundation::AssetServiceInterface.
+- Asset::AssetManager.
+- Foundation::AssetInterface.
+- Foundation::AssetMetadataInterface.
+- Foundation::AssetProviderInterface.
+- Foundation::AssetServiceInterface.
+- Foundation::ResourceInterface.
+- Foundation::TextureInterface.
+- Foundation::TextureServiceInterface.
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Console</h3>
+Allows modules to register new commands that are invokeable from a command line console.
+
+More information:
+- Registering new console commands.
+- Programmatically invoking console commands.
+
+Classes:
+- Console::Command.
+- Console::ConsoleCommandServiceInterface.
+- Console::ConsoleServiceInterface.
+- Console::CommandManager.
+-     
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Connection</h3>
+Exposes the functionality related to the currently active server connection, if Naali is connected to a server.   
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Server</h3>
+If naali is acting as a network server, this interface can be accessed to interact with the currently active client connections.    
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Audio</h3>
+Provides functions for playing back audio on the client.
+
+Topics:
+ - \subpage OpenALAudioModule "Using the sound system".
+	
+Classes:
+ - Foundation::SoundServiceInterface.
+ - OpenALAudio::Sound.
+ - OpenALAudio::SoundChannel.
+ - OpenALAudio::SoundSettings.
+ - OpenALAudio::SoundSystem.
+</td>
+</tr>
+
+</table>
+
+<h2>Naali Scene Structure</h2>
+
+The most visible part of Naali to end-users and world builders is the Naali scene structure. The Scene API is used to access this scene in program code. 
+The \subpage component_base "Naali Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
+
+<h2>Subsystems</h2>
+In addition to providing the core API, Naali contains the following functional subsystems, implemented as sets of modules.
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Renderer</h3>
+This subsystem consists of the rendering library and the graphics-related Naali scene features.  
+
+See the following topics for more information:
+	- \subpage OgreRenderingModule "Using the Ogre renderer module".	
+	
+<p>Implemented by modules
+<ul>
+<li>OgreRenderingModule
+<ul><li>Exposes the components OgrePlaceable, OgreMesh, OgreLight, OgreSky, OgreCustomObject, OgreConsoleOverlay, OgreMovableTextOverlay, OgreParticleSystem, OgreAnimationController, OgreEnvironment, OgreCamera.</ul> 
+<li>EnvironmentModule
+<ul><li>Exposes the components Terrain, Water.</ul> 
+</ul>
+
+</td>
+</tr>
+</table>
+
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Communication</h3>
+The subsystem of Naali that provides video and audio communication features between clients connected to the world.
+
+<p>Implemented by modules
+<ul>
+<li>CommunicationsModule
+<li>MumbleVoipModule
+<li>PhononPlayerModule
+<li>TelepathyIMModule
+</ul>
+
+</td>
+</tr>
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Taiga</h3>
+This subsystem consists of the modules that provide the features to access the features of a Taiga server or an OpenSim server.
+
+Topics:
+	- \subpage OpenSimProtocolConnection "Overview of login procedure". 
+	- \subpage OSUDP "Interfacing with the OpenSim world using OSUDP messages".
+	- \subpage XMLRPC "Performing custom XMLRPC calls".
+
+<p>Implemented by modules
+<ul>
+<li>InventoryModule
+<li>InWorldChatModule
+<ul><li>Exposes the components Billboard, ChatBubble.</ul>
+<li>LegacyAvatarModule
+<li>ProtocolModuleOpenSim
+<li>ProtocolModuleTaiga
+<li>\subpage RexLogic_Module "RexLogicModule"
+<ul><li>Exposes the components FreeData, AttachedSound, OpenSimAvatar, NetworkPosition, Controllable, AvatarAppearance, HoveringWidget, Highlight, HoveringText, Clone, Light, OpenSimPresence, OpenSimPrim, Touchable, 3DCanvas, 3DCanvasSource, Ruler, SoundRuler, Name, ParticleSystem, SoundListener, Sound, Mesh, InputMapper, Movable.</ul>
+<li>WorldMapModule
+</ul>
+
+</td>
+</tr>
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Script</h3>
+Allows implementing modules using the Python script language as well as embedding new functionality into scene entities by using JavaScript or Python.
+
+<p>Implemented by modules
+<ul>
+<li>PythonScriptModule
+<ul><li>Exposes the component DynamicComponent.</ul>
+<li>JavascriptScriptModule
+</ul>
  
-    Welcome to realXtend viewer source code documentation.
-    
-    First of all you might want to get to know the \subpage progconv "Programming Conventions" 
-    used in developing realXtend viewer.    
-      
-    You can browse the documentation at your own pace, or jump directly to
-    \ref GettingStarted "Getting started" for a general overview of the Viewer project.
+</td>
+</tr>
+</table>
 
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>Ether</h3>
+Provides the visual end-user UI experience to Naali.
+
+<p>Implemented by module
+<ul>
+<li>UiModule
+</ul>
+
+</td>
+</tr>
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #ffe0d0; vertical-align: top; padding: 5px;">
+<h3>WorldEditor</h3>
+Implements functionality for editing Naali scene content and Ogre asset data.
+
+<p>Implemented by modules
+<ul>
+<li>ECEditorModule
+<ul><li>Exposes the component SerializationTest.</ul>
+<li>OgreAssetEditorModule
+<li>WorldBuildingModule
+</ul>
  
-    \section install_sec Compiling the Viewer
+</td>
+</tr>
+</table>
 
-    See readme.txt for information about compiling the viewer.
+<h2>Modules</h2>
+Additionally, there exists the following modules.
 
-    \section license License
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h3>LoginScreenModule</h3>
+Implements a server login screen with simple, almost non-functional end-user UI. 
+ </td>
+</tr>
+</table>
 
-    For conditions of distribution and use, see copyright notice in license.txt
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 120px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h3>NoteCardModule</h3>
+Utilizes ECA synchronization mechanism and implements a free-form note card data storage on an entity.
+<p>Exposes the component NoteCard. 
+</td>
+</tr>
+</table>
 */

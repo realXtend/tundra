@@ -37,13 +37,13 @@ public:
     ~EC_SoundRuler();
     
     //! Sound radius
-    Foundation::Attribute<float> radiusAttr_;
+    Attribute<float> radiusAttr_;
     
     //! Sound volume
-    Foundation::Attribute<float> volumeAttr_;
+    Attribute<float> volumeAttr_;
     
     //! Segments to use for radius circle
-    Foundation::Attribute<float> segmentsAttr_;
+    Attribute<float> segmentsAttr_;
 
 public slots:
     /// Shows the highlighting effect.

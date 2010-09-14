@@ -69,6 +69,9 @@ namespace Asset
         //! XMLRPC asset provider
         Foundation::AssetProviderPtr xmlrpc_asset_provider_;
 
+        //! Local asset provider
+        Foundation::AssetProviderPtr local_asset_provider_;
+        
         //! Http asset provider
         Foundation::AssetProviderPtr http_asset_provider_;
 

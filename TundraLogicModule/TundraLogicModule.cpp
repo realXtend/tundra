@@ -11,8 +11,10 @@
 #include "KristalliProtocolModule.h"
 #include "KristalliProtocolModuleEvents.h"
 #include "CoreStringUtils.h"
+#include "RexNetworkUtils.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
+#include "SceneImporter.h"
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
 #include "MsgClientJoined.h"
@@ -24,6 +26,8 @@
 #include "MsgEntityIDCollision.h"
 
 #include "MemoryLeakCheck.h"
+
+using namespace RexTypes;
 
 namespace TundraLogic
 {
@@ -57,29 +61,38 @@ void TundraLogicModule::PostInitialize()
     kristalliEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Kristalli");
 
     RegisterConsoleCommand(Console::CreateCommand("startserver", 
-        "Starts a server. Usage: \"startserver(port)\"",
+        "Starts a server. Usage: startserver(port)",
         Console::Bind(this, &TundraLogicModule::ConsoleStartServer)));
     RegisterConsoleCommand(Console::CreateCommand("stopserver", 
         "Stops the server",
         Console::Bind(this, &TundraLogicModule::ConsoleStopServer)));
     RegisterConsoleCommand(Console::CreateCommand("connect", 
-        "Connects to a server. Usage: \"connect( address,[port],[username],[password])\"",
+        "Connects to a server. Usage: connect(address,port,username,password)",
         Console::Bind(this, &TundraLogicModule::ConsoleConnect)));
     RegisterConsoleCommand(Console::CreateCommand("disconnect", 
         "Disconnects from a server.",
         Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
     
     RegisterConsoleCommand(Console::CreateCommand("savescene",
-        "Saves scene into an XML file. Usage: \"savescene(filename)\"",
+        "Saves scene into an XML file. Usage: savescene(filename)",
         Console::Bind(this, &TundraLogicModule::ConsoleSaveScene)));
     RegisterConsoleCommand(Console::CreateCommand("loadscene",
-        "Loads scene from an XML file. Usage: \"loadscene(filename)\"",
+        "Loads scene from an XML file. Usage: loadscene(filename)",
         Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
+    
+    RegisterConsoleCommand(Console::CreateCommand("importscene",
+        "Loads scene from a dotscene file. Optionally clears the existing scene. Usage: loadscene(filename,clearscene)",
+        Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
         LogFatal("Could not get KristalliProtocolModule");
+        
+    // If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
+    Foundation::ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
+    if (!loginModule.lock().get())
+        ServerStart(cDefaultPort);
 }
 
 void TundraLogicModule::Uninitialize()
@@ -186,6 +199,29 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
         return Console::ResultFailure("Failed to load the scene.");
 }
 
+Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    bool clearscene = false;
+    if (params.size() > 1)
+        clearscene = ParseBool(params[1]);
+    
+    std::string filename = params[0];
+    boost::filesystem::path path(filename);
+    std::string dirname = path.branch_path().string();
+    
+    SceneImporter importer;
+    bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true);
+    
+    if (success)
+        return Console::ResultSuccess();
+    else
+        return Console::ResultFailure("Failed to import the scene.");
+}
 
 bool TundraLogicModule::IsServer() const
 {

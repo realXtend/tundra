@@ -57,6 +57,8 @@ namespace RexLogic
         //camera's spherical coordinata system
         float Radius, Theta, Phi;
         float mouse_drag_sensitivity;
+        bool isDoubleClickZoom;
+        float doubleClickZoomDistance;
 
         //! default constructor
         //! \param fw Framework pointer

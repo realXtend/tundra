@@ -197,11 +197,11 @@ namespace Scene
             \note Always remember to check for null pointer.
         */
         template<typename T>
-        Foundation::Attribute<T> *GetAttribute(const std::string &name) const
+        Attribute<T> *GetAttribute(const std::string &name) const
         {
             for(size_t i = 0; i < components_.size() ; ++i)
             {
-                Foundation::Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+                Attribute<T> *t = components_[i]->GetAttribute<T>(name);
                 if (t)
                     return t;
             }
@@ -213,11 +213,11 @@ namespace Scene
             \return AttributeInterface pointer to the attribute.
             \note Always remember to check for null pointer.
         */
-        Foundation::AttributeInterface *GetAttributeInterface(const std::string &name) const
+        AttributeInterface *GetAttributeInterface(const std::string &name) const
         {
             for(size_t i = 0; i < components_.size() ; ++i)
             {
-                Foundation::AttributeInterface *attr = components_[i]->GetAttribute(name);
+                AttributeInterface *attr = components_[i]->GetAttribute(name);
                 if (attr)
                     return attr;
             }
@@ -230,12 +230,12 @@ namespace Scene
             \return List of attributes, or empty list if no attributes are found.
         */
         template<typename T>
-        std::vector<Foundation::Attribute<T> > GetAttributes(const std::string &name) const
+        std::vector<Attribute<T> > GetAttributes(const std::string &name) const
         {
-            std::vector<Foundation::Attribute<T> > ret;
+            std::vector<Attribute<T> > ret;
             for(size_t i = 0; i < components_.size() ; ++i)
             {
-                Foundation::Attribute<T> *t = components_[i]->GetAttribute<T>(name);
+                Attribute<T> *t = components_[i]->GetAttribute<T>(name);
                 if (t)
                     return ret.push_back(t);
             }
@@ -246,12 +246,12 @@ namespace Scene
             \param name Name of the attribute.
             \return List of attribute interface pointers, or empty list if no attributes are found.
         */
-        Foundation::AttributeVector GetAttributes(const std::string &name) const
+        AttributeVector GetAttributes(const std::string &name) const
         {
-            std::vector<Foundation::AttributeInterface *> ret;
+            std::vector<AttributeInterface *> ret;
             for(size_t i = 0; i < components_.size() ; ++i)
             {
-                Foundation::AttributeInterface *attr = components_[i]->GetAttribute(name);
+                AttributeInterface *attr = components_[i]->GetAttribute(name);
                 if (attr)
                     ret.push_back(attr);
             }

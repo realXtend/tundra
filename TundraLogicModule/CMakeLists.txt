@@ -31,11 +31,11 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule)
+use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon EntityComponents/EC_Mesh)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule)
+link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon EC_Mesh)
 link_package (OGRE)
 link_package (BOOST)
 link_package (POCO)

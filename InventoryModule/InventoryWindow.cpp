@@ -112,8 +112,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &, const QString &)),
         this, SLOT(UploadFailed(const QString &, const QString &)));
 
-    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
-        this, SLOT(FinishProgessNotification(const QString &)));
+    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &, const QString &)),
+        this, SLOT(FinishProgessNotification(const QString &, const QString &)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -127,7 +127,6 @@ void InventoryWindow::changeEvent(QEvent* e)
     {
         QString text = QApplication::translate("Inventory::InventoryWindow", "Inventory");
         setWindowTitle(text);
-        graphicsProxyWidget()->setWindowTitle(text);
     }
     else
     {
@@ -376,8 +375,12 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
 {
     ///\note Aborting not possible with the current protocol.
 }
-
 void InventoryWindow::FinishProgessNotification(const QString &id)
+{
+    FinishProgessNotification(id, QString());
+}
+
+void InventoryWindow::FinishProgessNotification(const QString &id, const QString &asset_ref)
 {
 /*
     QMessageBox *msgBox = downloadDialogs_.take(asset_id);
@@ -399,7 +402,7 @@ void InventoryWindow::UploadStarted(const QString &filename)
     // No way to have any real upload progress info with current current HTTP upload path.
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
-    progress_controller->Start(13);
+    progress_controller->Start(50);
     notification_progress_map_[filename] = progress_controller;
 #endif
 }
@@ -438,25 +441,25 @@ void InventoryWindow::InitInventoryWindow()
     layout_->setContentsMargins(0, 0, 0, 0);
     setLayout(layout_);
 
+///\todo Disable crappy search line edit feature for now. Maybe do better some day.
+/*
     QHBoxLayout *line_layout = new QHBoxLayout();
     line_layout->setContentsMargins(7, 0, 7, 0);
     QLineEdit *lineEditSearch_ = new QLineEdit(mainWidget_);
+    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
     lineEditSearch_->setText("Search...");
     line_layout->addWidget(lineEditSearch_);
-    
+*/
     // Create inventory tree view.
     treeView_ = new InventoryTreeView(mainWidget_);
-//    QHBoxLayout *hlayout = mainWidget_->findChild<QHBoxLayout *>("horizontalLayout_BottomContainer");
-//    hlayout->addWidget(treeView_);
-    layout_->addLayout(line_layout);
+
+//    layout_->addLayout(line_layout);
     layout_->addWidget(treeView_);
 
     // Connect signals
     ///\todo Connecting both these signals causes WebDav inventory to work incorrectly.
 //    connect(treeView_, SIGNAL(expanded(const QModelIndex &)), this, SLOT(ExpandFolder(const QModelIndex &)));
     connect(treeView_, SIGNAL(doubleClicked(const QModelIndex &)), this, SLOT(OpenItem()));
-
-    QObject::connect(lineEditSearch_, SIGNAL(textChanged(const QString &)), this, SLOT(Search(const QString &)));
 
     CreateActions();
 }

@@ -10,6 +10,8 @@
 #define incl_InventoryModule_AbstractInventoryDataModel_h
 
 #include <QObject>
+#include <QPair>
+#include <QString>
 
 // Few useful defines.
 #define STD_TO_QSTR(p) QString(p.c_str())
@@ -18,6 +20,7 @@
 
 namespace Inventory
 {
+    typedef QPair<bool, QString> UploadResult;
     class AbstractInventoryItem;
 
     /// Abstract inventory data model, pure virtual class. Inherit this class to create your own inventory data models to use in InventoryItemModel.
@@ -137,7 +140,7 @@ namespace Inventory
 
         /// Indicates that asset upload has completed.
         /// @param filename Filename.
-        void UploadCompleted(const QString &filename);
+        void UploadCompleted(const QString &filename, const QString &asset_ref);
 
         /// Indicates that multiupload has completed.
         void MultiUploadCompleted();

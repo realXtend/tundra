@@ -1,4 +1,5 @@
 <config>
     <entry>TundraLogicModule</entry>
     <dependency>KristalliProtocolModule</dependency>
+    <dependency>OgreRenderingModule</dependency>
 </config>

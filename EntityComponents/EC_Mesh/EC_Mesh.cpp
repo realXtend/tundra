@@ -1,9 +1,10 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
 
-#include "OgreRenderingModule.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreSkeletonResource.h"
@@ -31,7 +32,7 @@ EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     skeleton_(0),
     attached_(false)
 {
-    static Foundation::AttributeMetadata drawDistanceData;
+    static AttributeMetadata drawDistanceData;
     static bool metadataInitialized = false;
     if(!metadataInitialized)
     {
@@ -40,11 +41,7 @@ EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     }
     drawDistance_.SetMetadata(&drawDistanceData);
 
-    OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-    if(!rendererModule)
-        return;
-
-    renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+    renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
     if(!renderer_.expired())
     {
         Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
@@ -132,7 +129,7 @@ void EC_Mesh::SetMesh(const QString &name)
             request_tag_t tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
             if(tag)
             {
-                resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
+                resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
                     boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
                 materialRequestTags_[i] = tag; 
             }
@@ -216,17 +213,17 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*)));
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*)));
 }
 
-void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
+void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
 {
     if(component != this)
         return;
@@ -241,7 +238,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
 
         tag = RequestResource(meshResouceId_.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
-            resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
+            resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
                 boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
         else
             RemoveMesh();
@@ -259,7 +256,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
             tag = RequestResource(materials[i].toString().toStdString(), OgreRenderer::OgreMaterialResource::GetTypeStatic());
             if(tag)
             {
-                resRequestTags_[ResouceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
+                resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
                     boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
                 materialRequestTags_[i] = tag;
             }
@@ -276,7 +273,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Founda
             std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
             tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
             if(tag)
-                resRequestTags_[ResouceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
+                resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
         }
     }
     else if(QString::fromStdString(drawDistance_.GetNameString()) == attrName)
@@ -385,7 +382,7 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
 
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
 
-    ResouceKeyPair event_key(event_data->tag_, event_data->resource_->GetType());
+    ResourceKeyPair event_key(event_data->tag_, event_data->resource_->GetType());
     MeshResourceHandlerMap::iterator iter2 = resRequestTags_.find(event_key);
     if(iter2 != resRequestTags_.end())
     {

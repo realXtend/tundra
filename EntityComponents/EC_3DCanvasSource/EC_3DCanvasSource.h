@@ -37,16 +37,16 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     //! Source
-    Foundation::Attribute<QString> source_;
+    Attribute<QString> source_;
 
     //! Position within source (for example scrollbar value, page number)
-    Foundation::Attribute<int> position_;
+    Attribute<int> position_;
 
     //! Submesh number into which to apply the 3DCanvas
-    Foundation::Attribute<int> submesh_;
+    Attribute<int> submesh_;
     
     //! Show as 2D when clicked
-    Foundation::Attribute<bool> show2d_;
+    Attribute<bool> show2d_;
 
     bool manipulate_ec_3dcanvas;
 

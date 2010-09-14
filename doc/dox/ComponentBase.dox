@@ -1,0 +1,120 @@
+/*!
+
+\page component_base Naali Entity Component Reference
+
+Naali provides a set of built-in entity components, which are the building blocks that make up the world. This page is the reference documentation for all these components. 
+You can define your own components in C++ by writing your own Naali module to host it. See the Module API and Scene API for more information on how to do this.
+
+<b>Note:</b> Some of the components listed here are internal to the system and they have never been intended to be used directly from the EC editor.
+Basically this means any component that does not contain any attributes or publicly accessible slots or actions.
+
+In C++ code, the components are prefixed with "EC_". In this documentation and in the EC editor, however, all the entity components are referred to without this prefix. 
+
+- \ref RexLogic::EC_AttachedSound "AttachedSound"
+- \ref EC_Light "Light"
+- ...
+- ...
+
+<!--
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h2>AttachedSound</h2>
+Adds a 3D spatial audio source to the position of the entity.
+
+Registered by RexLogic::RexLogicModule.
+
+Contains no attributes.
+ 
+Does not depend on any other component.
+
+Does not emit or react on any action.
+</td>
+</tr>
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h2>Light</h2>
+Makes the entity a light source.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>Vector3df: direction.
+<div style="margin: 5px;">Specifies the direction vector the light is shining at.</div> 
+<li>enum: light type. 
+<div style="margin: 5px;">One of the values "Point", "Spot" or "Directional".</div> 
+<li>Color: diffuse color.
+<div style="margin: 5px;">Specifies the color the light casts.</div> 
+<li>Color: specular color.
+<div style="margin: 5px;">Specifies the color of the reflections the light casts.</div> 
+<li>bool: cast shadows.
+<div style="margin: 5px;">If true, this light casts dynamically calculated shadows on the scene.</div> 
+<li>float: light range.
+<div style="margin: 5px;">Specifies how far in world space units the light reaches.</div> 
+<li>float: constant attenuation.
+<div style="margin: 5px;">Specifies the constant term of the light attenuation equation.</div> 
+<li>float: linear attenuation.
+<div style="margin: 5px;">Specifies the linear term of the light attenuation equation.</div> 
+<li>float: quadratic attenuation.
+<div style="margin: 5px;">Specifies the quadratic term of the light attenuation equation.</div> 
+<li>float: light inner angle.
+<div style="margin: 5px;">Specifies inner umbra angle of the light. Only applicable for spotlights.</div> 
+<li>float: light outer angle.   
+<div style="margin: 5px;">Specifies outer penumbra angle of the light. Only applicable for spotlights.</div>
+</ul>
+
+<b>Reacts on the following actions</b>:
+<ul>
+<li>"hide": Disables the light from affecting the scene.
+<li>"show": Enables the light in the scene.
+<li>"toggleVisibility": Toggles between the enabled and disabled states.
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this light is placed at. 
+</table>
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h2>...</h2>
+...  
+</td>
+</tr>
+</table>
+-->
+
+
+<h2>Scriptable Components</h2>
+All the components in Naali are written in C++. To allow dynamic behavior for data driven ECA data and script contents, the following special components exist:
+
+<table style="margin: 20px;">
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>DynamicComponent</h2>
+Unlike other components, the contents of this component are dynamically defined at runtime. This is particularly useful for scripts for managing their own custom application-level data.
+
+Registered by PythonScriptModule.
+
+The attribute structure of DynamicComponent is not fixed and can be specified at runtime per instance.   
+</td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
+<h2>Script</h2>
+Attaches to the entity a script source file, implemented either in JavaScript or Python. This allows attaching custom application-level logic to an entity.   
+</td>
+</tr>
+
+</table>
+
+  
+*/

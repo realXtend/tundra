@@ -400,6 +400,9 @@ namespace OgreRenderer
         std::string image_rendering_texture_name_;
 
         Scene::EntityPtr texture_rendering_cam_entity_;
+
+        // Pixel buffer used with screen captures
+        Ogre::uchar *capture_screen_pixel_data_;
     };
 }
 

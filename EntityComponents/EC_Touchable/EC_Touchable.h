@@ -46,7 +46,7 @@ public:
     bool IsSerializable() const { return true; }
 
     /// Name of the material used for this EC.
-    Foundation::Attribute<QString> materialName;
+    Attribute<QString> materialName;
 
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
     void OnHover();

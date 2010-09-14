@@ -78,8 +78,9 @@ namespace Foundation
         }
         else
         {
+#ifdef PROFILING
             ProfilerSection::SetProfiler(&profiler_);
-
+#endif
             PROFILE(FW_Startup);
             application_ = ApplicationPtr(new Application(this));
             platform_ = PlatformPtr(new Platform(this));
@@ -545,6 +546,7 @@ namespace Foundation
 
     Console::CommandResult Framework::ConsoleProfile(const StringVector &params)
     {
+#ifdef PROFILING
         boost::shared_ptr<Console::ConsoleServiceInterface> console = GetService<Console::ConsoleServiceInterface>(Foundation::Service::ST_Console).lock();
         if (console)
         {
@@ -558,6 +560,7 @@ namespace Foundation
             console->Print(" ");
 //            profiler.Release();
         }
+#endif
         return Console::ResultSuccess();
     }
 
@@ -605,10 +608,12 @@ namespace Foundation
         return engine_->GetUIView();
     }
 
+#ifdef PROFILING
     Profiler &Framework::GetProfiler()
     {
         return profiler_;
     }
+#endif
 
     void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
     {

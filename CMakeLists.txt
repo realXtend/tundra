@@ -154,7 +154,6 @@ add_subdirectory (EntityComponents/EC_SoundListener)
 add_subdirectory (EntityComponents/EC_Mesh)
 add_subdirectory (EntityComponents/EC_InputMapper)
 add_subdirectory (EntityComponents/EC_Movable)
-add_subdirectory (EntityComponents/EC_Script)
 
 # Add EC's declared by other modules here:
 # ...

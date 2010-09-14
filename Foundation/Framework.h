@@ -180,10 +180,11 @@ namespace Foundation
         //! Returns the scene map for self reflection / introspection.
         const SceneMap &GetSceneMap() const;
 
+#ifdef PROFILING
         //! Returns the default profiler used by all normal profiling blocks. For profiling code, use PROFILE-macro.
         //! Profiler &GetProfiler() { return *ProfilerSection::GetProfiler(); }
         Profiler &GetProfiler();
-
+#endif
         //! Add a new log listener for poco log
         void AddLogChannel(Poco::Channel *channel);
 
@@ -315,9 +316,10 @@ namespace Foundation
         //! Bridges QtApplication and Framework bridge object.
         std::auto_ptr <FrameworkQtApplication> engine_;
 
+#ifdef PROFILING
         //! profiler
         Profiler profiler_;
-
+#endif
         //! program options
         boost::program_options::variables_map cm_options_;
 

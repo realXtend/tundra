@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
@@ -7,7 +9,6 @@
 #include "EC_OgrePlaceable.h"
 #include "OgreParticleResource.h"
 #include "SceneManager.h"
-#include "OgreRenderingModule.h"
 #include "RexUUID.h"
 #include "EventManager.h"
 
@@ -26,10 +27,7 @@ EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
     castShadows_(this, "Cast shadows", false),
     renderingDistance_(this, "Rendering distance", 0.0f)
 {
-    OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-    if(!rendererModule)
-        return;
-    renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+    renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)
@@ -135,7 +133,7 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute)
+void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
 {
     if(component != this)
         return;
@@ -160,14 +158,14 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, Foundation::AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, Foundation::AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, Foundation::AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
 }
 
 Foundation::ComponentPtr EC_ParticleSystem::FindPlaceable() const

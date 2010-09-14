@@ -367,16 +367,10 @@ namespace RexLogic
 
     void AvatarEditor::changeEvent(QEvent* e)
     {
-       if (e->type() == QEvent::LanguageChange)
-        {
-            QString text = tr("Avatar Editor");
-            setWindowTitle(text);
-            graphicsProxyWidget()->setWindowTitle(text);
-        }
+        if (e->type() == QEvent::LanguageChange)
+            setWindowTitle(tr("Avatar Editor"));
         else
-        {
             QWidget::changeEvent(e);
-        }
     }
 
     void AvatarEditor::LoadAvatar()

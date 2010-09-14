@@ -19,10 +19,7 @@
 
 // Implementation code for some common attributes
 
-namespace Foundation
-{
-
-AttributeInterface::AttributeInterface(ComponentInterface* owner, const char* name) :
+AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, const char* name) :
     owner_(owner),
     name_(name),
     change_(AttributeChange::None),
@@ -99,10 +96,9 @@ template<> std::string Attribute<Color>::ToString() const
         ::ToString<float>(value.a);
 }
 
-template<> std::string Attribute<AssetReference>::ToString() const
+template<> std::string Attribute<Foundation::AssetReference>::ToString() const
 {
-    AssetReference value = Get();
-    
+    Foundation::AssetReference value = Get();
     return value.type_ + "," + value.id_;
 }
 
@@ -191,7 +187,7 @@ template<> std::string Attribute<Color>::TypenameToString() const
     return "color";
 }
 
-template<> std::string Attribute<AssetReference>::TypenameToString() const
+template<> std::string Attribute<Foundation::AssetReference>::TypenameToString() const
 {
     return "assetreference";
 }
@@ -322,7 +318,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
     }
 }
 
-template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<Foundation::AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
 {
     // We store type first, then ",", then asset id
     std::string::size_type pos = str.find(',');
@@ -376,4 +372,3 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
     Set(result, change);
 }
 
-}
