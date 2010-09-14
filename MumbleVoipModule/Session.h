@@ -50,6 +50,8 @@ namespace MumbleVoip
         virtual void DisableAudioReceiving();
         virtual bool IsAudioReceivingEnabled() const;
         virtual double SpeakerVoiceActivity() const;
+        virtual int GetAverageBandwithIn() const;
+        virtual int GetAverageBandwithOut() const;
 
         virtual QList<Communications::InWorldVoice::ParticipantInterface*> Participants() const;
 

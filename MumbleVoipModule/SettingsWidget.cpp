@@ -23,13 +23,15 @@ namespace MumbleVoip
         ApplyChanges();
     }
 
-    void SettingsWidget::InitializeUI()
+    void SettingsWidget::InitializeUI() 
     {
         setupUi(this);
 
         QStringList items;
         items.append("Mute");
         items.append("Continuous Transmission");
+        items.append("Push-to-Talk");
+        items.append("Toggle mode");
         this->defaultVoiceMode->addItems(items);
 
         LoadInitialState();
