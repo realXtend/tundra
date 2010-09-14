@@ -86,6 +86,8 @@ namespace UiServices
 
     void UiModule::Unload()
     {
+        ///\todo Just remove the fonts added by UiModule.
+        QFontDatabase::removeAllApplicationFonts();
     }
 
     void UiModule::Initialize()

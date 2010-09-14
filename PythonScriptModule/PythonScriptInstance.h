@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   IScriptInterface.h
+ *  @file   PythonScriptInstance.h
  *  @brief  Python script instance used with EC_Script.
  */
 
@@ -18,7 +18,9 @@
 class PythonScriptInstance : public IScriptInstance
 {
 public:
-    /// Default constuctor.
+    /** Constuctor.
+        @param filename Filename of the script (include path and file extension).
+    */
     PythonScriptInstance(const QString &filename);
 
     /// Destructor.
@@ -37,8 +39,10 @@ public:
     void Stop();
 
 private:
+    /// Python context for this script instance.
     PythonQtObjectPtr context_;
 
+    /// Script filename.
     QString filename_;
 };
 

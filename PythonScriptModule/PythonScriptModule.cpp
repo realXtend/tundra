@@ -56,6 +56,7 @@
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
+#include "LoginServiceInterface.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
@@ -641,7 +642,7 @@ namespace PythonScript
         return 0;
     }
 
-    void PythonScriptModule::RunScript(const QString &filename)
+    void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
         if (!script)
@@ -652,7 +653,8 @@ namespace PythonScript
 
         PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
         script->SetScriptInstance(pyInstance);
-        script->Run();
+        if (script->runOnLoad.Get())
+            script->Run();
     /*
             check if py script
             mikä oli vanha? jos vanha ->delete se
@@ -672,7 +674,7 @@ namespace PythonScript
         if (component->TypeName() == EC_Script::TypeNameStatic())
         {
             EC_Script *script = static_cast<EC_Script *>(component);
-            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(RunScript(const QString &)));
+            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(LoadScript(const QString &)));
         }
     }
 
@@ -1511,15 +1513,14 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     newpitch = (float) p;
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
         //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
         //cam->AddTime((float) 0.1);
         //cam->SetPitch(p); //have a linking prob with this
-        rexlogic_->SetCameraYawPitch(y, p);
+        rexlogic->SetCameraYawPitch(y, p);
     }
     
     //was with renderer, worked but required overriding rexlogic :p
@@ -1552,6 +1553,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
     //else - no logic module. can that ever happen?)
     return NULL; //rises py exception
 }
+
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
     const char* message;    
@@ -1702,11 +1704,6 @@ PyObject* GetPropertyEditor(PyObject *self)
     return PythonScriptModule::GetInstance()->WrapQObject(pe); 
 }
 
-//PyObject* GetQtModule(PyObject *self)
-//{
-//    return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
-//}
-
 PyObject* GetUiSceneManager(PyObject *self)
 {
     Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
@@ -1826,9 +1823,15 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-        rexlogic->StartLoginOpensim(firstAndLast, password, serverAddressWithPort);
+    QMap<QString, QString> map;
+    map["AvatarType"] = "OpenSim";
+    map["Username"] = firstAndLast;
+    map["Password"] = password;
+    map["WorldAddress"] = serverAddressWithPort;
+
+    Foundation::LoginServiceInterface *login_service = PythonScript::self()->GetFramework()->GetService<Foundation::LoginServiceInterface>();
+    if (login_service)
+        login_service->ProcessLoginData(map);
 
     Py_RETURN_NONE;
 }
@@ -1841,9 +1844,9 @@ PyObject *Exit(PyObject *self, PyObject *null)
 
 PyObject* Logout(PyObject *self)
 {
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-        rexlogic->LogoutAndDeleteWorld();
+    Foundation::LoginServiceInterface *login_service = PythonScript::self()->GetFramework()->GetService<Foundation::LoginServiceInterface>();
+    if (login_service)
+        login_service->Logout();
 
     Py_RETURN_NONE;
 }
