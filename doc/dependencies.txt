@@ -1,13 +1,13 @@
 DEPENDENCIES
 ============
 
-This project has the following dependencies:
+Naali has the following dependencies:
 
 - Boost 1.36.0 or newer, http://www.boost.org/
 
 - poco-1.3.4 or newer (Economy package), http://pocoproject.org/. Used as dynamic libraries.
 
-- Ogre 1.7.1 or newer, http://www.ogre3d.org 
+- Ogre 1.6.1 or newer; on Windows we use 1.7.1 by default http://www.ogre3d.org 
 
 - Qt 4.6.1 or newer, http://www.qtsoftware.com/ 
 
@@ -52,17 +52,6 @@ This project has the following dependencies:
 - Google Protocol Buffers 2.3.0 , http://code.google.com/apis/protocolbuffers/
 
 - PythonQt, 2.0.1, http://pythonqt.sourceforge.net/
-
-
-Dependencies with modifications that are not in upstream yet
-------------------------------------------------------------
-
-For these dependencies it is easiest to use the versions which we have
-in the Naali dependencies source repository, http://code.google.com/p/realxtend-naali-deps/
-
-- YAPE - Yet Another Property Editor, http://www.kde-apps.org/content/show.php?content=100063 
- * modified to optionally accept a QApp reference from outside, 
-   'cause was not getting the same app instance with the singleton mechanism
 
 
 OBTAINING DEPENDENCIES
