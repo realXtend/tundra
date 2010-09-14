@@ -9,6 +9,7 @@ class EC_OpenSimPrim;
 
 namespace WorldBuilding
 {
+    class BuildSceneManager;
     namespace PythonParams
     {
         enum ManipulationMode
@@ -35,10 +36,11 @@ namespace WorldBuilding
     Q_OBJECT
 
     public:
-        PythonHandler(QObject *parent);
+        PythonHandler(BuildSceneManager *parent);
         virtual ~PythonHandler();
 
     public slots:
+        void CleanPyWidgets();
         void EmitManipulationModeChange(int mode);
         void EmitEditingActivated(bool activated);
         void EmitRemoveHightlight();
@@ -56,6 +58,7 @@ namespace WorldBuilding
 
     private:
         PythonParams::ManipulationMode current_mode_;
+        BuildSceneManager *build_manager_;
 
     signals:
         void HelloFromPython();

@@ -3,19 +3,26 @@
 #include "StableHeaders.h"
 #include "PythonHandler.h"
 #include "WorldBuildingModule.h"
+#include "BuildSceneManager.h"
 
 #include <EC_OpenSimPrim.h>
 
 namespace WorldBuilding
 {
-    PythonHandler::PythonHandler(QObject *parent) :
+    PythonHandler::PythonHandler(BuildSceneManager *parent) :
         QObject(parent),
+        build_manager_(parent),
         current_mode_(PythonParams::MANIP_FREEMOVE)
     {
     }
 
     PythonHandler::~PythonHandler()
     {
+    }
+
+    void PythonHandler::CleanPyWidgets()
+    {
+        build_manager_->CleanPyWidgets();
     }
 
     void PythonHandler::EmitManipulationModeChange(int mode)

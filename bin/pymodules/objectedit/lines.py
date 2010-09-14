@@ -91,10 +91,11 @@ class MeshAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applymesh(ent, self.text)
             self.deactivateButtons()
+            self.mainedit.window.animation_widget.show()
+            self.mainedit.window.animationline.deactivateButtons()
 
 class SoundAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        #print "doaction in SoundAssetidEditline-class..."
         self.deactivateButtons()
     
     def applyAction(self):
@@ -102,7 +103,6 @@ class SoundAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applyaudio(ent, self.text, self.spinners[0].value, self.spinners[1].value)
             self.deactivateButtons()
-            self.mainedit.window.updateAnimation(ent)
 
     def update_soundradius(self, radius):
         ent = self.mainedit.active
@@ -120,7 +120,6 @@ class SoundAssetidEditline(DragDroppableEditline):
 
 class AnimationAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
-        # nada
         self.deactivateButtons()
     
     def applyAction(self):
@@ -128,6 +127,7 @@ class AnimationAssetidEditline(DragDroppableEditline):
         if ent is not None:
             applyanimation(ent, self.text, self.combobox.currentText, self.spinners[0].value) 
             self.deactivateButtons()
+            self.mainedit.window.updateAnimation(ent)
 
     def update_animationrate(self, rate):
         ent = self.mainedit.active
