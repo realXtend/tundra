@@ -25,7 +25,7 @@ from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
 import conversions as conv
 reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
-from PythonQt.QtGui import QVector3D as Vec
+from PythonQt.QtGui import QVector3D
 from PythonQt.QtGui import QQuaternion as Quat
 
 import rexviewer as r
@@ -44,6 +44,14 @@ except: #first run
 else:
     window = reload(window)
     manipulator = reload(manipulator)
+    
+def editable(ent): #removed this from PyEntity
+    try:
+        ent.prim
+    except AttributeError:
+        return False
+    else:
+        return True
     
 class ObjectEdit(Component):
     EVENTHANDLED = False
@@ -72,9 +80,6 @@ class ObjectEdit(Component):
         self.shortcuts = {
             (Qt.Key_Z, Qt.ControlModifier) : self.undo,
             (Qt.Key_Delete, Qt.NoModifier) : self.deleteObject,
-            (Qt.Key_S, Qt.AltModifier) : self.window.manipulator_scale,
-            (Qt.Key_M, Qt.AltModifier) : self.window.manipulator_move,
-            (Qt.Key_R, Qt.AltModifier) : self.window.manipulator_rotate,
             (Qt.Key_L, Qt.AltModifier) : self.linkObjects,
             (Qt.Key_L, Qt.ControlModifier|Qt.ShiftModifier) : self.unlinkObjects,
         }
@@ -198,7 +203,7 @@ class ObjectEdit(Component):
                 # get the parent entity, and if it is editable set it to ent.
                 # on next loop we get prim from it and from that we get children.
                 temp_ent = r.getEntity(qprim.ParentId)
-                if not temp_ent.editable:
+                if not editable(temp_ent):
                     # not a prim, so not selecting all children
                     break
                 else:
@@ -240,9 +245,10 @@ class ObjectEdit(Component):
             self.soundRuler(child)
             #self.sels.append(child)
             
-    def deselect(self, ent):
-        self.remove_highlight(ent)
-        self.removeSoundRuler(ent)
+    def deselect(self, ent, valid=True):
+        if valid: #the ent is still there, not already deleted by someone else
+            self.remove_highlight(ent)
+            self.removeSoundRuler(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
             if _ent.id == ent.id:
                 self.sels.remove(_ent)
@@ -266,18 +272,6 @@ class ObjectEdit(Component):
 
             self.window.deselected()
             
-    # def updateSelectionBox(self, ent): 
-#         if ent is not None:
-#             bb = list(ent.boundingbox)
-#             height = abs(bb[4] - bb[1]) 
-#             width = abs(bb[3] - bb[0])
-#             depth = abs(bb[5] - bb[2])
-
-#             self.selection_box.placeable.Position = ent.placeable.Position
-            
-#             self.selection_box.placeable.Scale = Vec(height, width, depth)#depth, width, height
-#             self.selection_box.placeable.Orientation = ent.placeable.Orientation
-                
     def highlight(self, ent):
         try:
             ent.highlight
@@ -302,7 +296,7 @@ class ObjectEdit(Component):
             h.Hide()
 
     def soundRuler(self, ent):
-        if ent.prim.SoundID:
+        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
                 ent.soundruler
             except AttributeError:
@@ -315,7 +309,7 @@ class ObjectEdit(Component):
             sr.UpdateSoundRuler()
 
     def removeSoundRuler(self, ent):
-        if ent.prim.SoundID:
+        if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
                 sr = ent.soundruler
             except AttributeError:
@@ -341,8 +335,8 @@ class ObjectEdit(Component):
 #     def hideSelector(self):
 #         try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
 #             if self.selection_box is not None:
-#                 self.selection_box.placeable.Scale = Vec(0.0, 0.0, 0.0)
-#                 self.selection_box.placeable.Position = Vec(0.0, 0.0, 0.0)
+#                 self.selection_box.placeable.Scale = QVector3D(0.0, 0.0, 0.0)
+#                 self.selection_box.placeable.Position = QVector3D(0.0, 0.0, 0.0)
 #         except RuntimeError, e:
 #             r.logDebug("hideSelector failed")
         
@@ -399,7 +393,7 @@ class ObjectEdit(Component):
 
         if ent is not None:
             #print "Got entity:", ent, ent.editable
-            if not self.manipulator.compareIds(ent.id) and ent.editable: #ent.id != self.selection_box.id and 
+            if not self.manipulator.compareIds(ent.id) and editable(ent): #ent.id != self.selection_box.id and 
                 r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
@@ -478,7 +472,6 @@ class ObjectEdit(Component):
         return rectx, recty, rectwidth, rectheight
 
     def on_multiselect(self, mouseinfo):
-        r.logInfo("on_multiselect()")
         if self.windowActive:           
             results = []
             results = r.rayCast(mouseinfo.x, mouseinfo.y)
@@ -625,7 +618,6 @@ class ObjectEdit(Component):
             self.sels = []
             
     def float_equal(self, a,b):
-        #print abs(a-b), abs(a-b)<0.01
         if abs(a-b)<0.01:
             return True
         else:
@@ -634,23 +626,23 @@ class ObjectEdit(Component):
     def changepos(self, i, v):
         #XXX NOTE / API TODO: exceptions in qt slots (like this) are now eaten silently
         #.. apparently they get shown upon viewer exit. must add some qt exc thing somewhere
-        #print "pos index %i changed to: %f" % (i, v)
         ent = self.active
         if ent is not None:
-            qpos = ent.placeable.Position
-            pos = list((qpos.x(), qpos.y(), qpos.z())) #should probably wrap Vector3, see test_move.py for refactoring notes. 
-    
-            if not self.float_equal(pos[i],v):
-                pos[i] = v
-                #converted to list to have it mutable
-                newpos = Vec(pos[0], pos[1], pos[2])
-                ent.placeable.Position = newpos
-                ent.network.Position = newpos
-                self.manipulator.moveTo(self.sels)
+            qpos = QVector3D(ent.placeable.Position)
+            if i == 0:
+                qpos.setX(v)
+            elif i == 1:
+                qpos.setY(v)
+            elif i == 2:
+                qpos.setZ(v)
 
-                self.modified = True
-                if not self.dragging:
-                    r.networkUpdate(ent.id)
+            ent.placeable.Position = qpos
+            ent.network.Position = qpos
+            self.manipulator.moveTo(self.sels)
+
+            self.modified = True
+            if not self.dragging:
+                r.networkUpdate(ent.id)
             
     def changescale(self, i, v):
         ent = self.active
@@ -669,7 +661,7 @@ class ObjectEdit(Component):
                         if index != i:
                             scale[index] += diff
                 
-                ent.placeable.Scale = Vec(scale[0], scale[1], scale[2])
+                ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
                     r.networkUpdate(ent.id)
@@ -781,6 +773,16 @@ class ObjectEdit(Component):
             self.time += time
             if self.sels:
                 ent = self.active
+                #try:
+                #    ent.prim
+                #except ValueError:
+                #that would work also, but perhaps this is nicer:
+                s = naali.getDefaultScene()
+                if not s.HasEntityId(ent.id):
+                    #my active entity was removed from the scene by someone else
+                    self.deselect(ent, valid=False)
+                    return
+                    
                 if self.time > self.UPDATE_INTERVAL:
                     try:
                         #sel_pos = self.selection_box.placeable.Position

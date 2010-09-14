@@ -3,8 +3,8 @@
 #ifndef incl_ECEditorModule_ECComponentEditor_h
 #define incl_ECEditorModule_ECComponentEditor_h
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include "ForwardDefines.h"
+
 #include <QObject>
 #include <map>
 #include <set>
@@ -12,14 +12,6 @@
 class QtAbstractPropertyBrowser;
 class QtProperty;
 class QtGroupPropertyManager;
-
-namespace Foundation
-{
-    class AttributeInterface;
-    class ComponentInterface;
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
-    typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
-}
 
 namespace ECEditor
 {
@@ -72,9 +64,7 @@ namespace ECEditor
         //! a new ECAttributeEditor instance is created and it's pointer returned to a user. If attribute type is not supported
         //! the method will return a null pointer.
         //! @return return attribute pointer if attribute type is supported and if not return null pointer.
-        static ECAttributeEditorBase *CreateAttributeEditor( QtAbstractPropertyBrowser *browser, 
-                                                             ECComponentEditor *editor, 
-                                                             Foundation::AttributeInterface &attribute);
+        static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor, AttributeInterface &attribute);
 
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what
@@ -88,14 +78,14 @@ namespace ECEditor
         void UpdateGroupPropertyText();
 
         typedef std::map<std::string, ECAttributeEditorBase*> AttributeEditorMap;
-        AttributeEditorMap          attributeEditors_;
+        AttributeEditorMap attributeEditors_;
         typedef std::set<Foundation::ComponentWeakPtr> ComponentSet;
-        ComponentSet                components_;
-        QtProperty                  *groupProperty_;
-        QtGroupPropertyManager      *groupPropertyManager_;
-        QtAbstractPropertyBrowser   *propertyBrowser_;
-        QString                     typeName_;
-        QString                     name_;
+        ComponentSet components_;
+        QtProperty *groupProperty_;
+        QtGroupPropertyManager *groupPropertyManager_;
+        QtAbstractPropertyBrowser *propertyBrowser_;
+        QString typeName_;
+        QString name_;
     };
 }
 

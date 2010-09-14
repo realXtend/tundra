@@ -20,8 +20,6 @@ namespace Ogre
 
 namespace OgreRenderer
 {
-    using Foundation::AttributeInterface;
-
     class Renderer;
     
     typedef boost::shared_ptr<Renderer> RendererPtr;
@@ -158,7 +156,7 @@ namespace OgreRenderer
         /*! When this changes, syncs the Ogre scene node position to the attribute. Note that sync the other way around will not be done
             Also RexLogic code does not use the attribute.
          */
-        Foundation::Attribute<Transform> transform_;
+        Attribute<Transform> transform_;
 
     public slots:
         //! translate

@@ -98,6 +98,8 @@ namespace Inventory
         QStringList filenames;
         /// List of names for the files.
         QStringList names;
+        /// Upload folder name
+        QString upload_folder;
     };
 
     /// Event data class to be used with EVENT_INVENTORY_UPLOAD_BUFFER.

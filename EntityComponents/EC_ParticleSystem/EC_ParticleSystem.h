@@ -47,9 +47,9 @@ public:
 
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-    Foundation::Attribute<QString>      particleId_;
-    Foundation::Attribute<bool>         castShadows_;
-    Foundation::Attribute<float>         renderingDistance_;
+    Attribute<QString>      particleId_;
+    Attribute<bool>         castShadows_;
+    Attribute<float>         renderingDistance_;
 
 public slots:
         //! Create a new particle system. System name will be same as component name.
@@ -60,7 +60,7 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(Foundation::ComponentInterface *component, Foundation::AttributeInterface *attribute);
+    void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
 
 private:
     explicit EC_ParticleSystem(Foundation::ModuleInterface *module);

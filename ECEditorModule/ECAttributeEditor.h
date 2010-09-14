@@ -24,11 +24,6 @@ class QtAbstractPropertyBrowser;
 
 class Color;
 
-namespace Foundation
-{
-    class AttributeInterface;
-}
-
 namespace ECEditor
 {
     typedef unsigned char MetaDataFlag;
@@ -45,7 +40,7 @@ namespace ECEditor
     class AbstractAttributeUiElement
     {
     public:
-        AbstractAttributeUiElement(Foundation::AttributeInterface *attribute,
+        AbstractAttributeUiElement(AttributeInterface *attribute,
                                    QtAbstractPropertyBrowser *owner):
             attribute_(attribute),
             owner_(owner)
@@ -56,7 +51,7 @@ namespace ECEditor
         virtual void Set(const std::string &value) = 0;
         virtual std::string Get() const = 0;
     private:
-        Foundation::AttributeInterface *attribute_;
+        AttributeInterface *attribute_;
         QtAbstractPropertyBrowser *owner_;
     };
 
@@ -83,7 +78,7 @@ namespace ECEditor
         };
 
         ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                              Foundation::AttributeInterface *attribute,
+                              AttributeInterface *attribute,
                               QObject *parent = 0);
 
         virtual ~ECAttributeEditorBase();
@@ -110,11 +105,11 @@ namespace ECEditor
         //! Add new attribute to the editor. If attribute has already added do nothing.
         /*! @param attribute Attribute that we want to add to editor.
          */
-        void AddNewAttribute(Foundation::AttributeInterface *attribute);
+        void AddNewAttribute(AttributeInterface *attribute);
         //! Remove attribute from the editor.
         /*! @param attribute Attribute that we want to remove from the editor.
          */
-        void RemoveAttribute(Foundation::AttributeInterface *attribute);
+        void RemoveAttribute(AttributeInterface *attribute);
 
     private slots:
         //! Called when user has picked one of the multiselect values.
@@ -159,7 +154,7 @@ namespace ECEditor
         QtProperty *rootProperty_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
-        typedef std::list<Foundation::AttributeInterface*> AttributeList;
+        typedef std::list<AttributeInterface*> AttributeList;
         AttributeList attributes_;
         bool useMultiEditor_;
         AttributeEditorState editorState_;
@@ -181,7 +176,7 @@ namespace ECEditor
     {
     public:
         ECAttributeEditor(QtAbstractPropertyBrowser *owner,
-                          Foundation::AttributeInterface *attribute,
+                          AttributeInterface *attribute,
                           QObject *parent = 0):
             ECAttributeEditorBase(owner, attribute, parent)
         {
@@ -205,7 +200,7 @@ namespace ECEditor
             AttributeList::iterator iter = attributes_.begin();
             while(iter != attributes_.end())
             {
-                Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(*iter);
+                Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(*iter);
                 if(attribute)
                 {
                     attribute->Set(value, AttributeChange::Local);
@@ -248,7 +243,7 @@ namespace ECEditor
             MultiEditPropertyManager *propertyManager = dynamic_cast<MultiEditPropertyManager *>(propertyMgr_);
             while(iter != attributes_.end())
             {
-                Foundation::Attribute<T> *attribute = dynamic_cast<Foundation::Attribute<T>*>(*iter);
+                Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(*iter);
                 if(!attribute)
                 {
                     iter++;

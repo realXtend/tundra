@@ -190,7 +190,7 @@ namespace ECEditor
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
-                Foundation::AttributeInterface *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
+                AttributeInterface *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
                 if(!attribute)
                     return Console::ResultFailure("invalid attribute type" + params[4]);
                 attribute->FromString(params[5], AttributeChange::Local);

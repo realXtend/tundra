@@ -8,11 +8,11 @@
 #ifndef incl_Interfaces_ComponentInterface_h
 #define incl_Interfaces_ComponentInterface_h
 
+#include "ForwardDefines.h"
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
 #include "EventDataInterface.h"
 #include "CoreTypes.h"
-#include "ForwardDefines.h"
 
 #include <QObject>
 
@@ -28,7 +28,7 @@ namespace Foundation
     */
     class ComponentInterface : public QObject
     {
-        friend class AttributeInterface;
+        friend class ::AttributeInterface;
 
         Q_OBJECT
         Q_PROPERTY(QString Name READ Name)
@@ -66,10 +66,10 @@ namespace Foundation
         /*! Note that for local entities (high bit of entityID on) this will not matter, as they will never be synced in any case.
          */
         void SetNetworkSyncEnabled(bool enabled);
-        
+
         //! Gets whether network enabled/disabled.
         bool GetNetworkSyncEnabled() { return network_sync_; }
-        
+
         //! Return true for components that support XML serialization
         virtual bool IsSerializable() const { return false; }
 

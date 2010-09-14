@@ -69,13 +69,13 @@ public:
         //Check if attribute has already created.
         if(!ContainAttribute(name))
         {
-            Foundation::AttributeInterface *attribute = new Foundation::Attribute<T>(this, name.toStdString().c_str());
+            AttributeInterface *attribute = new Attribute<T>(this, name.toStdString().c_str());
             emit AttributeAdded(name);
         }
     }
 
     //! A factory method that constructs a new attribute given the typename. This factory is not extensible.
-    Foundation::AttributeInterface *CreateAttribute(const QString &typeName, const QString &name);
+    AttributeInterface *CreateAttribute(const QString &typeName, const QString &name);
 
 public slots:
     //! Will handle ComponentChanged event to ComponentInterface.

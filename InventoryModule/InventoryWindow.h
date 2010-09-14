@@ -131,6 +131,7 @@ namespace Inventory
         /// Finish download progress notification
         /// @param item id
         void FinishProgessNotification(const QString &id);
+        void FinishProgessNotification(const QString &id, const QString &asset_ref);
 
         /// Creates new progress notification for file upload.
         /// @param filename Filename.

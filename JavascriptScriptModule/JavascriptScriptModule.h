@@ -40,9 +40,9 @@ namespace JavascriptScript
 
         //QScriptValue test(QScriptContext *context, QScriptEngine *engine);
 
-        virtual void RunScript(QString scriptname);
+        virtual void RunScript(const QString &scriptname);
         //virtual void RunString(QString codestr, QMap<QString, QObject*> context = QMap<QString, QObject*>());
-        virtual void RunString(QString codestr, QVariantMap context = QVariantMap());
+        virtual void RunString(const QString &codestr, const QVariantMap &context = QVariantMap());
 
         Console::CommandResult ConsoleRunString(const StringVector &params);
         Console::CommandResult ConsoleRunFile(const StringVector &params);

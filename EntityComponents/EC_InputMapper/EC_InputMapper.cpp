@@ -9,6 +9,7 @@
 #include "StableHeaders.h"
 #include "EC_InputMapper.h"
 
+#include "AttributeInterface.h"
 #include "InputServiceInterface.h"
 #include "Entity.h"
 
@@ -27,13 +28,22 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
 }
 
 EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework())
+    Foundation::ComponentInterface(module->GetFramework()),
+    contextName(this, "Input context name", "EC_InputMapper"),
+    contextPriority(this, "Input context priority", 90),
+    takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
+    takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
+    mappings(this, "Mappings")
 {
-    input_ = GetFramework()->Input().RegisterInputContext("EC_InputMapper", 90);
-    input_->SetTakeKeyboardEventsOverQt(true);
-    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(this, SIGNAL(AttributeChanged(AttributeInterface *, AttributeChange::Type)),
+        SLOT(AttributeUpdated(AttributeInterface *, AttributeChange::Type)));
 
-    // Register some hardcoded mappings for testing purposes;
+    input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+    input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+
     RegisterMapping(Qt::Key_I, "Move(Forward)");
     RegisterMapping(Qt::Key_K, "Move(Backward)");
     RegisterMapping(Qt::Key_J, "Move(Left)");
@@ -42,9 +52,32 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     RegisterMapping(Qt::Key_O, "Rotate(Right)");
 }
 
-void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
+void EC_InputMapper::AttributeUpdated(AttributeInterface *attribute, AttributeChange::Type change)
 {
-    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode | key->modifiers));
+    const std::string &name = attribute->GetNameString();
+    if(name == contextName.GetNameString() || name == contextPriority.GetNameString())
+    {
+        input_.reset();
+        input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    }
+    else if(name == takeKeyboardEventsOverQt.GetNameString())
+    {
+        input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+    }
+    else if(name == takeMouseEventsOverQt.GetNameString())
+    {
+        input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    }
+    else if(name == mappings.GetNameString())
+    {
+    }
+}
+
+void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
+{
+    Mappings_t::iterator it = mappings_.find(QKeySequence(e->keyCode | e->modifiers));
     if (it == mappings_.end())
         return;
 
@@ -74,3 +107,6 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
         entity->Exec(action);
 }
 
+void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
+{
+}

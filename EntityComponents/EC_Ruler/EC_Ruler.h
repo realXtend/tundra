@@ -50,20 +50,20 @@ public:
     };
     
     //! Ruler type
-    Foundation::Attribute<int> typeAttr_;
+    Attribute<int> typeAttr_;
     
     //! Visibility
-    Foundation::Attribute<bool> visibleAttr_;
+    Attribute<bool> visibleAttr_;
     
     //! Axis
-    Foundation::Attribute<int> axisAttr_;
+    Attribute<int> axisAttr_;
     
     //! Local or global space
-    Foundation::Attribute<bool> localAttr_;
+    Attribute<bool> localAttr_;
     
-    Foundation::Attribute<float> radiusAttr_;
+    Attribute<float> radiusAttr_;
     
-    Foundation::Attribute<float> segmentsAttr_;
+    Attribute<float> segmentsAttr_;
 
 public slots:
     /// Shows the highlighting effect.

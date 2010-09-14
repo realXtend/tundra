@@ -83,6 +83,9 @@ public:
 
     /// Loads scene from an XML file.
     Console::CommandResult ConsoleLoadScene(const StringVector &params);
+    
+    /// Imports a dotscene
+    Console::CommandResult ConsoleImportScene(const StringVector& params);
 
     /// Check whether we are a server (from KristalliProtocolModule)
     bool IsServer() const;

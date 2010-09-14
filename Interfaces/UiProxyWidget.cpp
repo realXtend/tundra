@@ -16,6 +16,7 @@
 #include <QParallelAnimationGroup>
 #include <QPropertyAnimation>
 #include <QGraphicsDropShadowEffect>
+#include <QApplication>
 
 #include "MemoryLeakCheck.h"
 
@@ -35,6 +36,7 @@ UiProxyWidget::UiProxyWidget(QWidget *widget, Qt::WindowFlags flags):
 
     // Embed widget to this proxy widget.
     setWidget(widget);
+    widget->installEventFilter(this);
 
     // Init effects and animations
     if (windowFlags() != Qt::Widget)
@@ -92,24 +94,21 @@ void UiProxyWidget::BringToFront()
         show();
 }
 
-void UiProxyWidget::showEvent(QShowEvent *show_event)
+bool UiProxyWidget::eventFilter(QObject *obj, QEvent *e)
 {
-    QGraphicsProxyWidget::showEvent(show_event);
-    emit Visible(true);
-    emit BringProxyToFrontRequest(this);
-
-    if (show_animation_enabled_ && animations_)
+    if (obj == widget() && e->type() == QEvent::LanguageChange)
     {
-        fade_animation_->setEndValue(1.0);
-        animations_->setDirection(QAbstractAnimation::Forward);
-        animations_->start();
+        // Temporarily disable event filter so that we don't get infinite loop.
+        obj->removeEventFilter(this);
+        QApplication::sendEvent(obj, e);
+        obj->installEventFilter(this);
+        QString newTitle = widget()->windowTitle();
+        if (newTitle.length())
+            setWindowTitle(newTitle);
+        return true;
     }
-}
 
-void UiProxyWidget::hideEvent(QHideEvent *hide_event)
-{
-    QGraphicsProxyWidget::hideEvent(hide_event);
-    emit Visible(false);
+    return QGraphicsProxyWidget::eventFilter(obj, e);
 }
 
 void UiProxyWidget::ToggleVisibility()
@@ -135,29 +134,43 @@ void UiProxyWidget::AnimatedHide()
         hide();
 }
 
-void UiProxyWidget::FinishHide()
+void UiProxyWidget::showEvent(QShowEvent *e)
 {
-    if (animations_->direction() == QAbstractAnimation::Backward)
-        hide();
+    QGraphicsProxyWidget::showEvent(e);
+    emit Visible(true);
+    emit BringProxyToFrontRequest(this);
+
+    if (show_animation_enabled_ && animations_)
+    {
+        fade_animation_->setEndValue(1.0);
+        animations_->setDirection(QAbstractAnimation::Forward);
+        animations_->start();
+    }
 }
 
-void UiProxyWidget::closeEvent(QCloseEvent *close_event)
+void UiProxyWidget::hideEvent(QHideEvent *e)
 {
-    QGraphicsProxyWidget::closeEvent(close_event);
+    QGraphicsProxyWidget::hideEvent(e);
+    emit Visible(false);
+}
+
+void UiProxyWidget::closeEvent(QCloseEvent *e)
+{
+    QGraphicsProxyWidget::closeEvent(e);
     emit Closed();
 }
 
-void UiProxyWidget::focusInEvent(QFocusEvent *focus_event)
+void UiProxyWidget::focusInEvent(QFocusEvent *e)
 {
-    QGraphicsProxyWidget::focusInEvent(focus_event);
+    QGraphicsProxyWidget::focusInEvent(e);
     if (windowFlags() != Qt::Widget)
         if (isVisible() && animations_->state() != QAbstractAnimation::Running)
             setOpacity(1.0);
 }
 
-void UiProxyWidget::focusOutEvent(QFocusEvent *focus_event)
+void UiProxyWidget::focusOutEvent(QFocusEvent *e)
 {
-    QGraphicsProxyWidget::focusOutEvent(focus_event);
+    QGraphicsProxyWidget::focusOutEvent(e);
 
     if (windowFlags() != Qt::Widget)
         setOpacity(unfocus_opacity_);
@@ -180,14 +193,20 @@ QVariant UiProxyWidget::itemChange(GraphicsItemChange change, const QVariant &va
     return QGraphicsProxyWidget::itemChange(change, value);
 }
 
-void UiProxyWidget::moveEvent(QGraphicsSceneMoveEvent *move_event)
+void UiProxyWidget::moveEvent(QGraphicsSceneMoveEvent *e)
 {
-    emit ProxyMoved(this, move_event->newPos());
-    QGraphicsProxyWidget::moveEvent(move_event);
+    emit ProxyMoved(this, e->newPos());
+    QGraphicsProxyWidget::moveEvent(e);
 }
 
-void UiProxyWidget::ungrabMouseEvent(QEvent *ungrab_event)
+void UiProxyWidget::ungrabMouseEvent(QEvent *e)
 {
     emit ProxyUngrabbed(this, scenePos());
-    QGraphicsProxyWidget::ungrabMouseEvent(ungrab_event);
+    QGraphicsProxyWidget::ungrabMouseEvent(e);
+}
+
+void UiProxyWidget::FinishHide()
+{
+    if (animations_->direction() == QAbstractAnimation::Backward)
+        hide();
 }

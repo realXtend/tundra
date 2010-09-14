@@ -244,7 +244,7 @@ void EcXmlEditorWidget::Save()
 void EcXmlEditorWidget::changeEvent(QEvent *event)
 {
     if (event->type() == QEvent::LanguageChange)
-        graphicsProxyWidget()->setWindowTitle(tr("EC Attribute XML Editor"));
+        setWindowTitle(tr("EC Attribute XML Editor"));
     else
        QWidget::changeEvent(event);
 }

@@ -24,7 +24,7 @@ namespace WorldBuilding
 {
     BuildSceneManager::BuildSceneManager(QObject *parent, Foundation::Framework *framework) :
         framework_(framework),
-        ui_helper_(new Helpers::UiHelper(parent)),
+        ui_helper_(new Helpers::UiHelper(parent, framework)),
         inworld_state(false),
         scene_name_("WorldBuilding"),
         world_object_view_(0),
@@ -236,16 +236,28 @@ namespace WorldBuilding
         {
             create_widgets = true;
             label_title = "3D Mesh Model";
+
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("mesh", mesh_browse, widget);
         }
         else if (type_compare == "sound")
         {
             create_widgets = true;
             label_title = "Attached Sound";
+            
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("sound", mesh_browse, widget);
         }
         else if (type_compare == "animation")
         {
             create_widgets = true;
             label_title = "Skeleton Animation";
+
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("animation", mesh_browse, widget);
         }
 
         if (create_widgets)

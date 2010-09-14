@@ -56,9 +56,6 @@ namespace Foundation
     typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
     typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
 
-    class AttributeInterface;
-    typedef std::vector<AttributeInterface*> AttributeVector;
-
     void RootLogFatal(const std::string &msg);
     void RootLogCritical(const std::string &msg);
     void RootLogError(const std::string &msg);
@@ -67,7 +64,14 @@ namespace Foundation
     void RootLogInfo(const std::string &msg);
     void RootLogTrace(const std::string &msg);
     void RootLogDebug(const std::string &msg);
-
 }
+
+class AttributeInterface;
+typedef std::vector<AttributeInterface*> AttributeVector;
+
+class KeyEvent;
+class MouseEvent;
+class InputContext;
+typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 #endif

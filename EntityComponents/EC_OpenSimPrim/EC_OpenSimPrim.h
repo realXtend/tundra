@@ -46,19 +46,14 @@ class EC_OpenSimPrim : public Foundation::ComponentInterface
     DECLARE_EC(EC_OpenSimPrim);
 
     Q_OBJECT
-    Q_PROPERTY(QString Name READ getName WRITE setName)
     Q_PROPERTY(QString FullId READ getFullId DESIGNABLE false)
     Q_PROPERTY(QString ServerScriptClass READ getServerScriptClass WRITE setServerScriptClass)
-    Q_PROPERTY(QString Description READ getDescription WRITE setDescription)
     Q_PROPERTY(QString MediaUrl READ getMediaUrl WRITE setMediaUrl DESIGNABLE false) // not handled anywhere
     Q_PROPERTY(QString HoveringText READ getHoveringText WRITE setHoveringText)
-    Q_PROPERTY(bool CastShadows READ getCastShadows WRITE setCastShadows)
     Q_PROPERTY(double SoundVolume READ getSoundVolume WRITE setSoundVolume)
     Q_PROPERTY(double SoundRadius READ getSoundRadius WRITE setSoundRadius)
     Q_PROPERTY(unsigned int Material READ getMaterial WRITE setMaterial DESIGNABLE false)
     Q_PROPERTY(unsigned int ClickAction READ getClickAction WRITE setClickAction)
-    Q_PROPERTY(unsigned int PathCurve READ getPathCurve WRITE setPathCurve)
-    Q_PROPERTY(unsigned int ProfileCurve READ getProfileCurve WRITE setProfileCurve)
     Q_PROPERTY(QVariant RegionHandle READ getRegionHandle WRITE setRegionHandle DESIGNABLE false)
     Q_PROPERTY(unsigned int LocalId READ getLocalId WRITE setLocalId DESIGNABLE false)
 
@@ -77,7 +72,6 @@ class EC_OpenSimPrim : public Foundation::ComponentInterface
     Q_PROPERTY(QString AnimationName READ getAnimationName WRITE setAnimationName)
     Q_PROPERTY(double AnimationRate READ getAnimationRate WRITE setAnimationRate)
 
-    Q_PROPERTY(bool IsVisible READ getIsVisible WRITE setIsVisible)
     Q_PROPERTY(bool LightCreatesShadows READ getLightCreatesShadows WRITE setLightCreatesShadows)
     Q_PROPERTY(bool DescriptionTexture READ getDescriptionTexture WRITE setDescriptionTexture)
     Q_PROPERTY(bool ScaleToPrim READ getScaleToPrim WRITE setScaleToPrim)
@@ -130,12 +124,6 @@ public:
     QString getAnimationName() const { return QString(AnimationName.c_str()); }
     void setAnimationName(QString value) { AnimationName = value.toStdString(); }
 
-    QString getName() const { return Name.Get(); }
-    void setName(QString name) { Name.Set(name, AttributeChange::Local); }
-
-    QString getDescription() const { return Description.Get(); }
-    void setDescription(QString value) { Description.Set(value, AttributeChange::Local); }
-
     QString getMediaUrl() const { return QString(MediaUrl.c_str()); }
     void setMediaUrl(QString value) { MediaUrl = value.toStdString(); }
 
@@ -144,9 +132,6 @@ public:
 
     QString getServerScriptClass() const { return QString(ServerScriptClass.c_str()); }
     void setServerScriptClass(const QString &scriptclass) { ServerScriptClass = scriptclass.toStdString(); }
-
-    bool getCastShadows() const { return CastShadows.Get(); }
-    void setCastShadows(bool shadows) { CastShadows.Set(shadows, AttributeChange::Local); }
 
     double getSoundVolume() const { return (double)SoundVolume; }
     void setSoundVolume(double sound) { SoundVolume = (float)sound; }
@@ -165,12 +150,6 @@ public:
 
     void setDrawType(unsigned int mat) { DrawType = (uint8_t)mat; }
     unsigned int getDrawType() const { return DrawType; }
-
-    void setPathCurve(unsigned int value) { PathCurve.Set((uint8_t)value, AttributeChange::Local); }
-    unsigned int getPathCurve() const { return PathCurve.Get(); }
-
-    void setProfileCurve(unsigned int value) { ProfileCurve.Set((uint8_t)value, AttributeChange::Local); }
-    unsigned int getProfileCurve() const { return ProfileCurve.Get(); }
 
     void setRegionHandle(const QVariant &reg) { RegionHandle = reg.toULongLong(); }
     QVariant getRegionHandle() const { return QVariant(static_cast<qulonglong>(RegionHandle)); }
@@ -254,20 +233,11 @@ public:
     bool getDescriptionTexture() const { return DescriptionTexture; }
     void setDescriptionTexture(bool value) { DescriptionTexture = value; }
 
-    bool getIsVisible() const { return IsVisible.Get(); }
-    void setIsVisible(bool value) { IsVisible.Set(value, AttributeChange::Local); }
-
     bool getScaleToPrim() const { return ScaleToPrim; }
     void setScaleToPrim(bool value) { ScaleToPrim = value; }
 
     double getAnimationRate() const { return (double)AnimationRate; }
     void setAnimationRate(double value) { AnimationRate = (float)value; }
-
-    double getDrawDistance() const { return (double)DrawDistance.Get(); }
-    void setDrawDistance(double value) { DrawDistance.Set((float)value, AttributeChange::Local); }
-
-    double getLOD() const { return (double)LOD.Get(); }
-    void setLOD(double value) { LOD.Set((float)value, AttributeChange::Local); }
 
     void setSelectPriority(const QVariant value) { SelectPriority = value.toULongLong(); }
     QVariant getSelectPriority() const { return QVariant(static_cast<qulonglong>(SelectPriority)); }
@@ -296,11 +266,9 @@ public:
     uint16_t TimeDilation;
     uint8_t PCode;
 
-    Foundation::Attribute<QString> Name;
-    Foundation::Attribute<QString> Description;
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, Name);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, Description);
 
-    /*std::string Name;
-    std::string Description;*/
     std::string HoveringText;
     std::string MediaUrl;
 
@@ -338,10 +306,11 @@ public:
     //! Drawing related variables
     Vector3df Scale; //not a property
     uint8_t DrawType; //enum!
-    Foundation::Attribute<bool> IsVisible;
-    Foundation::Attribute<bool> CastShadows;
-    Foundation::Attribute<float> DrawDistance;
-    Foundation::Attribute<float> LOD;
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, IsVisible);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, CastShadows);
+
+    DEFINE_QPROPERTY_ATTRIBUTE(float, DrawDistance);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, LOD);
 
     //bool IsVisible; 
     //bool CastShadows; 
@@ -384,25 +353,25 @@ public:
     UVParamMap PrimUVRotation;
 
     //! Primitive shape related variables
-    Foundation::Attribute<int> PathCurve;
-    Foundation::Attribute<int> ProfileCurve;
+    DEFINE_QPROPERTY_ATTRIBUTE(int, PathCurve);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, ProfileCurve);
 
-    Foundation::Attribute<float> PathBegin;
-    Foundation::Attribute<float> PathEnd;
-    Foundation::Attribute<float> PathScaleX;
-    Foundation::Attribute<float> PathScaleY;
-    Foundation::Attribute<float> PathShearX;
-    Foundation::Attribute<float> PathShearY;
-    Foundation::Attribute<float> PathTwist;
-    Foundation::Attribute<float> PathTwistBegin;
-    Foundation::Attribute<float> PathRadiusOffset;
-    Foundation::Attribute<float> PathTaperX;
-    Foundation::Attribute<float> PathTaperY;
-    Foundation::Attribute<float> PathRevolutions;
-    Foundation::Attribute<float> PathSkew;
-    Foundation::Attribute<float> ProfileBegin;
-    Foundation::Attribute<float> ProfileEnd;
-    Foundation::Attribute<float> ProfileHollow;
+    Attribute<float> PathBegin;
+    Attribute<float> PathEnd;
+    Attribute<float> PathScaleX;
+    Attribute<float> PathScaleY;
+    Attribute<float> PathShearX;
+    Attribute<float> PathShearY;
+    Attribute<float> PathTwist;
+    Attribute<float> PathTwistBegin;
+    Attribute<float> PathRadiusOffset;
+    Attribute<float> PathTaperX;
+    Attribute<float> PathTaperY;
+    Attribute<float> PathRevolutions;
+    Attribute<float> PathSkew;
+    Attribute<float> ProfileBegin;
+    Attribute<float> ProfileEnd;
+    Attribute<float> ProfileHollow;
 
     /*uint8_t PathCurve; 
     uint8_t ProfileCurve;

@@ -287,10 +287,10 @@ namespace ECEditor
                 if(components[i]->IsSerializable())
                 {
                     Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
-                    Foundation::AttributeVector attributes = components[i]->GetAttributes();
+                    AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        Foundation::AttributeInterface *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        AttributeInterface *attribute = component->GetAttribute(attributes[j]->GetNameString());
                         if(attribute)
                             attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
                     }
@@ -487,7 +487,7 @@ namespace ECEditor
         if (e->type() == QEvent::LanguageChange)
         {
             QString title = QApplication::translate("ECEditor", "Entity-component Editor");
-            graphicsProxyWidget()->setWindowTitle(title);
+            setWindowTitle(title);
         }
         else
            QWidget::changeEvent(e);

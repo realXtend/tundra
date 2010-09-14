@@ -477,10 +477,12 @@ namespace Foundation
                 if (!library->sl_.hasSymbol("SetProfiler"))
                     throw Poco::Exception("Function SetProfiler() need to be exported from the shared library for profiling to work properly!");
 
+#ifdef PROFILING
                 // Each shared library containing modules must have a SetProfiler function exposed so that time profiling can be performed in it.
                 ///\todo This could be made optional, but no real hurry since profiling is included in release versions as well.
                 SetProfilerFunc setProfiler = (SetProfilerFunc) library->sl_.getSymbol("SetProfiler");
                 setProfiler(&framework_->GetProfiler());
+#endif
             }
             catch (Poco::Exception &e)
             {
