@@ -98,7 +98,7 @@ namespace RexLogic
 
         //! @return The entity corresponding to given id AND uuid. This entity is guaranteed to have an existing EC_OpenSimPrim component.
         //!         Does not return null. If the entity doesn't exist, an entity with the given entityid and fullid is created and returned.
-        Scene::EntityPtr GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid);
+        Scene::EntityPtr GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *was_created);
         Scene::EntityPtr CreateNewPrimEntity(entity_id_t entityid);
         
         //! checks if stored pending rexdata exists for prim and handles it
