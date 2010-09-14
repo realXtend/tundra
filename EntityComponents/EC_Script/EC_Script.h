@@ -20,14 +20,14 @@ public:
     /// ComponentInterface override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
-    /// Reference to a script file.
-    Attribute<QString> scriptRef;
-
     /// Type of the script as string (js/py)
     Attribute<QString> type;
 
     /// Is the script run as soon as the script reference is set/loaded.
     Attribute<bool> runOnLoad;
+
+    /// Reference to a script file.
+    Attribute<QString> scriptRef;
 
     /** Sets new script instance. Unloads and deletes possible already existing script instance.
         @param instance Script instance.

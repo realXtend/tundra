@@ -51,9 +51,9 @@ void EC_Script::Stop(const QString &name)
 
 EC_Script::EC_Script(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
-    scriptRef(this, "Script ref"),
     type(this, "Type"),
-    runOnLoad(this, "Run on load"),
+    runOnLoad(this, "Run on load", false),
+    scriptRef(this, "Script ref"),
     scriptInstance_(0)
 {
     connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
