@@ -63,6 +63,7 @@ namespace WorldBuilding
     public slots:
         //! Cleans the passed python widgets from our layout
         void CleanPyWidgets();
+        bool IsBuildingActive();
 
         //! Handle our key context input
         void KeyPressed(KeyEvent *key);

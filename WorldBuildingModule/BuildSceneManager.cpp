@@ -24,6 +24,7 @@ namespace WorldBuilding
 {
     BuildSceneManager::BuildSceneManager(QObject *parent, Foundation::Framework *framework) :
         framework_(framework),
+        scene_(0),
         ui_helper_(new Helpers::UiHelper(parent, framework)),
         inworld_state(false),
         scene_name_("WorldBuilding"),
@@ -88,6 +89,14 @@ namespace WorldBuilding
         }
         python_deleted_widgets_.clear();
         toggle_visibility_widgets_.clear();
+    }
+
+    bool BuildSceneManager::IsBuildingActive()
+    { 
+        if (!scene_) 
+            return false; 
+        else 
+            return scene_->isActive(); 
     }
 
     void BuildSceneManager::InitScene()

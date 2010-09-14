@@ -136,6 +136,8 @@ class ObjectEdit(Component):
             self.cpp_python_handler.PassWidget("Animation", self.window.animation_widget)
             self.cpp_python_handler.PassWidget("Sound", self.window.sound_widget)
             self.cpp_python_handler.PassWidget("Materials", self.window.materialTabFormWidget)
+            # Check if build mode is active, required on python restarts
+            self.on_activate_editing(self.cpp_python_handler.IsBuildingActive())
             
     def on_keypressed(self, k):
         trigger = (k.keyCode, k.modifiers)
@@ -215,18 +217,12 @@ class ObjectEdit(Component):
                 break
         return ent, children
         
-    def select(self, ent):
+    def select(self, ent):        
         self.deselect_all()
         ent, children = self.baseselect(ent)
         self.sels.append(ent)
         self.window.selected(ent, False)
         self.canmove = True
-        
-        # Not needed at this point, c++ module gets selected entitys itself
-        #if self.cpp_python_handler != None:
-        #    if ent.prim != None:
-        #        self.cpp_python_handler.ObjectSelected(ent.prim)
-
         self.highlightChildren(children)
 
     def multiselect(self, ent):
@@ -362,7 +358,6 @@ class ObjectEdit(Component):
             return
         if mouseinfo.IsItemUnderMouse():
             return
-
         if mouseinfo.HasShiftModifier() and not mouseinfo.HasCtrlModifier() and not mouseinfo.HasAltModifier():
             self.on_multiselect(mouseinfo)
             return
@@ -381,12 +376,10 @@ class ObjectEdit(Component):
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
-            
         self.manipulator.initManipulation(ent, results)
         self.usingManipulator = True
 
         if ent is not None:
-            #print "Got entity:", ent, ent.editable
             if not self.manipulator.compareIds(ent.id) and editable(ent): #ent.id != self.selection_box.id and 
                 r.eventhandled = self.EVENTHANDLED
                 found = False
@@ -404,7 +397,6 @@ class ObjectEdit(Component):
                     
         else:
             self.selection_rect_startpos = (mouseinfo.x, mouseinfo.y)
-            #print "canmove:", self.canmove
             self.canmove = False
             self.deselect_all()
             
@@ -548,8 +540,7 @@ class ObjectEdit(Component):
                         self.window.update_guivals(ent)
    
     def on_inboundnetwork(self, evid, name):
-        #return False
-        print "editgui got an inbound network event:", id, name
+        #print "editgui got an inbound network event:", id, name
         return False
 
     def undo(self):
@@ -707,7 +698,9 @@ class ObjectEdit(Component):
         self.cpp_python_handler.disconnect('ActivateEditing(bool)', self.on_activate_editing)
         self.cpp_python_handler.disconnect('ManipulationMode(int)', self.on_manupulation_mode_change)
         self.cpp_python_handler.disconnect('RemoveHightlight()', self.deselect_all)
-        self.cpp_python_handler.disconnect('RotateValuesChangedToNetwork(int, int, int)', self.changerot_cpp)
+        self.cpp_python_handler.disconnect('RotateValuesToNetwork(int, int, int)', self.changerot_cpp)
+        self.cpp_python_handler.disconnect('ScaleValuesToNetwork(double, double, double)', self.changescale_cpp)
+        self.cpp_python_handler.disconnect('PosValuesToNetwork(double, double, double)', self.changepos_cpp)
         self.cpp_python_handler.disconnect('CreateObject()', self.createObject)
         self.cpp_python_handler.disconnect('DuplicateObject()', self.duplicate)
         self.cpp_python_handler.disconnect('DeleteObject()', self.deleteObject)
