@@ -137,7 +137,7 @@ namespace RexLogic
         void FocusOnObject(float, float, float);
 
         //! return camera state
-        CameraState GetCameraState() { return camera_state_; }
+        CameraState GetCameraState() const { return camera_state_; }
 
         //! reset camera state to CS_Follow
         void ResetCameraState();
@@ -262,7 +262,7 @@ namespace RexLogic
         void UpdateObjects(f64 frametime);
 
         //! Update sound listener position
-        /*! Uses current camera for now
+        /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
 

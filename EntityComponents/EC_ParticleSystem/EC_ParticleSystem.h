@@ -17,21 +17,6 @@ namespace Ogre
 namespace OgreRenderer
 {
     class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-}
-
-namespace Foundation
-{
-    class Framework;
-}
-
-namespace Foundation
-{
-    class ModuleInterface;
-    typedef boost::shared_ptr<Foundation::ComponentInterface> ComponentPtr;
 }
 
 class EC_ParticleSystem : public Foundation::ComponentInterface
@@ -47,12 +32,13 @@ public:
 
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
 
-    Attribute<QString>      particleId_;
-    Attribute<bool>         castShadows_;
-    Attribute<float>         renderingDistance_;
+    Attribute<QString> particleId_;
+    Attribute<bool> castShadows_;
+
+    Attribute<float> renderingDistance_;
 
 public slots:
-        //! Create a new particle system. System name will be same as component name.
+    //! Create a new particle system. System name will be same as component name.
     /*! \return true if successful
     */
     void CreateParticleSystem(const QString &systemName);
@@ -67,7 +53,7 @@ private:
     Foundation::ComponentPtr FindPlaceable() const;
     request_tag_t RequestResource(const std::string& id, const std::string& type);
 
-    OgreRenderer::RendererWeakPtr renderer_;
+    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
     Ogre::ParticleSystem* particleSystem_;
     Ogre::SceneNode* node_;
     request_tag_t particle_tag_;

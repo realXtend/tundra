@@ -47,6 +47,8 @@ namespace MediaPlayer
     class ServiceInterface;
 }
 
+class UiProxyWidget;
+
 namespace PythonScript
 {
     class PythonEngine;
@@ -123,6 +125,9 @@ namespace PythonScript
 
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr worldstream;
+
+        /// Keep list of proxy widgets created from py as the cause mem leaks if not deleted explicitily.
+        QList<UiProxyWidget *> proxyWidgets;
 
     private:
         //! Type name of the module.
