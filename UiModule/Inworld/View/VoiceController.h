@@ -10,6 +10,7 @@
 #include "ui_VoiceControl.h"
 
 class QMouseEvent;
+class QGraphicsProxyWidget;
 
 namespace Communications
 {
@@ -71,11 +72,6 @@ namespace CommUI
         virtual void SetPushToTalkOff();
         virtual void Toggle();
 
-    protected:
-        virtual void mouseMoveEvent(QMouseEvent *);
-        virtual void mousePressEvent(QMouseEvent *);
-        virtual void mouseReleaseEvent(QMouseEvent *);
-
     private slots:
         void ApplyTransmissionModeSelection(int selection);
         void OpenParticipantListWidget();
@@ -83,9 +79,8 @@ namespace CommUI
         void UpdateUI();
 
     private:
-        QPoint mouse_last_pos_;
         QTimer update_timer_;
-        bool mouse_dragging_;
+        QGraphicsProxyWidget* voice_users_proxy_widget_;
     };
 
 } // CommUI

@@ -12,6 +12,8 @@
 #include "VoiceUsersWidget.h"
 #include "VoiceControl.h"
 #include "VoiceController.h"
+#include "UiServiceInterface.h"
+#include "UiProxyWidget.h"
 
 #include <CommunicationsService.h>
 #include <QWidget>
@@ -474,10 +476,22 @@ namespace CoreUi
         {
             CommUI::VoiceControllerWidget* voice_controller_widget_ = new CommUI::VoiceControllerWidget(in_world_voice_session_);
 
-            if (voice_controller_proxy_widget_)
-                ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(voice_controller_proxy_widget_);
+            //if (voice_controller_proxy_widget_)
+            //    ui_module->GetInworldSceneController()->RemoveProxyWidgetFromScene(voice_controller_proxy_widget_);
 
-            voice_controller_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_controller_widget_);
+//            voice_controller_proxy_widget_ = ui_module->GetInworldSceneController()->GetInworldScene()->addWidget(voice_controller_widget_);
+
+            Foundation::UiServiceInterface* ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+            if (ui_service)
+            {
+                if (voice_controller_proxy_widget_)
+                    ui_service->RemoveWidgetFromScene(voice_controller_proxy_widget_);
+
+                voice_controller_proxy_widget_ = ui_service->AddWidgetToScene(voice_controller_widget_);
+                voice_controller_proxy_widget_->hide();
+            }
+
+
             voice_controller_proxy_widget_->hide();
             voice_controller_widget_->SetTransmissionMode(CommUI::VoiceController::PushToTalk);
             if (framework_)
