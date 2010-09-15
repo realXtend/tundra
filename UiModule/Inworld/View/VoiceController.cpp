@@ -43,11 +43,6 @@ namespace CommUI
             emit TransmissionModeChanged(transmission_mode_);
     }
 
-    //TransmissionMode VoiceController::GetTransmissionMode()
-    //{
-    //    return transmission_mode_;
-    //}
-
     void VoiceController::SetPushToTalkOn()
     {
         push_to_talk_on_ = true;
@@ -129,8 +124,6 @@ namespace CommUI
         QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         UpdateUI();
-        QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
-        update_timer_.start(200);
 
         /// @todo Use Settings class from MumbeVoipModule
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
@@ -147,6 +140,7 @@ namespace CommUI
 
     void VoiceControllerWidget::ApplyTransmissionModeSelection(int selection)
     {
+        UpdateUI();
         voice_controller_.SetTransmissionMode(VoiceController::TransmissionMode(selection));
     }
 
@@ -174,9 +168,6 @@ namespace CommUI
             participantsCountLabel->setText(QString("%1 participants").arg(voice_controller_.GetSession()->Participants().length()));
         else
             participantsCountLabel->setText("No participants");
-
-        averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithOut())/1024,'f',1)));
-        averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithIn())/1024,'f',1)));
 
         switch(transmissionModeComboBox->currentIndex())
         {
