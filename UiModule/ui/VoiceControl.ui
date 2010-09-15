@@ -7,13 +7,13 @@
     <x>0</x>
     <y>0</y>
     <width>322</width>
-    <height>270</height>
+    <height>300</height>
    </rect>
   </property>
   <property name="minimumSize">
    <size>
     <width>320</width>
-    <height>270</height>
+    <height>300</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -32,7 +32,9 @@
       <item>
        <widget class="QLabel" name="transmissionModeDescriptionLabel">
         <property name="text">
-         <string>Transmission mode desription...</string>
+         <string>Transmission mode desription...t
+...
+...</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
