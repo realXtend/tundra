@@ -24,6 +24,9 @@ register(animsync.COMPNAME, animsync.AnimationSync)
 import door
 register(door.COMPNAME, door.DoorHandler)
 
+import rotate
+register(rotate.COMPNAME, rotate.RotationHandler)
+
 class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
         circuits.BaseComponent.__init__(self)
