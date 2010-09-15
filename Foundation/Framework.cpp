@@ -109,7 +109,7 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.0"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.1"));
 
             CreateLoggingSystem(); // depends on config and platform
 
