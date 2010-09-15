@@ -4,9 +4,9 @@
 #include "DebugOperatorNew.h"
 
 #include "SettingsWidget.h"
-//#include <QSettings>
 #include "Settings.h"
 #include "Provider.h"
+#include "Session.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -16,6 +16,8 @@ namespace MumbleVoip
     {
         InitializeUI();
         UpdateUI();
+        connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
+        update_timer_.start(200);
     }
 
     SettingsWidget::~SettingsWidget()
@@ -91,6 +93,19 @@ namespace MumbleVoip
         playbackBufferSizeLabel->setText(QString("%1 ms").arg(playbackBufferSlider->value(), 4));
         encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value(), 3));
         microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value(), 3));
+
+        if (provider_->Session() && provider_->Session()->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+        {
+            averageBandwidthInLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithIn())/1024,'f',1)));
+            averageBandwidthOutLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithOut())/1024,'f',1)));
+            serverInfoLabel->setText(dynamic_cast<Session*>(provider_->Session())->GetServerInfo());
+        }
+        else
+        {
+            averageBandwidthInLabel->setText("");
+            averageBandwidthOutLabel->setText("");
+            serverInfoLabel->setText("");
+        }
     }
     
     void SettingsWidget::ApplyEncodeQuality()

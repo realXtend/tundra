@@ -4,6 +4,7 @@
 #define incl_MumbleVoipModule_SettingsWidget_h
 
 #include "ui_VoiceSettings.h"
+#include <QTimer>
 
 namespace MumbleVoip
 {
@@ -33,6 +34,7 @@ namespace MumbleVoip
     private:
         Settings* settings_;
         Provider* provider_;
+        QTimer update_timer_;
     };
 } // MumbleVoip
 
