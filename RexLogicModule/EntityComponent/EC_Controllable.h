@@ -101,17 +101,20 @@ namespace RexLogic
             RexTypes::Actions::ActionInputMap AssignCommonActions(EC_Controllable *controllable)
             {
                 using namespace RexTypes::Actions;
-                controllable->AddAction(MoveForward);
-                controllable->AddAction(MoveBackward);
-                controllable->AddAction(MoveLeft);
-                controllable->AddAction(MoveRight);
-                controllable->AddAction(RotateLeft);
-                controllable->AddAction(RotateRight);
-                controllable->AddAction(MoveUp);
-                controllable->AddAction(MoveDown);
-                controllable->AddAction(RotateUp);
-                controllable->AddAction(RotateDown);
-
+                if (controllable)
+                {
+                    controllable->AddAction(MoveForward);
+                    controllable->AddAction(MoveBackward);
+                    controllable->AddAction(MoveLeft);
+                    controllable->AddAction(MoveRight);
+                    controllable->AddAction(RotateLeft);
+                    controllable->AddAction(RotateRight);
+                    controllable->AddAction(MoveUp);
+                    controllable->AddAction(MoveDown);
+                    controllable->AddAction(RotateUp);
+                    controllable->AddAction(RotateDown);
+                }
+                
                 ActionInputMap input_map;
 
                 input_map[Input::Events::MOVE_FORWARD_PRESSED] = MoveForward;

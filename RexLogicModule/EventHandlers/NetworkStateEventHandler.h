@@ -34,6 +34,11 @@ namespace RexLogic
         /// @param data Event data.
         bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
 
+        /// Handles
+        /// @param event_id Event ID.
+        /// @param data Event data.
+        bool HandleTundraEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        
     private:
         /// Owner module.
         RexLogicModule *owner_;

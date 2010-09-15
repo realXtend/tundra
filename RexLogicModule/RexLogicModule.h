@@ -168,6 +168,9 @@ namespace RexLogic
         //! are always to be present in an reX world, like terrain.
         Scene::ScenePtr CreateNewActiveScene(const std::string &name);
 
+        //! Creates camera to scene. Called by CreateNewActiveScene. In Tundra mode will use freecamera mode by default
+        void CreateCamera(bool tundra_mode);
+
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
         void DeleteScene(const std::string &name);
@@ -334,9 +337,6 @@ namespace RexLogic
         //! Primitive handler pointer.
         PrimitivePtr primitive_;
 
-        //! Active scene pointer.
-        Scene::ScenePtr activeScene_;
-
         //! Current camera entity
         Scene::EntityWeakPtr camera_entity_;
 
@@ -400,8 +400,6 @@ namespace RexLogic
          */
         void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
 
-        /// Finds entity with active sound listener component and stores it.
-        void FindActiveListener();
     };
 }
 

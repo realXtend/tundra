@@ -170,6 +170,9 @@ namespace Environment
         //! Id for Input event category
         event_category_id_t input_event_category_;
 
+        //! Id for Tundra event category
+        event_category_id_t tundra_event_category_;
+
         //! Terrain geometry ptr.
         TerrainPtr terrain_;
 

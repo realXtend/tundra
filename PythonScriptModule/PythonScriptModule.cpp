@@ -1067,7 +1067,7 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
     // Get RexLogic and Scene
     RexLogic::RexLogicModule *rexlogicmodule_;
     rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene(); 
 
     if (!scene) 
     { 

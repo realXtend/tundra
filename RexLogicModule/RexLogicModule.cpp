@@ -265,6 +265,10 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+    
+    eventcategoryid = eventMgr->QueryEventCategory("Tundra");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+       &NetworkStateEventHandler::HandleTundraEvent, network_state_handler_, _1, _2));
 
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
@@ -294,48 +298,64 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     if (framework_->HasScene(name))
     {
         LogWarning("Tried to create new active scene, but it already existed!");
-        Scene::ScenePtr newActiveScene = framework_->GetScene(name);
-        SetCurrentActiveScene(newActiveScene);
-        return newActiveScene;
+        Scene::ScenePtr oldScene = framework_->GetScene(name);
+        return oldScene;
     }
 
-    activeScene_ = framework_->CreateScene(name);
-    framework_->SetDefaultWorldScene(activeScene_);
+    Scene::ScenePtr scene = framework_->CreateScene(name);
+    framework_->SetDefaultWorldScene(scene);
 
     // Connect ComponentAdded&Removed signals.
-    connect(activeScene_.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
             SLOT(NewComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
-    connect(activeScene_.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
             SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
 
     // Listen to component changes to serialize them via RexFreeData
-    primitive_->RegisterToComponentChangeSignals(activeScene_);
+    primitive_->RegisterToComponentChangeSignals(scene);
 
+    CreateCamera(false);
+    
+    return scene;
+}
+
+void RexLogicModule::CreateCamera(bool tundra_mode)
+{
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+    {
+        LogError("No scene, can not create camera");
+        return;
+    }
+    
     // Create camera entity into the scene
-    Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
+    Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
     Foundation::ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     Foundation::ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
     Foundation::ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
     assert(placeable && camera && sound_listener);
     if (placeable && camera && sound_listener)
     {
-        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
+        Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
         entity->AddComponent(placeable);
         entity->AddComponent(camera);
         entity->AddComponent(sound_listener);
         
         OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
         camera_ptr->SetPlaceable(placeable);
+        // Lookat something to setup the weird Opensim orientation
+        OgreRenderer::EC_OgrePlaceable* placeable_ptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+        placeable_ptr->LookAt(Vector3df(0,1,0));
         camera_ptr->SetActive();
         camera_entity_ = entity;
         // Set camera controllable to use this camera entity.
         //Note: it's a weak pointer so will not keep the camera alive needlessly
         camera_controllable_->SetCameraEntity(entity);
     }
-
-    event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
-
-    return GetCurrentActiveScene();
+    
+    // When connected to Tundra, start from freecam mode for now
+    if (tundra_mode)
+        framework_->GetEventManager()->SendEvent("Input", Input::Events::INPUTSTATE_FREECAMERA, 0);
 }
 
 void RexLogicModule::DeleteScene(const std::string &name)
@@ -345,9 +365,6 @@ void RexLogicModule::DeleteScene(const std::string &name)
         LogWarning("Tried to delete scene, but it didn't exist!");
         return;
     }
-
-    if (activeScene_ && activeScene_->Name() == name)
-        activeScene_.reset(); ///\todo Check in SceneManager that scene names surely are unique. -jj.
 
     framework_->RemoveScene(name);
     assert(!framework_->HasScene(name));
@@ -416,6 +433,7 @@ void RexLogicModule::DebugSanityCheckOgreCameraTransform()
 // virtual
 void RexLogicModule::Update(f64 frametime)
 {
+
     {
         PROFILE(RexLogicModule_Update);
 
@@ -440,14 +458,15 @@ void RexLogicModule::Update(f64 frametime)
         if (send_input_state)
         {
             send_input_state = false;
-            event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
             else
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
         }
-
-        if (world_stream_->IsConnected())
+        
+        // If scene exists, we should be connected and can update these
+        if (framework_->GetDefaultWorldScene())
         {
             avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
@@ -466,6 +485,7 @@ bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t eve
     // RexLogicModule does not directly handle any of its own events. Instead, there is a list of delegate objects
     // which handle events of each category. Pass the received event to the proper handler of the category of the event.
     PROFILE(RexLogicModule_HandleEvent);
+    
     LogicEventHandlerMap::iterator i = event_handlers_.find(category_id);
     if (i != event_handlers_.end())
         for(size_t j=0 ; j<i->second.size() ; j++)
@@ -489,10 +509,11 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
 
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return Scene::EntityPtr();
 
-    Scene::EntityPtr entity = activeScene_->GetEntity(entity_id);
+    Scene::EntityPtr entity = scene->GetEntity(entity_id);
     if (entity && entity->GetComponent(component))
         return entity;
     else
@@ -511,15 +532,15 @@ void RexLogicModule::SwitchCameraState()
     {
         camera_state_ = CS_Free;
 
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -528,14 +549,14 @@ void RexLogicModule::CameraTripod()
     if (camera_state_ == CS_Follow)
     {
         camera_state_ = CS_Tripod;
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
-        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -563,16 +584,6 @@ AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 {
     return primitive_;
-}
-
-void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
-{
-    activeScene_ = scene;
-}
-
-Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
-{
-    return activeScene_;
 }
 
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
@@ -645,7 +656,6 @@ void RexLogicModule::LogoutAndDeleteWorld()
         DeleteScene("World");
 
     pending_parents_.clear();
-    activeScene_.reset();
     UUIDs_.clear();
 }
 
@@ -686,10 +696,11 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
-    Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
+    Scene::EntityPtr entity = scene->GetEntity(entityid);
     if (!entity)
         return;
 
@@ -714,7 +725,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }
 
-    Scene::EntityPtr parent_entity = activeScene_->GetEntity(parentid);
+    Scene::EntityPtr parent_entity = scene->GetEntity(parentid);
     if (!parent_entity)
     {
         // If can't get the parent entity yet, add to pending parent list
@@ -728,11 +739,12 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 
 void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // Make sure we actually can get this now
-    Scene::EntityPtr parent_entity = activeScene_->GetEntity(entityid);
+    Scene::EntityPtr parent_entity = scene->GetEntity(entityid);
     if (!parent_entity)
         return;
 
@@ -764,10 +776,11 @@ void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QStrin
 
 void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
-    Scene::EntityList entities = activeScene_->GetEntitiesWithComponent(EC_HoveringText::TypeNameStatic());
+    Scene::EntityList entities = scene->GetEntitiesWithComponent(EC_HoveringText::TypeNameStatic());
     foreach(Scene::EntityPtr entity, entities)
     {
         boost::shared_ptr<EC_HoveringText> overlay = entity->GetComponent<EC_HoveringText>();
@@ -786,7 +799,8 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     using namespace OgreRenderer;
 
     //! \todo probably should not be directly in RexLogicModule
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // Damping interpolation factor, dependent on frame time
@@ -796,7 +810,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
     found_avatars_.clear();
 
-    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
 
@@ -866,19 +880,24 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
-        EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
+        Scene::EntityPtr camera = GetCameraEntity();
+        if (!camera) return;
+        EC_SoundListener *listener = camera->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->IsActive())
             listener->SetActive(true);
     }
-    else if (GetUserAvatarEntity())
+    else
     {
-        EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
+        Scene::EntityPtr avatar = GetUserAvatarEntity();
+        if (!avatar) return;
+        EC_SoundListener *listener = avatar->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->IsActive())
             listener->SetActive(true);
     }
@@ -1121,20 +1140,21 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
-    event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+    framework_->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return Console::ResultFailure("No active scene found.");
 
     if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
         return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
 
-    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
         OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
@@ -1197,22 +1217,6 @@ void RexLogicModule::ComponentRemoved(Scene::Entity *entity, Foundation::Compone
         LogDebug("Removed sound listener from the listener list.");
         soundListeners_.removeOne(entity);
     }
-}
-
-void RexLogicModule::FindActiveListener()
-{
-    if (!activeScene_)
-        return;
-
-    // Iterate throught possible listeners and find the active one.
-/*
-    foreach(Scene::Entity *listener, soundListeners_)
-        if (listener->GetComponent<EC_SoundListener>()->IsActive())
-        {
-            activeSoundListener_ = activeScene_->GetEntity(listener->GetId());
-            break;
-        }
-*/
 }
 
 } // namespace RexLogic
