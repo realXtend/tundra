@@ -9,6 +9,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 
+#include <QSettings>
 #include "VoiceController.h"
 #include <CommunicationsService.h>
 #include <QMouseEvent>
@@ -131,6 +132,11 @@ namespace CommUI
         UpdateUI();
         QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
         update_timer_.start(200);
+
+        /// @todo Use Settings class from MumbeVoipModule
+        QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
+        int default_voice_mode = settings.value("MumbleVoice/default_voice_mode").toInt();
+        transmissionModeComboBox->setCurrentIndex(default_voice_mode);
 
         showListButton->hide(); // temporaly hide the button because there is an another similiar button.
     }
