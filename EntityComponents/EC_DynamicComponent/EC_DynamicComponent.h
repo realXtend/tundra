@@ -74,10 +74,10 @@ public:
         }
     }
 
+public slots:
     //! A factory method that constructs a new attribute given the typename. This factory is not extensible.
     AttributeInterface *CreateAttribute(const QString &typeName, const QString &name);
 
-public slots:
     //! Will handle ComponentChanged event to ComponentInterface.
     //! @param changeType Accepts following strings {LocalOnly, Local and Network}.
     void ComponentChanged(const QString &changeType);
