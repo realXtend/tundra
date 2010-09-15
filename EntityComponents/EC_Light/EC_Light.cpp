@@ -29,10 +29,10 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColorAttr_(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadowsAttr_(this, "cast shadows", false),
-    rangeAttr_(this, "light range", 10.0f),
-    constAttenAttr_(this, "constant atten", 1.0f),
-    linearAttenAttr_(this, "linear atten", 0.0f),
-    quadraAttenAttr_(this, "quadratic atten", 0.0f),
+    rangeAttr_(this, "light range", 100.0f),
+    constAttenAttr_(this, "constant atten", 0.0f),
+    linearAttenAttr_(this, "linear atten", 0.01f),
+    quadraAttenAttr_(this, "quadratic atten", 0.01f),
     innerAngleAttr_(this, "light inner angle", 30.0f),
     outerAngleAttr_(this, "light outer angle", 40.0f)
 {
