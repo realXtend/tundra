@@ -71,6 +71,11 @@ class LocalScene(Component):
         self.publishName = None
         
         self.sceneActions = None # sceneactions.SceneActions()
+        
+        
+		#self.libMod = r.getLibraryModule()
+        
+        #self.libMod.connect("UploadSceneFile(QString, QVect)", self.onUploadSceneFile)
         pass
 
     def loadScene(self, filename):
@@ -97,7 +102,11 @@ class LocalScene(Component):
     def unloadScene(self):
         loader.unload_dotscene(self.dotScene)
         if(self.scenedata!=None and self.scenedata.hasCopyFiles == True):
-            self.scenedata.removeFiles()
+            try:
+                self.scenedata.removeFiles()
+            except:
+                #ignore
+                pass
         pass
         
     def publishScene(self, filename=""):
@@ -167,7 +176,6 @@ class LocalScene(Component):
         
     def update(self, time):
         # print "here", time
-        # self.window.processIncoming()
         pass
 
     def on_logout(self, id):
@@ -234,7 +242,15 @@ class LocalScene(Component):
             self.worldstream = r.getServerConnection()
         uploadcap_url = self.worldstream.GetCapability('UploadScene')
         print uploadcap_url
-    
+
+    def onUploadSceneFile(url, vect):
+        print "onUploadSceneFile"
+        print url
+        print vect
+        print dir(url)
+        print dir(vect)
+        pass
+        
         
             
 class SceneSaver:
