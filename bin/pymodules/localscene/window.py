@@ -17,7 +17,6 @@ class ToolBarWindow():
     def __init__(self, uistring, queue, endApplication, controller):
         self.controller = controller
         loader = QUiLoader()
-        loader.setLanguageChangeEnabled(True)
         uifile = QFile(uistring)
         ui = loader.load(uifile)
         self.gui = ui
@@ -69,10 +68,7 @@ class ToolBarWindow():
         """ for receiving input message events from other threads """
         while(self.inputQueue.qsize()):
             try:
-                try:
-                    title, msg = self.inputQueue.get(0)
-                except ValueError:
-                    return
+                title, msg = self.inputQueue.get(0)
                 if(title=="__end__"):
                     self.controller.isrunning = 0
                     return
@@ -328,6 +324,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
     def setServerScenes(self, d):        
         self.tableWidgetServerScenes.clearContents()
         self.serverSceneRegionLists = {}
+        self.serverSceneRegionCount = {}		
         #self.tableitems = []
         #self.listViewRegionScenes.clear()
         # need to figure out how to free tableitems
