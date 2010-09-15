@@ -482,7 +482,6 @@ namespace CoreUi
             voice_controller_proxy_widget_->hide();
         }
 
-        voice_controller_widget_->SetTransmissionMode(CommUI::VoiceController::PushToTalk);
         if (framework_)
         {
             input_context_ = framework_->Input().RegisterInputContext("CommunicationWidget", 90);

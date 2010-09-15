@@ -113,22 +113,21 @@ namespace CommUI
 
 
     VoiceControllerWidget::VoiceControllerWidget(Communications::InWorldVoice::SessionInterface* voice_session) :
-        VoiceController(voice_session)
-
+        voice_controller_(voice_session)
     {
         setupUi(this);
 
         QStringList options;
         options << "Mute" << "Continuous transmission" << "Push-to-Talk" << "Toggle mode";
         transmissionModeComboBox->addItems(options);   
-        QObject::connect(transmissionModeComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(ApplyTransmissionModeSelection(int)));
+        QObject::connect(transmissionModeComboBox, SIGNAL(currentIndexChanged(int)), (VoiceControllerWidget*)this, SLOT(ApplyTransmissionModeSelection(int)));
 
         QObject::connect(showListButton, SIGNAL(clicked()), this, SLOT(OpenParticipantListWidget()));
 
         QObject::connect(muteAllCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyMuteAllSelection()));
 
-        QObject::connect(GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
-        QObject::connect(GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
+        QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
+        QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         UpdateUI();
         QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
         update_timer_.start(200);
@@ -148,7 +147,7 @@ namespace CommUI
 
     void VoiceControllerWidget::ApplyTransmissionModeSelection(int selection)
     {
-        SetTransmissionMode(TransmissionMode(selection));
+        voice_controller_.SetTransmissionMode(VoiceController::TransmissionMode(selection));
     }
 
     void VoiceControllerWidget::OpenParticipantListWidget()
@@ -161,23 +160,23 @@ namespace CommUI
     {
         if (muteAllCheckBox->checkState() == Qt::Checked)
         {
-            GetSession()->DisableAudioReceiving();
+            voice_controller_.GetSession()->DisableAudioReceiving();
         }
         else
         {
-            GetSession()->EnableAudioReceiving();
+            voice_controller_.GetSession()->EnableAudioReceiving();
         }
     }
 
     void VoiceControllerWidget::UpdateUI()
     {
-        if (GetSession()->Participants().length() > 0)
-            participantsCountLabel->setText(QString("%1 participants").arg(GetSession()->Participants().length()));
+        if (voice_controller_.GetSession()->Participants().length() > 0)
+            participantsCountLabel->setText(QString("%1 participants").arg(voice_controller_.GetSession()->Participants().length()));
         else
             participantsCountLabel->setText("No participants");
 
-        averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithOut())/1024,'f',1)));
-        averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithIn())/1024,'f',1)));
+        averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithOut())/1024,'f',1)));
+        averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithIn())/1024,'f',1)));
 
         switch(transmissionModeComboBox->currentIndex())
         {
@@ -198,17 +197,17 @@ namespace CommUI
 
     void VoiceControllerWidget::SetPushToTalkOn()
     {
-        VoiceController::SetPushToTalkOn();
+        voice_controller_.SetPushToTalkOn();
     }
 
     void VoiceControllerWidget::SetPushToTalkOff()
     {
-        VoiceController::SetPushToTalkOff();
+        voice_controller_.SetPushToTalkOff();
     }
 
     void VoiceControllerWidget::Toggle()
     {
-        VoiceController::Toggle();
+        voice_controller_.Toggle();
     }
 
 } // CommUI
