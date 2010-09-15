@@ -86,6 +86,10 @@ namespace RexLogic
         
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
+        
+        // Because AvatarControllable routes input events to action events, need to assign the common actions here
+        // because we do not always have an avatar
+        input_events_ = Actions::AssignCommonActions(0);
     }
         
     bool AvatarControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
@@ -106,11 +110,11 @@ namespace RexLogic
             /// \bug Aren't we supposed to be able to post the ControllableEntity multiple times for the same entity to set the currently
             /// active controlled entity? This code will stack up the actions here? Or should we have different messages in the style of
             /// EVENT_MAKE_ENTITY_A_CONTROLLABLE_ENTITY and EVENT_SET_AS_CURRENT_CONTROLLABLE_ENTITY? -jj.
-            input_events_ = Actions::AssignCommonActions(controllable);
             controllable->AddAction(RA::FlyMode);
             controllable->SetType(CT_AVATAR);
             input_events_[Input::Events::TOGGLE_FLYMODE] = RA::FlyMode;
             input_events_[Input::Events::TOGGLE_FLYMODE_REL] = RA::FlyMode + 1;
+            input_events_ = Actions::AssignCommonActions(controllable);
         }
 
         return false;
@@ -178,8 +182,8 @@ namespace RexLogic
         {
             Scene::Events::EntityEventData event_data;
             event_data.entity = entity_.lock();
-            if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
-                event_manager_->SendEvent(action_event_category_, it->second, &event_data);
+            // If we don't have an avatar, send the event without it.
+            event_manager_->SendEvent(action_event_category_, it->second, &event_data);
         }
 
         return false;
@@ -191,8 +195,9 @@ namespace RexLogic
         if (!entity_data) // a bit of a hax, we need to watchout as different action events contain different data
             return false;
 
-        assert (entity_data->entity && "Action event received without valid entity!");
-
+        // Both camera & avatar needs these events. But avatar might not always exist. Need to handle this gracefully
+        if (!entity_data->entity)
+            return false;
 
         Foundation::ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::TypeNameStatic());
         if (IsAvatar(component))

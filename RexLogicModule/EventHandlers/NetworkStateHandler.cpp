@@ -9,6 +9,7 @@
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "RexLogicModule.h"
 #include "Communications/InWorldChat/Provider.h"
+#include "../TundraLogicModule/TundraEvents.h"
 
 #include "NetworkEvents.h"
 #include "Framework.h"
@@ -116,6 +117,17 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
         break;
     }
 
+    return false;
+}
+
+bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+{
+    switch(event_id)
+    {
+    case TundraLogic::Events::EVENT_TUNDRA_CONNECTED:
+        owner_->CreateCamera(true);
+        break;
+    }
     return false;
 }
 

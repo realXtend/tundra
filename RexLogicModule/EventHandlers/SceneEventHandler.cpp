@@ -101,7 +101,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
     {
         Events::RaycastEventData *event_data = checked_static_cast<Events::RaycastEventData *>(data);
         assert(event_data);
-        ScenePtr scene = owner_->GetCurrentActiveScene();
+        ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (scene)
         {
             event_id_t entity_id = event_data->localID;
@@ -126,7 +126,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventD
 
 void SceneEventHandler::ClearHovers(event_id_t entity_id)
 {
-    Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return; 
 

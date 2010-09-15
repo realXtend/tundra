@@ -1025,7 +1025,7 @@ namespace OgreRenderer
                 Ogre::TEX_TYPE_2D, width, height, 0, Ogre::PF_A8R8G8B8, Ogre::TU_RENDERTARGET);
             image_rendering->getBuffer()->getRenderTarget()->setAutoUpdated(false);
 
-            Scene::EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeId());
+            Scene::EntityPtr cam_entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
             if (!cam_entity)
                 return;
 

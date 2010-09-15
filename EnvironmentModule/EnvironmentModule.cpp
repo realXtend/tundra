@@ -33,6 +33,8 @@
 
 #include "WorldBuildingServiceInterface.h"
 
+#include "../TundraLogicModule/TundraEvents.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace Environment
@@ -77,7 +79,8 @@ namespace Environment
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
-
+        tundra_event_category_ = event_manager_->QueryEventCategory("Tundra");
+        
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
         {
@@ -135,7 +138,7 @@ namespace Environment
             }
         }
 
-        if ((currentWorldStream_) && currentWorldStream_->IsConnected())
+        if (framework_->GetDefaultWorldScene())
         {
             if (environment_.get())
                 environment_->Update(frametime);
@@ -185,6 +188,33 @@ namespace Environment
         else if(category_id == input_event_category_)
         {
             HandleInputEvent(event_id, data);
+        }
+        //! \todo Remove - strictly test code!!! We don't want hardcoded environment in Tundra mode, but used for now for testing
+        else if (category_id == tundra_event_category_)
+        {
+            if (event_id == TundraLogic::Events::EVENT_TUNDRA_CONNECTED)
+            {
+                if (GetFramework()->GetDefaultWorldScene().get())
+                {
+                    CreateEnvironment();
+                    CreateTerrain();
+                    CreateWater();
+                    //CreateEnvironment();
+                    CreateSky();
+                }
+            }
+
+            if (event_id == TundraLogic::Events::EVENT_TUNDRA_DISCONNECTED)
+            {
+                if(postprocess_dialog_)
+                    postprocess_dialog_->DisableAllEffects();
+                ReleaseTerrain();
+                ReleaseWater();
+                ReleaseEnvironment();
+                ReleaseSky();
+                firstTime_ = true;
+               
+            }
         }
         return false;
     }
@@ -524,7 +554,7 @@ namespace Environment
     {
         terrain_ = TerrainPtr(new Terrain(this));
 
-        Scene::EntityPtr entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::EntityPtr entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeIdLocal());
         entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
 
         terrain_->FindCurrentlyActiveTerrain();
@@ -554,7 +584,7 @@ namespace Environment
     void EnvironmentModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
-        Scene::EntityPtr sky_entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::EntityPtr sky_entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeIdLocal());
         sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
 
         sky_->FindCurrentlyActiveSky();

@@ -55,7 +55,7 @@ namespace RexLogic
     Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing)
     {
         // Make sure scene exists
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene)
             return Scene::EntityPtr();
 
@@ -93,7 +93,7 @@ namespace RexLogic
 
     Scene::EntityPtr Avatar::CreateNewAvatarEntity(entity_id_t entityid)
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene || !owner_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
             return Scene::EntityPtr();
 
@@ -243,7 +243,7 @@ namespace RexLogic
     
     void Avatar::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
     {
-        if (!owner_ || !owner_->GetCurrentActiveScene().get())
+        if (!owner_ || !owner_->GetFramework()->GetDefaultWorldScene().get())
             return;
 
         // The data contents:
@@ -414,7 +414,7 @@ namespace RexLogic
 
     bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene)
             return false;
 
@@ -483,7 +483,7 @@ namespace RexLogic
 
     void Avatar::CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene)
             return;
 
@@ -507,7 +507,7 @@ namespace RexLogic
 /*
     void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene)
             return;
 
@@ -535,7 +535,7 @@ namespace RexLogic
 
     void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
     {
-        Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
+        Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         if (!scene)
             return;
 

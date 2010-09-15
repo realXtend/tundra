@@ -67,7 +67,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -106,7 +106,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -776,7 +776,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return false;
 

@@ -120,7 +120,7 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
     ProcessAssets(filename, in_asset_dir, out_asset_dir, localassets);
     
     // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
-    ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz);
+    ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz);
     
     }
     catch (Exception& e)
@@ -308,20 +308,32 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
     {
         QDomElement pos_elem = node_elem.firstChildElement("position");
         QDomElement rot_elem = node_elem.firstChildElement("rotation");
+        QDomElement quat_elem = node_elem.firstChildElement("quaternion");
         QDomElement scale_elem = node_elem.firstChildElement("scale");
+        float posx, posy, posz, rotx = 0.0f, roty = 0.0f, rotz = 0.0f, rotw = 1.0f, scalex, scaley, scalez;
         
-        float posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
-        float posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
-        float posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
+        posx = ParseString<float>(pos_elem.attribute("x").toStdString(), 0.0f);
+        posy = ParseString<float>(pos_elem.attribute("y").toStdString(), 0.0f);
+        posz = ParseString<float>(pos_elem.attribute("z").toStdString(), 0.0f);
         
-        float rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
-        float roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
-        float rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
-        float rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+        if (!rot_elem.isNull())
+        {
+            rotx = ParseString<float>(rot_elem.attribute("qx").toStdString(), 0.0f);
+            roty = ParseString<float>(rot_elem.attribute("qy").toStdString(), 0.0f);
+            rotz = ParseString<float>(rot_elem.attribute("qz").toStdString(), 0.0f);
+            rotw = ParseString<float>(rot_elem.attribute("qw").toStdString(), 1.0f);
+        }
+        if (!quat_elem.isNull())
+        {
+            rotx = ParseString<float>(rot_elem.attribute("x").toStdString(), 0.0f);
+            roty = ParseString<float>(rot_elem.attribute("y").toStdString(), 0.0f);
+            rotz = ParseString<float>(rot_elem.attribute("z").toStdString(), 0.0f);
+            rotw = ParseString<float>(rot_elem.attribute("w").toStdString(), 1.0f);
+        }
         
-        float scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
-        float scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
-        float scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
+        scalex = ParseString<float>(scale_elem.attribute("x").toStdString(), 1.0f);
+        scaley = ParseString<float>(scale_elem.attribute("y").toStdString(), 1.0f);
+        scalez = ParseString<float>(scale_elem.attribute("z").toStdString(), 1.0f);
         
         Vector3df newpos(posx, posy, posz);
         Quaternion newrot(rotx, roty, rotz, rotw);
@@ -377,11 +389,26 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                 }
                 
                 Transform entity_transform;
-                Vector3df rot_euler;
-                newrot.toEuler(rot_euler);
-                entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                entity_transform.SetRot(rot_euler.x, rot_euler.y, rot_euler.z);
-                entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                
+                if (!flipyz)
+                {
+                    //! \todo this probably breaks due to the hardcoded adjustment of meshes from Ogre to Opensim orientation
+                    Vector3df rot_euler;
+                    newrot.toEuler(rot_euler);
+                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                }
+                else
+                {
+                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                    Vector3df rot_euler;
+                    Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                    adjustedrot.toEuler(rot_euler);
+                    entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
+                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                }
                 
                 placeablePtr->transform_.Set(entity_transform, change);
                 placeablePtr->ComponentChanged(change);

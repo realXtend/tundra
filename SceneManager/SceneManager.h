@@ -92,7 +92,7 @@ namespace Scene
 
             To create an empty entity omit components parameter.
 
-            \param id Id of the new entity. Use GetNextFreeId() or GetNextLocalFreeId()
+            \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
@@ -104,7 +104,7 @@ namespace Scene
 
             To create an empty entity omit components parameter.
 
-            \param id Id of the new entity. Use GetNextFreeId() or GetNextLocalFreeId()
+            \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */

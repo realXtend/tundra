@@ -85,7 +85,7 @@ void Water::CreateWaterGeometry(float height)
         RemoveWaterGeometry();
 
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
-    Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
+    Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeIdLocal());
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Water::TypeNameStatic()));
     activeWaterComponent_ = entity->GetComponent<EC_Water>().get();
     activeWaterComponent_->SetWaterHeight(height);
