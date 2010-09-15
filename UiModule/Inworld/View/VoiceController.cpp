@@ -172,6 +172,22 @@ namespace CommUI
 
         averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithOut())/1024,'f',1)));
         averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(GetSession()->GetAverageBandwithIn())/1024,'f',1)));
+
+        switch(transmissionModeComboBox->currentIndex())
+        {
+        case 0:
+            transmissionModeDescriptionLabel->setText("Another participants cannot hear you.");
+            break;
+        case 1:
+            transmissionModeDescriptionLabel->setText("Another participants can here you.");
+            break;
+        case 2:
+            transmissionModeDescriptionLabel->setText("Another participants can here you while you keep pressing middle mouse button (MMB) down.");
+            break;
+        case 3:
+            transmissionModeDescriptionLabel->setText("Another participants can here you when you have enabled transmission. You can toggle the state by pressing middle mouse button (MMB).");
+            break;
+        }
     }
 
     void VoiceControllerWidget::SetPushToTalkOn()

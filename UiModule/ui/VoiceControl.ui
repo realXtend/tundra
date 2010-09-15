@@ -28,6 +28,9 @@
         <property name="text">
          <string>Transmission mode desription...</string>
         </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
        </widget>
       </item>
      </layout>
@@ -79,6 +82,9 @@
         </item>
         <item>
          <widget class="QPushButton" name="showListButton">
+          <property name="enabled">
+           <bool>true</bool>
+          </property>
           <property name="text">
            <string>Show List</string>
           </property>
