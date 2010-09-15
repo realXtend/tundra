@@ -60,7 +60,8 @@ namespace CommUI
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
     };
 
-    class VoiceControllerWidget : public QObject, public QWidget, private Ui::VoiceControl, public VoiceController
+    //public QObject,
+    class VoiceControllerWidget : public QWidget, private Ui::VoiceControl
     {
         Q_OBJECT
     public:
@@ -81,6 +82,7 @@ namespace CommUI
     private:
         QTimer update_timer_;
         QGraphicsProxyWidget* voice_users_proxy_widget_;
+        VoiceController voice_controller_;
     };
 
 } // CommUI
