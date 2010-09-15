@@ -131,6 +131,8 @@ namespace CommUI
         UpdateUI();
         QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
         update_timer_.start(200);
+
+        showListButton->hide(); // temporaly hide the button because there is an another similiar button.
     }
 
     VoiceControllerWidget::~VoiceControllerWidget()
