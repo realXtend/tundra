@@ -109,8 +109,8 @@ namespace CoreUi
         CommUI::VoiceStateWidget* voice_state_widget_;
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
         CommUI::VoiceUsersWidget* voice_users_widget_;
-        QGraphicsProxyWidget* voice_users_proxy_widget_;
-        QGraphicsProxyWidget* voice_controller_proxy_widget_;
+        UiProxyWidget* voice_users_proxy_widget_;
+        UiProxyWidget* voice_controller_proxy_widget_;
 
         InputContextPtr input_context_;
 
