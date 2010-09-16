@@ -74,9 +74,11 @@ void JavascriptModule::PostInitialize()
 {
     input_ = GetFramework()->Input().RegisterInputContext("ScriptInput", 100);
     Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+    //Foundation::SoundServiceInterface *sound = GetFramework()->GetService<Foundation::SoundServiceInterface>();
 
-    services_["Input"]  = input_.get();
-    services_["Ui"]     = ui;
+    services_["input"]  = input_.get();
+    services_["ui"]     = ui;
+    //services_["sound"]  = sound;
 
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
@@ -162,7 +164,7 @@ void JavascriptModule::SceneAdded(const QString &name)
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
             this, SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
     //! @todo only most recently added scene has been saved to services_ map change this so that we can have access to multiple scenes in script side.
-    services_["Scene"]  = scene.get();
+    services_["scene"]  = scene.get();
 }
 
 void JavascriptModule::ScriptChanged(const QString &scriptRef)
@@ -180,7 +182,7 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
         javaScriptInstance->RegisterService(iter.value(), iter.key());
 
     //Send entity that owns the EC_Script component.
-    javaScriptInstance->RegisterService(sender->GetParentEntity(), "Me");
+    javaScriptInstance->RegisterService(sender->GetParentEntity(), "me");
 
     if (sender->runOnLoad.Get())
         sender->Run();
