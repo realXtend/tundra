@@ -105,20 +105,25 @@ namespace CommUI
 
     void VoiceUsersInfoWidget::SetVoiceActivity(double activity)
     {
-        //! \todo: IMPELEMENT
+        voice_activity_ = activity;
     }
 
     void VoiceUsersInfoWidget::UpdateStyleSheet()
     {
-       setStyleSheet("QPushButton#voiceUsersInfoWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat; }");
-       count_label_.setStyleSheet("QLabel#voiceUserCount { border: 0px; background-color: transparent; background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }");
+        if (voice_activity_ > 0)
+        {
+           setStyleSheet("QPushButton#voiceUsersInfoWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/user_green.png'); background-position: top left; background-repeat: no-repeat; }");
+        }
+        else
+        {
+           setStyleSheet("QPushButton#voiceUsersInfoWidget { border: 0px; background-color: rgba(34,34,34,191); background-image: url('./data/ui/images/comm/user.png'); background-position: top left; background-repeat: no-repeat; }");
+        }
+        count_label_.setStyleSheet("QLabel#voiceUserCount { border: 0px; background-color: transparent; background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }");
 
-       if (user_count_ == 0)
-           count_label_.setText("0");
-       else
-           count_label_.setText(QString::number(user_count_));
+        if (user_count_ == 0)
+            count_label_.setText("0");
+        else
+            count_label_.setText(QString::number(user_count_));
     }
-
-
 
 } // CommUI

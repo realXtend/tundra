@@ -82,6 +82,7 @@ namespace CoreUi
         void ShowVoiceControls();
         void HideVoiceControls();
         void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
+        void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
 
     private:
         Foundation::Framework* framework_;
