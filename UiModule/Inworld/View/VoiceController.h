@@ -84,7 +84,7 @@ namespace CommUI
         QGraphicsProxyWidget* voice_users_proxy_widget_;
         VoiceController voice_controller_;
         QList<VoiceUserWidget *> user_widgets_;
-        static const int PARTICIPANTS_SHOWN_MAX_ = 5;
+        static const int PARTICIPANTS_SHOWN_MAX_ = 1;
     };
 
 } // CommUI
