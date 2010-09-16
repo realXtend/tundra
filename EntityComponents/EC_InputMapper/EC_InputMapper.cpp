@@ -93,7 +93,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 
     // If the action has parameters, parse them from the action string.
     int idx = action.indexOf('(');
-    if (idx =! -1)
+    if (idx != -1)
     {
         QString act = action.left(idx);
         QString parsedAction = action.mid(idx + 1);
@@ -108,4 +108,27 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 {
+    if (!GetParentEntity())
+        return;
+
+    if (e->IsButtonDown(MouseEvent::MiddleButton))
+    {
+        std::cout << e->relativeX << " " << e->relativeY << " " << e->relativeZ << std::endl;
+        if (e->relativeX > 0 && abs(e->relativeX) >= 1)
+        {
+            GetParentEntity()->Exec("Move" ,"Right");
+        }
+        if (e->relativeX < 0 && abs(e->relativeX) >= 1)
+        {
+            GetParentEntity()->Exec("Move", "Left");
+        }
+        if (e->relativeY > 0 && abs(e->relativeY) >= 1)
+        {
+            GetParentEntity()->Exec("Move" ,"Backward");
+        }
+        if (e->relativeY < 0 && abs(e->relativeY) >= 1)
+        {
+            GetParentEntity()->Exec("Move", "Forward");
+        }
+    }
 }
