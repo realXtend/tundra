@@ -23,15 +23,7 @@ EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
     triggerSound_(this, "Trigger sound", false),
     soundGain_(this, "Sound gain", 1.0f)
 {
-    static AttributeMetadata metaData;
-    static bool metadataInitialized = false;
-    if(!metadataInitialized)
-    {
-        metaData.min = "0";
-        metaData.max = "1";
-        metaData.step = "0.1";
-        metadataInitialized = true;
-    }
+    static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain_.SetMetadata(&metaData);
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));

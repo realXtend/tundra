@@ -43,6 +43,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<std::vector<QVariant> > *>(&attribute))
             attributeEditor = new ECAttributeEditor<std::vector<QVariant> >(browser, &attribute, editor);
+        else if(dynamic_cast<const Attribute<QVariantList > *>(&attribute))
+            attributeEditor = new ECAttributeEditor<QVariantList >(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<Foundation::AssetReference> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<Transform> *>(&attribute))

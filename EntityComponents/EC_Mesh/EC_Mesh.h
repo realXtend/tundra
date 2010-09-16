@@ -29,7 +29,13 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
-//! Note if you are planning to remove the skeleton you need to relogin to the server.
+//! User can apply new mesh to scene and change it's materials and skeleton.
+/*! EC_Mesh can be used to set mesh to world scene. There are options to apply new materials and skeleton to mesh aswell.
+ *  Note if you are planning to remove the skeleton and want that it's realy gone you should relogin to the server.
+ *  that is cause Ogre doesn't have a serivice that will remove applied skeleton from the mesh so we need to recreate
+ *  the mesh to get change show.
+ *  @todo Add ogre animation support when have extra time.
+ */
 class EC_Mesh : public Foundation::ComponentInterface
 {
     Q_OBJECT
@@ -40,34 +46,65 @@ public:
     ~EC_Mesh();
 
     virtual bool IsSerializable() const { return true; }
+
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
 
-    Attribute<Transform> nodePosition_;
-    Attribute<QString> meshResouceId_;
-    Attribute<QString> skeletonId_;
-    Attribute<std::vector<QVariant> > meshMaterial_;
-    Attribute<float> drawDistance_;
-    Attribute<bool> castShadows_;
+    //! Node position attribute is used to do some extra tweaks for transormation.
+    DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodePosition);
+
+    //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
+
+    //! Skeleton asset id, will handle request resource automaticly.
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, skeletonId);
+
+    //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
+    //! @todo replace std::vector to QVariantList.
+    DEFINE_QPROPERTY_ATTRIBUTE(std::vector<QVariant>, meshMaterial);
+
+    //! Mesh draw distance.
+    DEFINE_QPROPERTY_ATTRIBUTE(float, drawDistance);
+
+    //! Will the mesh cast shadows.
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
 public slots:
     //! Add or change entity's mesh.
+    /*! @param name Ogre mesh resource name.
+     */
     void SetMesh(const QString &name);
+
+    //! Remove mesh from entity.
     void RemoveMesh();
+
+    //! Set material to wanted subMesh.
+    /*! @param index a sub mesh index that material is attached to.
+     *  @param material_name Ogre material name (assumming that ogre have that material loaded).
+     *  @return did we successfully added a new material to a sub mesh.
+     */
     bool SetMaterial(uint index, const QString &material_name);
+
     //! Attach skeleton to entity.
+    /*! @param skeletonName Ogre skeleton resource name.
+     */
     void AttachSkeleton(const QString &skeletonName);
+
+signals:
+    //! Singal is emmitted when mesh has successfully loaded and applyed to entity.
+    void OnMeshChanged();
+
+    //! Signal is emmitted when material has succussfully applyed to sub mesh.
+    void OnMaterialChanged(uint index, const QString &material_name);
+
+    //! Signal is emmitted when skeleton has successfully applied to entity.
+    void OnSkeletonChanged(QString skeleton_name);
 
 private slots:
     //! Emitted when the parrent entity has been setted.
     void UpdateSignals();
+
     //! Emitted when some of the attributes has been changed.
     void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
-
-signals:
-    void OnMeshChanged();
-    void OnMaterialChanged(uint index, const QString &material_name);
-    void OnSkeletonChanged(QString skeleton_name);
-    
 
 private:
     //! Constuctor.

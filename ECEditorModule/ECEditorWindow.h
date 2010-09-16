@@ -97,6 +97,9 @@ namespace ECEditor
         /// Show/Hide entity list.
         void ToggleEntityList();
 
+        /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
+        void EntityRemoved(Scene::Entity* entity);
+
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         void EditEntityXml(Scene::EntityPtr entity);
@@ -118,6 +121,9 @@ namespace ECEditor
 
         /// QWidget override.
         void changeEvent(QEvent *change_event);
+
+    private slots:
+        void SceneAdded(const QString &name);
 
     private:
         void BoldEntityListItem(entity_id_t entity_id, bool bold = true);
