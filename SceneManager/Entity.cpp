@@ -162,6 +162,29 @@ namespace Scene
         return false;
     }
 
+    AttributeInterface *Entity::GetAttributeInterface(const std::string &name) const
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            AttributeInterface *attr = components_[i]->GetAttribute(name);
+            if (attr)
+                return attr;
+        }
+        return 0;
+    }
+
+    AttributeVector Entity::GetAttributes(const std::string &name) const
+    {
+        std::vector<AttributeInterface *> ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            AttributeInterface *attr = components_[i]->GetAttribute(name);
+            if (attr)
+                ret.push_back(attr);
+        }
+        return ret;
+    }
+
     QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
@@ -180,53 +203,53 @@ namespace Scene
             return "";
     }
 
-    Action *Entity::RegisterAction(const QString &name)
+    EntityAction *Entity::Action(const QString &name)
     {
         if (actions_.contains(name))
             return actions_[name];
 
-        Action *action = new Action(name);
+        EntityAction *action = new EntityAction(name);
         actions_.insert(name, action);
         return action;
     }
 
     void Entity::ConnectAction(const QString &name, const QObject *receiver, const char *member)
     {
-        Action *action = RegisterAction(name);
+        EntityAction *action = Action(name);
         assert(action);
         connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
     }
 
-    void Entity::Exec(const QString &action, Action::ExecutionType type)
+    void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger();
     }
 
-    void Entity::Exec(const QString &action, const QString &param, Action::ExecutionType type)
+    void Entity::Exec(const QString &action, const QString &param, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, Action::ExecutionType type)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param1, param2);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, Action::ExecutionType type)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
         if (!HasReceivers(act))
             return;
@@ -234,9 +257,9 @@ namespace Scene
         act->Trigger(param1, param2, param3);
     }
 
-    void Entity::Exec(const QString &action, const QStringVector &params, Action::ExecutionType type)
+    void Entity::Exec(const QString &action, const QStringVector &params, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
@@ -252,7 +275,7 @@ namespace Scene
             act->Trigger(params[0], params[1], params[2], params.mid(3));
     }
 
-    bool Entity::HasReceivers(Action *action)
+    bool Entity::HasReceivers(EntityAction *action)
     {
         int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
         if (receivers == 0)

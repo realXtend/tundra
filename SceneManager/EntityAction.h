@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   Action.h
+ *  @file   EntityAction.h
  *  @brief  Represent an executable command on an Entity.
  *
  *          Components (or other instances) can register to these actions by using Entity::ConnectAction().
@@ -9,8 +9,8 @@
  *          Actions cannot be created directly, they're created by Entity::RegisterAction().
  */
 
-#ifndef incl_SceneManager_Action_h
-#define incl_SceneManager_Action_h
+#ifndef incl_SceneManager_EntityAction_h
+#define incl_SceneManager_EntityAction_h
 
 #include "CoreTypes.h"
 
@@ -28,7 +28,7 @@ namespace Scene
 
         @ingroup Scene_group
     */
-    class Action : public QObject
+    class EntityAction : public QObject
     {
         Q_OBJECT
         Q_ENUMS(ExecutionType)
@@ -37,7 +37,7 @@ namespace Scene
 
     public:
         /// Destructor.
-        ~Action() {}
+        ~EntityAction() {}
 
         /// Returns name of the action.
         QString Name() const { return name_; }
@@ -67,7 +67,7 @@ namespace Scene
         /** Constructor.
             @param name Name of the action.
         */
-        explicit Action(const QString &name ) : name_(name) {}
+        explicit EntityAction(const QString &name ) : name_(name) {}
 
         /** Triggers this action i.e. emits the Triggered signal.
             @param param1 1st parameter for the action, if applicable.

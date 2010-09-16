@@ -35,7 +35,7 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
     mappings(this, "Mappings")
 {
-    connect(this, SIGNAL(AttributeChanged(AttributeInterface *, AttributeChange::Type)),
+    connect(this, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)),
         SLOT(AttributeUpdated(AttributeInterface *, AttributeChange::Type)));
 
     input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
