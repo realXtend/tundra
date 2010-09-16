@@ -102,8 +102,8 @@ namespace MumbleVoip
         }
         else
         {
-            averageBandwidthInLabel->setText("");
-            averageBandwidthOutLabel->setText("");
+            averageBandwidthInLabel->setText("0.0 kB/s");
+            averageBandwidthOutLabel->setText("0.0 kB/s");
             serverInfoLabel->setText("");
         }
     }
