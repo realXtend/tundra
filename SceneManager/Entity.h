@@ -7,7 +7,7 @@
 #include "CoreTypes.h"
 #include "ComponentInterface.h"
 #include "AttributeInterface.h"
-#include "Action.h"
+#include "EntityAction.h"
 
 #include <QObject>
 #include <QMap>
@@ -82,7 +82,7 @@ namespace Scene
         typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
 
         //! Action container
-        typedef QMap<QString, Action *> ActionMap;
+        typedef QMap<QString, EntityAction *> ActionMap;
 
         //! destructor
         ~Entity();
@@ -204,16 +204,7 @@ namespace Scene
             \return AttributeInterface pointer to the attribute.
             \note Always remember to check for null pointer.
         */
-        AttributeInterface *GetAttributeInterface(const std::string &name) const
-        {
-            for(size_t i = 0; i < components_.size() ; ++i)
-            {
-                AttributeInterface *attr = components_[i]->GetAttribute(name);
-                if (attr)
-                    return attr;
-            }
-            return 0;
-        }
+        AttributeInterface *GetAttributeInterface(const std::string &name) const;
 
         /*! Returns list of attributes with spesific name.
             \param T Typename/class of the attribute.
@@ -237,17 +228,7 @@ namespace Scene
             \param name Name of the attribute.
             \return List of attribute interface pointers, or empty list if no attributes are found.
         */
-        AttributeVector GetAttributes(const std::string &name) const
-        {
-            std::vector<AttributeInterface *> ret;
-            for(size_t i = 0; i < components_.size() ; ++i)
-            {
-                AttributeInterface *attr = components_[i]->GetAttribute(name);
-                if (attr)
-                    ret.push_back(attr);
-            }
-            return ret;
-        }
+        AttributeVector GetAttributes(const std::string &name) const;
 
     public slots:
         Foundation::ComponentInterface* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
@@ -274,10 +255,13 @@ namespace Scene
         //! Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }
 
-        /** Creates and registers new action for this entity, or returns an existing action.
+        /// Creates and registers new action for this entity, or returns an existing action.
+        /** Use this function from scripting languages.
             @param name Name of the action.
+            @note Never returns null pointer
+            @note Never store the returned pointer.
         */
-        Action *RegisterAction(const QString &name);
+        EntityAction *Action(const QString &name);
 
         /** Connects action with a spesific name to a receiver object with member slot.
             @param name Name of the action.
@@ -291,14 +275,14 @@ namespace Scene
             @param action Name of the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, Action::ExecutionType type = Action::Local);
+        void Exec(const QString &action, EntityAction::ExecutionType type = EntityAction::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param Parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QString &param, Action::ExecutionType type = Action::Local);
+        void Exec(const QString &action, const QString &param, EntityAction::ExecutionType type = EntityAction::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
@@ -306,7 +290,8 @@ namespace Scene
             @param param2 2nd parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QString &param1, const QString &param2, Action::ExecutionType type = Action::Local);
+        void Exec(const QString &action, const QString &param1, const QString &param2,
+            EntityAction::ExecutionType type = EntityAction::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
@@ -316,21 +301,21 @@ namespace Scene
             @param type Execution type, i.e. where the actions is executed.
         */
         void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3,
-            Action::ExecutionType type = Action::Local);
+            EntityAction::ExecutionType type = EntityAction::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param params List of parameters for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QStringVector &params, Action::ExecutionType type = Action::Local);
+        void Exec(const QString &action, const QStringVector &params, EntityAction::ExecutionType type = EntityAction::Local);
 
     private:
         /** Validates that the action has receivers. If not, deletes the action and removes it from
             the registered actions.
             @param action Action to be validated.
         */
-        bool HasReceivers(Action *action);
+        bool HasReceivers(EntityAction *action);
 
         //! a list of all components
         ComponentVector components_;
