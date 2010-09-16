@@ -257,8 +257,6 @@ namespace CommUI
         }
         int area_height = 0;
         int number = user_widgets_.size();
-        if (number > PARTICIPANTS_SHOWN_MAX_)
-            number = PARTICIPANTS_SHOWN_MAX_;
         if (number == 0)
             area_height = 0;
         else
@@ -267,7 +265,6 @@ namespace CommUI
         const QRect& geometry = userListScrollAreaWidgetContents->geometry();
         userListScrollAreaWidgetContents->
         setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
-        qDebug() << " --- Set height: " << area_height;
     }
 
 } // CommUI
