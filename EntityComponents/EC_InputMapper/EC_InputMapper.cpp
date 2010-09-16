@@ -92,10 +92,9 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 //    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
 
     // If the action has parameters, parse them from the action string.
-    if (action.contains('(') || action.contains(')') || action.contains(','))
+    int idx = action.indexOf('(');
+    if (idx =! -1)
     {
-        ///\todo Better protection agains malformed action strings?
-        int idx = action.indexOf('(');
         QString act = action.left(idx);
         QString parsedAction = action.mid(idx + 1);
         parsedAction.remove('(');

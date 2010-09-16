@@ -77,7 +77,9 @@ void EC_Script::RegisterActions()
     assert(entity);
     if (entity)
     {
+        entity->ConnectAction("Run", this, SLOT(Run()));
         entity->ConnectAction("Run", this, SLOT(Run(const QString &)));
+        entity->ConnectAction("Stop", this, SLOT(Stop()));
         entity->ConnectAction("Stop", this, SLOT(Stop(const QString &)));
     }
 }
