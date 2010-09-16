@@ -113,7 +113,6 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
 
     if (e->IsButtonDown(MouseEvent::MiddleButton))
     {
-        std::cout << e->relativeX << " " << e->relativeY << " " << e->relativeZ << std::endl;
         if (e->relativeX > 0 && abs(e->relativeX) >= 1)
         {
             GetParentEntity()->Exec("Move" ,"Right");
