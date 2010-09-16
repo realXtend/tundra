@@ -15,6 +15,7 @@
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
 #include "PostProcessWidget.h"
+#include "EC_WaterPlane.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -60,6 +61,7 @@ namespace Environment
     {
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
+        DECLARE_MODULE_EC(EC_WaterPlane);
     }
 
     void EnvironmentModule::Initialize()
