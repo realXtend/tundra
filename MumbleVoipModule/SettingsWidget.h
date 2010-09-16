@@ -31,6 +31,7 @@ namespace MumbleVoip
         virtual void ApplyChanges();
         virtual void UpdateUI();
         virtual void UpdateMicrophoneLevel();
+        virtual void OnSessionProviderDestroyed();
     private:
         Settings* settings_;
         Provider* provider_;
