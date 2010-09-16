@@ -102,11 +102,11 @@ Classes:
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Config</h3>
-Implements a uniform mechanism for modules to store their configuration data.
+Implements a uniform mechanism for modules to store their configuration data. \ref ConfigAPI "Main documentation page."
 
 More information:
-- Reading and writing configuration data.
-- Using default values.
+- \ref ConfigReadWrite "Reading and writing configuration data."
+- \ref ConfigDefaultValues "Using default values."
 
 Classes:
 - Foundation::ConfigurationManager.
@@ -235,10 +235,11 @@ If naali is acting as a network server, this interface can be accessed to intera
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Audio</h3>
-Provides functions for playing back audio on the client.
+Provides functions for playing back audio on the client. \page OpenALAudioModule "Main documentation page."
 
 Topics:
  - \subpage OpenALAudioModule "Using the sound system".
+ - todo: fillaa tähän liittyvät konseptit/usaget.
 	
 Classes:
  - Foundation::SoundServiceInterface.
