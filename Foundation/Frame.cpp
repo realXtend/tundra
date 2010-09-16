@@ -46,6 +46,7 @@ DelayedSignal *Frame::DelayedExecute(float time)
 {
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
     QTimer::singleShot(time*1000, delayed, SLOT(Expire(float)));
+    connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
     delayedSignals_.push_back(delayed);
     return delayed;
 }
@@ -55,10 +56,19 @@ void Frame::DelayedExecute(float time, const QObject *receiver, const char *memb
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
     QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
     connect(delayed, SIGNAL(Triggered(float)), receiver, member);
+    connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
     delayedSignals_.push_back(delayed);
 }
 
 void Frame::Update(float frametime)
 {
     emit Updated(frametime);
+}
+
+void Frame::DeleteDelayedSignal()
+{
+    DelayedSignal *expiredSignal = checked_static_cast<DelayedSignal *>(sender());
+    assert(expiredSignal);
+    delayedSignals_.removeOne(expiredSignal);
+    SAFE_DELETE_LATER(expiredSignal);
 }
