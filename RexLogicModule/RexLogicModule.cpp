@@ -340,6 +340,7 @@ void RexLogicModule::CreateCamera(bool tundra_mode)
         entity->AddComponent(placeable);
         entity->AddComponent(camera);
         entity->AddComponent(sound_listener);
+        scene->EmitEntityCreated(entity);
         
         OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
         camera_ptr->SetPlaceable(placeable);

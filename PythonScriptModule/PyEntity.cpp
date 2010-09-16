@@ -6,7 +6,7 @@
 #include "PyEntity.h"
 
 #include "PythonScriptModule.h"
-#include "RexLogicModule.h" //for getting prim component data
+//#include "RexLogicModule.h" //for getting prim component data
 #include "SceneManager.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgrePlaceable.h"

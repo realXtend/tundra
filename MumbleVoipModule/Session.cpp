@@ -617,4 +617,20 @@ namespace MumbleVoip
         }
     }
 
+    int Session::GetAverageBandwithIn() const
+    {
+        if (connection_)
+            return connection_->GetAverageBandwithIn();
+        else
+            return 0;
+    }
+
+    int Session::GetAverageBandwithOut() const
+    {
+        if (connection_)
+            return connection_->GetAverageBandwithOut();
+        else
+            return 0;
+    }
+
 } // MumbleVoip

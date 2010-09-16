@@ -18,8 +18,8 @@ def getDefaultScene():
     
 def createEntity(comptypes = []):
     s = getDefaultScene()
-    newid = s.NextFreeId()
-    ent = s.CreateEntityRaw(newid, comptypes)
+    #newid = s.NextFreeId()
+    ent = s.CreateEntityRaw(0, comptypes) #0 apparently means it assigns NextFreeId
     return Entity(ent)
 
 #def createMeshEntity(meshname):
@@ -52,6 +52,7 @@ class Entity:
         'highlight': 'EC_Highlight',
         'touchable': 'EC_Touchable',
         'soundruler': 'EC_SoundRuler',
+        'netpos': 'EC_NetworkPosition',
         }   
  
     def __init__(self, qent):

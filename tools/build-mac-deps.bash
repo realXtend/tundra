@@ -89,25 +89,6 @@ viewerdeps_svnroot=http://realxtend-naali-deps.googlecode.com/svn
 
 
 cd $build
-what=propertyeditor
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-
-    if test -d $what; then
-	svn update $what
-    else
-	svn co $viewerdeps_svnroot/trunk/$what $what
-    fi
-    cd $what
-    cmake .
-    make VERBOSE=1
-    cp -a lib/libPropertyEditor.* $prefix/lib/
-    cp lib/property*.h $prefix/include
-    touch $tags/$what-done
-fi
-
-cd $build
 what=PythonQt
 if test -f $tags/$what-done; then
     echo $what is done

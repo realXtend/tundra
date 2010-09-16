@@ -64,7 +64,7 @@ void Primitive::Update(f64 frametime)
     SerializeECsToNetwork();
 }
 
-Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid)
+Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
     Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
@@ -89,6 +89,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
         prim->FullId = fullid;
         CheckPendingRexPrimData(entityid);
         CheckPendingRexFreeData(entityid);
+        *created = true;
         return entity;
     }
 
@@ -101,6 +102,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
     entity_event_data.sceneName = scene->Name();
     framework_->GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_ENTITY_UPDATED, &entity_event_data);
     */
+    *created = false;
     return entity;
 }
 
@@ -115,8 +117,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(EC_NetworkPosition::TypeNameStatic());
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
-    // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::Network); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components);
 
     // Now switch networksync off from the placeable, before we do any damage
     Foundation::ComponentInterfacePtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
@@ -143,8 +144,9 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         RexUUID fullid = msg->ReadUUID();
         msg->SkipToNextVariable();        // CRC U32
         uint8_t pcode = msg->ReadU8();
+        bool was_created;
 
-        Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid);
+        Scene::EntityPtr entity = GetOrCreatePrimEntity(localid, fullid, &was_created);
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
         EC_NetworkPosition *netpos = entity->GetComponent<EC_NetworkPosition>().get();
 
@@ -269,6 +271,12 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         // Handle setting the prim as child of another object, or possibly being parent itself
         rexlogicmodule_->HandleMissingParent(localid);
         rexlogicmodule_->HandleObjectParent(localid);
+        if (was_created)
+        {
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            if (scene)
+                scene->EmitEntityCreated(entity, AttributeChange::Network);
+        }
     }
 
     return false;

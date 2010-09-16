@@ -7,6 +7,7 @@
 #include "CoreTypes.h"
 #include "ComponentInterface.h"
 #include "AttributeInterface.h"
+#include "Action.h"
 
 #include <QObject>
 #include <QMap>
@@ -14,7 +15,6 @@
 namespace Scene
 {
     class SceneManager;
-    class Action;
 
     //! Local entity ID flag (high bit)
     static const entity_id_t LocalEntity = 0x80000000;
@@ -298,35 +298,41 @@ namespace Scene
         /** Executes an arbitrary action for all components of this entity.
             The components may or may not handle the action.
             @param action Name of the action.
+            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action);
+        void Exec(const QString &action, Action::ExecutionType type = Action::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param Parameter for the action.
+            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QString &param);
+        void Exec(const QString &action, const QString &param, Action::ExecutionType type = Action::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
+            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QString &param1, const QString &param2);
+        void Exec(const QString &action, const QString &param1, const QString &param2, Action::ExecutionType type = Action::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
             @param param3 3rd parameter for the action.
+            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3);
+        void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3,
+            Action::ExecutionType type = Action::Local);
 
         /** This is an overloaded function.
             @param action Name of the action.
             @param params List of parameters for the action.
+            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QStringVector &params);
+        void Exec(const QString &action, const QStringVector &params, Action::ExecutionType type = Action::Local);
 
     private:
         /** Validates that the action has receivers. If not, deletes the action and removes it from

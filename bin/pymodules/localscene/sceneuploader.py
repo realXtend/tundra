@@ -16,6 +16,7 @@ import urllib2
 import time
 import shutil
 from xml.dom.minidom import getDOMImplementation
+import sceneactionsxml
 
 import constants
 from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_UPLOAD_FOLDER
@@ -76,27 +77,33 @@ class SceneUploader:
             headers['RegionName']=regionName
         if (not(publishName == None)):
             print "(not(publishName == None))"
-            headers['PublishName']=publishName
-        else:
-            headers['PublishName']=publishName
-        
-        
+        headers['PublishName']=publishName
         print headers
         
         request = urllib2.Request(self.cap_url, datagen, headers) # post
         self.progressBar.setValue(5)
         self.progressBar.setFormat("progress: sending request %p%")
-        #print "------"
-        r.logInfo(urllib2.urlopen(request).read())
+        #r.logInfo(urllib2.urlopen(request).read())
+        resp = urllib2.urlopen(request).read()
+        print resp
+        parser = sceneactionsxml.XmlStringDictionaryParser(resp)
+        #parser = sceneactionsxml.XmlSceneRegionResponceParser(resp)
+        d = parser.parse()
+        self.handleErrors(d)
+
         self.progressBar.setValue(7)
         self.progressBar.setFormat("progress: done %p%")
         self.progressBar.setValue(0)
         #self.progressBar.clear()
-        #print "------"
-
-        # except:
-            # r.logInfo("uploadScene failed")
-
+        
+    def handleErrors(self, d):
+        #print d
+        if not d.has_key('error'):
+            self.controller.queue.put(('scene upload', 'server sent malformed responce'))
+        if(d['error']!='None'):
+            self.controller.queue.put(('scene upload', d['error']))
+        
+        
     def testGetAddrInfo(self, host, port):
         #print "Fetch addr info for ", host, " with port ", port
         for res in getaddrinfo(host, port, 0, SOCK_STREAM):

@@ -56,8 +56,7 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
 
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList(),
-            AttributeChange::Type change = AttributeChange::LocalOnly) { return CreateEntity((entity_id_t)id, components, change).get(); }
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
@@ -108,8 +107,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList(),
-             AttributeChange::Type change = AttributeChange::LocalOnly);
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList());
 
         //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -206,7 +204,9 @@ namespace Scene
             \param entity Entity pointer
             \param change Type of change (local, from network...)
          */
-        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
+        void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change = AttributeChange::LocalOnly);
+
+        void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::LocalOnly);
         
         //! Emit a notification of an entity being removed. 
         /*! Note: the entity pointer will be invalid shortly after!

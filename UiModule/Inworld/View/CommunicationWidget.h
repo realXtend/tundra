@@ -5,6 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
+#include "InputServiceInterface.h"
 
 class QStackedLayout;
 class QTextBrowser;
@@ -32,6 +33,8 @@ namespace CommUI
     class VoiceUsersWidget;
     class VoiceUsersInfoWidget;
     class VoiceStateWidget;
+    class VoiceController;
+    class VoiceControllerWidget;
 }
 
 namespace Foundation
@@ -93,6 +96,8 @@ namespace CoreUi
         NormalChatViewWidget *normal_view_widget_;
         UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
+        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
+
         static bool in_world_speak_mode_on_;
 
         QPointF press_pos_;
@@ -104,9 +109,10 @@ namespace CoreUi
         CommUI::VoiceStateWidget* voice_state_widget_;
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
         CommUI::VoiceUsersWidget* voice_users_widget_;
-        QGraphicsProxyWidget* voice_users_proxy_widget_;
+        UiProxyWidget* voice_users_proxy_widget_;
+        UiProxyWidget* voice_controller_proxy_widget_;
 
-        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
+        InputContextPtr input_context_;
 
     signals:
         void SendMessageToServer(const QString &message);

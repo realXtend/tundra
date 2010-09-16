@@ -24,8 +24,6 @@
     #include <Python.h>
 #endif
 
-class EC_OpenSimPrim;
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -41,6 +39,7 @@ namespace ProtocolUtilities
     class InventorySkeleton;
     class WorldStream;
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
+    typedef boost::shared_ptr<InventorySkeleton> InventoryPtr;
 }
 
 namespace MediaPlayer
@@ -48,7 +47,7 @@ namespace MediaPlayer
     class ServiceInterface;
 }
 
-typedef boost::shared_ptr<ProtocolUtilities::InventorySkeleton> InventoryPtr;
+class UiProxyWidget;
 
 namespace PythonScript
 {
@@ -69,9 +68,11 @@ namespace PythonScript
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
 
-        /**
+        /** Prepares Python script instance used with EC_Script for execution.
+            The script is executed instantly only if the runOnLoad attribute of the script EC is true.
+            @param filename Filename of the script.
         */
-        void RunScript(const QString &filename);
+        void LoadScript(const QString &filename);
 
     public:
         PythonScriptModule();
@@ -120,10 +121,13 @@ namespace PythonScript
 //        PyTypeObject *GetRexPyTypeObject();
 
         // Inventory skeleton retrieved during login process
-        InventoryPtr inventory;
+        ProtocolUtilities::InventoryPtr inventory;
 
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr worldstream;
+
+        /// Keep list of proxy widgets created from py as the cause mem leaks if not deleted explicitily.
+        QList<UiProxyWidget *> proxyWidgets;
 
     private:
         //! Type name of the module.

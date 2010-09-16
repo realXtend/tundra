@@ -90,7 +90,7 @@ void Water::CreateWaterGeometry(float height)
     activeWaterComponent_ = entity->GetComponent<EC_Water>().get();
     activeWaterComponent_->SetWaterHeight(height);
     activeWaterEntity_ = entity;
-
+    active_scene->EmitEntityCreated(entity);
     emit WaterCreated();
 }
 
