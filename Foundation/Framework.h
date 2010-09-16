@@ -140,9 +140,6 @@ namespace Foundation
         /// Returns the framework Input object.
         InputServiceInterface &Input();
 
-        /// Returns the framework Input object.
-        Frame *GetFrame() const { return frame_; }
-
         //! Creates new empty scene.
         /*! 
             \param name name of the new scene
@@ -265,11 +262,9 @@ namespace Foundation
             return GetServiceManager()->GetService<T>().lock().get();
         }
 
-    signals:
-        /** Emitted after one frame is processed.
-         *  @param frametime Elapsed time in seconds since the last frame.
-         */
-        void FrameProcessed(double frametime);
+public slots:
+        /// Returns the framework Frame object.
+        Frame *GetFrame() const { return frame_; }
 
     private:
         //! Registers framework specific console commands

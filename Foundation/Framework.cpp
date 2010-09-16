@@ -312,9 +312,8 @@ namespace Foundation
             }
 
             frame_->Update(frametime);
-            emit FrameProcessed(frametime);
         }
-        
+
         RESETPROFILER
     }
 
