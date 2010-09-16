@@ -57,6 +57,7 @@ namespace MumbleVoip
 
         virtual void Update(f64 frametime);
         virtual QList<QString> Statistics();
+        virtual QString GetServerInfo() const;
 
     private:
         static const int AUDIO_RECORDING_BUFFER_MS = 200;

@@ -15,6 +15,7 @@
 #include "SceneManager.h"
 #include "SoundServiceInterface.h"
 #include "LoggingFunctions.h"
+#include "Frame.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
@@ -25,7 +26,7 @@ EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
     soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update()));
+    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
 EC_SoundListener::~EC_SoundListener()
