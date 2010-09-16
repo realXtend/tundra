@@ -1345,9 +1345,9 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
         maxVal = max(maxVal, data[data.size()-1-i]);
 
     double bucketSize = 1.0;
-    Core::tick_t time = Core::GetCurrentClockTime();
-    Core::tick_t modulus = (Core::tick_t)(Core::GetCurrentClockFreq() * bucketSize);
-    Core::tick_t modulus2 = (Core::tick_t)(Core::GetCurrentClockFreq() * bucketSize * 2.0);
+    tick_t time = GetCurrentClockTime();
+    tick_t modulus = (tick_t)(GetCurrentClockFreq() * bucketSize);
+    tick_t modulus2 = (tick_t)(GetCurrentClockFreq() * bucketSize * 2.0);
     QColor colorEven = QColor(0, 0, 0xFF);
     QColor colorOdd = QColor(0xD0, 0xD0, 0xFF);
     if (time % modulus2 >= modulus)

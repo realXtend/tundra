@@ -1,20 +1,22 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_WaterPlane.h"
 #include "EC_OgrePlaceable.h"
 #include "AttributeInterface.h"
 
-#include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
+
 #include <QDebug>
 
 #include <Ogre.h>
 #include <OgreQuaternion.h>
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
 #include "MemoryLeakCheck.h"
 
@@ -41,20 +43,15 @@ namespace Environment
         node_(0),
         attached_(false)
     {
-    
-        OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-        if(!rendererModule)
-            return;
-
-        renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+        renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
         if(!renderer_.expired())
         {
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_ = scene_mgr->createSceneNode();
         }
 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)), this, SLOT(AttributeUpdated(AttributeInterface*, AttributeChange::Type)));
-        //QObject::connect(framework_, SIGNAL(FrameProcessed(double)), this, SLOT(TestUnderWater()));
+        QObject::connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
+            SLOT(AttributeUpdated(AttributeInterface*, AttributeChange::Type)));
 
         lastXsize_ = xSizeAttr_.Get();
         lastYsize_ = ySizeAttr_.Get();
