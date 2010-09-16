@@ -19,7 +19,9 @@ class QApplication;
 class QGraphicsView;
 class QWidget;
 class QObject;
+
 class InputServiceInterface;
+class Frame;
 
 namespace Poco
 {
@@ -137,6 +139,9 @@ namespace Foundation
 
         /// Returns the framework Input object.
         InputServiceInterface &Input();
+
+        /// Returns the framework Input object.
+        Frame *GetFrame() const { return frame_; }
 
         //! Creates new empty scene.
         /*! 
@@ -338,6 +343,9 @@ namespace Foundation
 
         //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;
+
+        //! Exposes Naali framework's update tick.
+        Frame *frame_;
     };
 
     namespace
