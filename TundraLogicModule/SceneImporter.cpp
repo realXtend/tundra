@@ -21,6 +21,12 @@ using namespace RexTypes;
 namespace TundraLogic
 {
 
+struct MeshInfo
+{
+    std::string name_;
+    unsigned filesize_;
+};
+
 bool ProcessBraces(const std::string& line, int& braceLevel)
 {
     if (line == "{")
@@ -36,7 +42,8 @@ bool ProcessBraces(const std::string& line, int& braceLevel)
     else return false;
 }
 
-SceneImporter::SceneImporter()
+SceneImporter::SceneImporter(Foundation::Framework* framework) :
+    framework_(framework)
 {
 }
 
@@ -140,7 +147,8 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem)
         if (!entity_elem.isNull())
         {
             std::string mesh_name = entity_elem.attribute("meshFile").toStdString();
-            mesh_names_.insert(mesh_name);
+            // Store the original name. Later we fix duplicates.
+            mesh_names_[mesh_name] = mesh_name;
             QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
             if (!subentities_elem.isNull())
             {
@@ -276,11 +284,11 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
     }
     
     // Copy meshes
-    //! \todo check for binary duplicates
-    i = mesh_names_.begin();
-    while (i != mesh_names_.end())
+    std::vector<MeshInfo> created_meshes;
+    std::map<std::string, std::string>::iterator m = mesh_names_.begin();
+    while (m != mesh_names_.end())
     {
-        std::string meshname = *i;
+        std::string meshname = m->first;
         QFile mesh_in((in_asset_dir + meshname).c_str());
         if (!mesh_in.open(QFile::ReadOnly))
             TundraLogicModule::LogError("Could not open input mesh file " + meshname);
@@ -288,16 +296,56 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
         {
             QByteArray bytes = mesh_in.readAll();
             mesh_in.close();
-            QFile mesh_out((out_asset_dir + meshname).c_str());
-            if (!mesh_out.open(QFile::WriteOnly))
-                TundraLogicModule::LogError("Could not open output mesh file " + meshname);
-            else
+            
+            // Here, loop through all already created meshes and check for duplicate
+            bool duplicate_found = false;
+            for (unsigned j = 0; j < created_meshes.size(); ++j)
             {
-                mesh_out.write(bytes);
-                mesh_out.close();
+                if (created_meshes[j].filesize_ == bytes.size())
+                {
+                    QFile mesh_compare((out_asset_dir + created_meshes[j].name_).c_str());
+                    if (!mesh_compare.open(QFile::ReadOnly))
+                        continue;
+                    QByteArray compare_bytes = mesh_compare.readAll();
+                    mesh_compare.close();
+                    if (compare_bytes.size() != bytes.size())
+                        continue;
+                    unsigned matches = 0;
+                    for (unsigned k = 0; k < bytes.size(); ++k)
+                    {
+                        if (bytes[k] == compare_bytes[k])
+                            matches++;
+                    }
+                    // If we match over 75% of the bytes at correct places, assume mesh is same
+                    // (due to rounding errors in exporting, there may be meshes which differ slightly with their coordinates)
+                    if (matches > (unsigned)(bytes.size() * 0.75f))
+                    {
+                        duplicate_found = true;
+                        // Duplicate was found, adjust the map to refer to the original
+                        m->second = created_meshes[j].name_;
+                        break;
+                    }
+                }
+            }
+            
+            if (!duplicate_found)
+            {
+                QFile mesh_out((out_asset_dir + meshname).c_str());
+                if (!mesh_out.open(QFile::WriteOnly))
+                    TundraLogicModule::LogError("Could not open output mesh file " + meshname);
+                else
+                {
+                    mesh_out.write(bytes);
+                    mesh_out.close();
+                    
+                    MeshInfo newinfo;
+                    newinfo.name_ = meshname;
+                    newinfo.filesize_ = bytes.size();
+                    created_meshes.push_back(newinfo);
+                }
             }
         }
-        ++i;
+        ++m;
     }
 }
 
@@ -349,7 +397,9 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
         QDomElement entity_elem = node_elem.firstChildElement("entity");
         if (!entity_elem.isNull())
         {
-            QString mesh_name = entity_elem.attribute("meshFile");
+            // Get mesh name from map
+            QString mesh_name = QString::fromStdString(mesh_names_[entity_elem.attribute("meshFile").toStdString()]);
+            
             bool cast_shadows = ParseBool(entity_elem.attribute("castShadows").toStdString());
             
             if (localassets)

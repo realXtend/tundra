@@ -214,7 +214,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
-    SceneImporter importer;
+    SceneImporter importer(framework_);
     bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true);
     
     if (success)

@@ -10,13 +10,18 @@ class QDomElement;
 
 #include <map>
 
+namespace Foundation
+{
+    class Framework;
+}
+
 namespace TundraLogic
 {
 
 class SceneImporter
 {
 public:
-    SceneImporter();
+    SceneImporter(Foundation::Framework* framework);
     ~SceneImporter();
     
     //! Import a scene
@@ -65,7 +70,12 @@ private:
     //! Textures encountered in scene
     std::set<std::string> texture_names_;
     //! Meshes encountered in scene
-    std::set<std::string> mesh_names_;
+    /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
+     */
+    std::map<std::string, std::string> mesh_names_;
+    
+    //! Framework
+    Foundation::Framework* framework_;
 };
 
 }
