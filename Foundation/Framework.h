@@ -266,6 +266,16 @@ namespace Foundation
          */
         void FrameProcessed(double frametime);
 
+        /** Emitted after new scene has been added to framework.
+         *  @param name new scene name.
+         */
+        void SceneAdded(const QString &name);
+
+        /** Emitted after scene has been removed from the framework.
+         *  @param name removed scene name.
+         */
+        void SceneRemoved(const QString &name);
+
     private:
         //! Registers framework specific console commands
         //! Should be called after modules are loaded and initialized

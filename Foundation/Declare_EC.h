@@ -97,7 +97,7 @@ namespace Foundation
 
 /// Defines a new 'Attribute<type> attribute' member as an automatically generated QProperty of name 'attribute'.
 #define DEFINE_QPROPERTY_ATTRIBUTE(type, attribute) \
-    Attribute<type> attribute; \
+    Attribute<type > attribute; \
     Q_PROPERTY(type attribute READ get##attribute WRITE set##attribute) \
     type get##attribute() const { return (type)attribute.Get(); } \
     void set##attribute(type value) { attribute.Set((type)value, AttributeChange::Local); }

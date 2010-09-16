@@ -97,11 +97,6 @@ namespace Foundation
             return 0;
         }
 
-        //! Component has changed. Send notification & queue network replication as necessary
-        /*! Note: call this when you're satisfied & done with your current modifications
-         */
-        void ComponentChanged(AttributeChange::Type change);
-
         //! Attribute has changed. Send component & scenemanager change notifications
         /*! Called by AttributeInterface::Changed.
          */
@@ -129,6 +124,12 @@ namespace Foundation
             For more information, see @ref EventSystem.
         */
         virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
+
+    public slots:
+        //! Component has changed. Send notification & queue network replication as necessary
+        /*! Note: call this when you're satisfied & done with your current modifications
+         */
+        void ComponentChanged(AttributeChange::Type change);
 
     signals:
         //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC

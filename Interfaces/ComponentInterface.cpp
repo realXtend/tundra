@@ -154,21 +154,6 @@ QString ComponentInterface::ReadAttributeType(QDomElement& comp_element, const Q
     return QString();
 }
 
-void ComponentInterface::ComponentChanged(AttributeChange::Type change)
-{
-    change_ = change;
-    
-    if (parent_entity_)
-    {
-        Scene::SceneManager* scene = parent_entity_->GetScene();
-        if (scene)
-            scene->EmitComponentChanged(this, change);
-    }
-    
-    // Trigger also internal change
-    emit OnChanged();
-}
-
 void ComponentInterface::AttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
 {
     // Trigger scenemanager signal
@@ -215,6 +200,21 @@ void ComponentInterface::DeserializeFrom(QDomElement& element, AttributeChange::
         std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
         attributes_[i]->FromString(attr_str, change);
     }
+}
+
+void ComponentInterface::ComponentChanged(AttributeChange::Type change)
+{
+    change_ = change;
+    
+    if (parent_entity_)
+    {
+        Scene::SceneManager* scene = parent_entity_->GetScene();
+        if (scene)
+            scene->EmitComponentChanged(this, change);
+    }
+    
+    // Trigger also internal change
+    emit OnChanged();
 }
 
 }

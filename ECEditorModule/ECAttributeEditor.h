@@ -291,6 +291,10 @@ namespace ECEditor
     template<> void ECAttributeEditor<std::vector<QVariant> >::Initialize();
     template<> void ECAttributeEditor<std::vector<QVariant> >::Set(QtProperty *property);
 
+    template<> void ECAttributeEditor<QVariantList >::Update();
+    template<> void ECAttributeEditor<QVariantList >::Initialize();
+    template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
+
     template<> void ECAttributeEditor<Foundation::AssetReference>::Update();
     template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize();
     template<> void ECAttributeEditor<Foundation::AssetReference>::Set(QtProperty *property);

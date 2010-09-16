@@ -476,6 +476,18 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
+    {
+        EntityIdSet::iterator iter = selectedEntities_.find(entity->GetId());
+        if(iter != selectedEntities_.end())
+            selectedEntities_.erase(iter);
+
+        QList<QListWidgetItem*> items = entity_list_->findItems(QString::number(entity->GetId()), Qt::MatchExactly);
+        for(uint i = 0; i < items.size(); i++)
+            SAFE_DELETE(items[i]);
+        //RefreshPropertyBrowser();
+    }
+
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
     {
         ClearEntities();
@@ -572,6 +584,22 @@ namespace ECEditor
 
         if (toggle_entities_button_)
             connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
+
+        // Scene is not added yet so we need to listen when it's added and we can connect scenemanager's EntityRemoved singal.
+        connect(framework_, SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+    }
+
+    void ECEditorWindow::SceneAdded(const QString &name)
+    {
+        Scene::ScenePtr scenePtr = framework_->GetScene(name.toStdString());
+        if(scenePtr)
+        {
+            // If scene has already added no need to do multiple connection.
+            disconnect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)),
+                       this, SLOT(EntityRemoved(Scene::Entity*)));
+            connect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+                    this, SLOT(EntityRemoved(Scene::Entity*)));
+        }
     }
 
     QStringList ECEditorWindow::GetAvailableComponents() const
