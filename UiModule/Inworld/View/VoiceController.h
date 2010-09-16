@@ -22,6 +22,8 @@ namespace Communications
 
 namespace CommUI
 {
+    class VoiceUserWidget;
+
     class VoiceController : public QObject
     {
         Q_OBJECT
@@ -76,10 +78,13 @@ namespace CommUI
         void OpenParticipantListWidget();
         void ApplyMuteAllSelection();
         void UpdateUI();
+        void UpdateParticipantList();
 
     private:
         QGraphicsProxyWidget* voice_users_proxy_widget_;
         VoiceController voice_controller_;
+        QList<VoiceUserWidget *> user_widgets_;
+        static const int PARTICIPANTS_SHOWN_MAX_ = 5;
     };
 
 } // CommUI
