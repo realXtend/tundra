@@ -47,6 +47,7 @@ namespace MumbleVoip
         connect(this->microphoneLevelSlider, SIGNAL(valueChanged(int)), this, SLOT(ApplyChanges()));
         connect(this->positionalAudioCheckBox, SIGNAL(stateChanged(int)), this, SLOT(ApplyChanges()));
         connect(settings_, SIGNAL(MicrophoneLevelChanged(double)), this, SLOT(UpdateMicrophoneLevel()));
+        connect(provider_, SIGNAL(destroyed()), this, SLOT(OnSessionProviderDestroyed()));
     }
 
     void SettingsWidget::LoadInitialState()
@@ -94,7 +95,7 @@ namespace MumbleVoip
         encodeQualityLabel->setText(QString("%1 %").arg(encodeQualitySlider->value(), 3));
         microphoneLevelLabel->setText(QString("%1 %").arg(microphoneLevelSlider->value(), 3));
 
-        if (provider_->Session() && provider_->Session()->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
+        if (provider_ && provider_->Session() && provider_->Session()->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
         {
             averageBandwidthInLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithIn())/1024,'f',1)));
             averageBandwidthOutLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithOut())/1024,'f',1)));
@@ -124,6 +125,11 @@ namespace MumbleVoip
     {
         settings_->SetMicrophoneLevel( this->microphoneLevelSlider->value()*0.01 );
         settings_->Save();
+    }
+
+    void SettingsWidget::OnSessionProviderDestroyed()
+    {
+        provider_ = 0;
     }
 
 } // MumbleVoip
