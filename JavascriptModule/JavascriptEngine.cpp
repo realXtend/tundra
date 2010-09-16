@@ -34,9 +34,18 @@ void JavascriptEngine::Unload()
 void JavascriptEngine::Run()
 {
     QString program = LoadScript();
+    //Before we begin to run the script.
+    QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(program);
+    if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
+    {
+        JavascriptModule::LogError("Syntax error: " + syntaxResult.errorMessage().toStdString() + 
+                                   " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
+        return;
+    }
+
     QScriptValue result = engine_->evaluate(program, scriptRef_);
     if (engine_->hasUncaughtException())
-        JavascriptModule::LogError("Script Exception: " + result.toString().toStdString());
+        JavascriptModule::LogError(result.toString().toStdString());
 }
 
 void JavascriptEngine::Stop()
