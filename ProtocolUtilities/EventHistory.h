@@ -9,7 +9,7 @@
 /// Maintains a timestamped history of events that have occurred. Bounds the maximum memory usage to the N most recent entries.
 class EventHistory
 {
-    std::vector<std::pair<Core::tick_t, double> > records_;
+    std::vector<std::pair<tick_t, double> > records_;
     size_t maxHistorySize_;
 
 public:
@@ -20,7 +20,7 @@ public:
 
     void InsertRecord(double record)
     {
-        Core::tick_t time = Core::GetCurrentClockTime();
+        tick_t time = GetCurrentClockTime();
         records_.push_back(std::make_pair(time, record));
         if (records_.size() > maxHistorySize_)
             records_.erase(records_.begin());
@@ -50,17 +50,17 @@ public:
             dstOccurCount->clear();
             dstOccurCount->resize(numEntries, 0);
         }
-        Core::tick_t time = Core::GetCurrentClockTime();
-        Core::tick_t modulus = (Core::tick_t)(Core::GetCurrentClockFreq() * bucketSize);
+        tick_t time = GetCurrentClockTime();
+        tick_t modulus = (tick_t)(GetCurrentClockFreq() * bucketSize);
         time -= time % modulus;
 
         for(size_t i = 0; i < records_.size(); ++i)
         {
-            Core::tick_t age = time - records_[i].first;
-            if (age >= (Core::tick_t)(-1) >> 1)
+            tick_t age = time - records_[i].first;
+            if (age >= (tick_t)(-1) >> 1)
                 continue;
 
-            int idx = age / (double)Core::GetCurrentClockFreq() / bucketSize;
+            int idx = age / (double)GetCurrentClockFreq() / bucketSize;
             if (idx < 0 || idx >= numEntries)
                 continue;
             dstAccum[dstAccum.size()-1-idx] += records_[i].second;

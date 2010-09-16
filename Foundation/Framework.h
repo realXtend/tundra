@@ -19,7 +19,9 @@ class QApplication;
 class QGraphicsView;
 class QWidget;
 class QObject;
+
 class InputServiceInterface;
+class Frame;
 
 namespace Poco
 {
@@ -260,11 +262,9 @@ namespace Foundation
             return GetServiceManager()->GetService<T>().lock().get();
         }
 
-    signals:
-        /** Emitted after one frame is processed.
-         *  @param frametime Elapsed time in seconds since the last frame.
-         */
-        void FrameProcessed(double frametime);
+public slots:
+        /// Returns the framework Frame object.
+        Frame *GetFrame() const { return frame_; }
 
         /** Emitted after new scene has been added to framework.
          *  @param name new scene name.
@@ -348,6 +348,9 @@ namespace Foundation
 
         //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;
+
+        //! Exposes Naali framework's update tick.
+        Frame *frame_;
     };
 
     namespace
