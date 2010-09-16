@@ -262,10 +262,11 @@ namespace Foundation
             return GetServiceManager()->GetService<T>().lock().get();
         }
 
-public slots:
+    public slots:
         /// Returns the framework Frame object.
         Frame *GetFrame() const { return frame_; }
 
+    signals:
         /** Emitted after new scene has been added to framework.
          *  @param name new scene name.
          */

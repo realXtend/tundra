@@ -161,6 +161,7 @@ void JavascriptModule::SceneAdded(const QString &name)
             this, SLOT(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
             this, SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
+    //! @todo only most recently added scene has been saved to services_ map change this so that we can have access to multiple scenes in script side.
     services_["Scene"]  = scene.get();
 }
 
@@ -177,7 +178,12 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     ServiceMap::iterator iter = services_.begin();
     for(; iter != services_.end(); iter++)
         javaScriptInstance->RegisterService(iter.value(), iter.key());
-    sender->Run();
+
+    //Send entity that owns the EC_Script component.
+    javaScriptInstance->RegisterService(sender->GetParentEntity(), "Me");
+
+    if (sender->runOnLoad.Get())
+        sender->Run();
 }
 
 void JavascriptModule::ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
