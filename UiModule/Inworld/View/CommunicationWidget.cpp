@@ -128,7 +128,6 @@ namespace CoreUi
         connect(viewModeButton, SIGNAL( clicked() ), SLOT( ChangeViewPressed() ));
         connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
-//        connect(voiceToggle, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
 
         HideVoiceControls();
 
@@ -226,7 +225,11 @@ namespace CoreUi
             if (voice_controller_proxy_widget_->isVisible())
                 voice_controller_proxy_widget_->AnimatedHide();
             else
+            {
                 voice_controller_proxy_widget_->show();
+                voice_controller_proxy_widget_->moveBy(1,1);
+                voice_controller_proxy_widget_->moveBy(-1,-1);
+            }
         }
     }
 

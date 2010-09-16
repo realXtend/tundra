@@ -133,6 +133,7 @@ namespace CommUI
 
         showListButton->hide(); // temporaly hide the button because there is an another similiar button.
 
+        UpdateParticipantList();
         if (voice_session)
         {
             connect(voice_session, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateParticipantList()) );
@@ -235,7 +236,6 @@ namespace CommUI
             }
         }
 
-        //! @todo remove widgets...
         foreach(VoiceUserWidget* widget, user_widgets_)
         {
             bool participant_exist = false;
@@ -265,7 +265,9 @@ namespace CommUI
             area_height = number*user_widgets_[0]->height() + userListLayout->spacing()*(number-1) + userListLayout->contentsMargins().bottom() + userListLayout->contentsMargins().top();
 
         const QRect& geometry = userListScrollAreaWidgetContents->geometry();
-        userListScrollAreaWidgetContents->setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
+        userListScrollAreaWidgetContents->
+        setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
+        qDebug() << " --- Set height: " << area_height;
     }
 
 } // CommUI
