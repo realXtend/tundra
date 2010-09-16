@@ -85,7 +85,7 @@ public slots:
     DelayedSignal *DelayedExecute(float time);
 
     /// Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
-    /** Use this function from C++.
+    /** Use this function from C++ or in Python if the receiver is a QObject.
         @param time Time in seconds.
         @param receiver Receiver object.
         @param member Member slot.
@@ -114,6 +114,10 @@ private:
 
     /// Delayed signals.
     QList<DelayedSignal *> delayedSignals_;
+
+private slots:
+    /// Deletes delayed signal object and removes it from the list when it's expired.
+    void DeleteDelayedSignal();
 };
 
 #endif
