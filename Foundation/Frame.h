@@ -52,7 +52,7 @@ private slots:
     /** @brief Emit Triggered() signal
         Called by Frame object when the spesified amount of time has passed.
     */
-    void Expired();
+    void Expire();
 };
 
 /// Exposes Naali framework's update tick.
@@ -75,21 +75,22 @@ public slots:
     /// Return wall clock time of Framework in seconds.
     float GetWallClockTime() const;
 
-    /** Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
-        Use this function from C++.
-        @param time Time in seconds.
-        @param receiver Receiver object.
-        @param member Member slot.
-    */
-    void DelayedExecute(float time, const QObject *receiver, const char *member);
-
-    /** @brief 
-        Use this function from scripting languages like Python or Javascript.
+    /// Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
+    /** This function is basically a wrapper for QTimer and provided for convenience for scripting languages
+        so that we don't have to expose QTimer manually to e.g.Javascript.
         @param time Time in seconds.
         @note Never returns null pointer
         @note Never store the returned pointer.
     */
     DelayedSignal *DelayedExecute(float time);
+
+    /// Triggers DelayedSignal::Triggered(float) signal when spesified amount of time has elapsed.
+    /** Use this function from C++.
+        @param time Time in seconds.
+        @param receiver Receiver object.
+        @param member Member slot.
+    */
+    void DelayedExecute(float time, const QObject *receiver, const char *member);
 
 signals:
     /** Emitted after one frame is processed.
