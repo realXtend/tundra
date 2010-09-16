@@ -404,6 +404,7 @@ namespace CoreUi
                 connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
+                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface*)) );
                 connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
                 connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
                 connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
@@ -427,6 +428,7 @@ namespace CoreUi
             SAFE_DELETE(voice_users_info_widget_);
         }
         voice_users_info_widget_ = new CommUI::VoiceUsersInfoWidget(0);
+        connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
         this->voiceLayoutH->addWidget(voice_users_info_widget_);
         voice_users_info_widget_->show();
 
@@ -454,6 +456,14 @@ namespace CoreUi
         }
     }
 
+    void CommunicationWidget::ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p)
+    {
+        /// @todo Move all voice control widget related code to separate class
+        ///       and possible add to UiServiceInterdace methods to conrol tool widgets.
+        connect(p, SIGNAL(StartSpeaking()), this, SLOT(UpdateInWorldVoiceIndicator()));
+        connect(p, SIGNAL(StopSpeaking()), this, SLOT(UpdateInWorldVoiceIndicator()));
+    }
+    
     void CommunicationWidget::UpdateInWorldVoiceIndicator()
     {
         if (!in_world_voice_session_)
@@ -481,7 +491,20 @@ namespace CoreUi
         }
 
         if (voice_users_info_widget_)
+        {
+            double channel_voice_activity = 0;
+            QList<Communications::InWorldVoice::ParticipantInterface*> list = in_world_voice_session_->Participants();
+            foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
+            {
+                if (p->IsSpeaking())
+                {
+                    channel_voice_activity = 1;
+                    break;
+                }
+            }
+            voice_users_info_widget_->SetVoiceActivity(channel_voice_activity);
             voice_users_info_widget_->SetUsersCount(in_world_voice_session_->Participants().count());
+        }
     }
 
     void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
