@@ -300,14 +300,6 @@ macro (configure_dbus_glib)
     sagase_configure_report (DBUS_GLIB)
 endmacro (configure_dbus_glib)
 
-macro (configure_propertyeditor)
-    sagase_configure_package(PROPERTYEDITOR
-        NAMES propertyeditor PropertyEditor
-        COMPONENTS propertyeditor PropertyEditor
-        PREFIXES ${ENV_NAALI_DEP_PATH}/propertyeditor ${ENV_NAALI_DEP_PATH})
-    sagase_configure_report (PROPERTYEDITOR)
-endmacro (configure_propertyeditor)
-
 macro (configure_openal)
     sagase_configure_package(OPENAL
         NAMES OpenAL openal

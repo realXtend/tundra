@@ -6,7 +6,6 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
-#include "Action.h"
 
 #include "Framework.h"
 #include "ComponentInterface.h"
@@ -204,7 +203,7 @@ namespace Scene
         connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
     }
 
-    void Entity::Exec(const QString &action)
+    void Entity::Exec(const QString &action, Action::ExecutionType type)
     {
         Action *act = RegisterAction(action);
         if (!HasReceivers(act))
@@ -213,7 +212,7 @@ namespace Scene
         act->Trigger();
     }
 
-    void Entity::Exec(const QString &action, const QString &param)
+    void Entity::Exec(const QString &action, const QString &param, Action::ExecutionType type)
     {
         Action *act = RegisterAction(action);
         if (!HasReceivers(act))
@@ -222,7 +221,7 @@ namespace Scene
         act->Trigger(param);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, Action::ExecutionType type)
     {
         Action *act = RegisterAction(action);
         if (!HasReceivers(act))
@@ -231,7 +230,7 @@ namespace Scene
         act->Trigger(param1, param2);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, Action::ExecutionType type)
     {
         Action *act = RegisterAction(action);
         int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
@@ -241,7 +240,7 @@ namespace Scene
         act->Trigger(param1, param2, param3);
     }
 
-    void Entity::Exec(const QString &action, const QStringVector &params)
+    void Entity::Exec(const QString &action, const QStringVector &params, Action::ExecutionType type)
     {
         Action *act = RegisterAction(action);
         if (!HasReceivers(act))

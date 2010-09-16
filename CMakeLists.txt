@@ -10,6 +10,13 @@ if (COMMAND cmake_policy)
     cmake_policy (SET CMP0005 NEW)
 endif (COMMAND cmake_policy)
 
+# Turn on warnings
+if (MSVC)
+    add_definitions (/W2)
+else ()
+    add_definitions (-W)
+endif()
+
 # Set CMake custom module path & include them
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 
@@ -69,7 +76,6 @@ configure_ogre ()
 configure_xmlrpc ()
 configure_curl ()
 configure_openjpeg ()
-configure_propertyeditor ()
 configure_qtpropertybrowser ()
 
 if (CAELUM)

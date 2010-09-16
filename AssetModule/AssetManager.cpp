@@ -126,9 +126,9 @@ namespace Asset
         return false;
     }
     
-    void AssetManager::StoreAsset(Foundation::AssetPtr asset)
+    void AssetManager::StoreAsset(Foundation::AssetPtr asset, bool store_to_disk)
     {
-        cache_->StoreAsset(asset);
+        cache_->StoreAsset(asset, store_to_disk);
     }
     
     bool AssetManager::RegisterAssetProvider(Foundation::AssetProviderPtr asset_provider)

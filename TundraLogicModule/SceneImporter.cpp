@@ -354,14 +354,12 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
             
             if (localassets)
                 mesh_name = "file://" + mesh_name;
-            
-            //! \todo Handle flipyz
-            
+
             QStringList components;
             components.append(EC_Mesh::TypeNameStatic());
             components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
             
-            Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId(), components, change);
+            Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId(), components);
             EC_Mesh* meshPtr = 0;
             OgreRenderer::EC_OgrePlaceable* placeablePtr = 0;
             if (entity)
@@ -409,13 +407,15 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                     entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
                     entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
                 }
-                
+
                 placeablePtr->transform_.Set(entity_transform, change);
-                placeablePtr->ComponentChanged(change);
-                
+
                 meshPtr->meshResouceId_.Set(mesh_name, change);
                 meshPtr->meshMaterial_.Set(materials, change);
                 meshPtr->castShadows_.Set(cast_shadows, change);
+
+                scene->EmitEntityCreated(entity, change);
+                placeablePtr->ComponentChanged(change);
                 meshPtr->ComponentChanged(change);
             }
             

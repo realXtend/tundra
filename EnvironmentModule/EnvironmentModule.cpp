@@ -15,6 +15,7 @@
 #include "EnvironmentEditor.h"
 #include "EC_Water.h"
 #include "PostProcessWidget.h"
+#include "EC_WaterPlane.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -62,6 +63,7 @@ namespace Environment
     {
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_Water);
+        DECLARE_MODULE_EC(EC_WaterPlane);
     }
 
     void EnvironmentModule::Initialize()
@@ -554,9 +556,11 @@ namespace Environment
     {
         terrain_ = TerrainPtr(new Terrain(this));
 
-        Scene::EntityPtr entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeIdLocal());
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::EntityPtr entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        
         entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
-
+        scene->EmitEntityCreated(entity);
         terrain_->FindCurrentlyActiveTerrain();
         
         if ( environment_editor_ != 0 )
@@ -584,9 +588,12 @@ namespace Environment
     void EnvironmentModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
-        Scene::EntityPtr sky_entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeIdLocal());
-        sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
+        
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
 
+        sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
+        scene->EmitEntityCreated(sky_entity);
         sky_->FindCurrentlyActiveSky();
 
         if (!GetEnvironmentHandler()->IsCaelum())

@@ -61,11 +61,15 @@ namespace WorldBuilding
         bool inworld_state;
 
     public slots:
+        //! Cleans the passed python widgets from our layout
+        void CleanPyWidgets();
+        bool IsBuildingActive();
+
         //! Handle our key context input
         void KeyPressed(KeyEvent *key);
         void KeyReleased(KeyEvent *key);
 
-        // Public functions called by WorldBuildingModule
+        //! Public functions called by WorldBuildingModule
         void ToggleBuildScene();
         void ShowBuildScene();
         void HideBuildScene();
@@ -86,7 +90,6 @@ namespace WorldBuilding
 
     private slots:
         void InitScene();
-        void CleanPyWidgets();
         void SceneChangedNotification(const QString &old_name, const QString &new_name);
         void ObjectSelected(bool selected);
 

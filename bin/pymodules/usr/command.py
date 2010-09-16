@@ -1478,3 +1478,26 @@ if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEn
 
     ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     ent.mesh.SetMesh("axes.mesh")
+
+if 0: #adding components as dynamic properties of Scene::Entity
+    ent = naali.getUserAvatar()
+    qent = ent.qent
+    print qent.dynamicPropertyNames()
+
+    if 0:
+        qent.setProperty("myplace", ent.placeable)
+        print qent.myplace
+
+    #print dir(qent), type(qent.EC_OgrePlaceable), qent.EC_OgrePlaceable
+    print dir(ent.placeable)
+    print "Name:", ent.placeable.Name
+    print "objectName:", ent.placeable.objectName
+
+    print "DynProp check:", 'myplace' in qent.dynamicPropertyNames()
+    
+if 0: #using the dynamic property component getters implemented in core/componentpropertyadder now
+    ent = naali.getUserAvatar()
+    qent = ent.qent
+    print dir(qent)
+    print qent.dynamicPropertyNames()
+    print qent.placeable

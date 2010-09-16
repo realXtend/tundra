@@ -137,7 +137,7 @@ namespace RexLogic
         void FocusOnObject(float, float, float);
 
         //! return camera state
-        CameraState GetCameraState() { return camera_state_; }
+        CameraState GetCameraState() const { return camera_state_; }
 
         //! reset camera state to CS_Follow
         void ResetCameraState();
@@ -160,9 +160,6 @@ namespace RexLogic
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
-
-        //! @return The currently viewed scene, or 0 if not connected. (Don't use as an indicator of connection state!)
-        Scene::ScenePtr GetCurrentActiveScene() const;
 
         //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
         //! are always to be present in an reX world, like terrain.
@@ -265,7 +262,7 @@ namespace RexLogic
         void UpdateObjects(f64 frametime);
 
         //! Update sound listener position
-        /*! Uses current camera for now
+        /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
 

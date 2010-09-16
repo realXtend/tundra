@@ -3,8 +3,6 @@
 #ifndef incl_MumbleVoipModule_Settings_h
 #define incl_MumbleVoipModule_Settings_h
 
-//#include "CommunicationsService.h"
-//#include <QGraphicsProxyWidget>
 #include "ui_VoiceSettings.h"
 #include <QObject>
 #include <QDebug>
@@ -24,7 +22,7 @@ namespace MumbleVoip
         Q_PROPERTY(bool positional_audio_enabled READ GetPositionalAudioEnabled WRITE SetPositionalAudioEnabled NOTIFY PositionalAudioEnabledChanged )
 
     public:
-        enum VoiceMode { Mute, ContinuousTransmission };
+        enum VoiceMode { Mute, ContinuousTransmission, PushToTalk, ToggleMode };
         Settings();
         virtual ~Settings();
         virtual void Load();
