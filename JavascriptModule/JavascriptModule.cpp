@@ -167,7 +167,10 @@ void JavascriptModule::SceneAdded(const QString &name)
 void JavascriptModule::ScriptChanged(const QString &scriptRef)
 {
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
-    if(!sender && sender->type.Get()!= "js") 
+    if(!sender)
+        return;
+
+    if (sender->type.Get() != "js")
         return;
 
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
