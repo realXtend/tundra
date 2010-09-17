@@ -21,9 +21,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
     Foundation::ComponentInterface(module->GetFramework()),
-    nodePosition(this, "Transform"),
-    meshResourceId(this, "Mesh id", ""),
-    skeletonId(this, "Skeleton id", ""),
+    nodeTransformation(this, "Transform"),
+    meshResourceId(this, "Mesh ref", ""),
+    skeletonId(this, "Skeleton ref", ""),
     meshMaterial(this, "Mesh materials"),
     drawDistance(this, "Draw distance", 0.0f),
     castShadows(this, "Cast shadows", false),
@@ -100,7 +100,7 @@ void EC_Mesh::SetMesh(const QString &name)
 
     if(node_)
     {
-        Transform newTransform = nodePosition.Get();
+        Transform newTransform = nodeTransformation.Get();
         node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
         Quaternion adjust(DEGTORAD * newTransform.rotation.x,
                           DEGTORAD * newTransform.rotation.y,
@@ -113,7 +113,7 @@ void EC_Mesh::SetMesh(const QString &name)
     // Check if new materials need to be requested.
     if(HasMaterialsChanged())
     {
-        std::vector<QVariant> materials = meshMaterial.Get();
+        QVariantList materials = meshMaterial.Get();
         materialRequestTags_.resize(materials.size(), 0);
         for(uint i = 0; i < materials.size(); i++)
         {
@@ -192,7 +192,7 @@ bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().size())
         return false;
-    std::vector<QVariant> materials = meshMaterial.Get();
+    QVariantList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
         // No point to continue if all materials are not setted.
@@ -242,7 +242,7 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Attrib
         // We wont request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
         if(!HasMaterialsChanged())
             return;
-        std::vector<QVariant> materials = meshMaterial.Get();
+        QVariantList materials = meshMaterial.Get();
         materialRequestTags_.resize(materials.size(), 0);
         for(uint i = 0; i < materials.size(); i++)
         {
@@ -280,11 +280,11 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Attrib
         if(entity_)
             entity_->setCastShadows(castShadows.Get());
     }
-    else if(QString::fromStdString(nodePosition.GetNameString()) == attrName)
+    else if(QString::fromStdString(nodeTransformation.GetNameString()) == attrName)
     {
         if(node_)
         {
-            Transform newTransform = nodePosition.Get();
+            Transform newTransform = nodeTransformation.Get();
             node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
             Quaternion adjust(DEGTORAD * newTransform.rotation.x,
                               DEGTORAD * newTransform.rotation.y,

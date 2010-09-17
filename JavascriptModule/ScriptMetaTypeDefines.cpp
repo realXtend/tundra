@@ -14,6 +14,10 @@
 #include "UiProxyWidget.h"
 #include "Frame.h"
 
+#include "QtInputMouseEvent.h"
+#include "QtInputKeyEvent.h"
+#include "EntityAction.h"
+
 #include <QUiLoader>
 #include <QFile>
 
@@ -60,11 +64,16 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Foundation::ComponentInterface*>(engine);
 
     qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
+    qRegisterMetaType<Scene::EntityAction*>("Scene::EntityAction*");
 }
 
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
+
+    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
+    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
 
 void ReqisterFrameMetaTypes(QScriptEngine *engine)
