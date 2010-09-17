@@ -30,6 +30,8 @@ namespace QtInputEvents
 class MouseEvent : public QObject, public Foundation::EventDataInterface
 {
     Q_OBJECT
+    Q_ENUMS(MouseButton)
+    Q_ENUMS(EventType)
 
 public:
 	MouseEvent()

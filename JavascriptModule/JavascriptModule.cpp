@@ -90,7 +90,7 @@ void JavascriptModule::PostInitialize()
         Console::Bind(this, &JavascriptModule::ConsoleRunString))); 
 
     RegisterConsoleCommand(Console::CreateCommand(
-        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)", 
+        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",  
         Console::Bind(this, &JavascriptModule::ConsoleRunFile))); 
 }
 
