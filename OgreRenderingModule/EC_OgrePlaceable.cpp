@@ -9,7 +9,7 @@
 
 namespace OgreRenderer
 {
-    EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
+    EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),

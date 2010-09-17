@@ -8,7 +8,7 @@
 #include "EC_3DCanvas.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
 #include "UiProxyWidget.h"
@@ -26,7 +26,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include "MemoryLeakCheck.h"
 
-EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
+EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     source_(this, "source"),
     position_(this, "position", 0),

@@ -3,7 +3,7 @@
 #ifndef incl_CommunicationsModule_h
 #define incl_CommunicationsModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include <QObject>
 
@@ -24,7 +24,7 @@ namespace CommunicationsService
      *  @todo Console commands: 'communications' .. Information about available services
      *  @todo Move Communications UI implementation here ???
      */
-    class CommunicationsModule : public QObject, public Foundation::ModuleInterface
+    class CommunicationsModule : public QObject, public IModule
     {
     public:
         CommunicationsModule();

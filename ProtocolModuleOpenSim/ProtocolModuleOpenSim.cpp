@@ -28,7 +28,7 @@ namespace OpenSimProtocol
     std::string ProtocolModuleOpenSim::type_name_static_ = "OpenSimProtocol";
 
     ProtocolModuleOpenSim::ProtocolModuleOpenSim() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown)
     {
@@ -359,6 +359,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace OpenSimProtocol;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(ProtocolModuleOpenSim)
 POCO_END_MANIFEST

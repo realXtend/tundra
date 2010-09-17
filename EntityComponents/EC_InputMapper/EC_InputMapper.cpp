@@ -27,7 +27,7 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
     mappings_[keySeq] = action;
 }
 
-EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
+EC_InputMapper::EC_InputMapper(IModule *module):
     Foundation::ComponentInterface(module->GetFramework()),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),

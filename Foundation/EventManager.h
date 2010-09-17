@@ -243,7 +243,7 @@ namespace Foundation
             EventMap event_map_;
             
             /// Module event subscribers
-            QList<EventSubscriber<ModuleInterface > > module_subscribers_;
+            QList<EventSubscriber<IModule > > module_subscribers_;
 
             /// Component event subscribers
             QList<EventSubscriber<ComponentInterface > > component_subscribers_;

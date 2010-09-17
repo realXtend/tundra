@@ -3,7 +3,7 @@
 #ifndef incl_MumbleVoipModule_h
 #define incl_MumbleVoipModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "MumbleVoipModuleApi.h"
 #include "CommunicationsService.h"
@@ -41,7 +41,7 @@ namespace MumbleVoip
      *  command line argument '--use_native_mumble_client' disabled mumbleclient library and will use native mumble
      *  client application with link plugin.
      */
-    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public Foundation::ModuleInterface
+    class MUMBLE_VOIP_MODULE_API MumbleVoipModule : public QObject, public IModule
     {
         Q_OBJECT
 

@@ -3,7 +3,7 @@
 #ifndef incl_QtInputModule_QtInputModule_h
 #define incl_QtInputModule_QtInputModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "EventDataInterface.h"
 
@@ -53,7 +53,7 @@ class KeyBindingsConfigWindow;
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
     has access to QtInputModule, and the event tree -based API can be used by all modules.
 */
-class QTINPUT_MODULE_API QtInputModule : public QObject, public Foundation::ModuleInterface
+class QTINPUT_MODULE_API QtInputModule : public QObject, public IModule
 {
     Q_OBJECT
 

@@ -45,7 +45,7 @@ public:
 private:
     /// Constructor.
     /// @param module Owner module.
-    EC_OpenSimPresence(Foundation::ModuleInterface* module);
+    EC_OpenSimPresence(IModule* module);
 
     //! first name of avatar
     std::string first_name_;

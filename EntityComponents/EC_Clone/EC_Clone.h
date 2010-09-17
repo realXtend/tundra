@@ -39,7 +39,7 @@ class EC_Clone : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Clone(Foundation::ModuleInterface *module);
+    explicit EC_Clone(IModule *module);
 
 public:
     /// Destructor.

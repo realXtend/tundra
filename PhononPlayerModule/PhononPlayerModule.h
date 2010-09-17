@@ -3,7 +3,7 @@
 #ifndef incl_PhononPlayerModule_h
 #define incl_PhononPlayerModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include <QObject>
 
@@ -18,7 +18,7 @@ namespace PhononPlayer
     /**
      *  Offers PlayerService using Phonon backend.
      */
-    class PhononPlayerModule : public QObject, public Foundation::ModuleInterface
+    class PhononPlayerModule : public QObject, public IModule
     {
         Q_OBJECT
     public:

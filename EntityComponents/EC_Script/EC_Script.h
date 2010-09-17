@@ -75,7 +75,7 @@ private:
     /** Constuctor.
         @param module Declaring module.
     */
-    explicit EC_Script(Foundation::ModuleInterface *module);
+    explicit EC_Script(IModule *module);
 
     /// Script instance.
     IScriptInstance *scriptInstance_;

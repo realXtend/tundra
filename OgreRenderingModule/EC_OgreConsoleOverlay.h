@@ -51,7 +51,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreConsoleOverlay(Foundation::ModuleInterface* module);
+        EC_OgreConsoleOverlay(IModule* module);
 
         //! copy constructor. 
         /*! Should not be used in practice, as only  one console overlay is supported

@@ -26,7 +26,7 @@ namespace MumbleVoip
     std::string MumbleVoipModule::module_name_ = "MumbleVoip";
 
     MumbleVoipModule::MumbleVoipModule()
-        : ModuleInterface(module_name_),
+        : IModule(module_name_),
           link_plugin_(0),
           server_info_provider_(0),
           in_world_voice_provider_(0),
@@ -384,6 +384,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace MumbleVoip;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(MumbleVoipModule)
 POCO_END_MANIFEST

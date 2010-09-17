@@ -52,7 +52,7 @@ namespace RexLogic
     private:
         /// Constuctor.
         /// @param module Owner module.
-        explicit EC_HoveringWidget(Foundation::ModuleInterface *module);
+        explicit EC_HoveringWidget(IModule *module);
 
     public:
         /// Destructor.

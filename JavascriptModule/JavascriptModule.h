@@ -8,7 +8,7 @@
 #ifndef incl_JavascriptModule_JavascriptModule_h
 #define incl_JavascriptModule_JavascriptModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AttributeChangeType.h"
 #include "ScriptServiceInterface.h"
@@ -22,7 +22,7 @@ class QScriptValue;
 
 /**
 */
-class JavascriptModule : public QObject, public Foundation::ModuleInterface, public Foundation::ScriptServiceInterface
+class JavascriptModule : public QObject, public IModule, public Foundation::ScriptServiceInterface
 {
     Q_OBJECT
 

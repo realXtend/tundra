@@ -3,17 +3,12 @@
 #ifndef incl_Foundation_EC_Define_h
 #define incl_Foundation_EC_Define_h
 
-//#include "ComponentInterface.h"
 #include "ComponentManager.h"
-//#include "ForwardDefines.h"
 #include "ComponentRegistrarInterface.h"
 #include "ComponentFactoryInterface.h"
 #include "Framework.h"
 
-namespace Foundation
-{
-    class ModuleInterface;
-}
+class IModule;
 
 //! Helper macro for creating new entity components
 /*!
@@ -28,7 +23,7 @@ namespace Foundation
         virtual ~component##Registrar() {}                                                  \
                                                                                             \
         virtual void Register(Foundation::Framework *framework,                             \
-            Foundation::ModuleInterface* module)                                            \
+            IModule* module)                                            \
         {                                                                                   \
             component::RegisterComponent(framework, module);                                \
         }                                                                                   \
@@ -42,7 +37,7 @@ namespace Foundation
     class component##Factory : public Foundation::ComponentFactoryInterface                 \
     {                                                                                       \
     public:                                                                                 \
-        component##Factory(Foundation::ModuleInterface* module) : module_(module) {}        \
+        component##Factory(IModule* module) : module_(module) {}        \
         virtual ~component##Factory() {}                                                    \
                                                                                             \
         virtual Foundation::ComponentInterfacePtr  operator()()                             \
@@ -57,14 +52,14 @@ namespace Foundation
                     new component(*dynamic_cast<component*>(other.get())));                 \
         }                                                                                   \
     private:                                                                                \
-        Foundation::ModuleInterface* module_;                                               \
+        IModule* module_;                                               \
     };                                                                                      \
                                                                                             \
     friend class component##Factory;                                                        \
                                                                                             \
   public:                                                                                   \
     static void RegisterComponent(const Foundation::Framework *framework,                   \
-        Foundation::ModuleInterface* module)                                                \
+        IModule* module)                                                \
     {                                                                                       \
         Foundation::ComponentFactoryInterfacePtr factory =                                  \
             Foundation::ComponentFactoryInterfacePtr(new component##Factory(module));       \

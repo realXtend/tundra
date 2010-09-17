@@ -30,7 +30,7 @@ std::string JavascriptModule::type_name_static_ = "Javascript";
 JavascriptModule *javascriptModuleInstance_ = 0;
 
 JavascriptModule::JavascriptModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     engine(new QScriptEngine(this))
 {
 }
@@ -215,6 +215,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(JavascriptModule)
 POCO_END_MANIFEST

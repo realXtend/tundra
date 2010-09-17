@@ -107,7 +107,7 @@ namespace Environment
         void Destroy();
 
     private:
-        EC_Terrain(Foundation::ModuleInterface* module);
+        EC_Terrain(IModule* module);
 
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];

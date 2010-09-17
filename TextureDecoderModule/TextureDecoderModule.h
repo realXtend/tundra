@@ -3,7 +3,7 @@
 #ifndef incl_TextureDecoderModule_h
 #define incl_TextureDecoderModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "TextureDecoderModuleApi.h"
 
@@ -18,7 +18,7 @@ namespace TextureDecoder
     typedef boost::shared_ptr<TextureService> TextureServicePtr;
     
     //! Texture decoder module
-    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public Foundation::ModuleInterface
+    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public IModule
     {
     public:
         TextureDecoderModule();

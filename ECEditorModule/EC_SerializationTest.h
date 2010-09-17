@@ -30,7 +30,7 @@ namespace ECEditor
         Attribute<Foundation::AssetReference> attr4_;
         
     private:
-        EC_SerializationTest(Foundation::ModuleInterface* module);
+        EC_SerializationTest(IModule* module);
     };
 }
 

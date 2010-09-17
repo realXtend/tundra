@@ -10,7 +10,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_SoundRuler.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
@@ -26,7 +26,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
 
 #include "MemoryLeakCheck.h"
 
-EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
+EC_SoundRuler::EC_SoundRuler(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     radiusAttr_(this, "radius", 5),
     volumeAttr_(this, "volume", 5),

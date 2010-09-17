@@ -49,7 +49,7 @@ private slots:
     void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
 
 private:
-    explicit EC_ParticleSystem(Foundation::ModuleInterface *module);
+    explicit EC_ParticleSystem(IModule *module);
     Foundation::ComponentPtr FindPlaceable() const;
     request_tag_t RequestResource(const std::string& id, const std::string& type);
 

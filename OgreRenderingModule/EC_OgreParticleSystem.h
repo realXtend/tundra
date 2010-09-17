@@ -110,7 +110,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreParticleSystem(Foundation::ModuleInterface* module);
+        EC_OgreParticleSystem(IModule* module);
         
         //! attaches systems to placeable
         void AttachSystems();

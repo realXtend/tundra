@@ -42,7 +42,7 @@ class EC_HoveringText : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_HoveringText(Foundation::ModuleInterface *module);
+    explicit EC_HoveringText(IModule *module);
 
 public:
     /// Destructor.

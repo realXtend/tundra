@@ -6,10 +6,11 @@
 #include <boost/shared_ptr.hpp>
 #include <vector>
 
+class IModule;
+
 namespace Foundation
 {
     class Framework;
-    class ModuleInterface;
 
     //! Base class for all objects that register their entity-component factory services to the framework.
     /*!
@@ -22,7 +23,7 @@ namespace Foundation
         virtual ~ComponentRegistrarInterface() {}
         
         //! registers component to the framework
-        virtual void Register(Framework *framework, ModuleInterface* module) = 0;
+        virtual void Register(Framework *framework, IModule* module) = 0;
 
         //! unregisters component to framework
         virtual void Unregister(Framework *framework) = 0;

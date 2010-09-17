@@ -39,7 +39,7 @@ private slots:
     void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
 
 private:
-    explicit EC_Sound(Foundation::ModuleInterface *module);
+    explicit EC_Sound(IModule *module);
     Foundation::ComponentPtr FindPlaceable() const;
 
     sound_id_t sound_id_;

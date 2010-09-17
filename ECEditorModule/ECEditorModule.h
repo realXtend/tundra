@@ -3,7 +3,7 @@
 #ifndef incl_ECEditorModule_ECEditorModule_h
 #define incl_ECEditorModule_ECEditorModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -18,7 +18,7 @@ namespace ECEditor
     /*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
      *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
      */
-    class ECEditorModule : public QObject, public Foundation::ModuleInterface
+    class ECEditorModule : public QObject, public IModule
     {
         Q_OBJECT
 

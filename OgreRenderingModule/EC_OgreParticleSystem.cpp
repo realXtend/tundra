@@ -11,7 +11,7 @@
 
 namespace OgreRenderer
 {
-    EC_OgreParticleSystem::EC_OgreParticleSystem(Foundation::ModuleInterface* module) :
+    EC_OgreParticleSystem::EC_OgreParticleSystem(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         adjustment_node_(0),

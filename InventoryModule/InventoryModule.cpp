@@ -54,7 +54,7 @@ namespace Inventory
 std::string InventoryModule::type_name_static_ = "Inventory";
 
 InventoryModule::InventoryModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     inventoryEventCategory_(0),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
@@ -955,6 +955,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Inventory;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(InventoryModule)
 POCO_END_MANIFEST

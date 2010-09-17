@@ -327,7 +327,7 @@ namespace RexLogic
         void CalculateMasterModifiers();
         
     private:
-        EC_AvatarAppearance(Foundation::ModuleInterface* module);
+        EC_AvatarAppearance(IModule* module);
         AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
                 
         //! Avatar mesh

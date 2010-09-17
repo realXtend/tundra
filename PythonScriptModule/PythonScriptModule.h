@@ -4,7 +4,7 @@
 #define incl_PythonScriptModule_PythonScriptModule_h
 
 #include "Foundation.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -55,7 +55,7 @@ namespace PythonScript
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterface
+    class MODULE_API PythonScriptModule : public QObject, public IModule
     {
         Q_OBJECT
 

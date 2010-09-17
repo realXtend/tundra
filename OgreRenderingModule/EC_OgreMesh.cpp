@@ -12,7 +12,7 @@
 
 namespace OgreRenderer
 {
-    EC_OgreMesh::EC_OgreMesh(Foundation::ModuleInterface* module) :
+    EC_OgreMesh::EC_OgreMesh(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(0),

@@ -103,7 +103,7 @@ class EC_WaterPlane : public Foundation::ComponentInterface
          * Constuctor.
          * @param module Module where component belongs.
          **/
-        explicit EC_WaterPlane(Foundation::ModuleInterface *module);
+        explicit EC_WaterPlane(IModule *module);
         
         /**
          * Finds out that is EC_OgrePlaceable component connected to same entity where waterplane compontent is placed. 

@@ -150,7 +150,7 @@ namespace OgreRenderer
         //! Constructor
         /*! \param module renderer module
          */
-        EC_OgreAnimationController(Foundation::ModuleInterface* module);
+        EC_OgreAnimationController(IModule* module);
         
         //! Gets Ogre entity from the mesh entity component and checks if it has changed; in that case resets internal state
         Ogre::Entity* GetEntity();

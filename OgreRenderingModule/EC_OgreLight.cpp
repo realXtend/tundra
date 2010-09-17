@@ -10,7 +10,7 @@
 
 namespace OgreRenderer
 {
-    EC_OgreLight::EC_OgreLight(Foundation::ModuleInterface* module) :
+    EC_OgreLight::EC_OgreLight(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         light_(0),

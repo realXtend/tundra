@@ -10,7 +10,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_ChatBubble.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -31,7 +31,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
 
 #include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
+EC_ChatBubble::EC_ChatBubble(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),

@@ -8,7 +8,7 @@
 #include "InputEvents.h"
 #include "RexLogicModuleApi.h"
 #include "Declare_EC.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 
 namespace RexLogic
 {
@@ -83,7 +83,7 @@ namespace RexLogic
         //! Type of this controllable
         RexTypes::ControllableType type_;
 
-        EC_Controllable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
+        EC_Controllable(IModule* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
     };
 
     namespace Actions

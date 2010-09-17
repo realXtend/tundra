@@ -3,7 +3,7 @@
 #ifndef incl_AssetModule_h
 #define incl_AssetModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include "ConsoleCommandServiceInterface.h"
@@ -34,7 +34,7 @@ namespace Asset
     */
 
     //! Asset module.
-    class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterface
+    class ASSET_MODULE_API AssetModule : public IModule
     {
     public:
         AssetModule();

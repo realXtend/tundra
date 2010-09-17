@@ -1,12 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 
 namespace RexLogic
 {
-    EC_OpenSimAvatar::EC_OpenSimAvatar(Foundation::ModuleInterface* module) :
+    EC_OpenSimAvatar::EC_OpenSimAvatar(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         controlflags(0), yaw(0), state_(Stand)
     {

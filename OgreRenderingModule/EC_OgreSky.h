@@ -264,7 +264,7 @@ namespace OgreRenderer
     private:
         /// Constructor
         /// @param module ModuleInterface pointer.
-        EC_OgreSky(Foundation::ModuleInterface* module);
+        EC_OgreSky(IModule* module);
         
         /// Renderer
         RendererWeakPtr renderer_;
@@ -293,7 +293,7 @@ namespace OgreRenderer
         /// List of skybox image names.
         std::vector<std::string> skyBoxImages_;
         
-        Foundation::ModuleInterface* owner_; 
+        IModule* owner_; 
         
         size_t currentSkyBoxImageCount_;
     };

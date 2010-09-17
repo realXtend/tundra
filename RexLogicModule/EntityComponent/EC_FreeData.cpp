@@ -8,11 +8,11 @@
 #include "StableHeaders.h"
 #include "EntityComponent/EC_FreeData.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 
 namespace RexLogic
 {
-    EC_FreeData::EC_FreeData(Foundation::ModuleInterface* module) :
+    EC_FreeData::EC_FreeData(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework())
     {
     }

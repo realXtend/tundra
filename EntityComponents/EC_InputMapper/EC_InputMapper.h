@@ -64,7 +64,7 @@ private:
     /** Constructor.
         @param module Declaring module.
     */
-    explicit EC_InputMapper(Foundation::ModuleInterface *module);
+    explicit EC_InputMapper(IModule *module);
 
     /// Input context for this EC.
     boost::shared_ptr<InputContext> input_;

@@ -74,7 +74,7 @@ private:
     //! Constuctor.
     /*! \param module Module.
      */
-    explicit EC_3DCanvasSource(Foundation::ModuleInterface *module);
+    explicit EC_3DCanvasSource(IModule *module);
 
     //! Create the 2D UI widget, but do not show it yet
     void CreateWidget();

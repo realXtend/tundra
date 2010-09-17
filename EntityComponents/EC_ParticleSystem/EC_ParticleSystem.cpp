@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -19,7 +19,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"
 
-EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
+EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     Foundation::ComponentInterface(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),

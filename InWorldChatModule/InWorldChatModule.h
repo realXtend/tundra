@@ -10,7 +10,7 @@
 #define incl_InWorldChatModule_InWorldChatModule_h
 
 #include "InWorldChatModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -42,7 +42,7 @@ QT_END_NAMESPACE
 
 namespace Naali
 {
-    class INWORLDCHAT_MODULE_API InWorldChatModule :  public QObject, public Foundation::ModuleInterface
+    class INWORLDCHAT_MODULE_API InWorldChatModule :  public QObject, public IModule
     {
         Q_OBJECT
 

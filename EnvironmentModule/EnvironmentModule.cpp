@@ -41,7 +41,7 @@ namespace Environment
     std::string EnvironmentModule::type_name_static_ = "Environment";
 
     EnvironmentModule::EnvironmentModule() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -600,6 +600,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Environment;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(EnvironmentModule)
 POCO_END_MANIFEST

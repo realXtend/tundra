@@ -32,7 +32,7 @@ namespace Environment
         float GetWaterHeight() const;
 
     private:
-        EC_Water(Foundation::ModuleInterface* module);
+        EC_Water(IModule* module);
 
         void CreateOgreWaterObject();
 

@@ -24,7 +24,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 namespace Environment
 {
    
-    EC_WaterPlane::EC_WaterPlane(Foundation::ModuleInterface *module)
+    EC_WaterPlane::EC_WaterPlane(IModule *module)
         : Foundation::ComponentInterface(module->GetFramework()),
         xSizeAttr_(this, "Water plane x-size", 5000),
         ySizeAttr_(this, "Water plane y-size", 5000),

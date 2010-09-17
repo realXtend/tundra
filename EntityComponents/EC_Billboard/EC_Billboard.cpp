@@ -8,7 +8,7 @@
 
 #include "StableHeaders.h"
 #include "EC_Billboard.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -23,7 +23,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Billboard");
 
 #include <QTimer>
 
-EC_Billboard::EC_Billboard(Foundation::ModuleInterface *module) :
+EC_Billboard::EC_Billboard(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     billboardSet_(0),
     billboard_(0),

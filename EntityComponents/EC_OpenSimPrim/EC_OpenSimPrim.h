@@ -411,7 +411,7 @@ signals:
     void PrimDescriptionChanged(const EC_OpenSimPrim&);
 
 private:
-    EC_OpenSimPrim(Foundation::ModuleInterface* module);
+    EC_OpenSimPrim(IModule* module);
 
     QObject *editor_;
 

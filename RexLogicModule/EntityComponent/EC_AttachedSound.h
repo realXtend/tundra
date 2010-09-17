@@ -78,7 +78,7 @@ namespace RexLogic
         void Update(f64 frametime);
 
     private:
-        EC_AttachedSound(Foundation::ModuleInterface *module);
+        EC_AttachedSound(IModule *module);
 
         //! Init sound slot vector
         void InitSoundVector();

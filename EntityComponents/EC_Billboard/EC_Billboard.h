@@ -29,7 +29,7 @@ class EC_Billboard : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Module.
-    explicit EC_Billboard(Foundation::ModuleInterface *module);
+    explicit EC_Billboard(IModule *module);
 
 public:
     /// Destructor.

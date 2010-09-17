@@ -60,7 +60,7 @@ namespace RexLogic
         //! state
         State state_;
 
-        EC_OpenSimAvatar(Foundation::ModuleInterface* module);
+        EC_OpenSimAvatar(IModule* module);
     };
 }
 

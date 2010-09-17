@@ -47,7 +47,7 @@ void ClampFog(float& start, float& end, float farclip)
         start = farclip/3.0;
 }
 
-EC_OgreEnvironment::EC_OgreEnvironment(Foundation::ModuleInterface *module) :
+EC_OgreEnvironment::EC_OgreEnvironment(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(0),

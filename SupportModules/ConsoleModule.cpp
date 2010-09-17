@@ -19,7 +19,7 @@ namespace Console
 {
     std::string ConsoleModule::type_name_static_ = "Console";
 
-    ConsoleModule::ConsoleModule() : ModuleInterface(type_name_static_), ui_console_manager_(0)
+    ConsoleModule::ConsoleModule() : IModule(type_name_static_), ui_console_manager_(0)
     {
     }
 

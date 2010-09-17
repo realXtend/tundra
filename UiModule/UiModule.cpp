@@ -52,7 +52,7 @@ namespace UiServices
     std::string UiModule::type_name_static_ = "UI";
 
     UiModule::UiModule() :
-        Foundation::ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         ui_state_machine_(0),
         service_getter_(0),
         inworld_scene_controller_(0),
@@ -383,7 +383,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace UiServices;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(UiModule)
 POCO_END_MANIFEST
 

@@ -16,7 +16,7 @@
 
 #include "EC_Touchable.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 //#include "OgreMaterialUtils.h"
@@ -154,7 +154,7 @@ void EC_Touchable::UpdateMaterial()
     }
 }
 
-EC_Touchable::EC_Touchable(Foundation::ModuleInterface *module) :
+EC_Touchable::EC_Touchable(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0),
