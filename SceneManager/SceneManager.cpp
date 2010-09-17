@@ -20,24 +20,22 @@
 namespace Scene
 {
     SceneManager::SceneManager() :
-        gid_(0),
-        gid_local_(LocalEntity)
+        gid_(1),
+        gid_local_(LocalEntity + 1)
+    {
+    }
+    
+    SceneManager::SceneManager(const std::string &name, Foundation::Framework *framework) : 
+        name_(name),
+        framework_(framework),
+        gid_(1),
+        gid_local_(LocalEntity + 1)
     {
     }
     
     SceneManager::~SceneManager()
     {
         RemoveAllEntities(false);
-    }
-
-    Scene::EntityPtr SceneManager::CreateLocalEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change)
-    {
-        // Figure out new entity id
-        if(id == 0)
-            id = GetNextFreeIdLocal();
-        else
-            id |= LocalEntity;
-        return CreateEntity(id, components);
     }
 
     Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components)
@@ -79,18 +77,37 @@ namespace Scene
 
         return Scene::EntityPtr();
     }
+    
+    Scene::EntityPtr SceneManager::GetEntity(const QString& name) const
+    {
+        EntityMap::const_iterator it = entities_.begin();
+        while (it != entities_.end())
+        {
+            if (it->second->GetName() == name)
+                return it->second;
+            ++it;
+        }
+        
+        return Scene::EntityPtr();
+    }
 
     entity_id_t SceneManager::GetNextFreeId()
     {
         while(entities_.find(gid_) != entities_.end())
+        {
             gid_ = (gid_ + 1) & (LocalEntity - 1);
+            if (!gid_) ++gid_;
+        }
         return gid_;
     }
 
     entity_id_t SceneManager::GetNextFreeIdLocal()
     {
         while(entities_.find(gid_local_) != entities_.end())
+        {
             gid_local_ = (gid_local_ + 1) | LocalEntity;
+            if (gid_local_ == LocalEntity) ++gid_local_;
+        }
         return gid_local_;
     }
     
