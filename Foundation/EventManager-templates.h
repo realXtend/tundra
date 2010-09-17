@@ -8,7 +8,7 @@ namespace Foundation
 {
     template <class T> void EventManager::SendDelayedEvent(event_category_id_t category_id, event_id_t event_id, boost::shared_ptr<T> data, f64 delay)
     {
-       SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<EventDataInterface>(data), delay);
+       SendDelayedEvent(category_id, event_id, boost::dynamic_pointer_cast<IEventData>(data), delay);
     }
 
     template <typename T, typename U> bool EventManager::AddSubscriber(T* subscriber, QList<U>& subscribers, int priority)
@@ -138,7 +138,7 @@ namespace Foundation
         return false;
      }
 
-    template <typename T> bool EventManager::SendEvent(const EventSubscriber<T>& subs, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const
+    template <typename T> bool EventManager::SendEvent(const EventSubscriber<T>& subs, event_category_id_t category_id, event_id_t event_id, IEventData* data) const
      {
         T* subscriber = subs.subscriber_;
         if (subscriber)

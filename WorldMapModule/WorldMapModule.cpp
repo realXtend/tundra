@@ -79,7 +79,7 @@ namespace WorldMap
         UpdateAvatarPositions();
     }
 
-    bool WorldMapModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+    bool WorldMapModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
     {
         if (category_id == frameworkEventCategory_)
         {
@@ -156,7 +156,7 @@ namespace WorldMap
         return false;
     }
 
-    bool WorldMapModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool WorldMapModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
 
         if (event_id != Resource::Events::RESOURCE_READY)

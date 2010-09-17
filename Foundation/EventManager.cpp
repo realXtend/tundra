@@ -5,7 +5,7 @@
 
 #include "EventManager.h"
 #include "Framework.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "ModuleManager.h"
 #include "CoreException.h"
 
@@ -99,7 +99,7 @@ namespace Foundation
         event_map_[category_id][event_id] = name;
     }
     
-    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data)
+    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (QThread::currentThreadId() != main_thread_id_)
         {
@@ -154,7 +154,7 @@ namespace Foundation
 
     }
     
-    bool EventManager::SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data)
+    bool EventManager::SendEvent(const std::string& category, event_id_t event_id, IEventData* data)
     {
         return SendEvent(QueryEventCategory(category), event_id, data);
     }

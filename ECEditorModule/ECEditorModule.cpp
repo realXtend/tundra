@@ -86,7 +86,7 @@ namespace ECEditor
         RESETPROFILER;
     }
 
-    bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ECEditorModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (category_id == scene_event_category_)
         {

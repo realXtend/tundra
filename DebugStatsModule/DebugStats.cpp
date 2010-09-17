@@ -206,7 +206,7 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);

@@ -6,10 +6,7 @@
 #include "CoreTypes.h"
 #include <QList>
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
+class IEventData;
 
 namespace RexLogic
 {
@@ -21,7 +18,7 @@ namespace RexLogic
         explicit SceneEventHandler(RexLogicModule *owner);
         virtual ~SceneEventHandler();
 
-        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
         //! Clears the hovered entitys, for touchable ec:s calls HoverOut()
         void ClearHovers(event_id_t entity_id);

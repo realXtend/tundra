@@ -3,18 +3,19 @@
 #ifndef incl_Comm_CommunicationService_h
 #define incl_Comm_CommunicationService_h
 
-#include <QMap>
-#include <QStringList>
-#include "ModuleLoggingFunctions.h"
 #include "CommunicationServiceInterface.h"
+#include "ModuleLoggingFunctions.h"
 #include "CoreTypes.h"
 #include <CommunicationsService.h>
 
+#include <QMap>
+
 namespace Foundation
 {
-    class EventDataInterface;
     class Framework;
 }
+
+class IEventData;
 
 namespace Communication
 {
@@ -27,8 +28,8 @@ namespace Communication
     {
     public:
         //! Handle network event
-        virtual bool HandleNetworkEvent(Foundation::EventDataInterface* data) = 0;
-        virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data) = 0;
+        virtual bool HandleNetworkEvent(IEventData* data) = 0;
+        virtual bool HandleNetworkStateEvent(event_id_t event_id, IEventData* data) = 0;
     };
 
     /**
@@ -70,7 +71,7 @@ namespace Communication
         virtual ConnectionVector GetConnections(const QString &protocol) const;
 
         //! Handle events
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         virtual Foundation::Framework* GetFramework() { return framework_; };
 

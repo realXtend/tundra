@@ -22,11 +22,6 @@ namespace ProtocolUtilities
     class WorldStream;
 }
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
-
 namespace Inventory
 {
     class InventoryWindow;
@@ -60,7 +55,7 @@ namespace Inventory
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         MODULE_LOGGING_FUNCTIONS
 
         /// Returns name of this module. Needed for logging.
@@ -103,21 +98,21 @@ namespace Inventory
 
         /// Handles InventoryDescendents packet.
         /// @param data Event data.
-        void HandleInventoryDescendents(Foundation::EventDataInterface* event_data);
+        void HandleInventoryDescendents(IEventData* event_data);
 
         /** Handles CreateInventoryItem packet.
             @param data Event data.
             @note It seems that this packet is only sent by 0.4 reX server. Maybe drop support at some point?
         */
-        void HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data);
+        void HandleUpdateCreateInventoryItem(IEventData* event_data);
 
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
-        void HandleUuidNameReply(Foundation::EventDataInterface* event_data);
+        void HandleUuidNameReply(IEventData* event_data);
 
         /// Handles CreateInventoryItem packet.
         /// @param data Event data.
-        void HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data);
+        void HandleUuidGroupNameReply(IEventData* event_data);
 
         /// Deletes all item properties windows.
         void DeleteAllItemPropertiesWindows();
@@ -127,7 +122,7 @@ namespace Inventory
 
         /// Handles WebDAV upload request related to avatar.
         /// @param data Event data.
-        void HandleWebDavAvatarUploadRequest(event_id_t event_id, Foundation::EventDataInterface* event_data);
+        void HandleWebDavAvatarUploadRequest(event_id_t event_id, IEventData* event_data);
 
         /// Name of the module.
         static std::string type_name_static_;

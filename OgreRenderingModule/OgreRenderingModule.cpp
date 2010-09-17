@@ -114,7 +114,7 @@ namespace OgreRenderer
     }
 
     // virtual
-    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)

@@ -113,7 +113,7 @@ namespace Asset
     bool AssetModule::HandleEvent(
         event_category_id_t category_id,
         event_id_t event_id, 
-        Foundation::EventDataInterface* data)
+        IEventData* data)
     {
         PROFILE(AssetModule_HandleEvent);
         if ((category_id == inboundcategory_id_))

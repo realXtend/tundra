@@ -11,7 +11,7 @@
 #include "ForwardDefines.h"
 #include "AttributeChangeType.h"
 #include "AttributeInterface.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "CoreTypes.h"
 
 #include <QObject>
@@ -123,7 +123,7 @@ namespace Foundation
             @return True if the event was handled and is not to be propagated further.
             For more information, see @ref EventSystem.
         */
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) { return false; }
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
 
     public slots:
         //! Component has changed. Send notification & queue network replication as necessary

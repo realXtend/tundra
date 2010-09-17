@@ -52,7 +52,7 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "ServiceManager.h"
 #include "ComponentManager.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "TextureInterface.h"
 #include "SoundServiceInterface.h"
 #include "InputServiceInterface.h"
@@ -462,7 +462,7 @@ void RexLogicModule::Update(f64 frametime)
 }
 
 // virtual
-bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     // RexLogicModule does not directly handle any of its own events. Instead, there is a list of delegate objects
     // which handle events of each category. Pass the received event to the proper handler of the category of the event.
@@ -885,7 +885,7 @@ void RexLogicModule::UpdateSoundListener()
     }
 }
 
-bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     // Pass the event to the avatar manager
     avatar_->HandleResourceEvent(event_id, data);
@@ -895,13 +895,13 @@ bool RexLogicModule::HandleResourceEvent(event_id_t event_id, Foundation::EventD
     return false;
 }
 
-bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, IEventData* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleInventoryEvent(event_id, data);
 }
 
-bool RexLogicModule::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool RexLogicModule::HandleAssetEvent(event_id_t event_id, IEventData* data)
 {
     // Pass the event to the avatar manager
     return avatar_->HandleAssetEvent(event_id, data);

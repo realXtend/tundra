@@ -70,7 +70,7 @@ namespace CommunicationsService
     {
     }
 
-    bool CommunicationsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CommunicationsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         return false;
     }

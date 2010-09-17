@@ -144,7 +144,7 @@ namespace Environment
         }
     }
 
-    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if(category_id == framework_event_category_)
         {
@@ -191,7 +191,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {
@@ -221,7 +221,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, IEventData* data)
     {
         switch(event_id)
         {
@@ -245,7 +245,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, IEventData* data)
     {
         ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         assert(netdata);
@@ -424,7 +424,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         return false;
     }

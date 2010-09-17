@@ -98,7 +98,7 @@ public:
         @param event_id Id of the event
         @param data Event data, or 0 if no data passed.
     */
-    virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data) { return false; }
+    virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
 
     /// Declare a component the module defines. For internal use.
     void DeclareComponent(const Foundation::ComponentRegistrarInterfacePtr &registrar) { component_registrars_.push_back(registrar); }

@@ -78,7 +78,7 @@ namespace Console
     }
 
     // virtual
-    bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
         ///\todo Now that console UI has been moved from UiModule to ConsoleModule many

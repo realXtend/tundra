@@ -54,7 +54,7 @@ namespace TextureDecoder
         texture_service_.reset();
     }
     
-    bool TextureDecoderModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureDecoderModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(TextureDecoderModule_HandleEvent);
         if (category_id == asset_event_category_)

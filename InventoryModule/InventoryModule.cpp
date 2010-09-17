@@ -124,7 +124,7 @@ void InventoryModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     // NetworkState
     if (category_id == networkStateEventCategory_)
@@ -599,7 +599,7 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
     return Console::ResultSuccess();
 }
 
-void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleInventoryDescendents(IEventData* event_data)
 {
     NetworkEventInboundData *data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -737,7 +737,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
     return;
 }
 
-void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUpdateCreateInventoryItem(IEventData* event_data)
 {
     NetworkEventInboundData* data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -798,7 +798,7 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
     }
 }
 
-void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidNameReply(IEventData* event_data)
 {
     NetworkEventInboundData *data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -826,7 +826,7 @@ void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_
         it.next().value()->HandleUuidNameReply(map);
 }
 
-void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidGroupNameReply(IEventData* event_data)
 {
     NetworkEventInboundData* data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -887,7 +887,7 @@ void InventoryModule::ConnectSignals()
 */
 }
 
-void InventoryModule::HandleWebDavAvatarUploadRequest(event_id_t event_id, Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleWebDavAvatarUploadRequest(event_id_t event_id, IEventData* event_data)
 {
     if (inventoryType_ != IDMT_WebDav)
     {

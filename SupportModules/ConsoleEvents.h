@@ -3,7 +3,7 @@
 #ifndef incl_SupportModules_ConsoleEvents_h
 #define incl_SupportModules_ConsoleEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 namespace Console
 {
@@ -15,7 +15,7 @@ namespace Console
     }
 
     /// Event data interface for Console messages
-    class ConsoleEventData : public Foundation::EventDataInterface
+    class ConsoleEventData : public IEventData
     {
     public:
         ConsoleEventData(const std::string &string) : message(string) {}

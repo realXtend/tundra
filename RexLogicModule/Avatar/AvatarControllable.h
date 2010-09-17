@@ -40,13 +40,13 @@ namespace RexLogic
         ~AvatarControllable() {}
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
         //! Action event handler for handling controllable events
-        bool HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleActionEvent(event_id_t event_id, IEventData* data);
 
         //! Add time to avatar control simulation for all controllable avatars
         void AddTime(f64 frametime);

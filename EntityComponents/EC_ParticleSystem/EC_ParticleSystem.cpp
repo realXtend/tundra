@@ -43,7 +43,7 @@ EC_ParticleSystem::~EC_ParticleSystem()
     DeleteParticleSystem();
 }
 
-bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     // Making sure that event type is RESOURCE_READY before we start to dynamic cast.
     if (event_id != Resource::Events::RESOURCE_READY)
@@ -121,7 +121,7 @@ void EC_ParticleSystem::DeleteParticleSystem()
     return;
 }
 
-bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if(category_id == resource_event_category_)
     {

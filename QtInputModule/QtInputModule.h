@@ -5,7 +5,7 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 #include "QtInputModuleApi.h"
 
