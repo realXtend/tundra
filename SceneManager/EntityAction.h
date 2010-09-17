@@ -60,7 +60,7 @@ signals:
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
     */
-    void Triggered(const QString &param1, const QString &param2, const QString &param3, const QStringVector &params);
+    void Triggered(const QString &param1, const QString &param2, const QString &param3, const QStringList &params);
 
 private:
     /** Constructor.
@@ -74,7 +74,7 @@ private:
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
     */
-    void Trigger(const QString &param1 = "", const QString &param2 = "", const QString &param3 = "", const QStringVector &params = QStringVector())
+    void Trigger(const QString &param1 = "", const QString &param2 = "", const QString &param3 = "", const QStringList &params = QStringList())
     {
         emit Triggered(param1, param2, param3, params);
     }

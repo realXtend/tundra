@@ -64,7 +64,6 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Foundation::ComponentInterface*>(engine);
 
     qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
-    qRegisterMetaType<Scene::EntityAction*>("Scene::EntityAction*");
 }
 
 void ReqisterUiMetaTypes(QScriptEngine *engine)

@@ -217,7 +217,7 @@ namespace Scene
     {
         EntityAction *action = Action(name);
         assert(action);
-        connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
+        connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringList &)), receiver, member);
     }
 
     void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
@@ -250,14 +250,14 @@ namespace Scene
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
         EntityAction *act = Action(action);
-        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringList &)));
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param1, param2, param3);
     }
 
-    void Entity::Exec(const QString &action, const QStringVector &params, EntityAction::ExecutionType type)
+    void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
     {
         EntityAction *act = Action(action);
         if (!HasReceivers(act))

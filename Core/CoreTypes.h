@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_CoreTypes_h
-#define incl_CoreTypes_h
+#ifndef incl_Core_CoreTypes_h
+#define incl_Core_CoreTypes_h
 
 // types
 
@@ -24,6 +24,7 @@ template <class T> inline bool _isnan(T f) { return f != f; }
 
 #include <QString>
 #include <QVector>
+#include <QStringList>
 
 typedef unsigned char u8;
 typedef unsigned char uchar;
