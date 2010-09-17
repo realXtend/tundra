@@ -33,14 +33,14 @@ endif (MSVC)
 use_package (BOOST)
 use_package (POCO)
 use_package (CURL)
-use_modules (Core Foundation HttpUtilities)
+use_modules (Core Foundation Interfaces SceneManager HttpUtilities)
 
 build_executable (${TARGET_NAME} ${SOURCE_FILES})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
-link_modules (Core Foundation HttpUtilities)
+link_modules (Core Foundation  Interfaces SceneManager HttpUtilities)
 
 final_target ()
 
