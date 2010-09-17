@@ -35,11 +35,8 @@ namespace Scene
         //! default constructor
         SceneManager();
 
-        //! constructor that takes a name and parent module
-        SceneManager(const std::string &name, Foundation::Framework *framework) :  name_(name), framework_(framework) {}
-
-        //! copy constructor that also takes a name
-        SceneManager(const SceneManager &other, const std::string &name ) : framework_(other.framework_), entities_(other.entities_) { }
+        //! constructor that takes a name and framework
+        SceneManager(const std::string &name, Foundation::Framework *framework);
 
         //! copy constuctor
         SceneManager(const SceneManager &other);
@@ -86,18 +83,6 @@ namespace Scene
         //! Returns scene name
         const std::string &Name() const { return name_; }
 
-        //! Creates new local entity that contains the specified components
-        /*! Entities should never be created directly, but instead created with this function.
-
-            To create an empty entity omit components parameter.
-
-            \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
-            \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
-            \param change Origin of change regards to network replication
-        */
-        EntityPtr CreateLocalEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList(),
-             AttributeChange::Type change = AttributeChange::LocalOnly);
-
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
 
@@ -124,6 +109,11 @@ namespace Scene
         */
         EntityPtr GetEntity(entity_id_t id) const;
 
+        //! Returns entity with the specified name
+        /*! If found, returns the first one; there may be many with same name and uniqueness is not guaranteed
+         */
+        EntityPtr GetEntity(const QString& name) const;
+        
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         bool HasEntity(entity_id_t id) const { return (entities_.find(id) != entities_.end()); }
 

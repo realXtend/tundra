@@ -10,6 +10,7 @@
 #include "Quaternion.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_Mesh.h"
+#include "EC_Name.h"
 
 #include <Ogre.h>
 
@@ -56,85 +57,89 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
 {
     try
     {
-    
-    if (clearscene)
-        TundraLogicModule::LogInfo("Importing scene from " + filename + " and clearing the old");
-    else
-        TundraLogicModule::LogInfo("Importing scene from " + filename);
-    
-    // Create output asset path if does not exist
-    if (boost::filesystem::exists(out_asset_dir) == false)
-        boost::filesystem::create_directory(out_asset_dir);
-    
-    if (!in_asset_dir.empty())
-    {
-        char lastchar = in_asset_dir[in_asset_dir.length() - 1];
-        if ((lastchar != '/') && (lastchar != '\\'))
-            in_asset_dir += '/';
-    }
-    if (!out_asset_dir.empty())
-    {
-        char lastchar = out_asset_dir[out_asset_dir.length() - 1];
-        if ((lastchar != '/') && (lastchar != '\\'))
-            out_asset_dir += '/';
-    }
-    
-    QFile file(filename.c_str());
-    if (!file.open(QFile::ReadOnly))
-    {
+        if (clearscene)
+            TundraLogicModule::LogInfo("Importing scene from " + filename + " and clearing the old");
+        else
+            TundraLogicModule::LogInfo("Importing scene from " + filename);
+        
+        // Create output asset path if does not exist
+        if (boost::filesystem::exists(out_asset_dir) == false)
+            boost::filesystem::create_directory(out_asset_dir);
+        
+        if (!in_asset_dir.empty())
+        {
+            char lastchar = in_asset_dir[in_asset_dir.length() - 1];
+            if ((lastchar != '/') && (lastchar != '\\'))
+                in_asset_dir += '/';
+        }
+        if (!out_asset_dir.empty())
+        {
+            char lastchar = out_asset_dir[out_asset_dir.length() - 1];
+            if ((lastchar != '/') && (lastchar != '\\'))
+                out_asset_dir += '/';
+        }
+        
+        QFile file(filename.c_str());
+        if (!file.open(QFile::ReadOnly))
+        {
+            file.close();
+            TundraLogicModule::LogError("Failed to open file");
+            return false;
+        }
+        
+        QDomDocument dotscene;
+        if (!dotscene.setContent(&file))
+        {
+            file.close();
+            TundraLogicModule::LogError("Failed to parse XML content");
+            return false;
+        }
+        
         file.close();
-        TundraLogicModule::LogError("Failed to open file");
-        return false;
-    }
-    
-    QDomDocument dotscene;
-    if (!dotscene.setContent(&file))
-    {
-        file.close();
-        TundraLogicModule::LogError("Failed to parse XML content");
-        return false;
-    }
-    
-    file.close();
-    
-    QDomElement scene_elem = dotscene.firstChildElement("scene");
-    if (scene_elem.isNull())
-    {
-        TundraLogicModule::LogError("No scene element");
-        return false;
-    }
-    QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
-    if (nodes_elem.isNull())
-    {
-        TundraLogicModule::LogError("No nodes element");
-        return false;
-    }
-    
-    bool flipyz = false;
-    QString upaxis = scene_elem.attribute("upAxis");
-    if (upaxis == "y")
-        flipyz = true;
-    
-    if (clearscene)
-        scene->RemoveAllEntities(true, change);
-    
-    QDomElement node_elem = nodes_elem.firstChildElement("node");
-    
-    // First pass: get used assets
-    ProcessNodeForAssets(node_elem);
-    
-    // Write out the needed assets
-    ProcessAssets(filename, in_asset_dir, out_asset_dir, localassets);
-    
-    // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
-    ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz);
-    
+        
+        QDomElement scene_elem = dotscene.firstChildElement("scene");
+        if (scene_elem.isNull())
+        {
+            TundraLogicModule::LogError("No scene element");
+            return false;
+        }
+        QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
+        if (nodes_elem.isNull())
+        {
+            TundraLogicModule::LogError("No nodes element");
+            return false;
+        }
+        
+        bool flipyz = false;
+        QString upaxis = scene_elem.attribute("upAxis");
+        if (upaxis == "y")
+            flipyz = true;
+        
+        if (clearscene)
+            scene->RemoveAllEntities(true, change);
+        
+        QDomElement node_elem = nodes_elem.firstChildElement("node");
+        
+        // First pass: get used assets
+        TundraLogicModule::LogInfo("Processing scene for assets");
+        ProcessNodeForAssets(node_elem);
+        
+        // Write out the needed assets
+        TundraLogicModule::LogInfo("Saving needed assets");
+        ProcessAssets(filename, in_asset_dir, out_asset_dir, localassets);
+        
+        // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
+        TundraLogicModule::LogInfo("Creating entities");
+        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz);
+        
     }
     catch (Exception& e)
     {
         TundraLogicModule::LogError(std::string("Exception while scene importing: ") + e.what());
         return false;
     }
+    
+    TundraLogicModule::LogInfo("Finished");
     return true;
 }
 
@@ -397,6 +402,19 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
         QDomElement entity_elem = node_elem.firstChildElement("entity");
         if (!entity_elem.isNull())
         {
+            // Enforce uniqueness for node names, which may not be guaranteed by artists
+            std::string base_node_name = node_elem.attribute("name").toStdString();
+            if (base_node_name.empty())
+                base_node_name = "object";
+            std::string node_name = base_node_name;
+            int append_num = 1;
+            while (node_names_.find(node_name) != node_names_.end())
+            {
+                node_name = base_node_name + "_" + ToString<int>(append_num);
+                ++append_num;
+            }
+            node_names_.insert(node_name);
+            
             // Get mesh name from map
             QString mesh_name = QString::fromStdString(mesh_names_[entity_elem.attribute("meshFile").toStdString()]);
             
@@ -404,72 +422,91 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
             
             if (localassets)
                 mesh_name = "file://" + mesh_name;
-
-            QStringList components;
-            components.append(EC_Mesh::TypeNameStatic());
-            components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
             
-            Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId(), components);
-            EC_Mesh* meshPtr = 0;
-            OgreRenderer::EC_OgrePlaceable* placeablePtr = 0;
-            if (entity)
+            Scene::EntityPtr entity;
+            bool new_entity = false;
+            
+            // Try to find existing entity by name
+            QString node_name_qstr = QString::fromStdString(node_name);
+            entity = scene->GetEntity(node_name_qstr);
+            if (!entity)
             {
-                meshPtr = entity->GetComponent<EC_Mesh>().get();
-                placeablePtr = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-                
-                std::vector<QVariant> materials;
-                QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
-                if (!subentities_elem.isNull())
-                {
-                    QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
-                    while (!subentity_elem.isNull())
-                    {
-                        QString material_name = subentity_elem.attribute("materialName") + ".material";
-                        int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
-                        if (localassets)
-                            material_name = "file://" + material_name;
-                        if (index >= materials.size())
-                            materials.resize(index + 1);
-                        materials[index] = material_name;
-
-                        subentity_elem = subentity_elem.nextSiblingElement("subentity");
-                    }
-                }
-                
-                Transform entity_transform;
-                
-                if (!flipyz)
-                {
-                    //! \todo this probably breaks due to the hardcoded adjustment of meshes from Ogre to Opensim orientation
-                    Vector3df rot_euler;
-                    newrot.toEuler(rot_euler);
-                    entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
-                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
-                }
-                else
-                {
-                    //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
-                    Vector3df rot_euler;
-                    Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
-                    adjustedrot.toEuler(rot_euler);
-                    entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
-                    entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
-                    entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
-                }
-
-                placeablePtr->transform_.Set(entity_transform, change);
-
-                meshPtr->meshResouceId_.Set(mesh_name, change);
-                meshPtr->meshMaterial_.Set(materials, change);
-                meshPtr->castShadows_.Set(cast_shadows, change);
-
-                scene->EmitEntityCreated(entity, change);
-                placeablePtr->ComponentChanged(change);
-                meshPtr->ComponentChanged(change);
+                entity = scene->CreateEntity(scene->GetNextFreeId());
+                new_entity = true;
+            }
+            else
+            {
+                TundraLogicModule::LogInfo("Updating existing entity " + node_name);
             }
             
+            EC_Mesh* meshPtr = 0;
+            EC_Name* namePtr = 0;
+            OgreRenderer::EC_OgrePlaceable* placeablePtr = 0;
+            
+            if (entity)
+            {
+                meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
+                namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
+                placeablePtr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetOrCreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic(), change).get());
+                
+                if ((meshPtr) && (namePtr) && (placeablePtr))
+                {
+                    namePtr->name.Set(node_name_qstr, change);
+                    
+                    std::vector<QVariant> materials;
+                    QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
+                    if (!subentities_elem.isNull())
+                    {
+                        QDomElement subentity_elem = subentities_elem.firstChildElement("subentity");
+                        while (!subentity_elem.isNull())
+                        {
+                            QString material_name = subentity_elem.attribute("materialName") + ".material";
+                            int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
+                            if (localassets)
+                                material_name = "file://" + material_name;
+                            if (index >= materials.size())
+                                materials.resize(index + 1);
+                            materials[index] = material_name;
 
+                            subentity_elem = subentity_elem.nextSiblingElement("subentity");
+                        }
+                    }
+                    
+                    Transform entity_transform;
+                    
+                    if (!flipyz)
+                    {
+                        //! \todo this probably breaks due to the hardcoded adjustment of meshes from Ogre to Opensim orientation
+                        Vector3df rot_euler;
+                        newrot.toEuler(rot_euler);
+                        entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
+                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    }
+                    else
+                    {
+                        //! \todo it's unpleasant having to do this kind of coordinate mutilations. Possibly move to native Ogre coordinate system?
+                        Vector3df rot_euler;
+                        Quaternion adjustedrot(-newrot.x, newrot.z, newrot.y, newrot.w);
+                        adjustedrot.toEuler(rot_euler);
+                        entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
+                        entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
+                        entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                    }
+
+                    placeablePtr->transform_.Set(entity_transform, change);
+
+                    meshPtr->meshResouceId_.Set(mesh_name, change);
+                    meshPtr->meshMaterial_.Set(materials, change);
+                    meshPtr->castShadows_.Set(cast_shadows, change);
+
+                    if (new_entity)
+                        scene->EmitEntityCreated(entity, change);
+                    placeablePtr->ComponentChanged(change);
+                    meshPtr->ComponentChanged(change);
+                    namePtr->ComponentChanged(change);
+                }
+            }
         }
         
         // Process child nodes

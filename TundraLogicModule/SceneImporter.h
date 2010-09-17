@@ -24,8 +24,11 @@ public:
     SceneImporter(Foundation::Framework* framework);
     ~SceneImporter();
     
-    //! Import a scene
-    /*! \param scene Destination scene
+    //! Import a dotscene
+    /*! The behaviour is as follows: if an entity with same name is already found in the scene, the entity is just updated with information from the
+        dotscene (placeable and mesh) and other components are left alone. Otherwise, a new entity is created.
+        
+        \param scene Destination scene
         \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
@@ -37,6 +40,7 @@ public:
     bool Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, AttributeChange::Type change,
         bool clearscene = false, bool localassets = true);
     
+private:
     //! Process the asset references of a node, and its child nodes
     /*! \param node_elem Node element
      */
@@ -63,8 +67,7 @@ public:
      */
     void ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, bool localassets, bool flipyz);
-        
-private:
+    
     //! Materials encountered in scene
     std::set<std::string> material_names_;
     //! Textures encountered in scene
@@ -73,6 +76,8 @@ private:
     /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
      */
     std::map<std::string, std::string> mesh_names_;
+    //! Nodes already created into the scene. Used for enforcing uniqueness (otherwise the name-based "update import" logic will fail)
+    std::set<std::string> node_names_;
     
     //! Framework
     Foundation::Framework* framework_;
