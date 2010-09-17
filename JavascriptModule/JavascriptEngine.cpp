@@ -4,8 +4,8 @@
 #include "DebugOperatorNew.h"
 #include "JavascriptEngine.h"
 #include "JavascriptModule.h"
-
 #include "ScriptMetaTypeDefines.h"
+
 #include <QFile>
 #include <QUiLoader>
 
@@ -15,7 +15,13 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
     engine_(0),
     scriptRef_(scriptRef)
 {
-    Initialize();
+    engine_ = new QScriptEngine;
+
+    ReqisterInputMetaTypes(engine_);
+    ReqisterSceneMetaTypes(engine_);
+    ReqisterUiMetaTypes(engine_);
+    ReqisterQtMetaTypes(engine_);
+    ReqisterFrameMetaTypes(engine_);
 }
 
 JavascriptEngine::~JavascriptEngine()
@@ -59,7 +65,7 @@ void JavascriptEngine::RegisterService(QObject *serviceObject, const QString &na
     engine_->globalObject().setProperty(name, scriptValue);
 }
 
-QString JavascriptEngine::LoadScript()
+QString JavascriptEngine::LoadScript() const
 {
     QFile scriptFile(scriptRef_);
     scriptFile.open(QIODevice::ReadOnly);
@@ -68,14 +74,3 @@ QString JavascriptEngine::LoadScript()
     return result;
 }
 
-void JavascriptEngine::Initialize()
-{
-    engine_ = new QScriptEngine();
-    if(!engine_)
-        return;
-
-    ReqisterInputMetaTypes(engine_);
-    ReqisterSceneMetaTypes(engine_);
-    ReqisterUiMetaTypes(engine_);
-    ReqisterQtMetaTypes(engine_);
-}
