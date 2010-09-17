@@ -1,3 +1,10 @@
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ScriptMetaTypeDefines.cpp
+ *  @brief  Registration of Naali Core API to Javascript.
+ */
+
 #include "StableHeaders.h"
 #include "ScriptMetaTypeDefines.h"
 
@@ -5,6 +12,7 @@
 #include "QtInputMouseEvent.h"
 #include "QtInputKeyEvent.h"
 #include "UiProxyWidget.h"
+#include "Frame.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -24,6 +32,9 @@ Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(AttributeChange*);
 Q_DECLARE_METATYPE(Foundation::ComponentInterface*);
+
+//! Naali core API object defines.
+Q_DECLARE_METATYPE(Frame*);
 
 void ReqisterQtMetaTypes(QScriptEngine *engine)
 {
@@ -53,3 +64,9 @@ void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
 }
+
+void ReqisterFrameMetaTypes(QScriptEngine *engine)
+{
+    qScriptRegisterQObjectMetaType<Frame*>(engine);
+}
+
