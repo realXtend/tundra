@@ -277,7 +277,7 @@ namespace Scene
 
     bool Entity::HasReceivers(EntityAction *action)
     {
-        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringList &)));
         if (receivers == 0)
         {
             LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
