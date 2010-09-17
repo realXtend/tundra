@@ -25,12 +25,10 @@ JavascriptEngine::~JavascriptEngine()
 
 void JavascriptEngine::Reload()
 {
-    
 }
 
 void JavascriptEngine::Unload()
 {
-    
 }
 
 void JavascriptEngine::Run()
@@ -40,8 +38,8 @@ void JavascriptEngine::Run()
     QScriptSyntaxCheckResult syntaxResult = engine_->checkSyntax(program);
     if(syntaxResult.state() != QScriptSyntaxCheckResult::Valid)
     {
-        JavascriptModule::LogError("Syntax error: " + syntaxResult.errorMessage().toStdString() + 
-                                   " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
+        JavascriptModule::LogError("Syntax error in " + scriptRef_.toStdString() + syntaxResult.errorMessage().toStdString()
+            + " In line:" + QString::number(syntaxResult.errorLineNumber()).toStdString());
         return;
     }
 
