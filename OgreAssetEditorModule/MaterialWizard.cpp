@@ -19,9 +19,6 @@
 #define ENABLE(p) p->setEnabled(true);
 #define DISABLE(p) p->setEnabled(false);
 
-namespace Naali
-{
-
 MaterialWizard::MaterialWizard(QWidget *parent) :
     QWidget(parent),
     mainWidget_(0),
@@ -548,6 +545,4 @@ void MaterialWizard::ValidateScriptName(const QString &name)
         buttonCreate->setEnabled(true);
 
     scriptName_ = name;
-}
-
 }

@@ -32,9 +32,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Naali
-{
-
 OgreScriptEditor::OgreScriptEditor(
     const QString &inventory_id,
     const asset_type_t &asset_type,
@@ -295,6 +292,4 @@ void OgreScriptEditor::CreatePropertyEditor()
     propertyTable_->show();
 
     QObject::connect(propertyTable_, SIGNAL(cellChanged(int, int)), this, SLOT(PropertyChanged(int, int)));
-}
-
 }

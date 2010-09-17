@@ -31,9 +31,6 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace Naali
-{
-
 std::string OgreAssetEditorModule::type_name_static_ = "OgreAssetEditor";
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
@@ -385,15 +382,11 @@ void OgreAssetEditorModule::UploadBuffer(Inventory::InventoryUploadBufferEventDa
     framework_->GetEventManager()->SendEvent(inventoryEventCategory_, Inventory::Events::EVENT_INVENTORY_UPLOAD_BUFFER, data);
 }
 
-}
-
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
 void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-
-using namespace Naali;
 
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(OgreAssetEditorModule)
