@@ -35,14 +35,17 @@ namespace OgreRenderer
 <table style="margin: 20px;">
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
-<h2>Light</h2>
+<h2>Mesh</h2>
 Makes the mesh component.
 
 User can apply new mesh to scene and change it's materials and skeleton.
-EC_Mesh can be used to set mesh to world scene. There are options to apply new materials and skeleton to mesh aswell.
-Note if you are planning to remove the skeleton and want that it's realy gone you should relogin to the server.
+EC_Mesh component can be used to set mesh to a world scene. There are options to apply new materials and skeleton to mesh.
+
+Note! Animation or attachments are not tested with this component as yet.
+
+Note! if you are planning to remove the skeleton and want that it's realy gone you should relogin to the server.
 that is cause Ogre doesn't have a serivice that will remove applied skeleton from the mesh so we need to recreate
-the mesh to get change show.
+the mesh to get the change shown.
 
 <b>Attributes</b>:
 <ul>

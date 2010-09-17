@@ -12,6 +12,7 @@ In C++ code, the components are prefixed with "EC_". In this documentation and i
 
 - \ref RexLogic::EC_AttachedSound "AttachedSound"
 - \ref EC_Light "Light"
+- \ref EC_Mesh  "Mesh"
 - ...
 - ...
 
