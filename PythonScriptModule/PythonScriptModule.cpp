@@ -57,6 +57,7 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
+#include "Frame.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
@@ -556,13 +557,9 @@ namespace PythonScript
     {
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
-        {
-            PythonQt::self()->registerClass(renderer->metaObject());
             return renderer;
-        }
-        else
-            std::cout << "Renderer module not there?" << std::endl;
 
+        LogError("Renderer module not there?");
         return 0;
     }
 
@@ -570,25 +567,17 @@ namespace PythonScript
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
         if (worldLogic)
-        {
-            PythonQt::self()->registerClass(worldLogic->metaObject());
             return worldLogic;
-        }
-        else
-            LogError("WorldLogicInterface service not available in py GetWorldLogic");
 
+        LogError("WorldLogicInterface service not available in py GetWorldLogic");
         return 0;
     }
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
-        if (sptr)
-        {
-            Scene::SceneManager* scene = sptr.get();
-            PythonQt::self()->registerClass(scene->metaObject());
-            return scene;
-        }
+        Scene::ScenePtr scene = framework_->GetScene(name.toStdString());
+        if (scene)
+            return scene.get();
 
         return 0;
     }
@@ -627,12 +616,9 @@ namespace PythonScript
 
         MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
         if (player_service)
-        {
-            PythonQt::self()->registerClass(player_service->metaObject());
             return player_service;
-        }
-        else
-            PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+
+        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
 
@@ -895,8 +881,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
+    RexLogic::RexLogicModule *rexlogic_ = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic_)
     {
         //PythonScript::self()->LogInfo("Getting prim with UUID:" + ruuid.ToString());
@@ -1994,10 +1979,17 @@ namespace PythonScript
         {
             PythonScript::initRexQtPy(apiModule);
             PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            mainModule.addObject("_naali", this);
-            
+
+            mainModule.addObject("_pythonscriptmodule", this);
+            PythonQt::self()->registerClass(&OgreRenderer::Renderer::staticMetaObject);
+            PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
+            PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
+
+            mainModule.addObject("_naali", GetFramework());
+            PythonQt::self()->registerClass(&Frame::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
-            //add placeable and friends when PyEntity goes? PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
@@ -2007,7 +1999,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
 
             pythonqt_inited = true;
-            
+
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
             //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
         }

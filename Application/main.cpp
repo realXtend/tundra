@@ -2,14 +2,11 @@
 
 #include "DebugOperatorNew.h"
 
-#include <boost/thread.hpp>
-
-#include "MemoryLeakCheck.h"
-
 #include "Foundation.h"
 #include "ModuleManager.h"
-
 #include "HttpUtilities.h"
+
+#include <boost/thread.hpp>
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -26,6 +23,8 @@
 #include <strsafe.h>
 #pragma warning(pop)
 #endif
+
+#include "MemoryLeakCheck.h"
 
 void setup(Foundation::Framework &fw);
 int run(int argc, char **argv);
@@ -101,11 +100,10 @@ int run (int argc, char **argv)
         Foundation::Framework fw(argc, argv);
         if (fw.Initialized())
         {
-            setup (fw);
-
+            setup(fw);
             fw.Go();
         }
-        
+
         HttpUtilities::UninitializeHttp();
     }
 #if !defined(_DEBUG) || !defined (_MSC_VER)

@@ -308,7 +308,7 @@ namespace Scene
             @param params List of parameters for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QStringVector &params, EntityAction::ExecutionType type = EntityAction::Local);
+        void Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type = EntityAction::Local);
 
     private:
         /** Validates that the action has receivers. If not, deletes the action and removes it from
