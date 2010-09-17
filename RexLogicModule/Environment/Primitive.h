@@ -58,7 +58,7 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_44bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
 
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         void HandleLogout();
 

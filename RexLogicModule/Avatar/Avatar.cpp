@@ -686,17 +686,17 @@ namespace RexLogic
         avatar->SetState(state);
     }
     
-    bool Avatar::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool Avatar::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleResourceEvent(event_id, data);
     }
 
-    bool Avatar::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool Avatar::HandleInventoryEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleInventoryEvent(event_id, data);
     }
 
-    bool Avatar::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool Avatar::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleAssetEvent(event_id, data);
     }

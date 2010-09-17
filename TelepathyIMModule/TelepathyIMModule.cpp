@@ -116,7 +116,7 @@ namespace Communication
 
     }
 
-    bool TelepathyIMModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TelepathyIMModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 

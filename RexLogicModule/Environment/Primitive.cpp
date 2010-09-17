@@ -1278,7 +1278,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     }
 }
 
-bool Primitive::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id == Resource::Events::RESOURCE_READY)
     {

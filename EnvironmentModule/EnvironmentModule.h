@@ -12,11 +12,6 @@
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
-
 namespace Environment
 {
     class Terrain;
@@ -52,31 +47,31 @@ namespace Environment
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Handles resouce event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleResouceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResouceEvent(event_id_t event_id, IEventData* data);
 
         //! Handles framework event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
 
         //! Handles resouce event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleNetworkEvent(event_id_t event_id, IEventData* data);
 
         //! Handles input event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Get terrain texture ids, terrain height and water height values.
         //! @param network data pointer.

@@ -42,7 +42,6 @@ namespace Foundation
     class Framework;
     class KeyBindings;
     class MainWindow;
-    class EventDataInterface;
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
@@ -75,5 +74,7 @@ class KeyEvent;
 class MouseEvent;
 class InputContext;
 typedef boost::shared_ptr<InputContext> InputContextPtr;
+
+class IEventData;
 
 #endif

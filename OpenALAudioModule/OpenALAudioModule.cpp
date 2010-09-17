@@ -70,7 +70,7 @@ namespace OpenALAudio
         RESETPROFILER;
     }
 
-    bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (category_id == asset_event_category_)
         {

@@ -28,7 +28,7 @@ namespace TextureDecoder
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
         virtual void PostInitialize();
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         MODULE_LOGGING_FUNCTIONS
 

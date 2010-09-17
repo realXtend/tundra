@@ -113,7 +113,7 @@ namespace MumbleVoip
             in_world_voice_provider_->Update(frametime);
     }
 
-    bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);

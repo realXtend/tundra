@@ -98,7 +98,7 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
 
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
@@ -180,10 +180,10 @@ private:
     //! Detach entity from the scene node.
     void DetachEntity();
     
-    bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-    bool HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-    bool HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-    bool HandleMaterialResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
+    bool HandleMeshResourceEvent(event_id_t event_id, IEventData* data);
+    bool HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data);
+    bool HandleMaterialResourceEvent(event_id_t event_id, IEventData* data);
 
     OgreRenderer::RendererWeakPtr renderer_;
     Ogre::Entity* entity_;
@@ -196,7 +196,7 @@ private:
     AssetRequestArray materialRequestTags_;
 
     typedef std::pair<request_tag_t, std::string> ResourceKeyPair;
-    typedef boost::function<bool(event_id_t,Foundation::EventDataInterface*)> MeshEventHandlerFunction;
+    typedef boost::function<bool(event_id_t,IEventData*)> MeshEventHandlerFunction;
     typedef std::map<ResourceKeyPair, MeshEventHandlerFunction> MeshResourceHandlerMap;
     MeshResourceHandlerMap resRequestTags_;
 };

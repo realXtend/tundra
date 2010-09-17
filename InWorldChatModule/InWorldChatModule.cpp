@@ -78,7 +78,7 @@ void InWorldChatModule::Update(f64 frametime)
 {
 }
 
-bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if (category_id == frameworkEventCategory_)
     {

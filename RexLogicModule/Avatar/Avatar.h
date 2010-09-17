@@ -72,13 +72,13 @@ namespace RexLogic
         void UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime);
 
         //! Handles resource event
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         //! Handles inventory event
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInventoryEvent(event_id_t event_id, IEventData* data);
 
         //! Handles asset event
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
 
         //! Handles logout
         void HandleLogout();

@@ -318,7 +318,7 @@ namespace OpenSimProtocol
 
         ExtractCapabilitiesFromXml(response_str);
 
-        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, Foundation::EventDataPtr(), 0);
+        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, EventDataPtr(), 0);
     }
 
     void ProtocolModuleOpenSim::ExtractCapabilitiesFromXml(std::string xml)

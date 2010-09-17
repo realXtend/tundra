@@ -177,7 +177,7 @@ bool EC_Mesh::SetMaterial(uint index, const QString &material_name)
     return true;
 }
 
-bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
     {
@@ -370,7 +370,7 @@ void EC_Mesh::AttachSkeleton(const QString &skeletonName)
     }
 }
 
-bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id != Resource::Events::RESOURCE_READY)
         return false;
@@ -388,7 +388,7 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
     return false;
 }
 
-bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -405,7 +405,7 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventData
     return true;
 }
 
-bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 {
     if(!entity_)
         return false;
@@ -429,7 +429,7 @@ bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::Event
     return true;
 }
 
-bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;

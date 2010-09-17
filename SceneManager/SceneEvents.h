@@ -3,7 +3,7 @@
 #ifndef incl_SceneManager_SceneEvents_h
 #define incl_SceneManager_SceneEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "Vector3D.h"
 #include "ForwardDefines.h"
 
@@ -104,7 +104,7 @@ namespace Scene
         static const event_id_t EVENT_ENTITY_ECS_RECEIVED = 0x13;
         
         /// Event data interface for Scene object related events.
-        /*class SceneEventData: public Foundation::EventDataInterface
+        /*class SceneEventData: public IEventData
         {
         public:
             SceneEventData(const std::string &scene_name) : sceneName(scene_name) {}
@@ -118,7 +118,7 @@ namespace Scene
         };
         
         /// Event data interface for entity events.
-        /*class EntityEventData: public Foundation::EventDataInterface
+        /*class EntityEventData: public IEventData
         {
         public:
             EntityEventData(const std::string &scene_name) : sceneName(scene_name) {}
@@ -136,7 +136,7 @@ namespace Scene
         };
         
         /// Event data interface for component events.
-        /*class EntityEventData: public Foundation::EventDataInterface
+        /*class EntityEventData: public IEventData
         {
         public:
             EntityEventData(const std::string &scene_name) : sceneName(scene_name) {}
@@ -156,7 +156,7 @@ namespace Scene
         };*/
         
         /// Soon to be deprecated class event data class.
-        class SceneEventData: public Foundation::EventDataInterface
+        class SceneEventData: public IEventData
         {
         public:
             explicit SceneEventData(const std::string &scene_name);
@@ -168,7 +168,7 @@ namespace Scene
             std::vector<Scene::EntityPtr> entity_ptr_list;
         };
 
-        class EntityEventData : public Foundation::EventDataInterface
+        class EntityEventData : public IEventData
         {
         public:
             Scene::EntityPtr entity;
@@ -200,7 +200,7 @@ namespace Scene
             Scene::Entity *entity;
         };
 
-        class CreateEntityEventData : public Foundation::EventDataInterface
+        class CreateEntityEventData : public IEventData
         {
         public:
             CreateEntityEventData(Vector3df pos);
@@ -208,14 +208,14 @@ namespace Scene
             Vector3df position;
         };
 
-        class TerrainTexturesEventData : public Foundation::EventDataInterface
+        class TerrainTexturesEventData : public IEventData
         {
         public:
             /// should be same as RexTypes::RexAssetID. std::string is used because we dont want more dependences.
             std::string terrain[4];
         };
 
-        class WaterEventData : public Foundation::EventDataInterface
+        class WaterEventData : public IEventData
         {
         public:
             WaterEventData();

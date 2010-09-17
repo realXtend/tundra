@@ -46,7 +46,7 @@ namespace Asset
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         void UnsubscribeNetworkEvents();

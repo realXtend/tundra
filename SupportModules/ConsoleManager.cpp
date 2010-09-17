@@ -55,7 +55,7 @@ namespace Console
         {
             Console::ConsoleEventData* event_data = new Console::ConsoleEventData(text);
             parent_->GetFramework()->GetEventManager()->SendDelayedEvent(console_category_id_,
-                Console::Events::EVENT_CONSOLE_PRINT_LINE, Foundation::EventDataPtr(event_data));
+                Console::Events::EVENT_CONSOLE_PRINT_LINE, EventDataPtr(event_data));
         }
         else
         {

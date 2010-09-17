@@ -88,7 +88,7 @@ namespace RexLogic
         movement_.y_.rel_ = 0;
     }
         
-    bool AvatarControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleSceneEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
         {
@@ -116,7 +116,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         // switch between first and third person modes
 
@@ -185,7 +185,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleActionEvent(event_id_t event_id, IEventData* data)
     {
         Scene::Events::EntityEventData *entity_data = dynamic_cast<Scene::Events::EntityEventData*>(data);
         if (!entity_data) // a bit of a hax, we need to watchout as different action events contain different data

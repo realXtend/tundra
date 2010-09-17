@@ -169,7 +169,7 @@ namespace UiServices
     {
     }
 
-    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(UiModule_HandleEvent);
 

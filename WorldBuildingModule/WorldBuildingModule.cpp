@@ -50,7 +50,7 @@ namespace WorldBuilding
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyReleased(KeyEvent*)));
     }
 
-    bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         bool handled = false;
         QString category = service_category_identifiers_.keys().value(

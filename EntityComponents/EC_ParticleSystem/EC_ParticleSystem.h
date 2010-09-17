@@ -28,9 +28,9 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     Attribute<QString> particleId_;
     Attribute<bool> castShadows_;

@@ -19,8 +19,7 @@ class RexUUID;
 
 namespace Foundation
 {
-    class EventDataInterface;
-    class TextureInterface;    
+    class TextureInterface;
 }
 
 namespace Resource
@@ -74,7 +73,7 @@ namespace WorldMap
         void Load();
         void PostInitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Handles MapBlock network message.
         //! \param data Network event data.
@@ -85,7 +84,7 @@ namespace WorldMap
         bool HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData *data);
 
         //! Handles an asset event. Called from WorldMapModule.
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         //! Show the world map widget
         Console::CommandResult ShowWindow(const StringVector &params);
