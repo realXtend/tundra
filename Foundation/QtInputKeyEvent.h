@@ -20,6 +20,7 @@ namespace QtInputEvents
 class KeyEvent : public QObject, public Foundation::EventDataInterface
 {
     Q_OBJECT
+    Q_ENUMS(EventType)
 
 public:
     KeyEvent()

@@ -6,6 +6,9 @@
 #include "QtInputKeyEvent.h"
 #include "UiProxyWidget.h"
 
+#include "QtInputMouseEvent.h"
+#include "QtInputKeyEvent.h"
+
 #include <QUiLoader>
 #include <QFile>
 
@@ -52,4 +55,8 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
+
+    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
+    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
