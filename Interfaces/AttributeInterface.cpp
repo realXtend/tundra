@@ -109,20 +109,6 @@ template<> std::string Attribute<QVariant>::ToString() const
     return value.toString().toStdString();
 }
 
-template<> std::string Attribute<std::vector<QVariant> >::ToString() const
-{
-    std::vector<QVariant> values = Get();
-
-    std::string stringValue = "";
-    for(uint i = 0; i < values.size(); i++)
-    {
-        stringValue += values[i].toString().toStdString();
-        if(i < values.size() - 1)
-            stringValue += ";";
-    }
-    return stringValue;
-}
-
 template<> std::string Attribute<QVariantList >::ToString() const
 {
     QVariantList values = Get();
@@ -209,11 +195,6 @@ template<> std::string Attribute<Foundation::AssetReference>::TypenameToString()
 template<> std::string Attribute<QVariant>::TypenameToString() const
 {
     return "qvariant";
-}
-
-template<> std::string Attribute<std::vector<QVariant> >::TypenameToString() const
-{
-    return "qvariantarray";
 }
 
 template<> std::string Attribute<QVariantList >::TypenameToString() const
@@ -353,20 +334,6 @@ template<> void Attribute<Foundation::AssetReference>::FromString(const std::str
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
 {
     QVariant value(QString(str.c_str()));
-    Set(value, change);
-}
-
-template<> void Attribute<std::vector<QVariant> >::FromString(const std::string& str, AttributeChange::Type change)
-{
-    std::vector<QVariant> value;
-    QString strValue = QString::fromStdString(str);
-    QStringList components = strValue.split(';');
-
-    for(uint i = 0; i < components.size(); i++)
-        value.push_back(QVariant(components[i]));
-    if(value.size() == 1)
-        if(value[0] == "")
-            value.pop_back();
     Set(value, change);
 }
 

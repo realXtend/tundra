@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
+#include "Framework.h"
 
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"

@@ -44,7 +44,7 @@ public:
     Attribute<bool> takeMouseEventsOverQt;
 
     /// Key sequence - action name mappings.
-    Attribute<std::vector<QVariant> > mappings;
+    Attribute<QVariantList > mappings;
 
     typedef QMap<QKeySequence, QString> Mappings_t;
 
