@@ -30,9 +30,6 @@
 #include <QColor>
 #include "MemoryLeakCheck.h"
 
-namespace Naali
-{
-
 const std::string InWorldChatModule::moduleName_ = std::string("InWorldChatModule");
 
 InWorldChatModule::InWorldChatModule() :
@@ -415,10 +412,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 {
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
-
-}
-
-using namespace Naali;
 
 POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(InWorldChatModule)
