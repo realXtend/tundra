@@ -99,7 +99,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         QString parsedAction = action.mid(idx + 1);
         parsedAction.remove('(');
         parsedAction.remove(')');
-        QStringVector parameters = parsedAction.split(',').toVector();
+        QStringList parameters = parsedAction.split(',');
         entity->Exec(act, parameters);
     }
     else
