@@ -25,7 +25,6 @@ namespace Foundation
         attributeTypes_.push_back("quaternion");
         attributeTypes_.push_back("assetreference");
         attributeTypes_.push_back("qvariant");
-        attributeTypes_.push_back("qvariantarray");
         attributeTypes_.push_back("qvariantlist");
         attributeTypes_.push_back("transform");
     }
@@ -89,8 +88,6 @@ namespace Foundation
             attribute = new Attribute<AssetReference>(owner, name.c_str());
         else if(typeName == "qvariant")
             attribute = new Attribute<QVariant>(owner, name.c_str());
-        else if(typeName == "qvariantarray")
-            attribute = new Attribute<std::vector<QVariant> >(owner, name.c_str());
         else if(typeName == "qvariantlist")
             attribute = new Attribute<QVariantList >(owner, name.c_str());
         else if(typeName == "transform")

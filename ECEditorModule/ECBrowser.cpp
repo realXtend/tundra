@@ -248,6 +248,34 @@ namespace ECEditor
                         compWeak.lock()->ComponentChanged(AttributeChange::Local); 
                     }
                 }
+                else if(attr->TypenameToString() == "qvariantlist")
+                {
+                    Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList > *>(attr);
+                    if(attribute)
+                    {
+                        // We asume that item's name is form of "[0]","[1]" etc. We need to cut down those first and last characters
+                        // to able to get real index number of that item that is cause sorting can make the item order a bit odd.
+                        QString indexText = "";
+                        QString itemText = item->text(0);
+                        for(uint i = 1; i < itemText.size() - 1; i++)
+                            indexText += itemText[i];
+                        bool ok;
+                        int index = indexText.toInt(&ok);
+                        if(!ok)
+                            return false;
+
+                        QVariantList variants = attribute->Get();
+                        if(variants.size() > index)
+                            variants[index] = asset_id;
+                        else if(variants.size() == index)
+                            variants.push_back(asset_id);
+                        else
+                            return false;
+
+                        attribute->Set(variants, AttributeChange::Local);
+                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                    }
+                }
             }
         }
         else
