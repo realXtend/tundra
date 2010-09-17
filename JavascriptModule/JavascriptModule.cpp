@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   
+ *  @file   JavascriptModule.cpp
  *  @brief  
  */
 
@@ -9,26 +9,29 @@
 #include "DebugOperatorNew.h"
 
 #include "JavascriptModule.h"
+#include "ScriptMetaTypeDefines.h"
+#include "JavascriptEngine.h"
+
 #include "EC_Script.h"
 #include "SceneManager.h"
 #include "InputContext.h"
 #include "InputServiceInterface.h"
 #include "UiServiceInterface.h"
-#include "ScriptMetaTypeDefines.h"
-#include "JavascriptEngine.h"
+#include "Frame.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include <QtScript>
 
-#include "ConsoleCommandServiceInterface.h"
-Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
+Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*) ///@todo Remove? This is already done in ScriptMetaTypeDefines.cpp
 
 #include "MemoryLeakCheck.h"
 
-std::string JavascriptModule::type_name_static_ = "JavascriptModule";
+std::string JavascriptModule::type_name_static_ = "Javascript";
 JavascriptModule *javascriptModuleInstance_ = 0;
 
 JavascriptModule::JavascriptModule() :
-    ModuleInterface(type_name_static_)
+    ModuleInterface(type_name_static_),
+    engine(new QScriptEngine(this))
 {
 }
 
@@ -60,10 +63,10 @@ void JavascriptModule::Initialize()
     boost::weak_ptr<ScriptServiceInterface> service = boost::dynamic_pointer_cast<ScriptServiceInterface>(jsmodule);
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_JavascriptScripting, service);
 
-    engine.globalObject().setProperty("print", engine.newFunction(Print));
+    engine->globalObject().setProperty("print", engine->newFunction(Print));
 
-    QScriptValue objectbutton= engine.scriptValueFromQMetaObject<QPushButton>();
-    engine.globalObject().setProperty("QPushButton", objectbutton);
+    QScriptValue objectbutton= engine->scriptValueFromQMetaObject<QPushButton>();
+    engine->globalObject().setProperty("QPushButton", objectbutton);
 
     JavascriptModule::RunScript("jsmodules/lib/json2.js");
 
@@ -76,9 +79,11 @@ void JavascriptModule::PostInitialize()
     Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
     //Foundation::SoundServiceInterface *sound = GetFramework()->GetService<Foundation::SoundServiceInterface>();
 
-    services_["input"]  = input_.get();
-    services_["ui"]     = ui;
-    //services_["sound"]  = sound;
+    // Add Naali Core API objcects as js services.
+    services_["input"] = input_.get();
+    services_["ui"] = ui;
+    //services_["sound"] = sound;
+    services_["frame"] = GetFramework()->GetFrame();
 
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
@@ -87,59 +92,6 @@ void JavascriptModule::PostInitialize()
     RegisterConsoleCommand(Console::CreateCommand(
         "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",  
         Console::Bind(this, &JavascriptModule::ConsoleRunFile))); 
-}
-
-Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
-{
-    if (params.size() != 1)
-    {            
-        return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
-    }
-
-    else
-    {
-        JavascriptModule::RunString(QString::fromStdString(params[0]));
-        return Console::ResultSuccess();
-    }
-}
-
-Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
-{        
-    if (params.size() != 1)
-    {            
-        return Console::ResultFailure("Usage: JsLoad(myfile.js)");
-    }
-
-    QString scriptFileName = QString::fromStdString(params[0]);
-    JavascriptModule::RunScript(scriptFileName);
-
-    return Console::ResultSuccess();
-}
-
-JavascriptModule *JavascriptModule::GetInstance()
-{
-    assert(javascriptModuleInstance_);
-    return javascriptModuleInstance_;
-}
-
-void JavascriptModule::RunString(const QString &codestr, const QVariantMap &context)
-{
-    QMapIterator<QString, QVariant> i(context);
-    while (i.hasNext())
-    {
-        i.next();
-        engine.globalObject().setProperty(i.key(), engine.newQObject(i.value().value<QObject*>()));
-    }
-
-    engine.evaluate(codestr);
-}
-
-void JavascriptModule::RunScript(const QString &scriptFileName)
-{
-    QFile scriptFile(scriptFileName);
-    scriptFile.open(QIODevice::ReadOnly);
-    engine.evaluate(scriptFile.readAll(), scriptFileName);
-    scriptFile.close();
 }
 
 void JavascriptModule::Uninitialize()
@@ -156,13 +108,58 @@ bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t e
     return false;
 }
 
+Console::CommandResult JavascriptModule::ConsoleRunString(const StringVector &params)
+{
+    if (params.size() != 1)
+        return Console::ResultFailure("Usage: JsExec(print 1 + 1)");
+
+    JavascriptModule::RunString(QString::fromStdString(params[0]));
+    return Console::ResultSuccess();
+}
+
+Console::CommandResult JavascriptModule::ConsoleRunFile(const StringVector &params)
+{
+    if (params.size() != 1)
+        return Console::ResultFailure("Usage: JsLoad(myfile.js)");
+
+    JavascriptModule::RunScript(QString::fromStdString(params[0]));
+
+    return Console::ResultSuccess();
+}
+
+JavascriptModule *JavascriptModule::GetInstance()
+{
+    assert(javascriptModuleInstance_);
+    return javascriptModuleInstance_;
+}
+
+void JavascriptModule::RunString(const QString &codestr, const QVariantMap &context)
+{
+    QMapIterator<QString, QVariant> i(context);
+    while (i.hasNext())
+    {
+        i.next();
+        engine->globalObject().setProperty(i.key(), engine->newQObject(i.value().value<QObject*>()));
+    }
+
+    engine->evaluate(codestr);
+}
+
+void JavascriptModule::RunScript(const QString &scriptFileName)
+{
+    QFile scriptFile(scriptFileName);
+    scriptFile.open(QIODevice::ReadOnly);
+    engine->evaluate(scriptFile.readAll(), scriptFileName);
+    scriptFile.close();
+}
+
 void JavascriptModule::SceneAdded(const QString &name)
 {
     Scene::ScenePtr scene = GetFramework()->GetScene(name.toStdString());
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            this, SLOT(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
+            SLOT(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            this, SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
+            SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
     //! @todo only most recently added scene has been saved to services_ map change this so that we can have access to multiple scenes in script side.
     services_["scene"]  = scene.get();
 }
@@ -176,7 +173,7 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
     sender->SetScriptInstance(javaScriptInstance);
 
-    //Register all services to script engine.
+    //Register all services to script engine->
     ServiceMap::iterator iter = services_.begin();
     for(; iter != services_.end(); iter++)
         javaScriptInstance->RegisterService(iter.value(), iter.key());
@@ -191,15 +188,13 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
 void JavascriptModule::ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     if(comp->TypeName() == "EC_Script")
-        connect(comp, SIGNAL(ScriptRefChanged(const QString &)),
-                this, SLOT(ScriptChanged(const QString &)));
+        connect(comp, SIGNAL(ScriptRefChanged(const QString &)), SLOT(ScriptChanged(const QString &)));
 }
 
 void JavascriptModule::ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
 {
     if(comp->TypeName() == "EC_Script")
-        disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)),
-                   this, SLOT(ScriptChanged(const QString &)));
+        disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)), this, SLOT(ScriptChanged(const QString &)));
 }
 
 QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
@@ -210,11 +205,7 @@ QScriptValue Print(QScriptContext *context, QScriptEngine *engine)
 
 QScriptValue ScriptRunFile(QScriptContext *context, QScriptEngine *engine)
 {
-    QString scriptFileName = context->argument(0).toString();
-
-    JavascriptModule *owner = JavascriptModule::GetInstance();
-    owner->RunScript(scriptFileName);
-
+    JavascriptModule::GetInstance()->RunScript(context->argument(0).toString());
     return QScriptValue();
 }
 
