@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Sound.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
@@ -13,7 +13,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 
 #include "MemoryLeakCheck.h"
 
-EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
+EC_Sound::EC_Sound(IModule *module):
     Foundation::ComponentInterface(module->GetFramework()),
     sound_id_(0),
     soundId_(this, "Sound id"),

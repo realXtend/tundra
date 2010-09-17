@@ -25,7 +25,7 @@ namespace ECEditor
     std::string ECEditorModule::name_static_ = "ECEditor";
     
     ECEditorModule::ECEditorModule() :
-        ModuleInterface(name_static_),
+        IModule(name_static_),
         scene_event_category_(0),
         framework_event_category_(0),
         input_event_category_(0),
@@ -272,7 +272,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace ECEditor;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(ECEditorModule)
 POCO_END_MANIFEST
 

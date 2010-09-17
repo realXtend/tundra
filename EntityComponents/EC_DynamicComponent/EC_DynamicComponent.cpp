@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_DynamicComponent.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
 #include "LoggingFunctions.h"
@@ -26,7 +26,7 @@ namespace
     }
 }
 
-EC_DynamicComponent::EC_DynamicComponent(Foundation::ModuleInterface *module):
+EC_DynamicComponent::EC_DynamicComponent(IModule *module):
     Foundation::ComponentInterface(module->GetFramework())
 {
 }

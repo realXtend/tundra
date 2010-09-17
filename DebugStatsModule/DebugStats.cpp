@@ -46,7 +46,7 @@ namespace DebugStats
 const std::string DebugStatsModule::moduleName = std::string("DebugStats");
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterface(NameStatic()),
+    IModule(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkOutEventCategory_(0),
@@ -541,6 +541,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace DebugStats;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(DebugStatsModule)
 POCO_END_MANIFEST 

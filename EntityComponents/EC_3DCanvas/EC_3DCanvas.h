@@ -47,7 +47,7 @@ public slots:
     QWidget *GetWidget() { return widget_; }
 
 private:
-    explicit EC_3DCanvas(Foundation::ModuleInterface *module);
+    explicit EC_3DCanvas(IModule *module);
     void UpdateSubmeshes();
 
 private slots:

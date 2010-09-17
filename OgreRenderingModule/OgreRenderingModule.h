@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderingModule_OgreRenderingModule_h
 #define incl_OgreRenderingModule_OgreRenderingModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "Renderer.h"
 #include "OgreModuleApi.h"
@@ -29,7 +29,7 @@ namespace OgreRenderer
     */
 
     //! A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterface
+    class OGRE_MODULE_API OgreRenderingModule : public IModule
     {
     public:
         OgreRenderingModule();

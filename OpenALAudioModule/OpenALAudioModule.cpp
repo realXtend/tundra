@@ -12,7 +12,7 @@ namespace OpenALAudio
 {
     std::string OpenALAudioModule::type_name_static_ = "OpenALAudio";
 
-    OpenALAudioModule::OpenALAudioModule() : ModuleInterface(type_name_static_)
+    OpenALAudioModule::OpenALAudioModule() : IModule(type_name_static_)
     {
     }
 
@@ -96,6 +96,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace OpenALAudio;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(OpenALAudioModule)
 POCO_END_MANIFEST

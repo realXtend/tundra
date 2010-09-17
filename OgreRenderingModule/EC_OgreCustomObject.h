@@ -88,7 +88,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreCustomObject(Foundation::ModuleInterface* module);
+        EC_OgreCustomObject(IModule* module);
         
         //! attaches entity to placeable
         void AttachEntity();

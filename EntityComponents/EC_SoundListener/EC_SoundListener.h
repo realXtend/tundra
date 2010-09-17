@@ -57,7 +57,7 @@ private:
     /** Constructor.
      *  @param module Declaring module.
      */
-    explicit EC_SoundListener(Foundation::ModuleInterface *module);
+    explicit EC_SoundListener(IModule *module);
 
     /// Parent entity's placeable component.
     boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;

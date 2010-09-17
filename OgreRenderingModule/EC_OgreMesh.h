@@ -207,7 +207,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMesh(Foundation::ModuleInterface* module);
+        EC_OgreMesh(IModule* module);
         
         //! prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
         /*! \param mesh_name Mesh to prepare

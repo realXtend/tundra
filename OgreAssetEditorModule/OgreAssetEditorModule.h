@@ -9,7 +9,7 @@
 #ifndef incl_OgreAssetEditorModule_OgreAssetEditorModule_h
 #define incl_OgreAssetEditorModule_OgreAssetEditorModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -31,7 +31,7 @@ namespace Naali
     class MaterialWizard;
     class EditorManager;
 
-    class OgreAssetEditorModule : public QObject, public Foundation::ModuleInterface
+    class OgreAssetEditorModule : public QObject, public IModule
     {
         Q_OBJECT
 

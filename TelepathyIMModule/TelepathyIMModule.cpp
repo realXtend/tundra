@@ -28,7 +28,7 @@ namespace Communication
     std::string TelepathyIMModule::type_name_static_ = "TelepathyIM";
 
     TelepathyIMModule::TelepathyIMModule()
-        : ModuleInterface(type_name_static_),
+        : IModule(type_name_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
           communication_service_(0),
@@ -204,6 +204,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Communication;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
 POCO_EXPORT_CLASS(TelepathyIMModule)
 POCO_END_MANIFEST

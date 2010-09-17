@@ -116,7 +116,7 @@ namespace PythonScript
     PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
 
     PythonScriptModule::PythonScriptModule()
-    :ModuleInterface(type_name_static_),
+    :IModule(type_name_static_),
     pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
     {
         pythonqt_inited = false;
@@ -671,7 +671,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace PythonScript;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
 

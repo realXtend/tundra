@@ -10,7 +10,7 @@
 #define incl_WorldMapModule_h
 
 #include "WorldMapModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -59,7 +59,7 @@ QT_END_NAMESPACE
 
 namespace WorldMap
 {
-    class WORLDMAP_MODULE_API WorldMapModule :  public QObject, public Foundation::ModuleInterface
+    class WORLDMAP_MODULE_API WorldMapModule :  public QObject, public IModule
     {
         Q_OBJECT
 

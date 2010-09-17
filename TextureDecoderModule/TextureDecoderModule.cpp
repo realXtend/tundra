@@ -12,7 +12,7 @@ namespace TextureDecoder
 {
     std::string TextureDecoderModule::type_name_static_ = "TextureDecoder";
 
-    TextureDecoderModule::TextureDecoderModule() : ModuleInterface(type_name_static_)
+    TextureDecoderModule::TextureDecoderModule() : IModule(type_name_static_)
     {
     }
 
@@ -81,7 +81,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace TextureDecoder;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(TextureDecoderModule)
 POCO_END_MANIFEST
 

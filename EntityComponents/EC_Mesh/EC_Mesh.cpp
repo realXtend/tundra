@@ -19,7 +19,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
-EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
+EC_Mesh::EC_Mesh(IModule *module):
     Foundation::ComponentInterface(module->GetFramework()),
     nodeTransformation(this, "Transform"),
     meshResourceId(this, "Mesh ref", ""),

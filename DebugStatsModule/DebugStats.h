@@ -10,7 +10,7 @@
 #define incl_DebugStats_h
 
 #include "DebugStatsModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexTypes.h"
 
@@ -38,7 +38,7 @@ namespace DebugStats
     class TimeProfilerWindow;
     class ParticipantWindow;
 
-    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterface
+    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public IModule
     {
         Q_OBJECT
 

@@ -22,7 +22,7 @@
 #ifndef incl_RexLogicModule_RexLogicModule_h
 #define incl_RexLogicModule_RexLogicModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "WorldLogicInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexLogicModuleApi.h"
@@ -95,7 +95,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public Foundation::ModuleInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public IModule
     {
         Q_OBJECT
 

@@ -3,7 +3,7 @@
 #ifndef incl_SupportModules_ConsoleModule_h
 #define incl_SupportModules_ConsoleModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
@@ -22,7 +22,7 @@ namespace Console
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
-    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterface
+    class CONSOLE_MODULE_API ConsoleModule : public IModule
     {
     public:
         ConsoleModule();

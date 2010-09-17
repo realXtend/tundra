@@ -87,7 +87,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreLight(Foundation::ModuleInterface* module);
+        EC_OgreLight(IModule* module);
         
         //! attaches light to placeable
         void AttachLight();

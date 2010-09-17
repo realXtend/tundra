@@ -57,7 +57,7 @@ private:
     /** Constructor.
         @param module Declaring module.
      */
-    explicit EC_Movable(Foundation::ModuleInterface *module);
+    explicit EC_Movable(IModule *module);
 
     void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
 

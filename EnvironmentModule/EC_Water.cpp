@@ -3,14 +3,14 @@
 #include "StableHeaders.h"
 #include "EC_Water.h"
 #include "Renderer.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ServiceManager.h"
 
 #include <Ogre.h>
 
 namespace Environment
 {
-    EC_Water::EC_Water(Foundation::ModuleInterface* module) :
+    EC_Water::EC_Water(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         scene_node_(0), entity_(0)
     {

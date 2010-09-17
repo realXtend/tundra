@@ -37,7 +37,7 @@ namespace Naali
 std::string OgreAssetEditorModule::type_name_static_ = "OgreAssetEditor";
 
 OgreAssetEditorModule::OgreAssetEditorModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     frameworkEventCategory_(0),
     inventoryEventCategory_(0),
     assetEventCategory_(0),
@@ -395,6 +395,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Naali;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(OgreAssetEditorModule)
 POCO_END_MANIFEST

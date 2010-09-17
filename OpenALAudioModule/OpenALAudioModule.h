@@ -3,7 +3,7 @@
 #ifndef incl_OpenALAudio_OpenALAudioModule_h
 #define incl_OpenALAudio_OpenALAudioModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "OpenALAudioModuleApi.h"
 
@@ -20,7 +20,7 @@ namespace OpenALAudio
     typedef boost::shared_ptr<SoundSettings> SoundSettingsPtr;
 
     //! interface for modules
-    class OPENAL_MODULE_API OpenALAudioModule : public Foundation::ModuleInterface
+    class OPENAL_MODULE_API OpenALAudioModule : public IModule
     {
     public:
         OpenALAudioModule();

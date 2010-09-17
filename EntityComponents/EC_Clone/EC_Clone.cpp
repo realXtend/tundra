@@ -11,7 +11,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Clone.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
@@ -26,7 +26,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Clone")
 
 #include "MemoryLeakCheck.h"
 
-EC_Clone::EC_Clone(Foundation::ModuleInterface *module) :
+EC_Clone::EC_Clone(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)

@@ -144,7 +144,7 @@ private:
     //! Constuctor.
     /*! \param module Module.
      */
-    explicit EC_Light(Foundation::ModuleInterface *module);
+    explicit EC_Light(IModule *module);
     
     //! Attaches light to placeable
     void AttachLight();

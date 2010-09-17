@@ -9,12 +9,12 @@
 #include <boost/shared_ptr.hpp>
 #include <boost/weak_ptr.hpp>
 
+class IModule;
+
 namespace Foundation
 {
-    class ModuleInterface;
-
-    typedef boost::shared_ptr<ModuleInterface> ModuleSharedPtr;
-    typedef boost::weak_ptr<ModuleInterface> ModuleWeakPtr;
+    typedef boost::shared_ptr<IModule> ModuleSharedPtr;
+    typedef boost::weak_ptr<IModule> ModuleWeakPtr;
 }
 
 #endif

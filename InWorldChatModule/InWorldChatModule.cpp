@@ -36,7 +36,7 @@ namespace Naali
 const std::string InWorldChatModule::moduleName_ = std::string("InWorldChatModule");
 
 InWorldChatModule::InWorldChatModule() :
-    ModuleInterface(moduleName_),
+    IModule(moduleName_),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),
@@ -420,6 +420,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Naali;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(InWorldChatModule)
 POCO_END_MANIFEST

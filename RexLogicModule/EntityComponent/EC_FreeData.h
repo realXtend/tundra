@@ -32,7 +32,7 @@ namespace RexLogic
     private:
         /// Constuctor.
         /// @param module Declaring module.
-        EC_FreeData(Foundation::ModuleInterface* module);
+        EC_FreeData(IModule* module);
     };
 }
 

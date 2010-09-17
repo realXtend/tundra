@@ -158,7 +158,7 @@ private:
     //! Constuctor.
     /*! \param module Module.
      */
-    explicit EC_Mesh(Foundation::ModuleInterface *module);
+    explicit EC_Mesh(IModule *module);
     //! Request asset using it's resource id and resource type. If resource has been found at the renderer service return it's tag to user.
     /*! @param id Resource id.
      *  @param type Resource type.

@@ -91,7 +91,7 @@ public slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Ruler(Foundation::ModuleInterface *module);
+    explicit EC_Ruler(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();

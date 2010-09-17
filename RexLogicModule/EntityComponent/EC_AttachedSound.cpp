@@ -2,13 +2,13 @@
 
 #include "StableHeaders.h"
 #include "SoundServiceInterface.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ServiceManager.h"
 #include "EC_AttachedSound.h"
 
 namespace RexLogic
 {
-    EC_AttachedSound::EC_AttachedSound(Foundation::ModuleInterface *module) :
+    EC_AttachedSound::EC_AttachedSound(IModule *module) :
         Foundation::ComponentInterface(module->GetFramework())
     {
         InitSoundVector();

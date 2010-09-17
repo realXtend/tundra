@@ -155,7 +155,7 @@ namespace OgreRenderer
     private:
         /// Constructor.
         /// \param module Renderer module.
-        EC_OgreEnvironment(Foundation::ModuleInterface *module);
+        EC_OgreEnvironment(IModule *module);
 
         /// Creates the sunlight.
         void CreateSunlight();

@@ -41,7 +41,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module);
+        EC_OgreMovableTextOverlay(IModule* module);
 
         //! copy constructor. 
 //        EC_OgreMovableTextOverlay(const EC_OgreMovableTextOverlay &other);

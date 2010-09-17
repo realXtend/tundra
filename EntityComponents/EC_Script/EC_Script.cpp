@@ -49,7 +49,7 @@ void EC_Script::Stop(const QString &name)
         scriptInstance_->Stop();
 }
 
-EC_Script::EC_Script(Foundation::ModuleInterface *module):
+EC_Script::EC_Script(IModule *module):
     Foundation::ComponentInterface(module->GetFramework()),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),

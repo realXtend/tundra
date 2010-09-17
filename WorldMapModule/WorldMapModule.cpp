@@ -34,7 +34,7 @@ namespace WorldMap
 {
 
     WorldMapModule::WorldMapModule() :
-        ModuleInterface(NameStatic()), 
+        IModule(NameStatic()), 
         time_from_last_update_ms_(0),
         networkStateEventCategory_(0),
         networkInEventCategory_(0),
@@ -359,6 +359,6 @@ namespace WorldMap
 
 using namespace WorldMap;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(WorldMapModule)
 POCO_END_MANIFEST

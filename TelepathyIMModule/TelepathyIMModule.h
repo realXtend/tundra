@@ -3,7 +3,7 @@
 #ifndef incl_TelepathyIMModule_TelepathyIMModule_h
 #define incl_TelepathyIMModule_TelepathyIMModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include "TelepathyIMModuleApi.h"
@@ -56,7 +56,7 @@ namespace Communication
      *  Enables IM GUI if jabber protocol is usable
      *
      */
-    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public Foundation::ModuleInterface
+    class TELEPATHY_IM_MODULE_API TelepathyIMModule : public QObject, public IModule
     {
         Q_OBJECT
 

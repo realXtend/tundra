@@ -8,7 +8,7 @@
 #define incl_EnvironmentModule_EnvironmentModule_h
 
 #include "EnvironmentModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
@@ -38,7 +38,7 @@ namespace Environment
         Also module will handle all environment editing via EnvironmentEditor. Module receives network
         messages and send them forward to other components that will need them.
     */
-    class ENVIRONMENT_MODULE_API EnvironmentModule : public Foundation::ModuleInterface
+    class ENVIRONMENT_MODULE_API EnvironmentModule : public IModule
     {
     public:
         //! Constructor.

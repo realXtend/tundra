@@ -87,7 +87,7 @@ private slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Touchable(Foundation::ModuleInterface *module);
+    explicit EC_Touchable(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();

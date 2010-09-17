@@ -116,7 +116,7 @@ public slots:
     bool ContainAttribute(const QString &name) const;
 
 private:
-    explicit EC_DynamicComponent(Foundation::ModuleInterface *module);
+    explicit EC_DynamicComponent(IModule *module);
 };
 
 #endif

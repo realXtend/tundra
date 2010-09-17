@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_Light.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -20,7 +20,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
 using namespace RexTypes;
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(Foundation::ModuleInterface *module) :
+EC_Light::EC_Light(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     light_(0),
     attached_(false),

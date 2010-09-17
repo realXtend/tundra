@@ -20,7 +20,7 @@ namespace WorldBuilding
 
     WorldBuildingModule::WorldBuildingModule() :
         QObject(),
-        ModuleInterface(module_name)
+        IModule(module_name)
     {
         event_query_categories_ << "Framework" << "NetworkState" << "Scene";
     }
@@ -133,6 +133,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 }
 
 using namespace WorldBuilding;
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(WorldBuildingModule)
 POCO_END_MANIFEST

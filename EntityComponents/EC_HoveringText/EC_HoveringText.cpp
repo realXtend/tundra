@@ -10,7 +10,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -31,7 +31,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
+EC_HoveringText::EC_HoveringText(IModule *module) :
     Foundation::ComponentInterface(module->GetFramework()),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),

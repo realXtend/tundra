@@ -12,7 +12,7 @@ namespace CommunicationsService
     std::string CommunicationsModule::type_name_static_ = "Communications";
 
     CommunicationsModule::CommunicationsModule()
-        : ModuleInterface(type_name_static_)
+        : IModule(type_name_static_)
     {
     }
 
@@ -85,6 +85,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace CommunicationsService;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
 POCO_EXPORT_CLASS(CommunicationsModule)
 POCO_END_MANIFEST

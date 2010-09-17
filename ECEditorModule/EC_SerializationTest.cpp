@@ -2,11 +2,11 @@
 
 #include "StableHeaders.h"
 #include "EC_SerializationTest.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 
 namespace ECEditor
 {
-    EC_SerializationTest::EC_SerializationTest(Foundation::ModuleInterface* module) :
+    EC_SerializationTest::EC_SerializationTest(IModule* module) :
         Foundation::ComponentInterface(module->GetFramework()),
         attr1_(this, "attr1"),
         attr2_(this, "attr2"),

@@ -19,7 +19,7 @@ static const float MAX_VISIBILITY_DISTANCE = 50.f;
 namespace OgreRenderer
 {
 
-EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module) :
+EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(IModule* module) :
     Foundation::ComponentInterface(module->GetFramework()),
     text_element_(0),
     container_(0),

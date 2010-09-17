@@ -78,7 +78,7 @@ namespace RexLogic
         void SetQOrientation(const QQuaternion newort);
 
     private:
-        EC_NetworkPosition(Foundation::ModuleInterface* module);        
+        EC_NetworkPosition(IModule* module);        
 
         //! Disable position damping, called after setting position forcibly
         void NoPositionDamping();
