@@ -1,7 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file ModuleReference.h
-/// @brief This file defines types that are used when directly accessing modules using the ModuleManager query interface.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file ModuleReference.h
+ *  @brief This file defines types that are used when directly accessing modules using the ModuleManager query interface.
+ */
 
 #ifndef incl_Foundation_ModuleReference_h
 #define incl_Foundation_ModuleReference_h
@@ -11,10 +13,7 @@
 
 class IModule;
 
-namespace Foundation
-{
-    typedef boost::shared_ptr<IModule> ModuleSharedPtr;
-    typedef boost::weak_ptr<IModule> ModuleWeakPtr;
-}
+typedef boost::shared_ptr<IModule> ModuleSharedPtr;
+typedef boost::weak_ptr<IModule> ModuleWeakPtr;
 
 #endif

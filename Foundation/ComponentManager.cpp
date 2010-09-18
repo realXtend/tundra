@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "ComponentManager.h"
 #include "Framework.h"
-#include "ComponentFactoryInterface.h"
+#include "IComponentFactory.h"
 #include "IComponent.h"
 #include "IAttribute.h"
 #include "AssetInterface.h"
@@ -29,7 +29,7 @@ namespace Foundation
         attributeTypes_.push_back("transform");
     }
 
-    void ComponentManager::RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory)
+    void ComponentManager::RegisterFactory(const QString &component, const ComponentFactoryPtr &factory)
     {
         if (factories_.find(component) == factories_.end())
             factories_[component] = factory;

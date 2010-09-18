@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_Interfaces_ComponentFactoryInterface_h
-#define incl_Interfaces_ComponentFactoryInterface_h
+#ifndef incl_Interfaces_IComponentFactory_h
+#define incl_Interfaces_IComponentFactory_h
 
 #include <boost/shared_ptr.hpp>
 
@@ -12,11 +12,11 @@ class IComponent;
 
     \note When creating new entity components, it is not necessary to use this class if DECLARE_EC -macro is used.
 */
-class ComponentFactoryInterface
+class IComponentFactory
 {
 public:
-    ComponentFactoryInterface() {}
-    virtual ~ComponentFactoryInterface() {}
+    IComponentFactory() {}
+    virtual ~IComponentFactory() {}
 
     virtual boost::shared_ptr<IComponent> operator()() = 0;
     virtual boost::shared_ptr<IComponent> operator()(const boost::shared_ptr<IComponent> &) = 0;
