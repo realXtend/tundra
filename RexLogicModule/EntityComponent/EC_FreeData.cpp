@@ -13,7 +13,7 @@
 namespace RexLogic
 {
     EC_FreeData::EC_FreeData(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework())
+        IComponent(module->GetFramework())
     {
     }
 

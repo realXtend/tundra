@@ -27,7 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
 #include "MemoryLeakCheck.h"
 
 EC_SoundRuler::EC_SoundRuler(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     radiusAttr_(this, "radius", 5),
     volumeAttr_(this, "volume", 5),
     segmentsAttr_(this, "segments", 29),

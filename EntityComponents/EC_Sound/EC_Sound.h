@@ -3,8 +3,8 @@
 #ifndef incl_EC_Sound_EC_Sound_h
 #define incl_EC_Sound_EC_Sound_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "ResourceInterface.h"
 #include "Declare_EC.h"
 
@@ -13,7 +13,7 @@ namespace Foundation
     class ModuleInterface;
 }
 
-class EC_Sound : public Foundation::ComponentInterface
+class EC_Sound : public IComponent
 {
     DECLARE_EC(EC_Sound);
     Q_OBJECT
@@ -36,11 +36,11 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
+    void AttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
     explicit EC_Sound(IModule *module);
-    Foundation::ComponentPtr FindPlaceable() const;
+    ComponentPtr FindPlaceable() const;
 
     sound_id_t sound_id_;
 };

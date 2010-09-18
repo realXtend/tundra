@@ -37,7 +37,7 @@
 namespace RexLogic
 {
     EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         namebillboardSet_(0),
         buttonsbillboardSet_(0),
         namebillboard_(0),

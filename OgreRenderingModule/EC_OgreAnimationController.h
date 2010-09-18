@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreAnimationController_h
 #define incl_OgreRenderer_EC_OgreAnimationController_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
 
@@ -24,7 +24,7 @@ namespace OgreRenderer
     /*! Needs to be told of an EC_OgreMesh component to be usable
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreAnimationController : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreAnimationController : public IComponent
     {
         Q_OBJECT
         

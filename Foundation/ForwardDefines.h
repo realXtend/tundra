@@ -25,18 +25,24 @@ namespace Console
     struct CommandResult;
 }
 
+class ComponentFactoryInterface;
+typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
+
+class IComponent;
+typedef boost::shared_ptr<IComponent> ComponentInterfacePtr;
+typedef boost::shared_ptr<IComponent> ComponentPtr;
+typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
+
 namespace Foundation
 {
     class ModuleManager;
     class ComponentManager;
-    class ComponentFactoryInterface;
     class ServiceManager;
     class ConfigurationManager;
     class EventManager;
     class Platform;
     class Application;
     class ConfigurationManager;
-    class ComponentInterface;
     class ThreadTaskManager;
     class Profiler;
     class Framework;
@@ -45,17 +51,12 @@ namespace Foundation
 
     typedef boost::shared_ptr<ModuleManager> ModuleManagerPtr;
     typedef boost::shared_ptr<ComponentManager> ComponentManagerPtr;
-    typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
     typedef boost::shared_ptr<ServiceManager> ServiceManagerPtr;
     typedef boost::shared_ptr<ConfigurationManager> ConfigurationManagerPtr;
     typedef boost::shared_ptr<EventManager> EventManagerPtr;
     typedef boost::shared_ptr<Platform> PlatformPtr;
     typedef boost::shared_ptr<Application> ApplicationPtr;
     typedef boost::shared_ptr<ThreadTaskManager> ThreadTaskManagerPtr;
-
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
-    typedef boost::shared_ptr<ComponentInterface> ComponentPtr;
-    typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
 
     void RootLogFatal(const std::string &msg);
     void RootLogCritical(const std::string &msg);
@@ -67,8 +68,8 @@ namespace Foundation
     void RootLogDebug(const std::string &msg);
 }
 
-class AttributeInterface;
-typedef std::vector<AttributeInterface*> AttributeVector;
+class IAttribute;
+typedef std::vector<IAttribute*> AttributeVector;
 
 class KeyEvent;
 class MouseEvent;

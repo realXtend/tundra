@@ -391,14 +391,14 @@ namespace RexLogic
          *  @param entity Entity for which the component was added.
          *  @param component The added component.
          */
-        void NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void NewComponentAdded(Scene::Entity *entity, IComponent *component);
 
         /** Called when component is removed from the active scene.
          *  Currently used for handling sound listener EC's.
          *  @param entity Entity from which the component was removed.
          *  @param component The removed component.
          */
-        void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void  ComponentRemoved(Scene::Entity *entity, IComponent *component);
 
         /// Finds entity with active sound listener component and stores it.
         void FindActiveListener();

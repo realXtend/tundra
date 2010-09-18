@@ -112,7 +112,7 @@ namespace RexLogic
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
         scene->EmitEntityCreated(entity, AttributeChange::Network);
 
-        Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
         {
             //CreateNameOverlay(placeable, entityid);
@@ -479,7 +479,7 @@ namespace RexLogic
         avatar_appearance_.Update(frametime);
     }
 
-    void Avatar::CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
+    void Avatar::CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
@@ -503,7 +503,7 @@ namespace RexLogic
         }
     }
 /*
-    void Avatar::CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id)
+    void Avatar::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
         if (!scene)
@@ -571,9 +571,9 @@ namespace RexLogic
         if (!entity)
             return;
 
-        Foundation::ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        Foundation::ComponentPtr meshptr = entity->GetComponent(EC_OgreMesh::TypeNameStatic());
-        Foundation::ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
+        ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent(EC_OgreMesh::TypeNameStatic());
+        ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {

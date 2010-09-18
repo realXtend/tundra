@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ECBrowser.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ECComponentEditor.h"
 #include "SceneManager.h"
 #include "ECEditorModule.h"
@@ -49,14 +49,14 @@ namespace ECEditor
         selectedEntities_.insert(entity);
 
         QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+                         SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
                          this,
-                         SLOT(NewComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
+                         SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
 
         QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
+                         SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
                          this,
-                         SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+                         SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
     }
 
     void ECBrowser::RemoveEntity(Scene::Entity *entity)
@@ -180,7 +180,7 @@ namespace ECEditor
         {
             for(uint i = 0; i < (*iter)->components_.size(); i++)
             {
-                Foundation::ComponentWeakPtr compWeak = (*iter)->components_[i];
+                ComponentWeakPtr compWeak = (*iter)->components_[i];
                 if(compWeak.expired())
                     continue;
 
@@ -190,7 +190,7 @@ namespace ECEditor
                     names << item->parent()->text(0);
 
                 // Try to find the right attribute.
-                AttributeInterface *attr = 0;
+                IAttribute *attr = 0;
                 for(uint i = 0; i < names.size(); i++)
                 {
                     attr = compWeak.lock()->GetAttribute(names[i].toStdString());
@@ -406,7 +406,7 @@ namespace ECEditor
         }
     }
     
-    void ECBrowser::NewComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp) 
+    void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
     {
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
@@ -419,12 +419,12 @@ namespace ECEditor
             if((*iterComp)->ContainComponent(comp))
                 return;
         }
-        Foundation::ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+        ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
         AddNewComponentToGroup(componentPtr);
     }
 
-    void ECBrowser::ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp)
+    void ECBrowser::ComponentRemoved(Scene::Entity* entity, IComponent* comp)
     {
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
@@ -437,7 +437,7 @@ namespace ECEditor
             if(!(*iterComp)->ContainComponent(comp))
                 continue;
             
-            Foundation::ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
             assert(componentPtr.get());
             RemoveComponentFromGroup(comp);
             return;
@@ -458,7 +458,7 @@ namespace ECEditor
             {
                 if(!(*iter)->components_.size())
                     return;
-                Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
+                ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
                 {
                     emit ShowXmlEditorForComponent(pointer.lock()->TypeName().toStdString());
@@ -487,7 +487,7 @@ namespace ECEditor
                     return;
                 // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
                 // Note! wont take account that other components might have different values in their attributes
-                Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
+                ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
                 {
                     pointer.lock()->SerializeTo(temp_doc, entity_elem);
@@ -511,7 +511,7 @@ namespace ECEditor
             EntitySet::iterator iter = selectedEntities_.begin();
             while(iter != selectedEntities_.end())
             {
-                Foundation::ComponentInterfacePtr component;
+                ComponentInterfacePtr component;
                 QString type = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
                 if(!(*iter)->HasComponent(type, name))
@@ -548,10 +548,10 @@ namespace ECEditor
 
             while(!componentGroup->components_.empty())
             {
-                Foundation::ComponentWeakPtr pointer = componentGroup->components_.back();
+                ComponentWeakPtr pointer = componentGroup->components_.back();
                 if(!pointer.expired())
                 {
-                    Foundation::ComponentInterfacePtr comp = pointer.lock();
+                    ComponentInterfacePtr comp = pointer.lock();
                     Scene::Entity *entity = comp->GetParentEntity();
                     entity->RemoveComponent(comp, AttributeChange::Local);
                 }
@@ -572,21 +572,21 @@ namespace ECEditor
             return;
 
         Scene::Entity *entity = component->GetParentEntity();
-        Foundation::ComponentInterfacePtr compPtr = entity->GetComponent(component);
+        ComponentInterfacePtr compPtr = entity->GetComponent(component);
         RemoveComponentFromGroup(component);
         AddNewComponentToGroup(compPtr);
     }
 
     void ECBrowser::ComponentNameChanged(const std::string &newName)
     {
-        Foundation::ComponentInterface *component = dynamic_cast<Foundation::ComponentInterface*>(sender());
+        IComponent *component = dynamic_cast<IComponent*>(sender());
         if(component)
         {
             RemoveComponentFromGroup(component);
             Scene::Entity *entity = component->GetParentEntity();
             if(!entity)
                 return;
-            Foundation::ComponentInterfacePtr compPtr = entity->GetComponent(component);
+            ComponentInterfacePtr compPtr = entity->GetComponent(component);
             AddNewComponentToGroup(compPtr);
         }
     }
@@ -621,7 +621,7 @@ namespace ECEditor
         if (!ok)
             return;
 
-        std::vector<Foundation::ComponentWeakPtr> components = (*iter)->components_;
+        std::vector<ComponentWeakPtr> components = (*iter)->components_;
         for(uint i = 0; i < components.size(); i++)
         {
             if(components[i].expired())
@@ -651,7 +651,7 @@ namespace ECEditor
         if(!(*iter)->IsDynamic())
             return;
 
-        std::vector<Foundation::ComponentWeakPtr> components = (*iter)->components_;
+        std::vector<ComponentWeakPtr> components = (*iter)->components_;
         for(uint i = 0; i < components.size(); i++)
         {
             if(components[i].expired())
@@ -666,7 +666,7 @@ namespace ECEditor
         //RemoveComponentGroup(*iter);
     }
 
-    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const Foundation::ComponentInterface &comp)
+    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const IComponent &comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
@@ -688,7 +688,7 @@ namespace ECEditor
         return iter;
     }
 
-    void ECBrowser::AddNewComponentToGroup(Foundation::ComponentInterfacePtr comp)
+    void ECBrowser::AddNewComponentToGroup(ComponentInterfacePtr comp)
     {
         assert(comp.get());
         if(!comp.get() && !treeWidget_)
@@ -702,7 +702,7 @@ namespace ECEditor
                 return;
 
             (*iter)->editor_->AddNewComponent(comp, false);
-            (*iter)->components_.push_back(Foundation::ComponentWeakPtr(comp));
+            (*iter)->components_.push_back(ComponentWeakPtr(comp));
             if((*iter)->IsDynamic())
             {
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent*>(comp.get());
@@ -756,7 +756,7 @@ namespace ECEditor
             treeWidget_->collapseItem(newItem);
     }
 
-    void ECBrowser::RemoveComponentFromGroup(Foundation::ComponentInterface *comp)
+    void ECBrowser::RemoveComponentFromGroup(IComponent *comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)

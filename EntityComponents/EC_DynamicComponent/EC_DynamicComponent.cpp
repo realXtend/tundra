@@ -14,7 +14,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 namespace
 {
     //! Function that is used by std::sort algorithm to sort attributes by their name.
-    bool CmpAttributeByName(const AttributeInterface *a, const AttributeInterface *b)
+    bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
     {
         return a->GetNameString() < b->GetNameString();
     }
@@ -27,7 +27,7 @@ namespace
 }
 
 EC_DynamicComponent::EC_DynamicComponent(IModule *module):
-    Foundation::ComponentInterface(module->GetFramework())
+    IComponent(module->GetFramework())
 {
 }
 
@@ -118,7 +118,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
     while(!addAttributes.empty())
     {
         DeserializeData attributeData = addAttributes.back();
-        AttributeInterface *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
+        IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
         if (attribute)
             attribute->FromString(attributeData.value_, AttributeChange::Local);
         addAttributes.pop_back();
@@ -131,9 +131,9 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
     }
 }
 
-AttributeInterface *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
+IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
 {
-    AttributeInterface *attribute = 0;
+    IAttribute *attribute = 0;
     if(ContainAttribute(name))
         return attribute;
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
@@ -161,11 +161,11 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
 void EC_DynamicComponent::ComponentChanged(const QString &changeType)
 {
     if(changeType == "Local")
-        Foundation::ComponentInterface::ComponentChanged(AttributeChange::Local);
+        IComponent::ComponentChanged(AttributeChange::Local);
     else if(changeType == "LocalOnly")
-        Foundation::ComponentInterface::ComponentChanged(AttributeChange::LocalOnly);
+        IComponent::ComponentChanged(AttributeChange::LocalOnly);
     else if(changeType == "Network")
-        Foundation::ComponentInterface::ComponentChanged(AttributeChange::Network);
+        IComponent::ComponentChanged(AttributeChange::Network);
     else
         LogWarning("Cannot emit ComponentChanged event cause \"" + changeType.toStdString() + "\" changeType is not supported.");
 }
@@ -189,7 +189,7 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
         for(uint i = 0; i < index; i++)
             iter++;*/
 
-        AttributeInterface *attribute = attributes_[index];//(*iter);
+        IAttribute *attribute = attributes_[index];//(*iter);
         if(!attribute)
             return value;
         Attribute<QVariant> *variantAttribute = dynamic_cast<Attribute<QVariant>*>(attribute);
@@ -207,11 +207,11 @@ QVariant EC_DynamicComponent::GetAttribute(int index) const
 QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 {
     QVariant value;
-    AttributeInterface *attribute = 0;
+    IAttribute *attribute = 0;
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        AttributeInterface *attributeInterface = *iter;
+        IAttribute *attributeInterface = *iter;
         std::string attrName = attributeInterface->GetNameString();
         if(attrName == name.toStdString())
         {
@@ -259,7 +259,7 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
         for(uint i = 0; i < index; i++)
             iter++;
 
-        AttributeInterface *attribute = (*iter);
+        IAttribute *attribute = (*iter);
         if(!attribute)
             return;
         //Check if attribute is Attribute<QVariant> type and if not use attribute interface's FromString method to convert it to right format.
@@ -295,17 +295,17 @@ void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, Attribu
         }
 
         variantAttribute->Set(value, change);
-        //Foundation::ComponentInterface::ComponentChanged(change);
+        //IComponent::ComponentChanged(change);
     }
 }
 
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
-    AttributeInterface *attribute = 0;
+    IAttribute *attribute = 0;
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
     {
-        AttributeInterface *attributeInterface = *iter;
+        IAttribute *attributeInterface = *iter;
         std::string attrName = attributeInterface->GetNameString();
         if(attrName == name.toStdString())
         {
@@ -325,7 +325,7 @@ void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &valu
         return;
     }
     variantAttribute->Set(value, change);
-    //Foundation::ComponentInterface::ComponentChanged(change);
+    //IComponent::ComponentChanged(change);
 }
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
@@ -385,8 +385,8 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
         return false;
     
     // Compare that every attribute is same in both components.
-    QSet<AttributeInterface*> myAttributeSet;
-    QSet<AttributeInterface*> attributeSet;
+    QSet<IAttribute*> myAttributeSet;
+    QSet<IAttribute*> attributeSet;
     for(uint i = 0; i < myAttributeSet.size(); i++)
     {
         attributeSet.insert(myAttributeVector[i]);

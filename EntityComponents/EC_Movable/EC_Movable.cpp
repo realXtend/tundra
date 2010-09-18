@@ -69,7 +69,7 @@ void EC_Movable::Rotate(const QString &direction)
 }
 
 EC_Movable::EC_Movable(IModule *module):
-    Foundation::ComponentInterface(module->GetFramework())
+    IComponent(module->GetFramework())
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

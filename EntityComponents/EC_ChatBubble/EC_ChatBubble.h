@@ -9,7 +9,7 @@
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
 #define incl_EC_ChatBubble_EC_ChatBubble_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -35,7 +35,7 @@ class QTimer;
 QT_END_NAMESPACE
 
 /// Chat bubble component wich shows billboard with chat bubble and text on entity.
-class EC_ChatBubble : public Foundation::ComponentInterface
+class EC_ChatBubble : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_ChatBubble);

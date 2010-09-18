@@ -16,7 +16,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
 
 EC_OpenSimPrim::EC_OpenSimPrim(IModule* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     editor_(0),
     // GENERIC
     Name(this, "Name"),

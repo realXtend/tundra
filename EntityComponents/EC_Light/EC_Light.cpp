@@ -21,7 +21,7 @@ using namespace RexTypes;
 using namespace OgreRenderer;
 
 EC_Light::EC_Light(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     light_(0),
     attached_(false),
     typeAttr_(this, "light type", LT_Point),
@@ -80,7 +80,7 @@ EC_Light::~EC_Light()
     }
 }
 
-void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)
+void EC_Light::SetPlaceable(ComponentPtr placeable)
 {
     if (dynamic_cast<EC_OgrePlaceable*>(placeable.get()) == 0)
     {
@@ -123,7 +123,7 @@ void EC_Light::UpdateOgreLight()
     // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
     if (parent_entity_)
     {
-        Foundation::ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
             SetPlaceable(placeable);
         else

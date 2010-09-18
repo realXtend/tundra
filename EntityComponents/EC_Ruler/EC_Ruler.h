@@ -10,7 +10,7 @@
 #ifndef incl_EC_Ruler_EC_Ruler_h
 #define incl_EC_Ruler_EC_Ruler_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -24,7 +24,7 @@ namespace Ogre
     class ManualObject;
 }
 
-class EC_Ruler : public Foundation::ComponentInterface
+class EC_Ruler : public IComponent
 {
     Q_OBJECT
     Q_ENUMS(Type)

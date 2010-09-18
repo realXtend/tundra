@@ -20,7 +20,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 #include "MemoryLeakCheck.h"
 
 EC_ParticleSystem::EC_ParticleSystem(IModule *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
     particleId_(this, "Particle id"),
@@ -133,7 +133,7 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;
@@ -158,20 +158,20 @@ void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *compone
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
 }
 
-Foundation::ComponentPtr EC_ParticleSystem::FindPlaceable() const
+ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();

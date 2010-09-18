@@ -9,7 +9,7 @@
 namespace RexLogic
 {
     EC_AttachedSound::EC_AttachedSound(IModule *module) :
-        Foundation::ComponentInterface(module->GetFramework())
+        IComponent(module->GetFramework())
     {
         InitSoundVector();
     }

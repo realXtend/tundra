@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreConsoleOverlay_h
 #define incl_OgreRenderer_EC_OgreConsoleOverlay_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "CoreThread.h"
 
@@ -21,11 +21,11 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     //! Interface for the console overlay, so in SupportModules we don't need to link against OgreRenderingModule.
-    class EC_OgreConsoleOverlayInterface : public Foundation::ComponentInterface
+    class EC_OgreConsoleOverlayInterface : public IComponent
     {
     public:
         EC_OgreConsoleOverlayInterface(Foundation::Framework *framework) :
-            Foundation::ComponentInterface(framework)
+            IComponent(framework)
         {
         }
         

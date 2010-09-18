@@ -70,11 +70,11 @@ namespace ECEditor
 
         //! Creates EC attribute XML editor widget for component.
         //! \param component Component pointer.
-        void CreateXmlEditor(Foundation::ComponentPtr component);
+        void CreateXmlEditor(ComponentPtr component);
 
         //! Creates EC attribute XML editor widget for component.
         //! \param components List of component pointers.
-        void CreateXmlEditor(const QList<Foundation::ComponentPtr> &components);
+        void CreateXmlEditor(const QList<ComponentPtr> &components);
 
     private:
         //! Static name of the module

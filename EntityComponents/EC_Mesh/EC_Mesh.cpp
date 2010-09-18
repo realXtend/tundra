@@ -21,7 +21,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 #include "MemoryLeakCheck.h"
 
 EC_Mesh::EC_Mesh(IModule *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     nodeTransformation(this, "Transform"),
     meshResourceId(this, "Mesh ref", ""),
     skeletonId(this, "Skeleton ref", ""),
@@ -208,17 +208,17 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*)));
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;
@@ -313,10 +313,10 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     return tag;
 }
 
-Foundation::ComponentPtr EC_Mesh::FindPlaceable() const
+ComponentPtr EC_Mesh::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();

@@ -23,7 +23,7 @@
 
 /// this define can be used to make component declaration automatic when the parent module gets loaded / unloaded.
 #define DECLARE_MODULE_EC(component) \
-    { Foundation::ComponentRegistrarInterfacePtr registrar = Foundation::ComponentRegistrarInterfacePtr(new component::component##Registrar); \
+    { ComponentRegistrarInterfacePtr registrar = ComponentRegistrarInterfacePtr(new component::component##Registrar); \
     DeclareComponent(registrar); } \
 
 /** Possible module states
@@ -101,7 +101,7 @@ public:
     virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
 
     /// Declare a component the module defines. For internal use.
-    void DeclareComponent(const Foundation::ComponentRegistrarInterfacePtr &registrar) { component_registrars_.push_back(registrar); }
+    void DeclareComponent(const ComponentRegistrarInterfacePtr &registrar) { component_registrars_.push_back(registrar); }
 
     /// Returns the name of the module. Each module also has a static accessor for the name, it's needed by the logger.
     const std::string &Name() const { return name_; }
@@ -150,7 +150,7 @@ private:
     void UninitializeInternal();
 
     /// Component registrars
-    Foundation::RegistrarVector component_registrars_;
+    RegistrarVector component_registrars_;
 
     typedef std::vector<Console::Command> CommandVector;
 

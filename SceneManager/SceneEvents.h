@@ -152,7 +152,7 @@ namespace Scene
             Scene::EntityPtr ownerEntityPtr;
             
             /// List of component pointers.
-            std::vector<Foundation::ComponentInterface> entity_ptr_list;
+            std::vector<IComponent> entity_ptr_list;
         };*/
         
         /// Soon to be deprecated class event data class.

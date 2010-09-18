@@ -3,7 +3,7 @@
 #ifndef incl_EC_Water_h
 #define incl_EC_Water_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "Declare_EC.h"
 
@@ -17,7 +17,7 @@ namespace Environment
 {
     /// Represents data related to water plane.
     /// \ingroup EnvironmentModuleClient.
-    class EC_Water : public Foundation::ComponentInterface
+    class EC_Water : public IComponent
     {
         Q_OBJECT
 

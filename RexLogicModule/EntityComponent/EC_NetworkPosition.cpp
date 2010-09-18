@@ -7,7 +7,7 @@
 namespace RexLogic
 {
     EC_NetworkPosition::EC_NetworkPosition(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         time_since_update_(0.0),
         time_since_prev_update_(0.001),
         first_update(true)

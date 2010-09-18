@@ -266,10 +266,10 @@ namespace PythonScript
                 assert(scene.get());
                 if (scene)
                 {
-                    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                        SLOT(OnComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
-                    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                        SLOT(OnComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+                    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+                        SLOT(OnComponentAdded(Scene::Entity*, IComponent*)));
+                    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+                        SLOT(OnComponentRemoved(Scene::Entity*, IComponent*)));
                 }
             }
 
@@ -649,7 +649,7 @@ namespace PythonScript
     */
     }
 
-    void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
         {
@@ -658,7 +658,7 @@ namespace PythonScript
         }
     }
 
-    void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
     }
 }
@@ -953,8 +953,8 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
             
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1064,8 +1064,8 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1260,8 +1260,8 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
-        Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        Foundation::ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
         OgreRenderer::EC_OgreMesh *meshptr = 0;
         OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1443,8 +1443,8 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
-    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
@@ -1989,6 +1989,8 @@ namespace PythonScript
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
+
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);

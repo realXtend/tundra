@@ -20,7 +20,7 @@
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
 EC_SoundListener::EC_SoundListener(IModule *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     active_(false)
 {
     soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();

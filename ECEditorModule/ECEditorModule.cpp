@@ -143,9 +143,9 @@ namespace ECEditor
         ui->RegisterUniversalWidget("Components", editor_proxy);
 
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
-        connect(editor_window_, SIGNAL(EditComponentXml(Foundation::ComponentPtr)), this, SLOT(CreateXmlEditor(Foundation::ComponentPtr)));
+        connect(editor_window_, SIGNAL(EditComponentXml(ComponentPtr)), this, SLOT(CreateXmlEditor(ComponentPtr)));
         connect(editor_window_, SIGNAL(EditEntityXml(const QList<Scene::EntityPtr> &)), this, SLOT(CreateXmlEditor(const QList<Scene::EntityPtr> &)));
-        connect(editor_window_, SIGNAL(EditComponentXml(const QList<Foundation::ComponentPtr> &)), this, SLOT(CreateXmlEditor(const QList<Foundation::ComponentPtr> &)));
+        connect(editor_window_, SIGNAL(EditComponentXml(const QList<ComponentPtr> &)), this, SLOT(CreateXmlEditor(const QList<ComponentPtr> &)));
     }
 
     Console::CommandResult ECEditorModule::ShowWindow(const StringVector &params)
@@ -186,11 +186,11 @@ namespace ECEditor
 
             if(params[1] == "add")
             {
-                Foundation::ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
+                ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
-                AttributeInterface *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
+                IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
                 if(!attribute)
                     return Console::ResultFailure("invalid attribute type" + params[4]);
                 attribute->FromString(params[5], AttributeChange::Local);
@@ -206,7 +206,7 @@ namespace ECEditor
 
             else if(params[1] == "rem")
             {
-                Foundation::ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
+                ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
@@ -240,14 +240,14 @@ namespace ECEditor
         ui->BringWidgetToFront(xmlEditor_);
     }
 
-    void ECEditorModule::CreateXmlEditor(Foundation::ComponentPtr component)
+    void ECEditorModule::CreateXmlEditor(ComponentPtr component)
     {
-        QList<Foundation::ComponentPtr> components;
+        QList<ComponentPtr> components;
         components << component;
         CreateXmlEditor(components);
     }
 
-    void ECEditorModule::CreateXmlEditor(const QList<Foundation::ComponentPtr> &components)
+    void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
     {
         Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (components.empty() || !ui)

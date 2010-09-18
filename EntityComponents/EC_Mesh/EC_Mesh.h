@@ -3,8 +3,8 @@
 #ifndef incl_EC_Mesh_EC_Mesh_h
 #define incl_EC_Mesh_EC_Mesh_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "RexTypes.h"
@@ -87,7 +87,7 @@ Does not emit any actions.
 </table>
 
 */
-class EC_Mesh : public Foundation::ComponentInterface
+class EC_Mesh : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Mesh);
@@ -155,7 +155,7 @@ private slots:
     void UpdateSignals();
 
     //! Emitted when some of the attributes has been changed.
-    void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
+    void AttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
     //! Constuctor.
@@ -169,7 +169,7 @@ private:
      */
     request_tag_t RequestResource(const std::string& id, const std::string& type);
     
-    Foundation::ComponentPtr FindPlaceable() const;
+    ComponentPtr FindPlaceable() const;
     //! Checks if component's and entity's materials differ from each other
     /*! so that we can ensure that material resources are only requested when materials have actually changed.
      *! @return Return true if materials differ from each other.

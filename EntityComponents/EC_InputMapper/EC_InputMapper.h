@@ -9,7 +9,7 @@
 #ifndef incl_EC_InputMapper_EC_InputMapper_h
 #define incl_EC_InputMapper_EC_InputMapper_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 #include <QMap>
@@ -19,7 +19,7 @@
 
 /// Registers an InputContext from the Naali Input subsystem and uses it to translate
 /// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
-class EC_InputMapper : public Foundation::ComponentInterface
+class EC_InputMapper : public IComponent
 {
     DECLARE_EC(EC_InputMapper);
     Q_OBJECT
@@ -77,7 +77,7 @@ private slots:
         @param attribute Changed attribute.
         @param change Change type.
     */
-    void AttributeUpdated(AttributeInterface *, AttributeChange::Type change);
+    void AttributeUpdated(IAttribute *, AttributeChange::Type change);
 
     /** Handles key events from input service.
         Performs entity action for for the parent entity if action mapping is registered for the key event.

@@ -5,7 +5,7 @@
 #include "IModule.h"
 
 EC_OpenSimPresence::EC_OpenSimPresence(IModule* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     regionHandle(0),
     localId(0),
     parentId(0),

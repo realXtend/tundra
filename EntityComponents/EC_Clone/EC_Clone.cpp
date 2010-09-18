@@ -27,7 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Clone")
 #include "MemoryLeakCheck.h"
 
 EC_Clone::EC_Clone(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)
 {
