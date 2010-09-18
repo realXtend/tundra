@@ -4,8 +4,8 @@
 #define incl_Foundation_EC_Define_h
 
 #include "ComponentManager.h"
-#include "ComponentRegistrarInterface.h"
-#include "ComponentFactoryInterface.h"
+#include "IComponentRegistrar.h"
+#include "IComponentFactory.h"
 #include "Framework.h"
 
 class IModule;
@@ -16,7 +16,7 @@ class IModule;
 */
 #define DECLARE_EC(component)                                                           \
   public:                                                                               \
-    class component##Registrar : public ComponentRegistrarInterface                     \
+    class component##Registrar : public IComponentRegistrar                             \
     {                                                                                   \
     public:                                                                             \
         component##Registrar() {}                                                       \
@@ -34,7 +34,7 @@ class IModule;
     };                                                                                  \
                                                                                         \
   private:                                                                              \
-    class component##Factory : public ComponentFactoryInterface                         \
+    class component##Factory : public IComponentFactory                                 \
     {                                                                                   \
     public:                                                                             \
         component##Factory(IModule* module) : module_(module) {}                        \
@@ -61,8 +61,8 @@ class IModule;
     static void RegisterComponent(const Foundation::Framework *framework,               \
         IModule* module)                                                                \
     {                                                                                   \
-        ComponentFactoryInterfacePtr factory =                                          \
-            ComponentFactoryInterfacePtr(new component##Factory(module));               \
+        ComponentFactoryPtr factory =                                                   \
+            ComponentFactoryPtr(new component##Factory(module));                        \
         framework->GetComponentManager()->RegisterFactory(TypeNameStatic(), factory);   \
     }                                                                                   \
                                                                                         \

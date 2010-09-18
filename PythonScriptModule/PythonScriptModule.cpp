@@ -39,7 +39,6 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"

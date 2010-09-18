@@ -26,7 +26,7 @@ namespace Foundation
         typedef std::map<std::string, ComponentList> ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
-        typedef std::map<QString, ComponentFactoryInterfacePtr> ComponentFactoryMap;
+        typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
 
         //! default constructor
         ComponentManager(Framework *framework);
@@ -35,7 +35,7 @@ namespace Foundation
         ~ComponentManager() { }
 
         //! register factory for the component
-        void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory);
+        void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
 
         //! Unregister the component. Removes the factory.
         void UnregisterFactory(const QString &component);

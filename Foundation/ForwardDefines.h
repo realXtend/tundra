@@ -25,8 +25,8 @@ namespace Console
     struct CommandResult;
 }
 
-class ComponentFactoryInterface;
-typedef boost::shared_ptr<ComponentFactoryInterface> ComponentFactoryInterfacePtr;
+class IComponentFactory;
+typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 
 class IComponent;
 typedef boost::shared_ptr<IComponent> ComponentInterfacePtr;
