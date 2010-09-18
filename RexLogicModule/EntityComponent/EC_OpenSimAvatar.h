@@ -3,7 +3,7 @@
 #ifndef incl_EC_OpenSimAvatar_h
 #define incl_EC_OpenSimAvatar_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
 #include "Declare_EC.h"
@@ -12,7 +12,7 @@ namespace RexLogic
 {
     //! This component is present on all avatars when connected to an
     //! OpenSim world. 
-    class REXLOGIC_MODULE_API EC_OpenSimAvatar : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_OpenSimAvatar : public IComponent
     {
         Q_OBJECT
             

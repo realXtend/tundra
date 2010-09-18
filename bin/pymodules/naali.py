@@ -88,6 +88,10 @@ class Entity:
         oldpyent = r.getEntity(self.id)
         oldpyent.createComponent(typename)
 
+    # Returns EntityAction pointer by the name
+    def action(self, name):
+        return self.qent.Action(name)
+    
 def getEntity(entid):
     qent = getScene("World").GetEntityRaw(entid)
     if qent is None:

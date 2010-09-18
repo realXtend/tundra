@@ -11,7 +11,7 @@
 namespace OgreRenderer
 {
     EC_OgreLight::EC_OgreLight(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         light_(0),
         attached_(false)
@@ -36,7 +36,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreLight::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreLight::SetPlaceable(ComponentPtr placeable)
     {
         DetachLight();
         placeable_ = placeable;

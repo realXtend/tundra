@@ -50,7 +50,7 @@ public:
     {
         Local = 1, ///< Executed only.locally.
         Server = 2, ///< Executed only on server.
-        Peers = 4 ///< Executed on only on peers.
+        Peers = 4 ///< Executed only on peers.
     };
 
 signals:
@@ -60,7 +60,7 @@ signals:
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
     */
-    void Triggered(const QString &param1, const QString &param2, const QString &param3, const QStringList &params);
+    void Triggered(QString param1, QString param2, QString param3, QStringList params);
 
 private:
     /** Constructor.

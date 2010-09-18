@@ -10,7 +10,7 @@
 namespace OgreRenderer
 {
     EC_OgreCamera::EC_OgreCamera(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         attached_(false),
         camera_(0)
@@ -48,7 +48,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreCamera::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreCamera::SetPlaceable(ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {

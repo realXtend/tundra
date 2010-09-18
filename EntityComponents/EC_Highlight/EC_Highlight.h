@@ -10,7 +10,7 @@
 #ifndef incl_EC_Highlight_EC_Highlight_h
 #define incl_EC_Highlight_EC_Highlight_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -24,7 +24,7 @@ namespace Ogre
     class Entity;
 }
 
-class EC_Highlight : public Foundation::ComponentInterface
+class EC_Highlight : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Highlight);

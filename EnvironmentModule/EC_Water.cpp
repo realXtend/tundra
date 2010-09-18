@@ -11,7 +11,7 @@
 namespace Environment
 {
     EC_Water::EC_Water(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         scene_node_(0), entity_(0)
     {
         CreateOgreWaterObject();

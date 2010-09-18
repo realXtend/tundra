@@ -48,7 +48,7 @@ void ClampFog(float& start, float& end, float farclip)
 }
 
 EC_OgreEnvironment::EC_OgreEnvironment(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     sunlight_(0),
 //#ifdef CAELUM

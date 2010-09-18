@@ -3,12 +3,12 @@
 #ifndef incl_EC_OpenSimPresence_h
 #define incl_EC_OpenSimPresence_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "Declare_EC.h"
 
 //! This component is present on all agents when connected to an OpenSim world. 
-class EC_OpenSimPresence : public Foundation::ComponentInterface
+class EC_OpenSimPresence : public IComponent
 {
     Q_OBJECT
 

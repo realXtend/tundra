@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreCustomObject_h
 #define incl_OgreRenderer_EC_OgreCustomObject_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
 
@@ -29,7 +29,7 @@ namespace OgreRenderer
         related to manual objects (still unfixed as of 1.6.2)
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
     {
         Q_OBJECT
 
@@ -38,13 +38,13 @@ namespace OgreRenderer
         virtual ~EC_OgreCustomObject();
 
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
 
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
 
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -100,7 +100,7 @@ namespace OgreRenderer
         void DestroyEntity();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

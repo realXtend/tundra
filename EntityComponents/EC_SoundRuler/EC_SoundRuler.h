@@ -10,7 +10,7 @@
 #ifndef incl_EC_SoundRuler_EC_SoundRuler_h
 #define incl_EC_SoundRuler_EC_SoundRuler_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -26,7 +26,7 @@ namespace Ogre
 
 class EC_OpenSimPrim;
 
-class EC_SoundRuler : public Foundation::ComponentInterface
+class EC_SoundRuler : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_SoundRuler);

@@ -20,7 +20,7 @@ namespace OgreRenderer
 {
 
 EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(IModule* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     text_element_(0),
     container_(0),
     overlay_(0),
@@ -150,7 +150,7 @@ void EC_OgreMovableTextOverlay::SetVisible(bool visible)
         overlay_->hide();
 }
 
-void EC_OgreMovableTextOverlay::SetPlaceable(Foundation::ComponentPtr placeable)
+void EC_OgreMovableTextOverlay::SetPlaceable(ComponentPtr placeable)
 {
     if (!node_)
         return;

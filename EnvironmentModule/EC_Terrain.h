@@ -4,7 +4,7 @@
 #define incl_EC_TerrainPatch_h
 
 #include "EnvironmentModuleApi.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -16,7 +16,7 @@ namespace Ogre
 namespace Environment
 {
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
-    class ENVIRONMENT_MODULE_API EC_Terrain : public Foundation::ComponentInterface
+    class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
     {
         Q_OBJECT
 

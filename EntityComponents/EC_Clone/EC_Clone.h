@@ -11,7 +11,7 @@
 #ifndef incl_EC_Clone_EC_Clone_h
 #define incl_EC_Clone_EC_Clone_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -31,7 +31,7 @@ namespace Ogre
     class Entity;
 }
 
-class EC_Clone : public Foundation::ComponentInterface
+class EC_Clone : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Clone);

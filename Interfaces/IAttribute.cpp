@@ -1,14 +1,14 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   AttributeInterface.cpp
+ *  @file   IAttribute.cpp
  *  @brief  Abstract base class and template class for entity-component attributes.
  */
 
 #include "StableHeaders.h"
 
-#include "AttributeInterface.h"
-#include "ComponentInterface.h"
+#include "IAttribute.h"
+#include "IComponent.h"
 #include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
@@ -19,7 +19,7 @@
 
 // Implementation code for some common attributes
 
-AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, const char* name) :
+IAttribute::IAttribute(IComponent* owner, const char* name) :
     owner_(owner),
     name_(name),
     change_(AttributeChange::None),
@@ -30,7 +30,7 @@ AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, co
         owner->AddAttribute(this);
 }
 
-void AttributeInterface::Changed(AttributeChange::Type change)
+void IAttribute::Changed(AttributeChange::Type change)
 {
     if (owner_)
         owner_->AttributeChanged(this, change);

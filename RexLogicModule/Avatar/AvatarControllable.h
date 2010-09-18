@@ -78,7 +78,7 @@ namespace RexLogic
             \param component Controllable component, if null, false is returned
             \return True if controllable is avatar, false otherwise
         */
-        bool IsAvatar(const Foundation::ComponentPtr &component) const;
+        bool IsAvatar(const ComponentPtr &component) const;
 
         typedef std::map<int, RexTypes::ControlFlags> ActionControlFlagMap;
 
@@ -89,7 +89,7 @@ namespace RexLogic
         Scene::EntityWeakPtr entity_;
 
         //! Convenient access to controllable component
-        Foundation::ComponentWeakPtr component_;
+        ComponentWeakPtr component_;
 
         //! event manager
         Foundation::EventManagerPtr event_manager_;

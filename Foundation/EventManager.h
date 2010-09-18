@@ -6,7 +6,7 @@
 #include "ModuleReference.h"
 #include "IEventData.h"
 #include "CoreThread.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Framework.h"
 
 
@@ -169,7 +169,7 @@ namespace Foundation
              * @note does not check that is component allready register through @p RegisterEventSubscriber(T* subscriber,int priority)
              */
             
-            bool RegisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id, event_id_t event_id);
+            bool RegisterEventSubscriber(IComponent* component, event_category_id_t category_id, event_id_t event_id);
 
             /**
              * Unregister specialized events. 
@@ -180,7 +180,7 @@ namespace Foundation
              * @note If component is also register through RegisterEventSubscriber(T* subscriber,int priority), this function does not remove it from that lists
              */
             
-            bool UnregisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id,event_id_t event_id);
+            bool UnregisterEventSubscriber(IComponent* component, event_category_id_t category_id,event_id_t event_id);
 
         private:
            
@@ -246,7 +246,7 @@ namespace Foundation
             QList<EventSubscriber<IModule > > module_subscribers_;
 
             /// Component event subscribers
-            QList<EventSubscriber<ComponentInterface > > component_subscribers_;
+            QList<EventSubscriber<IComponent > > component_subscribers_;
             
             //! Delayed events
             typedef std::vector<DelayedEvent> DelayedEventVector;
@@ -262,7 +262,7 @@ namespace Foundation
             //! Current thread ID
             Qt::HANDLE main_thread_id_;
 
-            QMap<QPair<event_category_id_t, event_id_t>, QList<ComponentInterface* > > specialEvents_;
+            QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > > specialEvents_;
     };
 
 }

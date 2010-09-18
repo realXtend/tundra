@@ -35,19 +35,10 @@ namespace Foundation
         ~ComponentManager() { }
 
         //! register factory for the component
-        void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory)
-        {
-            if (factories_.find(component) == factories_.end())
-                factories_[component] = factory;
-        }
+        void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory);
 
         //! Unregister the component. Removes the factory.
-        void UnregisterFactory(const QString &component)
-        {
-            ComponentFactoryMap::iterator iter = factories_.find(component);
-            if (iter != factories_.end())
-                factories_.erase(iter);
-        }
+        void UnregisterFactory(const QString &component);
 
         //! Returns true if component can be created (a factory for the component has registered itself)
         /*!
@@ -77,7 +68,7 @@ namespace Foundation
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
 
         //! Create new attribute for spesific component.
-        AttributeInterface *CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name);
+        IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
 
         //! Returns list of supported attribute types.
         StringVector GetAttributeTypes() const;

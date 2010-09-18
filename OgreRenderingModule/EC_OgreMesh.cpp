@@ -13,7 +13,7 @@
 namespace OgreRenderer
 {
     EC_OgreMesh::EC_OgreMesh(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(0),
         adjustment_node_(0),
@@ -42,7 +42,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreMesh::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreMesh::SetPlaceable(ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {

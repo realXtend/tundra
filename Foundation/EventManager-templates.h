@@ -43,7 +43,7 @@ namespace Foundation
         if ( module != 0)
             return AddSubscriber(module, module_subscribers_, priority);
 
-        ComponentInterface* component = dynamic_cast<ComponentInterface* >(subscriber);
+        IComponent* component = dynamic_cast<IComponent* >(subscriber);
         if ( component != 0 )
             return AddSubscriber(component, component_subscribers_, priority);
 
@@ -74,17 +74,17 @@ namespace Foundation
         if ( module != 0)
             return RemoveSubscriber(module, module_subscribers_);
 
-        ComponentInterface* component = dynamic_cast<ComponentInterface* >(subscriber);
+        IComponent* component = dynamic_cast<IComponent* >(subscriber);
 
         if ( component != 0 )
         {
             bool ret = RemoveSubscriber(component, component_subscribers_);
             bool ret2 = false;
 
-            QMap<QPair<event_category_id_t, event_id_t>, QList<ComponentInterface* > >::iterator iter;
+            QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > >::iterator iter;
             for (iter = specialEvents_.begin(); iter != specialEvents_.end();)
             {
-                QList<ComponentInterface* > lst = specialEvents_[iter.key()];
+                QList<IComponent* > lst = specialEvents_[iter.key()];
 
                 bool found = false;
 
@@ -131,7 +131,7 @@ namespace Foundation
         if ( module != 0)
             return EventSubscriberExist(module, module_subscribers_);
 
-        ComponentInterface* component = dynamic_cast<ComponentInterface* >(subscriber);
+        IComponent* component = dynamic_cast<IComponent* >(subscriber);
         if ( component != 0 )
             return EventSubscriberExist(component, component_subscribers_);
 

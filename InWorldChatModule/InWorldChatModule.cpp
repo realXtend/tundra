@@ -167,7 +167,7 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
 
     if (!entity->HasComponent("EC_Billboard", "VoipIndicator"))
     {
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
+        ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
         assert(component.get());
         entity->AddComponent(component);
         entity->GetComponent<EC_Billboard>()->SetDimensions(10, 10);
@@ -185,7 +185,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     Scene::EntityList prims = scene->GetEntitiesWithComponent(EC_OpenSimPrim::TypeNameStatic());
-    Scene::EntityListIterator it = prims.begin();
+    Scene::EntityList::iterator it = prims.begin();
     while(it != prims.end())
     {
         Scene::EntityPtr entity = *it;
@@ -210,7 +210,7 @@ Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params
 
 void InWorldChatModule::ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message)
 {
-    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
+    ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
     assert(component.get());
     EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
     chatBubble.ShowMessage(message);

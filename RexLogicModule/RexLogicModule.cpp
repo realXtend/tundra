@@ -303,19 +303,19 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     framework_->SetDefaultWorldScene(activeScene_);
 
     // Connect ComponentAdded&Removed signals.
-    connect(activeScene_.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            SLOT(NewComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
-    connect(activeScene_.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+    connect(activeScene_.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
+    connect(activeScene_.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
 
     // Listen to component changes to serialize them via RexFreeData
     primitive_->RegisterToComponentChangeSignals(activeScene_);
 
     // Create camera entity into the scene
     Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
-    Foundation::ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    Foundation::ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
-    Foundation::ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
+    ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
+    ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
     assert(placeable && camera && sound_listener);
     if (placeable && camera && sound_listener)
     {
@@ -711,7 +711,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     if (parentid == 0)
     {
         // No parent, attach to scene root
-        child_placeable->SetParent(Foundation::ComponentPtr());
+        child_placeable->SetParent(ComponentPtr());
         return;
     }
 
@@ -723,7 +723,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }
 
-    Foundation::ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     child_placeable->SetParent(parent_placeable);
 }
 
@@ -1175,13 +1175,13 @@ void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
     emit OnIncomingEstateOwnerMessage(params);
 }
 
-void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
+void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *component)
 {
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {
         LogDebug("Added new sound listener to the listener list.");
 //        EC_SoundListener *listener = entity->GetComponent<EC_SoundListener>().get();
-//        connect(listener, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)), 
+//        connect(listener, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), 
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }
@@ -1191,7 +1191,7 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, Foundation::Compon
     }
 }
 
-void RexLogicModule::ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
+void RexLogicModule::ComponentRemoved(Scene::Entity *entity, IComponent *component)
 {
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {

@@ -125,12 +125,12 @@ namespace RexLogic
         //! Creates the name overlay above the avatar.
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-//        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+//        void CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id);
 
         //! Creates an info icon to avatar
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-        void CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+        void CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id);
         
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.

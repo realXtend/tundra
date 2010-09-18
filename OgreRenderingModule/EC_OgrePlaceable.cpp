@@ -10,7 +10,7 @@
 namespace OgreRenderer
 {
     EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         scene_node_(0),
         link_scene_node_(0),
@@ -55,7 +55,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgrePlaceable::SetParent(Foundation::ComponentPtr placeable)
+    void EC_OgrePlaceable::SetParent(ComponentPtr placeable)
     {
         if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
         {

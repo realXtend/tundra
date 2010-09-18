@@ -13,7 +13,7 @@ namespace Environment
 {
 
 EC_Terrain::EC_Terrain(IModule* module) :
-    Foundation::ComponentInterface(module->GetFramework())
+    IComponent(module->GetFramework())
 {
 }
 

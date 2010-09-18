@@ -32,7 +32,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 #include "MemoryLeakCheck.h"
 
 EC_HoveringText::EC_HoveringText(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),

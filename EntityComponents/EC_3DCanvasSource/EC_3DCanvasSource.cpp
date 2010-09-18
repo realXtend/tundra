@@ -27,7 +27,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 #include "MemoryLeakCheck.h"
 
 EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    IComponent(module->GetFramework()),
     source_(this, "source"),
     position_(this, "position", 0),
     submesh_(this, "submesh", 0),
@@ -135,7 +135,7 @@ void EC_3DCanvasSource::RepaintCanvas()
     if (!entity)
         return;
 
-    Foundation::ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
         return;
 
@@ -212,7 +212,7 @@ void EC_3DCanvasSource::UpdateCanvas()
         return;
     }
     
-    Foundation::ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");
@@ -249,7 +249,7 @@ void EC_3DCanvasSource::FetchWebViewUrl()
         return;
     }
     
-    Foundation::ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");

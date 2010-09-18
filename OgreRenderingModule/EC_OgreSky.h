@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreSky_h
 #define incl_OgreRenderer_EC_OgreSky_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
@@ -173,7 +173,7 @@ namespace OgreRenderer
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      *
      */
-    class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreSky : public IComponent
     {
         Q_OBJECT
         

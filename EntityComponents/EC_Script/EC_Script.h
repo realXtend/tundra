@@ -3,12 +3,12 @@
 #ifndef incl_EC_Script_EC_Script_h
 #define incl_EC_Script_EC_Script_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 class IScriptInstance;
 
-class EC_Script: public Foundation::ComponentInterface
+class EC_Script: public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Script)
@@ -66,7 +66,7 @@ private slots:
         @param attribute Attribute that changed.
         @param change Change type.
     */
-    void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+    void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Registers the actions this component provides when parent entity is set.
     void RegisterActions();

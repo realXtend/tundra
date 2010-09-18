@@ -3,7 +3,7 @@
 #ifndef incl_RexLogic_EC_AvatarAppearance_h
 #define incl_RexLogic_EC_AvatarAppearance_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
@@ -282,7 +282,7 @@ namespace RexLogic
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
 
     //! Entity component that stores an avatar's appearance parameters
-    class REXLOGIC_MODULE_API EC_AvatarAppearance : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AvatarAppearance : public IComponent
     {
         Q_OBJECT
             

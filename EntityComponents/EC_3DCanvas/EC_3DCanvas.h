@@ -3,7 +3,7 @@
 #ifndef incl_EC_3DCanvas_EC_3DCanvas_h
 #define incl_EC_3DCanvas_EC_3DCanvas_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 #include <QMap>
@@ -27,7 +27,7 @@ namespace Ogre
 class QWidget;
 class QTimer;
 
-class EC_3DCanvas : public Foundation::ComponentInterface
+class EC_3DCanvas : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_3DCanvas);

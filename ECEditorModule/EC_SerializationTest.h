@@ -4,16 +4,16 @@
 #define incl_ECEditorModule_EC_SerializationTest_h
 
 #include "Framework.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "AssetInterface.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 
 namespace ECEditor
 {
-    class EC_SerializationTest : public Foundation::ComponentInterface
+    class EC_SerializationTest : public IComponent
     {
         DECLARE_EC(EC_SerializationTest);
 

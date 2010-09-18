@@ -5,7 +5,7 @@
 
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
@@ -22,7 +22,7 @@
 namespace ECEditor
 {
     ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                                                 AttributeInterface *attribute,
+                                                 IAttribute *attribute,
                                                  QObject *parent):
         QObject(parent),
         owner_(owner),
@@ -92,7 +92,7 @@ namespace ECEditor
         }
     }
 
-    void ECAttributeEditorBase::AddNewAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::AddNewAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
@@ -104,7 +104,7 @@ namespace ECEditor
         UpdateEditorUI();
     }
 
-    void ECAttributeEditorBase::RemoveAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::RemoveAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
