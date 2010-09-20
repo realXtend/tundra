@@ -16,7 +16,7 @@ namespace Foundation
 
 namespace RexLogic
 {
-    class CameraZoomEvent : public Foundation::EventDataInterface
+    class CameraZoomEvent : public IEventData
     {
     public:
         ~CameraZoomEvent() {}
@@ -68,13 +68,13 @@ namespace RexLogic
         ~CameraControllable() {}
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
         //! Action event handler for handling controllable events
-        bool HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleActionEvent(event_id_t event_id, IEventData* data);
 
         //! update camera simulation for all controllable cameras
         void AddTime(f64 frametime);

@@ -15,7 +15,7 @@ class QScriptEngine;
 class JavascriptEngine: public IScriptInstance
 {
 public:
-    JavascriptEngine(const QString &scriptRef);
+    explicit JavascriptEngine(const QString &scriptRef);
     ~JavascriptEngine();
 
     //! Overload from IScriptInstance
@@ -36,9 +36,8 @@ public:
     //void SetPrototype(QScriptable *prototype, );
 
 private:
-    QString LoadScript();
-    void Initialize();
-    
+    QString LoadScript() const;
+
     QScriptEngine *engine_;
     QString scriptRef_;
 };

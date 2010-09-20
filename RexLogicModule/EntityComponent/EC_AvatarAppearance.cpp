@@ -14,8 +14,8 @@ namespace RexLogic
             return name_;
     }
     
-    EC_AvatarAppearance::EC_AvatarAppearance(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework())
+    EC_AvatarAppearance::EC_AvatarAppearance(IModule* module) :
+        IComponent(module->GetFramework())
     {
     }
 

@@ -8,7 +8,7 @@
 #ifndef incl_EC_OpenSimPrim_EC_OpenSimPrim_h
 #define incl_EC_OpenSimPrim_EC_OpenSimPrim_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "Color.h"
 #include "Declare_EC.h"
@@ -41,7 +41,7 @@ typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 typedef std::map<uint8_t, float> UVParamMap;
 
 //! Each scene entity representing a prim in OpenSim sense has this component.
-class EC_OpenSimPrim : public Foundation::ComponentInterface
+class EC_OpenSimPrim : public IComponent
 {
     DECLARE_EC(EC_OpenSimPrim);
 
@@ -411,7 +411,7 @@ signals:
     void PrimDescriptionChanged(const EC_OpenSimPrim&);
 
 private:
-    EC_OpenSimPrim(Foundation::ModuleInterface* module);
+    EC_OpenSimPrim(IModule* module);
 
     QObject *editor_;
 

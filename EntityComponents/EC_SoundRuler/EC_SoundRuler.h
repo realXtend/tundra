@@ -10,7 +10,7 @@
 #ifndef incl_EC_SoundRuler_EC_SoundRuler_h
 #define incl_EC_SoundRuler_EC_SoundRuler_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -26,7 +26,7 @@ namespace Ogre
 
 class EC_OpenSimPrim;
 
-class EC_SoundRuler : public Foundation::ComponentInterface
+class EC_SoundRuler : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_SoundRuler);
@@ -68,7 +68,7 @@ public slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_SoundRuler(Foundation::ModuleInterface *module);
+    explicit EC_SoundRuler(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();

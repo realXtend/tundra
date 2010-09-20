@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreMesh_h
 #define incl_OgreRenderer_EC_OgreMesh_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -29,7 +29,7 @@ namespace OgreRenderer
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreMesh : public IComponent
     {
         Q_OBJECT
         
@@ -41,7 +41,7 @@ namespace OgreRenderer
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -138,7 +138,7 @@ namespace OgreRenderer
         bool HasAttachmentMesh(uint index) const;
         
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! returns mesh name
         const std::string& GetMeshName() const;
@@ -207,7 +207,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMesh(Foundation::ModuleInterface* module);
+        EC_OgreMesh(IModule* module);
         
         //! prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
         /*! \param mesh_name Mesh to prepare
@@ -223,7 +223,7 @@ namespace OgreRenderer
         void DetachEntity();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

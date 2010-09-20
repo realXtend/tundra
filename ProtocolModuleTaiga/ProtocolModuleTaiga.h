@@ -3,7 +3,7 @@
 #ifndef incl_ProtocolModuleTaiga_ProtocolModuleTaiga_h
 #define incl_ProtocolModuleTaiga_ProtocolModuleTaiga_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ProtocolModuleTaigaApi.h"
 #include "TaigaLoginThread.h"
@@ -35,7 +35,7 @@ namespace TaigaProtocol
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
     class TAIGAPROTO_MODULE_API ProtocolModuleTaiga 
-        : public Foundation::ModuleInterface, 
+        : public IModule, 
           public ProtocolUtilities::INetMessageListener, 
           public ProtocolUtilities::ProtocolModuleInterface
     {

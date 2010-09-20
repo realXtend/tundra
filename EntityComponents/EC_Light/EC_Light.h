@@ -3,8 +3,8 @@
 #ifndef incl_EC_Light_EC_Light_h
 #define incl_EC_Light_EC_Light_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Color.h"
@@ -71,7 +71,7 @@ Does not emit any actions.
 </table>
 
 */
-class EC_Light : public Foundation::ComponentInterface
+class EC_Light : public IComponent
 {
     DECLARE_EC(EC_Light);
     
@@ -92,13 +92,13 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     //! Gets placeable component
-    Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+    ComponentPtr GetPlaceable() const { return placeable_; }
     
     //! Sets placeable component
     /*! Set a null placeable (or do not set a placeable) to have a detached light
         \param placeable placeable component
      */
-    void SetPlaceable(Foundation::ComponentPtr placeable);
+    void SetPlaceable(ComponentPtr placeable);
     
     //! @return Ogre light pointer
     Ogre::Light* GetLight() const { return light_; }
@@ -144,7 +144,7 @@ private:
     //! Constuctor.
     /*! \param module Module.
      */
-    explicit EC_Light(Foundation::ModuleInterface *module);
+    explicit EC_Light(IModule *module);
     
     //! Attaches light to placeable
     void AttachLight();
@@ -153,7 +153,7 @@ private:
     void DetachLight();
     
     //! Placeable component, optional
-    Foundation::ComponentPtr placeable_;
+    ComponentPtr placeable_;
     
     //! Ogre light
     Ogre::Light* light_;

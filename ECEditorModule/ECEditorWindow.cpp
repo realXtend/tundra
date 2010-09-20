@@ -162,7 +162,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
+            ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
             if(component)
             {
                 entities[i]->RemoveComponent(component, AttributeChange::Local);
@@ -184,7 +184,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for (uint i = 0; i < entities.size(); ++i)
         {
-            Foundation::ComponentInterfacePtr comp;
+            ComponentInterfacePtr comp;
             comp = entities[i]->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
@@ -282,16 +282,16 @@ namespace ECEditor
                 if(components[i]->TypeName() == "EC_OgrePlaceable")
                 {
                     hasPlaceable = true;
-                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                 }
                 // Ignore all nonserializable components.
                 if(components[i]->IsSerializable())
                 {
-                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                     AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        AttributeInterface *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString());
                         if(attribute)
                             attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
                     }
@@ -308,7 +308,7 @@ namespace ECEditor
         }
     }
 
-    void ECEditorWindow::HighlightEntities(Foundation::ComponentInterface *component)
+    void ECEditorWindow::HighlightEntities(IComponent *component)
     {
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
@@ -428,13 +428,13 @@ namespace ECEditor
         emit EditEntityXml(ents);
     }
 
-    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components)
+    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentInterfacePtr> components)
     {
         if(!components.size())
             return;
 
-        QList<Foundation::ComponentPtr> comps;
-        foreach(Foundation::ComponentInterfacePtr component, components)
+        QList<ComponentPtr> comps;
+        foreach(ComponentInterfacePtr component, components)
             comps << component;
 
         emit EditComponentXml(comps);
@@ -448,7 +448,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
+            ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
             if(component)
                 emit EditComponentXml(component);
         }
@@ -562,8 +562,8 @@ namespace ECEditor
             // signals from attribute browser to editor window.
             QObject::connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
             QObject::connect(browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
-            QObject::connect(browser_, SIGNAL(ComponentSelected(Foundation::ComponentInterface *)), 
-                             this, SLOT(HighlightEntities(Foundation::ComponentInterface *)));
+            QObject::connect(browser_, SIGNAL(ComponentSelected(IComponent *)), 
+                             this, SLOT(HighlightEntities(IComponent *)));
         }
 /*
         if (component_list_ && browser_)
@@ -604,10 +604,11 @@ namespace ECEditor
 
     QStringList ECEditorWindow::GetAvailableComponents() const
     {
+        using namespace Foundation;
         QStringList components;
-        Foundation::ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
-        const Foundation::ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
-        Foundation::ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
+        ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
+        const ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
+        ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
         while (i != factories.end())
         {
             components.append(i->first); //<< i->first.c_str();

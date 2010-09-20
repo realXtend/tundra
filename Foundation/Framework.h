@@ -6,7 +6,7 @@
 // Application name is statically defined here
 #define APPLICATION_NAME "realXtend"
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
@@ -365,7 +365,7 @@ namespace Foundation
     /*! Options contains program options pre-parsed by framework. If modules wish
         to use their own command line arguments, the arguments are also supplied.
     */
-    class ProgramOptionsEvent : public EventDataInterface
+    class ProgramOptionsEvent : public IEventData
     {
         ProgramOptionsEvent();
     public:

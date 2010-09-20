@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_WaterPlane.h"
 #include "EC_OgrePlaceable.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 
 #include "Renderer.h"
 #include "SceneManager.h"
@@ -24,8 +24,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 namespace Environment
 {
    
-    EC_WaterPlane::EC_WaterPlane(Foundation::ModuleInterface *module)
-        : Foundation::ComponentInterface(module->GetFramework()),
+    EC_WaterPlane::EC_WaterPlane(IModule *module)
+        : IComponent(module->GetFramework()),
         xSizeAttr_(this, "Water plane x-size", 5000),
         ySizeAttr_(this, "Water plane y-size", 5000),
         depthAttr_(this, "Water plane depth", 20),
@@ -50,8 +50,8 @@ namespace Environment
             node_ = scene_mgr->createSceneNode();
         }
 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
-            SLOT(AttributeUpdated(AttributeInterface*, AttributeChange::Type)));
+        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         lastXsize_ = xSizeAttr_.Get();
         lastYsize_ = ySizeAttr_.Get();
@@ -178,7 +178,7 @@ namespace Environment
 
     }
 
-    void EC_WaterPlane::AttributeUpdated(AttributeInterface* attribute, AttributeChange::Type change)
+    void EC_WaterPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeWaterPlane(attribute);
     }
@@ -216,7 +216,7 @@ namespace Environment
 
     }
 
-    void EC_WaterPlane::ChangeWaterPlane(AttributeInterface* attribute)
+    void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
     {
         std::string name = attribute->GetNameString();
         if ( ( name == xSizeAttr_.GetNameString() 
@@ -273,10 +273,10 @@ namespace Environment
     }
 
 
-    Foundation::ComponentPtr EC_WaterPlane::FindPlaceable() const
+    ComponentPtr EC_WaterPlane::FindPlaceable() const
     {
         assert(framework_);
-        Foundation::ComponentPtr comp;
+        ComponentPtr comp;
         if(!GetParentEntity())
             return comp;
         comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
