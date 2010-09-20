@@ -4,9 +4,9 @@
 #define incl_ECEditorModule_EC_SerializationTest_h
 
 #include "Framework.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "AssetInterface.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -52,7 +52,8 @@ Does not emit any actions.
 </table>
 
 */
-    class EC_SerializationTest : public Foundation::ComponentInterface
+
+    class EC_SerializationTest : public IComponent
     {
         DECLARE_EC(EC_SerializationTest);
 
@@ -69,7 +70,7 @@ Does not emit any actions.
         Attribute<Foundation::AssetReference> attr4_;
         
     private:
-        EC_SerializationTest(Foundation::ModuleInterface* module);
+        EC_SerializationTest(IModule* module);
     };
 }
 

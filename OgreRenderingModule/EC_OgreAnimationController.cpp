@@ -9,8 +9,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreAnimationController::EC_OgreAnimationController(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework())
+    EC_OgreAnimationController::EC_OgreAnimationController(IModule* module) :
+        IComponent(module->GetFramework())
     {
         ResetState();
     }
@@ -28,22 +28,25 @@ namespace OgreRenderer
     {
         QStringList availableList;
         Ogre::Entity* entity = GetEntity();
-        if (!entity) return availableList;
-            
+        if (!entity) 
+            return availableList;
         Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
+        if (!anims) 
+            return availableList;
         Ogre::AnimationStateIterator i = anims->getAnimationStateIterator();
-        while(i.hasMoreElements()) {
+        while (i.hasMoreElements()) 
+        {
             Ogre::AnimationState *animstate = i.getNext();
             availableList << QString(animstate->getAnimationName().c_str());
         }
-        
         return availableList;
     }
     
     void EC_OgreAnimationController::Update(f64 frametime)
     {
         Ogre::Entity* entity = GetEntity();
-        if (!entity) return;
+        if (!entity) 
+            return;
         
         std::vector<std::string> erase_list;
         

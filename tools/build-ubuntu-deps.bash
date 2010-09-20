@@ -2,9 +2,12 @@
 set -e
 set -x
 
-# script to build naali and most deps. first manually add the
-# following ppa sources using add-apt-repository or the software
-# sources gui tool: ppa:mapopa/qt4.6
+# script to build naali and most deps.
+#
+# if you want to use caelum, install ogre and nvidia cg from
+# ppa:andrewfenn/ogredev and change the caelum setting to 1 in
+# top-level CMakeLists.txt
+
 
 viewer=$(dirname $(readlink -f $0))/..
 deps=$viewer/../naali-deps
@@ -109,25 +112,6 @@ else
     cp plugins.cfg $prefix/etc/OGRE/
     cp lib$what.a $prefix/lib/
     cp main/include/* $prefix/include/
-    touch $tags/$what-done
-fi
-
-cd $build
-what=propertyeditor
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-
-    if test -d $what; then
-	svn update $what
-    else
-	svn co $viewerdeps_svn/trunk/$what $what
-    fi
-    cd $what
-    cmake .
-    make
-    cp -a lib/libPropertyEditor.* $prefix/lib/
-    cp lib/*.h $prefix/include/
     touch $tags/$what-done
 fi
 

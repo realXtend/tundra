@@ -10,7 +10,7 @@
 #ifndef incl_OgreRenderer_EC_OgreEnvironment_h
 #define incl_OgreRenderer_EC_OgreEnvironment_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 
 #include "Color.h"
@@ -86,7 +86,7 @@ Does not emit any actions.
      *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      */
-    class OGRE_MODULE_API EC_OgreEnvironment : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreEnvironment : public IComponent
     {
         Q_OBJECT
         
@@ -184,7 +184,7 @@ Does not emit any actions.
     private:
         /// Constructor.
         /// \param module Renderer module.
-        EC_OgreEnvironment(Foundation::ModuleInterface *module);
+        EC_OgreEnvironment(IModule *module);
 
         /// Creates the sunlight.
         void CreateSunlight();

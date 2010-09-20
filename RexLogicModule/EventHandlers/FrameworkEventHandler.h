@@ -21,7 +21,7 @@ namespace RexLogic
         ~FrameworkEventHandler() {}
 
         //! handle framework event
-        bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
     private:
         //! server connection
         ProtocolUtilities::WorldStream *connection_;

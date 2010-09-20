@@ -9,7 +9,7 @@
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
 #define incl_EC_ChatBubble_EC_ChatBubble_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -67,7 +67,7 @@ Does not emit any actions.
 */
 
 /// Chat bubble component wich shows billboard with chat bubble and text on entity.
-class EC_ChatBubble : public Foundation::ComponentInterface
+class EC_ChatBubble : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_ChatBubble);
@@ -75,7 +75,7 @@ class EC_ChatBubble : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_ChatBubble(Foundation::ModuleInterface *module);
+    explicit EC_ChatBubble(IModule *module);
 
 public:
     /// Destructor.

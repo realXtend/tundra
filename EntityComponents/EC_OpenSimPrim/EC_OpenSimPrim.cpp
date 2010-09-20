@@ -7,7 +7,7 @@
 
 #include "StableHeaders.h"
 #include "EC_OpenSimPrim.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "SceneManager.h"
 #include "LoggingFunctions.h"
 
@@ -15,8 +15,8 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_OpenSimPrim");
 
-EC_OpenSimPrim::EC_OpenSimPrim(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_OpenSimPrim::EC_OpenSimPrim(IModule* module) :
+    IComponent(module->GetFramework()),
     editor_(0),
     // GENERIC
     Name(this, "Name"),

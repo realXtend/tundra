@@ -9,7 +9,7 @@
 #ifndef incl_EC_HoveringText_EC_HoveringText_h
 #define incl_EC_HoveringText_EC_HoveringText_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -74,7 +74,7 @@ Does not emit any actions.
 
 
 /// Shows a hovering text attached to an entity.
-class EC_HoveringText : public Foundation::ComponentInterface
+class EC_HoveringText : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_HoveringText);
@@ -82,7 +82,7 @@ class EC_HoveringText : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_HoveringText(Foundation::ModuleInterface *module);
+    explicit EC_HoveringText(IModule *module);
 
 public:
     /// Destructor.

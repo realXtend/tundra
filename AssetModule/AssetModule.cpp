@@ -6,6 +6,7 @@
 #include "UDPAssetProvider.h"
 #include "XMLRPCAssetProvider.h"
 #include "QtHttpAssetProvider.h"
+#include "LocalAssetProvider.h"
 #include "NetworkEvents.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -19,7 +20,7 @@ namespace Asset
 {
     std::string AssetModule::type_name_static_ = "Asset";
 
-    AssetModule::AssetModule() : ModuleInterface(type_name_static_), inboundcategory_id_(0)
+    AssetModule::AssetModule() : IModule(type_name_static_), inboundcategory_id_(0)
     {
     }
 
@@ -46,6 +47,11 @@ namespace Asset
         http_asset_provider_ = Foundation::AssetProviderPtr(new QtHttpAssetProvider(framework_));
         manager_->RegisterAssetProvider(http_asset_provider_);
 
+        // Add localassethandler, with a hardcoded dir for now
+        // Note: this directory is a different concept than the "pre-warmed assetcache"
+        local_asset_provider_ = Foundation::AssetProviderPtr(new LocalAssetProvider(framework_, "./data/assets"));
+        manager_->RegisterAssetProvider(local_asset_provider_);
+        
         // Last fallback is UDP provider
         udp_asset_provider_ = Foundation::AssetProviderPtr(new UDPAssetProvider(framework_));
         manager_->RegisterAssetProvider(udp_asset_provider_);
@@ -88,6 +94,7 @@ namespace Asset
     {
         manager_->UnregisterAssetProvider(udp_asset_provider_);
         manager_->UnregisterAssetProvider(xmlrpc_asset_provider_);
+        manager_->UnregisterAssetProvider(local_asset_provider_);
         manager_->UnregisterAssetProvider(http_asset_provider_);
 
         framework_->GetServiceManager()->UnregisterService(manager_);
@@ -106,7 +113,7 @@ namespace Asset
     bool AssetModule::HandleEvent(
         event_category_id_t category_id,
         event_id_t event_id, 
-        Foundation::EventDataInterface* data)
+        IEventData* data)
     {
         PROFILE(AssetModule_HandleEvent);
         if ((category_id == inboundcategory_id_))
@@ -149,7 +156,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Asset;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(AssetModule)
 POCO_END_MANIFEST
 

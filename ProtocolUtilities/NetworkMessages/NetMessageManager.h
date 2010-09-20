@@ -211,10 +211,10 @@ namespace ProtocolUtilities
         uint8_t pingId;
 
         /// List of pending Ping ID - time stamp pairs
-        std::map<uint8_t, Core::tick_t> pendingPings;
+        std::map<uint8_t, tick_t> pendingPings;
 
         /// How much time has elapsed in CPU ticks since we've heard from the server last time.
-        Core::tick_t lastHeardSinceTick;
+        tick_t lastHeardSinceTick;
     };
 }
 

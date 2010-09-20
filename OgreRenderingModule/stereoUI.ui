@@ -65,7 +65,7 @@
         </font>
        </property>
        <property name="text">
-        <string>Focal length</string>
+        <string>Convergence length</string>
        </property>
       </widget>
      </item>

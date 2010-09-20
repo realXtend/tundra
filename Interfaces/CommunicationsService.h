@@ -261,6 +261,8 @@ namespace Communications
             virtual void DisableAudioReceiving() = 0;
             virtual bool IsAudioReceivingEnabled() const = 0;
             virtual double SpeakerVoiceActivity() const = 0;
+            virtual int GetAverageBandwithIn() const = 0;
+            virtual int GetAverageBandwithOut() const = 0;
 
             //virtual void SetSelfPosition(const vector3df& pos) = 0;
 

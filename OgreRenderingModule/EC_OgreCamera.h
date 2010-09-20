@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreCamera_h
 #define incl_OgreRenderer_EC_OgreCamera_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
 
@@ -67,7 +67,7 @@ Does not emit any actions.
     /*! Needs to be attached to a placeable (aka scene node) to be useful.
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreCamera : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreCamera : public IComponent
     {
         Q_OBJECT
         
@@ -79,7 +79,7 @@ Does not emit any actions.
         /*! set a null placeable to detach the camera, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
     public slots:
  
         //! sets as active camera in the viewport
@@ -123,7 +123,7 @@ Does not emit any actions.
         //! constructor
         /*! \param module renderer module
          */
-        explicit EC_OgreCamera(Foundation::ModuleInterface* module);
+        explicit EC_OgreCamera(IModule* module);
         
         //! attaches camera to placeable
         void AttachCamera();
@@ -132,7 +132,7 @@ Does not emit any actions.
         void DetachCamera();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
  
         //! attached to placeable -flag
         bool attached_;

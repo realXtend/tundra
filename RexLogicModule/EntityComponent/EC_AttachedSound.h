@@ -3,7 +3,7 @@
 #ifndef incl_OpenALAudio_EC_AttachedSound_h
 #define incl_OpenALAudio_EC_AttachedSound_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexLogicModuleApi.h"
 #include "Vector3D.h"
 #include "Declare_EC.h"
@@ -70,7 +70,7 @@ Does not emit any actions.
         To use, first setup the sound usually using the sound service, then use AddSound()
         To be useful, the entity also needs the EC_OgrePlaceable component.
      */
-    class REXLOGIC_MODULE_API EC_AttachedSound : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AttachedSound : public IComponent
     {
         Q_OBJECT
         Q_ENUMS(SoundSlot)
@@ -131,7 +131,7 @@ Does not emit any actions.
         void Update(f64 frametime);
 
     private:
-        EC_AttachedSound(Foundation::ModuleInterface *module);
+        EC_AttachedSound(IModule *module);
 
         //! Init sound slot vector
         void InitSoundVector();

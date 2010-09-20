@@ -1,43 +1,68 @@
 """namespace config, 'cause the c++ side doesn't do it too nicely"""
 
+from __main__ import _pythonscriptmodule
 from __main__ import _naali
+import rexviewer as r #the old module is still used , while porting away from it
 #from _naali import *
 
 #XXX do we actually want these style changes,
 #or is it better to just call the slots directly
 # module methods
-runjs = _naali.RunJavascriptString
+runjs = _pythonscriptmodule.RunJavascriptString
 
 def getScene(name):
-    return _naali.GetScene(name)
+    return _pythonscriptmodule.GetScene(name)
     
 def getDefaultScene():
     #XXX should use framework GetDefaultWorldScene
     return getScene("World")
     
-def createEntity():
+def createEntity(comptypes = []):
     s = getDefaultScene()
-    newid = s.NextFreeId()
-    ent = s.CreateEntityRaw(newid)
-    return ent
+    #newid = s.NextFreeId()
+    ent = s.CreateEntityRaw(0, comptypes) #0 apparently means it assigns NextFreeId
+    return Entity(ent)
+
+#def createMeshEntity(meshname):
+#    ent = createEntity()
+
+    #XXX ugly workaround
+    #oldpyent = r.getEntity(ent.id)
+    #oldpyent.createComponent("EC_OgreMesh") #sets placeable too
+
+    #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
+    #ent = naali.createEntity(["EC_OgrePlaceable", "EC_OgreMesh"])
+    #ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
+    #ent.mesh.SetMesh(meshname)
 
 def createInputContext(name, priority = 100):
-    return _naali.CreateInputContext(name, priority)
+    return _pythonscriptmodule.CreateInputContext(name, priority)
 
 # module variables
-renderer = _naali.GetRenderer()
-worldlogic = _naali.GetWorldLogic()
-inputcontext = _naali.GetInputContext()
-mediaplayerservice = _naali.GetMediaPlayerService()
+renderer = _pythonscriptmodule.GetRenderer()
+worldlogic = _pythonscriptmodule.GetWorldLogic()
+inputcontext = _pythonscriptmodule.GetInputContext()
+mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
+frame = _naali.GetFrame()
 
 class Entity:
     compnames = {
         'placeable': 'EC_OgrePlaceable',
-        'camera': 'EC_OgreCamera'
+        'mesh': 'EC_OgreMesh',
+        'camera': 'EC_OgreCamera',
+        'animationcontroller': 'EC_OgreAnimationController',
+        'highlight': 'EC_Highlight',
+        'touchable': 'EC_Touchable',
+        'soundruler': 'EC_SoundRuler',
+        'netpos': 'EC_NetworkPosition',
         }   
  
     def __init__(self, qent):
+        self.id = qent.Id
+
+        """The Scene::Entity exposed by Qt mechanism. Public, ok to use directly as well."""
         self.qent = qent
+
 
     def getComponent(self, typename, idname=None):
         """To allow getting components for which there is no shortcut in py Entity helper"""
@@ -46,16 +71,27 @@ class Entity:
             return self.qent.GetComponentRaw(typename)
         else:
             return self.qent.GetComponentRaw(typename, idname)
+
+    def getDynamicComponent(self, idname):
+        return self.getComponent("EC_DynamicComponent", idname)
         
     def __getattr__(self, name):
         if name in Entity.compnames:
             fullname = Entity.compnames[name]
             comp = self.qent.GetComponentRaw(fullname)
-            if comp is None:
+            if comp is None: 
                 raise AttributeError, "The entity does not have a %s component" % fullname
             return comp
         raise AttributeError
 
+    def createComponent(self, typename):
+        oldpyent = r.getEntity(self.id)
+        oldpyent.createComponent(typename)
+
+    # Returns EntityAction pointer by the name
+    def action(self, name):
+        return self.qent.Action(name)
+    
 def getEntity(entid):
     qent = getScene("World").GetEntityRaw(entid)
     if qent is None:
@@ -80,5 +116,3 @@ def getUserAvatar():
         
 def getCamera():
     return _getAsPyEntity(worldlogic.GetCameraEntityRaw, "No default camera. No scene?")
-        
-    

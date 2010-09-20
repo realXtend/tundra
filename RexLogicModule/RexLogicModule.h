@@ -22,7 +22,7 @@
 #ifndef incl_RexLogicModule_RexLogicModule_h
 #define incl_RexLogicModule_RexLogicModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "WorldLogicInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexLogicModuleApi.h"
@@ -95,7 +95,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public Foundation::ModuleInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public IModule
     {
         Q_OBJECT
 
@@ -112,7 +112,7 @@ namespace RexLogic
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         static const std::string &NameStatic() { return type_name_static_; }
         MODULE_LOGGING_FUNCTIONS;
 
@@ -137,7 +137,7 @@ namespace RexLogic
         void FocusOnObject(float, float, float);
 
         //! return camera state
-        CameraState GetCameraState() { return camera_state_; }
+        CameraState GetCameraState() const { return camera_state_; }
 
         //! reset camera state to CS_Follow
         void ResetCameraState();
@@ -262,18 +262,18 @@ namespace RexLogic
         void UpdateObjects(f64 frametime);
 
         //! Update sound listener position
-        /*! Uses current camera for now
+        /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         //! Handle an inventory event.
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInventoryEvent(event_id_t event_id, IEventData* data);
 
         //! Handle an asset event.
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
 
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
@@ -318,7 +318,7 @@ namespace RexLogic
         //! How long to keep doing dead reckoning
         f64 dead_reckoning_time_;
 
-        typedef boost::function<bool(event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
+        typedef boost::function<bool(event_id_t,IEventData*)> LogicEventHandlerFunction;
         typedef std::vector<LogicEventHandlerFunction> EventHandlerVector;
         typedef std::map<event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
 
@@ -391,14 +391,14 @@ namespace RexLogic
          *  @param entity Entity for which the component was added.
          *  @param component The added component.
          */
-        void NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void NewComponentAdded(Scene::Entity *entity, IComponent *component);
 
         /** Called when component is removed from the active scene.
          *  Currently used for handling sound listener EC's.
          *  @param entity Entity from which the component was removed.
          *  @param component The removed component.
          */
-        void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void  ComponentRemoved(Scene::Entity *entity, IComponent *component);
 
         /// Finds entity with active sound listener component and stores it.
         void FindActiveListener();

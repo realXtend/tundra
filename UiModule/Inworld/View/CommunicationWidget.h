@@ -5,6 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 #include "ui_CommunicationWidget.h"
+#include "InputServiceInterface.h"
 
 class QStackedLayout;
 class QTextBrowser;
@@ -29,9 +30,9 @@ namespace Communications
 
 namespace CommUI
 {
-    class VoiceUsersWidget;
     class VoiceUsersInfoWidget;
     class VoiceStateWidget;
+    class VoiceControllerWidget;
 }
 
 namespace Foundation
@@ -71,7 +72,6 @@ namespace CoreUi
         void ChangeView(ViewMode new_mode);
         void ToggleImWidget();
         void ToggleVoice();
-        void ToggleVoiceUsers();
 
         void ShowIncomingMessage(bool self_sent_message, QString sender, QString timestamp, QString message);
         void SendMessageRequested();
@@ -82,6 +82,7 @@ namespace CoreUi
         void ShowVoiceControls();
         void HideVoiceControls();
         void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
+        void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
 
     private:
         Foundation::Framework* framework_;
@@ -93,7 +94,8 @@ namespace CoreUi
         NormalChatViewWidget *normal_view_widget_;
         UiProxyWidget *im_proxy_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
-        static bool in_world_speak_mode_on_;
+        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
+
 
         QPointF press_pos_;
         QPointF release_pos_;
@@ -103,10 +105,11 @@ namespace CoreUi
         // in-world voice
         CommUI::VoiceStateWidget* voice_state_widget_;
         CommUI::VoiceUsersInfoWidget* voice_users_info_widget_;
-        CommUI::VoiceUsersWidget* voice_users_widget_;
-        QGraphicsProxyWidget* voice_users_proxy_widget_;
+        CommUI::VoiceControllerWidget* voice_controller_widget_;
+        UiProxyWidget* voice_users_proxy_widget_;
+        UiProxyWidget* voice_controller_proxy_widget_;
 
-        Communications::InWorldChat::SessionInterface* in_world_chat_session_;
+        InputContextPtr input_context_;
 
     signals:
         void SendMessageToServer(const QString &message);

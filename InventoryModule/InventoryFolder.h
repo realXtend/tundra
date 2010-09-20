@@ -9,13 +9,14 @@
 #define incl_InventoryModule_InventoryFolder_h
 
 #include "AbstractInventoryItem.h"
+#include "InventoryModuleApi.h"
 #include "RexTypes.h"
 
 namespace Inventory
 {
     class InventoryAsset;
 
-    class InventoryFolder : public AbstractInventoryItem
+    class INVENTORY_MODULE_API InventoryFolder : public AbstractInventoryItem
     {
         Q_OBJECT
         Q_PROPERTY(bool dirty_ READ IsDirty WRITE SetDirty)

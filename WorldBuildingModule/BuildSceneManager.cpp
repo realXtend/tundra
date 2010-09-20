@@ -10,7 +10,7 @@
 #include "BuildingWidget.h"
 #include "UiHelper.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "UiServiceInterface.h"
@@ -24,7 +24,8 @@ namespace WorldBuilding
 {
     BuildSceneManager::BuildSceneManager(QObject *parent, Foundation::Framework *framework) :
         framework_(framework),
-        ui_helper_(new Helpers::UiHelper(parent)),
+        scene_(0),
+        ui_helper_(new Helpers::UiHelper(parent, framework)),
         inworld_state(false),
         scene_name_("WorldBuilding"),
         world_object_view_(0),
@@ -68,7 +69,34 @@ namespace WorldBuilding
             py_widget->setParent(0);
             py_widget = 0;
         }
+        foreach (QWidget *visib_widget, toggle_visibility_widgets_)
+        {
+            if (!visib_widget)
+                continue;
+            QLabel *label = dynamic_cast<QLabel*>(visib_widget);
+            if (!label)
+                continue;
+            int index = object_manip_ui.main_layout->indexOf(label);
+            if (index == -1)
+                continue;
+            QLayoutItem *item = object_manip_ui.main_layout->takeAt(index);
+            if (!item)
+                continue;
+            object_manip_ui.main_layout->removeItem(item);
+            delete item; // Deletes the layout item which != the widget
+            label->setParent(0);
+            SAFE_DELETE(label); // Delete QLabels also
+        }
         python_deleted_widgets_.clear();
+        toggle_visibility_widgets_.clear();
+    }
+
+    bool BuildSceneManager::IsBuildingActive()
+    { 
+        if (!scene_) 
+            return false; 
+        else 
+            return scene_->isActive(); 
     }
 
     void BuildSceneManager::InitScene()
@@ -223,51 +251,70 @@ namespace WorldBuilding
             return;
 
         // Check for type
-        bool create_widgets = false;
+        bool create_widgets = true;
+        bool toggle_visiblity = true;
         bool python_deletes = true;
         QString type_compare = type.toLower();
         QString label_title = type;
         if (type_compare == "materials")
         {
-            create_widgets = true;
             label_title = "Textures";
         }
         else if (type_compare == "mesh")
         {
-            create_widgets = true;
             label_title = "3D Mesh Model";
+
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("mesh", mesh_browse, widget);
         }
         else if (type_compare == "sound")
         {
-            create_widgets = true;
             label_title = "Attached Sound";
+            
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("sound", mesh_browse, widget);
         }
         else if (type_compare == "animation")
         {
-            create_widgets = true;
-            label_title = "Skeleton Animation";
+            toggle_visiblity = false;
+            label_title = "";
+
+            QPushButton *mesh_browse = widget->findChild<QPushButton*>("Browse");
+            if (mesh_browse)
+                ui_helper_->AddBrowsePair("animation", mesh_browse, widget);
         }
+        else
+            create_widgets = false;
 
         if (create_widgets)
         {
-            QString title_style("font-size:18px;font-weight:bold;padding-top:5px;");
-            int len = object_manip_ui.main_layout->count();
+            int inject_pos = object_manip_ui.main_layout->count() - 2;
 
-            // Make title and insert widget
-            QLabel *title = new QLabel(label_title);
-            title->setStyleSheet(title_style);
-            title->setIndent(0);
-            object_manip_ui.main_layout->insertWidget(len-2, title);
-            object_manip_ui.main_layout->insertWidget(len-1, widget);
+            // Make title if needed
+            if (!label_title.isEmpty())
+            {
+                // Make title and insert widget
+                QLabel *title = new QLabel(label_title);
+                title->setStyleSheet("font-size:18px;font-weight:bold;padding-top:5px;");
+                title->setIndent(0);
+                title->hide();
+
+                toggle_visibility_widgets_ << title;
+                object_manip_ui.main_layout->insertWidget(inject_pos, title);
+                inject_pos++;
+            }
+
+            // Insert widget to layout
+            widget->hide();
+            object_manip_ui.main_layout->insertWidget(inject_pos, widget);
 
             // Put to internal lists for visibility and deleting
-            toggle_visibility_widgets_ << title << widget;
+            if (toggle_visiblity)
+                toggle_visibility_widgets_ << widget;
             if (python_deletes)
                 python_deleted_widgets_ << widget;
-
-            // Hide all on startup
-            widget->hide();
-            title->hide();
         }
     }
 

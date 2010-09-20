@@ -40,10 +40,11 @@ namespace Asset
             bool check_disk = true,
             const std::string& asset_type = std::string());
 
-        //! Stores asset to cache. Posts ASSET_READY event when done.
+        //! Stores asset to cache.
         /*! \param asset Asset
+            \param store_to_disk Whether to store to disk cache in addition to memory cache
          */
-        void StoreAsset(Foundation::AssetPtr asset);
+        void StoreAsset(Foundation::AssetPtr asset, bool store_to_disk);
 
         //! Deletes the memory asset
         bool DeleteAsset(Foundation::AssetPtr asset);

@@ -72,13 +72,13 @@ namespace RexLogic
         void UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime);
 
         //! Handles resource event
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         //! Handles inventory event
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInventoryEvent(event_id_t event_id, IEventData* data);
 
         //! Handles asset event
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
 
         //! Handles logout
         void HandleLogout();
@@ -125,12 +125,12 @@ namespace RexLogic
         //! Creates the name overlay above the avatar.
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-//        void CreateNameOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+//        void CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id);
 
         //! Creates an info icon to avatar
         //! @param placeable EC_OgrePlaceable entity component.
         //! @param entity_id Entity id of the avatar.
-        void CreateWidgetOverlay(Foundation::ComponentPtr placeable, entity_id_t entity_id);
+        void CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id);
         
         //! Show the avatar name overlay.
         //! @param entity_id Entity id of the avatar.

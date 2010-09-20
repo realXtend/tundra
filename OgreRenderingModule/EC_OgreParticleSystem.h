@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreParticleSystem_h
 #define incl_OgreRenderer_EC_OgreParticleSystem_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -59,7 +59,7 @@ Does not emit any actions.
         Needs to be attached to a placeable (aka scene node) to be visible.
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreParticleSystem : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreParticleSystem : public IComponent
     {
         Q_OBJECT
         
@@ -68,13 +68,13 @@ Does not emit any actions.
         virtual ~EC_OgreParticleSystem();
 
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! sets placeable component
         /*! set a null placeable to detach the system(s), otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -141,7 +141,7 @@ Does not emit any actions.
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreParticleSystem(Foundation::ModuleInterface* module);
+        EC_OgreParticleSystem(IModule* module);
         
         //! attaches systems to placeable
         void AttachSystems();
@@ -150,7 +150,7 @@ Does not emit any actions.
         void DetachSystems();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

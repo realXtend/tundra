@@ -4,7 +4,7 @@
  *  @file   AttributeChangeType.h
  *  @brief  Dummy class containing enumeration of attribute/component change types for replication.
  *          This is done in separate file in order to overcome cyclic inclusion dependency
- *          between AttributeInterface and ComponentInterface.
+ *          between IAttribute and IComponent.
  */
 
 #ifndef incl_Interfaces_AttributeChangeType_h

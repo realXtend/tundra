@@ -11,7 +11,7 @@
 #ifndef incl_EC_Clone_EC_Clone_h
 #define incl_EC_Clone_EC_Clone_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -64,7 +64,8 @@ EC_OgreCustomObject (if prim) components available in advance.</b>
 </table>
 */
 
-class EC_Clone : public Foundation::ComponentInterface
+
+class EC_Clone : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Clone);
@@ -72,7 +73,7 @@ class EC_Clone : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Clone(Foundation::ModuleInterface *module);
+    explicit EC_Clone(IModule *module);
 
 public:
     /// Destructor.

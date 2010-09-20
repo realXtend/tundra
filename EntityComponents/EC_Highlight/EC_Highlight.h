@@ -10,7 +10,7 @@
 #ifndef incl_EC_Highlight_EC_Highlight_h
 #define incl_EC_Highlight_EC_Highlight_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -56,7 +56,7 @@ Does not emit any actions.
 */
 
 
-class EC_Highlight : public Foundation::ComponentInterface
+class EC_Highlight : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Highlight);
@@ -79,7 +79,7 @@ public slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Highlight(Foundation::ModuleInterface *module);
+    explicit EC_Highlight(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();

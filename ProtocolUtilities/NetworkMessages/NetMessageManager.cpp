@@ -381,8 +381,8 @@ namespace ProtocolUtilities
 
             data.resize(numBytes);
 
-            Core::tick_t now = Core::GetCurrentClockTime();
-            lastHeardSince = (double)(now - lastHeardSinceTick) / Core::GetCurrentClockFreq() * 1000;
+            tick_t now = GetCurrentClockTime();
+            lastHeardSince = (double)(now - lastHeardSinceTick) / GetCurrentClockFreq() * 1000;
             lastHeardSinceTick = now;
 
 #ifdef PROTOCOL_STRESS_TEST
@@ -630,15 +630,15 @@ namespace ProtocolUtilities
         msg->ResetReading();
         uint8_t id = msg->ReadU8();
 
-        std::map<uint8_t, Core::tick_t>::iterator it = pendingPings.find(id);
+        std::map<uint8_t, tick_t>::iterator it = pendingPings.find(id);
         if (it == pendingPings.end())
         {
             std::cout << "Reveiced CompletePingCheck with false ID" << std::endl;
             return;
         }
 
-        Core::tick_t timeNow = Core::GetCurrentClockTime();
-        lastRoundTripTime = (double)(timeNow - it->second) / Core::GetCurrentClockFreq() * 1000;
+        tick_t timeNow = GetCurrentClockTime();
+        lastRoundTripTime = (double)(timeNow - it->second) / GetCurrentClockFreq() * 1000;
 
         const float alpha = 3.f/4.f;
         smoothenedRoundTripTime = smoothenedRoundTripTime * alpha + (1.f - alpha) * lastRoundTripTime;
@@ -719,7 +719,7 @@ namespace ProtocolUtilities
         {
             ++pingId;
             uint32_t oldestUnacked = pendingACKs.empty() ? 0 : *pendingACKs.begin();
-            pendingPings[pingId] = Core::GetCurrentClockTime();
+            pendingPings[pingId] = GetCurrentClockTime();
             SendStartPingCheck(pingId, oldestUnacked);
             pingSendTimer.restart();
         }

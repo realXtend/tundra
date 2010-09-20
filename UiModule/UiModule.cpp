@@ -52,7 +52,7 @@ namespace UiServices
     std::string UiModule::type_name_static_ = "UI";
 
     UiModule::UiModule() :
-        Foundation::ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         ui_state_machine_(0),
         service_getter_(0),
         inworld_scene_controller_(0),
@@ -86,6 +86,8 @@ namespace UiServices
 
     void UiModule::Unload()
     {
+        ///\todo Just remove the fonts added by UiModule.
+        QFontDatabase::removeAllApplicationFonts();
     }
 
     void UiModule::Initialize()
@@ -167,7 +169,7 @@ namespace UiServices
     {
     }
 
-    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(UiModule_HandleEvent);
 
@@ -381,7 +383,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace UiServices;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(UiModule)
 POCO_END_MANIFEST
 

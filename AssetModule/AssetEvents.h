@@ -3,7 +3,7 @@
 #ifndef incl_Asset_AssetEvents_h
 #define incl_Asset_AssetEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "AssetInterface.h"
 
 namespace Asset
@@ -33,7 +33,7 @@ namespace Asset
         //! Asset ready event data
         /*! \ingroup AssetModuleClient
          */
-        class AssetReady : public Foundation::EventDataInterface
+        class AssetReady : public IEventData
         {
         public:
             AssetReady(const std::string& asset_id, const std::string& asset_type, Foundation::AssetPtr asset, request_tag_t tag) :
@@ -61,7 +61,7 @@ namespace Asset
         //! Asset progress event data
         /*! \ingroup AssetModuleClient
          */
-        class AssetProgress : public Foundation::EventDataInterface
+        class AssetProgress : public IEventData
         {
         public:
             AssetProgress(const std::string& asset_id, const std::string& asset_type, uint size, uint received, uint received_continuous) :
@@ -92,7 +92,7 @@ namespace Asset
         //! Asset transfer canceled event data
         /*! \ingroup AssetModuleClient
          */
-        class AssetCanceled : public Foundation::EventDataInterface
+        class AssetCanceled : public IEventData
         {
         public:
             AssetCanceled(const std::string& asset_id, const std::string& asset_type) :
@@ -115,7 +115,7 @@ namespace Asset
          * Asset open event data. 
          * @ingroup AssetModule
          */
-        class AssetOpen : public Foundation::EventDataInterface
+        class AssetOpen : public IEventData
         {
             public: 
                 AssetOpen(const QString& asset_id, const QString& asset_type) : asset_id_(asset_id), asset_type_(asset_type) {}

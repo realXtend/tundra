@@ -6,10 +6,9 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
-#include "Action.h"
 
 #include "Framework.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "CoreStringUtils.h"
 #include "ComponentManager.h"
 #include "LoggingFunctions.h"
@@ -43,7 +42,7 @@ namespace Scene
         qDeleteAll(actions_);
     }
 
-    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::AddComponent(const ComponentInterfacePtr &component, AttributeChange::Type change)
     {
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
@@ -56,7 +55,7 @@ namespace Scene
         }
     }
 
-    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::RemoveComponent(const ComponentInterfacePtr &component, AttributeChange::Type change)
     {
         if (component)
         {
@@ -76,14 +75,14 @@ namespace Scene
         }
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
+    ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
         // If component was not found, try to create
-        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -91,17 +90,17 @@ namespace Scene
         }
 
         // Could not be created
-        return Foundation::ComponentInterfacePtr();
+        return ComponentInterfacePtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
+    ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
                 return components_[i];
 
         // If component was not found, try to create
-        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -109,34 +108,34 @@ namespace Scene
         }
 
         // Could not be created
-        return Foundation::ComponentInterfacePtr();
+        return ComponentInterfacePtr();
     }
     
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const QString &type_name) const
+    ComponentInterfacePtr Entity::GetComponent(const QString &type_name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
-        return Foundation::ComponentInterfacePtr();
+        return ComponentInterfacePtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const Foundation::ComponentInterface *component) const
+    ComponentInterfacePtr Entity::GetComponent(const IComponent *component) const
     {
         for (size_t i = 0; i < components_.size(); i++)
             if(component->TypeName() == components_[i]->TypeName() &&
                component->Name() == components_[i]->Name())
                return components_[i];
-        return Foundation::ComponentInterfacePtr();
+        return ComponentInterfacePtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const QString &type_name, const QString& name) const
+    ComponentInterfacePtr Entity::GetComponent(const QString &type_name, const QString& name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return components_[i];
 
-        return Foundation::ComponentInterfacePtr();
+        return ComponentInterfacePtr();
     }
 
     bool Entity::HasComponent(const QString &type_name) const
@@ -163,6 +162,29 @@ namespace Scene
         return false;
     }
 
+    IAttribute *Entity::GetAttributeInterface(const std::string &name) const
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            IAttribute *attr = components_[i]->GetAttribute(name);
+            if (attr)
+                return attr;
+        }
+        return 0;
+    }
+
+    AttributeVector Entity::GetAttributes(const std::string &name) const
+    {
+        std::vector<IAttribute *> ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            IAttribute *attr = components_[i]->GetAttribute(name);
+            if (attr)
+                ret.push_back(attr);
+        }
+        return ret;
+    }
+
     QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
@@ -181,63 +203,63 @@ namespace Scene
             return "";
     }
 
-    Action *Entity::RegisterAction(const QString &name)
+    EntityAction *Entity::Action(const QString &name)
     {
         if (actions_.contains(name))
             return actions_[name];
 
-        Action *action = new Action(name);
+        EntityAction *action = new EntityAction(name);
         actions_.insert(name, action);
         return action;
     }
 
     void Entity::ConnectAction(const QString &name, const QObject *receiver, const char *member)
     {
-        Action *action = RegisterAction(name);
+        EntityAction *action = Action(name);
         assert(action);
-        connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
+        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member);
     }
 
-    void Entity::Exec(const QString &action)
+    void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger();
     }
 
-    void Entity::Exec(const QString &action, const QString &param)
+    void Entity::Exec(const QString &action, const QString &param, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param1, param2);
     }
 
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
-        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        EntityAction *act = Action(action);
+        int receivers = act->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (!HasReceivers(act))
             return;
 
         act->Trigger(param1, param2, param3);
     }
 
-    void Entity::Exec(const QString &action, const QStringVector &params)
+    void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
@@ -253,9 +275,9 @@ namespace Scene
             act->Trigger(params[0], params[1], params[2], params.mid(3));
     }
 
-    bool Entity::HasReceivers(Action *action)
+    bool Entity::HasReceivers(EntityAction *action)
     {
-        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringList &)));
         if (receivers == 0)
         {
             LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");

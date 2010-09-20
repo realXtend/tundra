@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_Light.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -20,8 +20,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
 using namespace RexTypes;
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Light::EC_Light(IModule *module) :
+    IComponent(module->GetFramework()),
     light_(0),
     attached_(false),
     typeAttr_(this, "light type", LT_Point),
@@ -29,10 +29,10 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
     specColorAttr_(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
     castShadowsAttr_(this, "cast shadows", false),
-    rangeAttr_(this, "light range", 10.0f),
-    constAttenAttr_(this, "constant atten", 1.0f),
-    linearAttenAttr_(this, "linear atten", 0.0f),
-    quadraAttenAttr_(this, "quadratic atten", 0.0f),
+    rangeAttr_(this, "light range", 100.0f),
+    constAttenAttr_(this, "constant atten", 0.0f),
+    linearAttenAttr_(this, "linear atten", 0.01f),
+    quadraAttenAttr_(this, "quadratic atten", 0.01f),
     innerAngleAttr_(this, "light inner angle", 30.0f),
     outerAngleAttr_(this, "light outer angle", 40.0f)
 {
@@ -80,7 +80,7 @@ EC_Light::~EC_Light()
     }
 }
 
-void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)
+void EC_Light::SetPlaceable(ComponentPtr placeable)
 {
     if (dynamic_cast<EC_OgrePlaceable*>(placeable.get()) == 0)
     {
@@ -123,7 +123,7 @@ void EC_Light::UpdateOgreLight()
     // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
     if (parent_entity_)
     {
-        Foundation::ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
             SetPlaceable(placeable);
         else

@@ -3,8 +3,8 @@
 #ifndef incl_EC_DynamicComponent_EC_DynamicComponent_h
 #define incl_EC_DynamicComponent_EC_DynamicComponent_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 
 #include <QVariant>
@@ -83,7 +83,7 @@ Does not emit any actions.
 </table>
 
 */
-class EC_DynamicComponent : public Foundation::ComponentInterface
+class EC_DynamicComponent : public IComponent
 {
     DECLARE_EC(EC_DynamicComponent);
     Q_OBJECT
@@ -130,13 +130,13 @@ public:
         //Check if attribute has already created.
         if(!ContainAttribute(name))
         {
-            AttributeInterface *attribute = new Attribute<T>(this, name.toStdString().c_str());
+            IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
             emit AttributeAdded(name);
         }
     }
 
     //! A factory method that constructs a new attribute given the typename. This factory is not extensible.
-    AttributeInterface *CreateAttribute(const QString &typeName, const QString &name);
+    IAttribute *CreateAttribute(const QString &typeName, const QString &name);
 
 public slots:
     //! Will handle ComponentChanged event to ComponentInterface.
@@ -177,7 +177,7 @@ public slots:
     bool ContainAttribute(const QString &name) const;
 
 private:
-    explicit EC_DynamicComponent(Foundation::ModuleInterface *module);
+    explicit EC_DynamicComponent(IModule *module);
 };
 
 #endif

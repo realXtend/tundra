@@ -3,7 +3,7 @@
 #ifndef incl_PhononPlayerModule_h
 #define incl_PhononPlayerModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include <QObject>
 
@@ -18,7 +18,7 @@ namespace PhononPlayer
     /**
      *  Offers PlayerService using Phonon backend.
      */
-    class PhononPlayerModule : public QObject, public Foundation::ModuleInterface
+    class PhononPlayerModule : public QObject, public IModule
     {
         Q_OBJECT
     public:
@@ -32,7 +32,7 @@ namespace PhononPlayer
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Logging
         MODULE_LOGGING_FUNCTIONS
