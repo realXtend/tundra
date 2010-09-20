@@ -15,6 +15,7 @@ namespace Ogre
     class Entity;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -23,6 +24,37 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreCustomObject</h2>
+		Needs to be attached to a placeable (aka scene node) to be visible.
+		Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
+        related to manual objects (still unfixed as of 1.6.2)
+
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
         Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre

@@ -15,6 +15,8 @@ namespace Ogre
     class SceneNode;
 }
 
+
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -23,6 +25,35 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreParticleSystem</h2>
+particle system entity component.
+May contain multiple particle systems created from templates. Needs to be attached to a placeable (aka scene node) to be visible. 		
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Ogre particle system entity component
     /*! May contain multiple particle systems created from templates.
         Needs to be attached to a placeable (aka scene node) to be visible.
