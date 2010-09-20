@@ -13,7 +13,6 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
-#include "EC_Water.h"
 #include "PostProcessWidget.h"
 #include "EC_WaterPlane.h"
 
@@ -60,7 +59,6 @@ namespace Environment
     void EnvironmentModule::Load()
     {
         DECLARE_MODULE_EC(EC_Terrain);
-        DECLARE_MODULE_EC(EC_Water);
         DECLARE_MODULE_EC(EC_WaterPlane);
     }
 

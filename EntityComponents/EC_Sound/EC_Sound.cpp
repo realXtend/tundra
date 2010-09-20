@@ -16,15 +16,15 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 EC_Sound::EC_Sound(IModule *module):
     IComponent(module->GetFramework()),
     sound_id_(0),
-    soundId_(this, "Sound id"),
-    soundInnerRadius_(this, "sound radius inner", 0.0f),
-    soundOuterRadius_(this, "Sound radius outer", 20.0f),
-    loopSound_(this, "Loop sound", false),
-    triggerSound_(this, "Trigger sound", false),
-    soundGain_(this, "Sound gain", 1.0f)
+    soundId(this, "Sound ref"),
+    soundInnerRadius(this, "Sound radius inner", 0.0f),
+    soundOuterRadius(this, "Sound radius outer", 20.0f),
+    loopSound(this, "Loop sound", false),
+    triggerSound(this, "Trigger sound", false),
+    soundGain(this, "Sound gain", 1.0f)
 {
     static AttributeMetadata metaData("", "0", "1", "0.1");
-    soundGain_.SetMetadata(&metaData);
+    soundGain.SetMetadata(&metaData);
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
@@ -39,24 +39,35 @@ void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
     if(component != this)
         return;
 
-    if(attribute->GetNameString() == soundId_.GetNameString())
+    if(attribute->GetNameString() == soundId.GetNameString())
     {
         Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
-        if(soundService && soundService->GetSoundName(sound_id_) != soundId_.Get().toStdString())
+        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get().toStdString())
             StopSound();
     }
-    else if(attribute->GetNameString() == triggerSound_.GetNameString())
+    else if(attribute->GetNameString() == triggerSound.GetNameString())
     {
         // Play sound if sound asset id has been setted and if sound has been triggered or looped.
-        if(triggerSound_.Get() == true && (!soundId_.Get().isNull() || loopSound_.Get()))
+        if(triggerSound.Get() == true && (!soundId.Get().isNull() || loopSound.Get()))
             PlaySound();
     }
     UpdateSoundSettings();
 }
 
+void EC_Sound::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Play sound", this, SLOT(PlaySound()));
+        entity->ConnectAction("Stop sound", this, SLOT(StopSound()));
+    }
+}
+
 void EC_Sound::PlaySound()
 {
-    triggerSound_.Set(false, AttributeChange::LocalOnly);
+    triggerSound.Set(false, AttributeChange::LocalOnly);
     ComponentChanged(AttributeChange::LocalOnly);
 
     Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
@@ -69,15 +80,15 @@ void EC_Sound::PlaySound()
     OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundId_.Get().toStdString(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
-        soundService->SetGain(sound_id_, soundGain_.Get());
-        soundService->SetLooped(sound_id_, loopSound_.Get());
-        soundService->SetRange(sound_id_, soundInnerRadius_.Get(), soundOuterRadius_.Get(), 2.0f);
+        sound_id_ = soundService->PlaySound3D(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
+        soundService->SetGain(sound_id_, soundGain.Get());
+        soundService->SetLooped(sound_id_, loopSound.Get());
+        soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundId_.Get().toStdString(), Foundation::SoundServiceInterface::Ambient);
-        soundService->SetGain(sound_id_, soundGain_.Get());
+        sound_id_ = soundService->PlaySound(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Ambient);
+        soundService->SetGain(sound_id_, soundGain.Get());
     }
 }
 
@@ -97,9 +108,9 @@ void EC_Sound::UpdateSoundSettings()
     if(!soundService || !sound_id_)
         return;
 
-    soundService->SetGain(sound_id_, soundGain_.Get());
-    soundService->SetLooped(sound_id_, loopSound_.Get());
-    soundService->SetRange(sound_id_, soundInnerRadius_.Get(), soundOuterRadius_.Get(), 2.0f);
+    soundService->SetGain(sound_id_, soundGain.Get());
+    soundService->SetLooped(sound_id_, loopSound.Get());
+    soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
 }
 
 void EC_Sound::UpdateSignals()
