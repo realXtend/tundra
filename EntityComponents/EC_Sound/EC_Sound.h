@@ -21,12 +21,19 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    Attribute<QString>      soundId_;
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundInnerRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundOuterRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundGain);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, triggerSound);
+
+    /*Attribute<QString>      soundId_;
     Attribute<float>        soundInnerRadius_;
     Attribute<float>        soundOuterRadius_;
     Attribute<float>        soundGain_;
     Attribute<bool>         loopSound_;
-    Attribute<bool>         triggerSound_;
+    Attribute<bool>         triggerSound_;*/
 
 public slots:
     void PlaySound();
