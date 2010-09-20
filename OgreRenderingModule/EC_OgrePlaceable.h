@@ -16,6 +16,8 @@ namespace Ogre
     class SceneNode;
 }
 
+
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -23,7 +25,36 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
-    //! Ogre placeable (scene node) component
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgrePlaceable</h2>
+		(scene node) component.
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>:
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"translate": translate
+<li>"LookAt": LookAt wrapper that accepts a QVector3D for py & js e.g. camera use. 
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/   
+	//! Ogre placeable (scene node) component
     /*! \ingroup OgreRenderingModuleClient
      */
     class OGRE_MODULE_API EC_OgrePlaceable : public IComponent

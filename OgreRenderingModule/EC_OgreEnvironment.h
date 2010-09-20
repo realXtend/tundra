@@ -46,6 +46,7 @@ namespace Hydrax
     }
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -53,6 +54,34 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreEnvironment</h2>
+Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     /** Ogre environment component.
      *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
@@ -119,10 +148,10 @@ namespace OgreRenderer
 
         /// Disables the fog.
         void DisableFog();
+#ifdef CAELUM
 
         Caelum::CaelumSystem* GetCaelum();
 
-#ifdef CAELUM
         /// Speeds up the times
         /// @param value 2 doubles etc.
         void SetTimeScale(const float &value);

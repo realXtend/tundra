@@ -29,6 +29,54 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Mesh</h2>
+Note if you are planning to remove the skeleton you need to relogin to the server.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>Transform: nodePosition_
+<div></div> meshResouceId_
+<li>QString: skeletonId_
+<div></div> meshMaterial_
+<li>QString: 
+<div></div> 
+<li>std::vector<QVariant>: 
+<div></div> 
+<li>float: drawDistance_
+<div></div> 
+<li>bool: castShadows_
+<div></div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"SetMesh": Add or change entity's mesh.
+<li>"RemoveMesh": 
+<li>"SetMaterial": 
+<li>"AttachSkeleton": Attach skeleton to entity.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.  
+</table>
+*/
+
+
 /// Makes the mesh component.
 /**
 
