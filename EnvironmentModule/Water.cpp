@@ -21,7 +21,7 @@
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 #include "SceneManager.h"
-#include "EC_Water.h"
+
 
 namespace Environment
 {
@@ -41,38 +41,6 @@ Water::~Water()
 
 Scene::EntityWeakPtr Water::GetActiveWater()
 {
-    /*
-    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
-
-    // Check that is current water entity still valid.
-
-    if ( !activeWaterEntity_.expired() )
-        if(scene->GetEntity(activeWaterEntity_.lock()->GetId()).get() != 0)
-            return activeWaterEntity_;
-
-    // Current is not valid so search new, takes first entity which has water 
-
-    for(Scene::SceneManager::iterator iter = scene->begin();
-        iter != scene->end(); ++iter)
-    {
-        Scene::Entity &entity = **iter;
-        activeWaterComponent_ = entity.GetComponent<EC_Water>().get();
-        if (activeWaterComponent_ != 0)
-        {
-            activeWaterEntity_ = scene->GetEntity(entity.GetId());
-
-            if ( !activeWaterEntity_.expired())
-                return activeWaterEntity_;
-        }
-     }
-    
-    // There was any water entity so reset it to null state. 
-
-    activeWaterEntity_.reset();
-    activeWaterComponent_ = 0;
-    return Scene::EntityWeakPtr();
-    */
-    //return Scene::EntityWeakPtr();
     return activeWaterEntity_;
 }
 
@@ -91,10 +59,7 @@ void Water::CreateWaterGeometry(float height)
 
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
-    // Create EC_OgrePlaceable
-    //entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_OgrePlaceable::TypeNameStatic()));
-    //EC_OgrePlaceable* comp = entity->GetComponent<EC_OgrePlaceable>().get();
-    
+   
 
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_WaterPlane::TypeNameStatic()));
     activeWaterComponent_ = entity->GetComponent<EC_WaterPlane>().get();
@@ -103,18 +68,6 @@ void Water::CreateWaterGeometry(float height)
     activeWaterEntity_ = entity;
     active_scene->EmitEntityCreated(entity);
 
-/*
-    if ( !GetActiveWater().expired())
-        RemoveWaterGeometry();
-
-    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
-    Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
-    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Water::TypeNameStatic()));
-    activeWaterComponent_ = entity->GetComponent<EC_Water>().get();
-    activeWaterComponent_->SetWaterHeight(height);
-    activeWaterEntity_ = entity;
-    active_scene->EmitEntityCreated(entity);
-  */
 
     emit WaterCreated();
 
@@ -130,7 +83,7 @@ void Water::RemoveWaterGeometry()
     if ( activeWaterComponent_ != 0)
     {
         Scene::EntityPtr entity = activeWaterEntity_.lock();
-        entity->RemoveComponent(entity->GetComponent(EC_Water::TypeNameStatic()));
+        entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));
         activeWaterComponent_ = 0;
     }
 
