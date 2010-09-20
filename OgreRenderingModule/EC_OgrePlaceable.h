@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgrePlaceable_h
 #define incl_OgreRenderer_EC_OgrePlaceable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -57,7 +57,7 @@ Does not emit any actions.
 	//! Ogre placeable (scene node) component
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgrePlaceable : public IComponent
     {
         DECLARE_EC(EC_OgrePlaceable);
 
@@ -79,7 +79,7 @@ Does not emit any actions.
         /*! set null placeable to attach to scene root (the default)
             \param placeable new parent
          */
-        void SetParent(Foundation::ComponentPtr placeable);
+        void SetParent(ComponentPtr placeable);
         
         //! sets position
         /*! \param position new position
@@ -125,7 +125,7 @@ Does not emit any actions.
         void SetSelectPriority(int priority) { select_priority_ = priority; }
         
         //! gets parent placeable
-        Foundation::ComponentPtr GetParent() { return parent_; }
+        ComponentPtr GetParent() { return parent_; }
         
         //! returns position
         Vector3df GetPosition() const;
@@ -188,7 +188,7 @@ Does not emit any actions.
         //! constructor
         /*! \param module renderer module
          */
-        explicit EC_OgrePlaceable(Foundation::ModuleInterface* module);
+        explicit EC_OgrePlaceable(IModule* module);
         
         //! attaches scenenode to parent
         void AttachNode();
@@ -200,7 +200,7 @@ Does not emit any actions.
         RendererWeakPtr renderer_;
         
         //! parent placeable
-        Foundation::ComponentPtr parent_;
+        ComponentPtr parent_;
         
         //! Ogre scene node for geometry. scale is handled here
         Ogre::SceneNode* scene_node_;

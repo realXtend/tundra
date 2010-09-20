@@ -4,7 +4,7 @@
 #define incl_EC_TerrainPatch_h
 
 #include "EnvironmentModuleApi.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -49,7 +49,7 @@ Does not emit any actions.
 
 */
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
-    class ENVIRONMENT_MODULE_API EC_Terrain : public Foundation::ComponentInterface
+    class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
     {
         Q_OBJECT
 
@@ -140,7 +140,7 @@ Does not emit any actions.
         void Destroy();
 
     private:
-        EC_Terrain(Foundation::ModuleInterface* module);
+        EC_Terrain(IModule* module);
 
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];

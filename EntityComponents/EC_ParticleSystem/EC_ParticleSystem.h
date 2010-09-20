@@ -3,8 +3,8 @@
 #ifndef incl_EC_ParticleSystem_EC_ParticleSystem_h
 #define incl_EC_ParticleSystem_EC_ParticleSystem_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "ResourceInterface.h"
 #include "Declare_EC.h"
 
@@ -17,21 +17,6 @@ namespace Ogre
 namespace OgreRenderer
 {
     class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-}
-
-namespace Foundation
-{
-    class Framework;
-}
-
-namespace Foundation
-{
-    class ModuleInterface;
-    typedef boost::shared_ptr<Foundation::ComponentInterface> ComponentPtr;
 }
 
 /**
@@ -71,8 +56,9 @@ Does not emit any actions.
 </table>
 
 */
-class EC_ParticleSystem : public Foundation::ComponentInterface
+class EC_ParticleSystem : public IComponent
 {
+
     DECLARE_EC(EC_ParticleSystem);
     Q_OBJECT
 public:
@@ -80,16 +66,17 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    Attribute<QString>      particleId_;
-    Attribute<bool>         castShadows_;
-    Attribute<float>         renderingDistance_;
+    Attribute<QString> particleId_;
+    Attribute<bool> castShadows_;
+
+    Attribute<float> renderingDistance_;
 
 public slots:
-        //! Create a new particle system. System name will be same as component name.
+    //! Create a new particle system. System name will be same as component name.
     /*! \return true if successful
     */
     void CreateParticleSystem(const QString &systemName);
@@ -97,14 +84,14 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
+    void AttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
-    explicit EC_ParticleSystem(Foundation::ModuleInterface *module);
-    Foundation::ComponentPtr FindPlaceable() const;
+    explicit EC_ParticleSystem(IModule *module);
+    ComponentPtr FindPlaceable() const;
     request_tag_t RequestResource(const std::string& id, const std::string& type);
 
-    OgreRenderer::RendererWeakPtr renderer_;
+    boost::weak_ptr<OgreRenderer::Renderer> renderer_;
     Ogre::ParticleSystem* particleSystem_;
     Ogre::SceneNode* node_;
     request_tag_t particle_tag_;

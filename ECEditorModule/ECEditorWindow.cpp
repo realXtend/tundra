@@ -112,7 +112,7 @@ namespace ECEditor
         {
             QString entity_id_str;
             entity_id_str.setNum((int)entity_id);
-            
+            entity_list_->clearSelection();
             entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
         }
     }
@@ -162,7 +162,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
+            ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
             if(component)
             {
                 entities[i]->RemoveComponent(component, AttributeChange::Local);
@@ -184,7 +184,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for (uint i = 0; i < entities.size(); ++i)
         {
-            Foundation::ComponentInterfacePtr comp;
+            ComponentInterfacePtr comp;
             comp = entities[i]->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
@@ -268,7 +268,8 @@ namespace ECEditor
                 ECEditorModule::LogWarning("ECEditorWindow cannot create a new copy of entity, cause scene manager couldn't find entity. (id " + id.toStdString() + ").");
                 return;
             }
-            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
+            Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+            Scene::EntityPtr entity = scene->CreateEntity(framework_->GetDefaultWorldScene()->GetNextFreeId());
             assert(entity.get());
             if(!entity.get())
                 return;
@@ -281,16 +282,16 @@ namespace ECEditor
                 if(components[i]->TypeName() == "EC_OgrePlaceable")
                 {
                     hasPlaceable = true;
-                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                 }
                 // Ignore all nonserializable components.
                 if(components[i]->IsSerializable())
                 {
-                    Foundation::ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                     AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        AttributeInterface *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString());
                         if(attribute)
                             attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
                     }
@@ -303,10 +304,11 @@ namespace ECEditor
                 entityPlacer->setObjectName("EntityPlacer");
             }
             AddEntity(entity->GetId());
+            scene->EmitEntityCreated(entity);
         }
     }
 
-    void ECEditorWindow::HighlightEntities(Foundation::ComponentInterface *component)
+    void ECEditorWindow::HighlightEntities(IComponent *component)
     {
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
@@ -426,13 +428,13 @@ namespace ECEditor
         emit EditEntityXml(ents);
     }
 
-    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components)
+    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentInterfacePtr> components)
     {
         if(!components.size())
             return;
 
-        QList<Foundation::ComponentPtr> comps;
-        foreach(Foundation::ComponentInterfacePtr component, components)
+        QList<ComponentPtr> comps;
+        foreach(ComponentInterfacePtr component, components)
             comps << component;
 
         emit EditComponentXml(comps);
@@ -446,7 +448,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            Foundation::ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
+            ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
             if(component)
                 emit EditComponentXml(component);
         }
@@ -472,6 +474,18 @@ namespace ECEditor
                     toggle_entities_button_->setText(tr("Hide entities"));
             }
         }
+    }
+
+    void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
+    {
+        EntityIdSet::iterator iter = selectedEntities_.find(entity->GetId());
+        if(iter != selectedEntities_.end())
+            selectedEntities_.erase(iter);
+
+        QList<QListWidgetItem*> items = entity_list_->findItems(QString::number(entity->GetId()), Qt::MatchExactly);
+        for(uint i = 0; i < items.size(); i++)
+            SAFE_DELETE(items[i]);
+        //RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
@@ -548,8 +562,8 @@ namespace ECEditor
             // signals from attribute browser to editor window.
             QObject::connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
             QObject::connect(browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
-            QObject::connect(browser_, SIGNAL(ComponentSelected(Foundation::ComponentInterface *)), 
-                             this, SLOT(HighlightEntities(Foundation::ComponentInterface *)));
+            QObject::connect(browser_, SIGNAL(ComponentSelected(IComponent *)), 
+                             this, SLOT(HighlightEntities(IComponent *)));
         }
 /*
         if (component_list_ && browser_)
@@ -570,14 +584,31 @@ namespace ECEditor
 
         if (toggle_entities_button_)
             connect(toggle_entities_button_, SIGNAL(pressed()), this, SLOT(ToggleEntityList()));
+
+        // Scene is not added yet so we need to listen when it's added and we can connect scenemanager's EntityRemoved singal.
+        connect(framework_, SIGNAL(SceneAdded(const QString&)), this, SLOT(SceneAdded(const QString&)));
+    }
+
+    void ECEditorWindow::SceneAdded(const QString &name)
+    {
+        Scene::ScenePtr scenePtr = framework_->GetScene(name.toStdString());
+        if(scenePtr)
+        {
+            // If scene has already added no need to do multiple connection.
+            disconnect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)),
+                       this, SLOT(EntityRemoved(Scene::Entity*)));
+            connect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
+                    this, SLOT(EntityRemoved(Scene::Entity*)));
+        }
     }
 
     QStringList ECEditorWindow::GetAvailableComponents() const
     {
+        using namespace Foundation;
         QStringList components;
-        Foundation::ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
-        const Foundation::ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
-        Foundation::ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
+        ComponentManagerPtr comp_mgr = framework_->GetComponentManager();
+        const ComponentManager::ComponentFactoryMap& factories = comp_mgr->GetComponentFactoryMap();
+        ComponentManager::ComponentFactoryMap::const_iterator i = factories.begin();
         while (i != factories.end())
         {
             components.append(i->first); //<< i->first.c_str();

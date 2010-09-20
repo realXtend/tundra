@@ -139,7 +139,7 @@ namespace OgreRenderer
     }
     
     
-    bool ResourceHandler::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         switch (event_id)
         {
@@ -202,7 +202,7 @@ namespace OgreRenderer
         return false;
     }
 
-    bool ResourceHandler::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {     
@@ -237,14 +237,22 @@ namespace OgreRenderer
             if (checked_static_cast<OgreTextureResource*>(tex.get())->GetLevel() == 0)
             {
                 Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
-                framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
                 return tag;
             }
         }
         
-        // See if already have in the cache with a superior (non-J2K) format
         Foundation::ServiceManagerPtr service_manager = framework_->GetServiceManager();
         boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = service_manager->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        
+        // Hack: if the texture indicates a local asset, do not go through the J2K pipe, but request as an image asset
+        if ((id.find("file://") == 0) && (asset_service))
+        {
+            // This request tag is unnecessary... as the asset should be loaded immediately if it exists
+            request_tag_t source_tag = asset_service->RequestAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
+        }
+        
+        // See if already have in the cache with a superior (non-J2K) format
         if (asset_service)
         {
             Foundation::AssetPtr imageasset = asset_service->GetAsset(id, RexTypes::ASSETTYPENAME_IMAGE);
@@ -263,9 +271,11 @@ namespace OgreRenderer
                     UpdateLegacyMaterials(tex->GetId());
                     resources_[tex->GetId()] = tex;
                     Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
-                    framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                    framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
                     return tag;
                 }
+                else
+                    OgreRenderingModule::LogInfo("Failed to set imagetexturedata");
             }
         }
         
@@ -349,7 +359,7 @@ namespace OgreRenderer
         if (res)
         {
             Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(res->GetId(), res, tag);
-            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
             return tag;
         }
         

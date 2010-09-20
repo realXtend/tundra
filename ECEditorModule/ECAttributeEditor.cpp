@@ -5,7 +5,7 @@
 
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
@@ -22,7 +22,7 @@
 namespace ECEditor
 {
     ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                                                 AttributeInterface *attribute,
+                                                 IAttribute *attribute,
                                                  QObject *parent):
         QObject(parent),
         owner_(owner),
@@ -92,7 +92,7 @@ namespace ECEditor
         }
     }
 
-    void ECAttributeEditorBase::AddNewAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::AddNewAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
@@ -104,7 +104,7 @@ namespace ECEditor
         UpdateEditorUI();
     }
 
-    void ECAttributeEditorBase::RemoveAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::RemoveAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
@@ -123,6 +123,8 @@ namespace ECEditor
         if(attributes_.size() > 1)
         {
             AttributeList::const_iterator iter = attributes_.begin();
+            if ((*iter) == 0)
+                return false;
             std::string value = (*iter)->ToString();
             while(iter != attributes_.end())
             {
@@ -714,9 +716,9 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    //-------------------------QVARIANTARRAY ATTRIBUTE TYPE-------------------------
+    //-------------------------QVARIANTLIST ATTRIBUTE TYPE---------------------------
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Initialize()
+        template<> void ECAttributeEditor<QVariantList >::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
@@ -734,8 +736,8 @@ namespace ECEditor
             {
                 QtProperty *childProperty = 0;
                 // Get number of elements in attribute array and create for property for each array element.
-                Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
-                std::vector<QVariant> variantArray = attribute->Get();
+                Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
+                QVariantList variantArray = attribute->Get();
                 for(uint i = 0; i < variantArray.size(); i++)
                 {
                     childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
@@ -753,14 +755,14 @@ namespace ECEditor
             InitializeMultiEditor();
     }
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Set(QtProperty *property)
+    template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
         {
-            Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
+            Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
-            std::vector<QVariant> value;
+            QVariantList value;
             for(uint i = 0; i < children.size(); i++)
             {
                 QVariant variant = QVariant(stringManager->value(children[i]));
@@ -776,14 +778,14 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Update()
+    template<> void ECAttributeEditor<QVariantList >::Update()
     {
         if(!useMultiEditor_)
         {
-            Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
+            Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
-            std::vector<QVariant> value = attribute->Get();
+            QVariantList value = attribute->Get();
             //! @todo It's tend to be heavy operation to reinitialize all ui elements when new parameters have been added.
             //! replace this so that only single vector's element is added/deleted from the editor.
             if(value.size() + 1 != children.size())

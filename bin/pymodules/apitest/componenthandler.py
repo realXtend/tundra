@@ -34,7 +34,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         s = naali.getScene(name)
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
-        s.connect("ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)", self.onComponentAdded)
+        s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
 
     #def onComponentInitialized(self, comp):
     #    print "Comp inited:", comp

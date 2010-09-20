@@ -132,6 +132,7 @@ namespace OgreRenderer
         q_ogre_ui_view_(0),
         last_width_(0),
         last_height_(0),
+        capture_screen_pixel_data_(0),
         cave_manager_(new CAVEManager(this)),
         stereo_controller_(new StereoController(this)),
         resized_dirty_(0),
@@ -1030,8 +1031,9 @@ namespace OgreRenderer
 
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::TypeNameStatic()));
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
+            scene->EmitEntityCreated(cam_entity);
             
-            Foundation::ComponentInterfacePtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentInterfacePtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
@@ -1105,7 +1107,9 @@ namespace OgreRenderer
 
             captured_pixmap = CreateQImageFromTexture(render_texture, window_width, window_height);
         }
-        return QPixmap::fromImage(captured_pixmap);
+        QPixmap return_pixmap = QPixmap::fromImage(captured_pixmap).copy(); // Deep copy so we can delete the buffer data
+        SAFE_DELETE(capture_screen_pixel_data_);
+        return return_pixmap;
     }
 
     QPixmap Renderer::RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation)
@@ -1134,12 +1138,13 @@ namespace OgreRenderer
 
     QImage Renderer::CreateQImageFromTexture(Ogre::RenderTexture *render_texture, int width, int height)
     {
-        Ogre::uchar *pixel_data = new Ogre::uchar[width * height * 4];
+        SAFE_DELETE(capture_screen_pixel_data_);
+        capture_screen_pixel_data_ = new Ogre::uchar[width * height * 4];
         Ogre::Box bounds(0, 0, width, height);
-        Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)pixel_data);
+        Ogre::PixelBox pixels = Ogre::PixelBox(bounds, Ogre::PF_A8R8G8B8, (void*)capture_screen_pixel_data_);
         render_texture->copyContentsToMemory(pixels, Ogre::RenderTarget::FB_AUTO);
 
-        QImage image = QImage(pixel_data, width, height, QImage::Format_ARGB32_Premultiplied);
+        QImage image = QImage(capture_screen_pixel_data_, width, height, QImage::Format_ARGB32);
         if (image.isNull())
             OgreRenderingModule::LogError("Capturing render texture to a image failed");
         return image;

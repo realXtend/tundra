@@ -3,7 +3,7 @@
 #ifndef incl_TextureDecoderModule_h
 #define incl_TextureDecoderModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "TextureDecoderModuleApi.h"
 
@@ -18,7 +18,7 @@ namespace TextureDecoder
     typedef boost::shared_ptr<TextureService> TextureServicePtr;
     
     //! Texture decoder module
-    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public Foundation::ModuleInterface
+    class TEXTURE_DECODER_MODULE_API TextureDecoderModule : public IModule
     {
     public:
         TextureDecoderModule();
@@ -28,7 +28,7 @@ namespace TextureDecoder
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
         virtual void PostInitialize();
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         MODULE_LOGGING_FUNCTIONS
 

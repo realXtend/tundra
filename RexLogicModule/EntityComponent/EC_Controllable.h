@@ -3,12 +3,12 @@
 #ifndef incl_RexLogic_EC_Controllable_h
 #define incl_RexLogic_EC_Controllable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexTypes.h"
 #include "InputEvents.h"
 #include "RexLogicModuleApi.h"
 #include "Declare_EC.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 
 namespace RexLogic
 {
@@ -78,7 +78,7 @@ Does not emit any actions.
 </table>
 
 */
-    class EC_Controllable : public Foundation::ComponentInterface
+    class EC_Controllable : public IComponent
     {
         Q_OBJECT
 
@@ -131,7 +131,7 @@ Does not emit any actions.
         //! Type of this controllable
         RexTypes::ControllableType type_;
 
-        EC_Controllable(Foundation::ModuleInterface* module) : Foundation::ComponentInterface(module->GetFramework()), current_action_(0), dirty_(false) {}
+        EC_Controllable(IModule* module) : IComponent(module->GetFramework()), current_action_(0), dirty_(false) {}
     };
 
     namespace Actions

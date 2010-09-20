@@ -32,7 +32,7 @@ namespace MumbleVoip
         SAFE_DELETE(server_info_request_manager_);
     }
 
-    bool ServerInfoProvider::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ServerInfoProvider::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (!framework_event_category_ && framework_)
            framework_event_category_ = framework_->GetEventManager()->QueryEventCategory("Framework");

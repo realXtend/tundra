@@ -9,7 +9,7 @@
 #ifndef incl_EC_Billboard_EC_BillBoard_h
 #define incl_EC_Billboard_EC_BillBoard_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -55,7 +55,7 @@ Does not emit any actions.
 */
 
 /// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
-class EC_Billboard : public Foundation::ComponentInterface
+class EC_Billboard : public IComponent
 {
     Q_OBJECT
 
@@ -64,7 +64,7 @@ class EC_Billboard : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Module.
-    explicit EC_Billboard(Foundation::ModuleInterface *module);
+    explicit EC_Billboard(IModule *module);
 
 public:
     /// Destructor.

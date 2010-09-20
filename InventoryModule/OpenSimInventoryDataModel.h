@@ -19,11 +19,7 @@
 #include <QVector>
 
 class RexUUID;
-
-namespace Foundation
-{
-    class EventDataInterface;
-}
+class IEventData;
 
 namespace ProtocolUtilities
 {
@@ -137,19 +133,19 @@ namespace Inventory
 
         /// Handles INVENTORY_DESCENDENTS event.
         /// @param data Event data.
-        void HandleInventoryDescendents(Foundation::EventDataInterface *data);
+        void HandleInventoryDescendents(IEventData *data);
 
         /// Handles RESOURCE_READY event.
         /// @param data Event data.
-//        void HandleResourceReady(Foundation::EventDataInterface *data);
+//        void HandleResourceReady(IEventData *data);
 
         /// Handles ASSET_READY event for items to be downloaded (i.e. saved to disk).
         /// @param data Event data.
-        void HandleAssetReadyForDownload(Foundation::EventDataInterface *data);
+        void HandleAssetReadyForDownload(IEventData *data);
 
         /// Handles ASSET_READY event for items to be opened.
         /// @param data Event data.
-        void HandleAssetReadyForOpen(Foundation::EventDataInterface *data);
+        void HandleAssetReadyForOpen(IEventData *data);
 
         /** Uploads a file using HTTP.
             @param asset_type_t Asset type.
@@ -157,9 +153,9 @@ namespace Inventory
             @param name User-defined name.
             @param description User-defined description.
             @param folder_id Id of the destination folder for this item.
-            @return true if successful
+            @return UploadResult (bool and QString asset ref)
          */
-        bool UploadFile(
+        UploadResult UploadFile(
             const asset_type_t asset_type,
             std::string filename,
             const std::string &name,
@@ -173,9 +169,9 @@ namespace Inventory
             @param description User-defined description.
             @param folder_id Id of the destination folder for this item.
             @param data buffer
-            @return true if successful
+            @return UploadResult (bool and QString asset ref)
          */
-        bool UploadBuffer(
+        UploadResult UploadBuffer(
             const asset_type_t asset_type,
             const std::string &filename,
             const std::string &name,

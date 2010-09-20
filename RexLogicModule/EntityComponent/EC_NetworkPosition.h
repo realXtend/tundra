@@ -3,7 +3,7 @@
 #ifndef incl_EC_NetworkPosition_h
 #define incl_EC_NetworkPosition_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "RexLogicModuleApi.h"
 #include "Declare_EC.h"
@@ -52,7 +52,7 @@ Does not emit any actions.
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
     /*! Note that currently values are stored in Ogre format axes.
      */ 
-    class REXLOGIC_MODULE_API EC_NetworkPosition : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_NetworkPosition : public IComponent
     {
         Q_OBJECT
             
@@ -111,7 +111,7 @@ Does not emit any actions.
         void SetQOrientation(const QQuaternion newort);
 
     private:
-        EC_NetworkPosition(Foundation::ModuleInterface* module);        
+        EC_NetworkPosition(IModule* module);        
 
         //! Disable position damping, called after setting position forcibly
         void NoPositionDamping();

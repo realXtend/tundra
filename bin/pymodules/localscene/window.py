@@ -17,7 +17,6 @@ class ToolBarWindow():
     def __init__(self, uistring, queue, endApplication, controller):
         self.controller = controller
         loader = QUiLoader()
-        loader.setLanguageChangeEnabled(True)
         uifile = QFile(uistring)
         ui = loader.load(uifile)
         self.gui = ui
@@ -325,6 +324,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
     def setServerScenes(self, d):        
         self.tableWidgetServerScenes.clearContents()
         self.serverSceneRegionLists = {}
+        self.serverSceneRegionCount = {}		
         #self.tableitems = []
         #self.listViewRegionScenes.clear()
         # need to figure out how to free tableitems

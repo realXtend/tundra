@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreCustomObject_h
 #define incl_OgreRenderer_EC_OgreCustomObject_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
 
@@ -61,7 +61,7 @@ Does not emit any actions.
         related to manual objects (still unfixed as of 1.6.2)
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
     {
         Q_OBJECT
 
@@ -70,13 +70,13 @@ Does not emit any actions.
         virtual ~EC_OgreCustomObject();
 
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
 
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
 
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -120,7 +120,7 @@ Does not emit any actions.
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreCustomObject(Foundation::ModuleInterface* module);
+        EC_OgreCustomObject(IModule* module);
         
         //! attaches entity to placeable
         void AttachEntity();
@@ -132,7 +132,7 @@ Does not emit any actions.
         void DestroyEntity();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

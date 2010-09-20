@@ -97,7 +97,7 @@ namespace RexLogic
         camera_entity_ = camera;
     }
     
-    bool CameraControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleSceneEvent(event_id_t event_id, IEventData* data)
     {
         //! \todo This is where our user agent model design breaks down. We assume only one controllable entity exists and that it is a target for the camera.
         //!       Should be changed so in some way the target can be changed and is not automatically assigned. -cm
@@ -107,7 +107,7 @@ namespace RexLogic
         return false;
     }
 
-    bool CameraControllable::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
@@ -205,7 +205,7 @@ namespace RexLogic
         return false;
     }
 
-    bool CameraControllable::HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleActionEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
@@ -254,7 +254,8 @@ namespace RexLogic
         {
             if (current_state_ == FocusOnObject)
             {
-                current_state_ = ThirdPerson;
+                event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
+                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
             }
         }
 

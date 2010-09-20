@@ -3,7 +3,7 @@
 #ifndef incl_EC_Water_h
 #define incl_EC_Water_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "Declare_EC.h"
 
@@ -49,7 +49,7 @@ Does not emit any actions.
 
     /// Represents data related to water plane.
     /// \ingroup EnvironmentModuleClient.
-    class EC_Water : public Foundation::ComponentInterface
+    class EC_Water : public IComponent
     {
         Q_OBJECT
 
@@ -64,7 +64,7 @@ Does not emit any actions.
         float GetWaterHeight() const;
 
     private:
-        EC_Water(Foundation::ModuleInterface* module);
+        EC_Water(IModule* module);
 
         void CreateOgreWaterObject();
 

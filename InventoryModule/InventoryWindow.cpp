@@ -112,8 +112,8 @@ void InventoryWindow::InitInventoryTreeModel(InventoryPtr inventory_model)
     connect(inventory_model.get(), SIGNAL(UploadFailed(const QString &, const QString &)),
         this, SLOT(UploadFailed(const QString &, const QString &)));
 
-    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &)),
-        this, SLOT(FinishProgessNotification(const QString &)));
+    connect(inventory_model.get(), SIGNAL(UploadCompleted(const QString &, const QString &)),
+        this, SLOT(FinishProgessNotification(const QString &, const QString &)));
 }
 
 void InventoryWindow::ResetInventoryTreeModel()
@@ -375,8 +375,12 @@ void InventoryWindow::AbortDownload(const QString &asset_id)
 {
     ///\note Aborting not possible with the current protocol.
 }
-
 void InventoryWindow::FinishProgessNotification(const QString &id)
+{
+    FinishProgessNotification(id, QString());
+}
+
+void InventoryWindow::FinishProgessNotification(const QString &id, const QString &asset_ref)
 {
 /*
     QMessageBox *msgBox = downloadDialogs_.take(asset_id);
@@ -398,7 +402,7 @@ void InventoryWindow::UploadStarted(const QString &filename)
     // No way to have any real upload progress info with current current HTTP upload path.
     UiServices::ProgressController *progress_controller = new UiServices::ProgressController();
     emit Notification(new UiServices::ProgressNotification("Uploading " + filename + " to inventory", progress_controller));
-    progress_controller->Start(13);
+    progress_controller->Start(50);
     notification_progress_map_[filename] = progress_controller;
 #endif
 }

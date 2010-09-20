@@ -9,7 +9,7 @@
 #include "StableHeaders.h"
 #include "EC_InputMapper.h"
 
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "InputServiceInterface.h"
 #include "Entity.h"
 
@@ -27,21 +27,23 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
     mappings_[keySeq] = action;
 }
 
-EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_InputMapper::EC_InputMapper(IModule *module):
+    IComponent(module->GetFramework()),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),
-    takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", true)
-//    mappings(this, "Mappings")
+    takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
+    takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
+    mappings(this, "Mappings")
 {
-    connect(this, SIGNAL(AttributeChanged(AttributeInterface *, AttributeChange::Type)),
-        SLOT(AttributeUpdated(AttributeInterface *, AttributeChange::Type)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+        SLOT(AttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
-    connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
-    // Register some hardcoded mappings for testing purposes;
     RegisterMapping(Qt::Key_I, "Move(Forward)");
     RegisterMapping(Qt::Key_K, "Move(Backward)");
     RegisterMapping(Qt::Key_J, "Move(Left)");
@@ -50,15 +52,32 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     RegisterMapping(Qt::Key_O, "Rotate(Right)");
 }
 
-void EC_InputMapper::AttributeUpdated(AttributeInterface *attribute, AttributeChange::Type change)
+void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
-    const QString &name = attribute->GetNameString().c_str();
-    //if(name == meshResouceId_.GetNameString()))
+    const std::string &name = attribute->GetNameString();
+    if(name == contextName.GetNameString() || name == contextPriority.GetNameString())
+    {
+        input_.reset();
+        input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+        connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+        connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
+    }
+    else if(name == takeKeyboardEventsOverQt.GetNameString())
+    {
+        input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
+    }
+    else if(name == takeMouseEventsOverQt.GetNameString())
+    {
+        input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
+    }
+    else if(name == mappings.GetNameString())
+    {
+    }
 }
 
-void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
+void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
 {
-    Mappings_t::iterator it = mappings_.find(QKeySequence(key->keyCode | key->modifiers));
+    Mappings_t::iterator it = mappings_.find(QKeySequence(e->keyCode | e->modifiers));
     if (it == mappings_.end())
         return;
 
@@ -73,18 +92,42 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *key)
 //    LogDebug("Invoking action " + action.toStdString() + " for entity " + ToString(entity->GetId()));
 
     // If the action has parameters, parse them from the action string.
-    if (action.contains('(') || action.contains(')') || action.contains(','))
+    int idx = action.indexOf('(');
+    if (idx != -1)
     {
-        ///\todo Better protection agains malformed action strings?
-        int idx = action.indexOf('(');
         QString act = action.left(idx);
         QString parsedAction = action.mid(idx + 1);
         parsedAction.remove('(');
         parsedAction.remove(')');
-        QStringVector parameters = parsedAction.split(',').toVector();
+        QStringList parameters = parsedAction.split(',');
         entity->Exec(act, parameters);
     }
     else
         entity->Exec(action);
 }
 
+void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
+{
+    if (!GetParentEntity())
+        return;
+
+    if (e->IsButtonDown(MouseEvent::MiddleButton))
+    {
+        if (e->relativeX > 0 && abs(e->relativeX) >= 1)
+        {
+            GetParentEntity()->Exec("Move" ,"Right");
+        }
+        if (e->relativeX < 0 && abs(e->relativeX) >= 1)
+        {
+            GetParentEntity()->Exec("Move", "Left");
+        }
+        if (e->relativeY > 0 && abs(e->relativeY) >= 1)
+        {
+            GetParentEntity()->Exec("Move" ,"Backward");
+        }
+        if (e->relativeY < 0 && abs(e->relativeY) >= 1)
+        {
+            GetParentEntity()->Exec("Move", "Forward");
+        }
+    }
+}

@@ -5,8 +5,8 @@
  *  @brief  Interface for different script instances, e.g. Javascript of Python.
  */
 
-#ifndef incl_EC_Clone_IScriptInstance_h
-#define incl_EC_Clone_IScriptInstance_h
+#ifndef incl_EC_Script_IScriptInstance_h
+#define incl_EC_Script_IScriptInstance_h
 
 /// Interface for different script instances, e.g. Javascript of Python.
 class IScriptInstance
@@ -19,10 +19,16 @@ public:
     virtual ~IScriptInstance() {}
 
     /// Loads/reload this script instance.
-    virtual bool Reload() = 0;
+    virtual void Reload() = 0;
 
     /// Unloads this script instance.
-    virtual bool Unload() = 0;
+    virtual void Unload() = 0;
+
+    /// Starts this script instance.
+    virtual void Run() = 0;
+
+    /// Stops this script instance.
+    virtual void Stop() = 0;
 };
 
 #endif

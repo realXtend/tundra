@@ -9,7 +9,7 @@
 #ifndef incl_EC_HoveringWidget_h
 #define incl_EC_HoveringWidget_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "RexLogicModuleApi.h"
@@ -112,7 +112,7 @@ Does not emit any actions.
 
 */
     /// Shows a hovering widget attached to an entity.
-    class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_HoveringWidget : public IComponent
     {
         Q_OBJECT
         DECLARE_EC(EC_HoveringWidget);
@@ -120,7 +120,7 @@ Does not emit any actions.
     private:
         /// Constuctor.
         /// @param module Owner module.
-        explicit EC_HoveringWidget(Foundation::ModuleInterface *module);
+        explicit EC_HoveringWidget(IModule *module);
 
     public:
         /// Destructor.

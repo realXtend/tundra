@@ -18,7 +18,7 @@ namespace Console
     typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
     typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-    CommandManager::CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console) :
+    CommandManager::CommandManager(IModule *parent, ConsoleServiceInterface *console) :
         Console::ConsoleCommandServiceInterface(),
         parent_ (checked_static_cast< ConsoleModule* >(parent)),
         console_(console)

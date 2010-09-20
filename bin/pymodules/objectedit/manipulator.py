@@ -271,10 +271,12 @@ class Manipulator:
                 
             worldwidth = (math.tan(fov/2)*length) * 2
             worldheight = (height*worldwidth) / width
-                
-            #used in freemoving to get the size of movement right
-            amountx = (worldwidth * movedx)
-            amounty = (worldheight * movedy)
+
+            ## used in freemoving to get the size of movement right
+            # factor for move size
+            movefactor = width / height
+            amountx = (worldwidth * movedx) * movefactor
+            amounty = (worldheight * movedy) * movefactor
 
             self.setManipulatorScale(ents)
 

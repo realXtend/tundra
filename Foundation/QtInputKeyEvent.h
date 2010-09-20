@@ -4,7 +4,7 @@
 #define incl_QtInputModule_KeyEvent_h
 
 #include "CoreTypes.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 #include <QObject>
 #include <QString>
@@ -17,9 +17,10 @@ namespace QtInputEvents
 }
 
 /// KeyEvent is the event data structure passed as the parameter in all Naali in-scene KeyPressed and KeyReleased events.
-class KeyEvent : public QObject, public Foundation::EventDataInterface
+class KeyEvent : public QObject, public IEventData
 {
     Q_OBJECT
+    Q_ENUMS(EventType)
 
 public:
     KeyEvent()

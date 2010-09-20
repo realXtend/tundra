@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreSky_h
 #define incl_OgreRenderer_EC_OgreSky_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
@@ -202,7 +202,7 @@ Does not emit any actions.
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      *
      */
-    class OGRE_MODULE_API EC_OgreSky : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreSky : public IComponent
     {
         Q_OBJECT
         
@@ -293,7 +293,7 @@ Does not emit any actions.
     private:
         /// Constructor
         /// @param module ModuleInterface pointer.
-        EC_OgreSky(Foundation::ModuleInterface* module);
+        EC_OgreSky(IModule* module);
         
         /// Renderer
         RendererWeakPtr renderer_;
@@ -322,7 +322,7 @@ Does not emit any actions.
         /// List of skybox image names.
         std::vector<std::string> skyBoxImages_;
         
-        Foundation::ModuleInterface* owner_; 
+        IModule* owner_; 
         
         size_t currentSkyBoxImageCount_;
     };

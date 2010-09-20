@@ -3,7 +3,7 @@
 #ifndef incl_RexLogic_EC_AvatarAppearance_h
 #define incl_RexLogic_EC_AvatarAppearance_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
@@ -317,7 +317,7 @@ Does not emit any actions.
 */
 
     //! Entity component that stores an avatar's appearance parameters
-    class REXLOGIC_MODULE_API EC_AvatarAppearance : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AvatarAppearance : public IComponent
     {
         Q_OBJECT
             
@@ -362,7 +362,7 @@ Does not emit any actions.
         void CalculateMasterModifiers();
         
     private:
-        EC_AvatarAppearance(Foundation::ModuleInterface* module);
+        EC_AvatarAppearance(IModule* module);
         AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
                 
         //! Avatar mesh

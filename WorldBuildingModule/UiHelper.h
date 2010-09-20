@@ -5,6 +5,9 @@
 
 #include <EC_OpenSimPrim.h>
 
+#include "Foundation.h"
+
+#include <QSignalMapper>
 #include <QObject>
 #include <QString>
 #include <QMap>
@@ -33,7 +36,7 @@ namespace WorldBuilding
 
         public:
             // Constructor
-            UiHelper(QObject *parent = 0);
+            UiHelper(QObject *parent, Foundation::Framework *framework);
 
             // Public containers
             QMap<QString, QtProperty*> editor_items;
@@ -65,6 +68,7 @@ namespace WorldBuilding
             void OnPosChanged(double value);
 
             void SetupVisibilityButtons(AnchorLayout *layout, Ui::BuildingWidget *manip_ui, Ui::BuildingWidget *info_ui);
+            void AddBrowsePair(QString name, QPushButton *button, QWidget *tool_widget);
 
         private slots:
             void CollapseSubGroups(QtBrowserItem *main_group);
@@ -72,13 +76,18 @@ namespace WorldBuilding
             QtProperty *CreateInformationGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
             QtProperty *CreateRexPrimDataGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
             QtProperty *CreateShapeGroup(QtVariantPropertyManager *variant_manager, EC_OpenSimPrim *prim);
-  
+
+            void BrowseClicked(QWidget *widget_ptr);
+            void BrowserAndUpload(QString category, QString filter, QString upload_to, QWidget *tool_widget);
+            void AssetUploadCompleted(const QString &filename, const QString &asset_ref);
+
         signals:
             void PosChanged(double x, double y, double z);
             void ScaleChanged(double x, double y, double z);
             void RotationChanged(int x, int y, int z);
 
         private:
+            QSignalMapper *mapper_;
             QStringList shape_limiter_zero_to_one; 
             QStringList shape_limiter_minushalf_to_plushalf;
             QStringList shape_limiter_minusone_to_plusone;
@@ -90,6 +99,12 @@ namespace WorldBuilding
             bool ignore_manip_changes_;
 
             PythonParams::ManipulationMode manip_mode_;
+
+            QMap<QString, QPair<QPushButton*,QWidget*> > browser_pairs_;
+
+            Foundation::Framework *framework_;
+
+            QMap<QString, QPair<QWidget*, QString> > pending_uploads_;
         };
     }
 }

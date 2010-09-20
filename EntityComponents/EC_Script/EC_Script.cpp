@@ -2,11 +2,14 @@
 
 #include "StableHeaders.h"
 #include "EC_Script.h"
-#include "AttributeInterface.h"
 #include "IScriptInstance.h"
+
+#include "IAttribute.h"
+#include "Entity.h"
 
 EC_Script::~EC_Script()
 {
+    SAFE_DELETE(scriptInstance_);
 }
 
 void EC_Script::SetScriptInstance(IScriptInstance *instance)
@@ -14,6 +17,7 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     // If we already have a script instance, unload and delete it.
     if (scriptInstance_)
     {
+        scriptInstance_->Stop();
         scriptInstance_->Unload();
         SAFE_DELETE(scriptInstance_);
     }
@@ -21,18 +25,62 @@ void EC_Script::SetScriptInstance(IScriptInstance *instance)
     scriptInstance_ = instance;
 }
 
-EC_Script::EC_Script(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
-    scriptRef(this, "Script ref"),
-    type(this, "Type"),
-    scriptInstance_(0)
+void EC_Script::Run()
 {
-    connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
-        SLOT(HandleAttributeChanged(AttributeInterface*, AttributeChange::Type)));
+    if (scriptInstance_)
+        scriptInstance_->Run();
 }
 
-void EC_Script::HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
+void EC_Script::Run(const QString &name)
+{
+    if (name == scriptRef.Get() && scriptInstance_)
+        scriptInstance_->Run();
+}
+
+void EC_Script::Stop()
+{
+    if (scriptInstance_)
+        scriptInstance_->Stop();
+}
+
+void EC_Script::Stop(const QString &name)
+{
+    if (name == scriptRef.Get() && scriptInstance_)
+        scriptInstance_->Stop();
+}
+
+EC_Script::EC_Script(IModule *module):
+    IComponent(module->GetFramework()),
+    type(this, "Type"),
+    runOnLoad(this, "Run on load", false),
+    scriptRef(this, "Script ref"),
+    scriptInstance_(0)
+{
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+}
+
+void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute->GetNameString() == scriptRef.GetNameString())
-        emit ScriptRefChanged(scriptRef.Get());
+        if (scriptRef.Get() != lastRef_)
+        {
+            emit ScriptRefChanged(scriptRef.Get());
+            lastRef_ = scriptRef.Get();
+        }
 }
+
+void EC_Script::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Run", this, SLOT(Run()));
+        entity->ConnectAction("Run", this, SLOT(Run(const QString &)));
+        entity->ConnectAction("Stop", this, SLOT(Stop()));
+        entity->ConnectAction("Stop", this, SLOT(Stop(const QString &)));
+    }
+}
+

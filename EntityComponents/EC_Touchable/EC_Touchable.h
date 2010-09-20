@@ -14,8 +14,8 @@
 #ifndef incl_EC_Highlight_EC_Touchable_h
 #define incl_EC_Highlight_EC_Touchable_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 
 #include <QCursor>
@@ -77,7 +77,7 @@ EC_OgreCustomObject (if prim) components available in advance.</b>.
 </table>
 
 */
-class EC_Touchable : public Foundation::ComponentInterface
+class EC_Touchable : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Touchable);
@@ -131,7 +131,7 @@ private slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Touchable(Foundation::ModuleInterface *module);
+    explicit EC_Touchable(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();
