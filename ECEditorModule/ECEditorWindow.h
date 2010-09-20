@@ -26,7 +26,7 @@ QT_END_NAMESPACE;
 struct EntityComponentSelection
 {
     Scene::EntityPtr entity;
-    std::vector<ComponentInterfacePtr> components;
+    std::vector<ComponentPtr> components;
 };
 
 namespace ECEditor
@@ -88,7 +88,7 @@ namespace ECEditor
         void ShowXmlEditorForEntity();
 
         /// Shows EC XML editor.for each components.
-        void ShowXmlEditorForComponent(std::vector<ComponentInterfacePtr> components);
+        void ShowXmlEditorForComponent(std::vector<ComponentPtr> components);
 
         /// Shows EC XML editor.for a single component.
         //void ShowXmlEditorForComponent();

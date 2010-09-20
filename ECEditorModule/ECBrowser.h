@@ -96,7 +96,7 @@ namespace ECEditor
         /*! if component type is not included, create new component group and add it to editor.
          *  @param comp a new component that we want to add into the enity.
          */
-        void AddNewComponentToGroup(ComponentInterfacePtr comp);
+        void AddNewComponentToGroup(ComponentPtr comp);
         //! Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
         /*! @param comp that we want to remove from  the component group.
          */
