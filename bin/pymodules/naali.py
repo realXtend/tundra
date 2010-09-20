@@ -82,7 +82,7 @@ class Entity:
             if comp is None: 
                 raise AttributeError, "The entity does not have a %s component" % fullname
             return comp
-        raise AttributeError
+        raise AttributeError, name
 
     def createComponent(self, typename):
         oldpyent = r.getEntity(self.id)
