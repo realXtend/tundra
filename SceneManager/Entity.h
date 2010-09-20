@@ -5,8 +5,8 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "EntityAction.h"
 
 #include <QObject>
@@ -61,25 +61,25 @@ namespace Scene
 
             \param type_name type of the component
         */
-        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name) const;
+        ComponentInterfacePtr GetComponent(const QString &type_name) const;
 
         //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
             \param type_name type of the component
             \param name name of the component
         */
-        Foundation::ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
+        ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
 
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
             \param change Change type for network replication, in case component has to be created
         */
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        Foundation::ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! component container
-        typedef std::vector<Foundation::ComponentInterfacePtr> ComponentVector;
+        typedef std::vector<ComponentInterfacePtr> ComponentVector;
 
         //! Action container
         typedef QMap<QString, EntityAction *> ActionMap;
@@ -104,20 +104,20 @@ namespace Scene
             \param component An entity component
             \param change Origin of change for network replication
         */
-        void AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void AddComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
 
             \param component component that we want to find.
         */
-        Foundation::ComponentInterfacePtr GetComponent(const Foundation::ComponentInterface *component) const;
+        ComponentInterfacePtr GetComponent(const IComponent *component) const;
 
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component
@@ -201,10 +201,10 @@ namespace Scene
 
         /*! Returns attribute interface pointer to attribute with spesific name.
             \param name Name of the attribute.
-            \return AttributeInterface pointer to the attribute.
+            \return IAttribute pointer to the attribute.
             \note Always remember to check for null pointer.
         */
-        AttributeInterface *GetAttributeInterface(const std::string &name) const;
+        IAttribute *GetAttributeInterface(const std::string &name) const;
 
         /*! Returns list of attributes with spesific name.
             \param T Typename/class of the attribute.
@@ -231,11 +231,11 @@ namespace Scene
         AttributeVector GetAttributes(const std::string &name) const;
 
     public slots:
-        Foundation::ComponentInterface* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
-        Foundation::ComponentInterface* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
+        IComponent* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
+        IComponent* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
         
-        Foundation::ComponentInterface* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, change).get(); }
-        Foundation::ComponentInterface* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, name, change).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, change).get(); }
+        IComponent* GetOrCreateComponentRaw(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { return GetOrCreateComponent(type_name, name, change).get(); }
 
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name Type of the component.
@@ -308,7 +308,7 @@ namespace Scene
             @param params List of parameters for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QStringVector &params, EntityAction::ExecutionType type = EntityAction::Local);
+        void Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type = EntityAction::Local);
 
     private:
         /** Validates that the action has receivers. If not, deletes the action and removes it from

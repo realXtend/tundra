@@ -20,9 +20,9 @@
 
 #include <boost/make_shared.hpp>
 
-QtInputModule::QtInputModule() 
-:ModuleInterface("QtInputModule"),
-configWindow(0)
+QtInputModule::QtInputModule() :
+    IModule("QtInput"),
+    configWindow(0)
 {
 }
 

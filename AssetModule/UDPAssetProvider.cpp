@@ -353,7 +353,7 @@ namespace Asset
         return;
     }
 
-    bool UDPAssetProvider::HandleNetworkEvent(Foundation::EventDataInterface* data)
+    bool UDPAssetProvider::HandleNetworkEvent(IEventData* data)
     {
         ProtocolUtilities::NetworkEventInboundData *event_data = dynamic_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         if (!event_data)

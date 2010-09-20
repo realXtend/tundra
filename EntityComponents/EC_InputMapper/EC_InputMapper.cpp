@@ -9,7 +9,7 @@
 #include "StableHeaders.h"
 #include "EC_InputMapper.h"
 
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "InputServiceInterface.h"
 #include "Entity.h"
 
@@ -27,16 +27,16 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
     mappings_[keySeq] = action;
 }
 
-EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_InputMapper::EC_InputMapper(IModule *module):
+    IComponent(module->GetFramework()),
     contextName(this, "Input context name", "EC_InputMapper"),
     contextPriority(this, "Input context priority", 90),
     takeKeyboardEventsOverQt(this, "Take keyboard events over Qt", false),
     takeMouseEventsOverQt(this, "Take mouse events over Qt", false),
     mappings(this, "Mappings")
 {
-    connect(this, SIGNAL(OnAttributeChanged(AttributeInterface *, AttributeChange::Type)),
-        SLOT(AttributeUpdated(AttributeInterface *, AttributeChange::Type)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
+        SLOT(AttributeUpdated(IAttribute *, AttributeChange::Type)));
 
     input_ = GetFramework()->Input().RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
@@ -52,7 +52,7 @@ EC_InputMapper::EC_InputMapper(Foundation::ModuleInterface *module):
     RegisterMapping(Qt::Key_O, "Rotate(Right)");
 }
 
-void EC_InputMapper::AttributeUpdated(AttributeInterface *attribute, AttributeChange::Type change)
+void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
     const std::string &name = attribute->GetNameString();
     if(name == contextName.GetNameString() || name == contextPriority.GetNameString())
@@ -99,7 +99,7 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         QString parsedAction = action.mid(idx + 1);
         parsedAction.remove('(');
         parsedAction.remove(')');
-        QStringVector parameters = parsedAction.split(',').toVector();
+        QStringList parameters = parsedAction.split(',');
         entity->Exec(act, parameters);
     }
     else

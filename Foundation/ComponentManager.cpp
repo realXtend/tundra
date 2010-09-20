@@ -3,9 +3,9 @@
 #include "StableHeaders.h"
 #include "ComponentManager.h"
 #include "Framework.h"
-#include "ComponentFactoryInterface.h"
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponentFactory.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "AssetInterface.h"
 #include "Transform.h"
 
@@ -25,9 +25,21 @@ namespace Foundation
         attributeTypes_.push_back("quaternion");
         attributeTypes_.push_back("assetreference");
         attributeTypes_.push_back("qvariant");
-        attributeTypes_.push_back("qvariantarray");
         attributeTypes_.push_back("qvariantlist");
         attributeTypes_.push_back("transform");
+    }
+
+    void ComponentManager::RegisterFactory(const QString &component, const ComponentFactoryPtr &factory)
+    {
+        if (factories_.find(component) == factories_.end())
+            factories_[component] = factory;
+    }
+
+    void ComponentManager::UnregisterFactory(const QString &component)
+    {
+        ComponentFactoryMap::iterator iter = factories_.find(component);
+        if (iter != factories_.end())
+            factories_.erase(iter);
     }
 
     bool ComponentManager::CanCreate(const QString &type_name)
@@ -66,9 +78,9 @@ namespace Foundation
         return newComponent;
     }
 
-    AttributeInterface *ComponentManager::CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name)
+    IAttribute *ComponentManager::CreateAttribute(IComponent*owner, const std::string &typeName, const std::string &name)
     {
-        AttributeInterface *attribute = 0;
+        IAttribute *attribute = 0;
         if(typeName == "string")
             attribute = new Attribute<QString>(owner, name.c_str());
         else if(typeName == "int")
@@ -89,8 +101,6 @@ namespace Foundation
             attribute = new Attribute<AssetReference>(owner, name.c_str());
         else if(typeName == "qvariant")
             attribute = new Attribute<QVariant>(owner, name.c_str());
-        else if(typeName == "qvariantarray")
-            attribute = new Attribute<std::vector<QVariant> >(owner, name.c_str());
         else if(typeName == "qvariantlist")
             attribute = new Attribute<QVariantList >(owner, name.c_str());
         else if(typeName == "transform")

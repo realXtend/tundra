@@ -41,10 +41,10 @@ namespace TextureDecoder
         void Update(f64 frametime);
 
         //! Handles an asset event. Called by TextureDecoderModule
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
         
         //! Handles a thread task event. Called by TextureDecoderModule
-        bool HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleTaskEvent(event_id_t event_id, IEventData* data);
         
     private:
         //! Updates a texture request

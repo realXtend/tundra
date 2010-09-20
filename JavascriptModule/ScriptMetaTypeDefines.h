@@ -1,8 +1,8 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   
- *  @brief  
+ *  @file   ScriptMetaTypeDefines.h
+ *  @brief  Registration of Naali Core API to Javascript.
  */
 
 #ifndef incl_JavascriptModule_ScriptMetaTypeDefines_h
@@ -46,5 +46,8 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine);
 
 //! Will register all meta data types that are needed to use UI in script side.
 void ReqisterUiMetaTypes(QScriptEngine *engine);
+
+//! Will register all meta data types that are needed to use Frame Core API object.
+void ReqisterFrameMetaTypes(QScriptEngine *engine);
 
 #endif

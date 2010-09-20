@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ConsoleModule.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Profiler.h"
 
 using namespace Console;
@@ -14,6 +14,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 }
 
 // Add here any other modules in this project
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(ConsoleModule)
 POCO_END_MANIFEST

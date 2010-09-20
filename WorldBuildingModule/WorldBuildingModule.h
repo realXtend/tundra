@@ -3,7 +3,7 @@
 #ifndef incl_WorldBuildingModule_h
 #define incl_WorldBuildingModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldBuildingModuleApi.h"
 #include "InputServiceInterface.h"
@@ -17,7 +17,7 @@ namespace WorldBuilding
     class BuildSceneManager;
     typedef boost::shared_ptr<BuildSceneManager> BuildServicePtr;
 
-    class WB_MODULE_API WorldBuildingModule : public QObject, public Foundation::ModuleInterface
+    class WB_MODULE_API WorldBuildingModule : public QObject, public IModule
     {
 
     Q_OBJECT
@@ -31,7 +31,7 @@ namespace WorldBuilding
 
         void Initialize();
         void PostInitialize();
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         MODULE_LOGGING_FUNCTIONS
 
