@@ -40,15 +40,15 @@ class IModule;
         component##Factory(IModule* module) : module_(module) {}                        \
         virtual ~component##Factory() {}                                                \
                                                                                         \
-        virtual ComponentInterfacePtr  operator()()                                     \
+        virtual ComponentPtr  operator()()                                     \
         {                                                                               \
-            return ComponentInterfacePtr(new component(module_));                       \
+            return ComponentPtr(new component(module_));                       \
         }                                                                               \
                                                                                         \
-        virtual ComponentInterfacePtr  operator()(                                      \
-                    const ComponentInterfacePtr &other)                                 \
+        virtual ComponentPtr  operator()(                                      \
+                    const ComponentPtr &other)                                 \
         {                                                                               \
-           return ComponentInterfacePtr(                                                \
+           return ComponentPtr(                                                \
                     new component(*dynamic_cast<component*>(other.get())));             \
         }                                                                               \
     private:                                                                            \

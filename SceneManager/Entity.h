@@ -61,25 +61,25 @@ namespace Scene
 
             \param type_name type of the component
         */
-        ComponentInterfacePtr GetComponent(const QString &type_name) const;
+        ComponentPtr GetComponent(const QString &type_name) const;
 
         //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
             \param type_name type of the component
             \param name name of the component
         */
-        ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
+        ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
             \param change Change type for network replication, in case component has to be created
         */
-        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! component container
-        typedef std::vector<ComponentInterfacePtr> ComponentVector;
+        typedef std::vector<ComponentPtr> ComponentVector;
 
         //! Action container
         typedef QMap<QString, EntityAction *> ActionMap;
@@ -104,20 +104,20 @@ namespace Scene
             \param component An entity component
             \param change Origin of change for network replication
         */
-        void AddComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
 
             \param component component that we want to find.
         */
-        ComponentInterfacePtr GetComponent(const IComponent *component) const;
+        ComponentPtr GetComponent(const IComponent *component) const;
 
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component

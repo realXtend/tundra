@@ -11,7 +11,7 @@
 
 namespace ECEditor
 {
-    ComponentGroup::ComponentGroup(ComponentInterfacePtr component,
+    ComponentGroup::ComponentGroup(ComponentPtr component,
                                  ECComponentEditor *editor,
                                  QTreeWidgetItem *listItem,
                                  bool isDynamic):
@@ -90,7 +90,7 @@ namespace ECEditor
         return false;
     }
 
-    bool ComponentGroup::AddComponent(ComponentInterfacePtr comp)
+    bool ComponentGroup::AddComponent(ComponentPtr comp)
     {
         //Check if the component have already added to component group or it's name or type are different for the component group.
         if(ContainComponent(comp.get()) || comp->Name() != name_ || comp->TypeName() != typeName_) 
