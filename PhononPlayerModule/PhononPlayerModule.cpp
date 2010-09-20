@@ -13,7 +13,7 @@ namespace PhononPlayer
     std::string PhononPlayerModule::type_name_static_ = "PhononPlayer";
 
     PhononPlayerModule::PhononPlayerModule()
-        : ModuleInterface(type_name_static_)
+        : IModule(type_name_static_)
     {
     }
 
@@ -50,7 +50,7 @@ namespace PhononPlayer
     {
     }
 
-    bool PhononPlayerModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool PhononPlayerModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         return false;
     }
@@ -65,6 +65,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace PhononPlayer;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
 POCO_EXPORT_CLASS(PhononPlayerModule)
 POCO_END_MANIFEST

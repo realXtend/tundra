@@ -8,7 +8,7 @@
 #ifndef incl_LoginScreenModule_LoginScreenModule_h
 #define incl_LoginScreenModule_LoginScreenModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -19,7 +19,7 @@ class InputContext;
 
 class LoginWidget;
 
-class LoginScreenModule : public QObject, public Foundation::ModuleInterface
+class LoginScreenModule : public QObject, public IModule
 {
     Q_OBJECT
 
@@ -30,23 +30,23 @@ public:
     /// Destructor.
     ~LoginScreenModule();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PreInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Initialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PostInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Uninitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Update(f64 frametime);
 
-    /// ModuleInterface override.
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    /// IModule override.
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     MODULE_LOGGING_FUNCTIONS
 

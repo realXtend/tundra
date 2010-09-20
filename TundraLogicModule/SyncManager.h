@@ -4,7 +4,7 @@
 #define incl_TundraLogicModule_SyncManager_h
 
 #include "Foundation.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "SceneManager.h"
 
 #include <QObject>
@@ -70,11 +70,11 @@ public:
     
 private slots:
     //! Trigger EC sync because of component attributes changing
-    void OnComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+    void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
     //! Trigger EC sync because of component added to entity
-    void OnComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+    void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
     //! Trigger EC sync because of component removed from entity
-    void OnComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+    void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
     //! Trigger sync of entity creation
     void OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
     //! Trigger sync of entity removal

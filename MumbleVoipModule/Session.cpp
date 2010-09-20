@@ -633,4 +633,9 @@ namespace MumbleVoip
             return 0;
     }
 
+    QString Session::GetServerInfo() const
+    {
+        return server_info_.server;
+    }
+
 } // MumbleVoip

@@ -7,10 +7,7 @@
 #include "ConsoleServiceInterface.h"
 #include "CoreThread.h"
 
-namespace Foundation
-{
-    class ModuleInterface;
-}
+class IModule;
 
 namespace Console
 {
@@ -25,7 +22,7 @@ namespace Console
     {
     public:
         //! default constructor
-        CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console);
+        CommandManager(IModule *parent, ConsoleServiceInterface *console);
         //! destructor
         virtual ~CommandManager();
 

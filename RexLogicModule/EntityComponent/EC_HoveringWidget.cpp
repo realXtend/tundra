@@ -14,7 +14,7 @@
 #include "HoveringButtonsController.h"
 #include "DetachedWidgetController.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -36,8 +36,8 @@
 
 namespace RexLogic
 {
-    EC_HoveringWidget::EC_HoveringWidget(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+    EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
+        IComponent(module->GetFramework()),
         namebillboardSet_(0),
         buttonsbillboardSet_(0),
         namebillboard_(0),

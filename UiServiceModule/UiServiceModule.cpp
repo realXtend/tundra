@@ -10,7 +10,7 @@
 
 std::string UiServiceModule::type_name_static_ = "UiService";
 
-UiServiceModule::UiServiceModule() : ModuleInterface(type_name_static_)
+UiServiceModule::UiServiceModule() : IModule(type_name_static_)
 {
 }
 
@@ -46,7 +46,7 @@ void UiServiceModule::Update(f64 frametime)
 }
 
 // virtual
-bool UiServiceModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool UiServiceModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     return false;
 }
@@ -57,6 +57,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(UiServiceModule)
 POCO_END_MANIFEST

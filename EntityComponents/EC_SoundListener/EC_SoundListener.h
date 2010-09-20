@@ -10,7 +10,7 @@
 #ifndef incl_EC_SoundListener_EC_SoundListener_h
 #define incl_EC_SoundListener_EC_SoundListener_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace Foundation
@@ -27,7 +27,7 @@ namespace OgreRenderer
  *  Updates parent entity's placeable component's position to the sound service each frame.
  *  @note   Only one entity can have active sound listener at a time.
  */
-class EC_SoundListener : public Foundation::ComponentInterface
+class EC_SoundListener : public IComponent
 {
     DECLARE_EC(EC_SoundListener);
     Q_OBJECT
@@ -57,7 +57,7 @@ private:
     /** Constructor.
      *  @param module Declaring module.
      */
-    explicit EC_SoundListener(Foundation::ModuleInterface *module);
+    explicit EC_SoundListener(IModule *module);
 
     /// Parent entity's placeable component.
     boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;

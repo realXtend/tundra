@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 #define incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -32,7 +32,7 @@ namespace OgreRenderer
     //! Movable Ogre text overlay.
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreMovableTextOverlay : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreMovableTextOverlay : public IComponent
     {
         Q_OBJECT
         
@@ -41,7 +41,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module);
+        EC_OgreMovableTextOverlay(IModule* module);
 
         //! copy constructor. 
 //        EC_OgreMovableTextOverlay(const EC_OgreMovableTextOverlay &other);
@@ -60,7 +60,7 @@ namespace OgreRenderer
         void SetOffset(const Vector3df& offset);
 
         //! Sets the placeable (scene node) which the overlay is meant to follow.
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
 
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
@@ -110,7 +110,7 @@ namespace OgreRenderer
         Ogre::SceneNode *node_;
 
         //! Parent placeable which will be followed
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
 
         //! Attached to parent-flag
         bool attached_;

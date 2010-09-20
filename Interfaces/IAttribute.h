@@ -1,7 +1,7 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   AttributeInterface.h
+ *  @file   IAttribute.h
  *  @brief  Abstract base class, template class and metadata class for entity-component attributes.
  */
 
@@ -17,10 +17,7 @@
 class DataSerializer;
 class DataDeserializer;
 
-namespace Foundation
-{
-    class ComponentInterface;
-}
+class IComponent;
 
 //! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
 /*! possible min and max values mapping of enumeration signatures and values.
@@ -77,17 +74,17 @@ private:
 //! Abstract base class for entity-component attributes.
 /*! Concrete attribute classes will be subclassed out of this
  */
-class AttributeInterface
+class IAttribute
 {
 public:
     //! Constructor
     /*! \param owner Component which this attribute will be attached to
         \param name Name of attribute
      */
-    AttributeInterface(Foundation::ComponentInterface* owner, const char* name);
+    IAttribute(IComponent* owner, const char* name);
 
     //! Destructor.
-    virtual ~AttributeInterface() {}
+    virtual ~IAttribute() {}
 
     //! Sets attribute null i.e. its value should be fetched from a parent entity
     /*! \todo Not implemented yet. Implement parent entity concept and fetching of values
@@ -108,7 +105,7 @@ public:
     bool IsNull() const { return null_; }
 
     //! Returns attributes owner component.
-    Foundation::ComponentInterface* GetOwner() const { return owner_; }
+    IComponent* GetOwner() const { return owner_; }
 
     //! Returns current/most recent change type.
     AttributeChange::Type GetChange() const { return change_; }
@@ -150,7 +147,7 @@ protected:
     void Changed(AttributeChange::Type change);
 
     //! Owning component
-    Foundation::ComponentInterface* owner_;
+    IComponent* owner_;
 
     //! Name of attribute
     std::string name_;
@@ -165,18 +162,18 @@ protected:
     AttributeMetadata *metadata_;
 };
 
-typedef std::vector<AttributeInterface*> AttributeVector;
+typedef std::vector<IAttribute*> AttributeVector;
 
 //! Attribute template class
-template<typename T> class Attribute : public AttributeInterface
+template<typename T> class Attribute : public IAttribute
 {
 public:
     /*! Constructor.
         \param owner Owner component.
         \param name Name.
     */
-    Attribute(Foundation::ComponentInterface* owner, const char* name) :
-        AttributeInterface(owner, name)
+    Attribute(IComponent* owner, const char* name) :
+        IAttribute(owner, name)
     {
     }
 
@@ -185,8 +182,8 @@ public:
         \param name Name.
         \param value Value.
     */
-    Attribute(Foundation::ComponentInterface* owner, const char* name, const T &value) :
-        AttributeInterface(owner, name),
+    Attribute(IComponent* owner, const char* name, const T &value) :
+        IAttribute(owner, name),
         value_(value)
     {
     }
@@ -205,16 +202,16 @@ public:
         Changed(change);
     }
 
-    //! AttributeInterface override.
+    //! IAttribute override.
     virtual std::string ToString() const;
 
-    //! AttributeInterface override.
+    //! IAttribute override.
     virtual void FromString(const std::string& str, AttributeChange::Type change);
 
-    //! AttributeInterface override.
+    //! IAttribute override.
     virtual void ToBinary(DataSerializer& dest) const;
 
-    //! AttributeInterface override.
+    //! IAttribute override.
     virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change);
 
     //! Returns the type of the data stored in this attribute.
@@ -225,7 +222,7 @@ private:
     T value_;
 };
 
-// Commented out to improve compilation times, as these are not used outside AttributeInterface.cpp
+// Commented out to improve compilation times, as these are not used outside IAttribute.cpp
 // currently. Can be added back if needed.
 
 /*template<> std::string Attribute<std::string>::ToString() const;

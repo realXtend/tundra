@@ -499,7 +499,7 @@ namespace OpenALAudio
         return true;
     }
     
-    bool SoundSystem::HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool SoundSystem::HandleTaskEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id != Task::Events::REQUEST_COMPLETED)
             return false;
@@ -553,7 +553,7 @@ namespace OpenALAudio
         return true;
     }
     
-    bool SoundSystem::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool SoundSystem::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id != Asset::Events::ASSET_READY)
             return false;

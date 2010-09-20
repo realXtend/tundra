@@ -10,10 +10,7 @@
 
 #include "CoreTypes.h"
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
+class IEventData;
 
 namespace RexLogic
 {
@@ -32,12 +29,12 @@ namespace RexLogic
         /// Handles
         /// @param event_id Event ID.
         /// @param data Event data.
-        bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleNetworkStateEvent(event_id_t event_id, IEventData* data);
 
         /// Handles
         /// @param event_id Event ID.
         /// @param data Event data.
-        bool HandleTundraEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleTundraEvent(event_id_t event_id, IEventData* data);
         
     private:
         /// Owner module.

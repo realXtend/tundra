@@ -46,7 +46,7 @@ SceneEventHandler::~SceneEventHandler()
 {
 }
 
-bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, IEventData* data)
 {
     using namespace Scene;
 

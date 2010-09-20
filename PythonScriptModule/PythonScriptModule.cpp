@@ -39,7 +39,6 @@
 #include "ModuleManager.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
-#include "ComponentRegistrarInterface.h"
 #include "ConsoleCommandServiceInterface.h"
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
@@ -57,6 +56,7 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
+#include "Frame.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
@@ -115,7 +115,7 @@ namespace PythonScript
     PythonScriptModule *PythonScriptModule::pythonScriptModuleInstance_ = 0;
 
     PythonScriptModule::PythonScriptModule()
-    :ModuleInterface(type_name_static_),
+    :IModule(type_name_static_),
     pmmModule(0), pmmDict(0), pmmClass(0), pmmInstance(0)
     {
         pythonqt_inited = false;
@@ -241,7 +241,7 @@ namespace PythonScript
             Console::Bind(this, &PythonScriptModule::ConsoleReset)));
     }
 
-    bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool PythonScriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {    
         PyObject* value = NULL;
 
@@ -265,10 +265,10 @@ namespace PythonScript
                 assert(scene.get());
                 if (scene)
                 {
-                    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                        SLOT(OnComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
-                    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                        SLOT(OnComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+                    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+                        SLOT(OnComponentAdded(Scene::Entity*, IComponent*)));
+                    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+                        SLOT(OnComponentRemoved(Scene::Entity*, IComponent*)));
                 }
             }
 
@@ -556,13 +556,9 @@ namespace PythonScript
     {
         OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
         if (renderer)
-        {
-            PythonQt::self()->registerClass(renderer->metaObject());
             return renderer;
-        }
-        else
-            std::cout << "Renderer module not there?" << std::endl;
 
+        LogError("Renderer module not there?");
         return 0;
     }
 
@@ -570,25 +566,17 @@ namespace PythonScript
     {
         Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
         if (worldLogic)
-        {
-            PythonQt::self()->registerClass(worldLogic->metaObject());
             return worldLogic;
-        }
-        else
-            LogError("WorldLogicInterface service not available in py GetWorldLogic");
 
+        LogError("WorldLogicInterface service not available in py GetWorldLogic");
         return 0;
     }
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr sptr = framework_->GetScene(name.toStdString());
-        if (sptr)
-        {
-            Scene::SceneManager* scene = sptr.get();
-            PythonQt::self()->registerClass(scene->metaObject());
-            return scene;
-        }
+        Scene::ScenePtr scene = framework_->GetScene(name.toStdString());
+        if (scene)
+            return scene.get();
 
         return 0;
     }
@@ -627,12 +615,9 @@ namespace PythonScript
 
         MediaPlayer::ServiceInterface *player_service = framework_->GetService<MediaPlayer::ServiceInterface>();
         if (player_service)
-        {
-            PythonQt::self()->registerClass(player_service->metaObject());
             return player_service;
-        }
-        else
-            PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
+
+        PythonScriptModule::LogError("Cannot find PlayerServiceInterface implementation.");
         return 0;
     }
 
@@ -663,7 +648,7 @@ namespace PythonScript
     */
     }
 
-    void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
     {
         if (component->TypeName() == EC_Script::TypeNameStatic())
         {
@@ -672,7 +657,7 @@ namespace PythonScript
         }
     }
 
-    void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component)
+    void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
     }
 }
@@ -685,7 +670,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace PythonScript;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(PythonScriptModule)
 POCO_END_MANIFEST
 
@@ -895,8 +880,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
 
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
+    RexLogic::RexLogicModule *rexlogic_ = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
     if (rexlogic_)
     {
         //PythonScript::self()->LogInfo("Getting prim with UUID:" + ruuid.ToString());
@@ -968,8 +952,8 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
             
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1079,8 +1063,8 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-            Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1275,8 +1259,8 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
-        Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
-        Foundation::ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
         OgreRenderer::EC_OgreMesh *meshptr = 0;
         OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
@@ -1458,8 +1442,8 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
-    Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    Foundation::ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
@@ -1994,10 +1978,19 @@ namespace PythonScript
         {
             PythonScript::initRexQtPy(apiModule);
             PythonQtObjectPtr mainModule = PythonQt::self()->getMainModule();
-            mainModule.addObject("_naali", this);
-            
+
+            mainModule.addObject("_pythonscriptmodule", this);
+            PythonQt::self()->registerClass(&OgreRenderer::Renderer::staticMetaObject);
+            PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
+            PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
+
+            mainModule.addObject("_naali", GetFramework());
+            PythonQt::self()->registerClass(&Frame::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
-            //add placeable and friends when PyEntity goes? PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
+            PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
+
+            //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
@@ -2007,7 +2000,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
 
             pythonqt_inited = true;
-            
+
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
             //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
         }

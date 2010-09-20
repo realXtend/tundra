@@ -87,7 +87,7 @@ static const int cInitialAttempts = 1;
 static const int cReconnectAttempts = 5;
 
 KristalliProtocolModule::KristalliProtocolModule()
-:ModuleInterface(NameStatic())
+:IModule(NameStatic())
 , serverConnection(0)
 , server(0)
 , reconnectAttempts(0)
@@ -298,7 +298,7 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
     }
 }
 
-bool KristalliProtocolModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool KristalliProtocolModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     return false;
 }
@@ -356,6 +356,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace KristalliProtocol;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(KristalliProtocolModule)
 POCO_END_MANIFEST

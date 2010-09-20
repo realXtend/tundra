@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Sound.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
@@ -13,8 +13,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
 
 #include "MemoryLeakCheck.h"
 
-EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Sound::EC_Sound(IModule *module):
+    IComponent(module->GetFramework()),
     sound_id_(0),
     soundId_(this, "Sound id"),
     soundInnerRadius_(this, "sound radius inner", 0.0f),
@@ -23,15 +23,7 @@ EC_Sound::EC_Sound(Foundation::ModuleInterface *module):
     triggerSound_(this, "Trigger sound", false),
     soundGain_(this, "Sound gain", 1.0f)
 {
-    static AttributeMetadata metaData;
-    static bool metadataInitialized = false;
-    if(!metadataInitialized)
-    {
-        metaData.min = "0";
-        metaData.max = "1";
-        metaData.step = "0.1";
-        metadataInitialized = true;
-    }
+    static AttributeMetadata metaData("", "0", "1", "0.1");
     soundGain_.SetMetadata(&metaData);
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
@@ -42,7 +34,7 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;
@@ -112,20 +104,20 @@ void EC_Sound::UpdateSoundSettings()
 
 void EC_Sound::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(GetParentEntity())
     {
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
     }
 }
 
-Foundation::ComponentPtr EC_Sound::FindPlaceable() const
+ComponentPtr EC_Sound::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();

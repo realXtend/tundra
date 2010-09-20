@@ -3,7 +3,7 @@
 #ifndef incl_ECEditorModule_ECEditorModule_h
 #define incl_ECEditorModule_ECEditorModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -18,7 +18,7 @@ namespace ECEditor
     /*! \defgroup ECEditorModuleClient ECEditorModule Client interface.
      *  EC Editor implements a way of adding arbitrary EC's to world entities, using (so far) xml-formatted data typed in RexFreeData
      */
-    class ECEditorModule : public QObject, public Foundation::ModuleInterface
+    class ECEditorModule : public QObject, public IModule
     {
         Q_OBJECT
 
@@ -29,13 +29,13 @@ namespace ECEditor
         //! Destructor 
         virtual ~ECEditorModule();
 
-        //! ModuleInterfaceImpl overrides.
+        //! IModuleImpl overrides.
         void Load();
         void Initialize();
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Show EC editor window.
         Console::CommandResult ShowWindow(const StringVector &params);
@@ -70,11 +70,11 @@ namespace ECEditor
 
         //! Creates EC attribute XML editor widget for component.
         //! \param component Component pointer.
-        void CreateXmlEditor(Foundation::ComponentPtr component);
+        void CreateXmlEditor(ComponentPtr component);
 
         //! Creates EC attribute XML editor widget for component.
         //! \param components List of component pointers.
-        void CreateXmlEditor(const QList<Foundation::ComponentPtr> &components);
+        void CreateXmlEditor(const QList<ComponentPtr> &components);
 
     private:
         //! Static name of the module

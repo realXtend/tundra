@@ -46,7 +46,7 @@ namespace DebugStats
 const std::string DebugStatsModule::moduleName = std::string("DebugStats");
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterface(NameStatic()),
+    IModule(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkOutEventCategory_(0),
@@ -198,7 +198,7 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);
@@ -486,7 +486,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
 
-    QStringVector execParameters;
+    QStringList execParameters;
     for(size_t i = 2; i < params.size(); ++i)
         execParameters << params[i].c_str();
 
@@ -505,6 +505,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace DebugStats;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(DebugStatsModule)
 POCO_END_MANIFEST 

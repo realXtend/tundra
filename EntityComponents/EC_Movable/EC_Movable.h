@@ -8,7 +8,7 @@
 #ifndef incl_EC_Movable_EC_Movable_h
 #define incl_EC_Movable_EC_Movable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -31,7 +31,7 @@ namespace ProtocolUtilities
         -Rotate(Left)
         -Rotate(Right)
 */
-class EC_Movable : public Foundation::ComponentInterface
+class EC_Movable : public IComponent
 {
     DECLARE_EC(EC_Movable);
     Q_OBJECT
@@ -57,7 +57,7 @@ private:
     /** Constructor.
         @param module Declaring module.
      */
-    explicit EC_Movable(Foundation::ModuleInterface *module);
+    explicit EC_Movable(IModule *module);
 
     void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
 

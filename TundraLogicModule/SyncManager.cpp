@@ -32,12 +32,12 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     removedComponents_.clear();
     removedEntities_.clear();
     
-    connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
-        this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
-        this, SLOT( OnComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ),
-        this, SLOT( OnComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
+        this, SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
+        this, SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
+        this, SLOT( OnComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( EntityCreated(Scene::Entity*, AttributeChange::Type) ),
         this, SLOT( OnEntityCreated(Scene::Entity*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( EntityRemoved(Scene::Entity*, AttributeChange::Type) ),
@@ -97,7 +97,7 @@ void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection
         msg.entityID = entity->GetId();
         for(uint i = 0; i < components.size(); ++i)
         {
-            Foundation::ComponentInterface* component = components[i].get();
+            IComponent* component = components[i].get();
             
             if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
             {
@@ -124,7 +124,7 @@ void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection
         msg.entityID = entity->GetId();
         for(uint i = 0; i < components.size(); ++i)
         {
-            Foundation::ComponentInterface* component = components[i].get();
+            IComponent* component = components[i].get();
             
             if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
             {
@@ -151,7 +151,7 @@ void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection
     }
 }
 
-void SyncManager::OnComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change)
+void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
@@ -164,7 +164,7 @@ void SyncManager::OnComponentChanged(Foundation::ComponentInterface* comp, Attri
     dirtyEntities_.insert(entity->GetId());
 }
 
-void SyncManager::OnComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
@@ -185,7 +185,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, Foundation::ComponentI
     dirtyEntities_.insert(entity->GetId());
 }
 
-void SyncManager::OnComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
@@ -376,7 +376,7 @@ void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateE
     {
         QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -461,7 +461,7 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
     {
         QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -516,7 +516,7 @@ void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRem
         QString componentName = QString::fromStdString(BufferToString(msg.components[i].componentName));
         QString componentTypeName = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
         
-        Foundation::ComponentInterfacePtr comp = entity->GetComponent(componentTypeName, componentName);
+        ComponentPtr comp = entity->GetComponent(componentTypeName, componentName);
         if (comp)
         {
             entity->RemoveComponent(comp, change);

@@ -385,6 +385,7 @@ namespace Foundation
         event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
         GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
 
+        emit SceneAdded(QString::fromStdString(name));
         return new_scene;
     }
 
@@ -395,6 +396,7 @@ namespace Foundation
             default_scene_.reset();
         if (scene != scenes_.end())
             scenes_.erase(scene);
+        emit SceneRemoved(QString::fromStdString(name));
     }
 
     Scene::ScenePtr Framework::GetScene(const std::string &name) const
