@@ -389,8 +389,8 @@ namespace Scene
                     // This way the whole stream should not desync even if something goes wrong
                     QByteArray comp_bytes;
                     comp_bytes.resize(data_size);
-                    source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
-                    DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                    if (data_size)
+                        source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
                     
                     try
                     {
@@ -398,7 +398,11 @@ namespace Scene
                         if (new_comp)
                         {
                             new_comp->SetNetworkSyncEnabled(sync);
-                            new_comp->DeserializeFromBinary(comp_source, change);
+                            if (data_size)
+                            {
+                                DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                                new_comp->DeserializeFromBinary(comp_source, change);
+                            }
                         }
                         else
                             std::cout << "Failed to load component " << type_name.toStdString() << std::endl;

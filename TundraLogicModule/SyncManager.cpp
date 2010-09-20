@@ -10,8 +10,7 @@
 #include "MsgRemoveComponents.h"
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
-
-#include <QDomDocument>
+#include "CoreStringUtils.h"
 
 namespace TundraLogic
 {
@@ -32,7 +31,6 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     dirtyEntities_.clear();
     removedComponents_.clear();
     removedEntities_.clear();
-    pendingComponentUpdates_.clear();
     
     connect(scene.get(), SIGNAL( ComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ),
         this, SLOT( OnComponentChanged(Foundation::ComponentInterface*, AttributeChange::Type) ));
@@ -83,38 +81,40 @@ std::vector<MessageConnection*> SyncManager::GetConnectionsToSyncTo()
 
 void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity, bool allComponents)
 {
-    QDomDocument temp_doc;
-    QDomElement entity_elem = temp_doc.createElement("entity");
+    if (!entity)
+        return;
     
-    bool no_components = true;
     const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-    for(unsigned i = 0; i < components.size(); ++i)
-    {
-        if ((components[i]->IsSerializable()) && (components[i]->GetNetworkSyncEnabled()))
-        {
-            // If not sending all components, send only those who are dirtied
-            if ((allComponents) || (components[i]->GetChange() == AttributeChange::Local))
-            {
-                components[i]->SerializeTo(temp_doc, entity_elem);
-                no_components = false;
-            }
-        }
-    }
-    temp_doc.appendChild(entity_elem);
+    bool no_components = true;
     
     // If there were no components, and we're not sending a CreateEntity message, do not send anything
     if ((no_components) && (!createEntity))
         return;
     
-    QByteArray bytes = temp_doc.toByteArray();
-    
     if (createEntity)
     {
         MsgCreateEntity msg;
         msg.entityID = entity->GetId();
-        msg.componentData.resize(bytes.size());
-        memcpy(&msg.componentData[0], bytes.data(), bytes.size());
-        
+        for(uint i = 0; i < components.size(); ++i)
+        {
+            Foundation::ComponentInterface* component = components[i].get();
+            
+            if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
+            {
+                // If not sending all components, send only those who are dirtied
+                if ((allComponents) || (component->GetChange() == AttributeChange::Local))
+                {
+                    MsgCreateEntity::S_components newComponent;
+                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
+                    newComponent.componentData.resize(64 * 1024);
+                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
+                    component->SerializeToBinary(dest);
+                    newComponent.componentData.resize(dest.BytesFilled());
+                    msg.components.push_back(newComponent);
+                }
+            }
+        }
         for (unsigned i = 0; i < connections.size(); ++i)
             connections[i]->Send(msg);
     }
@@ -122,38 +122,32 @@ void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection
     {
         MsgUpdateComponents msg;
         msg.entityID = entity->GetId();
-        msg.componentData.resize(bytes.size());
-        memcpy(&msg.componentData[0], bytes.data(), bytes.size());
+        for(uint i = 0; i < components.size(); ++i)
+        {
+            Foundation::ComponentInterface* component = components[i].get();
+            
+            if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
+            {
+                // If not sending all components, send only those who are dirtied
+                if ((allComponents) || (component->GetChange() == AttributeChange::Local))
+                {
+                    MsgUpdateComponents::S_components newComponent;
+                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
+                    newComponent.componentData.resize(64 * 1024);
+                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
+                    component->SerializeToBinary(dest);
+                    newComponent.componentData.resize(dest.BytesFilled());
+                    msg.components.push_back(newComponent);
+                }
+            }
+        }
+        // If there are no components to update, do not send
+        if (msg.components.empty())
+            return;
         
         for (unsigned i = 0; i < connections.size(); ++i)
             connections[i]->Send(msg);
-    }
-}
-
-void SyncManager::DeserializeComponents(QDomDocument& doc, Scene::EntityPtr entity, AttributeChange::Type change)
-{
-    QDomElement entity_elem = doc.firstChildElement("entity");
-    if (!entity_elem.isNull())
-    {
-        QDomElement comp_elem = entity_elem.firstChildElement("component");
-        while (!comp_elem.isNull())
-        {
-            std::string type_name = comp_elem.attribute("type").toStdString();
-            std::string name = comp_elem.attribute("name").toStdString();
-            Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(QString::fromStdString(type_name), QString::fromStdString(name)); //\todo just convert to use qstring all over here, not convert back & forth XXX
-            if (new_comp)
-            {
-                new_comp->DeserializeFrom(comp_elem, change);
-                new_comp->ComponentChanged(change);
-                
-                // If changetype is Network, reset it from the component now so that it won't show "dirty" status which may be confusing
-                if (change == AttributeChange::Network)
-                    new_comp->ResetChange();
-            }
-            else
-                TundraLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
-            comp_elem = comp_elem.nextSiblingElement("component");
-        }
     }
 }
 
@@ -233,9 +227,6 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     if (entity->IsLocal())
         return;
     
-    // Remove pending component updates for this entity, if any
-    pendingComponentUpdates_[entity->GetId()].clear();
-    
     createdEntities_.erase(entity->GetId());
     dirtyEntities_.erase(entity->GetId());
     removedComponents_.erase(entity->GetId()); // Individual component removals do not matter at this point
@@ -249,9 +240,6 @@ void SyncManager::Update()
         return;
     
     std::vector<MessageConnection*> connections = GetConnectionsToSyncTo();
-    
-    // Apply pending component updates, if they're possible to apply now
-    ApplyPendingComponentUpdates();
     
     // Process first the created entities
     std::set<entity_id_t>::const_iterator i = createdEntities_.begin();
@@ -383,14 +371,41 @@ void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateE
         return;
     }
     
-    QDomDocument temp_doc;
-    if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&msg.componentData[0], msg.componentData.size())))
+    // Read the components
+    for (uint i = 0; i < msg.components.size(); ++i)
     {
-        TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
-        return;
+        QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
+        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        if (new_comp)
+        {
+            if (msg.components[i].componentData.size())
+            {
+                DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
+                try
+                {
+                    new_comp->DeserializeFromBinary(source, change);
+                }
+                catch (...)
+                {
+                    TundraLogicModule::LogError("Error while deserializing component " + type_name.toStdString());
+                }
+            }
+        }
+        else
+            TundraLogicModule::LogWarning("Could not create component " + type_name.toStdString());
     }
     
-    DeserializeComponents(temp_doc, entity, change);
+    // Then emit the entity/componentchanges
+    scene->EmitEntityCreated(entity, change);
+    // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+    // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+    for(uint i = 0; i < components.size(); ++i)
+        components[i]->ComponentChanged(change);
+    // Finally, if changetype is Network, reset it so that it won't show "dirty" status which may be confusing
+    if (change == AttributeChange::Network)
+        entity->ResetChange();
 }
 
 void SyncManager::HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg)
@@ -426,23 +441,55 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
     // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
     AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
     
-    // See if we can find the entity. If not, put to pending updates
-    // (we could also force in-order component update messages, but that order would then apply to all entities, possibly slowing update down in case of lost packets)
-    Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
+    // See if we can find the entity. If not, create it (!!!)
+    // \todo When we move to UDP, we will need to implement a smarter protocol that guarantees correct latest state
+    // With TCP everything stays automatically in order nicely
+    Scene::EntityPtr entity = scene->GetEntity(entityID);
     if (!entity)
     {
-        pendingComponentUpdates_[entity->GetId()].push_back(msg.componentData);
-        return;
+        TundraLogicModule::LogWarning("Entity " + ToString<int>(entityID) + " not found for UpdateComponents message, creating it now");
+        entity = scene->CreateEntity(entityID);
+        if (!entity)
+        {
+            TundraLogicModule::LogWarning("Scene refused to create entity " + ToString<int>(entityID));
+            return;
+        }
     }
     
-    QDomDocument temp_doc;
-    if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&msg.componentData[0], msg.componentData.size())))
+    // Read the components
+    for (uint i = 0; i < msg.components.size(); ++i)
     {
-        TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
-        return;
+        QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
+        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        if (new_comp)
+        {
+            if (msg.components[i].componentData.size())
+            {
+                DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
+                try
+                {
+                    new_comp->DeserializeFromBinary(source, change);
+                }
+                catch (...)
+                {
+                    TundraLogicModule::LogError("Error while deserializing component " + type_name.toStdString());
+                }
+            }
+        }
+        else
+            TundraLogicModule::LogWarning("Could not create component " + type_name.toStdString());
     }
     
-    DeserializeComponents(temp_doc, entity, change);
+    // Then emit the componentchanges
+    // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+    // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+    for(uint i = 0; i < components.size(); ++i)
+        components[i]->ComponentChanged(change);
+    // Finally, if changetype is Network, reset it so that it won't show "dirty" status which may be confusing
+    if (change == AttributeChange::Network)
+        entity->ResetChange();
 }
 
 void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg)
@@ -492,41 +539,6 @@ void SyncManager::HandleEntityIDCollision(MessageConnection* source, const MsgEn
     
     TundraLogicModule::LogDebug("An entity ID collision occurred. Entity " + ToString<int>(msg.oldEntityID) + " became " + ToString<int>(msg.newEntityID));
     scene->ChangeEntityId(msg.oldEntityID, msg.newEntityID);
-}
-
-void SyncManager::ApplyPendingComponentUpdates()
-{
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-    if (!scene)
-        return;
-    
-    bool isServer = owner_->IsServer();
-    
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
-    
-    std::map<entity_id_t, std::vector<std::vector<unsigned char> > >::iterator i = pendingComponentUpdates_.begin();
-    while (i != pendingComponentUpdates_.end())
-    {
-        Scene::EntityPtr entity = scene->GetEntity(i->first);
-        if (entity)
-        {
-            std::vector<std::vector<unsigned char> >& updates = i->second;
-            for (unsigned j = 0; j < updates.size(); ++j)
-            {
-                QDomDocument temp_doc;
-                if (!temp_doc.setContent(QByteArray::fromRawData((const char*)&updates[j][0], updates[j].size())))
-                {
-                    TundraLogicModule::LogWarning("Received malformed component XML data, can not deserialize components");
-                    continue;
-                }
-                
-                DeserializeComponents(temp_doc, entity, change);
-            }
-        }
-        i->second.clear();
-        ++i;
-    }
 }
 
 }
