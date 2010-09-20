@@ -17,7 +17,7 @@ EC_Sound::EC_Sound(IModule *module):
     IComponent(module->GetFramework()),
     sound_id_(0),
     soundId(this, "Sound ref"),
-    soundInnerRadius(this, "sound radius inner", 0.0f),
+    soundInnerRadius(this, "Sound radius inner", 0.0f),
     soundOuterRadius(this, "Sound radius outer", 20.0f),
     loopSound(this, "Loop sound", false),
     triggerSound(this, "Trigger sound", false),
@@ -52,6 +52,17 @@ void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
             PlaySound();
     }
     UpdateSoundSettings();
+}
+
+void EC_Sound::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Play sound", this, SLOT(PlaySound()));
+        entity->ConnectAction("Stop sound", this, SLOT(StopSound()));
+    }
 }
 
 void EC_Sound::PlaySound()
