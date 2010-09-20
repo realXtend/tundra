@@ -36,7 +36,7 @@ std::string TundraLogicModule::type_name_static_ = "TundraLogic";
 
 static const unsigned short cDefaultPort = 2345;
 
-TundraLogicModule::TundraLogicModule() : ModuleInterface(type_name_static_),
+TundraLogicModule::TundraLogicModule() : IModule(type_name_static_),
     loginstate_(NotConnected),
     reconnect_(false)
 {
@@ -90,7 +90,7 @@ void TundraLogicModule::PostInitialize()
         LogFatal("Could not get KristalliProtocolModule");
         
     // If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
-    Foundation::ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
+    ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
     if (!loginModule.lock().get())
         ServerStart(cDefaultPort);
 }
@@ -345,7 +345,7 @@ KristalliProtocol::UserConnectionList& TundraLogicModule::ServerGetUserConnectio
 }
 
 // virtual
-bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool TundraLogicModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if (category_id == tundraEventCategory_)
     {
@@ -584,6 +584,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace TundraLogic;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(TundraLogicModule)
 POCO_END_MANIFEST

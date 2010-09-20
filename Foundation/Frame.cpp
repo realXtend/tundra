@@ -22,7 +22,7 @@ DelayedSignal::DelayedSignal(boost::uint64_t startTime) : startTime_(startTime)
 {
 }
 
-void DelayedSignal::Expired()
+void DelayedSignal::Expire()
 {
     emit Triggered((float)((GetCurrentClockTime() - startTime_) / GetCurrentClockFreq()));
 }
@@ -42,23 +42,33 @@ float Frame::GetWallClockTime() const
     return (GetCurrentClockTime() - startTime_) / GetCurrentClockFreq();
 }
 
-void Frame::DelayedExecute(float time, const QObject *receiver, const char *member)
-{
-    DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
-    QTimer::singleShot(time*1000, delayed, SIGNAL(Triggered()));
-    connect(delayed, SIGNAL(Triggered()), receiver, member);
-    delayedSignals_.push_back(delayed);
-}
-
 DelayedSignal *Frame::DelayedExecute(float time)
 {
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
-    QTimer::singleShot(time*1000, delayed, SIGNAL(Triggered()));
+    QTimer::singleShot(time*1000, delayed, SLOT(Expire(float)));
+    connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
     delayedSignals_.push_back(delayed);
     return delayed;
+}
+
+void Frame::DelayedExecute(float time, const QObject *receiver, const char *member)
+{
+    DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
+    QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
+    connect(delayed, SIGNAL(Triggered(float)), receiver, member);
+    connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
+    delayedSignals_.push_back(delayed);
 }
 
 void Frame::Update(float frametime)
 {
     emit Updated(frametime);
+}
+
+void Frame::DeleteDelayedSignal()
+{
+    DelayedSignal *expiredSignal = checked_static_cast<DelayedSignal *>(sender());
+    assert(expiredSignal);
+    delayedSignals_.removeOne(expiredSignal);
+    SAFE_DELETE_LATER(expiredSignal);
 }

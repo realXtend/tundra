@@ -35,7 +35,7 @@ NetworkStateEventHandler::~NetworkStateEventHandler()
 {
 }
 
-bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, IEventData* data)
 {
     switch(event_id)
     {
@@ -120,7 +120,7 @@ bool NetworkStateEventHandler::HandleNetworkStateEvent(event_id_t event_id, Foun
     return false;
 }
 
-bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, IEventData* data)
 {
     switch(event_id)
     {

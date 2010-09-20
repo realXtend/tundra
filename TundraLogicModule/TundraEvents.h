@@ -3,7 +3,7 @@
 #ifndef incl_TundraLogicModule_TundraEvents_h
 #define incl_TundraLogicModule_TundraEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 namespace TundraLogic
 {
@@ -22,7 +22,7 @@ namespace Events
     //! Tundra connection or login failed. No eventdata structure.
     static const event_id_t EVENT_TUNDRA_LOGIN_FAILED = 0x04;
     
-    class TundraLoginEventData : public Foundation::EventDataInterface
+    class TundraLoginEventData : public IEventData
     {
     public:
         std::string address_;
@@ -31,7 +31,7 @@ namespace Events
         std::string password_;
     };
     
-    class TundraConnectedEventData : public Foundation::EventDataInterface
+    class TundraConnectedEventData : public IEventData
     {
     public:
         u8 user_id_;

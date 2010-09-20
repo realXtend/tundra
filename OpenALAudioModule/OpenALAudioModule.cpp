@@ -12,7 +12,7 @@ namespace OpenALAudio
 {
     std::string OpenALAudioModule::type_name_static_ = "OpenALAudio";
 
-    OpenALAudioModule::OpenALAudioModule() : ModuleInterface(type_name_static_)
+    OpenALAudioModule::OpenALAudioModule() : IModule(type_name_static_)
     {
     }
 
@@ -70,7 +70,7 @@ namespace OpenALAudio
         RESETPROFILER;
     }
 
-    bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool OpenALAudioModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (category_id == asset_event_category_)
         {
@@ -96,6 +96,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace OpenALAudio;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(OpenALAudioModule)
 POCO_END_MANIFEST

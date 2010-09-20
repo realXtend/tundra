@@ -32,7 +32,7 @@ InputEventHandler::~InputEventHandler()
 {
 }
 
-bool InputEventHandler::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool InputEventHandler::HandleInputEvent(event_id_t event_id, IEventData* data)
 {
     using namespace Input;
 

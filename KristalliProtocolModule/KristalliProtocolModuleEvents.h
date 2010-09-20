@@ -8,7 +8,7 @@
 */
 #pragma once
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 class MessageConnection;
 typedef unsigned long message_id_t;
@@ -32,7 +32,7 @@ namespace Events
     static const event_id_t CONNECTION_FAILED = 4;
     
     // The message received from a Kristalli server is wrapped in this Naali event structure.
-    class KristalliNetMessageIn : public Foundation::EventDataInterface
+    class KristalliNetMessageIn : public IEventData
     {
     public:
         KristalliNetMessageIn(MessageConnection *source_, message_id_t id_, const char *data_, size_t numBytes_)
@@ -47,7 +47,7 @@ namespace Events
     };
     
     // Event structure for user connected
-    class KristalliUserConnected : public Foundation::EventDataInterface
+    class KristalliUserConnected : public IEventData
     {
     public:
         KristalliUserConnected(UserConnection *connection_) :
@@ -59,7 +59,7 @@ namespace Events
     };
     
     // Event structure for user connected
-    class KristalliUserDisconnected : public Foundation::EventDataInterface
+    class KristalliUserDisconnected : public IEventData
     {
     public:
         KristalliUserDisconnected(UserConnection *connection_) :

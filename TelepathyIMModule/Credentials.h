@@ -4,7 +4,7 @@
 #define incl_Comm_Credentials_h
 
 //#include <Foundation.h>
-//#include <EventDataInterface.h>
+//#include <IEventData.h>
 #include "CredentialsInterface.h"
 #include <QString>
 //#include "interface.h"

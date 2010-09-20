@@ -12,6 +12,8 @@
 #include "ForwardDefines.h"
 #include "RexTypes.h"
 
+//#include "CaelumWrapper.h"
+
 #include <QVector>
 #include <QObject>
 
@@ -249,6 +251,8 @@ namespace Environment
 
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
+
+        //CaelumWrapper* wrapper_;
 
     };
 }

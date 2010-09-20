@@ -1,14 +1,14 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   AttributeInterface.cpp
+ *  @file   IAttribute.cpp
  *  @brief  Abstract base class and template class for entity-component attributes.
  */
 
 #include "StableHeaders.h"
 
-#include "AttributeInterface.h"
-#include "ComponentInterface.h"
+#include "IAttribute.h"
+#include "IComponent.h"
 #include "AssetInterface.h"
 #include "Core.h"
 #include "CoreStdIncludes.h"
@@ -22,7 +22,7 @@
 
 // Implementation code for some common attributes
 
-AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, const char* name) :
+IAttribute::IAttribute(IComponent* owner, const char* name) :
     owner_(owner),
     name_(name),
     change_(AttributeChange::None),
@@ -33,7 +33,7 @@ AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, co
         owner->AddAttribute(this);
 }
 
-void AttributeInterface::Changed(AttributeChange::Type change)
+void IAttribute::Changed(AttributeChange::Type change)
 {
     if (owner_)
         owner_->AttributeChanged(this, change);
@@ -112,9 +112,9 @@ template<> std::string Attribute<QVariant>::ToString() const
     return value.toString().toStdString();
 }
 
-template<> std::string Attribute<std::vector<QVariant> >::ToString() const
+template<> std::string Attribute<QVariantList>::ToString() const
 {
-    std::vector<QVariant> values = Get();
+    QVariantList values = Get();
 
     std::string stringValue = "";
     for(uint i = 0; i < values.size(); i++)
@@ -200,9 +200,9 @@ template<> std::string Attribute<QVariant>::TypenameToString() const
     return "qvariant";
 }
 
-template<> std::string Attribute<std::vector<QVariant> >::TypenameToString() const
+template<> std::string Attribute<QVariantList >::TypenameToString() const
 {
-    return "qvariantarray";
+    return "qvariantlist";
 }
 
 template<> std::string Attribute<Transform>::TypenameToString() const
@@ -340,9 +340,9 @@ template<> void Attribute<QVariant>::FromString(const std::string& str, Attribut
     Set(value, change);
 }
 
-template<> void Attribute<std::vector<QVariant> >::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<QVariantList >::FromString(const std::string& str, AttributeChange::Type change)
 {
-    std::vector<QVariant> value;
+    QVariantList value;
     QString strValue = QString::fromStdString(str);
     QStringList components = strValue.split(';');
 
@@ -443,7 +443,7 @@ template<> void Attribute<QVariant>::ToBinary(DataSerializer& dest) const
     dest.AddString(str);
 }
 
-template<> void Attribute<std::vector<QVariant> >::ToBinary(DataSerializer& dest) const
+template<> void Attribute<QVariantList>::ToBinary(DataSerializer& dest) const
 {
     dest.Add<u8>(value_.size());
     for (uint i = 0; i < value_.size(); ++i)
@@ -541,15 +541,15 @@ template<> void Attribute<QVariant>::FromBinary(DataDeserializer& source, Attrib
     Set(value, change);
 }
 
-template<> void Attribute<std::vector<QVariant> >::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+template<> void Attribute<QVariantList>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
 {
-    std::vector<QVariant> values;
+    QVariantList values;
     
     u8 numValues = source.Read<u8>();
     for (u32 i = 0; i < numValues; ++i)
     {
         std::string str = source.ReadString();
-        values.push_back(QVariant(QString(str.c_str())));
+        values.append(QVariant(QString(str.c_str())));
     }
     
     Set(values, change);

@@ -48,7 +48,7 @@ QMap<QString, QString> GetLoginInfo() const
 std::string LoginScreenModule::type_name_static_ = "LoginScreen";
 
 LoginScreenModule::LoginScreenModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     window_(0),
     framework_category_(0),
     network_category_(0),
@@ -118,7 +118,7 @@ void LoginScreenModule::Update(f64 frametime)
 }
 
 // virtual
-bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     
@@ -230,6 +230,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(LoginScreenModule)
 POCO_END_MANIFEST

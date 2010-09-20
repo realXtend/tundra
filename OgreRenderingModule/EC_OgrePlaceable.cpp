@@ -9,28 +9,28 @@
 
 namespace OgreRenderer
 {
-
-EC_OgrePlaceable::EC_OgrePlaceable(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+    
+EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
+    IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     scene_node_(0),
     link_scene_node_(0),
     attached_(false),
     select_priority_(0),
-    transform_(this, "Transform")
+    transform(this, "Transform")
 {
     RendererPtr renderer = renderer_.lock();
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     link_scene_node_ = scene_mgr->createSceneNode();
     scene_node_ = scene_mgr->createSceneNode();
     link_scene_node_->addChild(scene_node_);
-    
+        
     // In case the placeable is used for camera control, set fixed yaw axis
     link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
-    
+
     // Hook the transform attribute change
-    connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
-        SLOT(HandleAttributeChanged(AttributeInterface*, AttributeChange::Type)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 }
 
 EC_OgrePlaceable::~EC_OgrePlaceable()
@@ -60,7 +60,7 @@ EC_OgrePlaceable::~EC_OgrePlaceable()
     }
 }
 
-void EC_OgrePlaceable::SetParent(Foundation::ComponentPtr placeable)
+void EC_OgrePlaceable::SetParent(ComponentPtr placeable)
 {
     if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
     {
@@ -300,9 +300,9 @@ QVector3D EC_OgrePlaceable::translate(int axis, float amount)
     return QVector3D(newpos.x, newpos.y, newpos.z);
 }
 
-void EC_OgrePlaceable::HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
+void EC_OgrePlaceable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
-    if (attribute == &transform_)
+    if (attribute == &transform)
     {
         // Safety & legacy world compatibility: in non-networksynced mode, do nothing
         if (!GetNetworkSyncEnabled())
@@ -310,7 +310,7 @@ void EC_OgrePlaceable::HandleAttributeChanged(AttributeInterface* attribute, Att
         if (!link_scene_node_)
             return;
         
-        Transform newTransform = transform_.Get();
+        Transform newTransform = transform.Get();
         link_scene_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
         Quaternion orientation(DEGTORAD * newTransform.rotation.x,
                           DEGTORAD * newTransform.rotation.y,

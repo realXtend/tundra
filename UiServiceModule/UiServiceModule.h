@@ -3,13 +3,13 @@
 #ifndef incl_UiServiceModule_UiServiceModule_h
 #define incl_UiServiceModule_UiServiceModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 class UiService;
 typedef boost::shared_ptr<UiService> UiServicePtr;
 
-class UiServiceModule : public Foundation::ModuleInterface
+class UiServiceModule : public IModule
 {
 public:
     /// Default constructor.
@@ -18,23 +18,23 @@ public:
     /// Destructor.
     ~UiServiceModule();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PreInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Initialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PostInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Uninitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Update(f64 frametime);
 
-    /// ModuleInterface override.
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    /// IModule override.
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     MODULE_LOGGING_FUNCTIONS
 

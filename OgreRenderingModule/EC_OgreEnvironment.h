@@ -10,7 +10,7 @@
 #ifndef incl_OgreRenderer_EC_OgreEnvironment_h
 #define incl_OgreRenderer_EC_OgreEnvironment_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 
 #include "Color.h"
@@ -57,7 +57,7 @@ namespace OgreRenderer
      *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
      */
-    class OGRE_MODULE_API EC_OgreEnvironment : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreEnvironment : public IComponent
     {
         Q_OBJECT
         
@@ -119,8 +119,10 @@ namespace OgreRenderer
 
         /// Disables the fog.
         void DisableFog();
-
 #ifdef CAELUM
+
+        Caelum::CaelumSystem* GetCaelum();
+
         /// Speeds up the times
         /// @param value 2 doubles etc.
         void SetTimeScale(const float &value);
@@ -155,7 +157,7 @@ namespace OgreRenderer
     private:
         /// Constructor.
         /// \param module Renderer module.
-        EC_OgreEnvironment(Foundation::ModuleInterface *module);
+        EC_OgreEnvironment(IModule *module);
 
         /// Creates the sunlight.
         void CreateSunlight();

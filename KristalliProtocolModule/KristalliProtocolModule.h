@@ -10,7 +10,7 @@
 #define incl_KristalliProtocolModule_KristalliProtocolModule_h
 
 #include "Foundation.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
 #include "ModuleLoggingFunctions.h"
 
@@ -38,7 +38,7 @@ namespace KristalliProtocol
     
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
-    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public Foundation::ModuleInterface, public IMessageHandler, public INetworkServerListener
+    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public IMessageHandler, public INetworkServerListener
     {
     public:
         KristalliProtocolModule();
@@ -82,7 +82,7 @@ namespace KristalliProtocol
 
         bool HandleEvent(event_category_id_t category_id,
             event_id_t event_id, 
-            Foundation::EventDataInterface* data);
+            IEventData* data);
 
         void SubscribeToNetworkEvents();
 

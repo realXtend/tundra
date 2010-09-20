@@ -453,7 +453,7 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                 {
                     namePtr->name.Set(node_name_qstr, change);
                     
-                    std::vector<QVariant> materials;
+                    QVector<QVariant> materials;
                     QDomElement subentities_elem = entity_elem.firstChildElement("subentities");
                     if (!subentities_elem.isNull())
                     {
@@ -494,11 +494,11 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                         entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
                     }
 
-                    placeablePtr->transform_.Set(entity_transform, change);
+                    placeablePtr->transform.Set(entity_transform, change);
 
-                    meshPtr->meshResouceId_.Set(mesh_name, change);
-                    meshPtr->meshMaterial_.Set(materials, change);
-                    meshPtr->castShadows_.Set(cast_shadows, change);
+                    meshPtr->meshResourceId.Set(mesh_name, change);
+                    meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
+                    meshPtr->castShadows.Set(cast_shadows, change);
 
                     if (new_entity)
                         scene->EmitEntityCreated(entity, change);

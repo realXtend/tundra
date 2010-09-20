@@ -21,7 +21,7 @@ namespace TaigaProtocol
     std::string ProtocolModuleTaiga::type_name_static_ = "TaigaProtocol";
 
     ProtocolModuleTaiga::ProtocolModuleTaiga() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown),
         identityUrl_(""),
@@ -343,6 +343,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace TaigaProtocol;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(ProtocolModuleTaiga)
 POCO_END_MANIFEST

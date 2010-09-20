@@ -3,15 +3,15 @@
 #include "StableHeaders.h"
 #include "EC_Water.h"
 #include "Renderer.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ServiceManager.h"
 
 #include <Ogre.h>
 
 namespace Environment
 {
-    EC_Water::EC_Water(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+    EC_Water::EC_Water(IModule* module) :
+        IComponent(module->GetFramework()),
         scene_node_(0), entity_(0)
     {
         CreateOgreWaterObject();
@@ -67,7 +67,6 @@ namespace Environment
 
             if (!scene_node_)
             {
-                
                 const char water_mesh[] = "WaterMesh";
                 Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(water_mesh, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
                     Ogre::Plane(Ogre::Vector3::UNIT_Z, 0), 5000, 5000, 10, 10, true, 1, 1, 1, Ogre::Vector3::UNIT_X);
@@ -78,7 +77,6 @@ namespace Environment
 
                 scene_node_ = sceneMgr->getRootSceneNode()->createChildSceneNode("WaterNode");
                 scene_node_->attachObject(entity_);
-                
             }
         }
     }

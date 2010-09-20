@@ -4,7 +4,7 @@
 #define incl_TundraLogicModule_SceneImporter_h
 
 #include "SceneManager.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 
 class QDomElement;
 
