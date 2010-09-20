@@ -50,4 +50,7 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+# Add Kristalli needed for the binary serializer/deserializer
+target_link_libraries (${TARGET_NAME} Core.lib Network.lib)
+
 final_target ()

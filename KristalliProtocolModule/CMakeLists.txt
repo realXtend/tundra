@@ -1,11 +1,6 @@
 # Define target name and output directory
 init_target (KristalliProtocolModule OUTPUT modules/core)
 
-set(KRISTALLI_CORE_PATH "../Kristalli")
-
-include_directories(${KRISTALLI_CORE_PATH}/include)
-link_directories(${KRISTALLI_CORE_PATH}/build/win)
-
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)

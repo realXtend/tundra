@@ -20,6 +20,9 @@ endif()
 # Set CMake custom module path & include them
 set (CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} CMakeModules)
 
+# Set Kristalli path
+set(KRISTALLI_CORE_PATH ${PROJECT_BINARY_DIR}/Kristalli)
+
 # The following CMake modules are required for the project to build.
 include (Sagase)
 include (ModuleSetup)

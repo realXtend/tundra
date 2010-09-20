@@ -205,20 +205,35 @@ namespace Scene
          */
         void EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
-        //! Load the scene (from an XML file for now, and only serializable components)
+        //! Load the scene from XML
         /*! Note: will remove all existing entities
             \param filename File name
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
            
             \return true if successful
          */
-        bool LoadScene(const std::string& filename, AttributeChange::Type change);
+        bool LoadSceneXML(const std::string& filename, AttributeChange::Type change);
         
-        //! Save the scene (into an XML file for now, and only serializable components)
+        //! Save the scene to XML
         /*! \param filename File name
             \return true if successful
          */
-        bool SaveScene(const std::string& filename);
+        bool SaveSceneXML(const std::string& filename);
+        
+        //! Load the scene from binary
+        /*! Note: will remove all existing entities
+            \param filename File name
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+           
+            \return true if successful
+         */
+        bool LoadSceneBinary(const std::string& filename, AttributeChange::Type change);
+        
+        //! Save the scene to binary
+        /*! \param filename File name
+            \return true if successful
+         */
+        bool SaveSceneBinary(const std::string& filename);
         
     private:
         SceneManager &operator =(const SceneManager &other);

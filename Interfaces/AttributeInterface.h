@@ -14,6 +14,9 @@
 
 #include <map>
 
+class DataSerializer;
+class DataDeserializer;
+
 namespace Foundation
 {
     class ComponentInterface;
@@ -116,11 +119,17 @@ public:
     //! Returns attributes name as string.
     std::string GetNameString() const { return std::string(name_); }
 
-    //! Convert attribute to string for XML serialization
+    //! Write attribute to string for XML serialization
     virtual std::string ToString() const = 0;
 
-    //! Convert attribute from string for XML deserialization
+    //! Read attribute from string for XML deserialization
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
+
+    //! Write attribute to binary for binary serialization
+    virtual void ToBinary(DataSerializer& dest) const = 0;
+    
+    //! Read attribute from binary for binary deserialization
+    virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change) = 0;
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
@@ -201,6 +210,12 @@ public:
 
     //! AttributeInterface override.
     virtual void FromString(const std::string& str, AttributeChange::Type change);
+
+    //! AttributeInterface override.
+    virtual void ToBinary(DataSerializer& dest) const;
+
+    //! AttributeInterface override.
+    virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change);
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;
