@@ -23,12 +23,42 @@ namespace Ogre
     class Font;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreMovableTextOverlay</h2>
+		Movable Ogre text overlay. 
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Movable Ogre text overlay.
     /*! \ingroup OgreRenderingModuleClient
      */

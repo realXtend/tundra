@@ -14,6 +14,41 @@
 
 namespace RexLogic
 {
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>FreeData</h2>
+An entity component that attaches to an entity a generic string of data, for quickly doing custom data extension/storage.
+
+\todo This component is not useful unless there can be several instances of it on a single entity, or unless we make it store a dictionary
+ of string-value pairs.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+
+</table>
+
+*/
+
     /// An entity component that attaches to an entity a generic string of data, for quickly doing custom data extension/storage.
     /// \todo This component is not useful unless there can be several instances of it on a single entity, or unless we make it store a dictionary
     ///       of string-value pairs.
@@ -35,5 +70,6 @@ namespace RexLogic
         EC_FreeData(Foundation::ModuleInterface* module);
     };
 }
+
 
 #endif

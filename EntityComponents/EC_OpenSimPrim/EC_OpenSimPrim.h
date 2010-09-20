@@ -40,7 +40,62 @@ typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 //! Map for holding prim face uv parameter info
 typedef std::map<uint8_t, float> UVParamMap;
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OpenSimPrim</h2>
+Each scene entity representing a prim in OpenSim sense has this component.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>"float": PathEnd
+<li>"float": PathScaleX
+<li>"float": PathScaleY
+<li>"float": PathShearX
+<li>"float": PathShearY
+<li>"float": PathTwist
+<li>"float": PathTwistBegin
+<li>"float": PathRadiusOffset
+<li>"float": PathTaperX
+<li>"float": PathTaperY
+<li>"float": PathRevolutions
+<li>"float": PathSkew
+<li>"float": ProfileBegin
+<li>"float": ProfileEnd
+<li>"float": ProfileHollow
+</ul>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"GetChildren": 
+<li>"SetEditor": 
+<li>"MyPropertyChanged": 
+<li>"SendRexPrimDataUpdate": 
+<li>"SendObjectShapeUpdate": 
+<li>"SendObjectNameUpdate": 
+<li>"SendObjectDescriptionUpdate": 
+</ul>
+
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
+
 //! Each scene entity representing a prim in OpenSim sense has this component.
+
 class EC_OpenSimPrim : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_OpenSimPrim);

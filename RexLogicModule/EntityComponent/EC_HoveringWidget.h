@@ -37,12 +37,80 @@ class QGraphicsProxyWidget;
 class QTimer;
 QT_END_NAMESPACE
 
+
+
 namespace RexLogic
 {
     class HoveringButtonsController;
     class HoveringNameController;
     class DetachedWidgetController;
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>HoveringWidget</h2>
+HoveringWidget shows a hovering widget attached to an entity.
+
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"HoveredOver": called when widget is hovered
+<li>"InitializeBillboards": Initializes billboards, must be called before use
+<li>"SetDisabled": Disables/enables widget
+<li>"IsDisabled": return true if widget is disabled
+<li>"SetButtonsDisabled": set buttons disabled, will still show the text
+<li>"IsButtonsDisabled": return true if buttons ase disabled
+<li>"ShowButtons": show/hide buttons
+<li>"Show": Shows the widget
+<li>"AnimatedShow": Shows the widget with animation (not currently working properly)
+<li>"EntityClicked": notifies that entity was clicked
+<li>"Detach": 
+<li>"Attach": 
+<li>"WidgetClicked": called when the widget is clicked in 3D scene
+        @param x coordinate (clamped in 0-1) 
+        @param y coordinate (clamped in 0-1)
+<li>"Hide": Hides the hovering text
+
+<li>"AnimatedHide": Hides the hovering text with animation.
+<li>"IsVisible": Returns if the hovering text is visible or not.
+        @true If the hovering text is visible, false if it's hidden or not initialized properly.
+<li>"SetText": Sets the text to be shown.
+        @param text Text to be shown.
+<li>"AddButton": Add button to the widget
+        @button button to add
+<li>"SetCameraDistance": set widgets distance from the camera
+<li>"GetCameraDistance": get widgets distance from the camera
+<li>"AdjustWidgetinf": Adjust what to show, might disable button or set the widget invisible.
+<li>"ScaleWidget": scale widget to have static screenspace size
+        @param bset billboardset, used to get worldtransforms
+        @param b billboard that we scale
+        @param size size in screenspace
+        @param next_to_nametag, if true, will try to place the billboard next to the namebillboard
+</ul>
+
+
+
+
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>The entity must have EC_OgrePlaceable component available in advance.</b>
+</table>
+
+*/
     /// Shows a hovering widget attached to an entity.
     class REXLOGIC_MODULE_API EC_HoveringWidget : public Foundation::ComponentInterface
     {

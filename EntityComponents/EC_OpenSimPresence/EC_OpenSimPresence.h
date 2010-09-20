@@ -7,9 +7,38 @@
 #include "RexUUID.h"
 #include "Declare_EC.h"
 
-//! This component is present on all agents when connected to an OpenSim world. 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OpenSimPresence</h2>
+This component is present on all agents when connected to an OpenSim world. 
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"QGetFullName": 
+<li>"QGetUUIDString": 
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
 class EC_OpenSimPresence : public Foundation::ComponentInterface
 {
+
     Q_OBJECT
 
     DECLARE_EC(EC_OpenSimPresence);

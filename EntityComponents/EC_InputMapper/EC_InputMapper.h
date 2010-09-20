@@ -19,6 +19,52 @@
 class KeyEvent;
 class InputContext;
 
+
+/**
+<table class="header">
+<tr>
+<td>
+<h2>InputMapper</h2>
+
+Registers an InputContext from the Naali Input subsystem and uses it to translate
+given set of keys to Entity Actions on the entity the component is part of.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString: contextName.
+<div>This input mapper's input context priority.</div> 
+<li>int: contextPriority.
+<div>This input mapper's input context priority.</div> 
+<li>bool: takeKeyboardEventsOverQt.
+<div>This input mapper's input context priority.</div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"RegisterMapping": Register new key sequence - action mapping for this input mapper.
+        @param keySeq Key sequence.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        "More(Forward)" or "Move(Forward,100)" etc.
+        @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>
+
+</table>
+*/
+
 /** Registers an InputContext from the Naali Input subsystem and uses it to translate
     given set of keys to Entity Actions on the entity the component is part of.
 */

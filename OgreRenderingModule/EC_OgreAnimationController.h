@@ -18,8 +18,44 @@ namespace Ogre
 namespace OgreRenderer
 {
 
+
 	class EC_OgreMesh;
 
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreAnimationController</h2>
+Ogre-specific mesh entity animation controller
+
+Needs to be told of an OgreMesh component to be usable
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"EnableAnimation": Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
+<li>"SetAnimationTimePosition": 
+<li>"GetAvailableAnimations": 
+<li>"OgreRenderer": Gets mesh entity component
+<li>"SetMeshEntity": Gets mesh entity component
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgreMesh</b>.
+</table>
+
+*/
     //! Ogre-specific mesh entity animation controller
     /*! Needs to be told of an EC_OgreMesh component to be usable
         \ingroup OgreRenderingModuleClient

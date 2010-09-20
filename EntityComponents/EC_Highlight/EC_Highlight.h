@@ -23,6 +23,38 @@ namespace Ogre
     class SceneNode;
     class Entity;
 }
+/**
+<table class="header">
+<tr>
+<td>
+<h2>HighLight</h2>
+Enables visual highlighting effect for of scene entity.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes.</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"hide": Disables the highlighting effect.
+<li>"show": Shows the highlighting effect.
+<li>"IsVisible": Returns if the highlight component is visible or not.
+  @true If the highlight component is visible, false if it's hidden or not initialized properly.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable, OgreMesh and OgreCustomObject</b>. 
+</table>
+*/
+
 
 class EC_Highlight : public Foundation::ComponentInterface
 {

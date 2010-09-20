@@ -16,6 +16,39 @@
 
 namespace RexLogic
 {
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>NetworkPosition</h2>
+Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
+Note that currently values are stored in Ogre format axes.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+
+*/
+
+
     //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
     /*! Note that currently values are stored in Ogre format axes.
      */ 

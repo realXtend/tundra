@@ -12,6 +12,7 @@ namespace Ogre
     class Camera;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -20,6 +21,48 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreCamera</h2>
+Ogre camera entity component
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"SetActive": sets as active camera in the viewport
+<li>"SetNearClip": sets near clip distance
+        \note EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        \param nearclip new near clip distance
+<li>"SetFarClip": sets far clip distance
+        note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        \param farclip new far clip distance
+<li>"SetVerticalFov": sets vertical fov 
+        \param fov new vertical fov in radians 
+<li>"GetNearClip": returns near clip distance
+<li>"GetFarClip": returns far clip distance
+<li>"GetVerticalFov": returns vertical fov as radians
+<li>"IsActive": returns whether camera is active in the viewport
+<li>"GetCamera": returns the actual Ogre camera.
+        use with caution. never set the position of the camera directly, use the placeable component for that.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Ogre camera entity component
     /*! Needs to be attached to a placeable (aka scene node) to be useful.
         \ingroup OgreRenderingModuleClient

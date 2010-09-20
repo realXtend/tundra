@@ -24,9 +24,46 @@ namespace Ogre
     class MaterialManager;
 }
 
+
 class QWidget;
 class QTimer;
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>3DCanvas</h2>
+Makes the entity a light source.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Start": 
+<li>"Setup":
+<li>"SetWidget":
+<li>"SetRefreshRate":
+<li>"SetSubmesh":
+<li>"SetSubmeshes":
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>..
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgreCustomObject and OgreMesh</b>. 
+</table>
+
+*/
 class EC_3DCanvas : public Foundation::ComponentInterface
 {
     Q_OBJECT

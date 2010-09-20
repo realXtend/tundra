@@ -10,6 +10,34 @@
 
 namespace RexLogic
 {
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OpenSimAvatar</h2>
+This component is present on all avatars when connected to an OpenSim world. 
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>..
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
     //! This component is present on all avatars when connected to an
     //! OpenSim world. 
     class REXLOGIC_MODULE_API EC_OpenSimAvatar : public Foundation::ComponentInterface
