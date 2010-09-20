@@ -16,6 +16,9 @@
 
 #include <QDomDocument>
 
+#include "clb/Network/DataDeserializer.h"
+#include "clb/Network/DataSerializer.h"
+
 namespace Foundation
 {
 
@@ -218,6 +221,25 @@ void ComponentInterface::DeserializeFrom(QDomElement& element, AttributeChange::
         std::string attr_str = ReadAttribute(element, attributes_[i]->GetNameString().c_str()).toStdString();
         attributes_[i]->FromString(attr_str, change);
     }
+}
+
+void ComponentInterface::SerializeToBinary(DataSerializer& dest) const
+{
+    dest.Add<u8>(attributes_.size());
+    for (uint i = 0; i < attributes_.size(); ++i)
+        attributes_[i]->ToBinary(dest);
+}
+
+void ComponentInterface::DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    u8 num_attributes = source.Read<u8>();
+    if (num_attributes != attributes_.size())
+    {
+        std::cout << "Wrong number of attributes in DeserializeFromBinary!" << std::endl;
+        return;
+    }
+    for (uint i = 0; i < attributes_.size(); ++i)
+        attributes_[i]->FromBinary(source, change);
 }
 
 }

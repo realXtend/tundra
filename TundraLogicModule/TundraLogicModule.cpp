@@ -74,10 +74,10 @@ void TundraLogicModule::PostInitialize()
         Console::Bind(this, &TundraLogicModule::ConsoleDisconnect)));
     
     RegisterConsoleCommand(Console::CreateCommand("savescene",
-        "Saves scene into an XML file. Usage: savescene(filename)",
+        "Saves scene into XML or binary. Usage: savescene(filename,binary)",
         Console::Bind(this, &TundraLogicModule::ConsoleSaveScene)));
     RegisterConsoleCommand(Console::CreateCommand("loadscene",
-        "Loads scene from an XML file. Usage: loadscene(filename)",
+        "Loads scene from XML or binary. Usage: loadscene(filename,binary)",
         Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
     
     RegisterConsoleCommand(Console::CreateCommand("importscene",
@@ -177,7 +177,17 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
         return Console::ResultFailure("No filename given.");
-    bool success = scene->SaveScene(params[0]);
+    
+    bool useBinary = false;
+    if ((params.size() > 1) && (params[1] == "binary"))
+        useBinary = true;
+    
+    bool success;
+    if (!useBinary)
+        scene->SaveSceneXML(params[0]);
+    else
+        scene->SaveSceneBinary(params[0]);
+    
     if (success)
         return Console::ResultSuccess();
     else
@@ -191,8 +201,18 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
         return Console::ResultFailure("No filename given.");
+    
+    bool useBinary = false;
+    if ((params.size() > 1) && (params[1] == "binary"))
+        useBinary = true;
+    
     // Do the scene load as replicable only if we are a server
-    bool success = scene->LoadScene(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+    bool success;
+    if (!useBinary)
+        success = scene->LoadSceneXML(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+    else
+        success = scene->LoadSceneBinary(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+    
     if (success)
         return Console::ResultSuccess();
     else

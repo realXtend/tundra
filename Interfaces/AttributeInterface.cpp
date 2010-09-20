@@ -17,6 +17,9 @@
 #include <QVariant>
 #include <QStringList>
 
+#include "clb/Network/DataDeserializer.h"
+#include "clb/Network/DataSerializer.h"
+
 // Implementation code for some common attributes
 
 AttributeInterface::AttributeInterface(Foundation::ComponentInterface* owner, const char* name) :
@@ -36,7 +39,7 @@ void AttributeInterface::Changed(AttributeChange::Type change)
         owner_->AttributeChanged(this, change);
 }
 
-    // TOSTRING TEMPLATE IMPLEMENTATIONS.
+// TOSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> std::string Attribute<QString>::ToString() const
 {
@@ -207,7 +210,7 @@ template<> std::string Attribute<Transform>::TypenameToString() const
     return "transform";
 }
 
-    // FROMSTRING TEMPLATE IMPLEMENTATIONS.
+// FROMSTRING TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::FromString(const std::string& str, AttributeChange::Type change)
 {
@@ -370,5 +373,200 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
         result.SetScale(values[6], values[7], values[8]);
     }
     Set(result, change);
+}
+
+// TOBINARY TEMPLATE IMPLEMENTATIONS.
+
+template<> void Attribute<QString>::ToBinary(DataSerializer& dest) const
+{
+    QByteArray utf8bytes = value_.toUtf8();
+    dest.Add<u16>(utf8bytes.size());
+    if (utf8bytes.size())
+        dest.AddArray<u8>((const u8*)utf8bytes.data(), utf8bytes.size());
+}
+
+template<> void Attribute<bool>::ToBinary(DataSerializer& dest) const
+{
+    if (value_)
+        dest.Add<u8>(1);
+    else
+        dest.Add<u8>(0);
+}
+
+template<> void Attribute<int>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<s32>(value_);
+}
+
+template<> void Attribute<uint>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<u32>(value_);
+}
+
+template<> void Attribute<float>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<float>(value_);
+}
+
+template<> void Attribute<Vector3df>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<float>(value_.x);
+    dest.Add<float>(value_.y);
+    dest.Add<float>(value_.z);
+}
+
+template<> void Attribute<Quaternion>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<float>(value_.x);
+    dest.Add<float>(value_.y);
+    dest.Add<float>(value_.z);
+    dest.Add<float>(value_.w);
+}
+
+template<> void Attribute<Color>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<float>(value_.r);
+    dest.Add<float>(value_.g);
+    dest.Add<float>(value_.b);
+    dest.Add<float>(value_.a);
+}
+
+template<> void Attribute<Foundation::AssetReference>::ToBinary(DataSerializer& dest) const
+{
+    dest.AddString(value_.type_);
+    dest.AddString(value_.id_);
+}
+
+template<> void Attribute<QVariant>::ToBinary(DataSerializer& dest) const
+{
+    std::string str = value_.toString().toStdString();
+    dest.AddString(str);
+}
+
+template<> void Attribute<std::vector<QVariant> >::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<u8>(value_.size());
+    for (uint i = 0; i < value_.size(); ++i)
+    {
+        std::string str = value_[i].toString().toStdString();
+        dest.AddString(str);
+    }
+}
+
+template<> void Attribute<Transform>::ToBinary(DataSerializer& dest) const
+{
+    dest.Add<float>(value_.position.x);
+    dest.Add<float>(value_.position.y);
+    dest.Add<float>(value_.position.z);
+    dest.Add<float>(value_.rotation.x);
+    dest.Add<float>(value_.rotation.y);
+    dest.Add<float>(value_.rotation.z);
+    dest.Add<float>(value_.scale.x);
+    dest.Add<float>(value_.scale.y);
+    dest.Add<float>(value_.scale.z);
+}
+
+// FROMBINARY TEMPLATE IMPLEMENTATIONS.
+
+template<> void Attribute<QString>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    QByteArray utf8bytes;
+    utf8bytes.resize(source.Read<u16>());
+    if (utf8bytes.size())
+        source.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
+    Set(QString::fromUtf8(utf8bytes.data(), utf8bytes.size()), change);
+}
+
+template<> void Attribute<bool>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Set(source.Read<u8>() ? true : false, change);
+}
+
+template<> void Attribute<int>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Set(source.Read<s32>(), change);
+}
+
+template<> void Attribute<uint>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Set(source.Read<u32>(), change);
+}
+
+template<> void Attribute<float>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Set(source.Read<float>(), change);
+}
+
+template<> void Attribute<Vector3df>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Vector3df value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<Color>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Color value;
+    value.r = source.Read<float>();
+    value.g = source.Read<float>();
+    value.b = source.Read<float>();
+    value.a = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<Quaternion>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Quaternion value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    value.w = source.Read<float>();
+    Set(value, change);
+}
+
+template<> void Attribute<Foundation::AssetReference>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Foundation::AssetReference value;
+    value.type_ = source.ReadString();
+    value.id_ = source.ReadString();
+    Set(value, change);
+}
+
+template<> void Attribute<QVariant>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    std::string str = source.ReadString();
+    QVariant value(QString(str.c_str()));
+    Set(value, change);
+}
+
+template<> void Attribute<std::vector<QVariant> >::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    std::vector<QVariant> values;
+    
+    u8 numValues = source.Read<u8>();
+    for (u32 i = 0; i < numValues; ++i)
+    {
+        std::string str = source.ReadString();
+        values.push_back(QVariant(QString(str.c_str())));
+    }
+    
+    Set(values, change);
+}
+
+template<> void Attribute<Transform>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    Transform value;
+    value.position.x = source.Read<float>();
+    value.position.y = source.Read<float>();
+    value.position.z = source.Read<float>();
+    value.rotation.x = source.Read<float>();
+    value.rotation.y = source.Read<float>();
+    value.rotation.z = source.Read<float>();
+    value.scale.x = source.Read<float>();
+    value.scale.y = source.Read<float>();
+    value.scale.z = source.Read<float>();
+    Set(value, change);
 }
 

@@ -15,6 +15,9 @@
 #include <QDomDocument>
 #include <QFile>
 
+#include "clb/Network/DataDeserializer.h"
+#include "clb/Network/DataSerializer.h"
+
 #include "MemoryLeakCheck.h"
 
 namespace Scene
@@ -245,7 +248,7 @@ namespace Scene
         return ids;
     }
     
-    bool SceneManager::LoadScene(const std::string& filename, AttributeChange::Type change)
+    bool SceneManager::LoadSceneXML(const std::string& filename, AttributeChange::Type change)
     {
         QDomDocument scene_doc("Scene");
         
@@ -274,25 +277,28 @@ namespace Scene
             if (!id_str.isEmpty())
             {
                 entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                EntityPtr entity = CreateEntity(id, QStringList());
-                QDomElement comp_elem = ent_elem.firstChildElement("component");
-                while (!comp_elem.isNull())
+                EntityPtr entity = CreateEntity(id);
+                if (entity)
                 {
-                    QString type_name = comp_elem.attribute("type");
-                    QString name = comp_elem.attribute("name");
-                    Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
-                    if (new_comp)
+                    QDomElement comp_elem = ent_elem.firstChildElement("component");
+                    while (!comp_elem.isNull())
                     {
-                        new_comp->DeserializeFrom(comp_elem, change);
+                        QString type_name = comp_elem.attribute("type");
+                        QString name = comp_elem.attribute("name");
+                        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                        if (new_comp)
+                        {
+                            new_comp->DeserializeFrom(comp_elem, change);
+                        }
+                        comp_elem = comp_elem.nextSiblingElement("component");
                     }
-                    comp_elem = comp_elem.nextSiblingElement("component");
+                    EmitEntityCreated(entity, change);
+                    // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+                    // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                    for(uint i = 0; i < components.size(); ++i)
+                        components[i]->ComponentChanged(change);
                 }
-                EmitEntityCreated(entity, change);
-                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
-                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                for(uint i = 0; i < components.size(); ++i)
-                    components[i]->ComponentChanged(change);
             }
             ent_elem = ent_elem.nextSiblingElement("entity");
         }
@@ -300,7 +306,7 @@ namespace Scene
         return true;
     }
     
-    bool SceneManager::SaveScene(const std::string& filename)
+    bool SceneManager::SaveSceneXML(const std::string& filename)
     {
         QDomDocument scene_doc("Scene");
         QDomElement scene_elem = scene_doc.createElement("scene");
@@ -339,5 +345,141 @@ namespace Scene
         }
         else return false;
     }
+    
+    bool SceneManager::LoadSceneBinary(const std::string& filename, AttributeChange::Type change)
+    {
+        QDomDocument scene_doc("Scene");
+        
+        QFile file(filename.c_str());
+        if (!file.open(QIODevice::ReadOnly))
+            return false;
+        
+        QByteArray bytes = file.readAll();
+        file.close();
+        
+        if (!bytes.size())
+            return false;
+        
+        try
+        {
+            // Purge all old entities. Send events for the removal
+            RemoveAllEntities(true, change);
+            
+            DataDeserializer source(bytes.data(), bytes.size());
+            
+            uint num_entities = source.Read<u32>();
+            for (uint i = 0; i < num_entities; ++i)
+            {
+                EntityPtr entity = CreateEntity(source.Read<u32>());
+                if (!entity)
+                {
+                    std::cout << "Failed to create entity, stopping scene load" << std::endl;
+                    return false; // If entity creation fails, stream desync is more than likely so stop right here
+                }
+                
+                uint num_components = source.Read<u32>();
+                for (uint i = 0; i < num_components; ++i)
+                {
+                    QString type_name = QString::fromStdString(source.ReadString());
+                    QString name = QString::fromStdString(source.ReadString());
+                    bool sync = source.Read<u8>() ? true : false;
+                    uint data_size = source.Read<u32>();
+                    
+                    // Read the component data into a separate byte array, then deserialize from there.
+                    // This way the whole stream should not desync even if something goes wrong
+                    QByteArray comp_bytes;
+                    comp_bytes.resize(data_size);
+                    source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
+                    DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                    
+                    try
+                    {
+                        Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                        if (new_comp)
+                        {
+                            new_comp->SetNetworkSyncEnabled(sync);
+                            new_comp->DeserializeFromBinary(comp_source, change);
+                        }
+                        else
+                            std::cout << "Failed to load component " << type_name.toStdString() << std::endl;
+                    }
+                    catch (...)
+                    {
+                        std::cout << "Failed to load component " << type_name.toStdString() << std::endl;
+                    }
+                }
+                EmitEntityCreated(entity, change);
+                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                for(uint i = 0; i < components.size(); ++i)
+                    components[i]->ComponentChanged(change);
+            }
+        }
+        catch (...)
+        {
+            return false;
+        }
+        
+        return true;
+    }
+    
+    bool SceneManager::SaveSceneBinary(const std::string& filename)
+    {
+        QByteArray bytes;
+        // Assume 4MB max for now
+        bytes.resize(4 * 1024 * 1024);
+        DataSerializer dest(bytes.data(), bytes.size());
+        
+        dest.Add<u32>(entities_.size());
+        
+        EntityMap::iterator it = entities_.begin();
+        while(it != entities_.end())
+        {
+            Scene::Entity *entity = it->second.get();
+            if (entity)
+            {
+                dest.Add<u32>(entity->GetId());
+                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                uint num_serializable = 0;
+                for(uint i = 0; i < components.size(); ++i)
+                    if (components[i]->IsSerializable())
+                        num_serializable++;
+                dest.Add<u32>(num_serializable);
+                for(uint i = 0; i < components.size(); ++i)
+                {
+                    if (components[i]->IsSerializable())
+                    {
+                        dest.AddString(components[i]->TypeName().toStdString());
+                        dest.AddString(components[i]->Name().toStdString());
+                        dest.Add<u8>(components[i]->GetNetworkSyncEnabled() ? 1 : 0);
+                        
+                        // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
+                        QByteArray comp_bytes;
+                        // Assume 64KB max per component for now
+                        comp_bytes.resize(64 * 1024);
+                        DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
+                        components[i]->SerializeToBinary(comp_dest);
+                        comp_bytes.resize(comp_dest.BytesFilled());
+                        
+                        dest.Add<u32>(comp_bytes.size());
+                        dest.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
+                    }
+                }
+            }
+            ++it;
+        }
+        
+        bytes.resize(dest.BytesFilled());
+        QFile scenefile(filename.c_str());
+        if (scenefile.open(QFile::WriteOnly))
+        {
+            scenefile.write(bytes);
+            scenefile.close();
+            return true;
+        }
+        else return false;
+    }
+    
 }
 

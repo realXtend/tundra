@@ -21,6 +21,9 @@
 class QDomDocument;
 class QDomElement;
 
+class DataSerializer;
+class DataDeserializer;
+
 namespace Foundation
 {
     //! Base class for all components. Inherit from this class when creating new components.
@@ -122,6 +125,18 @@ namespace Foundation
 
         //! Deserialize from XML
         virtual void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
+
+        //! Serialize attributes to binary
+        /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+            it depends on the situation if they are needed or not
+         */
+        virtual void SerializeToBinary(DataSerializer& dest) const;
+        
+        //! Deserialize attributes from binary
+        /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
+            it depends on the situation if they are needed or not
+         */
+        virtual void DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change);
 
         /** Handles an event. Override in your own module if you want to receive events. Do not call.
             @param category_id Category id of the event

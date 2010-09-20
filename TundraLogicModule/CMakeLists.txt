@@ -8,11 +8,6 @@ endmacro (MocFolder)
 # Define target name and output directory
 init_target (TundraLogicModule OUTPUT modules/core)
 
-set(KRISTALLI_CORE_PATH "../Kristalli")
-
-include_directories(${KRISTALLI_CORE_PATH}/include)
-link_directories(${KRISTALLI_CORE_PATH}/build/win)
-
 MocFolder ()
 
 # Define source files
