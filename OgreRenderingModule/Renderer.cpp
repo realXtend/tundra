@@ -1033,7 +1033,7 @@ namespace OgreRenderer
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
             
-            Foundation::ComponentInterfacePtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentInterfacePtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;

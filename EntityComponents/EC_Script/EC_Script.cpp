@@ -4,7 +4,7 @@
 #include "EC_Script.h"
 #include "IScriptInstance.h"
 
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "Entity.h"
 
 EC_Script::~EC_Script()
@@ -49,19 +49,19 @@ void EC_Script::Stop(const QString &name)
         scriptInstance_->Stop();
 }
 
-EC_Script::EC_Script(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Script::EC_Script(IModule *module):
+    IComponent(module->GetFramework()),
     type(this, "Type"),
     runOnLoad(this, "Run on load", false),
     scriptRef(this, "Script ref"),
     scriptInstance_(0)
 {
-    connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)),
-        SLOT(HandleAttributeChanged(AttributeInterface*, AttributeChange::Type)));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
-void EC_Script::HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change)
+void EC_Script::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute->GetNameString() == scriptRef.GetNameString())
         if (scriptRef.Get() != lastRef_)

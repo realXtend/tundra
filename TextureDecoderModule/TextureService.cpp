@@ -180,7 +180,7 @@ namespace TextureDecoder
         }
     }  
     
-    bool TextureService::HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureService::HandleTaskEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id != Task::Events::REQUEST_COMPLETED)
             return false;
@@ -226,7 +226,7 @@ namespace TextureDecoder
         return true;
     }
     
-    bool TextureService::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureService::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Asset::Events::ASSET_CANCELED)
         {

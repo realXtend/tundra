@@ -20,8 +20,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
-EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Mesh::EC_Mesh(IModule *module):
+    IComponent(module->GetFramework()),
     nodeTransformation(this, "Transform"),
     meshResourceId(this, "Mesh ref", ""),
     skeletonId(this, "Skeleton ref", ""),
@@ -177,7 +177,7 @@ bool EC_Mesh::SetMaterial(uint index, const QString &material_name)
     return true;
 }
 
-bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
     {
@@ -208,17 +208,17 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*)));
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;
@@ -313,10 +313,10 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     return tag;
 }
 
-Foundation::ComponentPtr EC_Mesh::FindPlaceable() const
+ComponentPtr EC_Mesh::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
@@ -370,7 +370,7 @@ void EC_Mesh::AttachSkeleton(const QString &skeletonName)
     }
 }
 
-bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id != Resource::Events::RESOURCE_READY)
         return false;
@@ -388,7 +388,7 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
     return false;
 }
 
-bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -405,7 +405,7 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventData
     return true;
 }
 
-bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 {
     if(!entity_)
         return false;
@@ -429,7 +429,7 @@ bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::Event
     return true;
 }
 
-bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;

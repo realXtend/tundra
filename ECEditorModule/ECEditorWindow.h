@@ -26,7 +26,7 @@ QT_END_NAMESPACE;
 struct EntityComponentSelection
 {
     Scene::EntityPtr entity;
-    std::vector<Foundation::ComponentInterfacePtr> components;
+    std::vector<ComponentInterfacePtr> components;
 };
 
 namespace ECEditor
@@ -75,7 +75,7 @@ namespace ECEditor
         void PasteEntity();
 
         /// Highlights all entities from the list that owns the component.
-        void HighlightEntities(Foundation::ComponentInterface *component);
+        void HighlightEntities(IComponent *component);
 
         /// If entity selection different from previous update change browser to fit those changes.
         void RefreshPropertyBrowser();
@@ -88,7 +88,7 @@ namespace ECEditor
         void ShowXmlEditorForEntity();
 
         /// Shows EC XML editor.for each components.
-        void ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components);
+        void ShowXmlEditorForComponent(std::vector<ComponentInterfacePtr> components);
 
         /// Shows EC XML editor.for a single component.
         //void ShowXmlEditorForComponent();
@@ -105,7 +105,7 @@ namespace ECEditor
         void EditEntityXml(Scene::EntityPtr entity);
 
         /// Emitted user wants to edit EC attributes in XML editor.
-        void EditComponentXml(Foundation::ComponentPtr component);
+        void EditComponentXml(ComponentPtr component);
 
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         /// @param entities list of entities
@@ -113,7 +113,7 @@ namespace ECEditor
 
         /// Emitted user wants to edit EC attributes in XML editor.
         /// @param list of components
-        void EditComponentXml(const QList<Foundation::ComponentPtr> & components);
+        void EditComponentXml(const QList<ComponentPtr> & components);
 
     protected:
         /// QWidget override.

@@ -3,7 +3,7 @@
 #ifndef incl_SupportModules_ConsoleModule_h
 #define incl_SupportModules_ConsoleModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
@@ -22,7 +22,7 @@ namespace Console
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
-    class CONSOLE_MODULE_API ConsoleModule : public Foundation::ModuleInterface
+    class CONSOLE_MODULE_API ConsoleModule : public IModule
     {
     public:
         ConsoleModule();
@@ -33,7 +33,7 @@ namespace Console
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Returns default console
         ConsolePtr GetConsole() const { return manager_; }

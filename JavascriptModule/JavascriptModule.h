@@ -8,7 +8,7 @@
 #ifndef incl_JavascriptModule_JavascriptModule_h
 #define incl_JavascriptModule_JavascriptModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AttributeChangeType.h"
 #include "ScriptServiceInterface.h"
@@ -22,7 +22,7 @@ class QScriptValue;
 
 /**
 */
-class JavascriptModule : public QObject, public Foundation::ModuleInterface, public Foundation::ScriptServiceInterface
+class JavascriptModule : public QObject, public IModule, public Foundation::ScriptServiceInterface
 {
     Q_OBJECT
 
@@ -52,7 +52,7 @@ public:
     void Update(f64 frametime);
 
     /// ModuleInterface override.
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     MODULE_LOGGING_FUNCTIONS
 
@@ -76,10 +76,10 @@ public slots:
     void ScriptChanged(const QString &scriptRef);
 
     //! New component has been added to scene.
-    void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+    void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
     //! Component has been removed from scene.
-    void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+    void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
 private:
     InputContextPtr input_;

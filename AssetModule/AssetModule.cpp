@@ -20,7 +20,7 @@ namespace Asset
 {
     std::string AssetModule::type_name_static_ = "Asset";
 
-    AssetModule::AssetModule() : ModuleInterface(type_name_static_), inboundcategory_id_(0)
+    AssetModule::AssetModule() : IModule(type_name_static_), inboundcategory_id_(0)
     {
     }
 
@@ -113,7 +113,7 @@ namespace Asset
     bool AssetModule::HandleEvent(
         event_category_id_t category_id,
         event_id_t event_id, 
-        Foundation::EventDataInterface* data)
+        IEventData* data)
     {
         PROFILE(AssetModule_HandleEvent);
         if ((category_id == inboundcategory_id_))
@@ -156,7 +156,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Asset;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(AssetModule)
 POCO_END_MANIFEST
 

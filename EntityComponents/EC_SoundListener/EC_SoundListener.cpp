@@ -9,7 +9,7 @@
 
 #include "StableHeaders.h"
 #include "EC_SoundListener.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
@@ -19,8 +19,8 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
-EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_SoundListener::EC_SoundListener(IModule *module):
+    IComponent(module->GetFramework()),
     active_(false)
 {
     soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();

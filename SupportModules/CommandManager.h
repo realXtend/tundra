@@ -25,7 +25,7 @@ namespace Console
     {
     public:
         //! default constructor
-        CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console);
+        CommandManager(IModule *parent, ConsoleServiceInterface *console);
         //! destructor
         virtual ~CommandManager();
 

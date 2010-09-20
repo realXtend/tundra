@@ -5,10 +5,7 @@
 
 #include "CoreTypes.h"
 
-namespace Foundation
-{
-    class EventDataInterface;
-}
+class IEventData;
 
 namespace RexLogic
 {
@@ -26,7 +23,7 @@ namespace RexLogic
         virtual ~InputEventHandler();
 
         //! Handles an input event.
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Updates xxx
         //! \param frametime Time since the last frame.

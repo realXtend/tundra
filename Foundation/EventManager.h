@@ -4,9 +4,9 @@
 #define incl_Foundation_EventManager_h
 
 #include "ModuleReference.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "CoreThread.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Framework.h"
 
 
@@ -78,7 +78,7 @@ namespace Foundation
                 \param data Pointer to event data structure (event-specific), can be 0 if not needed
                 \return true if event was handled by some event handler
              */
-            bool SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data);
+            bool SendEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
             
             //! Sends an event
             /*! \param category Event category name. Will be auto-registered if it does not exist
@@ -86,7 +86,7 @@ namespace Foundation
                 \param data Pointer to event data structure (event-specific), can be 0 if not needed
                 \return true if event was handled by some event handler
              */
-            bool SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data);
+            bool SendEvent(const std::string& category, event_id_t event_id, IEventData* data);
             
            //! Sends a delayed event
             /*! Use with judgement. Note that you will not get to know whether event was handled. The event data object
@@ -169,7 +169,7 @@ namespace Foundation
              * @note does not check that is component allready register through @p RegisterEventSubscriber(T* subscriber,int priority)
              */
             
-            bool RegisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id, event_id_t event_id);
+            bool RegisterEventSubscriber(IComponent* component, event_category_id_t category_id, event_id_t event_id);
 
             /**
              * Unregister specialized events. 
@@ -180,7 +180,7 @@ namespace Foundation
              * @note If component is also register through RegisterEventSubscriber(T* subscriber,int priority), this function does not remove it from that lists
              */
             
-            bool UnregisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id,event_id_t event_id);
+            bool UnregisterEventSubscriber(IComponent* component, event_category_id_t category_id,event_id_t event_id);
 
         private:
            
@@ -221,7 +221,7 @@ namespace Foundation
              * @return true if event handled and further subscribers should not be processed
              */
           
-           template <typename T> bool SendEvent(const EventSubscriber<T>& subs, event_category_id_t category_id, event_id_t event_id, EventDataInterface* data) const;
+           template <typename T> bool SendEvent(const EventSubscriber<T>& subs, event_category_id_t category_id, event_id_t event_id, IEventData* data) const;
 
            template <typename T, typename U> bool AddSubscriber(T* subscriber, QList<U>& subscribers, int priority);
            
@@ -243,10 +243,10 @@ namespace Foundation
             EventMap event_map_;
             
             /// Module event subscribers
-            QList<EventSubscriber<ModuleInterface > > module_subscribers_;
+            QList<EventSubscriber<IModule > > module_subscribers_;
 
             /// Component event subscribers
-            QList<EventSubscriber<ComponentInterface > > component_subscribers_;
+            QList<EventSubscriber<IComponent > > component_subscribers_;
             
             //! Delayed events
             typedef std::vector<DelayedEvent> DelayedEventVector;
@@ -262,7 +262,7 @@ namespace Foundation
             //! Current thread ID
             Qt::HANDLE main_thread_id_;
 
-            QMap<QPair<event_category_id_t, event_id_t>, QList<ComponentInterface* > > specialEvents_;
+            QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > > specialEvents_;
     };
 
 }

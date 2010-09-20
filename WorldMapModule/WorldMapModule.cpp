@@ -34,7 +34,7 @@ namespace WorldMap
 {
 
     WorldMapModule::WorldMapModule() :
-        ModuleInterface(NameStatic()), 
+        IModule(NameStatic()), 
         time_from_last_update_ms_(0),
         networkStateEventCategory_(0),
         networkInEventCategory_(0),
@@ -79,7 +79,7 @@ namespace WorldMap
         UpdateAvatarPositions();
     }
 
-    bool WorldMapModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+    bool WorldMapModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
     {
         if (category_id == frameworkEventCategory_)
         {
@@ -156,7 +156,7 @@ namespace WorldMap
         return false;
     }
 
-    bool WorldMapModule::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool WorldMapModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
 
         if (event_id != Resource::Events::RESOURCE_READY)
@@ -359,6 +359,6 @@ namespace WorldMap
 
 using namespace WorldMap;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(WorldMapModule)
 POCO_END_MANIFEST

@@ -40,13 +40,13 @@ namespace RexLogic
         ~AvatarControllable() {}
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
         //! Action event handler for handling controllable events
-        bool HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleActionEvent(event_id_t event_id, IEventData* data);
 
         //! Add time to avatar control simulation for all controllable avatars
         void AddTime(f64 frametime);
@@ -78,7 +78,7 @@ namespace RexLogic
             \param component Controllable component, if null, false is returned
             \return True if controllable is avatar, false otherwise
         */
-        bool IsAvatar(const Foundation::ComponentPtr &component) const;
+        bool IsAvatar(const ComponentPtr &component) const;
 
         typedef std::map<int, RexTypes::ControlFlags> ActionControlFlagMap;
 
@@ -89,7 +89,7 @@ namespace RexLogic
         Scene::EntityWeakPtr entity_;
 
         //! Convenient access to controllable component
-        Foundation::ComponentWeakPtr component_;
+        ComponentWeakPtr component_;
 
         //! event manager
         Foundation::EventManagerPtr event_manager_;
