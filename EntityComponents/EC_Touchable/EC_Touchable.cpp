@@ -23,7 +23,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
-#include "Frame.h"
+//#include "Frame.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
@@ -197,7 +197,7 @@ EC_Touchable::EC_Touchable(IModule *module) :
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
-    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+//    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
 void EC_Touchable::Create()

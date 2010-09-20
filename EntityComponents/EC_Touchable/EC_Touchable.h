@@ -18,10 +18,6 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
-#include <QCursor>
-
-class QTimer;
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -34,7 +30,6 @@ namespace Ogre
 }
 
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -50,22 +45,29 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>QString : materialName
-<div>Name of the material used for this EC. </div> 
+<div>Name of the material used for this EC. </div>
+</ul>
+<ul>
+<li>bool : highlightOnHover
+<div>Is highlight material shown on mouse hover.</div>
+</ul>
+<ul>
+<li>int : hoverCursor
+<div>Hover mouse cursor, see @see Qt::CursorShape</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"SetHighlightOnHover": Set if highlight material is shown on hover
-<li>"SetHoverCursor": Set cursor shape for when entity is hovered
 <li>"Show": Shows the effect.
 <li>"Hide": Hides the effect.
 <li>"IsVisible": Returns if the component is visible or not.
-		@true If the component is visible, false if it's hidden or not initialized properly.
+        @true If the component is visible, false if it's hidden or not initialized properly.
 </ul>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"Show": Shows the effect.
+<li>"Hide": Hides the effect.
 </ul>
 </td>
 </tr>
@@ -75,7 +77,6 @@ Does not emit any actions.
 <b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
 EC_OgreCustomObject (if prim) components available in advance.</b>. 
 </table>
-
 */
 class EC_Touchable : public IComponent
 {
