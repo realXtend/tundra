@@ -282,7 +282,7 @@ void Environment::Update(f64 frametime)
     // Go through all water components.
     Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
-    Scene::EntityListIterator iter = lst.begin();
+    Scene::EntityList::iterator iter = lst.begin();
 
     bool underWater = false;
     EC_WaterPlane* plane = 0;
