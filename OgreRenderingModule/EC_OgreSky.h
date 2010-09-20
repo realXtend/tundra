@@ -292,7 +292,7 @@ Does not emit any actions.
 
     private:
         /// Constructor
-        /// @param module ModuleInterface pointer.
+        /// @param module module pointer.
         EC_OgreSky(IModule* module);
         
         /// Renderer

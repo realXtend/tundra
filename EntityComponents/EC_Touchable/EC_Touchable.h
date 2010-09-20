@@ -87,7 +87,7 @@ public:
     /// Destructor.
     ~EC_Touchable();
 
-    /// ComponentInterface override.
+    /// IComponent override.
     bool IsSerializable() const { return true; }
 
     /// Name of the material used for this EC.

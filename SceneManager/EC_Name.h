@@ -60,7 +60,7 @@ public:
     /// Desctructor.
     ~EC_Name() {}
 
-    /// ComponentInterface override.
+    /// IComponent override.
     /// This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
