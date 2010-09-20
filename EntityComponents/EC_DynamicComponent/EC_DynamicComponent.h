@@ -22,6 +22,67 @@
  *  @todo Serialize is now done using a FreeData field that has character limit of 1000. If xml file will get larger
  *  than that client will not send a new attribute values to the server.
  */
+
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>DynamicComponent</h2>
+DynamicComponent is a component where user can add or delete attributes in a runtime.
+	It's recommend to use attribute names while you set or get your attribute values cause 
+   index can change while the dynamic componet's attributes are added or removed. 
+   
+   If you want to create a new attribute you can use either AddQVariantAttribute or CreateAttribute methods.
+   AddQVariantAttribute will create empty QVariant type of attribute and user need to set attribute value
+   after the attribute is added to component by using a SetAttribute mehtod. 
+   
+   All component's changes should be forwarded to all clients and thenfor they should be on sync. When component is deserialized it will
+   compare old and a new attribute values and will get difference between those two and use that infomation
+   to remove attributes that are not in the new list and add those that are only in new list and only update
+   those values that are same in both lists.
+
+   @todo Serialize is now done using a FreeData field that has character limit of 1000. If xml file will get larger
+   than that client will not send a new attribute values to the server.
+
+
+Registered by PythonScript::PythonScriptModule.
+
+<b>No Attributes.</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"ComponentChanged": Will handle ComponentChanged event to ComponentInterface.
+    @param changeType Accepts following strings {LocalOnly, Local and Network}.
+<li>"AddQVariantAttribute": Create new attribute that type is QVariant.
+<li>"GetAttribute":Get attribute value as QVariant. If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
+        @param index Index to attribute list.
+        @return Return attribute value as QVariant if attribute has been found, else return null QVariant.
+        Use QVariant's isNull method to check if the variant value is initialized.
+<li>"SetAttribute": Insert new attribute value to attribute.
+<li>"GetNumAttributes": 
+<li>"GetAttributeName":
+<li>"ContainSameAttribute": Check if a given component is holding exactly same attributes as this component.
+    @return Return true if component is holding same attributes as this component else return false.
+<li>"RemoveAttribute": Remove attribute from the component.
+<li>"ContainAttribute": Check if component is hodling attribute by that name.
+    @param name Name of attribute that we are looking for.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+
+</table>
+
+*/
 class EC_DynamicComponent : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_DynamicComponent);

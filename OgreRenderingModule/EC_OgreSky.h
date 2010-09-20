@@ -10,6 +10,7 @@
 
 namespace OgreRenderer
 {
+
     /// Sky type
     //! \ingroup EnvironmentModuleClient.
     enum SkyType
@@ -168,6 +169,34 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreSky</h2>
+		
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
     /** Ogre sky component
      *
      *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.

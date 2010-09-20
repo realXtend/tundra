@@ -20,6 +20,35 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Movable</h2>
+Contains Entity Actions for moving entity with this component in scene.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Move": MoveForward, MoveBackward, MoveLeft, MoveRight
+<li>"Rotate": RotateLeft, RotateRight
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable and OpenSimPrim</b>.
+</table>
+*/
 /** Contains Entity Actions for moving entity with this component in scene.
  */
 class EC_Movable : public Foundation::ComponentInterface

@@ -21,6 +21,59 @@ class QLineEdit;
 class QWidget;
 class QUrl;
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>3DCanvasSource</h2>
+A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
+Also makes it possible to display the canvas contents as a 2D widget, and edit the source
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+
+<li>QString: source
+<div>Source</div> 
+<li>int: position
+<div>Position within source (for example scrollbar value, page number)</div> 
+<li>int: submesh
+<div>Submesh number into which to apply the 3DCanvas</div> 
+<li>bool: show2d
+<div>Show as 2D when clicked</div> 
+</ul>
+
+
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Clicked": Source text editor modified.
+<li>"SourceEdited": Link clicked in the 2D webview UI.
+<li>"StartPressed": Todo
+<li>"PrevPressed": Todo
+<li>"NextPressed": Todo
+<li>"EndPressed": Todo
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+
+
+Does not emit any actions.
+
+<b>Depends on components 3DCanvas, OgreMesh and OgreCustomObject</b>.
+</table>
+
+*/
+
 //! A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 /*! Also makes it possible to display the canvas contents as a 2D widget, and edit the source
  */

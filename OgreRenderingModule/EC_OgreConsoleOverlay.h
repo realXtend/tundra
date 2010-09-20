@@ -14,6 +14,7 @@ namespace Ogre
     class Overlay;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -39,6 +40,34 @@ namespace OgreRenderer
         virtual void Update(f64 frametime) = 0;
     };
     
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreConsoleOverlay</h2>
+Ogre overlay for debug console
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
     //! Ogre overlay for debug console
     /*! \ingroup OgreRenderingModuleClient
      */

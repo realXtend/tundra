@@ -13,6 +13,52 @@ namespace Foundation
     class ModuleInterface;
 }
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Sound</h2>
+
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString: soundId
+<div></div> 
+<li>float: soundInnerRadius
+<div></div> 
+<li>float: soundOuterRadius
+<div ></div> 
+<li>float: soundGain
+<div></div> 
+<li>bool: loopSound
+<div></div> 
+<li>bool: triggerSound
+<div></div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"PlaySound": 
+<li>"StopSound":
+<li>"UpdateSoundSettings": Get each attribute values and update sound's parameters if it's in playing state. 
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
+
 class EC_Sound : public Foundation::ComponentInterface
 {
     DECLARE_EC(EC_Sound);
