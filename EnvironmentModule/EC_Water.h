@@ -13,8 +13,40 @@ namespace Ogre
     class Entity;
 }
 
+
 namespace Environment
 {
+	/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Water</h2>
+Represents data related to water plane.
+
+Registered by Environment::EnvironmentModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't Depend on any components</b>. 
+</table>
+
+*/
+
     /// Represents data related to water plane.
     /// \ingroup EnvironmentModuleClient.
     class EC_Water : public IComponent

@@ -15,8 +15,10 @@
 #include "NetworkMessages/NetInMessage.h"
 #include "EC_WaterPlane.h"
 #include "OgreRenderingModule.h"
-#include <Caelum.h>
 
+#ifdef CAELUM
+#include <Caelum.h>
+#endif
 
 namespace Environment
 {
@@ -266,7 +268,10 @@ void Environment::Update(f64 frametime)
      // Currently updates other then water.
     env->UpdateVisualEffects(frametime);
 
-    Caelum::CaelumSystem* caelumSystem_ = env->GetCaelum();
+#ifdef CAELUM
+    Caelum::CaelumSystem* caelumSystem = env->GetCaelum();
+#endif
+
     boost::shared_ptr<OgreRenderer::Renderer> renderer = owner_->GetFramework()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
     
     if (!renderer)
@@ -276,13 +281,13 @@ void Environment::Update(f64 frametime)
     Ogre::Camera *camera = renderer.get()->GetCurrentCamera();
     Ogre::Viewport *viewport = renderer.get()->GetViewport();
     Ogre::SceneManager *sceneManager = renderer.get()->GetSceneManager();
-    float cameraFarClip_ = renderer.get()->GetViewDistance();
+    float cameraFarClip = renderer.get()->GetViewDistance();
     
      
     // Go through all water components.
     Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
-    Scene::EntityListIterator iter = lst.begin();
+    Scene::EntityList::iterator iter = lst.begin();
 
     bool underWater = false;
     EC_WaterPlane* plane = 0;
@@ -297,8 +302,12 @@ void Environment::Update(f64 frametime)
             break;
         }
     }
+    
+    Ogre::ColourValue fogColor;
 
-    Ogre::ColourValue fogColor_ = caelumSystem_->getGroundFog()->getColour();
+#ifdef CAELUM
+    fogColor = caelumSystem->getGroundFog()->getColour();
+#endif 
 
     if ( underWater )
     {
@@ -307,19 +316,19 @@ void Environment::Update(f64 frametime)
        float fogEnd = plane->fogEndAttr_.Get();
        float farClip = fogEnd+ 10.f;
        
-       if (farClip > cameraFarClip_)
-           farClip = cameraFarClip_;            
+       if (farClip > cameraFarClip)
+           farClip = cameraFarClip;            
     
        ClampFog(fogStart, fogEnd, farClip);            
 #ifdef CAELUM
             // Hide the Caelum subsystems.
-            caelumSystem_->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
+            caelumSystem->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif    
             Color col = plane->fogColorAttr_.Get();
             Ogre::ColourValue color(col.r/255.0, col.g/255.0,col.b/255.0, col.a/255.0);
             //@note default values are 0.2f, 0.4f, 0.35f
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_ * color, 0.001f, fogStart, fogEnd);
-            viewport->setBackgroundColour(fogColor_ *  color);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor * color, 0.001f, fogStart, fogEnd);
+            viewport->setBackgroundColour(fogColor *  color);
             camera->setFarClipDistance(farClip);
 
     }
@@ -327,13 +336,13 @@ void Environment::Update(f64 frametime)
     {
             float fogStart = 100.f;
             float fogEnd = 2000.f;
-            ClampFog(fogStart, fogEnd, cameraFarClip_);
+            ClampFog(fogStart, fogEnd, cameraFarClip);
 //#ifdef CAELUM
 //            caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
 //#endif
-            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor_, 0.001f, fogStart, fogEnd);
-            viewport->setBackgroundColour(fogColor_);
-            camera->setFarClipDistance(cameraFarClip_);
+            sceneManager->setFog(Ogre::FOG_LINEAR, fogColor, 0.001f, fogStart, fogEnd);
+            viewport->setBackgroundColour(fogColor);
+            camera->setFarClipDistance(cameraFarClip);
 
     }
  

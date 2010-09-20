@@ -6,10 +6,46 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
+
+
 class IScriptInstance;
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Script</h2>
+Registered by PythonScript::PythonScriptModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString: scriptRef
+<div></div> 
+<li>QString: type
+<div></div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any entity Component</b>.
+</table>
+*/
 class EC_Script: public IComponent
 {
+
+
     Q_OBJECT
     DECLARE_EC(EC_Script)
 

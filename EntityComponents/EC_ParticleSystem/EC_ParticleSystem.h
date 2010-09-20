@@ -19,8 +19,46 @@ namespace OgreRenderer
     class Renderer;
 }
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>ParticleSystem</h2>
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString: particleId
+<div></div> 
+<li>bool: castShadows
+<div></div> 
+<li>float: renderingDistance
+<div></div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"CreateParticleSystem": Create a new particle system. System name will be same as component name.
+<li>"DeleteParticleSystem": Delete excisting particle system.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+
+*/
 class EC_ParticleSystem : public IComponent
 {
+
     DECLARE_EC(EC_ParticleSystem);
     Q_OBJECT
 public:
