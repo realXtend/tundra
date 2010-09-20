@@ -10,11 +10,11 @@
 
 #include <PythonQt.h>
 
+#include <QFile>
+
 PythonScriptInstance::PythonScriptInstance(const QString &filename) : filename_(filename)
 {
     context_ = PythonQt::self()->createUniqueModule();
-//    foreach(naaliCoreFeat, NaaliCoreFeats)
-//        context->addObject(const QString& name, QObject* object);
 }
 
 void PythonScriptInstance::Reload()
@@ -27,7 +27,7 @@ void PythonScriptInstance::Unload()
 
 void PythonScriptInstance::Run()
 {
-    if (!filename_.isEmpty() && !context_.isNull())
+    if (QFile::exists(filename_) && !context_.isNull())
         context_.evalFile(filename_);
 }
 
