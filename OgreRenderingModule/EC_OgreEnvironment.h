@@ -148,8 +148,10 @@ Does not emit any actions.
 
         /// Disables the fog.
         void DisableFog();
-
 #ifdef CAELUM
+
+        Caelum::CaelumSystem* GetCaelum();
+
         /// Speeds up the times
         /// @param value 2 doubles etc.
         void SetTimeScale(const float &value);

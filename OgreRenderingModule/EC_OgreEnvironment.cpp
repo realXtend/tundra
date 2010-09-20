@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "OgreConversionUtils.h"
+#include "SceneManager.h"
 
 #include <QFile>
 
@@ -339,9 +340,14 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
     
     cameraFarClip_ = renderer->GetViewDistance();
     
+    // Go through all water components.
+    // Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    // EntityList lst = scene->GetEntitiesWithComponent(EC_WaterPlane::TypeNameStatic());
+   /*
     if ( sceneManager->hasEntity("WaterEntity") )
         water = sceneManager->getEntity("WaterEntity");
-              
+            
+    
     if (!water)
     {
         // No water entity, set fog value.
@@ -390,6 +396,7 @@ void EC_OgreEnvironment::UpdateVisualEffects(f64 frametime)
         }
        
     }
+*/
 
 #ifdef CAELUM 
     // If sun color and direction are controlled by user then their value are needed to override here. 
@@ -512,6 +519,11 @@ void EC_OgreEnvironment::InitCaelum()
     caelumSystem_->setEnsureSingleShadowSource(true);
 
     caelumSystem_->getMoon()->setDiffuseMultiplier(Ogre::ColourValue(0.25f, 0.25f, 0.25f));
+}
+
+Caelum::CaelumSystem* EC_OgreEnvironment::GetCaelum()
+{
+    return caelumSystem_;
 }
 
 void EC_OgreEnvironment::ShutdownCaelum()
