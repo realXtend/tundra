@@ -79,7 +79,6 @@ namespace Environment
             EnvironmentModule *owner_;
 
             //! Water EC pointer.
-            //EC_Water* activeWaterComponent_;
             EC_WaterPlane* activeWaterComponent_;
 
             //! Cached water entity pointer.
