@@ -40,15 +40,12 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "RenderServiceInterface.h"
-#include "PythonEngine.h" //is this needed here?
+#include "PythonEngine.h"
 #include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
-#include "InputEvents.h" //handling input events
-#include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
 #include "SceneManager.h"
@@ -634,18 +631,6 @@ namespace PythonScript
         script->SetScriptInstance(pyInstance);
         if (script->runOnLoad.Get())
             script->Run();
-    /*
-            check if py script
-            mikä oli vanha? jos vanha ->delete se
-            PythonQtObjectPtr context = PythonQt::self()->createUniqueModule();
-            foreach(naaliCoreFeat, NaaliCoreFeats)
-                context->addObject(const QString& name, QObject* object);
-            miten saadaan/saadanko:
-            1) python system moduulit
-            2) muut contextit
-            3) naalin /bin/pymodules/*.*
-            context->evalFile(const QString& filename);
-    */
     }
 
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
@@ -1229,8 +1214,8 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
     if (ec_touchable)
     {
-        ec_touchable->SetHighlightOnHover(false);
-        ec_touchable->SetHoverCursor(Qt::PointingHandCursor);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::Local);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Local);
     }
 }
 

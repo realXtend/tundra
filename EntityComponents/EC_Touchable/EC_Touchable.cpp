@@ -23,6 +23,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
+#include "Frame.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
@@ -84,18 +85,18 @@ void EC_Touchable::OnClick()
 
 void EC_Touchable::SetCursorVisible(bool visible)
 {
-    if (hover_cursor_.shape() != Qt::ArrowCursor)
+    if (hoverCursor.Get() != Qt::ArrowCursor)
     {
         QCursor *current_cursor = QApplication::overrideCursor();
         if (visible)
         {
             if (current_cursor)
             {
-                if (current_cursor->shape() != hover_cursor_.shape())
-                    QApplication::setOverrideCursor(hover_cursor_);
+                if (current_cursor->shape() != hoverCursor.Get())
+                    QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
             }
             else
-                QApplication::setOverrideCursor(hover_cursor_);
+                QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
         }
         else
         {
@@ -110,7 +111,7 @@ void EC_Touchable::SetCursorVisible(bool visible)
 
 void EC_Touchable::Show()
 {
-    if (show_material_)
+    if (highlightOnHover.Get())
     {
         if (!entityClone_)
             Create();
@@ -152,6 +153,8 @@ void EC_Touchable::UpdateMaterial()
         LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
         return;
     }
+
+//    hover_cursor_ = QCursor((Qt::CursorShape)(hoverCursor.Get()));
 }
 
 EC_Touchable::EC_Touchable(IModule *module) :
@@ -159,22 +162,42 @@ EC_Touchable::EC_Touchable(IModule *module) :
     entityClone_(0),
     sceneNode_(0),
     materialName(this, "material name", "Touchable"),
-    show_material_(true),
-    hovering_(false),
-    hover_cursor_(QCursor(Qt::ArrowCursor))
+    highlightOnHover(this, "highligh on hover", true),
+    hoverCursor(this, "hover cursor", Qt::ArrowCursor),
+    hovering_(false)
 {
+    static AttributeMetadata metadata;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        metadata.enums[Qt::ArrowCursor] = "ArrowCursor";
+        metadata.enums[Qt::UpArrow] = "UpArrowCursor";
+        metadata.enums[Qt::CrossCursor] = "CrossCursor";
+        metadata.enums[Qt::WaitCursor] = "WaitCursor";
+        metadata.enums[Qt::IBeamCursor] = "IBeamCursor";
+        metadata.enums[Qt::SizeVerCursor] = "SizeVerCursor";
+        metadata.enums[Qt::SizeHorCursor] = "SizeHorCursor";
+        metadata.enums[Qt::SizeBDiagCursor] = "SizeBDiagCursor";
+        metadata.enums[Qt::SizeFDiagCursor] = "SizeFDiagCursor";
+        metadata.enums[Qt::SizeAllCursor] = "SizeAllCursor";
+        metadata.enums[Qt::BlankCursor] = "BlankCursor";
+        metadata.enums[Qt::SplitVCursor] = "SplitVCursor";
+        metadata.enums[Qt::SplitHCursor] = "SplitHCursor";
+        metadata.enums[Qt::PointingHandCursor] = "PointingHandCursor";
+        metadata.enums[Qt::ForbiddenCursor] = "ForbiddenCursor";
+        metadata.enums[Qt::WhatsThisCursor] = "WhatsThisCursor";
+        metadata.enums[Qt::BusyCursor] = "BusyCursor";
+        metadata.enums[Qt::OpenHandCursor] = "OpenHandCursor";
+        metadata.enums[Qt::ClosedHandCursor] = "ClosedHandCursor";
+        metadataInitialized = true;
+    }
+
+    hoverCursor.SetMetadata(&metadata);
+
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
-}
-
-void EC_Touchable::SetHighlightOnHover(bool enabled)
-{
-    show_material_ = enabled;
-}
-
-void EC_Touchable::SetHoverCursor(Qt::CursorShape shape)
-{
-    hover_cursor_ = QCursor(shape);
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
 void EC_Touchable::Create()
@@ -277,5 +300,22 @@ void EC_Touchable::Create()
 
     sceneNode_->attachObject(entityClone_);
     Hide();
+}
+
+void EC_Touchable::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Show", this, SLOT(Show()));
+        entity->ConnectAction("Hide", this, SLOT(Hide()));
+    }
+/*
+    e->Exec("MouseHover");
+    e->Exec("MouseHoverIn");
+    e->Exec("MouseHoverOut");
+    e->Exec("Clicked");
+*/
 }
 
