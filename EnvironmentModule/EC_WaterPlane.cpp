@@ -36,9 +36,9 @@ namespace Environment
         xSegmentsAttr_(this, "The number of segments to the plane in the x direction", 10),
         ySegmentsAttr_(this, "The number of segments to the plane in the y direction", 10),
         materialNameAttr_(this, "Water material", QString("Ocean")),
-        fogColorAttr_(this, "Underwater fog color", Color()),
-        fogStartAttr_(this, "Fog start distance", 0.0),
-        fogEndAttr_(this, "Fog end distance", 0.0),
+        fogColorAttr_(this, "Underwater fog color", Color(51,102,89,255)),
+        fogStartAttr_(this, "Fog start distance", 100.f),
+        fogEndAttr_(this, "Fog end distance", 2000.f),
         entity_(0),
         node_(0),
         attached_(false)
@@ -82,7 +82,7 @@ namespace Environment
     bool EC_WaterPlane::IsUnderWater()
     {
       // Check that is camera inside of defined waterplane. 
-      ///todo this cannot be done this way, mesh orientation etc. must take care. 
+      ///todo this cannot be done this way, mesh orientation etc. must take care. Now we just assume that plane does not have orientation.
 
       if ( entity_ == 0)
         return false;
@@ -100,21 +100,24 @@ namespace Environment
       int xSize = xSizeAttr_.Get(), ySize = ySizeAttr_.Get(), depth = depthAttr_.Get();
       int x = posCamera.x, y = posCamera.y, z = posCamera.z;
     
-      int tmpMax = pos.x + 0.5*xSize;
-      int tmpMin = pos.x - 0.5*xSize;
+      // HACK this is strange, i thought that it should be 0.5 but some reason, visually it looks like that you can travel really "outside" from water. 
+      int tmpMax = pos.x + 0.25*xSize;
+      int tmpMin = pos.x - 0.25*xSize;
           
-      if ( x > tmpMin && x < tmpMax )
+      if ( x >= tmpMin && x <= tmpMax )
         {
-            tmpMax = pos.y + 0.5*ySize;
-            tmpMin = pos.y - 0.5*ySize;
+            tmpMax = pos.y + 0.25*ySize;
+            tmpMin = pos.y - 0.25*ySize;
         
-            if ( y >tmpMin && y < tmpMax)
+            if ( y >= tmpMin && y <= tmpMax)
             {
                 tmpMax = pos.z;
                 tmpMin = pos.z - depth;
             
-                if ( z> tmpMin && z < tmpMax)
+                if ( z >= tmpMin && z <= tmpMax)
+                {
                     return true;
+                }
                 else
                     return false;
             }
@@ -185,13 +188,16 @@ namespace Environment
         // Is attached?
         if ( entity_ != 0 && !entity_->isAttached() && !attached_ )
         {
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            scene_mgr->getRootSceneNode()->addChild(node_);
+            node_->setVisible(true);
         }
         
         Vector3df vec = positionAttr_.Get();
         node_->setPosition(vec.x, vec.y, vec.z);
-
+     
        
     }
 
