@@ -24,10 +24,59 @@ namespace Ogre
     class ManualObject;
 }
 
+
+
 class EC_OpenSimPrim;
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>SoundRuler</h2>
+SoundRuler enables visual sound properties effect for scene entity.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>float: radiusAttr_
+<div>Sound radius</div> 
+<li>float: volumeAttr_
+<div>Sound volume</div> 
+<li>float: segmentsAttr_
+<div> Segments to use for radius circle</div> 
+</ul>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Shows the highlighting effect. 
+<li>"Hide": Hides the highlighting effect.
+<li>"SetVolume": Set volume to show
+<li>"SetRadius": Set radius to show
+<li>"IsVisible": Returns if the ruler component is visible or not.
+		@true If the rule component is visible, false if it's hidden or not initialized properly.
+<li>"UpdateSoundRuler": Callback for OnChanged from ECEditor
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on OgrePlaceable, OgreMesh, OgreCustomObject and OpenSimPrim</b>. @author Nathan Letwory | http://www.letworyinteractive.com
+</table>
+
+*/
 class EC_SoundRuler : public IComponent
 {
+
+
     Q_OBJECT
     DECLARE_EC(EC_SoundRuler);
     

@@ -30,6 +30,54 @@ namespace RexLogic
         AvatarControllable.
         
     */
+
+	/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Controllable</h2>
+		Does not emit any actions.
+		Any entity with this component may be controlled by the user.
+        The entity can be controlled via 'actions'. Each different type
+        of controllable has their own list of actions, so they work in a
+        generic fashion. 
+
+        Controllables have a type. For each different type, a controller
+        class exists which handles the actual movement of the entity based
+        on the actions a controllable may perform.
+        
+        Many actions will probably be common to most or all controllables,
+        but actions can also be specific to a type of controllable.
+        F.ex. a tank could have a unique action 'rotate turret'.
+
+        For an example of a custom controller for an entity, see
+        AvatarControllable.
+
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+
+</table>
+
+*/
     class EC_Controllable : public IComponent
     {
         Q_OBJECT

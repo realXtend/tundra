@@ -17,9 +17,9 @@ namespace Ogre
 /// Makes the entity a light source.
 /**
 
-<table style="margin: 20px;">
+<table class="header">
 <tr>
-<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<td>
 <h2>Light</h2>
 Makes the entity a light source.
 
@@ -28,27 +28,27 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>Vector3df: direction.
-<div style="margin: 5px;">Specifies the direction vector the light is shining at.</div> 
+<div>Specifies the direction vector the light is shining at.</div> 
 <li>enum: light type. 
-<div style="margin: 5px;">One of the values "Point", "Spot" or "Directional".</div> 
+<div>One of the values "Point", "Spot" or "Directional".</div> 
 <li>Color: diffuse color.
-<div style="margin: 5px;">Specifies the color the light casts.</div> 
+<div>Specifies the color the light casts.</div> 
 <li>Color: specular color.
-<div style="margin: 5px;">Specifies the color of the reflections the light casts.</div> 
+<div>Specifies the color of the reflections the light casts.</div> 
 <li>bool: cast shadows.
-<div style="margin: 5px;">If true, this light casts dynamically calculated shadows on the scene.</div> 
+<div>If true, this light casts dynamically calculated shadows on the scene.</div> 
 <li>float: light range.
-<div style="margin: 5px;">Specifies how far in world space units the light reaches.</div> 
+<div>Specifies how far in world space units the light reaches.</div> 
 <li>float: constant attenuation.
-<div style="margin: 5px;">Specifies the constant term of the light attenuation equation.</div> 
+<div>Specifies the constant term of the light attenuation equation.</div> 
 <li>float: linear attenuation.
-<div style="margin: 5px;">Specifies the linear term of the light attenuation equation.</div> 
+<div>Specifies the linear term of the light attenuation equation.</div> 
 <li>float: quadratic attenuation.
-<div style="margin: 5px;">Specifies the quadratic term of the light attenuation equation.</div> 
+<div>Specifies the quadratic term of the light attenuation equation.</div> 
 <li>float: light inner angle.
-<div style="margin: 5px;">Specifies inner umbra angle of the light. Only applicable for spotlights.</div> 
+<div>Specifies inner umbra angle of the light. Only applicable for spotlights.</div> 
 <li>float: light outer angle.   
-<div style="margin: 5px;">Specifies outer penumbra angle of the light. Only applicable for spotlights.</div>
+<div>Specifies outer penumbra angle of the light. Only applicable for spotlights.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>

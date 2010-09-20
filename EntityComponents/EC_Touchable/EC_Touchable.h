@@ -33,6 +33,50 @@ namespace Ogre
     class Entity;
 }
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Touchable</h2>
+Touchable enables visual effect for scene entity in cases where
+the entity can be considered to have some kind of functionality
+when it is clicked i.e. touched. The effect is not visible by default.
+You must call Show() function separately. The effect is visible only
+for certain time.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString : materialName
+<div>Name of the material used for this EC. </div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"SetHighlightOnHover": Set if highlight material is shown on hover
+<li>"SetHoverCursor": Set cursor shape for when entity is hovered
+<li>"Show": Shows the effect.
+<li>"Hide": Hides the effect.
+<li>"IsVisible": Returns if the component is visible or not.
+		@true If the component is visible, false if it's hidden or not initialized properly.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+EC_OgreCustomObject (if prim) components available in advance.</b>. 
+</table>
+
+*/
 class EC_Touchable : public IComponent
 {
     Q_OBJECT
