@@ -26,24 +26,24 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>QString: soundId
-<div></div> 
+<div>Sound asset reference that is used to request a sound from sound service.</div> 
 <li>float: soundInnerRadius
-<div></div> 
+<div>Sound inner radius tell the distance where sound gain value is in it's maximum.</div> 
 <li>float: soundOuterRadius
-<div ></div> 
+<div>Sound outer radius tell the distance where sound gain value is zero.</div> 
 <li>float: soundGain
-<div></div> 
+<div>Sound gain value should be between 0.0-1.0</div> 
 <li>bool: loopSound
-<div></div> 
+<div>Do we want to loop the sound until the stop sound is called.</div> 
 <li>bool: triggerSound
-<div></div> 
+<div>Set this attribute true when you want to trigger the sound.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
 <li>"PlaySound": 
 <li>"StopSound":
-<li>"UpdateSoundSettings": Get each attribute values and update sound's parameters if it's in playing state. 
+<li>"UpdateSoundSettings": Get each attribute value and send them over to sound service.
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -67,22 +67,31 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
-    Attribute<QString>      soundId_;
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundInnerRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundOuterRadius);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, soundGain);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, triggerSound);
+
+    /*Attribute<QString>      soundId_;
     Attribute<float>        soundInnerRadius_;
     Attribute<float>        soundOuterRadius_;
     Attribute<float>        soundGain_;
     Attribute<bool>         loopSound_;
-    Attribute<bool>         triggerSound_;
+    Attribute<bool>         triggerSound_;*/
 
 public slots:
     void PlaySound();
     void StopSound();
-    //! Get each attribute values and update sound's parameters if it's in playing state.
+    //! Get each attribute value and send them over to sound service.
     void UpdateSoundSettings();
 
 private slots:
     void UpdateSignals();
     void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 
 private:
     explicit EC_Sound(IModule *module);
