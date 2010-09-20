@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Sound.h"
@@ -60,8 +62,8 @@ void EC_Sound::RegisterActions()
     assert(entity);
     if (entity)
     {
-        entity->ConnectAction("Play sound", this, SLOT(PlaySound()));
-        entity->ConnectAction("Stop sound", this, SLOT(StopSound()));
+        entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
+        entity->ConnectAction("StopSound", this, SLOT(StopSound()));
     }
 }
 

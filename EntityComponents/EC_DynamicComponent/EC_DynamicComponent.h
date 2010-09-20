@@ -52,7 +52,7 @@ Registered by PythonScript::PythonScriptModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"ComponentChanged": Will handle ComponentChanged event to ComponentInterface.
+<li>"ComponentChanged": Will handle ComponentChanged event to IComponent.
     @param changeType Accepts following strings {LocalOnly, Local and Network}.
 <li>"AddQVariantAttribute": Create new attribute that type is QVariant.
 <li>"GetAttribute":Get attribute value as QVariant. If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
@@ -139,7 +139,7 @@ public:
     IAttribute *CreateAttribute(const QString &typeName, const QString &name);
 
 public slots:
-    //! Will handle ComponentChanged event to ComponentInterface.
+    //! Will handle ComponentChanged event to IComponent.
     //! @param changeType Accepts following strings {LocalOnly, Local and Network}.
     void ComponentChanged(const QString &changeType);
 
@@ -166,7 +166,7 @@ public slots:
     bool ContainSameAttributes(const EC_DynamicComponent &comp) const;
 
     /// \todo Remove.
-    /// quick hack, should use GetParentEntity in ComponentInterface and add qt things to Entity (and eventualy get rid of PyEntity)
+    /// quick hack, should use GetParentEntity in IComponent and add qt things to Entity (and eventualy get rid of PyEntity)
     uint GetParentEntityId() const;
 
     /// Remove attribute from the component.
