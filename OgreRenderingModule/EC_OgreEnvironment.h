@@ -120,6 +120,8 @@ namespace OgreRenderer
         /// Disables the fog.
         void DisableFog();
 
+        Caelum::CaelumSystem* GetCaelum();
+
 #ifdef CAELUM
         /// Speeds up the times
         /// @param value 2 doubles etc.

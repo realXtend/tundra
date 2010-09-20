@@ -54,6 +54,8 @@ namespace OgreRenderer
         //! callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
 
+     
+
     private:
         //! Type name of the module.
         static std::string type_name_static_;
