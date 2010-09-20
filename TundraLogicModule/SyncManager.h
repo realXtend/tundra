@@ -102,14 +102,6 @@ private:
      */
     void SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
     
-    //! Deserialize components from an XML document
-    void DeserializeComponents(QDomDocument& doc, Scene::EntityPtr entity, AttributeChange::Type change);
-    
-    //! Apply pending component updates to entities.
-    /*! Note: all of these updates have already been approved
-     */
-    void ApplyPendingComponentUpdates();
-    
     //! Owning module
     TundraLogicModule* owner_;
     
@@ -127,9 +119,6 @@ private:
     
     //! Components that have been removed from specific entities on the frame
     std::map<entity_id_t, std::vector<RemovedComponent> > removedComponents_;
-    
-    //! Buffered component updates for entities that do not exist yet and cannot thus be applied
-    std::map<entity_id_t, std::vector<std::vector<unsigned char> > > pendingComponentUpdates_;
 };
 
 }

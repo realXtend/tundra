@@ -30,7 +30,11 @@
     <!-- Create a new entity, possibly with components filled -->
     <message id="110" name="CreateEntity" reliable="true" priority="100">
         <u32 name="entityID" />
-        <u8 name="componentData" dynamicCount="32" />
+        <struct name="components" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="16" />
+        </struct>
     </message>
 
     <!-- Remove an entity -->
@@ -41,7 +45,11 @@
     <!-- Update component(s) inside an existing entity -->
     <message id="112" name="UpdateComponents" reliable="true" priority="100">
         <u32 name="entityID" />
-        <u8 name="componentData" dynamicCount="32" />
+        <struct name="components" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="16" />
+        </struct>
     </message>
 
     <!-- Remove component(s) from an entity -->
