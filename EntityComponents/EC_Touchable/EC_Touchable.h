@@ -48,6 +48,12 @@ public:
     /// Name of the material used for this EC.
     Attribute<QString> materialName;
 
+    /// Is highlight material shown on mouse hover.
+    Attribute<bool> highlightOnHover;
+
+    /// Hover mouse cursor, see @see Qt::CursorShape
+    Attribute<int> hoverCursor;
+
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
     void OnHover();
 
@@ -58,12 +64,6 @@ public:
     void OnClick();
 
 public slots:
-    /// Set if highlight material is shown on hover
-    void SetHighlightOnHover(bool enabled);
-
-    /// Set cursor shape for when entity is hovered
-    void SetHoverCursor(Qt::CursorShape shape);
-
     /// Shows the effect.
     void Show();
 
@@ -74,15 +74,12 @@ public slots:
     /// @true If the component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
 
-private slots:
-    /// Updates the component if its material changes.
-    void UpdateMaterial();
-
-    /// Slot for emitting HoverIn the first time we get OnHover() call
-    void OnHoverIn();
-
-    /// Set our hover cursor visible
-    void SetCursorVisible(bool visible);
+signals:
+    //! Signal when mouse hovers over the entity with this touchable component
+    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
+    void MouseHoverIn();
+    void MouseHoverOut();
+    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
 
 private:
     /// Constuctor.
@@ -104,21 +101,21 @@ private:
     /// Name of the cloned entity used for highlighting
     std::string cloneName_;
 
-    /// Bool to define if highlight material will be shown on hover
-    bool show_material_;
-
     /// Bool to tell if we have emitted MouseHoverIn and are in hover state
     bool hovering_;
 
-    /// Hover cursor
-    QCursor hover_cursor_;
+private slots:
+    /// Updates the component if its material changes.
+    void UpdateMaterial();
 
-signals:
-    //! Signal when mouse hovers over the entity with this touchable component
-    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
-    void MouseHoverIn();
-    void MouseHoverOut();
-    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
+    /// Slot for emitting HoverIn the first time we get OnHover() call
+    void OnHoverIn();
+
+    /// Set our hover cursor visible
+    void SetCursorVisible(bool visible);
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif
