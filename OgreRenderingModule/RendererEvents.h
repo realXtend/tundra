@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_RendererEvents_h
 #define incl_OgreRenderer_RendererEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 namespace OgreRenderer
 {
@@ -28,7 +28,7 @@ namespace OgreRenderer
         //! Event data for window resize
         /*! \ingroup OgreRenderingModuleClient
          */
-        class WindowResized : public Foundation::EventDataInterface
+        class WindowResized : public IEventData
         {
             WindowResized();
         public:

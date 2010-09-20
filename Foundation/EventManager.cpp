@@ -5,7 +5,7 @@
 
 #include "EventManager.h"
 #include "Framework.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "ModuleManager.h"
 #include "CoreException.h"
 
@@ -20,9 +20,7 @@
 
 namespace Foundation
 {
-   
-    
-    EventManager::EventManager(Framework *framework) : 
+    EventManager::EventManager(Framework *framework) :
         framework_(framework),
         next_category_id_(1),
         next_request_tag_(1),
@@ -99,12 +97,14 @@ namespace Foundation
         event_map_[category_id][event_id] = name;
     }
     
-    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, EventDataInterface* data)
+    bool EventManager::SendEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (QThread::currentThreadId() != main_thread_id_)
         {
-            Foundation::RootLogError("Tried to send an immediate event (using SendEvent) from a thread that is not the main thread. Use SendDelayedEvent() instead.");
-            throw Exception("Tried to send an immediate event (using SendEvent) from a thread that is not the main thread. Use SendDelayedEvent() instead.");
+            Foundation::RootLogError("Tried to send an immediate event (using SendEvent) from a thread "
+                "that is not the main thread. Use SendDelayedEvent() instead.");
+            throw Exception("Tried to send an immediate event (using SendEvent) from a thread"
+                "that is not the main thread. Use SendDelayedEvent() instead.");
         }
         
         // Do not send messages after exit
@@ -115,46 +115,37 @@ namespace Foundation
             Foundation::RootLogWarning("Attempted to send event with illegal category");
             return false;
         }
-        
+
         // Send event in priority order, until someone returns true
         for (unsigned i = 0; i < module_subscribers_.size(); ++i)
-        {
             if (SendEvent(module_subscribers_[i], category_id, event_id, data))
                 return true;
-        }
-        
-        // After that send events to components
 
+        // After that send events to components
         for (unsigned i = 0; i < component_subscribers_.size(); ++i)
-        {
             if (SendEvent(component_subscribers_[i], category_id, event_id, data))
                 return true;
-        }
 
         // Then go through 
         QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
        
         if ( specialEvents_.contains(group) )
         {
-            QList<ComponentInterface* > lst = specialEvents_[group];
+            QList<IComponent* > lst = specialEvents_[group];
             for ( int i = 0; i < lst.size(); ++i)
             {
-                EventSubscriber<ComponentInterface> subs;
+                EventSubscriber<IComponent> subs;
                 subs.subscriber_ = lst[i];
 
                 if (SendEvent(subs, category_id, event_id, data))
                     return true;
-
             }
         }
 
         return false;
-
-
-
     }
     
-    bool EventManager::SendEvent(const std::string& category, event_id_t event_id, EventDataInterface* data)
+    bool EventManager::SendEvent(const std::string& category, event_id_t event_id, IEventData* data)
     {
         return SendEvent(QueryEventCategory(category), event_id, data);
     }
@@ -171,31 +162,29 @@ namespace Foundation
         {
             Foundation::RootLogWarning("Attempted to send delayed event with illegal category");
             return;
-        }    
-        
+        }
+
         DelayedEvent new_delayed_event;
         new_delayed_event.category_id_ = category_id;
         new_delayed_event.event_id_ = event_id;
         new_delayed_event.data_ = data;
         new_delayed_event.delay_ = delay;
-        
         new_delayed_events_.push_back(new_delayed_event);
     }
-    
 
-    bool EventManager::RegisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id, event_id_t event_id)
+    bool EventManager::RegisterEventSubscriber(IComponent* component, event_category_id_t category_id, event_id_t event_id)
     {
        
         QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
        
         if ( specialEvents_.contains(group) )
         {
-            QList<ComponentInterface* > lst = specialEvents_[group];
+            QList<IComponent* > lst = specialEvents_[group];
             lst.append(component);
         }
         else
         {
-            QList<ComponentInterface* > lst;
+            QList<IComponent* > lst;
             lst.append(component);
             specialEvents_.insert(group,lst); 
         }
@@ -203,7 +192,7 @@ namespace Foundation
         return true;
     }
 
-    bool EventManager::UnregisterEventSubscriber(ComponentInterface* component, event_category_id_t category_id,event_id_t event_id)
+    bool EventManager::UnregisterEventSubscriber(IComponent* component, event_category_id_t category_id,event_id_t event_id)
      {
        QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
        if ( specialEvents_.contains(group) )
@@ -215,14 +204,13 @@ namespace Foundation
        return false;
      }
 
-   
     request_tag_t EventManager::GetNextRequestTag()
     {
         if (next_request_tag_ == 0) 
             ++next_request_tag_; // Never use 0
         return next_request_tag_++;
-    }    
-    
+    }
+
     void EventManager::ClearDelayedEvents()
     {
         MutexLock lock(delayed_events_mutex_);
@@ -237,21 +225,18 @@ namespace Foundation
             delayed_events_.insert(delayed_events_.end(), new_delayed_events_.begin(), new_delayed_events_.end());
             new_delayed_events_.clear();
         }
-        
+
         DelayedEventVector::iterator i = delayed_events_.begin();
-        
         while (i != delayed_events_.end())
-        {
             if (i->delay_ <= 0.0)
             {
                 SendEvent(i->category_id_, i->event_id_, i->data_.get());
                 i = delayed_events_.erase(i);
             }
             else
-            {   
+            {
                 i->delay_ -= frametime;
                 ++i;
             }
-        }
     }
 }

@@ -82,11 +82,11 @@ namespace RexLogic
         void Update(f64 frametime);
         
         //! Handles resource event
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
         //! Handles asset event
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
         //! Handles inventory event
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);        
+        bool HandleInventoryEvent(event_id_t event_id, IEventData* data);        
         
         //! Exports avatar to an authentication/avatar storage server account
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);

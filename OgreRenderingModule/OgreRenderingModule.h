@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderingModule_OgreRenderingModule_h
 #define incl_OgreRenderingModule_OgreRenderingModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "Renderer.h"
 #include "OgreModuleApi.h"
@@ -29,7 +29,7 @@ namespace OgreRenderer
     */
 
     //! A renderer module using Ogre
-    class OGRE_MODULE_API OgreRenderingModule : public Foundation::ModuleInterface
+    class OGRE_MODULE_API OgreRenderingModule : public IModule
     {
     public:
         OgreRenderingModule();
@@ -41,7 +41,7 @@ namespace OgreRenderer
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! returns renderer
         RendererPtr GetRenderer() const { return renderer_; }
@@ -53,6 +53,8 @@ namespace OgreRenderer
 
         //! callback for console command
         Console::CommandResult ConsoleStats(const StringVector &params);
+
+     
 
     private:
         //! Type name of the module.

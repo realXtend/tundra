@@ -2,10 +2,10 @@
 
 #include "StableHeaders.h"
 #include "EC_OpenSimPresence.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 
-EC_OpenSimPresence::EC_OpenSimPresence(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_OpenSimPresence::EC_OpenSimPresence(IModule* module) :
+    IComponent(module->GetFramework()),
     regionHandle(0),
     localId(0),
     parentId(0),

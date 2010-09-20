@@ -36,7 +36,7 @@ Q_DECLARE_METATYPE(UiProxyWidget*);
 Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(AttributeChange*);
-Q_DECLARE_METATYPE(Foundation::ComponentInterface*);
+Q_DECLARE_METATYPE(IComponent*);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Frame*);
@@ -61,7 +61,7 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
-    qScriptRegisterQObjectMetaType<Foundation::ComponentInterface*>(engine);
+    qScriptRegisterQObjectMetaType<IComponent*>(engine);
 
     qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
 }

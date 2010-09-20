@@ -30,7 +30,7 @@ std::string JavascriptModule::type_name_static_ = "Javascript";
 JavascriptModule *javascriptModuleInstance_ = 0;
 
 JavascriptModule::JavascriptModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     engine(new QScriptEngine(this))
 {
 }
@@ -103,7 +103,7 @@ void JavascriptModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool JavascriptModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     return false;
 }
@@ -156,10 +156,10 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
 void JavascriptModule::SceneAdded(const QString &name)
 {
     Scene::ScenePtr scene = GetFramework()->GetScene(name.toStdString());
-    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            SLOT(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
-    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-            SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)));
+    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
+    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)));
     //! @todo only most recently added scene has been saved to services_ map change this so that we can have access to multiple scenes in script side.
     services_["scene"]  = scene.get();
 }
@@ -167,7 +167,10 @@ void JavascriptModule::SceneAdded(const QString &name)
 void JavascriptModule::ScriptChanged(const QString &scriptRef)
 {
     EC_Script *sender = dynamic_cast<EC_Script*>(this->sender());
-    if(!sender && sender->type.Get()!= "js") 
+    if(!sender)
+        return;
+
+    if (sender->type.Get() != "js")
         return;
 
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
@@ -185,13 +188,13 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
         sender->Run();
 }
 
-void JavascriptModule::ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if(comp->TypeName() == "EC_Script")
         connect(comp, SIGNAL(ScriptRefChanged(const QString &)), SLOT(ScriptChanged(const QString &)));
 }
 
-void JavascriptModule::ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+void JavascriptModule::ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
     if(comp->TypeName() == "EC_Script")
         disconnect(comp, SIGNAL(ScriptRefChanged(const QString &)), this, SLOT(ScriptChanged(const QString &)));
@@ -215,6 +218,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(JavascriptModule)
 POCO_END_MANIFEST

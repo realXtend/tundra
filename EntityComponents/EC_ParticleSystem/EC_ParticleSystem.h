@@ -3,8 +3,8 @@
 #ifndef incl_EC_ParticleSystem_EC_ParticleSystem_h
 #define incl_EC_ParticleSystem_EC_ParticleSystem_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "ResourceInterface.h"
 #include "Declare_EC.h"
 
@@ -19,7 +19,7 @@ namespace OgreRenderer
     class Renderer;
 }
 
-class EC_ParticleSystem : public Foundation::ComponentInterface
+class EC_ParticleSystem : public IComponent
 {
     DECLARE_EC(EC_ParticleSystem);
     Q_OBJECT
@@ -28,9 +28,9 @@ public:
 
     virtual bool IsSerializable() const { return true; }
 
-    bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
-    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+    bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     Attribute<QString> particleId_;
     Attribute<bool> castShadows_;
@@ -46,11 +46,11 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute);
+    void AttributeUpdated(IComponent *component, IAttribute *attribute);
 
 private:
-    explicit EC_ParticleSystem(Foundation::ModuleInterface *module);
-    Foundation::ComponentPtr FindPlaceable() const;
+    explicit EC_ParticleSystem(IModule *module);
+    ComponentPtr FindPlaceable() const;
     request_tag_t RequestResource(const std::string& id, const std::string& type);
 
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;

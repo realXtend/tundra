@@ -7,7 +7,7 @@
 #include <Poco/SharedLibrary.h>
 #include <Poco/ClassLoader.h>
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleReference.h"
 
 namespace fs = boost::filesystem;
@@ -41,7 +41,7 @@ namespace Foundation
             //! shared library
             Poco::SharedLibrary sl_;
             //! class loader
-            Poco::ClassLoader<ModuleInterface> cl_;
+            Poco::ClassLoader<IModule> cl_;
         };
         typedef boost::shared_ptr<SharedLibrary> SharedLibraryPtr;
 
@@ -55,7 +55,7 @@ namespace Foundation
         public:
             ModuleDeletor(const std::string &entry, SharedLibraryPtr shared_library);
 
-            void operator()(ModuleInterface *module);
+            void operator()(IModule *module);
         };
 
         //! Module entry. Contains information about a module. Useful for ModuleManager introspection.
@@ -93,7 +93,7 @@ namespace Foundation
 
             Loads the module immediatelly.
         */
-        void DeclareStaticModule(ModuleInterface *module);
+        void DeclareStaticModule(IModule *module);
 
         //! Specify a module by name that should not be loaded or initialized under any circumstances
         /*! 
@@ -139,22 +139,10 @@ namespace Foundation
 
         //! Returns module by name
         //! \note The pointer may invalidate between frames, always reacquire at begin of frame update
-        ModuleWeakPtr GetModule(const std::string &name)
-        {
-            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
-                if (it->module_->Name() == name)
-                    return ModuleWeakPtr(it->module_);
-            return ModuleWeakPtr();
-        }
+        ModuleWeakPtr GetModule(const std::string &name);
 
         //! Returns module by raw pointer
-        ModuleWeakPtr GetModule(ModuleInterface* rawptr)
-        {
-            for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
-                if (it->module_.get() == rawptr)
-                    return ModuleWeakPtr(it->module_);
-            return ModuleWeakPtr();
-        }
+        ModuleWeakPtr GetModule(IModule* rawptr);
 
         /** Returns module by class T.
          *  \param T class type of the module.
@@ -178,22 +166,10 @@ namespace Foundation
         const ModuleVector &GetModuleList() const { return modules_; }
 
         //! Returns true if module is loaded, false otherwise
-        bool HasModule(const std::string &name) const
-        {
-            for(size_t i = 0 ; i < modules_.size() ; ++i)
-                if (modules_[i].module_->Name() == name)
-                    return true;
-            return false;
-        }
+        bool HasModule(const std::string &name) const;
 
         //! @return True if the given module library entry is present, false otherwise.
-        bool HasModuleEntry(const std::string &entry) const
-        {
-            for (size_t i = 0 ; i < modules_.size() ; ++i)
-                if (modules_[i].entry_ == entry)
-                    return true;
-            return false;
-        }
+        bool HasModuleEntry(const std::string &entry) const;
 
         //! Loads and initializes a module with specified name
         /*! For internal use only!
@@ -215,16 +191,16 @@ namespace Foundation
         bool UnloadModuleByName(const std::string &module);
 
         //! Pre-initialize the specified module
-        void PreInitializeModule(ModuleInterface *module);
+        void PreInitializeModule(IModule *module);
         
         //! Initialize the specified module
-        void InitializeModule(ModuleInterface *module);
+        void InitializeModule(IModule *module);
 
         //! Post-initialize the specified module
-        void PostInitializeModule(ModuleInterface *module);
+        void PostInitializeModule(IModule *module);
 
         //! Uninitialize the specified module
-        void UninitializeModule(ModuleInterface *module);
+        void UninitializeModule(IModule *module);
 
         //! Unloads and deletes the module.
         //! \note Does not remove from modules_
@@ -268,7 +244,7 @@ namespace Foundation
         void LoadModule(const std::string &moduleName, const StringVector &entries);
 
         //! returns true if module is present
-        bool HasModule(ModuleInterface *module) const;
+        bool HasModule(IModule *module) const;
 
         //! Returns a vector containing all xml files in the specified directory, scans recursively.
         StringVectorPtr GetXmlFiles(const std::string &path);

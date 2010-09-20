@@ -1823,7 +1823,7 @@ namespace Environment
         return terrainPaintMode_;
     }
 
-    bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, IEventData* data)
     {
         //Painting is only enabled when window's is created and visible.
         if(!editor_widget_)
