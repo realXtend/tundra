@@ -20,12 +20,9 @@ init_target (RexLogicModule OUTPUT modules/core)
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
-file (GLOB UI_FILES EntityComponent/*.ui)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RexLogicModule.h Avatar/AvatarEditor.h EventHandlers/LoginHandler.h RexMovementInput.h
-    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h EntityComponent/HoveringNameController.h
-    EntityComponent/HoveringButtonsController.h EntityComponent/DetachedWidgetController.h  Environment/Primitive.h
-    Communications/*.h Communications/InWorldChat/*.h)
+file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h EventHandlers/MainPanelHandler.h 
+                     EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h Communications/InWorldChat/*.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
@@ -42,8 +39,6 @@ set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
-QT4_WRAP_UI(UI_SRCS ${UI_FILES})
-#QT4_ADD_RESOURCES(RESOURCE_SRCS ${RESOURCE_FILES})
 
 set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCOPE)
 
@@ -61,25 +56,25 @@ use_package (CURL)
 use_package (OPENJPEG)
 use_package (XMLRPC)
 
-use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon
+use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
     EntityComponents/EC_Highlight EntityComponents/EC_HoveringText EntityComponents/EC_Clone EntityComponents/EC_Light
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_Touchable EntityComponents/EC_3DCanvas
     EntityComponents/EC_3DCanvasSource EntityComponents/EC_ChatBubble EntityComponents/EC_Ruler EntityComponents/EC_SoundRuler 
     EntityComponents/EC_ParticleSystem EntityComponents/EC_SoundListener EntityComponents/EC_Sound EntityComponents/EC_Mesh
-    EntityComponents/EC_InputMapper EntityComponents/EC_Movable)
+    EntityComponents/EC_InputMapper EntityComponents/EC_Movable EntityComponents/EC_HoveringWidget)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)
 endif ()
 
-build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
+build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule RexCommon
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
     HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule
     EC_Highlight EC_HoveringText EC_Clone EC_Light EC_OpenSimPresence EC_OpenSimPrim EC_Touchable EC_3DCanvas
     EC_3DCanvasSource EC_ChatBubble EC_Ruler EC_SoundRuler EC_ParticleSystem EC_SoundListener EC_Sound EC_Mesh
-    EC_InputMapper EC_Movable)
+    EC_InputMapper EC_Movable EC_HoveringWidget)
 
 if (NOT UISERVICE_TEST)
     link_modules (UiModule)

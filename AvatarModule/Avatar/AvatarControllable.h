@@ -6,22 +6,22 @@
 #include "RexTypes.h"
 #include "InputEvents.h"
 
+#include "AvatarModule.h"
+#include "AvatarModuleApi.h" 
+
+class EC_Controllable;
+
 namespace ProtocolUtilities
 {
     class WorldStream;
 }
 
-typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
-
-namespace RexLogic
+namespace AvatarModule
 {
-    class RexLogicModule;
-    class EC_Controllable;
-
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.
     */
-    class AvatarControllable
+    class AV_MODULE_API AvatarControllable
     {
         enum State
         {
@@ -32,9 +32,10 @@ namespace RexLogic
 
         //! default constructor
         AvatarControllable();
+
     public:
         //! constructor that takes rex logic module
-        AvatarControllable(RexLogicModule *rexlogic);
+        AvatarControllable(AvatarModule *avatar_module);
 
         //! destructor
         ~AvatarControllable() {}
@@ -94,17 +95,11 @@ namespace RexLogic
         //! event manager
         Foundation::EventManagerPtr event_manager_;
 
-        //! (parent) rex logic module
-        RexLogicModule *rexlogic_;
-
         //! mappings from input events to actions
         RexTypes::Actions::ActionInputMap input_events_;
 
         //! map from actions to control flags
         ActionControlFlagMap control_flags_;
-
-        //! Rex server connection used to send updates
-        WorldStreamPtr connection_;
 
         //! default speed for avatar rotation
         float rotation_sensitivity_;
@@ -124,7 +119,11 @@ namespace RexLogic
         //! Tracks time between network updates
         float net_movementupdatetime_;
 
+        //! Framework ptr
         Foundation::Framework *framework_;
+
+        //! AvatarModule ptr
+        AvatarModule *avatar_module_;
 
         //! Mouse-look movement
         Input::Events::Movement movement_;

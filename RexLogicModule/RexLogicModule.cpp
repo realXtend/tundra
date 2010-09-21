@@ -23,11 +23,13 @@
 #include "DebugOperatorNew.h"
 
 #include "RexLogicModule.h"
+#include "SceneEvents.h"
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
 #include "EventHandlers/FrameworkEventHandler.h"
+#include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
 #include "EntityComponent/EC_FreeData.h"
@@ -35,11 +37,14 @@
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
-#include "EntityComponent/EC_HoveringWidget.h"
+#include "EC_HoveringWidget.h"
+
+#include "AvatarModule.h"
 #include "Avatar/Avatar.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "EntityComponent/EC_AvatarAppearance.h"
+
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
@@ -132,11 +137,6 @@ void RexLogicModule::Load()
 
     DECLARE_MODULE_EC(EC_FreeData);
     DECLARE_MODULE_EC(EC_AttachedSound);
-    DECLARE_MODULE_EC(EC_OpenSimAvatar);
-    DECLARE_MODULE_EC(EC_NetworkPosition);
-    DECLARE_MODULE_EC(EC_Controllable);
-    DECLARE_MODULE_EC(EC_AvatarAppearance);
-    DECLARE_MODULE_EC(EC_HoveringWidget);
     // External EC's
     DECLARE_MODULE_EC(EC_Highlight);
     DECLARE_MODULE_EC(EC_HoveringText);
@@ -164,8 +164,6 @@ void RexLogicModule::Initialize()
     PROFILE(RexLogicModule_Initialize);
     framework_->GetEventManager()->RegisterEventCategory("Action");
 
-    avatar_ = AvatarPtr(new Avatar(this));
-    avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
     world_stream_ = WorldStreamPtr(new ProtocolUtilities::WorldStream(framework_));
     network_handler_ = new NetworkEventHandler(this);
@@ -173,7 +171,7 @@ void RexLogicModule::Initialize()
     input_handler_ = new InputEventHandler(this);
     scene_handler_ = new SceneEventHandler(this);
     framework_handler_ = new FrameworkEventHandler(world_stream_.get(), this);
-    avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
+    avatar_event_handler_ = new AvatarEventHandler(this);
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
@@ -208,9 +206,6 @@ void RexLogicModule::PostInitialize()
 
     // Input events.
     event_category_id_t eventcategoryid = eventMgr->QueryEventCategory("Input");
-
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -221,19 +216,13 @@ void RexLogicModule::PostInitialize()
 
     // Action events.
     eventcategoryid = eventMgr->QueryEventCategory("Action");
-
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
 
     // Scene events.
     eventcategoryid = eventMgr->QueryEventCategory("Scene");
-
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -244,27 +233,22 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
 
-    // Inventory events
-    eventcategoryid = eventMgr->QueryEventCategory("Inventory");
-    event_handlers_[eventcategoryid].push_back(
-        boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
-
-    // Asset events
-    eventcategoryid = eventMgr->QueryEventCategory("Asset");
-    event_handlers_[eventcategoryid].push_back(
-        boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-
     // Framework events
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+
+    // Avatar events
+    eventcategoryid = eventMgr->QueryEventCategory("Avatar");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &AvatarEventHandler::HandleAvatarEvent, avatar_event_handler_, _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
-       &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
 
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
@@ -361,10 +345,7 @@ void RexLogicModule::Uninitialize()
         LogoutAndDeleteWorld();
 
     world_stream_.reset();
-    avatar_.reset();
-    avatar_editor_.reset();
     primitive_.reset();
-    avatar_controllable_.reset();
     camera_controllable_.reset();
 
     event_handlers_.clear();
@@ -427,9 +408,6 @@ void RexLogicModule::Update(f64 frametime)
         // interpolate & animate objects
         UpdateObjects(frametime);
 
-        // update avatar stuff (download requests etc.)
-        avatar_->Update(frametime);
-
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
 
@@ -450,11 +428,10 @@ void RexLogicModule::Update(f64 frametime)
 
         if (world_stream_->IsConnected())
         {
-            avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
             input_handler_->Update(frametime);
             // Update overlays last, after camera update
-            UpdateAvatarNameTags(avatar_->GetUserAvatar());
+            UpdateAvatarNameTags(GetAvatarHandler()->GetUserAvatar());
         }
     }
 
@@ -506,6 +483,13 @@ const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) 
     return prop;
 }
 
+float RexLogicModule::GetCameraControllablePitch() const
+{
+    if (camera_controllable_)
+        return camera_controllable_->GetPitch();
+    else
+        return 0.0;
+}
 void RexLogicModule::SwitchCameraState()
 {
     if (camera_state_ == CS_Follow)
@@ -551,14 +535,34 @@ void RexLogicModule::ResetCameraState()
     camera_state_ = CS_Follow;
 }
 
-AvatarPtr RexLogicModule::GetAvatarHandler() const
+AvatarModule::AvatarPtr RexLogicModule::GetAvatarHandler() const
 {
-    return avatar_;
+    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarHandler();
+    else
+        return AvatarModule::AvatarPtr();
 }
 
-AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
+AvatarModule::AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 {
-    return avatar_editor_;
+    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarEditor();
+    else
+        return AvatarModule::AvatarEditorPtr();
+}
+
+AvatarModule::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
+{
+    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarControllable();
+    else
+        return AvatarModule::AvatarControllablePtr();
 }
 
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
@@ -580,12 +584,12 @@ Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
 void RexLogicModule::SetAvatarYaw(float newyaw)
 {
-    avatar_controllable_->SetYaw(newyaw);
+    GetAvatarControllable()->SetYaw(newyaw);
 }
 
 void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
 {
-    avatar_controllable_->SetRotation(newrot);
+    GetAvatarControllable()->SetRotation(newrot);
 }
 
 void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
@@ -637,8 +641,8 @@ void RexLogicModule::LogoutAndDeleteWorld()
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
 
-    if (avatar_)
-        avatar_->HandleLogout();
+    if (GetAvatarHandler())
+        GetAvatarHandler()->HandleLogout();
     if (primitive_)
         primitive_->HandleLogout();
 
@@ -675,14 +679,22 @@ Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid) cons
 
 void RexLogicModule::RegisterFullId(const RexUUID &fullid, entity_id_t entityid)
 {
-    UUIDs_[fullid] = entityid;
+    IDMap::iterator iter = UUIDs_.find(fullid);
+    if (iter == UUIDs_.end())
+    {
+        UUIDs_[fullid] = entityid;
+        avatar_event_handler_->SendRegisterEvent(fullid, entityid);
+    }
 }
 
 void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
 {
     IDMap::iterator iter = UUIDs_.find(fullid);
     if (iter != UUIDs_.end())
+    {
         UUIDs_.erase(iter);
+        avatar_event_handler_->SendUnregisterEvent(fullid);
+    }
 }
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
@@ -846,7 +858,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         if (entity.GetComponent(EC_OpenSimAvatar::TypeNameStatic()))
         {
             found_avatars_.push_back(*iter);
-            avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
+            GetAvatarHandler()->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
 
         // General animation controller update
@@ -887,24 +899,9 @@ void RexLogicModule::UpdateSoundListener()
 
 bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
-    // Pass the event to the avatar manager
-    avatar_->HandleResourceEvent(event_id, data);
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);
-
     return false;
-}
-
-bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, IEventData* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleInventoryEvent(event_id, data);
-}
-
-bool RexLogicModule::HandleAssetEvent(event_id_t event_id, IEventData* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleAssetEvent(event_id, data);
 }
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)

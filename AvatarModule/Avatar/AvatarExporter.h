@@ -5,7 +5,7 @@
 
 #include "ThreadTask.h"
 
-namespace RexLogic
+namespace AvatarModule
 {
     //! An asset to export.
     /*! Note: hash has to be calculated before submitting for export, and many assets

@@ -8,10 +8,8 @@
 class QDomDocument;
 class QDomElement;
 
-namespace RexLogic
+namespace AvatarModule
 {
-    class AvatarAsset;
-    
     //! Utility functions for dealing with reX legacy avatar definitions (xml data). Used by RexLogicModule::AvatarAppearance.
     class LegacyAvatarSerializer
     {

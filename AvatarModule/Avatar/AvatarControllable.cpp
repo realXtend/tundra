@@ -2,11 +2,11 @@
 
 #include "StableHeaders.h"
 #include "Avatar/AvatarControllable.h"
+
 #include "EntityComponent/EC_Controllable.h"
-#include "CameraControllable.h"
 #include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "RexLogicModule.h"
+
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "SceneManager.h"
@@ -16,11 +16,13 @@
 #include "ConfigurationManager.h"
 #include "WorldStream.h"
 
+#include "WorldLogicInterface.h"
+
 using namespace RexTypes;
 
 namespace RA = RexTypes::Actions;
 
-namespace RexLogic
+namespace AvatarModule
 {
     uint32_t SetFPControlFlags(uint32_t control_flags, float pitch)
     {
@@ -59,16 +61,15 @@ namespace RexLogic
         return net_controlflags;
     }
 
-    AvatarControllable::AvatarControllable(RexLogicModule *rexlogic) : 
-        framework_(rexlogic->GetFramework())
-      , connection_(rexlogic->GetServerConnection())
-      , event_manager_(rexlogic->GetFramework()->GetEventManager())
-      , rexlogic_(rexlogic)
-      , net_dirty_(false)
-      , net_movementupdatetime_(0.f)
-      , net_updateinterval_(0.f)
-      , current_state_(ThirdPerson)
-      , drag_yaw_(0)
+    AvatarControllable::AvatarControllable(AvatarModule *avatar_module) : 
+        framework_(avatar_module->GetFramework()),
+        event_manager_(avatar_module->GetFramework()->GetEventManager()),
+        avatar_module_(avatar_module),
+        net_dirty_(false),
+        net_movementupdatetime_(0.f),
+        net_updateinterval_(0.f),
+        current_state_(ThirdPerson),
+        drag_yaw_(0)
     {
         action_event_category_ = event_manager_->QueryEventCategory("Action");
 
@@ -106,7 +107,7 @@ namespace RexLogic
             /// \bug Aren't we supposed to be able to post the ControllableEntity multiple times for the same entity to set the currently
             /// active controlled entity? This code will stack up the actions here? Or should we have different messages in the style of
             /// EVENT_MAKE_ENTITY_A_CONTROLLABLE_ENTITY and EVENT_SET_AS_CURRENT_CONTROLLABLE_ENTITY? -jj.
-            input_events_ = Actions::AssignCommonActions(controllable);
+            input_events_ = ControllableActions::AssignCommonActions(controllable);
             controllable->AddAction(RA::FlyMode);
             controllable->SetType(CT_AVATAR);
             input_events_[Input::Events::TOGGLE_FLYMODE] = RA::FlyMode;
@@ -224,16 +225,16 @@ namespace RexLogic
                         switch (event_id)
                         {
                         case RA::RotateLeft:
-							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
 								avatar->yaw = -1;
                             break;
                         case RA::RotateRight:
-							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
 								avatar->yaw = 1;
                             break;
                         case RA::RotateLeft + 1:
                         case RA::RotateRight + 1:
-							if(rexlogic_->GetCameraState() != CS_FocusOnObject)
+							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
 								avatar->yaw = 0;
                             break;
                         }
@@ -282,7 +283,11 @@ namespace RexLogic
         }
 
         //! \todo hax to get camera pitch. Should be fixed once camera is a proper entity and component. -cm
-        float pitch = rexlogic_->GetCameraControllable()->GetPitch();
+        //! \todo remove hack function from world logic interface, added as we moved code to AvatarModule
+        float pitch = 0;
+        Foundation::WorldLogicInterface *worldLogic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (worldLogic)
+            pitch = worldLogic->GetCameraControllablePitch();
         
         uint32_t net_controlflags = SetFPControlFlags(avatar->controlflags, pitch);
         if (net_controlflags != avatar->cached_controlflags)
@@ -323,7 +328,9 @@ namespace RexLogic
         RexTypes::Vector3 camupaxis = Vector3::ZERO;  
         float fardist = 4000.0f;
         
-        connection_->SendAgentUpdatePacket(bodyrot,headrot,0,camcenter,camataxis,camleftaxis,camupaxis,fardist,controlflags,flags);
+        ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
+        if (conn)
+            conn->SendAgentUpdatePacket(bodyrot, headrot, 0, camcenter, camataxis, camleftaxis, camupaxis, fardist, controlflags, flags);
     }
 
     void AvatarControllable::SendScheduledMovementToServer(uint controlflags)
@@ -382,7 +389,7 @@ namespace RexLogic
 
     void AvatarControllable::SetRotation(const Quaternion &newrot)
     {
-        RexLogicModule::LogDebug("AvatarControllable::SetRotation");
+        AvatarModule::LogDebug("AvatarControllable::SetRotation");
         Scene::EntityPtr avatarentity = entity_.lock();
         if(!avatarentity)
             return;

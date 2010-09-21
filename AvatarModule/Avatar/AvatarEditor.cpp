@@ -7,7 +7,6 @@
 #include "Avatar.h"
 #include "AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-#include "RexLogicModule.h"
 
 #include "SceneManager.h"
 #include "QtUtils.h"
@@ -28,15 +27,15 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace RexLogic
+namespace AvatarModule
 {
-    AvatarEditor::AvatarEditor(RexLogicModule* rexlogicmodule) :
-        rexlogicmodule_(rexlogicmodule),
+    AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
+        avatar_module_(avatar_module),
         avatar_widget_(0)
     {
         InitEditorWindow();
 
-        last_directory_ = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "last_avatar_editor_dir", std::string());
+        last_directory_ = avatar_module_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "last_avatar_editor_dir", std::string());
         if (last_directory_.empty())
             last_directory_ = Foundation::QtUtils::GetCurrentPath();
     }
@@ -44,12 +43,12 @@ namespace RexLogic
     AvatarEditor::~AvatarEditor()
     {
         SAFE_DELETE(avatar_widget_);
-        rexlogicmodule_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
+        avatar_module_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
 
     void AvatarEditor::ExportAvatar()
     {
-        rexlogicmodule_->GetAvatarHandler()->ExportUserAvatar();
+        avatar_module_->GetAvatarHandler()->ExportUserAvatar();
     }
 
     void AvatarEditor::ExportAvatarLocal()
@@ -57,12 +56,12 @@ namespace RexLogic
         const std::string filter = "Avatar description file (*.xml)";
         std::string filename = GetSaveFileName(filter, "Save avatar description and all assets");
         if (!filename.empty())
-            rexlogicmodule_->GetAvatarHandler()->ExportUserAvatarLocal(filename);
+            avatar_module_->GetAvatarHandler()->ExportUserAvatarLocal(filename);
     }
     
     void AvatarEditor::InitEditorWindow()
     {
-        Foundation::UiServiceInterface *ui = rexlogicmodule_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        Foundation::UiServiceInterface *ui = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
         if (ui == 0) // If this occurs, we're most probably operating in headless mode.
             return;
 
@@ -71,7 +70,7 @@ namespace RexLogic
         QFile file("./data/ui/avatareditor.ui");
         if (!file.exists())
         {
-            RexLogicModule::LogError("Cannot find avatar editor .ui file.");
+            AvatarModule::LogError("Cannot find avatar editor .ui file.");
             return;
         }
 
@@ -118,14 +117,14 @@ namespace RexLogic
         // Activate/deactivate export button based on whether export currently supported
         QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
         if (button)
-            button->setEnabled(rexlogicmodule_->GetAvatarHandler()->AvatarExportSupported());
+            button->setEnabled(avatar_module_->GetAvatarHandler()->AvatarExportSupported());
 
         QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");
         QWidget* attachment_panel = avatar_widget_->findChild<QWidget *>("panel_attachments");
         if (!mat_panel || !attachment_panel)    
             return;
                 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -314,7 +313,7 @@ namespace RexLogic
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -322,7 +321,7 @@ namespace RexLogic
             return;
 
         appearance->SetModifierValue(control_name, AppearanceModifier::Morph, value / 100.0f);
-        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
     }
 
     void AvatarEditor::BoneModifierValueChanged(int value)
@@ -334,7 +333,7 @@ namespace RexLogic
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -342,7 +341,7 @@ namespace RexLogic
             return;
 
         appearance->SetModifierValue(control_name, AppearanceModifier::Bone, value / 100.0f);
-        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
     }
 
     void AvatarEditor::MasterModifierValueChanged(int value)
@@ -354,7 +353,7 @@ namespace RexLogic
         if (value < 0) value = 0;
         if (value > 100) value = 100;
 
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -362,7 +361,7 @@ namespace RexLogic
             return;
 
         appearance->SetMasterModifierValue(control_name, value / 100.0f);
-        rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
+        avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupDynamicAppearance(entity);
     }
 
     void AvatarEditor::changeEvent(QEvent* e)
@@ -380,11 +379,11 @@ namespace RexLogic
 
         if (!filename.empty())
         {
-            AvatarPtr avatar_handler = rexlogicmodule_->GetAvatarHandler();
+            AvatarPtr avatar_handler = avatar_module_->GetAvatarHandler();
             Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
             if (!entity)
             {
-                RexLogicModule::LogError("User avatar not in scene, cannot load appearance");
+                AvatarModule::LogError("User avatar not in scene, cannot load appearance");
                 return;
             }
             avatar_handler->GetAppearanceHandler().LoadAppearance(entity, filename);
@@ -394,7 +393,7 @@ namespace RexLogic
     void AvatarEditor::RevertAvatar()
     {
         // Reload avatar from storage, or reload default
-        rexlogicmodule_->GetAvatarHandler()->ReloadUserAvatar();
+        avatar_module_->GetAvatarHandler()->ReloadUserAvatar();
     }
 
     void AvatarEditor::ChangeTexture()
@@ -410,11 +409,11 @@ namespace RexLogic
         std::string filename = GetOpenFileName(filter, "Choose texture or material");
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+            Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
             if (!entity)
                 return;
                 
-            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
+            avatar_module_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
             RebuildEditView();
         }
     }
@@ -428,7 +427,7 @@ namespace RexLogic
         std::string index_str = button->objectName().toStdString();
         uint index = ParseString<uint>(index_str);    
         
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+        Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
@@ -440,7 +439,7 @@ namespace RexLogic
         {
             attachments.erase(attachments.begin() + index);
             appearance->SetAttachments(attachments);
-            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
+            avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
             RebuildEditView();
         }
     }
@@ -452,11 +451,11 @@ namespace RexLogic
 
         if (!filename.empty())
         {
-            Scene::EntityPtr entity = rexlogicmodule_->GetAvatarHandler()->GetUserAvatar();
+            Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
             if (!entity)
                 return;
                 
-            rexlogicmodule_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
+            avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
             RebuildEditView();
         }
     }

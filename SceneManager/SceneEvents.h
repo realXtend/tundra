@@ -154,7 +154,7 @@ namespace Scene
             /// List of component pointers.
             std::vector<IComponent> entity_ptr_list;
         };*/
-        
+
         /// Soon to be deprecated class event data class.
         class SceneEventData: public IEventData
         {

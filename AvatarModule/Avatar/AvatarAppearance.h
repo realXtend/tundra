@@ -4,6 +4,8 @@
 #define incl_RexLogic_AvatarAppearance_h
 
 #include "EntityComponent/EC_AvatarAppearance.h"
+#include "AvatarModule.h"
+#include "AvatarModuleApi.h" 
 
 class QDomDocument;
 
@@ -22,17 +24,15 @@ namespace HttpUtilities
     typedef boost::shared_ptr<HttpTask> HttpTaskPtr;
 }
 
-namespace RexLogic
+namespace AvatarModule
 {
-    class RexLogicModule;
     class AvatarExporter;
     class AvatarExporterRequest;
     typedef boost::shared_ptr<AvatarExporter> AvatarExporterPtr;
     typedef boost::shared_ptr<AvatarExporterRequest> AvatarExporterRequestPtr;
-    class EC_AvatarAppearance;
 
     //! Handles setting up and updating avatars' appearance. Owned by RexLogicModule::Avatar.
-    class AvatarAppearance
+    class AV_MODULE_API AvatarAppearance
     {
         //! States of inventory-based export. Must go input-first
         enum InventoryExportState
@@ -43,7 +43,7 @@ namespace RexLogic
         };
         
     public:
-        AvatarAppearance(RexLogicModule *rexlogicmodule);
+        AvatarAppearance(Foundation::Framework *framework, AvatarModule *avatar_module);
         ~AvatarAppearance();
         
         //! Reads default appearance of avatar from file to xml document
@@ -223,7 +223,9 @@ namespace RexLogic
         //! Entity that is being used for inventory based export
         Scene::EntityWeakPtr inv_export_entity_;
         
-        RexLogicModule *rexlogicmodule_;
+        Foundation::Framework *framework_;
+
+        AvatarModule *avatar_module_;
     };
 }
 
