@@ -46,7 +46,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         #print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
-            #print "comp Name:", comp.Name
+            print "comp Name:", comp.Name
             if comp.Name in handlertypes:
                 handlertype = handlertypes[comp.Name]
                 h = handlertype(entity, comp, changetype)
