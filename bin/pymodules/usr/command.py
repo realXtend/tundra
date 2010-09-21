@@ -1338,6 +1338,17 @@ if 0: #the new DynamicComponent with individual attrs etc
     jssrc = dc.GetAttribute("js_src")
     print jssrc
 
+if 0: #create DynamicComponent
+    ent = naali.getEntity(2088826547)
+    #ent.createComponent("EC_DynamicComponent")
+    #d = ent.EC_DynamicComponent
+    oldent = r.getEntity(ent.id)
+    d = oldent.dynamic
+    print d
+    #d.CreateAttribute("real", "y")
+    #print d.SetAttribute('y', 0.5)
+    print d.GetAttribute('y')
+
 if 0: #animation control
     ent = naali.getUserAvatar()
     try:
