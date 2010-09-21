@@ -34,12 +34,13 @@ public:
     ~ScriptConsole() {}
 
 public slots:
-    /// Registers new console command.
+    /// Registers new console command and connects it's execution signal to receiver object and member slot.
     /** @param name Name of the command.
+        @param desc Description of the command.
         @param receiver Receiver object.
         @param member Member slot.
     */
-    void RegisterCommand(const QString &name, const QObject *receiver, const char *member);
+    void RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member);
 
     /// Executes console command.
     /** @param command Console command, syntax: "command(param1, param2, param3, ...)".
