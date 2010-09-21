@@ -1242,7 +1242,7 @@ if 0:
     print a == b, a.toString(), b.toString()
     
 
-if 1: #sound add&remove
+if 0: #sound add&remove
     e = naali.getUserAvatar()
     try:
         e.sound
