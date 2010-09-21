@@ -1242,19 +1242,21 @@ if 0:
     print a == b, a.toString(), b.toString()
     
 
-if 0: #sound add&remove
+if 1: #sound add&remove
     e = naali.getUserAvatar()
     try:
         e.sound
     except AttributeError:
-        #print e.createComponent("EC_AttachedSound")
-        print naali.createComponent(e, "EC_AttachedSound") #temp workaround XXX
+        print e.GetOrCreateComponentRaw("EC_AttachedSound")
+        print "HAS SOUND COMPONENT:", e.HasComponent("EC_AttachedSound")
+        #print naali.createComponent(e, "EC_AttachedSound") #temp workaround XXX
         print "created a new Sound component"
 
     s = e.sound
     print type(s), s
 
-    e.removeSound(s)
+    #e.removeSound(s)
+    e.RemoveComponentRaw(s)
     try:
         e.sound
     except AttributeError:
