@@ -22,6 +22,7 @@ class QObject;
 
 class InputServiceInterface;
 class Frame;
+class ScriptConsole;
 
 namespace Poco
 {
@@ -266,6 +267,9 @@ namespace Foundation
         /// Returns the framework Frame object.
         Frame *GetFrame() const { return frame_; }
 
+        /// Returns the framework Console object.
+        ScriptConsole *Console() const { return console_; }
+
     signals:
         /** Emitted after new scene has been added to framework.
          *  @param name new scene name.
@@ -352,6 +356,9 @@ namespace Foundation
 
         //! Exposes Naali framework's update tick.
         Frame *frame_;
+
+        //! Provides console access for scripting languages.
+        ScriptConsole *console_;
     };
 
     namespace

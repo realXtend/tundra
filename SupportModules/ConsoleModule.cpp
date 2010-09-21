@@ -7,7 +7,6 @@
 #include "ConsoleEvents.h"
 #include "UiConsoleManager.h"
 
-#include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -48,7 +47,6 @@ namespace Console
             ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
 
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
-        inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
     }
 
