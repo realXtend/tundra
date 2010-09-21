@@ -12,8 +12,9 @@
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
 }
+
+class IEventData;
 
 namespace OpenALAudio
 {
@@ -203,10 +204,10 @@ namespace OpenALAudio
         void Update(f64 frametime);
         
         //! Handles an asset event. Called from OpenALAudioModule.
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
         
         //! Handles a thread task event. Called from OpenALAudioModule.
-        bool HandleTaskEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleTaskEvent(event_id_t event_id, IEventData* data);
         
         //! Returns initialized status
         bool IsInitialized() const { return initialized_; }

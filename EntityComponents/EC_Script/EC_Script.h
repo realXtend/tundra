@@ -3,13 +3,49 @@
 #ifndef incl_EC_Script_EC_Script_h
 #define incl_EC_Script_EC_Script_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
+
+
 
 class IScriptInstance;
 
-class EC_Script: public Foundation::ComponentInterface
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Script</h2>
+Registered by PythonScript::PythonScriptModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString: scriptRef
+<div></div> 
+<li>QString: type
+<div></div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any entity Component</b>.
+</table>
+*/
+class EC_Script: public IComponent
 {
+
+
     Q_OBJECT
     DECLARE_EC(EC_Script)
 
@@ -17,7 +53,7 @@ public:
     /// Destructor.
     ~EC_Script();
 
-    /// ComponentInterface override. This component is serializable.
+    /// IComponent override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
     /// Type of the script as string (js/py)
@@ -66,7 +102,7 @@ private slots:
         @param attribute Attribute that changed.
         @param change Change type.
     */
-    void HandleAttributeChanged(AttributeInterface* attribute, AttributeChange::Type change);
+    void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     /// Registers the actions this component provides when parent entity is set.
     void RegisterActions();
@@ -75,7 +111,7 @@ private:
     /** Constuctor.
         @param module Declaring module.
     */
-    explicit EC_Script(Foundation::ModuleInterface *module);
+    explicit EC_Script(IModule *module);
 
     /// Script instance.
     IScriptInstance *scriptInstance_;

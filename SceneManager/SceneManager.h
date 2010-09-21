@@ -7,7 +7,7 @@
 #include "CoreStdIncludes.h"
 #include "CoreAnyIterator.h"
 #include "Entity.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 
 #include <QObject>
 #include <QVariant>
@@ -16,7 +16,6 @@
 namespace Scene
 {
     typedef std::list<EntityPtr> EntityList;
-    typedef std::list<EntityPtr>::iterator EntityListIterator;
 
     //! Acts as a generic scenegraph for all entities in the world.
     /*! Contains all entities in the world in a generic fashion.
@@ -143,23 +142,23 @@ namespace Scene
         /*! \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentChanged(IComponent* comp, AttributeChange::Type change);
         
         //! Emit notification of an attribute changing
         /*! \param comp Component pointer
             \param attribute Attribute pointer
             \param change Type of change (local, from network...)
          */
-        void EmitAttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
+        void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
-        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, AttributeChange::Type change);
+        //void EmitComponentInitialized(IComponent* comp); //, AttributeChange::Type change);
         
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
@@ -167,7 +166,7 @@ namespace Scene
             \param change Type of change (local, from network...)
             \note This is emitted before just before the component is removed.
          */
-        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
         //! Emit a notification of an entity having been created
         /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
             should not usually decide the entityID itself.
@@ -216,25 +215,25 @@ namespace Scene
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentChanged(IComponent* comp, AttributeChange::Type change);
 
         //! Signal when an attribute of a component has changed
-        void AttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
+        void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
         //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
         //! Signal when a component is initialized.
         /*! Python and Javascript handlers use this instead of subclassing and overriding the component constructor
          *! -- not used now 'cause ComponentAdded is also emitted upon initialization (loading from server ) 
-         void ComponentInitialized(Foundation::ComponentInterface* comp);*/
+         void ComponentInitialized(IComponent* comp);*/
 
         //! Signal when an entity created
         /*! Note: currently there is also Naali scene event that duplicates this notification

@@ -3,7 +3,7 @@
 #ifndef incl_RexLogic_EC_AvatarAppearance_h
 #define incl_RexLogic_EC_AvatarAppearance_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
@@ -12,8 +12,11 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 
+
+
 namespace RexLogic
 {
+
     //! Avatar asset name map (key: human-readable name, value: resource id)
     typedef std::map<std::string, std::string> AvatarAssetMap;
     
@@ -281,8 +284,40 @@ namespace RexLogic
     
     const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>AvatarAppearance</h2>
+Entity component that stores an avatar's appearance parameters.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+
+Does not emit any actions.
+
+<b>Doesn't depend on other components.</b>
+</table>
+
+*/
+
     //! Entity component that stores an avatar's appearance parameters
-    class REXLOGIC_MODULE_API EC_AvatarAppearance : public Foundation::ComponentInterface
+    class REXLOGIC_MODULE_API EC_AvatarAppearance : public IComponent
     {
         Q_OBJECT
             
@@ -327,7 +362,7 @@ namespace RexLogic
         void CalculateMasterModifiers();
         
     private:
-        EC_AvatarAppearance(Foundation::ModuleInterface* module);
+        EC_AvatarAppearance(IModule* module);
         AppearanceModifier* FindModifier(const std::string& name, AppearanceModifier::ModifierType type);
                 
         //! Avatar mesh
@@ -353,6 +388,8 @@ namespace RexLogic
         //! Miscellaneous properties
         AvatarPropertyMap properties_;
     };
+
+
 }
 
 #endif

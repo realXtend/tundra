@@ -35,10 +35,10 @@ namespace OgreRenderer
         std::vector<Foundation::ResourcePtr> GetResources(const std::string& type);
         
         //! Handles an asset system event. Called by OgreRenderingModule
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
 
         //! Handles a resource event. Called by OgreRenderingModule
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
         
         //! Internal method to parse braces from an Ogre script. Returns true if line contained open/close brace
         static bool ProcessBraces(const std::string& line, int& brace_level);

@@ -4,7 +4,7 @@
 #define incl_QtInputModule_MouseEvent_h
 
 #include "CoreTypes.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 
 #include <qnamespace.h>
 #include <QPoint>
@@ -27,9 +27,11 @@ namespace QtInputEvents
 }
 
 /// MouseEvent is the event data structure passed as the parameter in all Naali mouse-related events.
-class MouseEvent : public QObject, public Foundation::EventDataInterface
+class MouseEvent : public QObject, public IEventData
 {
     Q_OBJECT
+    Q_ENUMS(MouseButton)
+    Q_ENUMS(EventType)
 
 public:
 	MouseEvent()

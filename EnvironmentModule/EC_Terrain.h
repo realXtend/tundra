@@ -4,7 +4,7 @@
 #define incl_EC_TerrainPatch_h
 
 #include "EnvironmentModuleApi.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -13,10 +13,43 @@ namespace Ogre
     class SceneNode;
 }
 
+
+
 namespace Environment
 {
+	/**
+
+<table class="header">
+
+<tr>
+<td>
+<h2>Terrain</h2>
+Stores all the terrain patches (typically 16x16) in a given terrain.
+
+Registered by Environment::EnvironmentModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't Depend on any components</b>. 
+</table>
+
+*/
     /// Stores all the terrain patches (typically 16x16) in a given terrain.
-    class ENVIRONMENT_MODULE_API EC_Terrain : public Foundation::ComponentInterface
+    class ENVIRONMENT_MODULE_API EC_Terrain : public IComponent
     {
         Q_OBJECT
 
@@ -107,7 +140,7 @@ namespace Environment
         void Destroy();
 
     private:
-        EC_Terrain(Foundation::ModuleInterface* module);
+        EC_Terrain(IModule* module);
 
         /// Stores the actual height patches.
         Patch patches[cNumPatchesPerEdge][cNumPatchesPerEdge];

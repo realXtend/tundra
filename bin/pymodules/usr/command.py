@@ -898,11 +898,14 @@ if 0: #scene, aka. SceneManager
 if 0: #javascript service
     import naali
     from naali import runjs
+    cam = naali.getCamera()
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
     runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
-    runjs('print("Some camera! " + x)', {'x': naali.getCamera()})
-    runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
-    runjs('print("Camera Entity " + x)', {'x': naali.getCameraEntity()})
+    runjs('print("Some camera! " + x)', {'x': cam.camera})
+    #py objects are not qobjects. runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
+    runjs('print("Camera Entity " + x)', {'x': cam.qent})
+    runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.Position})
+    #not exposed yet. runjs('print("QVector3D: " + new QVector3D())', {})
     #runjs('var a = {"a": true, "b": 2};')
     #runjs('print(a.a + ", " + a.b)')
     #runjs('print(JSON.stringify(a))')

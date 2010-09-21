@@ -38,11 +38,10 @@ namespace CoreUi
         connect(savePushButton, SIGNAL(clicked()), SLOT(SaveSettings()));
         connect(cancelPushButton, SIGNAL(clicked()), SLOT(Canceled()));
         connect(visibility_animation_, SIGNAL(finished()), SLOT(AnimationsFinished()));
-
-        hide();
-        scene->addItem(this);
-
         connect(scene, SIGNAL(sceneRectChanged(const QRectF&)), SLOT(SceneRectChanged(const QRectF&)));
+
+        scene->addItem(this);
+        hide();
     }
 
     // Public
@@ -64,9 +63,10 @@ namespace CoreUi
     {
         if (!scene())
             return;
-
+        if (!widget())
+            return;
         qreal padding = 10;
-        setPos(scene()->sceneRect().right() - size().width() - padding, panel_->GetContentHeight() + padding);
+        setPos(scene()->sceneRect().right() - widget()->size().width() - padding, panel_->GetContentHeight() + padding);
         setOpacity(0);
 
         QGraphicsProxyWidget::showEvent(show_event);
@@ -87,10 +87,10 @@ namespace CoreUi
 
     void SettingsWidget::SceneRectChanged(const QRectF &scene_rect)
     {
-        if (isVisible() && scene())
+        if (scene() && widget())
         {        
             qreal padding = 10;
-            setPos(scene()->sceneRect().right() - size().width() - padding, panel_->GetContentHeight() + padding);
+            setPos(scene()->sceneRect().right() - widget()->size().width() - padding, panel_->GetContentHeight() + padding);
         }
     }
 
@@ -101,15 +101,15 @@ namespace CoreUi
 
     void SettingsWidget::SaveSettings()
     {
-        emit SaveSettingsClicked();
-        AnimatedHide();
-
         // Emit extra params for InworldSceneManager
         int new_animation_speed = showAnimationSpinBox->value();
         if (animationEnabledCheckBox->checkState() == Qt::Unchecked)
             emit NewUserInterfaceSettingsApplied(opacitySlider->value(), 0);
         else
             emit NewUserInterfaceSettingsApplied(opacitySlider->value(), showAnimationSpinBox->value());
+        emit SaveSettingsClicked();
+        
+        AnimatedHide();
     }
 
     void SettingsWidget::Canceled()

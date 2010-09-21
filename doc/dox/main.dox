@@ -32,10 +32,10 @@ Follow these first steps.
 <h2>Community</h2>
 Contact Naali developers and users at
 <ul>
-<li>Developer mailing list.
-<li>End-user mailing list.
-<li>Naali community wiki.
-<li>IRC channel.
+<li><a href="http://groups.google.com/group/realxtend-dev">Developer mailing list</a>
+<li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>
+<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a>
+<li>IRC channels: #realxtend and #realxtend-dev @ irc.freenode.net
 <li>Bug tracker.
 </ul>
 </td>
@@ -43,10 +43,10 @@ Contact Naali developers and users at
 <h2>Technical Guidelines</h2>
 See the following pages for help on working on Naali codebase.  
 <ul>
-<li>Coding conventions.
-<li>Header usage best practices.
-<li>Qt documentation.
-<li>Ogre documentation.
+<li> \subpage progconv "Coding conventions"
+<li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>
+<li><a href="http://doc.qt.nokia.com/">Qt documentation</a>
+<li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>
 </ul>
 </td>
 </tr>
@@ -159,7 +159,7 @@ Topics:
 <ul>
 <li>\subpage SceneModelPage "Scenes, entities and components."
 <li>Attributes and attribute metadata.
-<li>Entity actions.
+<li>\subpage EntityActionPage "Entity actions".
 <li>Accessing scene contents from C++ code.
 <li>Working with multiple scenes.
 <li>Accessing entity attributes using JavaScript.   

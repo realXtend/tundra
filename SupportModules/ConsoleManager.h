@@ -35,7 +35,7 @@ namespace Console
         ConsoleManager(const ConsoleManager &other);
 
         //! constructor that takes a parent module
-        explicit ConsoleManager(Foundation::ModuleInterface *parent);
+        explicit ConsoleManager(IModule *parent);
 
     public:
         //! destructor
@@ -69,7 +69,7 @@ namespace Console
         CommandManagerPtr command_manager_;
 
         //! parent module
-        Foundation::ModuleInterface *parent_;
+        IModule *parent_;
 
         //! Custom logger to get logmessages from Pogo
         PocoLogChannelPtr console_channel_;

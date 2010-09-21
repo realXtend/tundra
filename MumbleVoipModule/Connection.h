@@ -12,6 +12,7 @@
 #include <QReadWriteLock>
 #include "Core.h"
 #include "MumbleDefines.h"
+#include "StatisticsHandler.h"
 
 class QNetworkReply;
 class QNetworkAccessManager;
@@ -169,6 +170,9 @@ namespace MumbleLib
         
         double GetEncodingQuality() {return encoding_quality_;}
 
+        virtual int GetAverageBandwithIn() const;
+        virtual int GetAverageBandwithOut() const;
+
     private slots:
         void AddToUserList(User* user);
         void HandleIncomingCELTFrame(int session, unsigned char* data, int size);
@@ -201,6 +205,7 @@ namespace MumbleLib
         CELTMode* celt_mode_;
         CELTEncoder* celt_encoder_;
         CELTDecoder* celt_decoder_;
+        MumbleVoip::StatisticsHandler statistics_;
 
         unsigned char encode_buffer_[ENCODE_BUFFER_SIZE_];
         bool authenticated_;

@@ -1,5 +1,6 @@
 """namespace config, 'cause the c++ side doesn't do it too nicely"""
 
+from __main__ import _pythonscriptmodule
 from __main__ import _naali
 import rexviewer as r #the old module is still used , while porting away from it
 #from _naali import *
@@ -7,10 +8,10 @@ import rexviewer as r #the old module is still used , while porting away from it
 #XXX do we actually want these style changes,
 #or is it better to just call the slots directly
 # module methods
-runjs = _naali.RunJavascriptString
+runjs = _pythonscriptmodule.RunJavascriptString
 
 def getScene(name):
-    return _naali.GetScene(name)
+    return _pythonscriptmodule.GetScene(name)
     
 def getDefaultScene():
     #XXX should use framework GetDefaultWorldScene
@@ -35,13 +36,14 @@ def createMeshEntity(meshname, raycastprio=1):
     #ent.mesh.SetMesh(meshname)
 
 def createInputContext(name, priority = 100):
-    return _naali.CreateInputContext(name, priority)
+    return _pythonscriptmodule.CreateInputContext(name, priority)
 
 # module variables
-renderer = _naali.GetRenderer()
-worldlogic = _naali.GetWorldLogic()
-inputcontext = _naali.GetInputContext()
-mediaplayerservice = _naali.GetMediaPlayerService()
+renderer = _pythonscriptmodule.GetRenderer()
+worldlogic = _pythonscriptmodule.GetWorldLogic()
+inputcontext = _pythonscriptmodule.GetInputContext()
+mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
+frame = _naali.GetFrame()
 
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether
 # class Entity:
@@ -97,6 +99,10 @@ def createComponent(ent, typename):
     oldpyent.createComponent(typename)
 
 
+    # Returns EntityAction pointer by the name
+    def action(self, name):
+        return self.qent.Action(name)
+    
 def getEntity(entid):
     qent = getScene("World").GetEntityRaw(entid)
     if qent is None:

@@ -313,7 +313,7 @@ namespace Asset
         return Foundation::AssetPtr();
     }
 
-    void AssetCache::StoreAsset(Foundation::AssetPtr asset)
+    void AssetCache::StoreAsset(Foundation::AssetPtr asset, bool store_to_disk)
     {
         const std::string& asset_id = asset->GetId();
         AssetModule::LogDebug("Storing complete asset " + asset_id);
@@ -321,6 +321,9 @@ namespace Asset
         // Store to memory cache
         assets_[asset_id] = asset;
 
+        if (!store_to_disk)
+            return;
+        
         // Store to disk cache
         const std::string& type = asset->GetType();
         boost::filesystem::path file_path(cache_path_ + "/" + GetHash(asset_id) + "." + type);

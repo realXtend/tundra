@@ -10,7 +10,7 @@
 #include "BuildingWidget.h"
 #include "UiHelper.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "UiServiceInterface.h"

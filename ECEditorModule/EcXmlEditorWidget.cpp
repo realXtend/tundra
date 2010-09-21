@@ -13,7 +13,7 @@
 
 #include "Framework.h"
 #include "SceneManager.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Entity.h"
 #include "XMLUtilities.h"
 
@@ -71,12 +71,12 @@ void EcXmlEditorWidget::SetEntity(const QList<Scene::EntityPtr> &entities)
     Refresh();
 }
 
-void EcXmlEditorWidget::SetComponent(const QList<Foundation::ComponentPtr> &components)
+void EcXmlEditorWidget::SetComponent(const QList<ComponentPtr> &components)
 {
     entities_.clear();
     components_.clear();
 
-    foreach(Foundation::ComponentPtr comp, components)
+    foreach(ComponentPtr comp, components)
         components_ << comp;
 
     Refresh();
@@ -96,7 +96,7 @@ void EcXmlEditorWidget::Refresh()
     // Iterate through individually selected components
     if (components_.size() > 0)
     {
-        QListIterator<Foundation::ComponentWeakPtr> it(components_);
+        QListIterator<ComponentWeakPtr> it(components_);
 
         QDomElement entity_elem = temp_doc.createElement("entity");
         temp_doc.appendChild(entity_elem);
@@ -107,7 +107,7 @@ void EcXmlEditorWidget::Refresh()
 
         while(it.hasNext())
         {
-            Foundation::ComponentPtr component = it.next().lock();
+            ComponentPtr component = it.next().lock();
             //if (component->IsSerializable())
             component->SerializeTo(temp_doc, entity_elem);
         }
@@ -212,7 +212,7 @@ void EcXmlEditorWidget::Save()
                 QDomElement comp_elem = entity_elem.firstChildElement("component");
                 while (!comp_elem.isNull())
                 {
-                    Foundation::ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type"),
+                    ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"),
                                                                                   comp_elem.attribute("name"));
                     if (comp)
                     {

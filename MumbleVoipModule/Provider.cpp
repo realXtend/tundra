@@ -43,7 +43,7 @@ namespace MumbleVoip
             session_->Update(frametime);
     }
     
-    bool Provider::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool Provider::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (server_info_provider_)
             server_info_provider_->HandleEvent(category_id, event_id, data);
