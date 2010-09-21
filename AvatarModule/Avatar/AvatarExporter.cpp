@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "AvatarModule.h"
 #include "Avatar/AvatarExporter.h"
-#include "RexLogicModule.h"
+
 #include "LLSDUtilities.h"
 #include "XmlRpcEpi.h"
+
 #include "Poco/MD5Engine.h"
 #include "Poco/SHA1Engine.h"
 #include "Poco/Base64Encoder.h"
@@ -17,7 +19,7 @@ using namespace RexTypes;
 // Time in which to reauthenticate if export has lasted long, in seconds
 static const float REAUTHENTICATION_TIME = 60.0f;
 
-namespace RexLogic
+namespace AvatarModule
 {
     AvatarExporter::AvatarExporter() : ThreadTask("AvatarExport")
     {
@@ -71,14 +73,14 @@ namespace RexLogic
             return;
         }
         
-        RexLogicModule::LogInfo("Authenticated for export");
+        AvatarModule::LogInfo("Authenticated for export");
         
         std::string export_url = ReplaceSubstring(avatar_url, "/avatar/", "/xmlrpc/");
         
         try
         {
             // Export avatar
-            RexLogicModule::LogInfo("Exporting avatar xml");
+            AvatarModule::LogInfo("Exporting avatar xml");
             
             XmlRpcEpi call;
             call.Connect(export_url);
@@ -103,7 +105,7 @@ namespace RexLogic
             if (call.HasReply("MissingItems"))
             {
                 reexport = true;
-                RexLogicModule::LogInfo("Exporting assets");
+                AvatarModule::LogInfo("Exporting assets");
                 std::vector<std::string> items = call.GetVectorReply<std::string>("MissingItems");
                 for (uint i = 0; i < items.size(); ++i)
                 {
@@ -133,7 +135,7 @@ namespace RexLogic
                         asset_call.AddMember("itemname", name);
                         asset_call.AddMember("hashcode", asset->second.hash_);
                      
-                        RexLogicModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + ToString<int>(asset->second.data_.size()));
+                        AvatarModule::LogDebug("Exporting asset " + name + " hash " + asset->second.hash_ + " datasize " + ToString<int>(asset->second.data_.size()));
                         
                         XMLRPC_VectorAppendBase64(asset_call.GetXMLRPCCall()->GetParamList(), "binaries", (const char*)(&asset->second.data_[0]), asset->second.data_.size());
                         
@@ -149,7 +151,7 @@ namespace RexLogic
                     }
                     else
                     {
-                        RexLogicModule::LogInfo("Storage requested unknown missing asset " + name);
+                        AvatarModule::LogInfo("Storage requested unknown missing asset " + name);
                     }
                 }
             }
@@ -174,7 +176,7 @@ namespace RexLogic
             
             if (reexport)
             {
-                RexLogicModule::LogInfo("Re-exporting avatar xml");
+                AvatarModule::LogInfo("Re-exporting avatar xml");
                 
                 // Re-login to get a fresh hash if export has lasted long
                 if (export_timer.elapsed() > REAUTHENTICATION_TIME)

@@ -8,9 +8,14 @@
 #ifndef incl_RexLogicModule_Avatar_h
 #define incl_RexLogicModule_Avatar_h
 
+#include "Foundation.h"
+#include "AvatarModule.h"
+#include "SceneEvents.h"
 #include "RexUUID.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "Avatar/AvatarAppearance.h"
+
+#include "AvatarModuleApi.h" 
 
 namespace ProtocolUtilities
 {
@@ -22,17 +27,14 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
 }
 
-namespace RexLogic
+namespace AvatarModule
 {
-    class RexLogicModule;
-
-    ///\todo Remove REXLOGIC_MODULE_API
-    class REXLOGIC_MODULE_API Avatar
+    class AV_MODULE_API Avatar
     {
     public:
         //! Constructor.
         //! \param owner Owner module.
-        explicit Avatar(RexLogicModule *owner);
+        explicit Avatar(Foundation::Framework *framework, AvatarModule *avatar_module);
 
         //! Destructor.
         ~Avatar();
@@ -143,8 +145,11 @@ namespace RexLogic
         //! Sets avatar state
         void SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state);
 
-        //! Owner module.
-        RexLogicModule *owner_;
+        //! Framework ptr
+        Foundation::Framework *framework_;
+
+        //! AvatarModule ptr
+        AvatarModule *avatar_module_;
 
         //! Avatar state map
         typedef std::map<RexUUID, EC_OpenSimAvatar::State> AvatarStateMap;

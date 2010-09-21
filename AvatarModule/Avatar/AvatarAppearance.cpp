@@ -6,7 +6,7 @@
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarExporter.h"
 #include "LegacyAvatarSerializer.h"
-#include "RexLogicModule.h"
+
 #include "EntityComponent/EC_OpenSimAvatar.h"
 
 #include "SceneManager.h"
@@ -49,18 +49,19 @@ static const float FIXED_HEIGHT_OFFSET = -0.87f;
 static const float OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 static const uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
-namespace RexLogic
+namespace AvatarModule
 { 
     std::string ReplaceSpaces(const std::string& orig_str)
     {
         return ReplaceChar(orig_str, ' ', '_');
     }
         
-    AvatarAppearance::AvatarAppearance(RexLogicModule *rexlogicmodule) :
-        rexlogicmodule_(rexlogicmodule),
+    AvatarAppearance::AvatarAppearance(Foundation::Framework *framework, AvatarModule *avatar_module) :
+        framework_(framework),
+        avatar_module_(avatar_module),
         inv_export_state_(Idle)
     {
-        std::string default_avatar_path = rexlogicmodule_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_avatar_file", std::string("./data/default_avatar.xml"));
+        std::string default_avatar_path = avatar_module_->GetFramework()->GetDefaultConfig().DeclareSetting("RexAvatar", "default_avatar_file", std::string("./data/default_avatar.xml"));
         
         ReadDefaultAppearance(default_avatar_path);
     }
@@ -98,13 +99,13 @@ namespace RexLogic
         QString q_app_address = QString::fromStdString(appearance_address);
         if (!q_app_address.contains("/avatar/"))
         {
-            RexLogicModule::LogDebug("Inventory based avatar address received for avatar entity " + ToString<int>(entity->GetId()) + ": " +
+            AvatarModule::LogDebug("Inventory based avatar address received for avatar entity " + ToString<int>(entity->GetId()) + ": " +
                 appearance_address);
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             if (!asset_service)
             {
-                RexLogicModule::LogError("Could not get asset service");
+                AvatarModule::LogError("Could not get asset service");
                 return;
             }      
             request_tag_t tag = asset_service->RequestAsset(appearance_address, ASSETTYPENAME_GENERIC_AVATAR_XML);
@@ -117,9 +118,9 @@ namespace RexLogic
         // WEBDAV INVENTORY BASED AVATAR
         else if (q_app_address.endsWith("Avatar.xml"))
         {
-            RexLogicModule::LogDebug("Fetching webdav appearance from " + appearance_address);
+            AvatarModule::LogDebug("Fetching webdav appearance from " + appearance_address);
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             if (asset_service)
             {
                 asset_service->RemoveAssetFromCache(appearance_address);
@@ -128,7 +129,7 @@ namespace RexLogic
                     avatar_appearance_tags_[tag] = entity->GetId();
             }
             else
-                RexLogicModule::LogError("Could not get asset service");
+                AvatarModule::LogError("Could not get asset service");
             return;
         }
            
@@ -151,14 +152,14 @@ namespace RexLogic
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
-            RexLogicModule::LogError("Could not open avatar default appearance file " + filename);
+            AvatarModule::LogError("Could not open avatar default appearance file " + filename);
             return;
         }
         
         if (!default_appearance_->setContent(&file))
         {
             file.close();
-            RexLogicModule::LogError("Could not parse avatar default appearance file " + filename);
+            AvatarModule::LogError("Could not parse avatar default appearance file " + filename);
             return;
         }
         file.close();
@@ -252,10 +253,10 @@ namespace RexLogic
         }
         
         // If this is the user's avatar, make the editor refresh its view (morphs, textures etc.)
-        if (entity == rexlogicmodule_->GetAvatarHandler()->GetUserAvatar())
+        if (entity == avatar_module_->GetAvatarHandler()->GetUserAvatar())
         {
-            RexLogicModule::LogDebug("User avatar changed, rebuilding editor view");
-            rexlogicmodule_->GetAvatarEditor()->RebuildEditView(); 
+            AvatarModule::LogDebug("User avatar changed, rebuilding editor view");
+            avatar_module_->GetAvatarEditor()->RebuildEditView(); 
         }  
     }
     
@@ -383,7 +384,7 @@ namespace RexLogic
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
-        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
     }
     
@@ -749,12 +750,12 @@ namespace RexLogic
                 {
                     if (result->GetSuccess())
                     {
-                        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(i->first);
+                        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(i->first);
                         if (entity)
                             ProcessAppearanceDownload(entity, &result->data_[0], result->data_.size());
                     }
                     else
-                        RexLogicModule::LogInfo("Error downloading avatar appearance for avatar " + ToString<int>(i->first) + ": " + result->reason_);
+                        AvatarModule::LogInfo("Error downloading avatar appearance for avatar " + ToString<int>(i->first) + ": " + result->reason_);
                     
                     done = true;
                 }
@@ -784,7 +785,7 @@ namespace RexLogic
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
         {
             // If fails badly, setup default instead
-            RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
+            AvatarModule::LogInfo("Failed to parse avatar description, setting default appearance");
             SetupDefaultAppearance(entity);
             return;
         }
@@ -800,7 +801,7 @@ namespace RexLogic
             // Lets clear the cache as the id == url doesnt chance so
             // we can be sure the asset is fetched again from the web
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = 
-                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             if (asset_service)
             {
                 AvatarAssetMap::const_iterator iter = assets.begin();
@@ -837,11 +838,11 @@ namespace RexLogic
         } 
                 
         // Request needed avatar resources
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
         {
-            RexLogicModule::LogError("Renderer does not exist");
+            AvatarModule::LogError("Renderer does not exist");
             return 0;
         }    
     
@@ -886,7 +887,7 @@ namespace RexLogic
             // If not found, use default appearance
             // (at this point, it's nice to just have *some* appearance change, for example
             // changing back to default human from fish in the fishworld, if no avatar stored)
-            RexLogicModule::LogInfo("Got empty avatar description from storage, setting default appearance");
+            AvatarModule::LogInfo("Got empty avatar description from storage, setting default appearance");
             SetupDefaultAppearance(entity);
             return;
         }
@@ -918,7 +919,7 @@ namespace RexLogic
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
         {
             // If fails badly, setup default instead
-            RexLogicModule::LogInfo("Failed to parse avatar description, setting default appearance");
+            AvatarModule::LogInfo("Failed to parse avatar description, setting default appearance");
             SetupDefaultAppearance(entity);
             return;
         }
@@ -945,14 +946,14 @@ namespace RexLogic
             return false;
            
         // Now we know it is our request, can erase it and don't need to propagate this event      
-        RexLogicModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
+        AvatarModule::LogDebug("Got avatar resource " + event_data->id_ + " type " + event_data->resource_->GetType());      
         entity_id_t id = i->second;
 
         avatar_resource_tags_.erase(i);
         if (avatar_pending_requests_[id])
             avatar_pending_requests_[id]--;
             
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
+        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(id);
         if (!entity)
             return true;
 
@@ -963,7 +964,7 @@ namespace RexLogic
         // If was the last request, rebuild avatar
         if (avatar_pending_requests_[id] == 0)
         {
-            RexLogicModule::LogDebug("All resources received, rebuilding avatar");
+            AvatarModule::LogDebug("All resources received, rebuilding avatar");
             SetupAppearance(entity);
         }
     
@@ -984,7 +985,7 @@ namespace RexLogic
         // Now we know it is our request, can erase it and don't need to propagate this event
         entity_id_t id = i->second;
         avatar_appearance_tags_.erase(i);
-        Scene::EntityPtr entity = rexlogicmodule_->GetAvatarEntity(id);
+        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(id);
         if (!entity)
             return true;
 
@@ -1019,10 +1020,10 @@ namespace RexLogic
                     // See that the asset is actually an avatar description we uploaded
                     if (event_data->name.find("Avatar") != std::string::npos)
                     {
-                        WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
+                        ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
                         if (conn)
                         {
-                            RexLogicModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
+                            AvatarModule::LogDebug("Sending info about new inventory based appearance " + event_data->assetId.ToString());
                             StringVector strings;
                             std::string method = "RexSetAppearance";
                             strings.push_back(conn->GetInfo().agentID.ToString());
@@ -1070,11 +1071,11 @@ namespace RexLogic
 
         if (event_id == Inventory::Events::EVENT_INVENTORY_WEBDAV_AVATAR_XML_UPLOAD_COMPLETE)
         {
-            WorldStreamPtr connection = rexlogicmodule_->GetServerConnection();
+            ProtocolUtilities::WorldStreamPtr connection = avatar_module_->GetServerConnection();
             EC_OpenSimAvatar* avatar = inv_export_entity_.lock()->GetComponent<EC_OpenSimAvatar>().get();
             if (connection && avatar)
             {
-                RexLogicModule::LogDebug("Informing ModRex about webdav avatar appearance update.");
+                AvatarModule::LogDebug("Informing ModRex about webdav avatar appearance update.");
                 StringVector strings;
                 strings.push_back(connection->GetInfo().agentID.ToString());
                 strings.push_back(avatar->GetAppearanceAddress());
@@ -1201,11 +1202,11 @@ namespace RexLogic
     
     void AvatarAppearance::FixupResource(AvatarAsset& asset, const AvatarAssetMap& asset_map, const std::string& resource_type)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
         {
-            RexLogicModule::LogError("Renderer does not exist");
+            AvatarModule::LogError("Renderer does not exist");
             return;
         }
         
@@ -1222,7 +1223,7 @@ namespace RexLogic
     
     void AvatarAppearance::FixupMaterial(AvatarMaterial& mat, const AvatarAssetMap& asset_map)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
             return;
@@ -1332,7 +1333,7 @@ namespace RexLogic
 
         if (inv_export_state_ != Idle)
         {
-            RexLogicModule::LogInfo("Avatar export already running");
+            AvatarModule::LogInfo("Avatar export already running");
             return;
         }
 
@@ -1352,7 +1353,7 @@ namespace RexLogic
          
         // If there are assets, stuff them all
         inv_export_state_ = Assets;
-        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
@@ -1416,7 +1417,7 @@ namespace RexLogic
         std::string avatarfilename = "Avatar.xml";
                 
         // Upload appearance as inventory asset. 
-        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
@@ -1433,7 +1434,7 @@ namespace RexLogic
 
         if (inv_export_state_ != Idle)
         {
-            RexLogicModule::LogInfo("Avatar export already running");
+            AvatarModule::LogInfo("Avatar export already running");
             return;
         }
 
@@ -1452,7 +1453,7 @@ namespace RexLogic
          
         // If there are assets, stuff them all
         inv_export_state_ = Assets;
-        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         
         ExportAssetMap::const_iterator i = inv_export_request_->assets_.begin();
@@ -1504,7 +1505,7 @@ namespace RexLogic
         std::string avatarfilename = "Avatar" + time.toString(" yyyy.MM.dd hh:mm:ss").toStdString() + ".xml";
                 
         // Upload appearance as inventory asset. 
-        Foundation::EventManagerPtr eventmgr = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr eventmgr = avatar_module_->GetFramework()->GetEventManager();
         Inventory::InventoryUploadBufferEventData event_data;
         event_data.filenames.push_back(QString(avatarfilename.c_str()));
         event_data.buffers.push_back(data_buffer);
@@ -1530,11 +1531,11 @@ namespace RexLogic
         // Have only one export running at a time
         if (avatar_exporter_)
         {
-            RexLogicModule::LogInfo("Avatar export already running");
+            AvatarModule::LogInfo("Avatar export already running");
             return;
         }
         
-        RexLogicModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
+        AvatarModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
         
         // Instantiate new avatar exporter & give it the work request
         avatar_exporter_ = AvatarExporterPtr(new AvatarExporter());
@@ -1578,7 +1579,7 @@ namespace RexLogic
             avatarxmlfile.close();
         }
         else
-            RexLogicModule::LogError("Could not save avatar description file " + outname);
+            AvatarModule::LogError("Could not save avatar description file " + outname);
         
         // Get assets & dump them all
         AvatarExporterRequestPtr request(new AvatarExporterRequest());
@@ -1600,26 +1601,26 @@ namespace RexLogic
                 assetfile.close();
             }
             else
-                RexLogicModule::LogError("Could not save avatar asset " + filename);
+                AvatarModule::LogError("Could not save avatar asset " + filename);
             ++i;
         }
     }
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
     {
-        RexLogicModule::LogDebug("Getting mesh for export");
+        AvatarModule::LogDebug("Getting mesh for export");
         GetAvatarAssetForExport(request, appearance.GetMesh(), false, inventorymode);
-        RexLogicModule::LogDebug("Getting skeleton for export");
+        AvatarModule::LogDebug("Getting skeleton for export");
         GetAvatarAssetForExport(request, appearance.GetSkeleton(), false, inventorymode);
 
-        RexLogicModule::LogDebug("Getting materials for export");
+        AvatarModule::LogDebug("Getting materials for export");
         AvatarMaterialVector materials = appearance.GetMaterials();
         for (uint i = 0; i < materials.size(); ++i)
         {
             GetAvatarMaterialForExport(request, materials[i], inventorymode);
         }
         
-        RexLogicModule::LogDebug("Getting attachments for export");
+        AvatarModule::LogDebug("Getting attachments for export");
         AvatarAttachmentVector attachments = appearance.GetAttachments();
         for (uint i = 0; i < attachments.size(); ++i)
         {
@@ -1633,11 +1634,11 @@ namespace RexLogic
     
     bool AvatarAppearance::GetAvatarMaterialForExport(AvatarExporterRequestPtr request, const AvatarMaterial& material, bool inventorymode)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
         {
-            RexLogicModule::LogError("Renderer does not exist");
+            AvatarModule::LogError("Renderer does not exist");
             return false;
         }
         
@@ -1660,13 +1661,13 @@ namespace RexLogic
             OgreRenderer::OgreMaterialResource* mat_res = dynamic_cast<OgreRenderer::OgreMaterialResource*>(material.asset_.resource_.lock().get());
             if (!mat_res)
             {
-                RexLogicModule::LogError("Material resource " + export_name + " was not valid");
+                AvatarModule::LogError("Material resource " + export_name + " was not valid");
                 return false;
             }
             ogre_mat = mat_res->GetMaterial();
             if (ogre_mat.isNull())
             {
-                RexLogicModule::LogError("Material resource " + export_name + " could not be found");
+                AvatarModule::LogError("Material resource " + export_name + " could not be found");
                 return false;
             }
         }
@@ -1675,7 +1676,7 @@ namespace RexLogic
             ogre_mat = OgreRenderer::GetLocalMaterial(material.asset_.name_);
             if (ogre_mat.isNull())
             {
-                RexLogicModule::LogError("Material resource " + export_name + " could not be found");
+                AvatarModule::LogError("Material resource " + export_name + " could not be found");
                 return false;
             }
         }
@@ -1758,7 +1759,7 @@ namespace RexLogic
                 {
                     if (new_export_asset.hash_ == i->second.hash_)
                     {
-                        RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                        AvatarModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
                         duplicate = true;
                         break;
                     }
@@ -1771,7 +1772,7 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
+            AvatarModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
         }
         
         // Remove the clone
@@ -1795,7 +1796,7 @@ namespace RexLogic
         // If name is empty, skip
         if (export_name.empty())
         {
-            RexLogicModule::LogDebug("Skipping unnamed asset");
+            AvatarModule::LogDebug("Skipping unnamed asset");
             return true;
         }
 
@@ -1805,7 +1806,7 @@ namespace RexLogic
         // Skip if already exists with this name
         if (request->assets_.find(export_name) != request->assets_.end())
         {
-            RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
+            AvatarModule::LogDebug("Skipping export of avatar asset " + export_name + ", same name already exists");
             return true;
         }
         
@@ -1819,17 +1820,17 @@ namespace RexLogic
                 return true;        
         
             boost::shared_ptr<Foundation::AssetServiceInterface> asset_service =
-                rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+                avatar_module_->GetFramework()->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
             if (!asset_service)
             {
-                RexLogicModule::LogError("Could not get asset service");
+                AvatarModule::LogError("Could not get asset service");
                 return false;
             }
             // The assettype doesn't matter here
             Foundation::AssetPtr raw_asset = asset_service->GetAsset(asset.resource_id_, std::string());
             if (!raw_asset)
             {
-                RexLogicModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);
+                AvatarModule::LogError("Could not get raw asset data for resource " + asset.resource_id_);
                 return false;
             }
             if (raw_asset->GetSize())
@@ -1839,7 +1840,7 @@ namespace RexLogic
             }
             else
             {
-                RexLogicModule::LogError("Zero size data for avatar asset " + asset.name_);
+                AvatarModule::LogError("Zero size data for avatar asset " + asset.name_);
                 return false;
             }
         }
@@ -1857,13 +1858,13 @@ namespace RexLogic
                 }
                 else
                 {
-                    RexLogicModule::LogError("Zero size data for local avatar asset " + asset.name_);
+                    AvatarModule::LogError("Zero size data for local avatar asset " + asset.name_);
                     return false;
                 }
             }
             catch (Ogre::Exception e)
             {
-                RexLogicModule::LogError("Could not get local avatar asset " + asset.name_ + " for export");
+                AvatarModule::LogError("Could not get local avatar asset " + asset.name_ + " for export");
                 return false;
             }
         }
@@ -1878,14 +1879,14 @@ namespace RexLogic
             {
                 if (new_export_asset.hash_ == i->second.hash_)
                 {
-                    RexLogicModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
+                    AvatarModule::LogDebug("Skipping export of avatar asset " + export_name + ", has same hash as " + i->first);
                     return true;
                 }
                 ++i;
             }
         } 
         
-        RexLogicModule::LogDebug("Added export asset " + export_name);
+        AvatarModule::LogDebug("Added export asset " + export_name);
         request->assets_[export_name] = new_export_asset;
         return true;
     }
@@ -1899,9 +1900,9 @@ namespace RexLogic
             {
                 if (result->success_)
                 {
-                    RexLogicModule::LogInfo("Avatar exported successfully");
+                    AvatarModule::LogInfo("Avatar exported successfully");
                     // Send information of appearance change
-                    WorldStreamPtr conn = rexlogicmodule_->GetServerConnection();
+                    ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
                     if (conn)
                     {
                         std::string method = "RexAppearance";
@@ -1910,7 +1911,7 @@ namespace RexLogic
                     }
                 }
                 else
-                    RexLogicModule::LogInfo("Avatar export failed: " + result->message_);
+                    AvatarModule::LogInfo("Avatar export failed: " + result->message_);
                 
                 avatar_exporter_.reset();
             }
@@ -1947,7 +1948,7 @@ namespace RexLogic
         }
         catch (Ogre::Exception& e)
         {
-            RexLogicModule::LogError("Error while loading avatar " + filename + ": " + e.what());
+            AvatarModule::LogError("Error while loading avatar " + filename + ": " + e.what());
             return false;
         }
         
@@ -1970,14 +1971,14 @@ namespace RexLogic
         
         if (!file.open(QIODevice::ReadOnly))
         {
-            RexLogicModule::LogError("Could not open avatar appearance file " + filename);
+            AvatarModule::LogError("Could not open avatar appearance file " + filename);
             return false;
         }
         
         if (!avatar_doc.setContent(&file))
         {
             file.close();
-            RexLogicModule::LogError("Could not parse avatar appearance file " + filename);
+            AvatarModule::LogError("Could not parse avatar appearance file " + filename);
             return false;
         }
         file.close();
@@ -1989,7 +1990,7 @@ namespace RexLogic
         // If mesh name is empty, deduce mesh name from filename
         if (mesh.name_.empty())
         {
-            RexLogicModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
+            AvatarModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
 
             mesh.name_ = ReplaceSubstring(leafname, ".xml", ".mesh");
             appearance->SetMesh(mesh);
@@ -2037,11 +2038,11 @@ namespace RexLogic
     
     void AvatarAppearance::AddTempResourceDirectory(const std::string& dirname)
     {
-        boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
             GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
         if (!renderer)
         {
-            RexLogicModule::LogError("Renderer does not exist");
+            AvatarModule::LogError("Renderer does not exist");
             return;
         }
         
@@ -2099,11 +2100,11 @@ namespace RexLogic
         // New texture from image
         else
         {
-            boost::shared_ptr<OgreRenderer::Renderer> renderer = rexlogicmodule_->GetFramework()->GetServiceManager()->
+            boost::shared_ptr<OgreRenderer::Renderer> renderer = avatar_module_->GetFramework()->GetServiceManager()->
                 GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
             if (!renderer)
             {
-                RexLogicModule::LogError("Renderer does not exist");
+                AvatarModule::LogError("Renderer does not exist");
                 return false;
             }
             
@@ -2127,7 +2128,7 @@ namespace RexLogic
         
         Scene::Events::EntityEventData event_data;
         event_data.entity = entity;
-        Foundation::EventManagerPtr event_manager = rexlogicmodule_->GetFramework()->GetEventManager();
+        Foundation::EventManagerPtr event_manager = avatar_module_->GetFramework()->GetEventManager();
         event_manager->SendEvent("Scene", Scene::Events::EVENT_ENTITY_VISUALS_MODIFIED, &event_data);
                 
         return true;
@@ -2155,14 +2156,14 @@ namespace RexLogic
         
         if (!file.open(QIODevice::ReadOnly))
         {
-            RexLogicModule::LogError("Could not open attachment description file " + filename);
+            AvatarModule::LogError("Could not open attachment description file " + filename);
             return false;
         }
         
         if (!attachment_doc.setContent(&file))
         {
             file.close();
-            RexLogicModule::LogError("Could not parse attachment description file " + filename);
+            AvatarModule::LogError("Could not parse attachment description file " + filename);
             return false;
         }
         file.close();  

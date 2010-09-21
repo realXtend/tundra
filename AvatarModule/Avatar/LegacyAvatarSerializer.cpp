@@ -2,7 +2,6 @@
 
 #include "StableHeaders.h"
 #include "LegacyAvatarSerializer.h"
-#include "RexLogicModule.h"
 #include "RexTypes.h"
 #include "RexNetworkUtils.h"
 #include "OgreConversionUtils.h"
@@ -14,6 +13,8 @@
 #include "HttpUtilities.h"
 #include "XMLUtilities.h"
 
+#include "AvatarModule.h"
+
 #include <QDomDocument>
 #include <QDomElement>
 #include <QFile>
@@ -22,7 +23,7 @@
 
 using namespace RexTypes;
 
-namespace RexLogic
+namespace AvatarModule
 {
     std::string modifier_mode[] = {
         "relative",
@@ -30,14 +31,14 @@ namespace RexLogic
         "cumulative"
     };
     
-    bool LegacyAvatarSerializer::ReadAvatarAppearance(RexLogic::EC_AvatarAppearance& dest, const QDomDocument& source, bool read_mesh)
+    bool LegacyAvatarSerializer::ReadAvatarAppearance(EC_AvatarAppearance& dest, const QDomDocument& source, bool read_mesh)
     {
         PROFILE(Avatar_ReadAvatarAppearance);
         
         QDomElement avatar = source.firstChildElement("avatar");
         if (avatar.isNull())
         {
-            RexLogicModule::LogError("No avatar element");
+            AvatarModule::LogError("No avatar element");
             return false;
         }
 
@@ -105,7 +106,7 @@ namespace RexLogic
         QDomElement transform_elem = avatar.firstChildElement("transformation");
         if (!transform_elem.isNull())
         {
-            Transform trans;
+            AvatarTransform trans;
             trans.position_ = ParseVector3(transform_elem.attribute("position").toStdString());
             trans.orientation_ = ParseQuaternion(transform_elem.attribute("rotation").toStdString());
             trans.scale_ = ParseVector3(transform_elem.attribute("scale").toStdString());
@@ -339,7 +340,7 @@ namespace RexLogic
         QDomElement elem = source.firstChildElement("avatar");
         if (elem.isNull())
         {
-            RexLogicModule::LogError("No avatar element");
+            AvatarModule::LogError("No avatar element");
             return false;
         }
         
@@ -363,7 +364,7 @@ namespace RexLogic
             id = elem.attribute("uuid").toStdString(); // legacy
         if (id.empty())
         {
-            RexLogicModule::LogError("Missing animation identifier");
+            AvatarModule::LogError("Missing animation identifier");
             return false;
         }
         
@@ -372,7 +373,7 @@ namespace RexLogic
             intname = elem.attribute("ogrename").toStdString(); // legacy
         if (intname.empty())
         {
-            RexLogicModule::LogError("Missing mesh animation name");
+            AvatarModule::LogError("Missing mesh animation name");
             return false;
         }
         
@@ -406,7 +407,7 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogError("Attachment without name element");
+            AvatarModule::LogError("Attachment without name element");
             return false;
         }
 
@@ -424,7 +425,7 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogError("Attachment without mesh element");
+            AvatarModule::LogError("Attachment without mesh element");
             return false;
         }
         
@@ -452,7 +453,7 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogError("Attachment without avatar element");
+            AvatarModule::LogError("Attachment without avatar element");
             return false;
         }
         
@@ -465,7 +466,7 @@ namespace RexLogic
         QDomElement attachment_elem = source.firstChildElement("attachment");
         if (attachment_elem.isNull())
         {
-            RexLogicModule::LogError("Attachment without attachment element");
+            AvatarModule::LogError("Attachment without attachment element");
             return false;
         }
 
@@ -489,7 +490,7 @@ namespace RexLogic
         
         if (!found)
         {
-            RexLogicModule::LogError("No matching avatar mesh found in attachment. This attachment cannot be used for this avatar mesh");
+            AvatarModule::LogError("No matching avatar mesh found in attachment. This attachment cannot be used for this avatar mesh");
             return false;
         }
         
@@ -501,7 +502,7 @@ namespace RexLogic
         }
         else
         {
-            RexLogicModule::LogError("Attachment without mesh element");
+            AvatarModule::LogError("Attachment without mesh element");
             return false;
         }
         
@@ -604,7 +605,7 @@ namespace RexLogic
         // Transformation element
         {
             QDomElement transformation = dest.createElement("transformation");
-            const Transform& transform  = source.GetTransform();
+            const AvatarTransform& transform  = source.GetTransform();
             SetAttribute(transformation, "position", WriteVector3(transform.position_));
             SetAttribute(transformation, "rotation", WriteQuaternion(transform.orientation_));
             SetAttribute(transformation, "scale", WriteVector3(transform.scale_));

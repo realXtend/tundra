@@ -2,6 +2,38 @@
 <!DOCTYPE TS>
 <TS version="2.0" language="en_EN">
 <context>
+    <name>AudioPreviewEditor</name>
+    <message>
+        <source>Frequency: %1Hz</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Bits: %1 bit</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source> Format: </source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>
+Duration: %1 sec</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Stop</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Play</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Audio: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>AvatarEditor</name>
     <message>
         <source>Avatar Editor</source>
@@ -876,6 +908,13 @@ p, li { white-space: pre-wrap; }
     </message>
     <message>
         <source>Terrain paint</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Ether::Logic::EtherSceneController</name>
+    <message>
+        <source>Naali&apos;s help system is still under development, sorry.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -1835,88 +1874,9 @@ alpha layer of the diffuse map</source>
     </message>
 </context>
 <context>
-    <name>Naali::AudioPreviewEditor</name>
-    <message>
-        <source>Audio: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Stop</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Play</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Frequency: %1Hz</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Bits: %1 bit</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Format: </source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>
-Duration: %1 sec</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::MaterialWizard</name>
-    <message>
-        <source>Material Wizard</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::MeshPreviewEditor</name>
+    <name>MeshPreviewEditor</name>
     <message>
         <source>Mesh: </source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::OgreAssetEditorModule</name>
-    <message>
-        <source>Material Wizard</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>World Tools</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::OgreScriptEditor</name>
-    <message>
-        <source>OGRE Script Editor</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::PropertyTableWidget</name>
-    <message>
-        <source>Name</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Type</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Value</source>
-        <translation type="unfinished"></translation>
-    </message>
-</context>
-<context>
-    <name>Naali::TexturePreviewEditor</name>
-    <message>
-        <source>Texture: </source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2052,6 +2012,14 @@ Duration: %1 sec</source>
         <source>Local ID</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Components</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Properties</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ObjectManipulationsWidget</name>
@@ -2103,6 +2071,21 @@ Duration: %1 sec</source>
         <source>Z</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>default</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>OgreAssetEditorModule</name>
+    <message>
+        <source>Material Wizard</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>World Tools</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>OgreScriptEditor</name>
@@ -2116,6 +2099,10 @@ Duration: %1 sec</source>
     </message>
     <message>
         <source>Cancel</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>OGRE Script Editor</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2134,9 +2121,17 @@ Duration: %1 sec</source>
     </message>
 </context>
 <context>
-    <name>PostProcessWidget</name>
+    <name>PropertyTableWidget</name>
     <message>
-        <source>Post-processing</source>
+        <source>Name</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Type</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Value</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2396,6 +2391,69 @@ QLabel {
     </message>
 </context>
 <context>
+    <name>StereoUI</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Eye spacing</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Convergence length</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Pixel shift</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Screen width</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>( if &lt;= 0, will use default)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Left Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Right Color</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>(Only  valid for anaglyphic)</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Technique</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Anaglyph</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Passive</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Active</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enable stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Disable stereo</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
     <name>TeleportWidget</name>
     <message>
         <source>Settings Widget</source>
@@ -2415,6 +2473,28 @@ QLabel {
     </message>
     <message>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>TexturePreviewEditor</name>
+    <message>
+        <source>Texture: </source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>Toolbar</name>
+    <message>
+        <source>Toolbar</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Custom Lights</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Exit Building</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -2477,7 +2557,7 @@ QLabel {
         <translation type="unfinished"></translation>
     </message>
     <message>
-        <source>You are now using realXtend&apos;s virtual world viewer called Naali. The Next step is to get you into a world and for this we provide three types of login methods. 
+        <source>You are now using realXtend&apos;s virtual world viewer called Naali. The next step is to get you into a world and for this we provide three types of login methods. 
 
 OpenSim login requires you to have an existing account for the server you are joining. Just insert your first and last name to the Username field, both password and world address to the respective fields, and click Connect.
 
@@ -2578,6 +2658,39 @@ Third option is to login into realXtend Taiga and ScienceSim servers that are ba
     </message>
     <message>
         <source>Close</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>VoiceControl</name>
+    <message>
+        <source>Form</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transmission mode</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Transmission mode desription...t
+...
+...</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Participants</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>0 participants</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mute all</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Show List</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

@@ -3,21 +3,22 @@
 #ifndef incl_RexLogic_AvatarEditor_h
 #define incl_RexLogic_AvatarEditor_h
 
+#include "AvatarModule.h"
+#include "AvatarModuleApi.h"
+
 #include <QWidget>
 
 class QTabWidget;
 
-namespace RexLogic
+namespace AvatarModule
 {
-    class RexLogicModule;
-
     //! Avatar editing window. Owned by RexLogicModule.
-    class AvatarEditor : public QWidget
+    class AV_MODULE_API AvatarEditor : public QWidget
     {
         Q_OBJECT
 
     public:
-        explicit AvatarEditor(RexLogicModule *rexlogicmodule);
+        explicit AvatarEditor(AvatarModule *avatar_module);
         ~AvatarEditor();
 
         //! Rebuild edit view
@@ -60,7 +61,7 @@ namespace RexLogic
 
     private:
         //! Owner module.
-        RexLogicModule *rexlogicmodule_;
+        AvatarModule *avatar_module_;
 
         //! Create editor window
         void InitEditorWindow();
