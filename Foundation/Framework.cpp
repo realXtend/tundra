@@ -21,6 +21,7 @@
 #include "CoreException.h"
 #include "InputServiceInterface.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -71,7 +72,8 @@ namespace Foundation
         initialized_(false),
         log_formatter_(0),
         splitterchannel(0),
-        frame_(new Frame(this))
+        frame_(new Frame(this)),
+        console_(new ScriptConsole(this))
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
