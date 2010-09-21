@@ -55,6 +55,7 @@ class Entity:
         'touchable': 'EC_Touchable',
         'soundruler': 'EC_SoundRuler',
         'netpos': 'EC_NetworkPosition',
+        'prim': 'EC_OpenSimPrim',
         }   
  
     def __init__(self, qent):
