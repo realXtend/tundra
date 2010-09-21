@@ -13,6 +13,7 @@
 #include "QtInputKeyEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "QtInputMouseEvent.h"
 #include "QtInputKeyEvent.h"
@@ -40,6 +41,7 @@ Q_DECLARE_METATYPE(IComponent*);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Frame*);
+Q_DECLARE_METATYPE(ScriptConsole*);
 
 void ReqisterQtMetaTypes(QScriptEngine *engine)
 {
@@ -75,8 +77,9 @@ void ReqisterUiMetaTypes(QScriptEngine *engine)
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
 
-void ReqisterFrameMetaTypes(QScriptEngine *engine)
+void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<Frame*>(engine);
+    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
 }
 
