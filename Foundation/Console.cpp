@@ -16,10 +16,12 @@
 
 #include "MemoryLeakCheck.h"
 
-void ScriptConsole::RegisterCommand(const QString &name, const QObject *receiver, const char *member)
+void ScriptConsole::RegisterCommand(const QString &name, const QString &desc, const QObject *receiver, const char *member)
 {
-//    Console::ConsoleCommandServiceInterface *console = framework_->GetService<Console::ConsoleCommandServiceInterface>();
-//    
+    Console::ConsoleCommandServiceInterface *consoleCommand = framework_->GetService<Console::ConsoleCommandServiceInterface>();
+    Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
+    consoleCommand->RegisterCommand(cmd);
+    connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)), receiver, member);
 }
 
 void ScriptConsole::ExecuteCommand(const QString &command)
