@@ -5,9 +5,9 @@
 
 #include "ECComponentEditor.h"
 
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "ECAttributeEditor.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Transform.h"
 
 #include <QtTreePropertyBrowser>
@@ -24,7 +24,7 @@ namespace ECEditor
     ECAttributeEditorBase *ECComponentEditor::CreateAttributeEditor(
         QtAbstractPropertyBrowser *browser,
         ECComponentEditor *editor,
-        AttributeInterface &attribute)
+        IAttribute &attribute)
     {
         ECAttributeEditorBase *attributeEditor = 0;
         if(dynamic_cast<const Attribute<float> *>(&attribute))
@@ -41,8 +41,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<bool>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<QVariant> *>(&attribute))
             attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<std::vector<QVariant> > *>(&attribute))
-            attributeEditor = new ECAttributeEditor<std::vector<QVariant> >(browser, &attribute, editor);
+        else if(dynamic_cast<const Attribute<QVariantList > *>(&attribute))
+            attributeEditor = new ECAttributeEditor<QVariantList >(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<Foundation::AssetReference> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<Transform> *>(&attribute))
@@ -50,7 +50,7 @@ namespace ECEditor
         return attributeEditor;
     }
 
-    ECComponentEditor::ECComponentEditor(Foundation::ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser):
+    ECComponentEditor::ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser):
         QObject(propertyBrowser),
         groupProperty_(0),
         groupPropertyManager_(0),
@@ -73,7 +73,7 @@ namespace ECEditor
         }
     }
 
-    void ECComponentEditor::InitializeEditor(Foundation::ComponentInterfacePtr component)
+    void ECComponentEditor::InitializeEditor(ComponentPtr component)
     {
         if(!propertyBrowser_)
            return;
@@ -88,7 +88,7 @@ namespace ECEditor
         propertyBrowser_->addProperty(groupProperty_);
     }
 
-    void ECComponentEditor::CreateAttriubteEditors(Foundation::ComponentInterfacePtr component)
+    void ECComponentEditor::CreateAttriubteEditors(ComponentPtr component)
     {
         AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
@@ -131,7 +131,7 @@ namespace ECEditor
         return false;
     }
 
-    void ECComponentEditor::AddNewComponent(Foundation::ComponentInterfacePtr component, bool updateUi)
+    void ECComponentEditor::AddNewComponent(ComponentPtr component, bool updateUi)
     {
         //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
         if(component->TypeName() != typeName_)
@@ -142,7 +142,7 @@ namespace ECEditor
         AttributeEditorMap::iterator iter = attributeEditors_.begin();
         while(iter != attributeEditors_.end())
         {
-            AttributeInterface *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
+            IAttribute *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
             if(attribute)
                 iter->second->AddNewAttribute(attribute);
             iter++;
@@ -151,7 +151,7 @@ namespace ECEditor
         UpdateGroupPropertyText();
     }
 
-    void ECComponentEditor::RemoveComponent(Foundation::ComponentInterface *component)
+    void ECComponentEditor::RemoveComponent(IComponent *component)
     {
         if(!component)
             return;
@@ -162,13 +162,13 @@ namespace ECEditor
         ComponentSet::iterator iter = components_.begin();
         while(iter != components_.end())
         {
-            Foundation::ComponentPtr componentPtr = (*iter).lock();
+            ComponentPtr componentPtr = (*iter).lock();
             if(componentPtr.get() == component)
             {
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
-                    AttributeInterface *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
+                    IAttribute *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
                     if(attribute)
                         attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;
@@ -218,7 +218,7 @@ namespace ECEditor
 
     void ECComponentEditor::ComponentChanged()
     {
-        Foundation::ComponentInterface *component = dynamic_cast<Foundation::ComponentInterface *>(sender());
+        IComponent *component = dynamic_cast<IComponent *>(sender());
         if(!component)
             return;
         if(component->TypeName() != typeName_)

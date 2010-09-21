@@ -8,11 +8,11 @@
 #include "ServerInfo.h"
 
 class UiProxyWidget;
+class IEventData;
 
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
 }
 
 namespace MumbleVoip
@@ -33,7 +33,7 @@ namespace MumbleVoip
         virtual Communications::InWorldVoice::SessionInterface* Session();
         virtual QString& Description();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         virtual QList<QString> Statistics();
 
         virtual void ShowMicrophoneAdjustmentDialog();

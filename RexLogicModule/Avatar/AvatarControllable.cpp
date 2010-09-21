@@ -88,7 +88,7 @@ namespace RexLogic
         movement_.y_.rel_ = 0;
     }
         
-    bool AvatarControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleSceneEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
         {
@@ -98,7 +98,7 @@ namespace RexLogic
 
             assert (entity && "Received event EVENT_CONTROLLABLE_ENTITY with null entity.");
             component_ = entity->GetComponent(EC_Controllable::TypeNameStatic());
-            Foundation::ComponentPtr component = component_.lock();
+            ComponentPtr component = component_.lock();
 
             assert (component && "Received event EVENT_CONTROLLABLE_ENTITY with null controllable component.");
             EC_Controllable *controllable = checked_static_cast<EC_Controllable*>(component.get());
@@ -116,7 +116,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         // switch between first and third person modes
 
@@ -185,7 +185,7 @@ namespace RexLogic
         return false;
     }
 
-    bool AvatarControllable::HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarControllable::HandleActionEvent(event_id_t event_id, IEventData* data)
     {
         Scene::Events::EntityEventData *entity_data = dynamic_cast<Scene::Events::EntityEventData*>(data);
         if (!entity_data) // a bit of a hax, we need to watchout as different action events contain different data
@@ -194,7 +194,7 @@ namespace RexLogic
         assert (entity_data->entity && "Action event received without valid entity!");
 
 
-        Foundation::ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::TypeNameStatic());
+        ComponentPtr component = entity_data->entity->GetComponent(EC_Controllable::TypeNameStatic());
         if (IsAvatar(component))
         {
             EC_OpenSimAvatar *avatar = entity_data->entity->GetComponent<EC_OpenSimAvatar>().get();
@@ -339,7 +339,7 @@ namespace RexLogic
         SendMovementToServer(controlflags);
     }
 
-    bool AvatarControllable::IsAvatar(const Foundation::ComponentPtr &component) const
+    bool AvatarControllable::IsAvatar(const ComponentPtr &component) const
     {
         if (!component)
             return false;
@@ -371,7 +371,7 @@ namespace RexLogic
         if(!avatarentity)
             return;
         
-        Foundation::ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
+        ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
         if (IsAvatar(component))
         {
             EC_OpenSimAvatar *avatar = avatarentity->GetComponent<EC_OpenSimAvatar>().get();
@@ -387,7 +387,7 @@ namespace RexLogic
         if(!avatarentity)
             return;
         
-        Foundation::ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
+        ComponentPtr component = avatarentity->GetComponent(EC_Controllable::TypeNameStatic());
         if (IsAvatar(component))
         {
             EC_NetworkPosition *netpos = checked_static_cast<EC_NetworkPosition*>(avatarentity->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());

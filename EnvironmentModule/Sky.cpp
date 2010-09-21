@@ -320,7 +320,7 @@ void Sky::FindCurrentlyActiveSky()
         iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        Foundation::ComponentInterfacePtr sky_component = entity.GetComponent(OgreRenderer::EC_OgreSky::TypeNameStatic());
+        ComponentPtr sky_component = entity.GetComponent(OgreRenderer::EC_OgreSky::TypeNameStatic());
         if (sky_component.get())
             cachedSkyEntity_ = scene->GetEntity(entity.GetId());
     }

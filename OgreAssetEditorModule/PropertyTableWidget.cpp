@@ -14,9 +14,6 @@
 #include <QMimeData>
 #include <QDragEnterEvent>
 
-namespace Naali
-{
-
 PropertyTableWidget::PropertyTableWidget(QWidget *parent) : QTableWidget(parent)
 {
     InitWidget();
@@ -127,6 +124,3 @@ void PropertyTableWidget::InitWidget()
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     setMouseTracking(true);
 }
-
-}
-

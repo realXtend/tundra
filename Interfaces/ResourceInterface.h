@@ -10,7 +10,7 @@
 #endif
 
 #include "CoreTypes.h"
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "CoreModuleApi.h"
 
 #include <map>
@@ -101,7 +101,7 @@ namespace Resource
         static const event_id_t RESOURCE_CANCELED = 2;
         
         //! Resource ready event data
-        class ResourceReady : public Foundation::EventDataInterface
+        class ResourceReady : public IEventData
         {
         public:
             ResourceReady(const std::string& id, Foundation::ResourcePtr resource, request_tag_t tag) :
@@ -124,7 +124,7 @@ namespace Resource
         };
         
         //! Resource canceled event data
-        class ResourceCanceled : public Foundation::EventDataInterface
+        class ResourceCanceled : public IEventData
         {
         public:
             ResourceCanceled(const std::string& id, request_tag_t tag) :

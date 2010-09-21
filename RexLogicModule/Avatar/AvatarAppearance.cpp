@@ -932,7 +932,7 @@ namespace RexLogic
             SetupAppearance(entity);
     }
     
-    bool AvatarAppearance::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id != Resource::Events::RESOURCE_READY)
             return false;
@@ -970,7 +970,7 @@ namespace RexLogic
         return true;
     }
     
-    bool AvatarAppearance::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id != Asset::Events::ASSET_READY)
             return false;
@@ -1007,7 +1007,7 @@ namespace RexLogic
         return true;
     }
     
-    bool AvatarAppearance::HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool AvatarAppearance::HandleInventoryEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Inventory::Events::EVENT_INVENTORY_DESCENDENT)
         {

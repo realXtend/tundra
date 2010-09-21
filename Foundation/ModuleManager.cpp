@@ -40,7 +40,7 @@ namespace Foundation
         {
         }
 
-        void ModuleDeletor::operator()(ModuleInterface *module)
+        void ModuleDeletor::operator()(IModule *module)
         {
             if (shared_library_)
                 shared_library_->cl_.destroy(entry_, module);
@@ -63,7 +63,7 @@ namespace Foundation
         UnloadModules();
     }
 
-    void ModuleManager::DeclareStaticModule(ModuleInterface *module)
+    void ModuleManager::DeclareStaticModule(IModule *module)
     {
         assert (module);
         if (IsExcluded(module->Name()) == false && HasModule(module) == false)
@@ -307,15 +307,15 @@ namespace Foundation
     {
         for(size_t i = 0; i < modules_.size(); ++i)
         {
-            ModuleInterface *mod = modules_[i].module_.get();
-            if (mod->State() != Foundation::Module::MS_Initialized)
+            IModule *mod = modules_[i].module_.get();
+            if (mod->State() != MS_Initialized)
                 PreInitializeModule(mod);
         }
 
         for(size_t i = 0; i < modules_.size(); ++i)
         {
-            ModuleInterface *mod = modules_[i].module_.get();
-            if (mod->State() != Foundation::Module::MS_Initialized)
+            IModule *mod = modules_[i].module_.get();
+            if (mod->State() != MS_Initialized)
                 InitializeModule(mod);
         }
 
@@ -354,6 +354,38 @@ namespace Foundation
         }
     }
 
+    ModuleWeakPtr ModuleManager::GetModule(const std::string &name)
+    {
+        for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+            if (it->module_->Name() == name)
+                return ModuleWeakPtr(it->module_);
+        return ModuleWeakPtr();
+    }
+
+    ModuleWeakPtr ModuleManager::GetModule(IModule* rawptr)
+    {
+        for(ModuleVector::iterator it = modules_.begin(); it != modules_.end() ; ++it)
+            if (it->module_.get() == rawptr)
+                return ModuleWeakPtr(it->module_);
+        return ModuleWeakPtr();
+    }
+
+    bool ModuleManager::HasModule(const std::string &name) const
+    {
+        for(size_t i = 0 ; i < modules_.size() ; ++i)
+            if (modules_[i].module_->Name() == name)
+                return true;
+        return false;
+    }
+
+    //! @return True if the given module library entry is present, false otherwise.
+    bool ModuleManager::HasModuleEntry(const std::string &entry) const
+    {
+        for (size_t i = 0 ; i < modules_.size() ; ++i)
+            if (modules_[i].entry_ == entry)
+                return true;
+        return false;
+    }
     bool ModuleManager::LoadModuleByName(const std::string &lib, const std::string &module)
     {
         assert (lib.empty() == false);
@@ -396,7 +428,7 @@ namespace Foundation
         //!       ModuleA <- ModuleB <- ModuleC may not work, ModuleB may get initialized before ModuleA which is error.
         // first initialize dependencies
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+            if (modules_[i].module_->State() == MS_Loaded && std::find(
                 current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
@@ -408,7 +440,7 @@ namespace Foundation
                 modules_[i].module_->PreInitializeInternal();
 
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+            if (modules_[i].module_->State() == MS_Loaded && std::find(
                 current_modules.begin(), current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
@@ -420,7 +452,7 @@ namespace Foundation
                 modules_[i].module_->InitializeInternal();
 
         for(size_t i = 0 ; i < modules_.size() ; ++i)
-            if (modules_[i].module_->State() == Module::MS_Loaded && std::find(
+            if (modules_[i].module_->State() == MS_Loaded && std::find(
                 current_modules.begin(),current_modules.end(), modules_[i].entry_) == current_modules.end()
                 && modules_[i].entry_ != module)
             {
@@ -511,7 +543,7 @@ namespace Foundation
             if (library->cl_.findClass(*it) == 0)
                 throw Exception("Entry class not found from module");
 
-            ModuleInterface *module = library->cl_.create(*it);
+            IModule *module = library->cl_.create(*it);
             assert(module);
             Module::ModuleDeletor md(*it, library);
             ModuleSharedPtr modulePtr(module, md);
@@ -556,20 +588,20 @@ namespace Foundation
         assert (modules_.empty());
     }
 
-    void ModuleManager::PreInitializeModule(ModuleInterface *module)
+    void ModuleManager::PreInitializeModule(IModule *module)
     {
         assert(module);
-        assert(module->State() == Foundation::Module::MS_Loaded);
+        assert(module->State() == MS_Loaded);
         Foundation::RootLogDebug("Preinitializing module " + module->Name());
         module->PreInitializeInternal();
 
         // Do not log preinit success here to avoid extraneous logging.
     }
 
-    void ModuleManager::InitializeModule(ModuleInterface *module)
+    void ModuleManager::InitializeModule(IModule *module)
     {
         assert(module);
-        assert(module->State() == Foundation::Module::MS_Loaded);
+        assert(module->State() == MS_Loaded);
         Foundation::RootLogDebug("Initializing module " + module->Name());
         module->InitializeInternal();
 
@@ -577,17 +609,17 @@ namespace Foundation
         Poco::Logger::get(module->Name()).information(module->Name() + " initialized.");
     }
 
-    void ModuleManager::PostInitializeModule(ModuleInterface *module)
+    void ModuleManager::PostInitializeModule(IModule *module)
     {
         assert(module);
-        assert(module->State() == Foundation::Module::MS_Loaded);
+        assert(module->State() == MS_Loaded);
         Foundation::RootLogDebug("Postinitializing module " + module->Name());
         module->PostInitializeInternal();
 
         // Do not log postinit success here to avoid extraneous logging.
     }
 
-    void ModuleManager::UninitializeModule(ModuleInterface *module)
+    void ModuleManager::UninitializeModule(IModule *module)
     {
         assert(module);
         Foundation::RootLogDebug("Uninitializing module " + module->Name() + ".");
@@ -607,13 +639,13 @@ namespace Foundation
         Foundation::RootLogDebug("Unloading module " + moduleName + ".");
 
         entry.module_->UnloadInternal();
-        entry.module_.reset(); // Triggers the deletion of the ModuleInterface object. (either causes operator delete or Poco's module free to be called)
+        entry.module_.reset(); // Triggers the deletion of the IModule object. (either causes operator delete or Poco's module free to be called)
 
         // Send a log message in the log channel of the module we just unloaded. (the channel is in Poco and not in the module, so this is ok)
         Poco::Logger::get(moduleNameStatic).information(moduleName + " unloaded.");
     }
 
-    bool ModuleManager::HasModule(ModuleInterface *module) const
+    bool ModuleManager::HasModule(IModule *module) const
     {
         assert (module);
         for(ModuleVector::const_iterator it = modules_.begin(); it != modules_.end(); ++it)

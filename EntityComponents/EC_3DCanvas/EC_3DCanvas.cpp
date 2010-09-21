@@ -4,7 +4,7 @@
 #include "EC_3DCanvas.h"
 
 #include "Renderer.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "OgreMaterialUtils.h"
 #include "Entity.h"
 #include "RexTypes.h"
@@ -17,8 +17,8 @@
 
 #include <QDebug>
 
-EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_3DCanvas::EC_3DCanvas(IModule *module) :
+    IComponent(module->GetFramework()),
     widget_(0),
     update_internals_(false),
     refresh_timer_(0),

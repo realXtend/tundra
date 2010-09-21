@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreCustomObject_h
 #define incl_OgreRenderer_EC_OgreCustomObject_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Declare_EC.h"
 
@@ -15,6 +15,7 @@ namespace Ogre
     class Entity;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -23,13 +24,44 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreCustomObject</h2>
+		Needs to be attached to a placeable (aka scene node) to be visible.
+		Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
+        related to manual objects (still unfixed as of 1.6.2)
+
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Ogre custom object component
     /*! Needs to be attached to a placeable (aka scene node) to be visible.
         Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
         related to manual objects (still unfixed as of 1.6.2)
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreCustomObject : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
     {
         Q_OBJECT
 
@@ -38,13 +70,13 @@ namespace OgreRenderer
         virtual ~EC_OgreCustomObject();
 
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
 
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
 
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -88,7 +120,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreCustomObject(Foundation::ModuleInterface* module);
+        EC_OgreCustomObject(IModule* module);
         
         //! attaches entity to placeable
         void AttachEntity();
@@ -100,7 +132,7 @@ namespace OgreRenderer
         void DestroyEntity();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

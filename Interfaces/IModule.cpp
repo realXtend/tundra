@@ -1,14 +1,14 @@
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
- *  @file   ModuleInterface.cpp
+ *  @file   IModule.cpp
  *  @brief  Interface for Naali modules.
  *          See @ref ModuleArchitecture for details.
  */
  
 #include "StableHeaders.h"
 #include "Framework.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
@@ -16,13 +16,12 @@
 
 #include <Poco/Logger.h>
 
-namespace Foundation
-{
-
 static const int DEFAULT_EVENT_PRIORITY = 100;
 
-ModuleInterface::ModuleInterface(const std::string &name) :
-    name_(name), state_(Module::MS_Unloaded), framework_(0)
+using namespace Foundation;
+
+IModule::IModule(const std::string &name) :
+    name_(name), state_(MS_Unloaded), framework_(0)
 {
     try
     {
@@ -34,17 +33,17 @@ ModuleInterface::ModuleInterface(const std::string &name) :
     }
 }
 
-ModuleInterface::~ModuleInterface()
+IModule::~IModule()
 {
     Poco::Logger::destroy(Name());
 }
 
-Framework *ModuleInterface::GetFramework() const
+Framework *IModule::GetFramework() const
 {
     return framework_;
 }
 
-void ModuleInterface::RegisterConsoleCommand(const Console::Command &command)
+void IModule::RegisterConsoleCommand(const Console::Command &command)
 {
     boost::shared_ptr<Console::CommandService> console = framework_->GetService<Console::CommandService>(Service::ST_ConsoleCommand).lock();
     //assert(console.get());
@@ -57,10 +56,10 @@ void ModuleInterface::RegisterConsoleCommand(const Console::Command &command)
     console->RegisterCommand(command);
 }
 
-void ModuleInterface::InitializeInternal()
+void IModule::InitializeInternal()
 {
     assert(framework_ != 0);
-    assert(state_ == Module::MS_Loaded);
+    assert(state_ == MS_Loaded);
 
     //! Register components
     for(size_t n = 0; n < component_registrars_.size(); ++n)
@@ -89,10 +88,10 @@ void ModuleInterface::InitializeInternal()
     Initialize();
 }
 
-void ModuleInterface::UninitializeInternal()
+void IModule::UninitializeInternal()
 {
     assert(framework_ != 0);
-    assert(state_ == Module::MS_Initialized);
+    assert(state_ == MS_Initialized);
 
     for(size_t n=0 ; n<component_registrars_.size() ; ++n)
         component_registrars_[n]->Unregister(framework_);
@@ -112,8 +111,6 @@ void ModuleInterface::UninitializeInternal()
 
     // The module is now uninitialized, but it is still loaded in memory.
     // The module can now be initialized again, and InitializeInternal()
-    // expects the state to be Module::MS_Loaded.
-    state_ = Module::MS_Loaded;
-}
-
+    // expects the state to be MS_Loaded.
+    state_ = MS_Loaded;
 }
