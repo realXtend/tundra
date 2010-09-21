@@ -1974,6 +1974,7 @@ namespace PythonScript
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
             PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
+            PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
