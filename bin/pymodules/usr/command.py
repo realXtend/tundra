@@ -152,14 +152,6 @@ if 0: #send chat
 if 0: #print test
     r.logInfo("this is a test print!")
     
-if 0: #camera pitch
-    dy = 0.1
-    dp = 0.5
-    #dp = -0.1
-    #dp = 0.1
-    r.setCameraYawPitch(dy, dp)
-    print r.getCameraYawPitch()
-
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
@@ -623,10 +615,6 @@ if 0: #getUserAvatar
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
     #ent.mesh = "cruncah1.mesh"
     
-if 0:
-    print r.getCameraUp()
-    print r.getCameraRight()
-
 if 0: #test changing the mesh asset a prim is using
     ent_id = 2088826433
     #print arkku_id, type(arkku_id)
