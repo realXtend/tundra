@@ -56,6 +56,7 @@
 #include "SceneEvents.h" //sending scene events after (placeable component) manipulation
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
+#include "LoginServiceInterface.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
@@ -75,8 +76,6 @@
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
-//#include "UiModule.h"
-//#include "Inworld/InworldSceneController.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
@@ -89,9 +88,6 @@
 #include "EC_DynamicComponent.h"
 #include "EC_Script.h"
 
-//for py_print
-//#include <stdio.h>
-
 #include <PythonQt.h>
 
 #include <QGroupBox> //just for testing addObject
@@ -100,9 +96,6 @@
 #include <QGraphicsView>
 #include <QWebView>
 //#include <QDebug>
-
-#include <propertyeditor.h>
-
 
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
@@ -151,6 +144,8 @@ namespace PythonScript
         input.reset();
 
         pmmModule = pmmDict = pmmClass = pmmInstance = 0;
+        foreach(UiProxyWidget *proxy, proxyWidgets)
+            SAFE_DELETE(proxy);
     }
 
     void PythonScriptModule::PostInitialize()
@@ -641,7 +636,7 @@ namespace PythonScript
         return 0;
     }
 
-    void PythonScriptModule::RunScript(const QString &filename)
+    void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
         if (!script)
@@ -652,7 +647,8 @@ namespace PythonScript
 
         PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
         script->SetScriptInstance(pyInstance);
-        script->Run();
+        if (script->runOnLoad.Get())
+            script->Run();
     /*
             check if py script
             mikä oli vanha? jos vanha ->delete se
@@ -672,7 +668,7 @@ namespace PythonScript
         if (component->TypeName() == EC_Script::TypeNameStatic())
         {
             EC_Script *script = static_cast<EC_Script *>(component);
-            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(RunScript(const QString &)));
+            connect(script, SIGNAL(ScriptRefChanged(const QString &)), SLOT(LoadScript(const QString &)));
         }
     }
 
@@ -1056,48 +1052,40 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
 PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 {
-    char* uuidstr;
-
+    const char* uuidstr;
     if(!PyArg_ParseTuple(args, "s", &uuidstr))
         return NULL;
 
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
-    
-    // Get RexLogic and Scene
-    RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene(); 
+    RexUUID texture_uuid(uuidstr);
 
-    if (!scene) 
-    { 
+    /// Get scene
+    const Scene::ScenePtr &scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+    {
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        return NULL;   
+        return NULL;
     }
 
     // Iterate the scene to find all submeshes that use this texture uuid
     QList<uint> submeshes_;
     bool submeshes_found_ = false;
-    for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
+    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+    foreach(Scene::EntityPtr e, prims)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *e.get();
         submeshes_.clear();
 
-        Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(entity.GetId());
-        if (!primentity) 
-            continue;
-        
-        EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(entity.GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
+        EC_OpenSimPrim &prim = *entity.GetComponent<EC_OpenSimPrim>();
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
             Foundation::ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
             Foundation::ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
-            
+
             OgreRenderer::EC_OgreMesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
-            if (mesh) 
+            if (mesh)
             {
                 meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
                 if (!meshptr)
@@ -1266,33 +1254,32 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
 {
     // Read params from py: entid as uint, textureuuid as string
     unsigned int ent_id_int;
-    char* uuidstr;
+    const char* uuidstr;
     entity_id_t ent_id;
 
     if(!PyArg_ParseTuple(args, "Is", &ent_id_int, &uuidstr))
-        return NULL;   
+        return NULL;
 
     ent_id = (entity_id_t)ent_id_int;
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
+    RexUUID texture_uuid(uuidstr);
 
-    RexLogic::RexLogicModule *rexlogicmodule_;
-    rexlogicmodule_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-
-    Scene::EntityPtr primentity = rexlogicmodule_->GetPrimEntity(ent_id);
-    if (!primentity) 
+    Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetFramework()->GetService<Foundation::WorldLogicInterface>();
+    if (!worldLogic)
         Py_RETURN_NONE;
 
-    EC_OpenSimPrim &prim = *checked_static_cast<EC_OpenSimPrim*>(primentity->GetComponent(EC_OpenSimPrim::TypeNameStatic()).get());
-    
+    Scene::EntityPtr primentity = worldLogic->GetEntityWithComponent(ent_id, EC_OpenSimPrim::TypeNameStatic());
+    if (!primentity)
+        Py_RETURN_NONE;
+
+    EC_OpenSimPrim &prim = *primentity->GetComponent<EC_OpenSimPrim>();
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
         Foundation::ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         Foundation::ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
-        
+
         OgreRenderer::EC_OgreMesh *meshptr = 0;
-        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;            
+        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
         if (mesh)
         {
@@ -1481,7 +1468,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
         OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
         ogremesh.SetPlaceable(placeable);
         ogremesh.SetMesh(meshname, true);
-    
+        scene->EmitEntityCreated(entity);
         return owner->entity_create(ent_id); //return the py wrapper for the new entity
     }
     
@@ -1511,15 +1498,14 @@ PyObject* SetCameraYawPitch(PyObject *self, PyObject *args)
     newpitch = (float) p;
 
     //boost::shared_ptr<OgreRenderer::Renderer> renderer = PythonScript::staticframework->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
-    RexLogic::RexLogicModule *rexlogic_;
-    rexlogic_ = dynamic_cast<RexLogic::RexLogicModule *>(PythonScript::self()->GetFramework()->GetModuleManager()->GetModule("RexLogic").lock().get());
-    if (rexlogic_)
+    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
+    if (rexlogic)
     {
         //boost::shared_ptr<RexLogic::CameraControllable> cam = rexlogic_->GetCameraControllable();
         //cam->HandleInputEvent(PythonScript::PythonScriptModule::inputeventcategoryid, &x);
         //cam->AddTime((float) 0.1);
         //cam->SetPitch(p); //have a linking prob with this
-        rexlogic_->SetCameraYawPitch(y, p);
+        rexlogic->SetCameraYawPitch(y, p);
     }
     
     //was with renderer, worked but required overriding rexlogic :p
@@ -1552,6 +1538,7 @@ PyObject* GetCameraYawPitch(PyObject *self, PyObject *args)
     //else - no logic module. can that ever happen?)
     return NULL; //rises py exception
 }
+
 PyObject* PyLogInfo(PyObject *self, PyObject *args) 
 {
     const char* message;    
@@ -1692,20 +1679,9 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     QWidget* widget = (QWidget*)widget_ptr;
 
     UiProxyWidget* proxy = new UiProxyWidget(widget);
+    PythonScriptModule::GetInstance()->proxyWidgets << proxy;
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
-
-PyObject* GetPropertyEditor(PyObject *self)
-{
-    QApplication* qapp = PythonScript::self()->GetFramework()->GetQApplication();
-    PropertyEditor::PropertyEditor* pe = new PropertyEditor::PropertyEditor(qapp);
-    return PythonScriptModule::GetInstance()->WrapQObject(pe); 
-}
-
-//PyObject* GetQtModule(PyObject *self)
-//{
-//    return PythonQt::self()->wrapQObject(PythonScript::GetWrappedQtModule());
-//}
 
 PyObject* GetUiSceneManager(PyObject *self)
 {
@@ -1826,9 +1802,15 @@ PyObject* StartLoginOpensim(PyObject *self, PyObject *args)
         return NULL;
     }
 
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-        rexlogic->StartLoginOpensim(firstAndLast, password, serverAddressWithPort);
+    QMap<QString, QString> map;
+    map["AvatarType"] = "OpenSim";
+    map["Username"] = firstAndLast;
+    map["Password"] = password;
+    map["WorldAddress"] = serverAddressWithPort;
+
+    Foundation::LoginServiceInterface *login_service = PythonScript::self()->GetFramework()->GetService<Foundation::LoginServiceInterface>();
+    if (login_service)
+        login_service->ProcessLoginData(map);
 
     Py_RETURN_NONE;
 }
@@ -1841,9 +1823,9 @@ PyObject *Exit(PyObject *self, PyObject *null)
 
 PyObject* Logout(PyObject *self)
 {
-    RexLogic::RexLogicModule *rexlogic = PythonScript::self()->GetFramework()->GetModule<RexLogic::RexLogicModule>();
-    if (rexlogic)
-        rexlogic->LogoutAndDeleteWorld();
+    Foundation::LoginServiceInterface *login_service = PythonScript::self()->GetFramework()->GetService<Foundation::LoginServiceInterface>();
+    if (login_service)
+        login_service->Logout();
 
     Py_RETURN_NONE;
 }
@@ -1950,9 +1932,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"getServerConnection", (PyCFunction)GetServerConnection, METH_NOARGS,
     "Gets the server connection."},    
-
-    {"getPropertyEditor", (PyCFunction)GetPropertyEditor, METH_VARARGS, 
-    "get property editor"},
 
     {"getTrashFolderId", (PyCFunction)GetTrashFolderId, METH_VARARGS, 
     "gets the trash folder id"},

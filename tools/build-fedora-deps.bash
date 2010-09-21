@@ -77,25 +77,6 @@ else
 fi
 
 cd $build
-what=propertyeditor
-if test -f $tags/$what-done; then
-    echo $what is done
-else
-
-    if test -d $what; then
-	svn update $what
-    else
-	svn co $viewerdeps_svn/trunk/$what $what
-    fi
-    cd $what
-    cmake .
-    make
-    cp -a lib/libPropertyEditor.* $prefix/lib/
-    cp lib/property*.h $prefix/include
-    touch $tags/$what-done
-fi
-
-cd $build
 what=PythonQt
 if test -f $tags/$what-done; then
     echo $what is done
