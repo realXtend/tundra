@@ -619,6 +619,12 @@ namespace PythonScript
         return 0;
     }
 
+    void PythonScriptModule::RemoveQtDynamicProperty(QObject* qobj, char* propname)
+    {
+        qobj->setProperty(propname, QVariant());
+    }
+
+
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
