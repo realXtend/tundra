@@ -44,6 +44,7 @@ worldlogic = _pythonscriptmodule.GetWorldLogic()
 inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
 frame = _naali.GetFrame()
+console = _naali.Console()
 
 class Entity:
     compnames = {
