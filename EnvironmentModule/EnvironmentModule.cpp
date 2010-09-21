@@ -524,9 +524,10 @@ namespace Environment
     {
         terrain_ = TerrainPtr(new Terrain(this));
 
-        Scene::EntityPtr entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::EntityPtr entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
         entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_Terrain"));
-
+        scene->EmitEntityCreated(entity);
         terrain_->FindCurrentlyActiveTerrain();
         
         if ( environment_editor_ != 0 )
@@ -554,9 +555,10 @@ namespace Environment
     void EnvironmentModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
-        Scene::EntityPtr sky_entity = GetFramework()->GetDefaultWorldScene()->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
+        Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+        Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
         sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
-
+        scene->EmitEntityCreated(sky_entity);
         sky_->FindCurrentlyActiveSky();
 
         if (!GetEnvironmentHandler()->IsCaelum())

@@ -109,7 +109,8 @@ namespace RexLogic
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
         // Note: we assume the avatar is created because of a message from network
-        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::Network);
+        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
+        scene->EmitEntityCreated(entity, AttributeChange::Network);
 
         Foundation::ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)

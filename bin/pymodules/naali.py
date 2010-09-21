@@ -53,8 +53,9 @@ mediaplayerservice = _naali.GetMediaPlayerService()
 #         'highlight': 'EC_Highlight',
 #         'touchable': 'EC_Touchable',
 #         'soundruler': 'EC_SoundRuler',
-#         }   
- 
+#         'netpos': 'EC_NetworkPosition',
+#        }   
+#
 #     def __init__(self, qent):
 #         self.id = qent.Id
 

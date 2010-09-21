@@ -30,7 +30,6 @@ use_package (PYTHON_QT)
 use_package (OGRE)
 use_package (CURL)
 use_package (XMLRPC)
-use_package (PROPERTYEDITOR)
 
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
@@ -54,7 +53,6 @@ link_package (PYTHON_QT)
 link_package (OGRE)
 link_package (CURL)
 link_package (XMLRPC)
-link_package (PROPERTYEDITOR)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
