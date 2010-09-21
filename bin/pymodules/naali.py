@@ -98,10 +98,9 @@ def createComponent(ent, typename):
     oldpyent = r.getEntity(ent.Id)
     oldpyent.createComponent(typename)
 
-
-    # Returns EntityAction pointer by the name
-    def action(self, name):
-        return self.qent.Action(name)
+# Returns EntityAction pointer by the name
+def action(self, name):
+    return self.qent.Action(name)
     
 def getEntity(entid):
     qent = getScene("World").GetEntityRaw(entid)

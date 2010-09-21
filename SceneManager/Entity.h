@@ -252,6 +252,9 @@ namespace Scene
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;
 
+        //! Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
+        void RemoveComponentRaw(IComponent* comp);
+
         //! Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }
 

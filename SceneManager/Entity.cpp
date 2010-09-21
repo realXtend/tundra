@@ -75,6 +75,12 @@ namespace Scene
         }
     }
 
+    void Entity::RemoveComponentRaw(IComponent* comp)
+    {
+      //ComponentPtr ptr = GetComponent(comp->TypeName(), comp->Name()); //the shared_ptr to this component
+      //RemoveComponent(ptr);
+    }
+
     ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
