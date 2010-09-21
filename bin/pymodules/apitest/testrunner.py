@@ -85,6 +85,7 @@ class TestCreateDestroy(TestRunner):
 
         yield "creating object"
         r.getServerConnection().SendObjectAddPacket(42, 42, 22)
+        
         yield "waiting for EntityCreated"
         while (not self.finished) and (not self.elapsed(self.wait_time)):
             yield None
@@ -113,16 +114,72 @@ class TestCreateDestroy(TestRunner):
         ent_id = ent.Id
         ent = naali.getEntity(ent.Id)
         try:
-            p = ent.netpos.Position
+            netp = ent.netpos.Position
         except AttributeError:
             if 0: print "skip unplaceable entity"
         else:
-            if 0: print "placeable entity created: pos", p.x(), p.y(), p.z()
-
             # for some reason z coord ends up as 22.25
-            if p.x() == 42.0 and p.y() == 42.0 and int(p.z()) == 22:
-                r.logInfo("found created test prim, deleting (finished=%s)" % self.finished)
+            if netp.x() == 42.0 and netp.y() == 42.0 and int(netp.z()) == 22:
+                r.logInfo("found created test prim - naming, moving and deleting (finished=%s)" % self.finished)
+                ent.prim.Name = "Seppo"
+                ent.prim.SendObjectNameUpdate()
+                pos = ent.placeable.Position
+                pos.setX(netp.x() + 1) #change the x-coordinate
+                ent.placeable.Position = pos
+                r.logInfo("Moving to move to pos: %s" % pos)
+                
                 r.getServerConnection().SendObjectDeRezPacket(
                     ent_id, r.getTrashFolderId())
                 self.finished = True
+
+class TestDynamicProperties(TestRunner):
+    def __init__(self, *args, **kw):
+        self.scene = None
+        TestRunner.__init__(self, *args, **kw)
+
+    def run(self):
+        self.wait_time = int(self.config.get("wait_time", 60))
+        yield "doing login"
+        self.timer_start()
+        r.startLoginOpensim(user, pwd, server)
+        yield "waiting for connection"
+        conn = None
+        while not self.elapsed(self.wait_time):
+            conn = r.getServerConnection()
+            if conn and conn.IsConnected():
+                break
+            else:
+                yield None
+        else:
+            return
+        yield "waiting for avatar to appear"
+        ent = None
+        while not self.elapsed(self.wait_time):
+            try:
+                ent = naali.getUserAvatar()
+            except ValueError:
+                yield None
+            else:
+                break
+        
+        if not ent:
+            yield "failure"
+        print 'dynamic propety stuff:'
+        ent.createComponent("EC_DynamicComponent")
+        print ent, type(ent)
+        d = ent.qent.EC_DynamicComponent
+        d.CreateAttribute("real", 42.0)
+        d.OnChanged()
+        d.SetAttribute("real", 8.5)
+        d.OnChanged()
+        d.RemoveAttribute("real")
+        d.OnChanged()
+        yield "created, changed and removed attribute"
+        r.exit()
+        yield "success"
+
+    @circuits.handler("on_sceneadded")
+    def sceneadded(self, name):
+        #r.logInfo("CreateDestroy sceneadded called")
+        self.scene = naali.getScene(name)
 

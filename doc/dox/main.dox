@@ -176,7 +176,7 @@ Classes:
 <li>Foundation::ComponentInterface
 <li>Scene::SceneManager
 <li>Scene::Entity
-<li>Scene::Action
+<li>Scene::EntityAction
 </ul>
   
 </td>

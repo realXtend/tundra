@@ -55,7 +55,7 @@ namespace DebugStats
 
     public slots:
         /// Creates and shows the profiling window.
-        Console::CommandResult ShowProfilingWindow(const StringVector &params);
+        Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
         /// Creates and shows the participant window.
         Console::CommandResult ShowParticipantWindow(const StringVector &params);

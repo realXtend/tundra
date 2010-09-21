@@ -54,6 +54,7 @@
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Avatar/Avatar.h"
@@ -1972,6 +1973,7 @@ namespace PythonScript
 
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
+            PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
