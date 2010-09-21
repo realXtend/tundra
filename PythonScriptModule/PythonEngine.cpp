@@ -78,7 +78,7 @@ namespace PythonScript
         /*Py_XDECREF(pFunc);
         Py_DECREF(pModule);*/
 
-        Py_Finalize();
+        /* Py_Finalize(); */
     }
 
     /*void PythonEngine::Reset()

@@ -1,5 +1,11 @@
 import circuits
 import naali
+import rexviewer as r
+#from PythonQt.QtCore import QVariant
+import PythonQt
+
+def invalid_qvariant():
+    return PythonQt.getVariable(None, "kekkis")
 
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
@@ -23,6 +29,7 @@ class ComponentPropertyAdder(circuits.BaseComponent):
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
         s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
+        s.connect("ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentRemoved)
 
     def onComponentAdded(self, ent, comp, changetype):
         #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
@@ -37,4 +44,18 @@ class ComponentPropertyAdder(circuits.BaseComponent):
             #consistent with how inside the c++ side single GetComponent works
             ent.setProperty(propname, comp)
 
-    #XXX \todo: add component removal handling too!
+    def onComponentRemoved(self, ent, comp, changetype):
+        r.logInfo("XXX onComponentRemoved called")
+        if comp.TypeName in compshorthand:
+            propname = compshorthand[comp.TypeName]
+        else:
+            propname = comp.TypeName
+        r.logInfo("XXX propname " +str(propname))
+        r.logInfo("XXX dynamicpropertynames " + str(ent.dynamicPropertyNames()))
+        if propname not in ent.dynamicPropertyNames():
+            # qt docs: "A property can be removed from an instance by
+            # passing the property name and an invalid QVariant value
+            # to QObject::setProperty(). The default constructor for
+            # QVariant constructs an invalid QVariant."
+            ent.setProperty(propname, invalid_qvariant())
+            print "XXX deleted prop", propname

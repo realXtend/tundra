@@ -266,29 +266,29 @@ namespace Scene
         */
         EntityAction *Action(const QString &name);
 
-        /** Connects action with a spesific name to a receiver object with member slot.
-            @param name Name of the action.
+        /// Connects action with a spesific name to a receiver object with member slot.
+        /** @param name Name of the action.
             @param receiver Receiver object.
             @param member Member slot.
         */
         void ConnectAction(const QString &name, const QObject *receiver, const char *member);
 
-        /** Executes an arbitrary action for all components of this entity.
-            The components may or may not handle the action.
+        /// Executes an arbitrary action for all components of this entity.
+        /** The components may or may not handle the action.
             @param action Name of the action.
             @param type Execution type, i.e. where the actions is executed.
         */
         void Exec(const QString &action, EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param Parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
         void Exec(const QString &action, const QString &param, EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
@@ -296,8 +296,8 @@ namespace Scene
         void Exec(const QString &action, const QString &param1, const QString &param2,
             EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
             @param param3 3rd parameter for the action.
@@ -306,8 +306,8 @@ namespace Scene
         void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3,
             EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param params List of parameters for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
