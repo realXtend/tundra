@@ -67,11 +67,22 @@ public:
     ~EC_Sound();
     virtual bool IsSerializable() const { return true; }
 
+    Q_PROPERTY(QString soundId READ getsoundId WRITE setsoundId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, soundId);
+
+    Q_PROPERTY(float soundInnerRadius READ getsoundInnerRadius WRITE setsoundInnerRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundInnerRadius);
+
+    Q_PROPERTY(float soundOuterRadius READ getsoundOuterRadius WRITE setsoundOuterRadius);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundOuterRadius);
+
+    Q_PROPERTY(float soundGain READ getsoundGain WRITE setsoundGain);
     DEFINE_QPROPERTY_ATTRIBUTE(float, soundGain);
+
+    Q_PROPERTY(bool loopSound READ getloopSound WRITE setloopSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, loopSound);
+
+    Q_PROPERTY(bool triggerSound READ gettriggerSound WRITE settriggerSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, triggerSound);
 
     /*Attribute<QString>      soundId_;

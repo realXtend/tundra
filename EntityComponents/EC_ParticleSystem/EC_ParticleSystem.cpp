@@ -23,9 +23,9 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
-    particleId_(this, "Particle id"),
-    castShadows_(this, "Cast shadows", false),
-    renderingDistance_(this, "Rendering distance", 0.0f)
+    particleId(this, "Particle id"),
+    castShadows(this, "Cast shadows", false),
+    renderingDistance(this, "Rendering distance", 0.0f)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -79,8 +79,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             if(!placeable)
                 return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
-            particleSystem_->setCastShadows(castShadows_.Get());
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
             return;
         }
     }
@@ -138,21 +138,21 @@ void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attr
     if(component != this)
         return;
 
-    if(attribute->GetNameString() == particleId_.GetNameString())
+    if(attribute->GetNameString() == particleId.GetNameString())
     {
-        particle_tag_ = RequestResource(particleId_.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
+        particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
-    else if(attribute->GetNameString() == castShadows_.GetNameString())
+    else if(attribute->GetNameString() == castShadows.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setCastShadows(castShadows_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
     }
-    else if(attribute->GetNameString() == renderingDistance_.GetNameString())
+    else if(attribute->GetNameString() == renderingDistance.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
     }
 }
 
