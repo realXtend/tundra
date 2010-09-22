@@ -250,7 +250,6 @@ namespace Scene
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
         EntityAction *act = Action(action);
-        int receivers = act->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (!HasReceivers(act))
             return;
 
