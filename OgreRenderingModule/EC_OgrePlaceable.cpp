@@ -316,6 +316,15 @@ void EC_OgrePlaceable::HandleAttributeChanged(IAttribute* attribute, AttributeCh
                           DEGTORAD * newTransform.rotation.y,
                           DEGTORAD * newTransform.rotation.z);
         link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
+
+        // Prevent Ogre exception from zero scale
+        if (newTransform.scale.x < 0.0000001f)
+            newTransform.scale.x = 0.0000001f;
+        if (newTransform.scale.y < 0.0000001f)
+            newTransform.scale.y = 0.0000001f;
+        if (newTransform.scale.z < 0.0000001f)
+            newTransform.scale.z = 0.0000001f;
+
         link_scene_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         
         AttachNode(); // Nodes become visible only after having their position set at least once

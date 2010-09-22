@@ -1,11 +1,5 @@
-/** @file
-	@author LudoCraft Oy
+// For conditions of distribution and use, see copyright notice in license.txt
 
-	Copyright 2009 LudoCraft Oy.
-	All rights reserved.
-
-	@brief
-*/
 #ifndef incl_KristalliProtocolModuleApi_h
 #define incl_KristalliProtocolModuleApi_h
 

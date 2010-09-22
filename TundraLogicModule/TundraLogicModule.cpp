@@ -109,7 +109,7 @@ void TundraLogicModule::Update(f64 frametime)
     
     // Run scene sync
     if (syncManager_)
-        syncManager_->Update();
+        syncManager_->Update(frametime);
     
     RESETPROFILER;
 }
@@ -184,9 +184,9 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
     
     bool success;
     if (!useBinary)
-        scene->SaveSceneXML(params[0]);
+        success = scene->SaveSceneXML(params[0]);
     else
-        scene->SaveSceneBinary(params[0]);
+        success = scene->SaveSceneBinary(params[0]);
     
     if (success)
         return Console::ResultSuccess();

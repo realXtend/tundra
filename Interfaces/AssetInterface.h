@@ -29,6 +29,16 @@ namespace Foundation
         std::string id_;
         //! Asset type
         std::string type_;
+        
+        bool operator == (const AssetReference& rhs) const
+        {
+            return (id_ == rhs.id_) && (type_ == rhs.type_);
+        }
+        
+        bool operator != (const AssetReference& rhs) const
+        {
+            return !(*this == rhs);
+        }
     };
     
     //! Interface for assets

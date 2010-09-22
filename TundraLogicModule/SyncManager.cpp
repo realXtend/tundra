@@ -1,23 +1,31 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
 #include "SyncManager.h"
+#include "SceneManager.h"
+#include "Entity.h"
 #include "TundraLogicModule.h"
 #include "MsgCreateEntity.h"
 #include "MsgUpdateComponents.h"
 #include "MsgRemoveComponents.h"
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
-#include "CoreStringUtils.h"
+
+#include <cstring>
+
+#include "MemoryLeakCheck.h"
 
 namespace TundraLogic
 {
 
 SyncManager::SyncManager(TundraLogicModule* owner, Foundation::Framework* fw) :
     owner_(owner),
-    framework_(fw)
+    framework_(fw),
+    update_period_(0.04),
+    update_acc_(0.0)
 {
 }
 
@@ -25,185 +33,148 @@ SyncManager::~SyncManager()
 {
 }
 
+void SyncManager::SetUpdatePeriod(f64 period)
+{
+    // Allow max 100fps
+    if (period < 0.01)
+        period = 0.01;
+    update_period_ = period;
+}
+
 void SyncManager::RegisterToScene(Scene::ScenePtr scene)
 {
-    createdEntities_.clear();
-    dirtyEntities_.clear();
-    removedComponents_.clear();
-    removedEntities_.clear();
+    // Disconnect from previous scene if not expired
+    Scene::ScenePtr previous = scene_.lock();
+    if (previous)
+    {
+        disconnect(this);
+        server_syncstate_.Clear();
+    }
     
-    connect(scene.get(), SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
+    scene_.reset();
+    
+    if (!scene)
+    {
+        TundraLogicModule::LogError("Null scene, cannot replicate");
+        return;
+    }
+    
+    scene_ = scene;
+    Scene::SceneManager* sceneptr = scene.get();
+    
+    connect(sceneptr, SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
         this, SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
+    connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
+    connect(sceneptr, SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( EntityCreated(Scene::Entity*, AttributeChange::Type) ),
+    connect(sceneptr, SIGNAL( EntityCreated(Scene::Entity*, AttributeChange::Type) ),
         this, SLOT( OnEntityCreated(Scene::Entity*, AttributeChange::Type) ));
-    connect(scene.get(), SIGNAL( EntityRemoved(Scene::Entity*, AttributeChange::Type) ),
+    connect(sceneptr, SIGNAL( EntityRemoved(Scene::Entity*, AttributeChange::Type) ),
         this, SLOT( OnEntityRemoved(Scene::Entity*, AttributeChange::Type) ));
 }
 
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    Scene::ScenePtr scene = scene_.lock();
     if (!scene)
         return;
     
-    // Sync all non-local entities
+    // If user does not have replication state, create it, then mark all non-local entities dirty
+    // so we will send them during the coming updates
+    if (!user->userData)
+        user->userData = boost::shared_ptr<IUserData>(new SceneSyncState());
+    
+    SceneSyncState* state = checked_static_cast<SceneSyncState*>(user->userData.get());
+    
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        std::vector<MessageConnection*> connections;
-        connections.push_back(user->connection);
         Scene::EntityPtr entity = *iter;
-        if (!entity->IsLocal())
-            SerializeAndSendComponents(connections, entity, true, true);
-    }
-}
-
-std::vector<MessageConnection*> SyncManager::GetConnectionsToSyncTo()
-{
-    std::vector<MessageConnection*> connections;
-    if (owner_->IsServer())
-    {
-        KristalliProtocol::UserConnectionList& userConnections = owner_->ServerGetUserConnections();
-        for (KristalliProtocol::UserConnectionList::iterator i = userConnections.begin(); i != userConnections.end(); ++i)
-            connections.push_back(i->connection);
-    }
-    else
-    {
-        if (owner_->ClientGetConnection())
-            connections.push_back(owner_->ClientGetConnection());
-    }
-    
-    return connections;
-}
-
-void SyncManager::SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity, bool allComponents)
-{
-    if (!entity)
-        return;
-    
-    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-    bool no_components = true;
-    
-    // If there were no components, and we're not sending a CreateEntity message, do not send anything
-    if ((no_components) && (!createEntity))
-        return;
-    
-    if (createEntity)
-    {
-        MsgCreateEntity msg;
-        msg.entityID = entity->GetId();
-        for(uint i = 0; i < components.size(); ++i)
-        {
-            IComponent* component = components[i].get();
-            
-            if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
-            {
-                // If not sending all components, send only those who are dirtied
-                if ((allComponents) || (component->GetChange() == AttributeChange::Local))
-                {
-                    MsgCreateEntity::S_components newComponent;
-                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
-                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
-                    newComponent.componentData.resize(64 * 1024);
-                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
-                    component->SerializeToBinary(dest);
-                    newComponent.componentData.resize(dest.BytesFilled());
-                    msg.components.push_back(newComponent);
-                }
-            }
-        }
-        for (unsigned i = 0; i < connections.size(); ++i)
-            connections[i]->Send(msg);
-    }
-    else
-    {
-        MsgUpdateComponents msg;
-        msg.entityID = entity->GetId();
-        for(uint i = 0; i < components.size(); ++i)
-        {
-            IComponent* component = components[i].get();
-            
-            if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
-            {
-                // If not sending all components, send only those who are dirtied
-                if ((allComponents) || (component->GetChange() == AttributeChange::Local))
-                {
-                    MsgUpdateComponents::S_components newComponent;
-                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
-                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
-                    newComponent.componentData.resize(64 * 1024);
-                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
-                    component->SerializeToBinary(dest);
-                    newComponent.componentData.resize(dest.BytesFilled());
-                    msg.components.push_back(newComponent);
-                }
-            }
-        }
-        // If there are no components to update, do not send
-        if (msg.components.empty())
-            return;
-        
-        for (unsigned i = 0; i < connections.size(); ++i)
-            connections[i]->Send(msg);
+        entity_id_t id = entity->GetId();
+        // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
+        if (id & Scene::LocalEntity)
+            break;
+        state->OnEntityChanged(id);
     }
 }
 
 void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
 {
+    if (!comp->IsSerializable())
+        return;
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
     Scene::Entity* entity = comp->GetParentEntity();
     if ((!entity) || (entity->IsLocal()))
         return;
-    // If entity is already on created list, let creation sync handle the component
-    if (createdEntities_.find(entity->GetId()) != createdEntities_.end())
-        return;
-    dirtyEntities_.insert(entity->GetId());
+    
+    if (owner_->IsServer())
+    {
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+        }
+    }
+    else
+    {
+        SceneSyncState* state = &server_syncstate_;
+        state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+    }
 }
 
 void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    if (!comp->IsSerializable())
+        return;
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
     
-    // If component was on the removed list, but was re-added, remove from removed list
-    std::vector<RemovedComponent>& removed = removedComponents_[entity->GetId()];
-    for (unsigned i = 0; i < removed.size(); ++i)
+    if (owner_->IsServer())
     {
-        if ((removed[i].typename_ == comp->TypeName()) && (removed[i].name_ == comp->Name()))
-            removed.erase(removed.begin() + i);
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+        }
     }
-    
-    // If entity is already on created list, let creation sync handle the component
-    if (createdEntities_.find(entity->GetId()) != createdEntities_.end())
-        return;
-    dirtyEntities_.insert(entity->GetId());
+    else
+    {
+        SceneSyncState* state = &server_syncstate_;
+        state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+    }
 }
 
 void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    if (!comp->IsSerializable())
+        return;
     if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
     
-    // If entity is on the created list, creation sync will send the proper set of components at the end of the frame, and we don't have to bother
-    if (createdEntities_.find(entity->GetId()) != createdEntities_.end())
-        return;
-    // If entity is on the removed list, we don't have to bother
-    if (removedEntities_.find(entity->GetId()) != removedEntities_.end())
-        return;
-    
-    RemovedComponent removed;
-    removed.typename_ = comp->TypeName();
-    removed.name_ = comp->Name();
-    
-    removedComponents_[entity->GetId()].push_back(removed);
+    if (owner_->IsServer())
+    {
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                state->OnComponentRemoved(entity->GetId(), comp->TypeName(), comp->Name());
+        }
+    }
+    else
+    {
+        SceneSyncState* state = &server_syncstate_;
+        state->OnComponentRemoved(entity->GetId(), comp->TypeName(), comp->Name());
+    }
 }
 
 void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
@@ -211,13 +182,21 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
     if ((change != AttributeChange::Local) || (entity->IsLocal()))
         return;
     
-    // Put on the created list
-    createdEntities_.insert(entity->GetId());
-    
-    // Remove from all other lists, if is there
-    removedEntities_.erase(entity->GetId());
-    dirtyEntities_.erase(entity->GetId());
-    removedComponents_.erase(entity->GetId());
+    if (owner_->IsServer())
+    {
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                state->OnEntityChanged(entity->GetId());
+        }
+    }
+    else
+    {
+        SceneSyncState* state = &server_syncstate_;
+        state->OnEntityChanged(entity->GetId());
+    }
 }
 
 void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
@@ -227,82 +206,121 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     if (entity->IsLocal())
         return;
     
-    createdEntities_.erase(entity->GetId());
-    dirtyEntities_.erase(entity->GetId());
-    removedComponents_.erase(entity->GetId()); // Individual component removals do not matter at this point
-    removedEntities_.insert(entity->GetId());
+    if (owner_->IsServer())
+    {
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                state->OnEntityRemoved(entity->GetId());
+        }
+    }
+    else
+    {
+        SceneSyncState* state = &server_syncstate_;
+        state->OnEntityRemoved(entity->GetId());
+    }
 }
 
-void SyncManager::Update()
+void SyncManager::Update(f64 frametime)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    update_acc_ += frametime;
+    if (update_acc_ < update_period_)
+        return;
+    // If multiple updates passed, update still just once
+    while (update_acc_ >= update_period_)
+        update_acc_ -= update_period_;
+    
+    Scene::ScenePtr scene = scene_.lock();
     if (!scene)
         return;
     
-    std::vector<MessageConnection*> connections = GetConnectionsToSyncTo();
+    if (owner_->IsServer())
+    {
+        // If we are server, process all users
+        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
+        {
+            SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
+            if (state)
+                ProcessSyncState(i->connection, state);
+        }
+    }
+    else
+    {
+        // If we are client, process just the server sync state
+        MessageConnection* connection = owner_->ClientGetConnection();
+        if (connection)
+            ProcessSyncState(connection, &server_syncstate_);
+    }
+}
+
+void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncState* state)
+{
+    Scene::ScenePtr scene = scene_.lock();
     
-    // Process first the created entities
-    std::set<entity_id_t>::const_iterator i = createdEntities_.begin();
-    while (i != createdEntities_.end())
+    // Process dirty entities (added/updated/removed components)
+    std::set<entity_id_t> dirty = state->dirty_entities_;
+    for (std::set<entity_id_t>::iterator i = dirty.begin(); i != dirty.end(); ++i)
     {
         Scene::EntityPtr entity = scene->GetEntity(*i);
-        if (entity)
+        if (!entity)
+            continue;
+        const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+        EntitySyncState* entitystate = state->GetEntity(*i);
+        // No record in entitystate -> newly created entity, send full state
+        if (!entitystate)
         {
-            SerializeAndSendComponents(connections, entity, true, false);
-            entity->ResetChange();
-        }
-        ++i;
-    }
-    createdEntities_.clear();
-    
-    // Then the entity modifications
-    i = dirtyEntities_.begin();
-    while (i != dirtyEntities_.end())
-    {
-        Scene::EntityPtr entity = scene->GetEntity(*i);
-        if (entity)
-        {
-            SerializeAndSendComponents(connections, entity, false, false);
-            entity->ResetChange();
-        }
-        ++i;
-    }
-    dirtyEntities_.clear();
-    
-    // Then removed components
-    std::map<entity_id_t, std::vector<RemovedComponent> >::const_iterator j = removedComponents_.begin();
-    while (j != removedComponents_.end())
-    {
-        const std::vector<RemovedComponent>& removed = j->second;
-        if (removed.size())
-        {
-            MsgRemoveComponents msg;
-            msg.entityID = j->first;
-            msg.components.resize(removed.size());
-            for (unsigned k = 0; k < removed.size(); ++k)
+            entitystate = state->GetOrCreateEntity(*i);
+            MsgCreateEntity msg;
+            msg.entityID = entity->GetId();
+            for(uint j = 0; j < components.size(); ++j)
             {
-                msg.components[k].componentTypeName = StringToBuffer(removed[k].typename_.toStdString());
-                msg.components[k].componentName = StringToBuffer(removed[k].name_.toStdString());
+                IComponent* component = components[j].get();
+                
+                if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
+                {
+                    // Create componentstate, then fill the initial data both there and to network stream
+                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeName(), component->Name());
+                    
+                    MsgCreateEntity::S_components newComponent;
+                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                    newComponent.componentName = StringToBuffer(component->Name().toStdString());
+                    newComponent.componentData.resize(64 * 1024);
+                    DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
+                    component->SerializeToBinary(dest);
+                    newComponent.componentData.resize(dest.BytesFilled());
+                    msg.components.push_back(newComponent);
+                    // Copy to state if data size nonzero
+                    if (newComponent.componentData.size())
+                    {
+                        componentstate->data_.resize(newComponent.componentData.size());
+                        memcpy(&componentstate->data_[0], &newComponent.componentData[0], newComponent.componentData.size());
+                    }
+                    
+                    destination->Send(msg);
+                }
+                
+                entitystate->AckDirty(component->TypeName(), component->Name());
             }
-            
-            for (unsigned l = 0; l < connections.size(); ++l)
-                connections[l]->Send(msg);
         }
-        ++j;
+        
+        state->AckDirty(*i);
     }
-    removedComponents_.clear();
-    
-    // And finally removed entities
-    i = removedEntities_.begin();
-    while (i != removedEntities_.end())
+
+    // Process removed entities
+    std::set<entity_id_t> removed = state->removed_entities_;
+    for (std::set<entity_id_t>::iterator i = removed.begin(); i != removed.end(); ++i)
     {
         MsgRemoveEntity msg;
         msg.entityID = *i;
-        for (unsigned j = 0; j < connections.size(); ++j)
-            connections[j]->Send(msg);
-        ++i;
+        destination->Send(msg);
+        
+        state->AckRemove(*i);
     }
-    removedEntities_.clear();
+    
+    //! \todo Update & remove components
 }
 
 bool SyncManager::ValidateAction(MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -469,6 +487,7 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 try
                 {
+                    //! \todo deltadeserialize
                     new_comp->DeserializeFromBinary(source, change);
                 }
                 catch (...)

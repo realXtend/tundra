@@ -128,6 +128,11 @@ public:
     //! Read attribute from binary for binary deserialization
     virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change) = 0;
 
+    //! Compare current value of attribute to binary deserialized data
+    /*! \return true if different (deltaserialization needed)
+     */
+    virtual bool CompareBinary(DataDeserializer& source) const = 0;
+
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
 
@@ -213,6 +218,9 @@ public:
 
     //! IAttribute override.
     virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change);
+
+    //! IAttribute override
+    virtual bool CompareBinary(DataDeserializer& source) const;
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;

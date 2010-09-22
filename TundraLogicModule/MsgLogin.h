@@ -20,7 +20,7 @@ struct MsgLogin
 	void InitToDefault()
 	{
 		reliable = true;
-		inOrder = false;
+		inOrder = true;
 		priority = 100;
 	}
 

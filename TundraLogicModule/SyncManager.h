@@ -6,6 +6,7 @@
 #include "Foundation.h"
 #include "IComponent.h"
 #include "SceneManager.h"
+#include "SyncState.h"
 
 #include <QObject>
 #include <map>
@@ -16,8 +17,6 @@ struct MsgRemoveEntity;
 struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
-
-class QDomDocument;
 
 namespace KristalliProtocol
 {
@@ -48,13 +47,19 @@ public:
     //! Destructor
     ~SyncManager();
     
-    //! Register to entity/component change signals and start syncing them
+    //! Set update period (seconds)
+    void SetUpdatePeriod(f64 period);
+    
+    //! Get update period
+    f64 GetUpdatePeriod() { return update_period_; }
+    
+    //! Register to entity/component change signals from a specific scene and start syncing them
     void RegisterToScene(Scene::ScenePtr scene);
     
-    //! Send pending sync messages for one frame
-    void Update();
+    //! Accumulate time & send pending sync messages if enough time passed from last update
+    void Update(f64 frametime);
     
-    //! Replicate the whole scene to a new user
+    //! Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(KristalliProtocol::UserConnection* user);
     
     //! Handle create entity message
@@ -81,10 +86,12 @@ private slots:
     void OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
     
 private:
-    //! Return the messageconnections to where we should send each sync message. For client, this is the server. For server, this is all connected clients
-    /*! \todo In the future, we may need to send different entities/components to different users, based on interest management
+    //! Process one sync state for changes in the scene
+    /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
+        \param destination MessageConnection where to send the messages
+        \param state Syncstate to process
      */
-    std::vector<MessageConnection*> GetConnectionsToSyncTo();
+    void ProcessSyncState(MessageConnection* destination, SceneSyncState* state);
     
     //! Validate the scene manipulation action. If returns false, it is ignored
     /*! \param source Where the action came from
@@ -108,17 +115,16 @@ private:
     //! Framework pointer
     Foundation::Framework* framework_;
     
-    //! Entities created within the frame
-    std::set<entity_id_t> createdEntities_;
+    //! Scene pointer
+    Scene::SceneWeakPtr scene_;
     
-    //! Locally dirty entities, to be replicated.
-    std::set<entity_id_t> dirtyEntities_;
+    //! Time period for update (default 0.04 - 25fps)
+    f64 update_period_;
+    //! Time accumulator for update
+    f64 update_acc_;
     
-    //! Removed entities
-    std::set<entity_id_t> removedEntities_;
-    
-    //! Components that have been removed from specific entities on the frame
-    std::map<entity_id_t, std::vector<RemovedComponent> > removedComponents_;
+    //! Server sync state (client operation only)
+    SceneSyncState server_syncstate_;
 };
 
 }
