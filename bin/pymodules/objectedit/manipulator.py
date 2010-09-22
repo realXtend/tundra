@@ -4,81 +4,21 @@ import rexviewer as r
 import naali
 rend = naali.renderer
 
+import mathutils as mu
 import math
 
 import PythonQt
-import PythonQt.QtGui
 
 from PythonQt.QtCore import Qt
-from PythonQt.QtGui import QQuaternion as Quat
-from PythonQt.QtGui import QVector3D as Vec
+
+import PythonQt.QtGui
+from PythonQt.QtGui import QQuaternion
+from PythonQt.QtGui import QVector3D
 
 try:
     qapp = PythonQt.Qt.QApplication.instance()
 except:
     qapp = None
-
-# according Quaternion*Vector from irrlicht (see Core\Quaternion.h)
-def quat_mult_vec(quat, v):
-    qvec = quat.vector()
-    uv = Vec.crossProduct(qvec, v)
-    uuv = Vec.crossProduct(qvec, uv)
-    uv = uv * 2.0 * quat.scalar()
-    uuv = uuv * 2.0
-
-    return v + uv + uuv
-
-# QQuaternion to euler [x,y,z]
-def quat_to_euler(quat):
-    euler = [0, 0, 0]
-    sqw = quat.scalar() * quat.scalar()
-    sqx = quat.x() * quat.x()
-    sqy = quat.y() * quat.y()
-    sqz = quat.z() * quat.z()
-    
-    euler[2] = math.atan2(2.0 * (quat.x()*quat.y() +quat.z()*quat.scalar()),(sqx - sqy - sqz + sqw))
-    euler[0] = math.atan2(2.0 * (quat.y()*quat.z() +quat.x()*quat.scalar()),(-sqx - sqy + sqz + sqw))
-    yval = math.asin(-2.0 * (quat.x()*quat.z() - quat.y()*quat.scalar()))
-    if yval < -1.0:
-        yval = -1.0
-    elif yval > 1.0:
-        yval = 1.0
-    euler[1] = yval
-    
-    return euler
-
-# euler [x,y,z] to QQuaternion
-def euler_to_quat(euler):
-    ang = euler[0] * 0.5
-    sr = math.sin(ang)
-    cr = math.cos(ang)
-
-    ang = euler[1] * 0.5
-    sp = math.sin(ang)
-    cp = math.cos(ang)
-
-    ang = euler[2] * 0.5
-    sy = math.sin(ang)
-    cy = math.cos(ang)
-
-    cpcy = cp * cy
-    spcy = sp * cy
-    cpsy = cp * sy
-    spsy = sp * sy
-
-    quat = Quat(cr*cpcy + sr*spsy, sr * cpcy - cr*spsy, cr*spcy + sr * cpsy, cr * cpsy - sr * spcy)
-    quat.normalize()
-    return quat
-
-# replacement for r.GetCameraUp()
-def get_up(entity):
-    v = Vec(0.0, 1.0, 0.0)
-    return quat_mult_vec(entity.placeable.Orientation, v)
-    
-# replacement for r.GetCameraRight()
-def get_right(entity):
-    v = Vec(1.0, 0.0, 0.0)
-    return quat_mult_vec(entity.placeable.Orientation, v)
 
 def set_custom_cursor(cursor_shape):
     if qapp == None:
@@ -114,19 +54,14 @@ class Manipulator:
     CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
     CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
-    MANIPULATORORIENTATION = Quat(1, 0, 0, 0)
-    MANIPULATORSCALE = Vec(1, 1, 1)
+    MANIPULATORORIENTATION = QQuaternion(1, 0, 0, 0)
+    MANIPULATORSCALE = QVector3D(1, 1, 1)
     
     MATERIALNAMES = None
     
     AXIS_RED = 0
     AXIS_GREEN = 1
     AXIS_BLUE = 2
-
-    # some handy shortcut rotations for quats
-    ninty_around_x = Quat(math.sqrt(0.5), math.sqrt(0.5), 0, 0)
-    ninty_around_y = Quat(math.sqrt(0.5), 0, math.sqrt(0.5), 0)
-    ninty_around_z = Quat(math.sqrt(0.5), 0, 0, math.sqrt(0.5))
     
     def __init__(self, creator):
         self.controller = creator
@@ -190,8 +125,8 @@ class Manipulator:
         ys = [e.placeable.Position.y() for e in ents]
         zs = [e.placeable.Position.z() for e in ents]
                 
-        minpos = Vec(min(xs), min(ys), min(zs))
-        maxpos = Vec(max(xs), max(ys), max(zs))
+        minpos = QVector3D(min(xs), min(ys), min(zs))
+        maxpos = QVector3D(max(xs), max(ys), max(zs))
         median = (minpos + maxpos) / 2 
         
         return median
@@ -202,8 +137,8 @@ class Manipulator:
             try: #XXX! without this try-except, if something is selected, the viewer will crash on exit
                 #print "Hiding arrows!"
                 if self.manipulator is not None:
-                    self.manipulator.placeable.Scale = Vec(0.0, 0.0, 0.0) #ugly hack
-                    self.manipulator.placeable.Position = Vec(0.0, 0.0, 0.0)#another ugly hack
+                    self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
+                    self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
                 
                 self.grabbed_axis = None
                 self.grabbed = False
@@ -254,7 +189,7 @@ class Manipulator:
             
         v = self.MANIPULATORSCALE
         factor = length*.1
-        newv = Vec(v) * factor
+        newv = QVector3D(v) * factor
         try:
             self.manipulator.placeable.Scale = newv
         except AttributeError:
@@ -280,8 +215,8 @@ class Manipulator:
 
             self.setManipulatorScale(ents)
 
-            rightvec = get_right(naali.getCamera())
-            upvec = get_up(naali.getCamera())
+            rightvec = mu.get_right(naali.getCamera())
+            upvec = mu.get_up(naali.getCamera())
 
             rightvec *= amountx
             upvec *= amounty
@@ -343,12 +278,6 @@ class MoveManipulator(Manipulator):
 
     def _manipulate(self, ent, amountx, amounty, changevec):
         if self.grabbed:
-#            rightvec = get_right(naali.getCamera())
-#            upvec = get_up(naali.getCamera())
-#            rightvec *= amountx
-#            upvec *= amounty
-#            changevec = rightvec - upvec
-
             if self.controller.useLocalTransform:
                 if self.grabbed_axis == self.AXIS_RED:
                     ent.network.Position = ent.placeable.translate(0, -changevec.x())
@@ -400,12 +329,6 @@ class ScaleManipulator(Manipulator):
                 changevec.setZ(0)
             
             ent.placeable.Scale += changevec
-            qprim = ent.prim
-            if qprim is not None:
-                children = qprim.GetChildren()
-                for child_id in children: #XXX this might not be the wanted behaviour with linksets! .. when just scaling the rootpart.
-                    child = r.getEntity(int(child_id))
-                    child.placeable.Scale += changevec
             
 class FreeMoveManipulator(Manipulator):
     NAME = "FreeMoveManipulator"
@@ -413,13 +336,6 @@ class FreeMoveManipulator(Manipulator):
     
     """ Using Qt's QVector3D. This has some lag issues or rather annoying stutterings """
     def _manipulate(self, ent, amountx, amounty, changevec):
-#        rightvec = get_right(naali.getCamera())
-#        upvec = get_up(naali.getCamera())
-#
-#        rightvec *= amountx
-#        upvec *= amounty
-#        changevec = rightvec - upvec
-
         ent.placeable.Position += changevec
         ent.network.Position += changevec
         
@@ -463,15 +379,15 @@ class RotationManipulator(Manipulator):
 
             if local:
                 if self.grabbed_axis == self.AXIS_RED:
-                    axis = Vec(1, 0, 0)
+                    axis = QVector3D(1, 0, 0)
                 elif self.grabbed_axis == self.AXIS_GREEN:
-                    axis = Vec(0, 1, 0)
+                    axis = QVector3D(0, 1, 0)
                 elif self.grabbed_axis == self.AXIS_BLUE:
-                    axis = Vec(0, 0, 1)
+                    axis = QVector3D(0, 0, 1)
 
-                ort = ort * Quat.fromAxisAndAngle(axis, mov)
+                ort = ort * QQuaternion.fromAxisAndAngle(axis, mov)
             else:
-                euler = quat_to_euler(ort)
+                euler = mu.quat_to_euler(ort)
 
                 if self.grabbed_axis == self.AXIS_RED: #rotate around x-axis
                     euler[0] -= math.radians(mov)
@@ -480,7 +396,7 @@ class RotationManipulator(Manipulator):
                 elif self.grabbed_axis == self.AXIS_BLUE: #rotate around z-axis
                     euler[2] += math.radians(mov)
 
-                ort = euler_to_quat(euler)
+                ort = mu.euler_to_quat(euler)
 
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort

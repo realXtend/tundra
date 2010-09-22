@@ -52,10 +52,11 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
 
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
+        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name);
 
     public:
         //! destructor
@@ -91,7 +92,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList());
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList());
 
         //! Returns entity with the specified id
         /*!
