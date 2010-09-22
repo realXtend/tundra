@@ -54,13 +54,13 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
 }
 
-namespace AvatarModule
+namespace Avatar
 {
-    class Avatar;
+    class AvatarHandler;
     class AvatarControllable;
     class AvatarEditor;
 
-    typedef boost::shared_ptr<Avatar> AvatarPtr;
+    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
 }
@@ -149,13 +149,13 @@ namespace RexLogic
         void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
-        AvatarModule::AvatarPtr GetAvatarHandler() const;
+        Avatar::AvatarHandlerPtr GetAvatarHandler() const;
 
         //! @return The avatar editor.
-        AvatarModule::AvatarEditorPtr GetAvatarEditor() const;
+        Avatar::AvatarEditorPtr GetAvatarEditor() const;
         
         //! Returns the avatar controllable
-        AvatarModule::AvatarControllablePtr GetAvatarControllable() const;
+        Avatar::AvatarControllablePtr GetAvatarControllable() const;
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler() const;

@@ -24,7 +24,7 @@ namespace HttpUtilities
     typedef boost::shared_ptr<HttpTask> HttpTaskPtr;
 }
 
-namespace AvatarModule
+namespace Avatar
 {
     class AvatarExporter;
     class AvatarExporterRequest;
@@ -43,7 +43,7 @@ namespace AvatarModule
         };
         
     public:
-        AvatarAppearance(Foundation::Framework *framework, AvatarModule *avatar_module);
+        AvatarAppearance(AvatarModule *avatar_module);
         ~AvatarAppearance();
         
         //! Reads default appearance of avatar from file to xml document

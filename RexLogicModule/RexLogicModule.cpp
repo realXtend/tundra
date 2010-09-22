@@ -40,7 +40,7 @@
 #include "EC_HoveringWidget.h"
 
 #include "AvatarModule.h"
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
@@ -535,34 +535,34 @@ void RexLogicModule::ResetCameraState()
     camera_state_ = CS_Follow;
 }
 
-AvatarModule::AvatarPtr RexLogicModule::GetAvatarHandler() const
+Avatar::AvatarHandlerPtr RexLogicModule::GetAvatarHandler() const
 {
-    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
     assert(avatar_module);
     if (avatar_module)
         return avatar_module->GetAvatarHandler();
     else
-        return AvatarModule::AvatarPtr();
+        return Avatar::AvatarHandlerPtr();
 }
 
-AvatarModule::AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
+Avatar::AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 {
-    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
     assert(avatar_module);
     if (avatar_module)
         return avatar_module->GetAvatarEditor();
     else
-        return AvatarModule::AvatarEditorPtr();
+        return Avatar::AvatarEditorPtr();
 }
 
-AvatarModule::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
+Avatar::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
 {
-    boost::shared_ptr<AvatarModule::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<AvatarModule::AvatarModule>().lock();
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
     assert(avatar_module);
     if (avatar_module)
         return avatar_module->GetAvatarControllable();
     else
-        return AvatarModule::AvatarControllablePtr();
+        return Avatar::AvatarControllablePtr();
 }
 
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const

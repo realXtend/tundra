@@ -23,7 +23,7 @@
 
 using namespace RexTypes;
 
-namespace AvatarModule
+namespace Avatar
 {
     std::string modifier_mode[] = {
         "relative",

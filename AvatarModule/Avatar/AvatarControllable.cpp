@@ -22,7 +22,7 @@ using namespace RexTypes;
 
 namespace RA = RexTypes::Actions;
 
-namespace AvatarModule
+namespace Avatar
 {
     uint32_t SetFPControlFlags(uint32_t control_flags, float pitch)
     {

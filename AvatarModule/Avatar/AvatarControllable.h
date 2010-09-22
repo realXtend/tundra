@@ -16,7 +16,7 @@ namespace ProtocolUtilities
     class WorldStream;
 }
 
-namespace AvatarModule
+namespace Avatar
 {
     //! A controller for avatar.
     /*! For more information about controllables, see EC_Controllable.

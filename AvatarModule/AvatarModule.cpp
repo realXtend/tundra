@@ -13,11 +13,11 @@
 
 #include "EC_HoveringWidget.h"
 
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
 
-namespace AvatarModule
+namespace Avatar
 {
     static std::string module_name = "AvatarModule";
     const std::string &AvatarModule::NameStatic() { return module_name; }
@@ -47,7 +47,7 @@ namespace AvatarModule
 	{
         event_query_categories_ << "Framework" << "Scene" << "NetworkState" << "Avatar" << "Resource" << "Asset" << "Inventory" << "Input" << "Action";
 
-        avatar_handler_ = AvatarPtr(new Avatar(GetFramework(), this));
+        avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
 	}
@@ -56,6 +56,15 @@ namespace AvatarModule
 	{
 		SubscribeToEventCategories();
 	}
+
+    void AvatarModule::Uninitialize()
+    {
+        avatar_handler_.reset();
+        avatar_controllable_.reset();
+        avatar_editor_.reset();
+        world_stream_.reset();
+        uuid_to_local_id_.clear();
+    }
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(const RexUUID &uuid)
 	{
@@ -83,8 +92,6 @@ namespace AvatarModule
         if (!uuid_to_local_id_.contains(full_uuid))
         {
 		    uuid_to_local_id_[full_uuid] = entity_id;
-
-            LogInfo("Registered uuid to ent");
             Events::SceneRegisterEntityData data(full_uuid, entity_id);
             GetFramework()->GetEventManager()->SendEvent("Avatar", Events::EVENT_REGISTER_UUID_TO_LOCALID, &data);
         }
@@ -94,7 +101,6 @@ namespace AvatarModule
 	{
 		if (uuid_to_local_id_.remove(full_uuid) > 0)
         {
-            LogInfo("Unregistered uuid");
             Events::SceneRegisterEntityData data(full_uuid);
             GetFramework()->GetEventManager()->SendEvent("Avatar", Events::EVENT_UNREGISTER_UUID_TO_LOCALID, &data);
         }
@@ -189,3 +195,14 @@ namespace AvatarModule
 			service_category_identifiers_[category] = GetFramework()->GetEventManager()->QueryEventCategory(category.toStdString());
     }
 }
+
+extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
+void SetProfiler(Foundation::Profiler *profiler)
+{
+    Foundation::ProfilerSection::SetProfiler(profiler);
+}
+
+using namespace Avatar;
+POCO_BEGIN_MANIFEST(IModule)
+    POCO_EXPORT_CLASS(AvatarModule)
+POCO_END_MANIFEST
