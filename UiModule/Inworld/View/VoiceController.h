@@ -6,7 +6,6 @@
 #include <QObject>
 #include <QWidget>
 #include <QPoint>
-#include <QTimer>
 #include "ui_VoiceControl.h"
 
 class QMouseEvent;
@@ -23,6 +22,8 @@ namespace Communications
 
 namespace CommUI
 {
+    class VoiceUserWidget;
+
     class VoiceController : public QObject
     {
         Q_OBJECT
@@ -60,7 +61,6 @@ namespace CommUI
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
     };
 
-    //public QObject,
     class VoiceControllerWidget : public QWidget, private Ui::VoiceControl
     {
         Q_OBJECT
@@ -78,11 +78,12 @@ namespace CommUI
         void OpenParticipantListWidget();
         void ApplyMuteAllSelection();
         void UpdateUI();
+        void UpdateParticipantList();
 
     private:
-        QTimer update_timer_;
         QGraphicsProxyWidget* voice_users_proxy_widget_;
         VoiceController voice_controller_;
+        QList<VoiceUserWidget *> user_widgets_;
     };
 
 } // CommUI

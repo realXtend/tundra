@@ -13,6 +13,7 @@
 #include "VoiceController.h"
 #include <CommunicationsService.h>
 #include <QMouseEvent>
+#include "VoiceUsersWidget.h" /// @todo Separate to VoiceParticipantWidget.h/cpp
 
 #include "DebugOperatorNew.h"
 
@@ -42,11 +43,6 @@ namespace CommUI
         if (old_mode != transmission_mode_)
             emit TransmissionModeChanged(transmission_mode_);
     }
-
-    //TransmissionMode VoiceController::GetTransmissionMode()
-    //{
-    //    return transmission_mode_;
-    //}
 
     void VoiceController::SetPushToTalkOn()
     {
@@ -129,8 +125,6 @@ namespace CommUI
         QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         QObject::connect(voice_controller_.GetSession(), SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), this, SLOT(UpdateUI()));
         UpdateUI();
-        QObject::connect(&update_timer_, SIGNAL(timeout()), this, SLOT(UpdateUI()));
-        update_timer_.start(200);
 
         /// @todo Use Settings class from MumbeVoipModule
         QSettings settings(QSettings::IniFormat, QSettings::UserScope, APPLICATION_NAME, "configuration/MumbleVoip");
@@ -138,6 +132,14 @@ namespace CommUI
         transmissionModeComboBox->setCurrentIndex(default_voice_mode);
 
         showListButton->hide(); // temporaly hide the button because there is an another similiar button.
+
+        UpdateParticipantList();
+        if (voice_session)
+        {
+            connect(voice_session, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateParticipantList()) );
+            connect(voice_session, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateParticipantList()) );
+            connect(voice_session, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateParticipantList()) );
+        }
     }
 
     VoiceControllerWidget::~VoiceControllerWidget()
@@ -147,6 +149,7 @@ namespace CommUI
 
     void VoiceControllerWidget::ApplyTransmissionModeSelection(int selection)
     {
+        UpdateUI();
         voice_controller_.SetTransmissionMode(VoiceController::TransmissionMode(selection));
     }
 
@@ -174,9 +177,6 @@ namespace CommUI
             participantsCountLabel->setText(QString("%1 participants").arg(voice_controller_.GetSession()->Participants().length()));
         else
             participantsCountLabel->setText("No participants");
-
-        averageOutgoingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithOut())/1024,'f',1)));
-        averageIncomingBandwidthLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(voice_controller_.GetSession()->GetAverageBandwithIn())/1024,'f',1)));
 
         switch(transmissionModeComboBox->currentIndex())
         {
@@ -208,6 +208,63 @@ namespace CommUI
     void VoiceControllerWidget::Toggle()
     {
         voice_controller_.Toggle();
+    }
+
+    void VoiceControllerWidget::UpdateParticipantList()
+    {
+        Communications::InWorldVoice::SessionInterface* session = voice_controller_.GetSession();
+        if (!session)
+            return;
+
+        QList<Communications::InWorldVoice::ParticipantInterface*> list = session->Participants();
+        foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
+        {
+            bool widget_exist = false;
+            foreach(VoiceUserWidget* w, user_widgets_)
+            {
+                if (w->Participant() == p)
+                {
+                    widget_exist = true;
+                    break;
+                }
+            }
+            if (!widget_exist)
+            {
+                VoiceUserWidget* w = new VoiceUserWidget(p);
+                user_widgets_.append(w);
+                userListLayout->insertWidget(0,w);
+            }
+        }
+
+        foreach(VoiceUserWidget* widget, user_widgets_)
+        {
+            bool participant_exist = false;
+            foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
+            {
+                if (widget->Participant() == p)
+                {
+                    participant_exist = true;
+                    break;
+                }
+            }
+            if (!participant_exist)
+            {
+                user_widgets_.removeOne(widget);
+                userListLayout->removeWidget(widget);
+                SAFE_DELETE(widget);
+                break;
+            }
+        }
+        int area_height = 0;
+        int number = user_widgets_.size();
+        if (number == 0)
+            area_height = 0;
+        else
+            area_height = number*user_widgets_[0]->height() + userListLayout->spacing()*(number-1) + userListLayout->contentsMargins().bottom() + userListLayout->contentsMargins().top();
+
+        const QRect& geometry = userListScrollAreaWidgetContents->geometry();
+        userListScrollAreaWidgetContents->
+        setGeometry(geometry.x(), geometry.y(), geometry.width(), area_height);
     }
 
 } // CommUI

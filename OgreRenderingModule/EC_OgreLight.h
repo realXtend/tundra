@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreLight_h
 #define incl_OgreRenderer_EC_OgreLight_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Color.h"
 #include "Vector3D.h"
@@ -14,6 +14,7 @@ namespace Ogre
     class Light;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -22,11 +23,40 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreLight</h2>
+		
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
+
     //! Ogre light component
     /*! A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
         \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreLight : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreLight : public IComponent
     {
         Q_OBJECT
         
@@ -44,13 +74,13 @@ namespace OgreRenderer
         virtual ~EC_OgreLight();
     
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! sets placeable component
         /*! set a null placeable (or do not set a placeable) to have a detached light
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
         
         //! sets type of light
         /*! \param type light type - point, directional or spot
@@ -87,7 +117,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreLight(Foundation::ModuleInterface* module);
+        EC_OgreLight(IModule* module);
         
         //! attaches light to placeable
         void AttachLight();
@@ -96,7 +126,7 @@ namespace OgreRenderer
         void DetachLight();
         
         //! placeable component, optional
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_UiModule_h
 #define incl_UiModule_UiModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include "UiModuleApi.h"
@@ -38,7 +38,7 @@ namespace UiServices
      *  Include above headers into your .cpp and UiServicesFwd.h to your .h files for easy access
      *  For the UI services provided for other, see @see UiSceneService
      */
-    class UI_MODULE_API UiModule : public QObject, public Foundation::ModuleInterface
+    class UI_MODULE_API UiModule : public QObject, public IModule
     {
         Q_OBJECT
 
@@ -53,7 +53,7 @@ namespace UiServices
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         /*************** UiModule Services ***************/
 

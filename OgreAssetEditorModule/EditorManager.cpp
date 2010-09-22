@@ -8,9 +8,6 @@
 #include "StableHeaders.h"
 #include "EditorManager.h"
 
-namespace Naali
-{
-
 EditorManager::EditorManager()
 {
 }
@@ -92,6 +89,4 @@ QWidget *EditorManager::TakeEditor(const QString &inventory_id, asset_type_t ass
         return editors_.take(key);
     else
         return 0;
-}
-
 }

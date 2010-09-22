@@ -45,6 +45,9 @@ namespace CommUI
         avatarNameLabel->setText(participant_->Name());
     }
 
+
+
+
     VoiceUsersWidget::VoiceUsersWidget(QWidget *parent, Qt::WindowFlags wFlags)
         : QWidget(parent, wFlags),
           session_(0)

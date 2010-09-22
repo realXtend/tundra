@@ -14,7 +14,8 @@
 namespace Environment
 {
     class EnvironmentModule;
-    class EC_Water;
+    //class EC_Water;
+    class EC_WaterPlane;
 
     //! \ingroup EnvironmentModuleClient.
     class ENVIRONMENT_MODULE_API Water : public QObject
@@ -78,7 +79,7 @@ namespace Environment
             EnvironmentModule *owner_;
 
             //! Water EC pointer.
-            EC_Water* activeWaterComponent_;
+            EC_WaterPlane* activeWaterComponent_;
 
             //! Cached water entity pointer.
             Scene::EntityWeakPtr activeWaterEntity_;

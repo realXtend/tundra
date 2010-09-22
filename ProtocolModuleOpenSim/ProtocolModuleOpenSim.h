@@ -3,7 +3,7 @@
 #ifndef incl_ProtocolModuleOpenSim_ProtocolModuleOpenSim_h
 #define incl_ProtocolModuleOpenSim_ProtocolModuleOpenSim_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "ProtocolModuleOpenSimApi.h"
 #include "OpenSimLoginThread.h"
@@ -33,7 +33,7 @@ namespace OpenSimProtocol
     /// communicating with the OpenSim server using the SLUDP protocol. It
     /// also handles the XMLRPC handshakes with the server.
     class OSPROTO_MODULE_API ProtocolModuleOpenSim  :
-        public Foundation::ModuleInterface,
+        public IModule,
         public ProtocolUtilities::INetMessageListener,
         public ProtocolUtilities::ProtocolModuleInterface
     {

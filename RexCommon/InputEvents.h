@@ -8,7 +8,7 @@
 #ifndef incl_Input_InputEvents_h
 #define incl_Input_InputEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "CoreTypes.h"
 
 namespace Foundation
@@ -189,7 +189,7 @@ namespace Input
         };
 
         //! input position that contains both relative and absolute movement for single axis. \ingroup Input_group
-        class SingleAxisMovement : public Foundation::EventDataInterface
+        class SingleAxisMovement : public IEventData
         {
         public:
             SingleAxisMovement() {}
@@ -210,7 +210,7 @@ namespace Input
         };
 
         //! input position that contains both relative and absolute movement for several axis. \ingroup Input_group
-        class Movement : public Foundation::EventDataInterface
+        class Movement : public IEventData
         {
         public:
             Movement() {}

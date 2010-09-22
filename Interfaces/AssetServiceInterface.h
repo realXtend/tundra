@@ -114,8 +114,9 @@ namespace Foundation
              sent to notify of the ready asset.
     
             \param asset Asset to store
+            \param store_to_disk Whether to store to disk cache. Default true, but makes no sense for local assets
          */
-        virtual void StoreAsset(AssetPtr asset) = 0;
+        virtual void StoreAsset(AssetPtr asset, bool store_to_disk = true) = 0;
     };
 }
 

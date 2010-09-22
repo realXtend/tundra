@@ -9,8 +9,9 @@
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
 }
+
+class IEventData;
 
 namespace RexLogic
 {
@@ -39,9 +40,9 @@ namespace RexLogic
             virtual void HandleIncomingChatMessage(const QString& from_uuid, const QString& from_name, const QString& text);
 
             /// Creates and deletes sessions
-            virtual bool HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+            virtual bool HandleNetworkStateEvent(event_id_t event_id, IEventData* data);
 
-            virtual bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+            virtual bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
         private slots:
             virtual void SendChatMessgeToServer(const QString& text);

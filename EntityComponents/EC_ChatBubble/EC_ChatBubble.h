@@ -9,7 +9,7 @@
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
 #define incl_EC_ChatBubble_EC_ChatBubble_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -34,8 +34,39 @@ QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
 
+
 /// Chat bubble component wich shows billboard with chat bubble and text on entity.
-class EC_ChatBubble : public Foundation::ComponentInterface
+/**
+<table class="header">
+<tr>
+<td>
+<h2>ChatBubble</h2>
+Chat bubble component wich shows billboard with chat bubble and text on entity.
+
+Registered by Naali::InWorldChatModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"ShowMessage: Adds new message to be shown on the chat bubble.
+    @param msg Message to be shown.
+    @note The time the message is shown is calculated from the message length.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable</b>.
+</table>
+*/
+class EC_ChatBubble : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_ChatBubble);
@@ -43,7 +74,7 @@ class EC_ChatBubble : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_ChatBubble(Foundation::ModuleInterface *module);
+    explicit EC_ChatBubble(IModule *module);
 
 public:
     /// Destructor.

@@ -3,7 +3,7 @@
 #ifndef incl_Protocol_NetworkEvents_h
 #define incl_Protocol_NetworkEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "RexUUID.h"
 #include "NetworkMessages/NetMessage.h"
 
@@ -170,7 +170,7 @@ namespace ProtocolUtilities
 
     /// Event data interface for authentication type identification.
     /// \ingroup OpenSimProtocolClient
-    class AuthenticationEventData : public Foundation::EventDataInterface
+    class AuthenticationEventData : public IEventData
     {
     public:
         AuthenticationEventData(const AuthenticationType &auth_type, const std::string &identity = "", const std::string &host = "") 
@@ -187,7 +187,7 @@ namespace ProtocolUtilities
 
     /// Event data interface for inbound messages.
     /// \ingroup OpenSimProtocolClient
-    class NetworkEventInboundData : public Foundation::EventDataInterface
+    class NetworkEventInboundData : public IEventData
     {
     public:
         NetworkEventInboundData(NetMsgID id, NetInMessage *msg) :
@@ -200,7 +200,7 @@ namespace ProtocolUtilities
 
     /// Event data interface for outbound messages.
     /// \ingroup OpenSimProtocolClient
-    class NetworkEventOutboundData : public Foundation::EventDataInterface
+    class NetworkEventOutboundData : public IEventData
     {
     public:
         NetworkEventOutboundData(NetMsgID id, const NetOutMessage *msg) :
@@ -211,7 +211,7 @@ namespace ProtocolUtilities
         const NetOutMessage *message;
     };
 
-    class NetworkingRegisteredEvent : public Foundation::EventDataInterface
+    class NetworkingRegisteredEvent : public IEventData
     {
     public:
         explicit NetworkingRegisteredEvent(boost::weak_ptr<ProtocolModuleInterface> pModule);
@@ -221,7 +221,7 @@ namespace ProtocolUtilities
         boost::weak_ptr<ProtocolModuleInterface> currentProtocolModule;
     };
 
-    class WorldStreamReadyEvent : public Foundation::EventDataInterface
+    class WorldStreamReadyEvent : public IEventData
     {
     public:
         explicit WorldStreamReadyEvent(boost::shared_ptr<ProtocolUtilities::WorldStream> currentWorldStream);
@@ -231,7 +231,7 @@ namespace ProtocolUtilities
     };
 
     /// Event data interface for EVENT_USER_CONNECTED and EVENT_USER_DISCONNECTED
-    class UserConnectivityEvent : public Foundation::EventDataInterface
+    class UserConnectivityEvent : public IEventData
     {
     public:
         /// Constructor
@@ -246,7 +246,7 @@ namespace ProtocolUtilities
     };
 
     /// Event data for EVENT_CONNECTION_FAILED
-    class ConnectionFailedEvent: public Foundation::EventDataInterface
+    class ConnectionFailedEvent: public IEventData
     {
     public:
         /*

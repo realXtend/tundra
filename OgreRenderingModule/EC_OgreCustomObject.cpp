@@ -10,8 +10,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreCustomObject::EC_OgreCustomObject(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+    EC_OgreCustomObject::EC_OgreCustomObject(IModule* module) :
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         entity_(0),
         attached_(false),
@@ -29,7 +29,7 @@ namespace OgreRenderer
         DestroyEntity();
     }
     
-    void EC_OgreCustomObject::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreCustomObject::SetPlaceable(ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {

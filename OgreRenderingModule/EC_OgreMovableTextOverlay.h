@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 #define incl_OgreRenderer_EC_OgreMovableTextOverlay_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -23,16 +23,46 @@ namespace Ogre
     class Font;
 }
 
+
 namespace OgreRenderer
 {
     class Renderer;
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
+	
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreMovableTextOverlay</h2>
+		Movable Ogre text overlay. 
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
     //! Movable Ogre text overlay.
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgreMovableTextOverlay : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgreMovableTextOverlay : public IComponent
     {
         Q_OBJECT
         
@@ -41,7 +71,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMovableTextOverlay(Foundation::ModuleInterface* module);
+        EC_OgreMovableTextOverlay(IModule* module);
 
         //! copy constructor. 
 //        EC_OgreMovableTextOverlay(const EC_OgreMovableTextOverlay &other);
@@ -60,7 +90,7 @@ namespace OgreRenderer
         void SetOffset(const Vector3df& offset);
 
         //! Sets the placeable (scene node) which the overlay is meant to follow.
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
 
         //! displays the text as is in the overlay
         void SetText(const std::string &text);
@@ -110,7 +140,7 @@ namespace OgreRenderer
         Ogre::SceneNode *node_;
 
         //! Parent placeable which will be followed
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
 
         //! Attached to parent-flag
         bool attached_;
