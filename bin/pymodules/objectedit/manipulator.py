@@ -75,7 +75,7 @@ class Manipulator:
 
     def compareIds(self, id):
         if self.usesManipulator:
-            if self.manipulator.id == id:
+            if self.manipulator.Id == id:
                 return True
         return False
         
@@ -92,7 +92,7 @@ class Manipulator:
     
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
-            ent = r.createEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
+            ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
             return ent 
 
     def stopManipulating(self):
@@ -149,11 +149,10 @@ class Manipulator:
     
     def initManipulation(self, ent, results):
         if self.usesManipulator:
-            
             if ent is None:
                 return
 
-            if ent.id == self.manipulator.id:
+            if ent.Id == self.manipulator.Id:
                 submeshid = results[-3]
                 self.axisSubmesh = submeshid
                 u = results[-2]
