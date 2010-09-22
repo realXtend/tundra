@@ -178,10 +178,8 @@ if 0: #camera entity - it is an entity nowadays, and there is EC cam even
 
 if 0: #calcing the camera angle around up axis for web ui
     import PythonQt.QtGui
-    from PythonQt.QtGui import QQuaternion as Quat
-    from PythonQt.QtGui import QVector3D as Vec
-
-    from objectedit.conversions import quat_to_euler#, euler_to_quat
+    from PythonQt.QtGui import QQuaternion
+    from PythonQt.QtGui import QVector3D
     import mathutils as mu
 
     def toAngleAxis(quat): 
@@ -193,7 +191,7 @@ if 0: #calcing the camera angle around up axis for web ui
         ang = 2.0 * math.acos(quat.scalar())
 
         invlen = lensq ** 0.5
-        vec = PythonQt.QtGui.QVector3D(quat.x() * invlen, 
+        vec = PythonQt.QtGui.QVector3D(quat.x() * invlen,
                                        quat.y() * invlen,
                                        quat.z() * invlen)
 
@@ -206,16 +204,15 @@ if 0: #calcing the camera angle around up axis for web ui
 
     ort = p.Orientation
     euler = mu.quat_to_euler(ort)
-    print euler
-    start = Quat(0, 0, -0.707, -0.707)
+    #print euler
+    start = QQuaternion(0, 0, -0.707, -0.707)
     #print start
-    rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), -10) #euler[0])
+    rot = QQuaternion.fromAxisAndAngle(QVector3D(0, 1, 0), -10)
     new = start * rot
-    #print euler_to_quat(euler)
     print ort
     print new
     #p.Orientation = new
-    #print euler_to_quat(euler), ort
+    #print mu.euler_to_quat(euler), ort
         
 if 0: #avatar set yaw (turn)
     #a = -1.0
