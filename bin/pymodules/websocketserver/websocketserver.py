@@ -111,9 +111,9 @@ def handle_clients(ws):
 
             NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
-            s = naali.getScene("World")
-            ents = s.GetEntityWithComponentRaw("EC_OpenSimPresence")
-                
+            scene = naali.getScene("World")
+            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
+
             for ent in ents:
 
                 x = ent.placeable.Position.x()
