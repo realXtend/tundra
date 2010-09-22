@@ -449,8 +449,8 @@ namespace PythonScript
             return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
-
         engine_->RunString(QString::fromStdString(params[0]));
+
         return Console::ResultSuccess();
     }
 
@@ -624,7 +624,6 @@ namespace PythonScript
         qobj->setProperty(propname, QVariant());
     }
 
-
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
@@ -634,7 +633,7 @@ namespace PythonScript
         if (script->type.Get() != "py")
             return;
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
+        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get(), script->GetParentEntity());
         script->SetScriptInstance(pyInstance);
         if (script->runOnLoad.Get())
             script->Run();

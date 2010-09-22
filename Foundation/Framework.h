@@ -270,6 +270,12 @@ namespace Foundation
         /// Returns the framework Console object.
         ScriptConsole *Console() const { return console_; }
 
+        /// Debugging utility function for printing QObject's methods and properties to log.
+        /** @param obj Object to inspect.
+            @todo Move this function to some better place.
+        */
+        void DescribeQObject(QObject *obj);
+
     signals:
         /** Emitted after new scene has been added to framework.
          *  @param name new scene name.

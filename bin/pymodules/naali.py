@@ -45,6 +45,8 @@ inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
 frame = _naali.GetFrame()
 console = _naali.Console()
+#input = _naali.GetInput()
+framework = _naali
 
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether
 # class Entity:
