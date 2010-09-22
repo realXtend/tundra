@@ -182,6 +182,7 @@ if 0: #calcing the camera angle around up axis for web ui
     from PythonQt.QtGui import QVector3D as Vec
 
     from objectedit.conversions import quat_to_euler#, euler_to_quat
+    import mathutils as mu
 
     def toAngleAxis(quat): 
         #no worky, so resorted to euler conversion
@@ -204,7 +205,7 @@ if 0: #calcing the camera angle around up axis for web ui
     #print toAngleAxis(p.Orientation)
 
     ort = p.Orientation
-    euler = quat_to_euler([ort.scalar(), ort.x(), ort.y(), ort.z()])
+    euler = mu.quat_to_euler(ort)
     print euler
     start = Quat(0, 0, -0.707, -0.707)
     #print start
