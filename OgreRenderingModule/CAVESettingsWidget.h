@@ -28,9 +28,12 @@ namespace OgreRenderer
         void CAVEButtonToggled(bool v);
         void AddNewCAVEView();
         void AddNewCAVEViewAdvanced();
+		void BNAVE();
+		void VCAVE();
+		void MiniCAVE();
 
     private:
-        
+        QString GetNextName();
         Foundation::Framework* framework_;
         CAVEViewSettings settings_dialog_;
         CAVEViewSettingsAdvanced settings_dialog_advanced_;

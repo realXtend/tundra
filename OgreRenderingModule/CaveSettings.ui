@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>272</width>
+    <width>277</width>
     <height>203</height>
    </rect>
   </property>
@@ -24,6 +24,59 @@
        <widget class="QCheckBox" name="toggle_CAVE">
         <property name="text">
          <string>Enable CAVE</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="Line" name="line_2">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="preset_label">
+        <property name="text">
+         <string>Presets:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QHBoxLayout" name="horizontalLayout_2">
+        <item>
+         <widget class="QPushButton" name="bnave_button">
+          <property name="text">
+           <string>BNAVE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="vcave_button">
+          <property name="text">
+           <string>V-CAVE</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QPushButton" name="minicave_button">
+          <property name="text">
+           <string>MiniCave</string>
+          </property>
+         </widget>
+        </item>
+       </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="label_custom">
+        <property name="text">
+         <string>Custom setup:</string>
         </property>
        </widget>
       </item>
