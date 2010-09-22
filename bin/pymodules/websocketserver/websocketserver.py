@@ -112,8 +112,7 @@ def handle_clients(ws):
             NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
             s = naali.getScene("World")
-            ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
-            ents = [r.getEntity(id) for id in ids]
+            ents = s.GetEntityWithComponentRaw("EC_OpenSimPresence")
                 
             for ent in ents:
 
@@ -126,7 +125,7 @@ def handle_clients(ws):
                 y_ori = ent.placeable.Orientation.y()
                 z_ori = ent.placeable.Orientation.z()
                 
-                id = ent.id
+                id = ent.Id
 
                 sendAll(['updateAvatar',
                          {'id': id,
