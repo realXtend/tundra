@@ -14,14 +14,20 @@
 
 #include <PythonQtObjectPtr.h>
 
+namespace Scene
+{
+    class Entity;
+}
+
 /// Python script instance used with EC_Script.
 class PythonScriptInstance : public IScriptInstance
 {
 public:
-    /** Constuctor.
-        @param filename Filename of the script (include path and file extension).
+    /// Constructs new script instance. Creates new module/context for the script file.
+    /** @param filename Filename of the script (include path and file extension).
+        @param entity Parent entity.
     */
-    PythonScriptInstance(const QString &filename);
+    PythonScriptInstance(const QString &filename, Scene::Entity *entity);
 
     /// Destructor.
     virtual ~PythonScriptInstance() {}
@@ -44,6 +50,9 @@ private:
 
     /// Script filename.
     QString filename_;
+
+    /// Python module name for the script file.
+    QString moduleName_;
 };
 
 #endif
