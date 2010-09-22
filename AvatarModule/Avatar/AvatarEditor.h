@@ -10,7 +10,7 @@
 
 class QTabWidget;
 
-namespace AvatarModule
+namespace Avatar
 {
     //! Avatar editing window. Owned by RexLogicModule.
     class AV_MODULE_API AvatarEditor : public QWidget

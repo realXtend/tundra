@@ -4,7 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "AvatarEditor.h"
-#include "Avatar.h"
+#include "AvatarHandler.h"
 #include "AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 
@@ -27,7 +27,7 @@
 
 #include "MemoryLeakCheck.h"
 
-namespace AvatarModule
+namespace Avatar
 {
     AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
         avatar_module_(avatar_module),
@@ -379,7 +379,7 @@ namespace AvatarModule
 
         if (!filename.empty())
         {
-            AvatarPtr avatar_handler = avatar_module_->GetAvatarHandler();
+            AvatarHandlerPtr avatar_handler = avatar_module_->GetAvatarHandler();
             Scene::EntityPtr entity = avatar_handler->GetUserAvatar();
             if (!entity)
             {

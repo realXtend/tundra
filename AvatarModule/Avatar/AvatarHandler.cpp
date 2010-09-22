@@ -8,7 +8,7 @@
 #include "StableHeaders.h"
 
 #include "AvatarEvents.h"
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 #include "Avatar/AvatarEditor.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
@@ -35,11 +35,11 @@
 
 #include <QPushButton>
 
-namespace AvatarModule
+namespace Avatar
 {
-    Avatar::Avatar(Foundation::Framework *framework, AvatarModule *avatar_module) : 
-        avatar_appearance_(framework, avatar_module), 
-        framework_(framework),
+    AvatarHandler::AvatarHandler(AvatarModule *avatar_module) : 
+        avatar_appearance_(avatar_module), 
+        framework_(avatar_module->GetFramework()),
         avatar_module_(avatar_module)
     {
         avatar_states_[RexUUID("6ed24bd8-91aa-4b12-ccc7-c97c857ab4e0")] = EC_OpenSimAvatar::Walk;
@@ -53,11 +53,11 @@ namespace AvatarModule
         avatar_states_[RexUUID("62c5de58-cb33-5743-3d07-9e4cd4352864")] = EC_OpenSimAvatar::Hover;
     }
 
-    Avatar::~Avatar()
+    AvatarHandler::~AvatarHandler()
     {
     }
 
-    Scene::EntityPtr Avatar::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing)
+    Scene::EntityPtr AvatarHandler::GetOrCreateAvatarEntity(entity_id_t entityid, const RexUUID &fullid, bool *existing)
     {
         // Make sure scene exists
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
@@ -96,7 +96,7 @@ namespace AvatarModule
         return entity;
     }
 
-    Scene::EntityPtr Avatar::CreateNewAvatarEntity(entity_id_t entityid)
+    Scene::EntityPtr AvatarHandler::CreateNewAvatarEntity(entity_id_t entityid)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
@@ -129,7 +129,7 @@ namespace AvatarModule
         return entity;
     }
 
-    bool Avatar::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
+    bool AvatarHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
     {
         ProtocolUtilities::NetInMessage &msg = *data->message;
         msg.ResetReading();
@@ -244,7 +244,7 @@ namespace AvatarModule
         return false;
     }
     
-    void Avatar::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
+    void AvatarHandler::HandleTerseObjectUpdate_30bytes(const uint8_t* bytes)
     {
         if (!framework_)
             return;
@@ -291,7 +291,7 @@ namespace AvatarModule
         assert(i <= 30);
     }
 
-    void Avatar::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
+    void AvatarHandler::HandleTerseObjectUpdateForAvatar_60bytes(const uint8_t* bytes)
     {
         // The data contents:
         // ofs  0 - localid - packed to 4 bytes
@@ -345,7 +345,7 @@ namespace AvatarModule
         assert(i <= 60);
     }
 
-    bool Avatar::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
+    bool AvatarHandler::HandleRexGM_RexAppearance(ProtocolUtilities::NetworkEventInboundData* data)
     {
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
         bool overrideappearance = false;
@@ -374,7 +374,7 @@ namespace AvatarModule
         return false;
     }
 
-    bool Avatar::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
+    bool AvatarHandler::HandleRexGM_RexAnim(ProtocolUtilities::NetworkEventInboundData* data)
     {
         StringVector params = ProtocolUtilities::ParseGenericMessageParameters(*data->message);
 
@@ -417,7 +417,7 @@ namespace AvatarModule
         return false;
     }
 
-    bool Avatar::HandleOSNE_KillObject(uint32_t objectid)
+    bool AvatarHandler::HandleOSNE_KillObject(uint32_t objectid)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
@@ -448,7 +448,7 @@ namespace AvatarModule
         return false;
     }
    
-    bool Avatar::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)
+    bool AvatarHandler::HandleOSNE_AvatarAnimation(ProtocolUtilities::NetworkEventInboundData* data)
     {
         ProtocolUtilities::NetInMessage &msg = *data->message;
         msg.ResetReading();
@@ -481,12 +481,12 @@ namespace AvatarModule
         return false;
     }
 
-    void Avatar::Update(f64 frametime)
+    void AvatarHandler::Update(f64 frametime)
     {
         avatar_appearance_.Update(frametime);
     }
 
-    void Avatar::CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id)
+    void AvatarHandler::CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
@@ -510,7 +510,7 @@ namespace AvatarModule
         }
     }
 /*
-    void Avatar::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
+    void AvatarHandler::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
@@ -538,7 +538,7 @@ namespace AvatarModule
     }
 */
 
-    void Avatar::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
+    void AvatarHandler::ShowAvatarNameOverlay(entity_id_t entity_id, bool visible)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
         if (!scene)
@@ -570,7 +570,7 @@ namespace AvatarModule
         }
     }
     
-    void Avatar::CreateAvatarMesh(entity_id_t entity_id)
+    void AvatarHandler::CreateAvatarMesh(entity_id_t entity_id)
     {
         using namespace OgreRenderer;
 
@@ -596,7 +596,7 @@ namespace AvatarModule
         }
     }
     
-    void Avatar::StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids)
+    void AvatarHandler::StartAvatarAnimations(const RexUUID& avatarid, const std::vector<RexUUID>& anim_ids)
     {
         using namespace OgreRenderer;
 
@@ -650,7 +650,7 @@ namespace AvatarModule
         }
     }
 
-    void Avatar::UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime)
+    void AvatarHandler::UpdateAvatarAnimations(entity_id_t avatarid, f64 frametime)
     {
         using namespace OgreRenderer;
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
@@ -680,7 +680,7 @@ namespace AvatarModule
         }
     }
     
-    void Avatar::SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state)
+    void AvatarHandler::SetAvatarState(const RexUUID& avatarid, EC_OpenSimAvatar::State state)
     {
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
         if (!entity)
@@ -692,22 +692,22 @@ namespace AvatarModule
         avatar->SetState(state);
     }
     
-    bool Avatar::HandleResourceEvent(event_id_t event_id, IEventData* data)
+    bool AvatarHandler::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleResourceEvent(event_id, data);
     }
 
-    bool Avatar::HandleInventoryEvent(event_id_t event_id, IEventData* data)
+    bool AvatarHandler::HandleInventoryEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleInventoryEvent(event_id, data);
     }
 
-    bool Avatar::HandleAssetEvent(event_id_t event_id, IEventData* data)
+    bool AvatarHandler::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         return avatar_appearance_.HandleAssetEvent(event_id, data);
     }
 
-    Scene::EntityPtr Avatar::GetUserAvatar() const
+    Scene::EntityPtr AvatarHandler::GetUserAvatar() const
     {
         ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
         if (!conn)
@@ -716,7 +716,7 @@ namespace AvatarModule
             return avatar_module_->GetAvatarEntity(conn->GetInfo().agentID);
     }
 
-    bool Avatar::AvatarExportSupported()
+    bool AvatarHandler::AvatarExportSupported()
     {
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
@@ -735,7 +735,7 @@ namespace AvatarModule
         return (conn->GetConnectionType() == ProtocolUtilities::AuthenticationConnection);
     }
 
-    void Avatar::ExportUserAvatar()
+    void AvatarHandler::ExportUserAvatar()
     {
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
@@ -769,7 +769,7 @@ namespace AvatarModule
             avatar_appearance_.InventoryExportAvatar(entity);
     }
 
-    void Avatar::ExportUserAvatarLocal(const std::string& filename)
+    void AvatarHandler::ExportUserAvatarLocal(const std::string& filename)
     {
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
@@ -781,7 +781,7 @@ namespace AvatarModule
         avatar_appearance_.ExportAvatarLocal(entity, filename);
     }
     
-    void Avatar::ReloadUserAvatar()
+    void AvatarHandler::ReloadUserAvatar()
     {
         Scene::EntityPtr entity = GetUserAvatar();
         if (!entity)
@@ -794,7 +794,7 @@ namespace AvatarModule
         avatar_appearance_.DownloadAppearance(entity, true);
     }
     
-    void Avatar::HandleLogout()
+    void AvatarHandler::HandleLogout()
     {
         avatar_appearance_.InventoryExportReset();
         pending_appearances_.clear();

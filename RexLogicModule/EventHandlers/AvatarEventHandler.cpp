@@ -11,7 +11,7 @@ namespace RexLogic
 {
     bool AvatarEventHandler::HandleAvatarEvent(event_id_t event_id, IEventData* data)
     {
-        using namespace AvatarModule;
+        using namespace Avatar;
 
         switch (event_id)
         {
@@ -34,7 +34,6 @@ namespace RexLogic
                 Events::SceneHandleParentData *in_data = dynamic_cast<Events::SceneHandleParentData*>(data);
                 if (in_data)
                 {
-                    RexLogicModule::LogInfo("HandleMissingParent / HandleObjectParent");
                     owner_->HandleMissingParent(in_data->local_id);
                     owner_->HandleObjectParent(in_data->local_id);
                 }
@@ -46,25 +45,21 @@ namespace RexLogic
 
     void AvatarEventHandler::SendRegisterEvent(const RexUUID &fullid, entity_id_t entityid)
     {
-        RexLogicModule::LogInfo("Registered uuid to ent");
         Foundation::EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
         if (event_manager)
         {
-            using namespace AvatarModule;
-            Events::SceneRegisterEntityData data(fullid, entityid);
-            event_manager->SendEvent("Avatar", Events::EVENT_REGISTER_UUID_TO_LOCALID, &data);
+            Avatar::Events::SceneRegisterEntityData data(fullid, entityid);
+            event_manager->SendEvent("Avatar", Avatar::Events::EVENT_REGISTER_UUID_TO_LOCALID, &data);
         }
     }
 
     void AvatarEventHandler::SendUnregisterEvent(const RexUUID &fullid)
     {
-        RexLogicModule::LogInfo("Unregistered uuid");
         Foundation::EventManagerPtr event_manager = owner_->GetFramework()->GetEventManager();
         if (event_manager)
         {
-            using namespace AvatarModule;
-            Events::SceneRegisterEntityData data(fullid);
-            event_manager->SendEvent("Avatar", Events::EVENT_UNREGISTER_UUID_TO_LOCALID, &data);
+            Avatar::Events::SceneRegisterEntityData data(fullid);
+            event_manager->SendEvent("Avatar", Avatar::Events::EVENT_UNREGISTER_UUID_TO_LOCALID, &data);
         }
     }
 }

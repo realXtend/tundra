@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarExporter.h"
@@ -49,15 +49,15 @@ static const float FIXED_HEIGHT_OFFSET = -0.87f;
 static const float OVERLAY_HEIGHT_MULTIPLIER = 1.5f;
 static const uint XMLRPC_ASSET_HASH_LENGTH = 28;
 
-namespace AvatarModule
+namespace Avatar
 { 
     std::string ReplaceSpaces(const std::string& orig_str)
     {
         return ReplaceChar(orig_str, ' ', '_');
     }
         
-    AvatarAppearance::AvatarAppearance(Foundation::Framework *framework, AvatarModule *avatar_module) :
-        framework_(framework),
+    AvatarAppearance::AvatarAppearance(AvatarModule *avatar_module) :
+        framework_(avatar_module->GetFramework()),
         avatar_module_(avatar_module),
         inv_export_state_(Idle)
     {

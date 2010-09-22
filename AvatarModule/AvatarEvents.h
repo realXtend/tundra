@@ -4,7 +4,7 @@
 #include "IEventData.h"
 #include "RexUUID.h"
 
-namespace AvatarModule
+namespace Avatar
 {
     namespace Events
     {

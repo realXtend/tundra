@@ -19,7 +19,7 @@ using namespace RexTypes;
 // Time in which to reauthenticate if export has lasted long, in seconds
 static const float REAUTHENTICATION_TIME = 60.0f;
 
-namespace AvatarModule
+namespace Avatar
 {
     AvatarExporter::AvatarExporter() : ThreadTask("AvatarExport")
     {

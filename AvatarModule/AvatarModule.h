@@ -15,13 +15,13 @@
 #include <QList>
 #include <QMap>
 
-namespace AvatarModule
+namespace Avatar
 {
-    class Avatar;
+    class AvatarHandler;
     class AvatarControllable;
     class AvatarEditor;
 
-    typedef boost::shared_ptr<Avatar> AvatarPtr;
+    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
     typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
 
@@ -41,6 +41,7 @@ namespace AvatarModule
 		void Load();
         void Initialize();
         void PostInitialize();
+        void Uninitialize();
         void Update(f64 frametime);
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
@@ -56,7 +57,7 @@ namespace AvatarModule
 
         ProtocolUtilities::WorldStreamPtr GetServerConnection() { return world_stream_; }
 
-        AvatarPtr GetAvatarHandler() { return avatar_handler_; }
+        AvatarHandlerPtr GetAvatarHandler() { return avatar_handler_; }
         AvatarEditorPtr GetAvatarEditor() { return avatar_editor_; }
         AvatarControllablePtr GetAvatarControllable() { return avatar_controllable_; }
 
@@ -73,7 +74,7 @@ namespace AvatarModule
         //! AvatarModules input context
         InputContextPtr input_context_;
 
-        AvatarPtr avatar_handler_;
+        AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
 

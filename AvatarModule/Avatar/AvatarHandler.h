@@ -5,8 +5,8 @@
  *  @brief  Logic handler for avatar entities.
  */
 
-#ifndef incl_RexLogicModule_Avatar_h
-#define incl_RexLogicModule_Avatar_h
+#ifndef incl_Avatar_Avatarhandler_h
+#define incl_Avatar_Avatarhandler_h
 
 #include "Foundation.h"
 #include "AvatarModule.h"
@@ -27,17 +27,17 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
 }
 
-namespace AvatarModule
+namespace Avatar
 {
-    class AV_MODULE_API Avatar
+    class AV_MODULE_API AvatarHandler
     {
     public:
         //! Constructor.
         //! \param owner Owner module.
-        explicit Avatar(Foundation::Framework *framework, AvatarModule *avatar_module);
+        explicit AvatarHandler(AvatarModule *avatar_module);
 
         //! Destructor.
-        ~Avatar();
+        ~AvatarHandler();
 
         //! Handles ObjectUpdate network message for avatars.
         //! \param data Network message data.
