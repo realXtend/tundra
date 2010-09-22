@@ -187,6 +187,21 @@ namespace Scene
         }
         return ids;
     }
+
+    QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name)
+    {
+        EntityList list = GetEntitiesWithComponent(type_name);
+        QList<Scene::Entity*> qlist;
+        EntityList::iterator iter;
+
+        for(iter = list.begin(); iter != list.end(); iter++)
+        {
+            EntityPtr ent = *iter;
+            Entity* e = ent.get();
+            qlist.append(e);
+        }
+        return qlist;
+    }
     
     bool SceneManager::LoadScene(const std::string& filename, AttributeChange::Type change)
     {

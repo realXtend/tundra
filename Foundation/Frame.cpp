@@ -45,7 +45,7 @@ float Frame::GetWallClockTime() const
 DelayedSignal *Frame::DelayedExecute(float time)
 {
     DelayedSignal *delayed = new DelayedSignal(GetCurrentClockTime());
-    QTimer::singleShot(time*1000, delayed, SLOT(Expire(float)));
+    QTimer::singleShot(time*1000, delayed, SLOT(Expire()));
     connect(delayed, SIGNAL(Triggered(float)), SLOT(DeleteDelayedSignal()));
     delayedSignals_.push_back(delayed);
     return delayed;
