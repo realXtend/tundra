@@ -27,7 +27,7 @@ namespace ECEditor
     {
         Q_OBJECT
     public:
-        ECComponentEditor(ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser);
+        ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser);
         virtual ~ECComponentEditor();
 
         //! Check if this component editor is holding spesific property as it's root property.
@@ -41,7 +41,7 @@ namespace ECEditor
         int AttributeCount() const { return attributeEditors_.size(); }
 
         //! Add new component into the editor.
-        void AddNewComponent(ComponentInterfacePtr component, bool updateUi = true);
+        void AddNewComponent(ComponentPtr component, bool updateUi = true);
 
         //! Remove component from the editor.
         void RemoveComponent(IComponent *component);
@@ -69,11 +69,11 @@ namespace ECEditor
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what
         //! attribute editors need to be created to this component editor.
-        void InitializeEditor(ComponentInterfacePtr component);
+        void InitializeEditor(ComponentPtr component);
 
         //! Create new attribute editors for spesific component.
         //! @param component Compoent that we need to use, to get all attributes that we want to edit.
-        void CreateAttriubteEditors(ComponentInterfacePtr component);
+        void CreateAttriubteEditors(ComponentPtr component);
 
         void UpdateGroupPropertyText();
 

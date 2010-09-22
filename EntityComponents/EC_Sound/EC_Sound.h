@@ -5,21 +5,15 @@
 
 #include "IComponent.h"
 #include "IAttribute.h"
-#include "ResourceInterface.h"
 #include "Declare_EC.h"
 
-namespace Foundation
-{
-    class ModuleInterface;
-}
-
+/// Represents in-world sound source.
 /**
-
 <table class="header">
 <tr>
 <td>
 <h2>Sound</h2>
-
+Represents in-world sound source.
 
 Registered by RexLogic::RexLogicModule.
 
@@ -48,7 +42,8 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"PlaySound": 
+<li>"StopSound":
 </ul>
 </td>
 </tr>
@@ -58,7 +53,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-
 class EC_Sound : public IComponent
 {
     DECLARE_EC(EC_Sound);
@@ -84,13 +78,6 @@ public:
 
     Q_PROPERTY(bool triggerSound READ gettriggerSound WRITE settriggerSound);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, triggerSound);
-
-    /*Attribute<QString>      soundId_;
-    Attribute<float>        soundInnerRadius_;
-    Attribute<float>        soundOuterRadius_;
-    Attribute<float>        soundGain_;
-    Attribute<bool>         loopSound_;
-    Attribute<bool>         triggerSound_;*/
 
 public slots:
     void PlaySound();

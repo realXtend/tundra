@@ -159,7 +159,7 @@ Topics:
 <ul>
 <li>\subpage SceneModelPage "Scenes, entities and components."
 <li>Attributes and attribute metadata.
-<li>Entity actions.
+<li>\subpage EntityActionPage "Entity actions".
 <li>Accessing scene contents from C++ code.
 <li>Working with multiple scenes.
 <li>Accessing entity attributes using JavaScript.   
@@ -176,7 +176,7 @@ Classes:
 <li>Foundation::ComponentInterface
 <li>Scene::SceneManager
 <li>Scene::Entity
-<li>Scene::Action
+<li>Scene::EntityAction
 </ul>
   
 </td>

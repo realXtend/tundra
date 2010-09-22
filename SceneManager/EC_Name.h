@@ -11,8 +11,8 @@
 #include "Declare_EC.h"
 
 
+/// Provides network-synchronizable means of identification for entities in addition to the plain ID number
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -47,10 +47,7 @@ Registered by RexLogic::RexLogicModule.
 Does not emit any actions.
 
 </table>
-
 */
-
-/// EC_Name provides network-synchronizable means of identification for entities in addition to the plain ID number.
 class EC_Name : public IComponent
 {
     DECLARE_EC(EC_Name);
@@ -60,7 +57,7 @@ public:
     /// Desctructor.
     ~EC_Name() {}
 
-    /// ComponentInterface override.
+    /// IComponent override.
     /// This component is serializable.
     virtual bool IsSerializable() const { return true; }
 

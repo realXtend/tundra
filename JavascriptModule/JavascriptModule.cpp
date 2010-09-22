@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   JavascriptModule.cpp
- *  @brief  
+ *  @brief  Enables Javascript execution and scripting in Naali.
  */
 
 #include "StableHeaders.h"
@@ -18,6 +18,7 @@
 #include "InputServiceInterface.h"
 #include "UiServiceInterface.h"
 #include "Frame.h"
+#include "Console.h"
 #include "ConsoleCommandServiceInterface.h"
 
 #include <QtScript>
@@ -84,6 +85,7 @@ void JavascriptModule::PostInitialize()
     services_["ui"] = ui;
     //services_["sound"] = sound;
     services_["frame"] = GetFramework()->GetFrame();
+    services_["console"] = GetFramework()->Console();
 
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 

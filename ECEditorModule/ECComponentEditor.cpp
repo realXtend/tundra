@@ -50,7 +50,7 @@ namespace ECEditor
         return attributeEditor;
     }
 
-    ECComponentEditor::ECComponentEditor(ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser):
+    ECComponentEditor::ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser):
         QObject(propertyBrowser),
         groupProperty_(0),
         groupPropertyManager_(0),
@@ -73,7 +73,7 @@ namespace ECEditor
         }
     }
 
-    void ECComponentEditor::InitializeEditor(ComponentInterfacePtr component)
+    void ECComponentEditor::InitializeEditor(ComponentPtr component)
     {
         if(!propertyBrowser_)
            return;
@@ -88,7 +88,7 @@ namespace ECEditor
         propertyBrowser_->addProperty(groupProperty_);
     }
 
-    void ECComponentEditor::CreateAttriubteEditors(ComponentInterfacePtr component)
+    void ECComponentEditor::CreateAttriubteEditors(ComponentPtr component)
     {
         AttributeVector attributes = component->GetAttributes();
         for(uint i = 0; i < attributes.size(); i++)
@@ -131,7 +131,7 @@ namespace ECEditor
         return false;
     }
 
-    void ECComponentEditor::AddNewComponent(ComponentInterfacePtr component, bool updateUi)
+    void ECComponentEditor::AddNewComponent(ComponentPtr component, bool updateUi)
     {
         //! Check that component type is same as editor's typename (We only want to add same type of components to editor).
         if(component->TypeName() != typeName_)

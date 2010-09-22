@@ -13,6 +13,7 @@
 #include "QtInputKeyEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "QtInputMouseEvent.h"
 #include "QtInputKeyEvent.h"
@@ -40,6 +41,8 @@ Q_DECLARE_METATYPE(IComponent*);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Frame*);
+Q_DECLARE_METATYPE(ScriptConsole*);
+Q_DECLARE_METATYPE(Command*);
 
 void ReqisterQtMetaTypes(QScriptEngine *engine)
 {
@@ -54,6 +57,10 @@ void ReqisterInputMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
+
+    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
+    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
 
 void ReqisterSceneMetaTypes(QScriptEngine *engine)
@@ -70,14 +77,12 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
-
-    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
-    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
-    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
 
-void ReqisterFrameMetaTypes(QScriptEngine *engine)
+void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<Frame*>(engine);
+    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
+    qScriptRegisterQObjectMetaType<Command*>(engine);
 }
 

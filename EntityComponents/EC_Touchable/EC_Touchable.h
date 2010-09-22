@@ -18,10 +18,6 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
-#include <QCursor>
-
-class QTimer;
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -34,7 +30,6 @@ namespace Ogre
 }
 
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -50,22 +45,29 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>QString : materialName
-<div>Name of the material used for this EC. </div> 
+<div>Name of the material used for this EC. </div>
+</ul>
+<ul>
+<li>bool : highlightOnHover
+<div>Is highlight material shown on mouse hover.</div>
+</ul>
+<ul>
+<li>int : hoverCursor
+<div>Hover mouse cursor, see @see Qt::CursorShape</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"SetHighlightOnHover": Set if highlight material is shown on hover
-<li>"SetHoverCursor": Set cursor shape for when entity is hovered
 <li>"Show": Shows the effect.
 <li>"Hide": Hides the effect.
 <li>"IsVisible": Returns if the component is visible or not.
-		@true If the component is visible, false if it's hidden or not initialized properly.
+        @true If the component is visible, false if it's hidden or not initialized properly.
 </ul>
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"Show": Shows the effect.
+<li>"Hide": Hides the effect.
 </ul>
 </td>
 </tr>
@@ -75,7 +77,6 @@ Does not emit any actions.
 <b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
 EC_OgreCustomObject (if prim) components available in advance.</b>. 
 </table>
-
 */
 class EC_Touchable : public IComponent
 {
@@ -86,11 +87,17 @@ public:
     /// Destructor.
     ~EC_Touchable();
 
-    /// ComponentInterface override.
+    /// IComponent override.
     bool IsSerializable() const { return true; }
 
     /// Name of the material used for this EC.
     Attribute<QString> materialName;
+
+    /// Is highlight material shown on mouse hover.
+    Attribute<bool> highlightOnHover;
+
+    /// Hover mouse cursor, see @see Qt::CursorShape
+    Attribute<int> hoverCursor;
 
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
     void OnHover();
@@ -102,12 +109,6 @@ public:
     void OnClick();
 
 public slots:
-    /// Set if highlight material is shown on hover
-    void SetHighlightOnHover(bool enabled);
-
-    /// Set cursor shape for when entity is hovered
-    void SetHoverCursor(Qt::CursorShape shape);
-
     /// Shows the effect.
     void Show();
 
@@ -118,15 +119,12 @@ public slots:
     /// @true If the component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
 
-private slots:
-    /// Updates the component if its material changes.
-    void UpdateMaterial();
-
-    /// Slot for emitting HoverIn the first time we get OnHover() call
-    void OnHoverIn();
-
-    /// Set our hover cursor visible
-    void SetCursorVisible(bool visible);
+signals:
+    //! Signal when mouse hovers over the entity with this touchable component
+    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
+    void MouseHoverIn();
+    void MouseHoverOut();
+    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
 
 private:
     /// Constuctor.
@@ -148,21 +146,21 @@ private:
     /// Name of the cloned entity used for highlighting
     std::string cloneName_;
 
-    /// Bool to define if highlight material will be shown on hover
-    bool show_material_;
-
     /// Bool to tell if we have emitted MouseHoverIn and are in hover state
     bool hovering_;
 
-    /// Hover cursor
-    QCursor hover_cursor_;
+private slots:
+    /// Updates the component if its material changes.
+    void UpdateMaterial();
 
-signals:
-    //! Signal when mouse hovers over the entity with this touchable component
-    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
-    void MouseHoverIn();
-    void MouseHoverOut();
-    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
+    /// Slot for emitting HoverIn the first time we get OnHover() call
+    void OnHoverIn();
+
+    /// Set our hover cursor visible
+    void SetCursorVisible(bool visible);
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif

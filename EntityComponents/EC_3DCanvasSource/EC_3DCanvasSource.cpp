@@ -135,7 +135,7 @@ void EC_3DCanvasSource::RepaintCanvas()
     if (!entity)
         return;
 
-    ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
         return;
 
@@ -212,7 +212,7 @@ void EC_3DCanvasSource::UpdateCanvas()
         return;
     }
     
-    ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");
@@ -249,7 +249,7 @@ void EC_3DCanvasSource::FetchWebViewUrl()
         return;
     }
     
-    ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");

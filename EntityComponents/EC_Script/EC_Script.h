@@ -53,7 +53,7 @@ public:
     /// Destructor.
     ~EC_Script();
 
-    /// ComponentInterface override. This component is serializable.
+    /// IComponent override. This component is serializable.
     virtual bool IsSerializable() const { return true; }
 
     /// Type of the script as string (js/py)
