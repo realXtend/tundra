@@ -220,6 +220,56 @@ void IComponent::DeserializeFromBinary(DataDeserializer& source, AttributeChange
         attributes_[i]->FromBinary(source, change);
 }
 
+bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const
+{
+    u8 num_attributes = previousData.Read<u8>();
+    if (num_attributes != attributes_.size())
+    {
+        std::cout << "Wrong number of attributes in base data, can not deltaserialize" << std::endl;
+        return false;
+    }
+    
+    static std::vector<bool> changed;
+    changed.clear();
+    
+    // First compare all and see if there's anything to write
+    bool num_changed = 0;
+    for (uint i = 0; i < attributes_.size(); ++i)
+    {
+        if (attributes_[i]->CompareBinary(previousData))
+        {
+            num_changed++;
+            changed.push_back(true);
+        }
+        else
+            changed.push_back(false);
+    }
+    
+    // Then write if there are some that have changed
+    if (num_changed)
+    {
+        for (uint i = 0; i < attributes_.size(); ++i)
+        {
+            if (changed[i])
+            {
+                dest.Add<bit>(1);
+                attributes_[i]->ToBinary(dest);
+            }
+            else
+                dest.Add<bit>(0);
+        }
+        
+        return true;
+    }
+    
+    return false;
+}
+
+bool IComponent::DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    return false;
+}
+
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
     change_ = change;

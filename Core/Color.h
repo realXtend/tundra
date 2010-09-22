@@ -25,6 +25,16 @@ public:
     Color(float nr, float ng, float nb, float na) : r(nr), g(ng), b(nb), a(na)
     {
     }
+    
+    bool operator == (const Color& rhs) const
+    {
+        return (r == rhs.r) && (g == rhs.g) && (b == rhs.b) && (a == rhs.a);
+    }
+    
+    bool operator != (const Color& rhs) const
+    {
+        return !(*this == rhs);
+    }
 };
 
 #endif

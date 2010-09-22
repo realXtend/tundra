@@ -2,33 +2,33 @@
     <!-- LOGIN -->
 
     <!-- Client to server -->
-    <message id="100" name="Login" reliable="true" priority="100">
+    <message id="100" name="Login" reliable="true" inOrder="true" priority="100">
         <s8 name="userName" dynamicCount="8" />
         <!-- Todo: add security to the login as appropriate -->
         <s8 name="password" dynamicCount="8" />
     </message>
     <!-- Server to client that attempts to join -->
-    <message id="101" name="LoginReply" reliable="true" priority="100">
+    <message id="101" name="LoginReply" reliable="true" inOrder="true" priority="100">
         <!-- zero = failure, nonzero = success -->
         <u8 name="success" />
         <!-- Note: in case of failure, userID is undefined -->
         <u8 name="userID" />
     </message>
     <!-- Server to other clients when a client joins -->
-    <message id="102" name="ClientJoined" reliable="true" priority="100">
+    <message id="102" name="ClientJoined" reliable="true" inOrder="true" priority="100">
         <u8 name="userID" />
         <s8 name="userName" dynamicCount="8" />
     </message>
     <!-- Server to other clients when a client left or timed out -->
-    <message id="103" name="ClientLeft" reliable="true" priority="100">
+    <message id="103" name="ClientLeft" reliable="true" inOrder="true" priority="100">
         <u8 name="userID" />
         <s8 name="userName" dynamicCount="8" />
     </message>
 
     <!-- SCENE REPLICATION -->
 
-    <!-- Create a new entity, possibly with components filled -->
-    <message id="110" name="CreateEntity" reliable="true" priority="100">
+    <!-- Create a new entity, possibly with components filled. The components are not deltaencoded. -->
+    <message id="110" name="CreateEntity" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
             <s8 name="componentTypeName" dynamicCount="8" />
@@ -38,12 +38,12 @@
     </message>
 
     <!-- Remove an entity -->
-    <message id="111" name="RemoveEntity" reliable="true" priority="100">
+    <message id="111" name="RemoveEntity" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
     </message>
     
-    <!-- Update component(s) inside an existing entity -->
-    <message id="112" name="UpdateComponents" reliable="true" priority="100">
+    <!-- Update component(s) inside an existing entity. The components are deltaencoded. -->
+    <message id="112" name="UpdateComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
             <s8 name="componentTypeName" dynamicCount="8" />
@@ -53,7 +53,7 @@
     </message>
 
     <!-- Remove component(s) from an entity -->
-    <message id="113" name="RemoveComponents" reliable="true" priority="100">
+    <message id="113" name="RemoveComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
             <s8 name="componentTypeName" dynamicCount="8" />
@@ -62,7 +62,7 @@
     </message>
 
     <!-- Server to client: Entity ID collision has occurred when creating an entity. New ID is returned. -->
-    <message id="114" name="EntityIDCollision" reliable="true" priority="100">
+    <message id="114" name="EntityIDCollision" reliable="true" inOrder="true" priority="100">
         <u32 name="oldEntityID" />
         <u32 name="newEntityID" />
     </message>

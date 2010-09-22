@@ -1,11 +1,5 @@
-/** @file
-	@author LudoCraft Oy
+// For conditions of distribution and use, see copyright notice in license.txt
 
-	Copyright 2009 LudoCraft Oy.
-	All rights reserved.
-
-	@brief
-*/
 #ifndef incl_KristalliProtocolModule_KristalliProtocolModule_h
 #define incl_KristalliProtocolModule_KristalliProtocolModule_h
 
@@ -13,27 +7,13 @@
 #include "IModule.h"
 #include "KristalliProtocolModuleApi.h"
 #include "ModuleLoggingFunctions.h"
+#include "UserConnection.h"
 
 #include "clb/Network/Network.h"
 #include "clb/Time/PolledTimer.h"
 
 namespace KristalliProtocol
 {
-    struct UserConnection
-    {
-        UserConnection() :
-            connection(0),
-            userID(0),
-            authenticated(false)
-        {
-        }
-        
-        MessageConnection* connection;
-        u8 userID;
-        bool authenticated;
-        std::string userName;
-    };
-    
     typedef std::list<UserConnection> UserConnectionList;
     
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'

@@ -543,16 +543,16 @@ template<> void Attribute<QVariant>::FromBinary(DataDeserializer& source, Attrib
 
 template<> void Attribute<QVariantList>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
 {
-    QVariantList values;
+    QVariantList value;
     
     u8 numValues = source.Read<u8>();
     for (u32 i = 0; i < numValues; ++i)
     {
         std::string str = source.ReadString();
-        values.append(QVariant(QString(str.c_str())));
+        value.append(QVariant(QString(str.c_str())));
     }
     
-    Set(values, change);
+    Set(value, change);
 }
 
 template<> void Attribute<Transform>::FromBinary(DataDeserializer& source, AttributeChange::Type change)
@@ -568,5 +568,114 @@ template<> void Attribute<Transform>::FromBinary(DataDeserializer& source, Attri
     value.scale.y = source.Read<float>();
     value.scale.z = source.Read<float>();
     Set(value, change);
+}
+
+// COMPAREBINARY TEMPLATE IMPLEMENTATIONS.
+
+template<> bool Attribute<QString>::CompareBinary(DataDeserializer& source) const
+{
+    QByteArray utf8bytes;
+    utf8bytes.resize(source.Read<u16>());
+    if (utf8bytes.size())
+        source.ReadArray<u8>((u8*)utf8bytes.data(), utf8bytes.size());
+    
+    QString value = QString::fromUtf8(utf8bytes.data(), utf8bytes.size());
+    return value_ != value;
+}
+
+template<> bool Attribute<bool>::CompareBinary(DataDeserializer& source) const
+{
+    bool value = source.Read<u8>() ? true : false;
+    return value_ != value;
+}
+
+template<> bool Attribute<int>::CompareBinary(DataDeserializer& source) const
+{
+    int value = source.Read<s32>();
+    return value_ != value;
+}
+
+template<> bool Attribute<uint>::CompareBinary(DataDeserializer& source) const
+{
+    uint value = source.Read<u32>();
+    return value_ != value;
+}
+
+template<> bool Attribute<float>::CompareBinary(DataDeserializer& source) const
+{
+    float value = source.Read<float>();
+    return value_ != value;
+}
+
+template<> bool Attribute<Vector3df>::CompareBinary(DataDeserializer& source) const
+{
+    Vector3df value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    return value_ != value;
+}
+
+template<> bool Attribute<Color>::CompareBinary(DataDeserializer& source) const
+{
+    Color value;
+    value.r = source.Read<float>();
+    value.g = source.Read<float>();
+    value.b = source.Read<float>();
+    value.a = source.Read<float>();
+    return value_ != value;
+}
+
+template<> bool Attribute<Quaternion>::CompareBinary(DataDeserializer& source) const
+{
+    Quaternion value;
+    value.x = source.Read<float>();
+    value.y = source.Read<float>();
+    value.z = source.Read<float>();
+    value.w = source.Read<float>();
+    return value_ != value;
+}
+
+template<> bool Attribute<Foundation::AssetReference>::CompareBinary(DataDeserializer& source) const
+{
+    Foundation::AssetReference value;
+    value.type_ = source.ReadString();
+    value.id_ = source.ReadString();
+    return value_ != value;
+}
+
+template<> bool Attribute<QVariant>::CompareBinary(DataDeserializer& source) const
+{
+    std::string str = source.ReadString();
+    QVariant value(QString(str.c_str()));
+    return value_ != value;
+}
+
+template<> bool Attribute<QVariantList>::CompareBinary(DataDeserializer& source) const
+{
+    QVariantList value;
+    
+    u8 numValues = source.Read<u8>();
+    for (u32 i = 0; i < numValues; ++i)
+    {
+        std::string str = source.ReadString();
+        value.append(QVariant(QString(str.c_str())));
+    }
+    return value_ != value;
+}
+
+template<> bool Attribute<Transform>::CompareBinary(DataDeserializer& source) const
+{
+    Transform value;
+    value.position.x = source.Read<float>();
+    value.position.y = source.Read<float>();
+    value.position.z = source.Read<float>();
+    value.rotation.x = source.Read<float>();
+    value.rotation.y = source.Read<float>();
+    value.rotation.z = source.Read<float>();
+    value.scale.x = source.Read<float>();
+    value.scale.y = source.Read<float>();
+    value.scale.z = source.Read<float>();
+    return value_ != value;
 }
 
