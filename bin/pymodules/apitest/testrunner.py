@@ -173,7 +173,7 @@ class TestDynamicProperties(TestRunner):
             yield "failure, avatar didn't appear"
             return
         print 'dynamic propety stuff:'
-        ent.createComponent("EC_DynamicComponent")
+        ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent
         d.CreateAttribute("real", 42.0)
@@ -247,7 +247,7 @@ class TestApi(TestRunner):
         yield "EC_Touchable & EC_Highlight"
         for longname, shortname in [("EC_Touchable", 'touchable'), ("EC_Highlight", 'highlight')]:
             e = naali.getUserAvatar()
-            e.createComponent(longname)
+            e.GetOrCreateComponentRaw(longname)
             x = getattr(e, shortname)
             x.Show()
             x.Hide()
@@ -258,13 +258,13 @@ class TestApi(TestRunner):
         print "new entity created:", ent
 
         yield "get camera FOV"
-        idnum = naali.getCamera().camera.GetVerticalFov()
+        fov = naali.getCamera().camera.GetVerticalFov()
         
         yield "avatar position"
         p = naali.getUserAvatar().placeable.Position
 
         yield "avatar animation controller"
-        p = naali.getUserAvatar().animationcontroller.EnableAnimation("Walk")
+        naali.getUserAvatar().animationcontroller.EnableAnimation("Walk")
 
         yield "test sendChat"
         r.sendChat("test chat")
@@ -272,6 +272,7 @@ class TestApi(TestRunner):
         yield "test logInfo"
         r.logInfo("test log message")
 
+        #XXX deprecate
         yield "test camera yaw/itch"
         r.setCameraYawPitch(.1, .5)
         r.getCameraYawPitch()
@@ -287,9 +288,9 @@ class TestApi(TestRunner):
     
         yield "test dynamic component"
         ent = naali.getUserAvatar()
-        ent.createComponent("EC_DynamicComponent")
+        ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
-        d = ent.qent.EC_DynamicComponent
+        d = ent.EC_DynamicComponent
         d.CreateAttribute("real", 42.0)
         d.OnChanged()
         d.SetAttribute("real", 8.5)
@@ -303,7 +304,7 @@ class TestApi(TestRunner):
         naali.runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
         naali.runjs('print("Some camera! " + x)', {'x': cam.camera})
         #py objects are not qobjects. naali.runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
-        naali.runjs('print("Camera Entity " + x)', {'x': cam.qent})
+        naali.runjs('print("Camera Entity " + x)', {'x': cam})
         naali.runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.Position})
         #not exposed yet. naali.runjs('print("QVector3D: " + new QVector3D())', {})
         #naali.runjs('var a = {"a": true, "b": 2};')
