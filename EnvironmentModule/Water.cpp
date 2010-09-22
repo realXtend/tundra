@@ -75,10 +75,7 @@ void Water::CreateWaterGeometry(float height)
 
 void Water::RemoveWaterGeometry()
 {
-    // Adjust that we are removing correct water
-    //if( GetActiveWater().expired())
-    //    return;
-    
+   
     // Remove component
     if ( activeWaterComponent_ != 0)
     {
@@ -98,14 +95,14 @@ void Water::RemoveWaterGeometry()
     emit WaterRemoved();
 }
 
-void Water::SetWaterHeight(float height)
+void Water::SetWaterHeight(float height, AttributeChange::Type type)
 {
     if (activeWaterComponent_ != 0)
     {
         //activeWaterComponent_->SetWaterHeight(height);
         Vector3df vec = activeWaterComponent_->positionAttr_.Get();
         vec.z = height;
-        activeWaterComponent_->positionAttr_.Set(vec, AttributeChange::Network);
+        activeWaterComponent_->positionAttr_.Set(vec, type);
         emit HeightChanged(static_cast<double>(height));
     }
 }
@@ -115,10 +112,74 @@ float Water::GetWaterHeight() const
     float height = 0.0;
     if (activeWaterComponent_ != 0)
         height = activeWaterComponent_->positionAttr_.Get().z;
-        
-        //height = activeWaterComponent_->GetWaterHeight();
-
+       
     return height;
+}
+
+void Water::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
+{
+    if ( activeWaterComponent_ == 0)
+        return;
+
+    activeWaterComponent_->fogStartAttr_.Set(fogStart,AttributeChange::Local);
+    activeWaterComponent_->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
+    activeWaterComponent_->fogColorAttr_.Set(Color(color[0]*255, color[1]*255, color[2]*255,255), AttributeChange::Local);
+ 
+    emit WaterFogAdjusted(fogStart, fogEnd, color);
+    
+}
+
+QVector<float> Water::GetFogWaterColor() const
+{
+    if ( activeWaterComponent_ == 0)
+        return QVector<float>();
+    
+    Ogre::ColourValue color = activeWaterComponent_->GetFogColorAsOgreValue();
+    QVector<float> vec; 
+    vec<<color[0]<<color[1]<<color[2];
+    return vec;
+    
+  
+}
+
+void Water::SetWaterFogColor(const QVector<float>& color)
+{
+   if ( activeWaterComponent_ == 0)
+        return;
+ 
+  
+   Color col(color[0], color[1], color[2],1.0);
+   activeWaterComponent_->fogColorAttr_.Set(col, AttributeChange::Local); 
+    
+}
+
+void Water::SetWaterFogDistance(float fogStart, float fogEnd)
+{
+    if ( activeWaterComponent_ == 0)
+        return;   
+
+    activeWaterComponent_->fogStartAttr_.Set(fogStart, AttributeChange::Local);
+    activeWaterComponent_->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
+    
+}
+
+float Water::GetWaterFogStartDistance() const
+{
+   if ( activeWaterComponent_ == 0)
+        return 0.f;   
+
+    return activeWaterComponent_->fogStartAttr_.Get();
+
+}
+
+float Water::GetWaterFogEndDistance() const
+{
+    if ( activeWaterComponent_ == 0)
+        return 0.f;   
+
+    return activeWaterComponent_->fogEndAttr_.Get();
+
+   
 }
 
 }
