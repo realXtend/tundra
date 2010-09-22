@@ -21,16 +21,16 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 from __future__ import division
 
 from circuits import Component
+import mathutils as mu
+
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
-import conversions as conv
-reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D
-from PythonQt.QtGui import QQuaternion as Quat
+from PythonQt.QtGui import QQuaternion as QQuaternion
 
 import rexviewer as r
-import naali #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
-from naali import renderer
+import naali
+from naali import renderer #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
 
 try:
     window
@@ -621,15 +621,15 @@ class ObjectEdit(Component):
             ent.network.Position = qpos
             self.manipulator.moveTo(self.sels)
 
-            self.modified = True
             if not self.dragging:
                 r.networkUpdate(ent.id)
+            self.modified = True
             
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
             qscale = ent.placeable.Scale
-            oldscale = list((qscale.x(), qscale.y(), qscale.z()))
+            #oldscale = list((qscale.x(), qscale.y(), qscale.z()))
             scale = list((qscale.x(), qscale.y(), qscale.z()))
                 
             if not self.float_equal(scale[i],v):
@@ -654,13 +654,7 @@ class ObjectEdit(Component):
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
         if ent is not None and not self.usingManipulator:
-            quat = conv.euler_to_quat(v)
-            # convert between conversions.Quat tuple (x,y,z,w) format and QQuaternion (w,x,y,z)
-            # TODO: it seems that visualisation compared to what we give/understand on ob edit
-            # level is shifted. For now leave this 'shift' in, but need to investigate later. At
-            # least visual changes triggered through ob edit window widgets seem to correspond
-            # better to what one expects.
-            ort = Quat(quat[3], quat[1], quat[2], quat[0])
+            ort = mu.euler_to_quat(v)
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
             if not self.dragging:
