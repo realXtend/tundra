@@ -123,7 +123,8 @@ void EC_Sound::UpdateSignals()
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
+        RegisterActions();
     }
 }
 

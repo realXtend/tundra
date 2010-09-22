@@ -30,11 +30,11 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>QString: particleId
-<div></div> 
+<div>Particle reosource asset id.</div> 
 <li>bool: castShadows
-<div></div> 
+<div>Deas particles cast shadows (mostly useless).</div> 
 <li>float: renderingDistance
-<div></div> 
+<div>Particles rendering distance.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -70,16 +70,27 @@ public:
 
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
-    Attribute<QString> particleId_;
-    Attribute<bool> castShadows_;
+    //! Particle reosource asset id.
+    Q_PROPERTY(QString particleId READ getparticleId WRITE setparticleId);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, particleId);
 
-    Attribute<float> renderingDistance_;
+    //! Deas particles cast shadows (mostly useless).
+    Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
+
+    //! Particles rendering distance.
+    Q_PROPERTY(float renderingDistance READ getrenderingDistance WRITE setrenderingDistance);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, renderingDistance);
+
+    /*Attribute<QString> particleId_;
+    Attribute<bool> castShadows_;
+    Attribute<float> renderingDistance_;*/
 
 public slots:
     //! Create a new particle system. System name will be same as component name.
-    /*! \return true if successful
-    */
     void CreateParticleSystem(const QString &systemName);
+
+    //! Delete particle system.
     void DeleteParticleSystem();
 
 private slots:

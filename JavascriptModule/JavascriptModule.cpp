@@ -162,8 +162,6 @@ void JavascriptModule::SceneAdded(const QString &name)
             SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)));
-    //! @todo only most recently added scene has been saved to services_ map change this so that we can have access to multiple scenes in script side.
-    services_["scene"]  = scene.get();
 }
 
 void JavascriptModule::ScriptChanged(const QString &scriptRef)
@@ -172,19 +170,29 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     if(!sender)
         return;
 
-    if (sender->type.Get() != "js")
+    if (sender->type.Get() != "js" && sender->type.Get().endsWith(".js"))
+    {
+        // If script ref is empty we need to destroy the previous script if it's type is javascript.
+        if(!dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
+        {
+            JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
+            sender->SetScriptInstance(javaScriptInstance);
+        }
         return;
+    }
 
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);
     sender->SetScriptInstance(javaScriptInstance);
 
-    //Register all services to script engine->
+    //Register all services to script engine
     ServiceMap::iterator iter = services_.begin();
     for(; iter != services_.end(); iter++)
         javaScriptInstance->RegisterService(iter.value(), iter.key());
 
     //Send entity that owns the EC_Script component.
     javaScriptInstance->RegisterService(sender->GetParentEntity(), "me");
+    //Send the scene that owns the script component.
+    javaScriptInstance->RegisterService(sender->GetParentEntity()->GetScene(), "scene");
 
     if (sender->runOnLoad.Get())
         sender->Run();

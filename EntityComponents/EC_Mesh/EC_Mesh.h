@@ -149,22 +149,29 @@ public:
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
 
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
+    //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+    Q_PROPERTY(QString meshResourceId READ getmeshResourceId WRITE setmeshResourceId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
 
     //! Skeleton asset id, will handle request resource automaticly.
+    Q_PROPERTY(QString skeletonId READ getskeletonId WRITE setskeletonId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, skeletonId);
 
     //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
     //! @todo replace std::vector to QVariantList.
+    Q_PROPERTY(QVariantList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, meshMaterial);
 
     //! Mesh draw distance.
+    Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, drawDistance);
 
     //! Will the mesh cast shadows.
+    Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
 public slots:
