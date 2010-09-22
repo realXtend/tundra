@@ -57,7 +57,7 @@ if 0:
     
 if 0: #get entity
     #idnum = new_id
-    idnum = naali.getCamera().id
+    idnum = naali.getCamera().Id
     print "Getting entity id", idnum,
     e = naali.getEntity(idnum)
     print "got:", e
@@ -152,18 +152,10 @@ if 0: #send chat
 if 0: #print test
     r.logInfo("this is a test print!")
     
-if 0: #camera pitch
-    dy = 0.1
-    dp = 0.5
-    #dp = -0.1
-    #dp = 0.1
-    r.setCameraYawPitch(dy, dp)
-    print r.getCameraYawPitch()
-
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
-        print "CAM:", cament.id
+        print "CAM:", cament.Id
     except ValueError:
         print "no CAM"
     else:
@@ -606,27 +598,12 @@ if 0: #testing the removal of canvases
     bool = modu.RemoveCanvasFromControlBar(canvas)
     print bool
     
-if 0:
-    print "Testing..."
-    e = r.getEntity(8880001)  
-    print e
-    start_x = e.pos[0]
-    start_y = e.pos[1]
-    start_z = e.pos[2]
-        
-    worldstream = r.getServerConnection()
-    worldstream.SendObjectAddPacket(start_x, start_y, start_z)
-
 if 0: #getUserAvatar 
     ent = naali.getUserAvatar()
-    print "User's avatar_id:", ent.id
+    print "User's avatar_id:", ent.Id
     #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
     #ent.mesh = "cruncah1.mesh"
     
-if 0:
-    print r.getCameraUp()
-    print r.getCameraRight()
-
 if 0: #test changing the mesh asset a prim is using
     ent_id = 2088826433
     #print arkku_id, type(arkku_id)
@@ -641,7 +618,7 @@ if 0: #test changing the mesh asset a prim is using
     print "new mesh set:", ent.mesh
     
     print "sending prim data update to server"
-    r.sendRexPrimData(ent.id) #arkku
+    r.sendRexPrimData(ent.Id) #arkku
     print "..done", ent.mesh
     
 if 0: #property editor tests
@@ -804,7 +781,7 @@ if 0: #updateflag checks, duplicate tests
     ws = r.getServerConnection()
     #print dir(ws)
     #x, y, z = e.placeable.Position.x(), ... #didn't port this unused line to new version
-    ws.SendObjectDuplicatePacket(e.id, e.prim.UpdateFlags, 1, 1, 1)
+    ws.SendObjectDuplicatePacket(e.Id, e.prim.UpdateFlags, 1, 1, 1)
     
 if 0: #proxywidget signal connecting
     #~ from PythonQt.QtUiTools import QUiLoader
@@ -915,11 +892,14 @@ if 0: #scene, aka. SceneManager
 if 0: #javascript service
     import naali
     from naali import runjs
+    cam = naali.getCamera()
     runjs('print("Hello from JS! " + x)', {'x': naali.renderer})
     runjs('print("Another hello from JS! " + x)', {'x': naali.inputcontext})
-    runjs('print("Some camera! " + x)', {'x': naali.getCamera()})
-    runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
-    runjs('print("Camera Entity " + x)', {'x': naali.getCameraEntity()})
+    runjs('print("Some camera! " + x)', {'x': cam.camera})
+    #py objects are not qobjects. runjs('print("Some camera, using naali :O ! " + x.getCamera())', {'x': naali})
+    runjs('print("Camera Entity " + x)', {'x': cam.qent})
+    runjs('print("Camera placeable pos: " + pos)', {'pos': cam.placeable.Position})
+    #not exposed yet. runjs('print("QVector3D: " + new QVector3D())', {})
     #runjs('var a = {"a": true, "b": 2};')
     #runjs('print(a.a + ", " + a.b)')
     #runjs('print(JSON.stringify(a))')
@@ -1256,18 +1236,21 @@ if 0:
     print a == b, a.toString(), b.toString()
     
 
-if 0:
+if 0: #sound add&remove
     e = naali.getUserAvatar()
     try:
         e.sound
     except AttributeError:
-        print e.createComponent("EC_AttachedSound")
+        print e.GetOrCreateComponentRaw("EC_AttachedSound")
+        print "HAS SOUND COMPONENT:", e.HasComponent("EC_AttachedSound")
+        #print naali.createComponent(e, "EC_AttachedSound") #temp workaround XXX
         print "created a new Sound component"
 
     s = e.sound
     print type(s), s
 
-    e.removeSound(s)
+    #e.removeSound(s)
+    e.RemoveComponentRaw(s)
     try:
         e.sound
     except AttributeError:
@@ -1278,7 +1261,7 @@ if 0: #create a new component, hilight
     try:
         e.highlight
     except AttributeError:
-        print e.createComponent("EC_Highlight")
+        print e.GetOrCreateComponentRaw("EC_Highlight")
         print "created a new Highlight component"
 
     h = e.highlight
@@ -1298,7 +1281,7 @@ if 0: #create a new component, touchable
     try:
         t = e.touchable
     except AttributeError:
-        print e.createComponent("EC_Touchable")
+        print e.GetOrCreateComponentRaw("EC_Touchable")
         print "created a new Touchable component", e.id
         t = e.touchable
 
@@ -1335,12 +1318,23 @@ if 0: #the new DynamicComponent with individual attrs etc
     jssrc = dc.GetAttribute("js_src")
     print jssrc
 
+if 0: #create DynamicComponent
+    ent = naali.getEntity(2088826547)
+    #ent.GetOrCreateComponentRaw("EC_DynamicComponent")
+    #d = ent.EC_DynamicComponent
+    oldent = r.getEntity(ent.id)
+    d = oldent.dynamic
+    print d
+    #d.CreateAttribute("real", "y")
+    #print d.SetAttribute('y', 0.5)
+    print d.GetAttribute('y')
+
 if 0: #animation control
     ent = naali.getUserAvatar()
     try:
         ent.animationcontroller
     except AttributeError:
-        #ent.createComponent("EC_DynamicComponent")
+        #ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, "has no animation controller component"
     
     a = ent.animationcontroller
@@ -1369,7 +1363,7 @@ if 0: #local object creation, testing if local previews of .scenes would work
     from PythonQt.QtGui import QQuaternion as Quat
 
     print "hep"
-    e = r.createEntity("Jack.mesh", 1515)
+    e = naali.createMeshEntity("Jack.mesh")
     print e
     e.placeable.Position = Vec3(128, 128, 60)
     e.placeable.Scale = Vec3(5, 5, 5)

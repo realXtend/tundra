@@ -34,8 +34,9 @@ QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
 
-/**
 
+/// Chat bubble component wich shows billboard with chat bubble and text on entity.
+/**
 <table class="header">
 <tr>
 <td>
@@ -65,8 +66,6 @@ Does not emit any actions.
 <b>Depends on components OgrePlaceable</b>.
 </table>
 */
-
-/// Chat bubble component wich shows billboard with chat bubble and text on entity.
 class EC_ChatBubble : public IComponent
 {
     Q_OBJECT

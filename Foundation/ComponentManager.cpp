@@ -47,13 +47,13 @@ namespace Foundation
         return (factories_.find(type_name) != factories_.end());
     }
 
-    ComponentInterfacePtr ComponentManager::CreateComponent(const QString &type_name)
+    ComponentPtr ComponentManager::CreateComponent(const QString &type_name)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         return component;
     }
 
@@ -61,20 +61,20 @@ namespace Foundation
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         component->SetName(name);
         return component;
     }
 
-    ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component)
+    ComponentPtr ComponentManager::CloneComponent(const ComponentPtr &component)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(component->TypeName());
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr newComponent = (*iter->second.get())(component);
+        ComponentPtr newComponent = (*iter->second.get())(component);
         return newComponent;
     }
 

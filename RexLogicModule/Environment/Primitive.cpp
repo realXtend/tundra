@@ -96,7 +96,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
     // Send the 'Entity Updated' event.
     /*
     event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-    ComponentInterfacePtr component = entity->GetComponent(EC_OpenSimPrim::TypeNameStatic());
+    ComponentPtr component = entity->GetComponent(EC_OpenSimPrim::TypeNameStatic());
     EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(component.get());
     Scene::SceneEventData::Events entity_event_data(entityid);
     entity_event_data.sceneName = scene->Name();
@@ -1270,7 +1270,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     }
     else
     {
-        ComponentInterfacePtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic());
+        ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic());
         assert(component.get());
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);

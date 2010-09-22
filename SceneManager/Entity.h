@@ -61,25 +61,25 @@ namespace Scene
 
             \param type_name type of the component
         */
-        ComponentInterfacePtr GetComponent(const QString &type_name) const;
+        ComponentPtr GetComponent(const QString &type_name) const;
 
         //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
             \param type_name type of the component
             \param name name of the component
         */
-        ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
+        ComponentPtr GetComponent(const QString &type_name, const QString &name) const;
 
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
             \param change Change type for network replication, in case component has to be created
         */
-        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! component container
-        typedef std::vector<ComponentInterfacePtr> ComponentVector;
+        typedef std::vector<ComponentPtr> ComponentVector;
 
         //! Action container
         typedef QMap<QString, EntityAction *> ActionMap;
@@ -104,20 +104,20 @@ namespace Scene
             \param component An entity component
             \param change Origin of change for network replication
         */
-        void AddComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
         /*! 
             \param component Pointer to the component to remove
         */
-        void RemoveComponent(const ComponentInterfacePtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
+        void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Returns a component with type typename and name or empty pointer if component was not found
         /*! If there are several components with the specified type, returns the first component found (arbitrary).
 
             \param component component that we want to find.
         */
-        ComponentInterfacePtr GetComponent(const IComponent *component) const;
+        ComponentPtr GetComponent(const IComponent *component) const;
 
         //! Returns list of components with type 'type_name' or empty list if no components were found.
         //! \param type_name type of the component
@@ -255,6 +255,9 @@ namespace Scene
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;
 
+        //! Return by name and type, 'cause can't call RemoveComponent with comp as shared_py
+        void RemoveComponentRaw(IComponent* comp);
+
         //! Returns actions map for introspection/reflection.
         const ActionMap &Actions() const { return actions_; }
 
@@ -266,29 +269,29 @@ namespace Scene
         */
         EntityAction *Action(const QString &name);
 
-        /** Connects action with a spesific name to a receiver object with member slot.
-            @param name Name of the action.
+        /// Connects action with a spesific name to a receiver object with member slot.
+        /** @param name Name of the action.
             @param receiver Receiver object.
             @param member Member slot.
         */
         void ConnectAction(const QString &name, const QObject *receiver, const char *member);
 
-        /** Executes an arbitrary action for all components of this entity.
-            The components may or may not handle the action.
+        /// Executes an arbitrary action for all components of this entity.
+        /** The components may or may not handle the action.
             @param action Name of the action.
             @param type Execution type, i.e. where the actions is executed.
         */
         void Exec(const QString &action, EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param Parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
         */
         void Exec(const QString &action, const QString &param, EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
             @param type Execution type, i.e. where the actions is executed.
@@ -296,8 +299,8 @@ namespace Scene
         void Exec(const QString &action, const QString &param1, const QString &param2,
             EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param param1 1st parameter for the action.
             @param param2 2nd parameter for the action.
             @param param3 3rd parameter for the action.
@@ -306,8 +309,8 @@ namespace Scene
         void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3,
             EntityAction::ExecutionType type = EntityAction::Local);
 
-        /** This is an overloaded function.
-            @param action Name of the action.
+        /// This is an overloaded function.
+        /** @param action Name of the action.
             @param params List of parameters for the action.
             @param type Execution type, i.e. where the actions is executed.
         */

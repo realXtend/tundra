@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   JavascriptModule.h
- *  @brief  
+ *  @brief  Enables Javascript execution and scripting in Naali.
  */
 
 #ifndef incl_JavascriptModule_JavascriptModule_h
@@ -20,6 +20,7 @@ class QScriptContext;
 class QScriptEngine;
 class QScriptValue;
 
+/// Enables Javascript execution and scripting in Naali.
 /**
 */
 class JavascriptModule : public QObject, public IModule, public Foundation::ScriptServiceInterface
@@ -33,25 +34,25 @@ public:
     /// Destructor.
     ~JavascriptModule();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Load();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PreInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Initialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void PostInitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Uninitialize();
 
-    /// ModuleInterface override.
+    /// IModule override.
     void Update(f64 frametime);
 
-    /// ModuleInterface override.
+    /// IModule override.
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     MODULE_LOGGING_FUNCTIONS

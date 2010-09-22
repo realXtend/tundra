@@ -53,9 +53,6 @@ namespace Console
         //! Console event category id.
         event_category_id_t consoleEventCategory_;
 
-        //! Input event category id.
-        event_category_id_t inputEventCategory_;
-
         //! Console UI manager
         UiConsoleManager *ui_console_manager_;
     };

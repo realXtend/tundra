@@ -186,7 +186,7 @@ namespace ECEditor
 
             if(params[1] == "add")
             {
-                ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
+                ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
@@ -206,7 +206,7 @@ namespace ECEditor
 
             else if(params[1] == "rem")
             {
-                ComponentInterfacePtr comp = ent->GetComponent(QString::fromStdString(params[2]));
+                ComponentPtr comp = ent->GetComponent(QString::fromStdString(params[2]));
                 EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp.get());
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
