@@ -84,11 +84,11 @@ bool LocalAssetProvider::RequestAsset(const std::string& asset_id, const std::st
             filestr.read((char *)&data[0], length);
             filestr.close();
             
-            // Store to cache
-            asset_service->StoreAsset(asset_ptr);
+            // Store to memory cache only
+            asset_service->StoreAsset(asset_ptr, false);
             // Send asset_ready event as delayed
             Events::AssetReady* event_data = new Events::AssetReady(asset_ptr->GetId(), asset_ptr->GetType(), asset_ptr, tag);
-            framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, Foundation::EventDataPtr(event_data));
+            framework_->GetEventManager()->SendDelayedEvent(event_category_, Events::ASSET_READY, EventDataPtr(event_data));
             
             return true;
         }

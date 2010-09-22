@@ -191,7 +191,7 @@ namespace Asset
             // Send asset canceled events
             HttpAssetTransferInfo error_transfer_data = transfer->GetTranferInfo();
             Events::AssetCanceled *data = new Events::AssetCanceled(error_transfer_data.id.toStdString(), RexTypes::GetAssetTypeString(error_transfer_data.type));
-            Foundation::EventDataPtr data_ptr(data);
+            EventDataPtr data_ptr(data);
             event_manager_->SendDelayedEvent(asset_event_category_, Events::ASSET_CANCELED, data_ptr, 0);
 
             // Clean up

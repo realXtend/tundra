@@ -17,7 +17,7 @@ class RotationHandler(circuits.BaseComponent):
     def onChanged(self):
         y = self.comp.GetAttribute('y')
         self.rot = Quat.fromAxisAndAngle(Vec(0, y, 0), 1)
-        print self.rot, y
+        #print self.rot, y
         
     @circuits.handler("update")
     def update(self, frametime):

@@ -7,13 +7,11 @@
 #include "Application.h"
 #include "Platform.h"
 #include "Foundation.h"
-#include "SceneManager.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
-#include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
@@ -22,6 +20,11 @@
 #include "FrameworkQtApplication.h"
 #include "CoreException.h"
 #include "InputServiceInterface.h"
+#include "Frame.h"
+#include "Console.h"
+
+#include "SceneManager.h"
+#include "SceneEvents.h"
 
 #include <Poco/Logger.h>
 #include <Poco/LoggingFactory.h>
@@ -62,13 +65,15 @@ namespace Task
 
 namespace Foundation
 {
-    Framework::Framework(int argc, char** argv) : 
+    Framework::Framework(int argc, char** argv) :
         exit_signal_(false),
         argc_(argc),
         argv_(argv),
         initialized_(false),
         log_formatter_(0),
-        splitterchannel(0)
+        splitterchannel(0),
+        frame_(new Frame(this)),
+        console_(new ScriptConsole(this))
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -301,18 +306,16 @@ namespace Foundation
             }
 
             // if we have a renderer service, render now
-            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
-                        service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-
+            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
             {
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
 
-            emit FrameProcessed(frametime);
+            frame_->Update(frametime);
         }
-        
+
         RESETPROFILER
     }
 
@@ -384,6 +387,7 @@ namespace Foundation
         event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
         GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
 
+        emit SceneAdded(QString::fromStdString(name));
         return new_scene;
     }
 
@@ -394,6 +398,7 @@ namespace Foundation
             default_scene_.reset();
         if (scene != scenes_.end())
             scenes_.erase(scene);
+        emit SceneRemoved(QString::fromStdString(name));
     }
 
     Scene::ScenePtr Framework::GetScene(const std::string &name) const

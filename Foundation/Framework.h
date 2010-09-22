@@ -6,7 +6,7 @@
 // Application name is statically defined here
 #define APPLICATION_NAME "realXtend"
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "Profiler.h"
 #include "ModuleManager.h"
 #include "ServiceManager.h"
@@ -19,7 +19,10 @@ class QApplication;
 class QGraphicsView;
 class QWidget;
 class QObject;
+
 class InputServiceInterface;
+class Frame;
+class ScriptConsole;
 
 namespace Poco
 {
@@ -260,11 +263,23 @@ namespace Foundation
             return GetServiceManager()->GetService<T>().lock().get();
         }
 
+    public slots:
+        /// Returns the framework Frame object.
+        Frame *GetFrame() const { return frame_; }
+
+        /// Returns the framework Console object.
+        ScriptConsole *Console() const { return console_; }
+
     signals:
-        /** Emitted after one frame is processed.
-         *  @param frametime Elapsed time in seconds since the last frame.
+        /** Emitted after new scene has been added to framework.
+         *  @param name new scene name.
          */
-        void FrameProcessed(double frametime);
+        void SceneAdded(const QString &name);
+
+        /** Emitted after scene has been removed from the framework.
+         *  @param name removed scene name.
+         */
+        void SceneRemoved(const QString &name);
 
     private:
         //! Registers framework specific console commands
@@ -338,6 +353,12 @@ namespace Foundation
 
         //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;
+
+        //! Exposes Naali framework's update tick.
+        Frame *frame_;
+
+        //! Provides console access for scripting languages.
+        ScriptConsole *console_;
     };
 
     namespace
@@ -351,7 +372,7 @@ namespace Foundation
     /*! Options contains program options pre-parsed by framework. If modules wish
         to use their own command line arguments, the arguments are also supplied.
     */
-    class ProgramOptionsEvent : public EventDataInterface
+    class ProgramOptionsEvent : public IEventData
     {
         ProgramOptionsEvent();
     public:

@@ -13,8 +13,8 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
-#include "EC_Water.h"
 #include "PostProcessWidget.h"
+#include "EC_WaterPlane.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -40,7 +40,7 @@ namespace Environment
     std::string EnvironmentModule::type_name_static_ = "Environment";
 
     EnvironmentModule::EnvironmentModule() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -59,7 +59,7 @@ namespace Environment
     void EnvironmentModule::Load()
     {
         DECLARE_MODULE_EC(EC_Terrain);
-        DECLARE_MODULE_EC(EC_Water);
+        DECLARE_MODULE_EC(EC_WaterPlane);
     }
 
     void EnvironmentModule::Initialize()
@@ -142,7 +142,7 @@ namespace Environment
         }
     }
 
-    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if(category_id == framework_event_category_)
         {
@@ -189,7 +189,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {
@@ -219,7 +219,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, IEventData* data)
     {
         switch(event_id)
         {
@@ -243,7 +243,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, IEventData* data)
     {
         ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         assert(netdata);
@@ -422,7 +422,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         return false;
     }
@@ -598,6 +598,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Environment;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(EnvironmentModule)
 POCO_END_MANIFEST

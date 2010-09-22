@@ -19,9 +19,6 @@
 #include <QVector>
 #include <QTextStream>
 
-namespace Naali
-{
-
 OgreMaterialProperties::OgreMaterialProperties(const QString &name, Foundation::AssetPtr asset) :
     material_(0)
 {
@@ -586,6 +583,4 @@ QString OgreMaterialProperties::TextureTypeToString(const Ogre::TextureType &typ
     };
 
     return str;
-}
-
 }

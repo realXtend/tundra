@@ -37,7 +37,7 @@ namespace ECEditor
 
         /// Sets the components whose EC attributes we want to edit as XML.
         /// @param components List of components.
-        void SetComponent(const QList<Foundation::ComponentPtr> &components);
+        void SetComponent(const QList<ComponentPtr> &components);
 
     public slots:
         /// Refreshes XML data.
@@ -64,7 +64,7 @@ namespace ECEditor
         QList<Scene::EntityWeakPtr> entities_;
 
         /// Components which we're editing.
-        QList<Foundation::ComponentWeakPtr > components_;
+        QList<ComponentWeakPtr > components_;
     };
 }
 

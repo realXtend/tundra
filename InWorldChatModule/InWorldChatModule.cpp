@@ -30,13 +30,10 @@
 #include <QColor>
 #include "MemoryLeakCheck.h"
 
-namespace Naali
-{
-
 const std::string InWorldChatModule::moduleName_ = std::string("InWorldChatModule");
 
 InWorldChatModule::InWorldChatModule() :
-    ModuleInterface(moduleName_),
+    IModule(moduleName_),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
     frameworkEventCategory_(0),
@@ -78,7 +75,7 @@ void InWorldChatModule::Update(f64 frametime)
 {
 }
 
-bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool InWorldChatModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if (category_id == frameworkEventCategory_)
     {
@@ -170,7 +167,7 @@ void InWorldChatModule::ShowUserVoipActivityIcon(const RexUUID &id, const bool v
 
     if (!entity->HasComponent("EC_Billboard", "VoipIndicator"))
     {
-        Foundation::ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
+        ComponentPtr component = framework_->GetComponentManager()->CreateComponent("EC_Billboard", "VoipIndicator");
         assert(component.get());
         entity->AddComponent(component);
         entity->GetComponent<EC_Billboard>()->SetDimensions(10, 10);
@@ -188,7 +185,7 @@ Console::CommandResult InWorldChatModule::TestAddBillboard(const StringVector &p
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     Scene::EntityList prims = scene->GetEntitiesWithComponent(EC_OpenSimPrim::TypeNameStatic());
-    Scene::EntityListIterator it = prims.begin();
+    Scene::EntityList::iterator it = prims.begin();
     while(it != prims.end())
     {
         Scene::EntityPtr entity = *it;
@@ -213,7 +210,7 @@ Console::CommandResult InWorldChatModule::ConsoleChat(const StringVector &params
 
 void InWorldChatModule::ApplyDefaultChatBubble(Scene::Entity &entity, const QString &message)
 {
-    Foundation::ComponentInterfacePtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
+    ComponentPtr component = entity.GetOrCreateComponent(EC_ChatBubble::TypeNameStatic());
     assert(component.get());
     EC_ChatBubble &chatBubble = *(checked_static_cast<EC_ChatBubble *>(component.get()));
     chatBubble.ShowMessage(message);
@@ -416,10 +413,6 @@ void SetProfiler(Foundation::Profiler *profiler)
     Foundation::ProfilerSection::SetProfiler(profiler);
 }
 
-}
-
-using namespace Naali;
-
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(InWorldChatModule)
 POCO_END_MANIFEST
