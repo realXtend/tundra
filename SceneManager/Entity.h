@@ -240,6 +240,25 @@ namespace Scene
         void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name), change); }
         void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name, name), change); }
 
+        //! Returns list of components with type 'type_name' or if typename is empty return all components
+        //! \param type_name type of the component
+        QObjectList GetComponentsRaw(const QString &type_name) const
+        {
+            QObjectList ret;
+            if(type_name.isNull())
+            {
+                for(size_t i = 0; i < components_.size() ; ++i)
+                    ret.push_back(components_[i].get());
+            }
+            else
+            {
+                for(size_t i = 0; i < components_.size() ; ++i)
+                    if (components_[i]->TypeName() == type_name)
+                        ret.push_back(components_[i].get());
+            }
+            return ret;
+        }
+
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name Type of the component.
         bool HasComponent(const QString &type_name) const;

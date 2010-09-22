@@ -43,6 +43,7 @@ Q_DECLARE_METATYPE(IComponent*);
 Q_DECLARE_METATYPE(Frame*);
 Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
+Q_DECLARE_METATYPE(DelayedSignal*);
 
 void ReqisterQtMetaTypes(QScriptEngine *engine)
 {
@@ -50,7 +51,6 @@ void ReqisterQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
-    object = engine->scriptValueFromQMetaObject<QUiLoader>();
 }
 
 void ReqisterInputMetaTypes(QScriptEngine *engine)
@@ -84,5 +84,6 @@ void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Frame*>(engine);
     qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
     qScriptRegisterQObjectMetaType<Command*>(engine);
+    qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 }
 
