@@ -222,12 +222,7 @@ def applyaudio(ent, audiouuid, soundRadius, soundVolume):
 def soundRulerUpdate(ent):
     # Check first to see if a sound ruler exists
     # and create it if there was none found
-    try:
-        ent.soundruler
-    except AttributeError:
-        ent.createComponent("EC_SoundRuler")
-
-    # update the ruler
+    sr = ent.GetOrCreateComponentRaw("EC_SoundRuler")
     sr = ent.soundruler
     sr.Show()
     sr.UpdateSoundRuler()
