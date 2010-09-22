@@ -238,7 +238,7 @@ namespace ProtocolUtilities
         void SendCreateInventoryFolderPacket(
             const RexUUID &parent_id,
             const RexUUID &folder_id,
-            const asset_type_t &type,
+            asset_type_t type,
             const std::string &name);
 
         /** Sends a which moves inventory folder and its contains to other folder.
@@ -250,7 +250,7 @@ namespace ProtocolUtilities
         void SendMoveInventoryFolderPacket(
             const RexUUID &folder_id,
             const RexUUID &parent_id,
-            const bool &re_timestamp = true);
+            bool re_timestamp = true);
 
         /** Sends a packet which deletes inventory folder.
          *  @param folders List of new folders.
@@ -280,7 +280,7 @@ namespace ProtocolUtilities
             const RexUUID &item_id,
             const RexUUID &folder_id,
             const std::string &new_name,
-            const bool &re_timestamp = true);
+            bool re_timestamp = true);
 
         /// Sends packet which requests an inventory item copy.
         /// @param old_agent_id Agent ID.
@@ -309,7 +309,7 @@ namespace ProtocolUtilities
         void SendUpdateInventoryFolderPacket(
             const RexUUID &folder_id,
             const RexUUID &parent_id,
-            const int8_t &type,
+            int8_t type,
             const std::string &name);
 
         /// Sends packet which modifies inventory item's name, description, type etc.
@@ -322,8 +322,8 @@ namespace ProtocolUtilities
         void SendUpdateInventoryItemPacket(
             const RexUUID &item_id,
             const RexUUID &folder_id,
-            const asset_type_t &asset_type,
-            const inventory_type_t &inventory_type,
+            asset_type_t asset_type,
+            inventory_type_t inventory_type,
             const std::string &name,
             const std::string &description);
 
@@ -337,9 +337,9 @@ namespace ProtocolUtilities
         void SendFetchInventoryDescendentsPacket(
             const RexUUID &folder_id,
             const RexUUID &owner_id = RexUUID(),
-            const int32_t &sort_order = 0,
-            const bool &fetch_folders = true,
-            const bool &fetch_items = true);
+            int32_t sort_order = 0,
+            bool fetch_folders = true,
+            bool fetch_items = true);
 
         /**
          *  Send a packet to Opensim server to accept friend request
@@ -360,7 +360,7 @@ namespace ProtocolUtilities
          *  Send friend request to Opensim server
          *  @param dest_id Target id
          */
-        void SendFormFriendshipPacket( const RexUUID &dest_id);
+        void SendFormFriendshipPacket(const RexUUID &dest_id);
 
         /**
          *  Sends a packet to remove friend from friend list.
@@ -521,10 +521,10 @@ namespace ProtocolUtilities
         const std::string& GetAuthAddress() const { return auth_server_address_; }
 
         /// @return True if the client connected to a server.
-        const bool IsConnected() const { return connected_; }
+        bool IsConnected() const { return connected_; }
 
         /// @return The state of the connection.
-        volatile Connection::State GetConnectionState();
+        Connection::State GetConnectionState();
 
         /// Set new state
         void SetConnectionState(Connection::State newstate);
@@ -550,9 +550,9 @@ namespace ProtocolUtilities
         void UnregisterCurrentProtocolModule();
 
         /// Set authentication type
-        const void SetAuthenticationType(AuthenticationType authentication_type) { authentication_type_ = authentication_type; }
-        
-        const AuthenticationType GetAuthenticationType() { return authentication_type_; }
+        void SetAuthenticationType(AuthenticationType authentication_type) { authentication_type_ = authentication_type; }
+
+        AuthenticationType GetAuthenticationType() { return authentication_type_; }
 
     private:
         Q_DISABLE_COPY(WorldStream);
