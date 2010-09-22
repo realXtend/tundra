@@ -155,7 +155,7 @@ class UUIDEditLine(DragDroppableEditline):
         mats = qprim.Materials
         mats[index] = matinfo
         qprim.Materials = mats
-        r.sendRexPrimData(ent.id)
+        r.sendRexPrimData(ent.Id)
         
     def applyAction(self):
         ent = self.mainedit.active
@@ -168,7 +168,7 @@ class UUIDEditLine(DragDroppableEditline):
             mats[self.index]  = (asset_type, self.text)
             qprim.Materials = mats
             
-            r.sendRexPrimData(ent.id)
+            r.sendRexPrimData(ent.Id)
             
             self.deactivateButtons()
             
@@ -179,7 +179,7 @@ def applymesh(ent, meshuuid):
         ent.prim.MeshID = meshuuid #new
     else:
         ent.mesh.SetMesh(meshuuid)        
-    r.sendRexPrimData(ent.id)
+    r.sendRexPrimData(ent.Id)
 
 def applyanimation(ent, animationuuid, animationname, animationrate):
     ent.prim.AnimationPackageID = animationuuid
@@ -197,7 +197,7 @@ def applyanimation(ent, animationuuid, animationname, animationrate):
         ent.createComponent('EC_OgreAnimationController')
         ac = ent.animationcontroller
         ac.SetMeshEntity(ent.mesh)
-    r.sendRexPrimData(ent.id)
+    r.sendRexPrimData(ent.Id)
 
 # Apply new audio settings as set in UI.
 def applyaudio(ent, audiouuid, soundRadius, soundVolume):
@@ -217,7 +217,7 @@ def applyaudio(ent, audiouuid, soundRadius, soundVolume):
         ent.prim.SoundVolume = soundVolume
         ent.sound.SetSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius, ent.prim.SoundVolume)
     soundRulerUpdate(ent)
-    r.sendRexPrimData(ent.id)
+    r.sendRexPrimData(ent.Id)
 
 def soundRulerUpdate(ent):
     # Check first to see if a sound ruler exists
