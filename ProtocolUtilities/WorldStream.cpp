@@ -866,7 +866,7 @@ void WorldStream::SendTextureCommitMessage()
 void WorldStream::SendCreateInventoryFolderPacket(
     const RexUUID &parent_id,
     const RexUUID &folder_id,
-    const asset_type_t &type,
+    asset_type_t type,
     const std::string &name)
 {
     if (!connected_)
@@ -891,7 +891,7 @@ void WorldStream::SendCreateInventoryFolderPacket(
 void WorldStream::SendMoveInventoryFolderPacket(
     const RexUUID &folder_id,
     const RexUUID &parent_id,
-    const bool &re_timestamp)
+    bool re_timestamp)
 {
     if (!connected_)
         return;
@@ -995,7 +995,7 @@ void WorldStream::SendMoveInventoryItemPacket(
     const RexUUID &item_id,
     const RexUUID &folder_id,
     const std::string &new_name,
-    const bool &re_timestamp)
+    bool re_timestamp)
 {
     if (!connected_)
         return;
@@ -1088,7 +1088,7 @@ void WorldStream::SendRemoveInventoryItemPacket(std::list<RexUUID> item_id_list)
 void WorldStream::SendUpdateInventoryFolderPacket(
     const RexUUID &folder_id,
     const RexUUID &parent_id,
-    const int8_t &type,
+    int8_t type,
     const std::string &name)
 {
     if (!connected_)
@@ -1114,8 +1114,8 @@ void WorldStream::SendUpdateInventoryFolderPacket(
 void WorldStream::SendUpdateInventoryItemPacket(
     const RexUUID &item_id,
     const RexUUID &folder_id,
-    const asset_type_t &asset_type,
-    const inventory_type_t &inventory_type,
+    asset_type_t asset_type,
+    inventory_type_t inventory_type,
     const std::string &name,
     const std::string &description)
 {
@@ -1167,9 +1167,9 @@ void WorldStream::SendUpdateInventoryItemPacket(
 void WorldStream::SendFetchInventoryDescendentsPacket(
     const RexUUID &folder_id,
     const RexUUID &owner_id,
-    const int32_t &sort_order,
-    const bool &fetch_folders,
-    const bool &fetch_items)
+    int32_t sort_order,
+    bool fetch_folders,
+    bool fetch_items)
 {
     if (!connected_)
         return;
@@ -1713,7 +1713,7 @@ QString WorldStream::GetCapability(const QString &name) const
     return GetCurrentProtocolModule()->GetCapability(name.toStdString()).c_str();
 }
 
-volatile Connection::State WorldStream::GetConnectionState()
+Connection::State WorldStream::GetConnectionState()
 {
     protocolModule_ = GetCurrentProtocolModule();
     if (!protocolModule_.get())
@@ -1730,7 +1730,6 @@ void WorldStream::SetConnectionState(Connection::State newstate)
 
     protocolModule_->SetConnectionState(newstate);
 }
-
 
 std::string WorldStream::GetConnectionErrorMessage()
 {
@@ -1820,8 +1819,6 @@ void WorldStream::UnregisterCurrentProtocolModule()
     protocolModule_.reset();
 }
 
-/********************** private **********************/
-
 void WorldStream::SendLoginSuccessfullPackets()
 {
     // Send the necessary UDP packets.
@@ -1838,7 +1835,6 @@ void WorldStream::SendLoginSuccessfullPackets()
     SendAgentThrottlePacket();
     SendAgentWearablesRequestPacket();
     SendRexStartupPacket("started"); 
-
 }
 
 void WorldStream::SendMapBlockPacket()
