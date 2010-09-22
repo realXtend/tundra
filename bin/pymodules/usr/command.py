@@ -152,14 +152,6 @@ if 0: #send chat
 if 0: #print test
     r.logInfo("this is a test print!")
     
-if 0: #camera pitch
-    dy = 0.1
-    dp = 0.5
-    #dp = -0.1
-    #dp = 0.1
-    r.setCameraYawPitch(dy, dp)
-    print r.getCameraYawPitch()
-
 if 0: #camera entity - it is an entity nowadays, and there is EC cam even
     try:
         cament = naali.getCamera()
@@ -606,10 +598,12 @@ if 0: #testing the removal of canvases
     bool = modu.RemoveCanvasFromControlBar(canvas)
     print bool
     
-if 0:
-    print r.getCameraUp()
-    print r.getCameraRight()
-
+if 0: #getUserAvatar 
+    ent = naali.getUserAvatar()
+    print "User's avatar_id:", ent.Id
+    #print "Avatar's mesh_name:", ent.mesh.GetMeshName(0)
+    #ent.mesh = "cruncah1.mesh"
+    
 if 0: #test changing the mesh asset a prim is using
     ent_id = 2088826433
     #print arkku_id, type(arkku_id)
@@ -1267,7 +1261,7 @@ if 0: #create a new component, hilight
     try:
         e.highlight
     except AttributeError:
-        print e.createComponent("EC_Highlight")
+        print e.GetOrCreateComponentRaw("EC_Highlight")
         print "created a new Highlight component"
 
     h = e.highlight
@@ -1287,7 +1281,7 @@ if 0: #create a new component, touchable
     try:
         t = e.touchable
     except AttributeError:
-        print e.createComponent("EC_Touchable")
+        print e.GetOrCreateComponentRaw("EC_Touchable")
         print "created a new Touchable component", e.id
         t = e.touchable
 
@@ -1326,7 +1320,7 @@ if 0: #the new DynamicComponent with individual attrs etc
 
 if 0: #create DynamicComponent
     ent = naali.getEntity(2088826547)
-    #ent.createComponent("EC_DynamicComponent")
+    #ent.GetOrCreateComponentRaw("EC_DynamicComponent")
     #d = ent.EC_DynamicComponent
     oldent = r.getEntity(ent.id)
     d = oldent.dynamic
@@ -1340,7 +1334,7 @@ if 0: #animation control
     try:
         ent.animationcontroller
     except AttributeError:
-        #ent.createComponent("EC_DynamicComponent")
+        #ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, "has no animation controller component"
     
     a = ent.animationcontroller
