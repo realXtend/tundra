@@ -9,6 +9,7 @@
 #include "PythonScriptInstance.h"
 
 #include "Entity.h"
+#include "SceneManager.h"
 
 #include <PythonQt.h>
 
@@ -17,10 +18,13 @@
 PythonScriptInstance::PythonScriptInstance(const QString &filename, Scene::Entity *entity) :
     filename_(filename)
 {
-    //context_ = PythonQt::self()->createUniqueModule();
-    moduleName_ = filename_.mid(3, filename_.length() - 4);
-    context_ = PythonQt::self()->createModuleFromScript(moduleName_);
+    context_ = PythonQt::self()->createUniqueModule();
+//    moduleName_ = filename_.mid(3, filename_.length() - 4);
+//    context_ = PythonQt::self()->createModuleFromScript(moduleName_);
+
+    // Add parent entity and scene to the context
     PythonQt::self()->addObject(context_, "me", entity);
+    PythonQt::self()->addObject(context_, "scene", entity->GetScene());
 }
 
 void PythonScriptInstance::Reload()
