@@ -166,11 +166,11 @@ namespace RexLogic
 
         //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
         //! are always to be present in an reX world, like terrain.
-        Scene::ScenePtr CreateNewActiveScene(const std::string &name);
+        Scene::ScenePtr CreateNewActiveScene(const QString &name);
 
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
-        void DeleteScene(const std::string &name);
+        void DeleteScene(const QString &name);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.

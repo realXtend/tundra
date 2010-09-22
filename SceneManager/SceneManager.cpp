@@ -12,6 +12,7 @@
 #include "IComponent.h"
 #include "ForwardDefines.h"
 
+#include <QString>
 #include <QDomDocument>
 #include <QFile>
 
@@ -20,6 +21,19 @@
 namespace Scene
 {
     uint SceneManager::gid_ = 0;
+
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
+        name_(name),
+        framework_(framework)
+    {
+    }
+
+    SceneManager::SceneManager(const SceneManager &other, const QString &name) :
+        framework_(other.framework_),
+        entities_(other.entities_),
+        name_(name)
+    {
+    }
 
     SceneManager::~SceneManager()
     {

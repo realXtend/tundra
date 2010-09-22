@@ -35,7 +35,7 @@ namespace Environment
         xSegmentsAttr_(this, "The number of segments to the plane in the x direction", 10),
         ySegmentsAttr_(this, "The number of segments to the plane in the y direction", 10),
         materialNameAttr_(this, "Water material", QString("Ocean")),
-        fogColorAttr_(this, "Underwater fog color", Color(0.2f,0.4f,0.35,1.0)),
+        fogColorAttr_(this, "Underwater fog color", Color(0.2f,0.4f,0.35f,1.0f)),
         fogStartAttr_(this, "Fog start distance", 100.f),
         fogEndAttr_(this, "Fog end distance", 2000.f),
         fogModeAttr_(this, "Fog mode", 3),

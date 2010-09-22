@@ -289,7 +289,7 @@ void RexLogicModule::PostInitialize()
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 }
 
-Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
+Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
 {
     if (framework_->HasScene(name))
     {
@@ -339,7 +339,7 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     return GetCurrentActiveScene();
 }
 
-void RexLogicModule::DeleteScene(const std::string &name)
+void RexLogicModule::DeleteScene(const QString &name)
 {
     if (!framework_->HasScene(name))
     {

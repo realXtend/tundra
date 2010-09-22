@@ -157,7 +157,7 @@ void JavascriptModule::RunScript(const QString &scriptFileName)
 
 void JavascriptModule::SceneAdded(const QString &name)
 {
-    Scene::ScenePtr scene = GetFramework()->GetScene(name.toStdString());
+    Scene::ScenePtr scene = GetFramework()->GetScene(name);
     connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)));
     connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),

@@ -22,7 +22,7 @@ namespace Environment
         : IComponent(module->GetFramework()),
         startDistanceAttr(this, "Fog start distance", 100.f),
         endDistanceAttr(this, "Fog end distance", 2000.f),
-        colorAttr(this,"Fog color", Color(0.707792,0.770537,0.831373,1.0)),
+        colorAttr(this,"Fog color", Color(0.707792f,0.770537f,0.831373f,1.f)),
         modeAttr(this, "Fog mode", 3),
         useAttr(this, "Use color over Caelum color", false)
     {

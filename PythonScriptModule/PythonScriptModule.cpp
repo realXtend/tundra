@@ -259,7 +259,7 @@ namespace PythonScript
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
-                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName);
+                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
                 assert(scene.get());
                 if (scene)
                 {
@@ -572,7 +572,7 @@ namespace PythonScript
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr scene = framework_->GetScene(name.toStdString());
+        Scene::ScenePtr scene = framework_->GetScene(name);
         if (scene)
             return scene.get();
 
