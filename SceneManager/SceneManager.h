@@ -28,17 +28,19 @@ namespace Scene
     class SceneManager : public QObject
     {
         Q_OBJECT
+        Q_PROPERTY (QString Name READ Name)
 
         friend class Foundation::Framework;
+
     private:
         //! default constructor
         SceneManager();
 
         //! constructor that takes a name and parent module
-        SceneManager(const std::string &name, Foundation::Framework *framework) :  name_(name), framework_(framework) {}
+        SceneManager(const QString &name, Foundation::Framework *framework);
 
         //! copy constructor that also takes a name
-        SceneManager(const SceneManager &other, const std::string &name ) : framework_(other.framework_), entities_(other.entities_) { }
+        SceneManager(const SceneManager &other, const QString &name);
 
         //! copy constuctor
         SceneManager(const SceneManager &other);
@@ -61,7 +63,7 @@ namespace Scene
     public:
         //! destructor
         ~SceneManager();
-        
+
         //! entity map
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
@@ -81,7 +83,7 @@ namespace Scene
         bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
 
         //! Returns scene name
-        const std::string &Name() const { return name_; }
+        const QString &Name() const { return name_; }
 
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
@@ -210,7 +212,7 @@ namespace Scene
         Foundation::Framework *framework_;
 
         //! Name of the scene
-        const std::string name_;
+        QString name_;
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)

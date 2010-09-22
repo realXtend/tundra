@@ -30,6 +30,7 @@ namespace Scene
     {
         Q_OBJECT
         Q_PROPERTY (uint Id READ GetId)
+        Q_PROPERTY (QString Name READ GetName)
 
         friend class SceneManager;
 
