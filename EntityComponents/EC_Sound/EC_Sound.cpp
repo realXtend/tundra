@@ -60,8 +60,8 @@ void EC_Sound::RegisterActions()
     assert(entity);
     if (entity)
     {
-        entity->ConnectAction("Play sound", this, SLOT(PlaySound()));
-        entity->ConnectAction("Stop sound", this, SLOT(StopSound()));
+        entity->ConnectAction("PlaySound", this, SLOT(PlaySound()));
+        entity->ConnectAction("StopSound", this, SLOT(StopSound()));
     }
 }
 
@@ -121,7 +121,8 @@ void EC_Sound::UpdateSignals()
         Scene::SceneManager *scene = GetParentEntity()->GetScene();
         if(scene)
         connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
+        RegisterActions();
     }
 }
 

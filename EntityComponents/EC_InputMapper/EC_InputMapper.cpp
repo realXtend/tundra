@@ -27,6 +27,13 @@ void EC_InputMapper::RegisterMapping(const QKeySequence &keySeq, const QString &
     mappings_[keySeq] = action;
 }
 
+void EC_InputMapper::RegisterMapping(const QString &keySeq, const QString &action)
+{
+    QKeySequence key(keySeq);
+    if(!key.isEmpty())
+        mappings_[key] = action;
+}
+
 EC_InputMapper::EC_InputMapper(IModule *module):
     IComponent(module->GetFramework()),
     contextName(this, "Input context name", "EC_InputMapper"),

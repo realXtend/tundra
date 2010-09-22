@@ -21,6 +21,8 @@ class KeyEvent;
 class InputContext;
 
 
+/// Registers an InputContext from the Naali Input subsystem and uses it to translate
+/// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 /**
 <table class="header">
 <tr>
@@ -65,8 +67,6 @@ Does not emit any actions.
 
 </table>
 */
-/// Registers an InputContext from the Naali Input subsystem and uses it to translate
-/// given set of key and mouse sequences to Entity Actions on the entity the component is part of.
 class EC_InputMapper : public IComponent
 {
     DECLARE_EC(EC_InputMapper);
@@ -80,19 +80,25 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     /// This input mapper's input context priority.
-    Attribute<QString> contextName;
+    Q_PROPERTY(QString contextName READ getcontextName WRITE setcontextName);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, contextName);
 
     /// This input mapper's input context priority.
-    Attribute<int> contextPriority;
+    Q_PROPERTY(int contextPriority READ getcontextPriority WRITE setcontextPriority);
+    DEFINE_QPROPERTY_ATTRIBUTE(int, contextPriority);
 
     /// Does the mapper receive keyboard input events even when a Qt widget has focus.
-    Attribute<bool> takeKeyboardEventsOverQt;
+    Q_PROPERTY(bool takeKeyboardEventsOverQt READ gettakeKeyboardEventsOverQt WRITE settakeKeyboardEventsOverQt);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, takeKeyboardEventsOverQt);
 
     /// Does the mapper receive mouse input events even when a Qt widget has focus.
-    Attribute<bool> takeMouseEventsOverQt;
+    Q_PROPERTY(bool takeMouseEventsOverQt READ gettakeMouseEventsOverQt WRITE settakeMouseEventsOverQt);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, takeMouseEventsOverQt);
 
     /// Key sequence - action name mappings.
-    Attribute<QVariantList > mappings;
+    Q_PROPERTY(QVariantList mappings READ getmappings WRITE setmappings);
+    DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, mappings);
+    //Attribute<QVariantList > mappings;
 
     typedef QMap<QKeySequence, QString> Mappings_t;
 
@@ -104,6 +110,13 @@ public slots:
         @note If registering key sequence with modifier keys, don't use Qt::Key enum - use Qt::Modifer enum instead.
     */
     void RegisterMapping(const QKeySequence &keySeq, const QString &action);
+
+    /** Register new key sequence - action mapping for this input mapper.
+        @param keySeq Key sequence as in string. example Qt::CTRL+Qt::Key_O sequence eguals "Ctrl+O" string.
+        @param action Name of the action. If you want to use parameters the string should look the following: 
+        "More(Forward)" or "Move(Forward,100)" etc.
+    */
+    void RegisterMapping(const QString &keySeqString, const QString &action);
 
     /// Returns the input context of this input mapper.
     InputContext *GetInputContext() const { return input_.get(); }
