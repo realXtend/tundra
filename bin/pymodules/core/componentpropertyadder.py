@@ -13,6 +13,7 @@ compshorthand = {
     'EC_Highlight': 'highlight',
     'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',
+    "EC_OpenSimPresence": 'opensimpresence',
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):

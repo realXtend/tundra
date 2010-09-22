@@ -1501,3 +1501,10 @@ if 0: #getting all entities with a certain component, now directly as the entity
     ents = s.GetEntitiesWithComponentRaw("EC_OgrePlaceable")
     for ent in ents:
         print ent.placeable.Position
+        
+if 0: #estate management uses presence info. websocketserver too
+    s = naali.getDefaultScene()
+    ents = s.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
+    for ent in ents:
+        displaystring = ent.opensimpresence.QGetFullName() + "|" + ent.opensimpresence.QGetUUIDString()
+        print displaystring
