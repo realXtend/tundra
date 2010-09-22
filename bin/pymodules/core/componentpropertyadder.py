@@ -6,7 +6,9 @@ import PythonQt
 
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
+    'EC_OpenSimPrim': 'prim',
     'EC_OgrePlaceable': 'placeable',
+    'EC_NetworkPosition': 'network',
     'EC_OgreMesh':'mesh',
     'EC_OgreCamera': 'camera',
     'EC_OgreAnimationController': 'animationcontroller',
@@ -14,6 +16,7 @@ compshorthand = {
     'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',
     "EC_OpenSimPresence": 'opensimpresence',
+    'EC_SoundRuler': 'soundruler'
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
@@ -58,4 +61,3 @@ class ComponentPropertyAdder(circuits.BaseComponent):
             #this is probably impossible on py side 'cause we don't see QVariants here, so there's a helper on the c++ side instead.
             #ent.setProperty(propname, invalid_qvariant())
             naali._pythonscriptmodule.RemoveQtDynamicProperty(ent, propname)
-            print "XXX deleted prop", propname
