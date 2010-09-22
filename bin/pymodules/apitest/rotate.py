@@ -33,8 +33,7 @@ class RotationHandler(circuits.BaseComponent):
                 pass #not there (yet)
             else:
                 self.entity.createComponent("EC_DynamicComponent")
-                oldent = r.getEntity(ent.id)
-                self.comp = oldent.dynamic
+                self.comp = self.entity.dynamic #XXX might be not implemented
 
     @circuits.handler("on_logout")
     def on_logout(self):
