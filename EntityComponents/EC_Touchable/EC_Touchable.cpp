@@ -119,7 +119,7 @@ EC_Touchable::EC_Touchable(IModule *module) :
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
-    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
+//    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }
 
 void EC_Touchable::Create()
