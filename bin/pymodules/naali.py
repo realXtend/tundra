@@ -35,6 +35,9 @@ def createMeshEntity(meshname, raycastprio=1):
     #ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     #ent.mesh.SetMesh(meshname)
 
+def removeEntity(entity):
+    r.removeEntity(entity.Id)
+
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
 

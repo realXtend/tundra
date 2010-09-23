@@ -73,7 +73,7 @@ class LocalScene(Component):
         self.sceneActions = None # sceneactions.SceneActions()
         
         
-		#self.libMod = r.getLibraryModule()
+        #self.libMod = r.getLibraryModule()
         
         #self.libMod.connect("UploadSceneFile(QString, QVect)", self.onUploadSceneFile)
         pass
