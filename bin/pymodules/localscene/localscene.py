@@ -278,10 +278,10 @@ class SceneSaver:
                 nodeNode.appendChild(position)
                 
                 rotation = newdoc.createElement('rotation')
-                rotation.setAttribute("qx", str(oNode.orientation.x))
-                rotation.setAttribute("qy", str(oNode.orientation.y))
-                rotation.setAttribute("qz", str(oNode.orientation.z))
-                rotation.setAttribute("qw", str(oNode.orientation.w))
+                rotation.setAttribute("qx", str(oNode.naali_ent.placeable.Orientation.x()))
+                rotation.setAttribute("qy", str(oNode.naali_ent.placeable.Orientation.y()))
+                rotation.setAttribute("qz", str(oNode.naali_ent.placeable.Orientation.z()))
+                rotation.setAttribute("qw", str(oNode.naali_ent.placeable.Orientation.scalar()))
                 nodeNode.appendChild(rotation)
                 
                 scale = newdoc.createElement('scale')
