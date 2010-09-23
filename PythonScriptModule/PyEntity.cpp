@@ -322,7 +322,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     
     else if (s_name.compare("network") == 0)
     {
-        RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
+        EC_NetworkPosition* networkpos = dynamic_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
         if (!networkpos)
         {
             PyErr_SetString(PyExc_AttributeError, "This entity does not have a networkpos component.");
@@ -536,7 +536,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    RexLogic::EC_NetworkPosition* networkpos = entity->GetComponent<RexLogic::EC_NetworkPosition>().get();
+    EC_NetworkPosition* networkpos = entity->GetComponent<EC_NetworkPosition>().get();
 
     if (s_name.compare("text") == 0)
     {

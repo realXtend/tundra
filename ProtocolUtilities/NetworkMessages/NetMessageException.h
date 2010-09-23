@@ -62,7 +62,7 @@ public:
      * Sets error message. 
      * @return Exception type enum.
      */
-    const ExceptionType GetType() const  { return type_; }
+    ExceptionType GetType() const  { return type_; }
 
     /** Utility function for converting the connection state enum to string.
      * @param The connection state enum.

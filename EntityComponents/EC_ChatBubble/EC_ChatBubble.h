@@ -103,6 +103,9 @@ public:
     /// @true If the chat bubble text is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
 
+    /// Clears the 3D subsystem resources for this object.
+    void Destroy();
+
 public slots:
     /// Adds new message to be shown on the chat bubble.
     /// @param msg Message to be shown.

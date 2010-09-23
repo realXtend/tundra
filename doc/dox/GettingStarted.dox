@@ -2,6 +2,8 @@
 
 \page GettingStarted Getting started
 
+TODO: This page is deprecated, and will be removed. See the \ref intro_sec "main developer page" instead.
+
 \section intro_GS Viewer introduction
 	The viewer is divided into several different projects and namespaces.
 

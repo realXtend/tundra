@@ -17,6 +17,7 @@ namespace Ogre
 {
     class Entity;
     class SceneNode;
+    class ColourValue;
 }
 
 
@@ -75,11 +76,16 @@ class EC_WaterPlane : public IComponent
         Attribute<float> fogStartAttr_;
         /// Underwater fog end distance (meters)
         Attribute<float> fogEndAttr_;
-        
+        /// UnderWater fog mode, defines how Fog density increases.
+        Attribute<int> fogModeAttr_;
+
          /** 
          * Returns true if camera is inside of watercube. 
          */
         bool IsUnderWater();
+
+        /// Returns color value in Ogre format.
+        Ogre::ColourValue GetFogColorAsOgreValue() const;
        
     public slots: 
         
@@ -94,6 +100,8 @@ class EC_WaterPlane : public IComponent
 
         /// Called If some of the attributes has been changed.
         void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+
+     
 
     private:
         /** 

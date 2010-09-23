@@ -57,7 +57,7 @@
 #include "Console.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
@@ -259,7 +259,7 @@ namespace PythonScript
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
-                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName);
+                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
                 assert(scene.get());
                 if (scene)
                 {
@@ -449,8 +449,8 @@ namespace PythonScript
             return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
-
         engine_->RunString(QString::fromStdString(params[0]));
+
         return Console::ResultSuccess();
     }
 
@@ -572,7 +572,7 @@ namespace PythonScript
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr scene = framework_->GetScene(name.toStdString());
+        Scene::ScenePtr scene = framework_->GetScene(name);
         if (scene)
             return scene.get();
 
@@ -624,7 +624,6 @@ namespace PythonScript
         qobj->setProperty(propname, QVariant());
     }
 
-
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
@@ -634,7 +633,7 @@ namespace PythonScript
         if (script->type.Get() != "py")
             return;
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
+        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get(), script->GetParentEntity());
         script->SetScriptInstance(pyInstance);
         if (script->runOnLoad.Get())
             script->Run();

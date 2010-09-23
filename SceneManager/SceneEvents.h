@@ -69,7 +69,7 @@ namespace Scene
         static const event_id_t EVENT_ENTITY_NONE_CLICKED = 0x1b;
 
         /// Sent when mouse is hovering above entity.
-        static const event_id_t EVENT_ENTITY_MOUSE_HOVER =  0x0c;
+        static const event_id_t EVENT_ENTITY_MOUSE_HOVER =  0x0c; ///<\todo Remove this altogether. -jj.
 
         // Component-related event id's:
     /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
@@ -154,7 +154,7 @@ namespace Scene
             /// List of component pointers.
             std::vector<IComponent> entity_ptr_list;
         };*/
-        
+
         /// Soon to be deprecated class event data class.
         class SceneEventData: public IEventData
         {

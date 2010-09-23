@@ -134,7 +134,7 @@ namespace ECEditor
         QStringList GetAvailableComponents() const;
 
         /// Returns list of selected entities.
-        std::vector<Scene::EntityPtr> GetSelectedEntities();
+        std::vector<Scene::EntityPtr> GetSelectedEntities() const;
 
         /// Framework pointer.
         Foundation::Framework *framework_;

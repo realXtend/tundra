@@ -13,10 +13,9 @@
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
-#include <QDebug>
-
 #include <Ogre.h>
 #include <OgreQuaternion.h>
+#include <OgreColourValue.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -36,13 +35,29 @@ namespace Environment
         xSegmentsAttr_(this, "The number of segments to the plane in the x direction", 10),
         ySegmentsAttr_(this, "The number of segments to the plane in the y direction", 10),
         materialNameAttr_(this, "Water material", QString("Ocean")),
-        fogColorAttr_(this, "Underwater fog color", Color(51,102,89,255)),
+        fogColorAttr_(this, "Underwater fog color", Color(0.2f,0.4f,0.35f,1.0f)),
         fogStartAttr_(this, "Fog start distance", 100.f),
         fogEndAttr_(this, "Fog end distance", 2000.f),
+        fogModeAttr_(this, "Fog mode", 3),
         entity_(0),
         node_(0),
         attached_(false)
     {
+        static AttributeMetadata metadata;
+        static bool metadataInitialized = false;
+    
+        if(!metadataInitialized)
+        {
+            metadata.enums[Ogre::FOG_NONE] = "NoFog";
+            metadata.enums[Ogre::FOG_EXP] = "Exponentially";
+            metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
+            metadata.enums[Ogre::FOG_LINEAR] = "Linearly";
+         
+            metadataInitialized = true;
+        }
+
+        fogModeAttr_.SetMetadata(&metadata);
+
         renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
         if(!renderer_.expired())
         {
@@ -175,6 +190,13 @@ namespace Environment
         
         Ogre::MeshManager::getSingleton().remove(name_.toStdString().c_str());
 
+
+    }
+
+    Ogre::ColourValue EC_WaterPlane::GetFogColorAsOgreValue() const
+    {
+        Color col = fogColorAttr_.Get();
+        return Ogre::ColourValue(col.r, col.g, col.b, col.a);
 
     }
 
