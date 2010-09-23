@@ -50,58 +50,6 @@ EC_Touchable::~EC_Touchable()
     }
 }
 
-void EC_Touchable::OnHover()
-{
-    if (!IsVisible())
-        Show();
-    if (!hovering_)
-        OnHoverIn();
-    emit MouseHover();
-}
-
-void EC_Touchable::OnHoverOut()
-{
-    if (IsVisible())
-        Hide();
-    hovering_ = false;
-    SetCursorVisible(false);
-    emit MouseHoverOut();
-}
-
-void EC_Touchable::OnClick() ///\todo Remove this altogether. -jj.
-{
-    emit Clicked();
-}
-
-///\todo Remove this altogether. -jj. Integrate switching mouse cursors to input contexts so that 
-/// it is not possible to "miss" calling restoreOverrideCursor and leak a cursor to stay on screen. Releasing a context
-/// also releases the cursor.
-void EC_Touchable::SetCursorVisible(bool visible) 
-{
-    if (hoverCursor.Get() != Qt::ArrowCursor)
-    {
-        QCursor *current_cursor = QApplication::overrideCursor();
-        if (visible)
-        {
-            if (current_cursor)
-            {
-                if (current_cursor->shape() != hoverCursor.Get())
-                    QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
-            }
-            else
-                QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
-        }
-        else
-        {
-            while (current_cursor)
-            {
-                QApplication::restoreOverrideCursor();
-                current_cursor = QApplication::overrideCursor();
-            }
-        }
-    }
-}
-
 void EC_Touchable::Show()
 {
     if (highlightOnHover.Get())
@@ -139,8 +87,7 @@ EC_Touchable::EC_Touchable(IModule *module) :
     sceneNode_(0),
     materialName(this, "material name", "Touchable"),
     highlightOnHover(this, "highligh on hover", true),
-    hoverCursor(this, "hover cursor", Qt::ArrowCursor),
-    hovering_(false)
+    hoverCursor(this, "hover cursor", Qt::ArrowCursor)
 {
     static AttributeMetadata metadata;
     static bool metadataInitialized = false;
@@ -296,13 +243,64 @@ void EC_Touchable::UpdateMaterial()
 //    hover_cursor_ = QCursor((Qt::CursorShape)(hoverCursor.Get()));
 }
 
+///\todo Remove this altogether. -jj. Integrate switching mouse cursors to input contexts so that 
+/// it is not possible to "miss" calling restoreOverrideCursor and leak a cursor to stay on screen. Releasing a context
+/// also releases the cursor.
+void EC_Touchable::SetCursorVisible(bool visible) 
+{
+    if (hoverCursor.Get() != Qt::ArrowCursor)
+    {
+        QCursor *current_cursor = QApplication::overrideCursor();
+        if (visible)
+        {
+            if (current_cursor)
+            {
+                if (current_cursor->shape() != hoverCursor.Get())
+                    QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
+            }
+            else
+                QApplication::setOverrideCursor(QCursor((Qt::CursorShape)(hoverCursor.Get())));
+        }
+        else
+        {
+            while (current_cursor)
+            {
+                QApplication::restoreOverrideCursor();
+                current_cursor = QApplication::overrideCursor();
+            }
+        }
+    }
+}
+
 void EC_Touchable::OnHoverIn()
 {
-    if (hovering_)
-        return;
-    hovering_ = true;
+    LogInfo("OnHoverIn");
     SetCursorVisible(true);
     emit MouseHoverIn();
+}
+
+void EC_Touchable::OnHover()
+{
+    LogInfo("OnHover");
+    if (!IsVisible())
+        Show();
+    emit MouseHover();
+}
+
+void EC_Touchable::OnHoverOut()
+{
+    LogInfo("OnHoverOut");
+    if (IsVisible())
+        Hide();
+
+    SetCursorVisible(false);
+    emit MouseHoverOut();
+}
+
+void EC_Touchable::OnClick()
+{
+    LogInfo("OnClick");
+    emit MousePressed();
 }
 
 void EC_Touchable::RegisterActions()
@@ -311,14 +309,14 @@ void EC_Touchable::RegisterActions()
     assert(entity);
     if (entity)
     {
+        // Generic actions
         entity->ConnectAction("Show", this, SLOT(Show()));
         entity->ConnectAction("Hide", this, SLOT(Hide()));
+        // Mouse actions
+        entity->ConnectAction("MouseHover", this, SLOT(OnHover()));
+        entity->ConnectAction("MouseHoverIn", this, SLOT(OnHoverIn()));
+        entity->ConnectAction("MouseHoverOut", this, SLOT(OnHoverOut()));
+        entity->ConnectAction("MousePress", this, SLOT(OnClick()));
     }
-/*
-    e->Exec("MouseHover");
-    e->Exec("MouseHoverIn");
-    e->Exec("MouseHoverOut");
-    e->Exec("Clicked");
-*/
 }
 

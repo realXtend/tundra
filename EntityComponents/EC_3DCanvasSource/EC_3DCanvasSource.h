@@ -7,22 +7,14 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
-class QDomDocument;
-class QDomElement;
-
-namespace Foundation
-{
-    class Framework;
-}
-
 class UiProxyWidget;
 
 class QLineEdit;
 class QWidget;
 class QUrl;
 
+/// A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -45,9 +37,6 @@ Registered by RexLogic::RexLogicModule.
 <div>Show as 2D when clicked</div> 
 </ul>
 
-
-
-
 <b>Exposes the following scriptable functions:</b>
 <ul>
 <li>"Clicked": Source text editor modified.
@@ -60,23 +49,16 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"MousePressed" : Opens the web page in 2D web browser widget if show2d attribute is true.
 </ul>
 </td>
 </tr>
-
-
 
 Does not emit any actions.
 
 <b>Depends on components 3DCanvas, OgreMesh and OgreCustomObject</b>.
 </table>
-
 */
-
-//! A 3D canvas controller that initializes an EC_3DCanvas into the same entity, with source parameters (for example html page url)
-/*! Also makes it possible to display the canvas contents as a 2D widget, and edit the source
- */
 class EC_3DCanvasSource : public IComponent
 {
     DECLARE_EC(EC_3DCanvasSource);
@@ -104,7 +86,7 @@ public:
     bool manipulate_ec_3dcanvas;
 
 public slots:
-    void Clicked();
+    void OnClick();
     //! Source text editor modified
     void SourceEdited();
     //! Link clicked in the 2D webview UI
@@ -122,7 +104,10 @@ private slots:
     void RepaintCanvas();
     void ChangeLanguage();
     void FetchWebViewUrl();
-    
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
+
 private:
     //! Constuctor.
     /*! \param module Module.

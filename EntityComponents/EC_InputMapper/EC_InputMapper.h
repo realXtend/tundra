@@ -148,8 +148,8 @@ private slots:
     */
     void HandleKeyEvent(KeyEvent *e);
 
-    /** Handles mouse events from input service.
-        Performs entity action for for the parent entity if action mapping is registered for the mouse event.
+    /// Handles mouse events from input service.
+    /** Performs entity action for for the parent entity if action mapping is registered for the mouse event.
         @param e Mouse event.
     */
     void HandleMouseEvent(MouseEvent *e);

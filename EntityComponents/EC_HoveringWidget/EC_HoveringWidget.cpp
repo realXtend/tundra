@@ -86,6 +86,8 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     QObject::connect(b, SIGNAL(pressed()), this, SLOT(Attach()));
     Detach();
     Attach();
+
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
 EC_HoveringWidget::~EC_HoveringWidget()
@@ -552,6 +554,14 @@ int EC_HoveringWidget::CheckNameTagWidth() const
     int label_width = metric.width(namewidget_->label->text());
     label_width += metric.averageCharWidth() * 4;
     return label_width;
+}
+
+void EC_HoveringWidget::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+        entity->ConnectAction("MouseHover", this, SLOT(HoveredOver()));
 }
 
 QPixmap EC_HoveringWidget::GetPixmap(QWidget &w, const QRect &dimensions)
