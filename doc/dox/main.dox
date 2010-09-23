@@ -10,19 +10,19 @@ Welcome to the Naali developer documentation. This page is a site map that assem
 <h2>Download</h2>
 Obtain Naali from
 <ul>
-<li>A binary distribution. Changelog.
-<li>Source repository.
-<li>3rd party library repository.   
+<li><a href="http://code.google.com/p/realxtend-naali/downloads/list">A binary distribution</a>. <a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali#Changelog_and_History">Changelog</a>.
+<li><a href="http://github.com/realXtend">Source repository on github</a>.
+<li><a href="http://code.google.com/p/realxtend-naali-deps/">Binary dependencies repository on Google code</a>.   
 </ul>
-Naali distribution license.
+<a href="http://github.com/realXtend/naali/blob/develop/license.txt">Naali distribution license</a>.
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Getting Started</h2>
 Follow these first steps.
 <ul>
-<li>Getting started with Naali.
-<li>Building the sources.
-<li>Configuring which modules to build and load. 
+<li><a href="http://wiki.realxtend.org/index.php/Getting_Started_with_Naali">Getting started with Naali</a>.
+<li><a href="http://wiki.realxtend.org/index.php/Building_Naali_from_source_trunk">Building the sources</a>.
+<li>\ref ModuleConfig "Configuring which modules to build and load." 
 </ul>
 </td>
 </tr>
@@ -32,21 +32,21 @@ Follow these first steps.
 <h2>Community</h2>
 Contact Naali developers and users at
 <ul>
-<li><a href="http://groups.google.com/group/realxtend-dev">Developer mailing list</a>
-<li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>
-<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a>
-<li>IRC channels: #realxtend and #realxtend-dev @ irc.freenode.net
-<li>Bug tracker.
+<li><a href="http://groups.google.com/group/realxtend-dev">Developer mailing list</a>.
+<li><a href="http://groups.google.com/group/realxtend">End-user mailing list</a>.
+<li><a href="http://wiki.realxtend.org/index.php/Main_Page">Naali community wiki</a>.
+<li>IRC channels: #realxtend and #realxtend-dev on <a href="http://freenode.net/">freenode</a>.
+<li>Bug trackers: <a href="http://github.com/realXtend/naali/issues">github</a>, <a href="http://code.google.com/p/realxtend-naali/issues/list">Google Code</a>. (yes, there are two, one of them is due to be dropped!)
 </ul>
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
 <h2>Technical Guidelines</h2>
-See the following pages for help on working on Naali codebase.  
+See the following pages for help on working on the Naali codebase.  
 <ul>
-<li> \subpage progconv "Coding conventions"
-<li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>
-<li><a href="http://doc.qt.nokia.com/">Qt documentation</a>
-<li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>
+<li>\ref progconv "Coding conventions."
+<li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
+<li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
+<li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
 </ul>
 </td>
 </tr>
@@ -57,7 +57,7 @@ The functionality built into Naali is subdivided into core libraries and optiona
 These interfaces are accessible directly through the root Framework object. The individual subsystems are accessible by querying the appropriate modules using the Module API.     
 
 The root object for accessing all Naali features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
-- the Framework class.
+- \ref Foundation::Framework "the Framework class".
 - Naali frame update tick.
 
 <h2>Core</h2>
@@ -102,11 +102,11 @@ Classes:
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Config</h3>
-Implements a uniform mechanism for modules to store their configuration data.
+Implements a uniform mechanism for modules to store their configuration data. \ref ConfigAPI "Main documentation page."
 
 More information:
-- Reading and writing configuration data.
-- Using default values.
+- \ref ConfigReadWrite "Reading and writing configuration data."
+- \ref ConfigDefaultValues "Using default values."
 
 Classes:
 - Foundation::ConfigurationManager.
@@ -235,10 +235,11 @@ If naali is acting as a network server, this interface can be accessed to intera
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Audio</h3>
-Provides functions for playing back audio on the client.
+Provides functions for playing back audio on the client. \ref OpenALAudioModule "Main documentation page."
 
 Topics:
- - \subpage OpenALAudioModule "Using the sound system".
+ - \ref OpenALAudioModule "Using the sound system".
+ - todo: add here the concepts related to audio.
 	
 Classes:
  - Foundation::SoundServiceInterface.
@@ -247,6 +248,27 @@ Classes:
  - OpenALAudio::SoundSettings.
  - OpenALAudio::SoundSystem.
 </td>
+</tr>
+
+<tr>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3>Frame</h3>
+Exposes signals for frame- and time-related event processing.
+
+Topics:
+- \ref FrameAPI_Cont "Executing per-frame processing".
+- \ref FrameAPI_Delayed "Delayed one-time execution".
+- \ref FrameAPI_Periodic "Periodic execution".
+
+The Frame API is accessed through the class \ref Foundation::Frame "Frame". 
+
+<!--    
+</td>
+<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<h3></h3>
+</td>
+-->
+
 </tr>
 
 </table>

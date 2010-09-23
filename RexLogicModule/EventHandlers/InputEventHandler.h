@@ -40,7 +40,7 @@ namespace RexLogic
         f64 lastCallTime_;
 
         //! Raycast interval for mouse hovering in seconds.
-        double raycastInterval_;
+        double raycastInterval_; ///\todo Remove this altogether. -jj.
     };
 }
 

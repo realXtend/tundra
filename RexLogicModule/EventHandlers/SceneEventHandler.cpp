@@ -5,13 +5,14 @@
 #include "SceneEvents.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
 #include "SoundServiceInterface.h"
 #include "WorldStream.h"
 #include "Environment/Primitive.h"
+
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
+#include "EC_NetworkPosition.h"
 
 namespace RexLogic
 {
@@ -83,9 +84,9 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, IEventData* data)
             owner_->GetServerConnection()->SendObjectAddPacket(pos_data->position);
         break;
     }
-    case Events::EVENT_CONTROLLABLE_ENTITY:
+    case Events::EVENT_CONTROLLABLE_ENTITY: ///\todo Remove this event altogether. -jj.
         break;
-    case Events::EVENT_ENTITY_CLICKED:
+    case Events::EVENT_ENTITY_CLICKED: ///\todo Remove this event altogether. -jj.
     {
         Events::EntityClickedData *entity_clicked_data = checked_static_cast<Events::EntityClickedData *>(data);
         assert(entity_clicked_data);
@@ -97,7 +98,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, IEventData* data)
         }
     break;
     }
-    case Events::EVENT_ENTITY_MOUSE_HOVER:
+    case Events::EVENT_ENTITY_MOUSE_HOVER: ///\todo Remove this event altogether. -jj.
     {
         Events::RaycastEventData *event_data = checked_static_cast<Events::RaycastEventData *>(data);
         assert(event_data);
@@ -124,7 +125,7 @@ bool SceneEventHandler::HandleSceneEvent(event_id_t event_id, IEventData* data)
     return false;
 }
 
-void SceneEventHandler::ClearHovers(event_id_t entity_id)
+void SceneEventHandler::ClearHovers(event_id_t entity_id) ///\todo Remove this altogether. -jj.
 {
     Scene::ScenePtr scene = owner_->GetCurrentActiveScene();
     if (!scene)

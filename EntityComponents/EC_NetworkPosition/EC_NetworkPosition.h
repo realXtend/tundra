@@ -5,7 +5,6 @@
 
 #include "IComponent.h"
 #include "RexUUID.h"
-#include "AvatarModuleApi.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -16,8 +15,8 @@
 
 //! Represents object position/rotation/velocity data received from network, for clientside inter/extrapolation
 /*! Note that currently values are stored in Ogre format axes.
- */ 
-class AV_MODULE_API EC_NetworkPosition : public IComponent
+ */
+class EC_NetworkPosition : public IComponent
 {
     Q_OBJECT
         
