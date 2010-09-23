@@ -3,7 +3,6 @@
 Loads scene files to be locally in naali, currently all scene related files need to be copied to naali specific media folders by hand
 """
 
-import rexviewer as r
 from circuits import Component
 
 from PythonQt.QtUiTools import QUiLoader
@@ -73,7 +72,7 @@ class LocalScene(Component):
         self.sceneActions = None # sceneactions.SceneActions()
         
         
-		#self.libMod = r.getLibraryModule()
+        #self.libMod = r.getLibraryModule()
         
         #self.libMod.connect("UploadSceneFile(QString, QVect)", self.onUploadSceneFile)
         pass
@@ -258,6 +257,7 @@ class SceneSaver:
         self.impl = getDOMImplementation()
         
     def save(self, filename, nodes):
+        from PythonQt.QtGui import QQuaternion
         #newdoc = self.impl.createDocument(None, "some_tag", None)
         newdoc = self.impl.createDocument(None, "scene formatVersion=\"\"", None)
         top_element = newdoc.documentElement
@@ -278,10 +278,13 @@ class SceneSaver:
                 nodeNode.appendChild(position)
                 
                 rotation = newdoc.createElement('rotation')
-                rotation.setAttribute("qx", str(oNode.orientation.x))
-                rotation.setAttribute("qy", str(oNode.orientation.y))
-                rotation.setAttribute("qz", str(oNode.orientation.z))
-                rotation.setAttribute("qw", str(oNode.orientation.w))
+                # XXX counter the 'fix' done in loading the scene
+                # loader.py in def create_naali_meshentity()
+                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, -1, 0, 0)
+                rotation.setAttribute("qx", str(oNode.naali_ent.placeable.Orientation.x()))
+                rotation.setAttribute("qy", str(oNode.naali_ent.placeable.Orientation.y()))
+                rotation.setAttribute("qz", str(oNode.naali_ent.placeable.Orientation.z()))
+                rotation.setAttribute("qw", str(oNode.naali_ent.placeable.Orientation.scalar()))
                 nodeNode.appendChild(rotation)
                 
                 scale = newdoc.createElement('scale')

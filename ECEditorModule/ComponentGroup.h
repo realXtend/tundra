@@ -10,19 +10,9 @@
 
 class QtProperty;
 
-namespace Foundation
-{
-    class ComponentInterface;
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
-    typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
-}
+class QTreeWidgetItem;
 
-namespace Scene
-{
-    class Entity;
-    typedef boost::shared_ptr<Entity> EntityPtr;
-    typedef boost::weak_ptr<Entity> EntityWeakPtr;
-}
+#include "ForwardDefines.h"
 
 namespace ECEditor
 {
@@ -31,14 +21,14 @@ namespace ECEditor
     //! as other components in this object's vector.
     struct ComponentGroup
     {
-        std::vector<Foundation::ComponentWeakPtr> components_;
+        std::vector<ComponentWeakPtr> components_;
         ECComponentEditor *editor_;
         QTreeWidgetItem *browserListItem_;
         QString name_;
         QString typeName_;
         bool isDynamic_;
 
-        ComponentGroup(Foundation::ComponentInterfacePtr component = Foundation::ComponentInterfacePtr(),
+        ComponentGroup(ComponentPtr component = ComponentPtr(),
                       ECComponentEditor *editor = 0,
                       QTreeWidgetItem *listItem = 0,
                       bool isDynamic = false);
@@ -57,19 +47,19 @@ namespace ECEditor
          *  @param component The component we want to compare.
          *  @return Return true if component is identical with component group's items.
          */
-        bool IsSameComponent(const Foundation::ComponentInterface &component) const;
+        bool IsSameComponent(const IComponent &component) const;
 
         //! Fast check for testing if given component is inculded in this component group.
-        bool ContainComponent(const Foundation::ComponentInterface *component) const;
+        bool ContainComponent(const IComponent *component) const;
 
         bool ContainAttribute(const std::string &name) const;
 
         //! If component isn't already added to component group, add it.
-        bool AddComponent(Foundation::ComponentInterfacePtr comp);
+        bool AddComponent(ComponentPtr comp);
 
         //! Try to find right component from component info and if found remove it from this object and ECComponentEditor.
         //! If ECComponentEditor doesn't contain any of components editor object will be released.
-        bool RemoveComponent(Foundation::ComponentInterface *comp);
+        bool RemoveComponent(IComponent *comp);
 
         bool IsDynamic() const { return isDynamic_; }
 

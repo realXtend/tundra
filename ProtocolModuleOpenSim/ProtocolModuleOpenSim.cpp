@@ -28,7 +28,7 @@ namespace OpenSimProtocol
     std::string ProtocolModuleOpenSim::type_name_static_ = "OpenSimProtocol";
 
     ProtocolModuleOpenSim::ProtocolModuleOpenSim() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         connected_(false),
         authenticationType_(ProtocolUtilities::AT_Unknown)
     {
@@ -318,7 +318,7 @@ namespace OpenSimProtocol
 
         ExtractCapabilitiesFromXml(response_str);
 
-        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, Foundation::EventDataPtr(), 0);
+        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, EventDataPtr(), 0);
     }
 
     void ProtocolModuleOpenSim::ExtractCapabilitiesFromXml(std::string xml)
@@ -359,6 +359,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace OpenSimProtocol;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(ProtocolModuleOpenSim)
 POCO_END_MANIFEST

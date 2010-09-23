@@ -3,7 +3,7 @@
 #ifndef incl_OgreRenderer_EC_OgrePlaceable_h
 #define incl_OgreRenderer_EC_OgrePlaceable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
@@ -16,6 +16,8 @@ namespace Ogre
     class SceneNode;
 }
 
+
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -23,10 +25,39 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
     
-    //! Ogre placeable (scene node) component
+	/**
+<table class="header">
+<tr>
+<td>
+<h2>OgrePlaceable</h2>
+		(scene node) component.
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>:
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"translate": translate
+<li>"LookAt": LookAt wrapper that accepts a QVector3D for py & js e.g. camera use. 
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/   
+	//! Ogre placeable (scene node) component
     /*! \ingroup OgreRenderingModuleClient
      */
-    class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
+    class OGRE_MODULE_API EC_OgrePlaceable : public IComponent
     {
         DECLARE_EC(EC_OgrePlaceable);
 
@@ -48,7 +79,7 @@ namespace OgreRenderer
         /*! set null placeable to attach to scene root (the default)
             \param placeable new parent
          */
-        void SetParent(Foundation::ComponentPtr placeable);
+        void SetParent(ComponentPtr placeable);
         
         //! sets position
         /*! \param position new position
@@ -94,7 +125,7 @@ namespace OgreRenderer
         void SetSelectPriority(int priority) { select_priority_ = priority; }
         
         //! gets parent placeable
-        Foundation::ComponentPtr GetParent() { return parent_; }
+        ComponentPtr GetParent() { return parent_; }
         
         //! returns position
         Vector3df GetPosition() const;
@@ -157,7 +188,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        explicit EC_OgrePlaceable(Foundation::ModuleInterface* module);
+        explicit EC_OgrePlaceable(IModule* module);
         
         //! attaches scenenode to parent
         void AttachNode();
@@ -169,7 +200,7 @@ namespace OgreRenderer
         RendererWeakPtr renderer_;
         
         //! parent placeable
-        Foundation::ComponentPtr parent_;
+        ComponentPtr parent_;
         
         //! Ogre scene node for geometry. scale is handled here
         Ogre::SceneNode* scene_node_;

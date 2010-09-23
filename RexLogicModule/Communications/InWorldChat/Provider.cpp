@@ -31,7 +31,7 @@ namespace RexLogic
             closed_sessions_.clear();
         }
 
-        bool Provider::HandleNetworkStateEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+        bool Provider::HandleNetworkStateEvent(event_id_t event_id, IEventData* data)
         {
             if (event_id == ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED)
             {
@@ -47,7 +47,7 @@ namespace RexLogic
             return false;
         }
 
-        bool Provider::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+        bool Provider::HandleSceneEvent(event_id_t event_id, IEventData* data)
         {
             if (event_id == Scene::Events::EVENT_CONTROLLABLE_ENTITY)
             {

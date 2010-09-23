@@ -3,7 +3,7 @@
 #ifndef incl_Foundation_ThreadTask_h
 #define incl_Foundation_ThreadTask_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "CoreTypes.h"
 #include "CoreThread.h"
 
@@ -27,7 +27,7 @@ namespace Foundation
     typedef boost::shared_ptr<ThreadTaskRequest> ThreadTaskRequestPtr;
     
     //! Base class for a threaded work result. Subclass and add needed variables.
-    class ThreadTaskResult : public EventDataInterface
+    class ThreadTaskResult : public IEventData
     {
     public:
         //! Request tag. Should be copied from the request to match the result to request

@@ -12,7 +12,7 @@
 namespace OgreRenderer
 {
 
-EC_OgreConsoleOverlay::EC_OgreConsoleOverlay(Foundation::ModuleInterface* module) :
+EC_OgreConsoleOverlay::EC_OgreConsoleOverlay(IModule* module) :
     EC_OgreConsoleOverlayInterface(module->GetFramework()),
     overlay_element_(0),
     container_(0),

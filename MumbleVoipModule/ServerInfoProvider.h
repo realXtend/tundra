@@ -11,10 +11,11 @@
 class QNetworkReply;
 class QNetworkAccessManager;
 
+class IEventData;
+
 namespace Foundation
 {
     class Framework;
-    class EventDataInterface;
 }
 
 namespace ProtocolUtilities
@@ -38,7 +39,7 @@ namespace MumbleVoip
         ServerInfoProvider(Foundation::Framework* framework);
         virtual ~ServerInfoProvider();
 
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
     signals:
         //! Emited when server info was successfully found

@@ -3,7 +3,7 @@
 #ifndef incl_EC_3DCanvas_EC_3DCanvas_h
 #define incl_EC_3DCanvas_EC_3DCanvas_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 #include <QMap>
@@ -24,10 +24,48 @@ namespace Ogre
     class MaterialManager;
 }
 
+
 class QWidget;
 class QTimer;
 
-class EC_3DCanvas : public Foundation::ComponentInterface
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>3DCanvas</h2>
+Makes the entity a light source.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Start": 
+<li>"Setup":
+<li>"SetWidget":
+<li>"SetRefreshRate":
+<li>"SetSubmesh":
+<li>"SetSubmeshes":
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>..
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgreCustomObject and OgreMesh</b>. 
+</table>
+
+*/
+
+class EC_3DCanvas : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_3DCanvas);
@@ -47,7 +85,7 @@ public slots:
     QWidget *GetWidget() { return widget_; }
 
 private:
-    explicit EC_3DCanvas(Foundation::ModuleInterface *module);
+    explicit EC_3DCanvas(IModule *module);
     void UpdateSubmeshes();
 
 private slots:

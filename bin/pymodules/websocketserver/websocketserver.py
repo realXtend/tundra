@@ -10,6 +10,7 @@ from eventlet import websocket
 import naali
 import rexviewer as r
 from PythonQt.QtGui import QVector3D as Vec3
+from PythonQt.QtGui import QQuaternion as Quat
 
 
 import async_eventlet_wsgiserver
@@ -24,40 +25,37 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         print "websocket listen.."
         self.sock = eventlet.listen(('0.0.0.0', 9999))
         print "..done"
-        self.server = async_eventlet_wsgiserver.server(self.sock, hello_world)
+        self.server = async_eventlet_wsgiserver.server(self.sock, handle_clients)
         print "websocket server started."
 
         NaaliWebsocketServer.instance = self
         self.previd = 500000
         self.clientavs = {}
 
-    def newclient(self, clientid, pos):
+    def newclient(self, clientid, position, orientation):
         #self.clients.add()
         ent = r.createEntity("Jack.mesh", self.previd)
         self.previd += 1
 
-        ent.placeable.Position = Vec3(pos[0], pos[1], SPAWNPOS[2])
+        ent.placeable.Position = Vec3(position[0], position[1], position[2])
         print "New entity for web socket presence at", ent.placeable.Position
 
         self.clientavs[clientid] = ent
 
-    def updateclient(self, clientid, pos):
+    def updateclient(self, clientid, position, orientation):
         ent = self.clientavs[clientid]
-        ent.placeable.Position = Vec3(pos[0], pos[1], SPAWNPOS[2])
+        ent.placeable.Position = Vec3(position[0], position[1], position[2])
+        ent.placeable.Orientation = Quat(orientation[0], orientation[1], orientation[2], orientation[3])
 
     @circuits.handler("update")
     def update(self, t):
-        #print "websocket server"
-        #print "x"
         if self.server is not None:
             self.server.next()
 
     @circuits.handler("on_exit")
     def on_exit(self):
-        for client in clients:
-            client.socket.close()
-        self.sock.close()
-        self.server = None
+        # Need to figure something out what to do and how
+        pass
 
 clients = set()
        
@@ -66,7 +64,7 @@ def sendAll(data):
         client.send(json.dumps(data))        
 
 @websocket.WebSocketWSGI
-def hello_world(ws):
+def handle_clients(ws):
     print 'START', ws
     myid = random.randrange(1,10000)
     clients.add(ws)
@@ -76,10 +74,16 @@ def hello_world(ws):
         try:
             msg = ws.wait()
         except socket.error:
-            break
+            #if there is an error we simply quit by exiting the
+            #handler. Eventlet should close the socket etc.
+            return
+
         print msg
+
         if msg is None:
-            break
+            # if there is no message the client has quit. 
+            return
+
         try:
             function, params = json.loads(msg)
         except ValueError, error:
@@ -87,13 +91,14 @@ def hello_world(ws):
 
         if function == 'CONNECTED':
             ws.send(json.dumps(['initGraffa', {}]))
-            #x = random.randrange(10, 180)
-            #y = random.randrange(10, 180)
-            x, y = SPAWNPOS[0], SPAWNPOS[1]
-            NaaliWebsocketServer.instance.newclient(myid, (x, y))
+
+            x, y, z = SPAWNPOS[0], SPAWNPOS[1], SPAWNPOS[2]
+            position = (x, y, z)
+            orientation = (0.0021971773821860552, 0.0, 0.0, 0.99999761581420898)
+            NaaliWebsocketServer.instance.newclient(myid, position, (1, 0, 0, 0))
 
             ws.send(json.dumps(['setId', {'id': myid}]))
-            sendAll(['newAvatar', {'id': myid, 'x': x, 'y': y, 'dx' : 0, 'dy': 0, 'angle': 0, 'speed': 0}])
+            sendAll(['newAvatar', {'id': myid, 'position': position, 'orientation': orientation}])
 
         elif function == 'Naps':
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
@@ -101,33 +106,32 @@ def hello_world(ws):
         elif function == 'giev update':
 
             id = params.get('id')
-            x = params.get('x')
-            y = params.get('y')
-            dx = params.get('dx')
-            dy = params.get('dy')
-            speed = params.get('speed')
-            angle = params.get('angle')
-            
+            position = params.get('position')
+            orientation = params.get('orientation')
 
-            NaaliWebsocketServer.instance.updateclient(myid, (x, y))
+            NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
             s = naali.getScene("World")
             ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
             ents = [r.getEntity(id) for id in ids]
                 
             for ent in ents:
+
                 x = ent.placeable.Position.x()
                 y = ent.placeable.Position.y()
+                z = ent.placeable.Position.z()
+                
+                w_ori = ent.placeable.Orientation.scalar()
+                x_ori = ent.placeable.Orientation.x()
+                y_ori = ent.placeable.Orientation.y()
+                z_ori = ent.placeable.Orientation.z()
+                
                 id = ent.id
 
                 sendAll(['updateAvatar',
                          {'id': id,
-                          'angle': angle,
-                          'x': x,
-                          'y': y,
-                          'dx': dx,
-                          'dy': dy,
-                          'speed': speed,
+                          'position': (x, y, z),
+                          'oritentation': (w_ori, x_ori, y_ori, z_ori),
                           }])
 
                 

@@ -68,8 +68,8 @@ void EC_Movable::Rotate(const QString &direction)
     SendMultipleObjectUpdatePacket(Vector3df(), orientation);
 }
 
-EC_Movable::EC_Movable(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework())
+EC_Movable::EC_Movable(IModule *module):
+    IComponent(module->GetFramework())
 {
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }

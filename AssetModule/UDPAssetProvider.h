@@ -74,7 +74,7 @@ namespace Asset
         //! Handles incoming network packet event
         /*! \return true if event handled
          */
-        bool HandleNetworkEvent(Foundation::EventDataInterface* data);
+        bool HandleNetworkEvent(IEventData* data);
 
         /// Clears all transfers.
         void ClearAllTransfers();

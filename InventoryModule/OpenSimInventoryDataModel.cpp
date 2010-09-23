@@ -432,7 +432,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     }
 }
 
-/*void OpenSimInventoryDataModel::HandleResourceReady(Foundation::EventDataInterface *data)
+/*void OpenSimInventoryDataModel::HandleResourceReady(IEventData *data)
 {
     ///\todo    It seems that we don't necessarily need to handle ResourceReady.
     ///         Ogre seems to be able to create files from AssetReady events.
@@ -474,7 +474,7 @@ void OpenSimInventoryDataModel::DownloadFile(const QString &store_folder, Abstra
     downloadRequests_.erase(i);
 }*/
 
-void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDataInterface *data)
+void OpenSimInventoryDataModel::HandleAssetReadyForDownload(IEventData *data)
 {
     Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
     request_tag_t tag = assetReady->tag_;
@@ -536,7 +536,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForDownload(Foundation::EventDat
     downloadRequests_.erase(i);
 }
 
-void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInterface *data)
+void OpenSimInventoryDataModel::HandleAssetReadyForOpen(IEventData *data)
 {
     //Asset::Events::AssetReady *assetReady = checked_static_cast<Asset::Events::AssetReady*>(data);
     Asset::Events::AssetReady *assetReady = dynamic_cast<Asset::Events::AssetReady*>(data);
@@ -573,7 +573,7 @@ void OpenSimInventoryDataModel::HandleAssetReadyForOpen(Foundation::EventDataInt
     }
 }
 
-void OpenSimInventoryDataModel::HandleInventoryDescendents(Foundation::EventDataInterface *data)
+void OpenSimInventoryDataModel::HandleInventoryDescendents(IEventData *data)
 {
     InventoryItemEventData *item_data = checked_static_cast<InventoryItemEventData *>(data);
 

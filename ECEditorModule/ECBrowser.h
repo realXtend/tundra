@@ -5,14 +5,13 @@
 
 #define QT_QTPROPERTYBROWSER_IMPORT
 
-#include <QtTreePropertyBrowser>
-#include <map>
-#include <set>
+#include "ForwardDefines.h"
 #include "CoreTypes.h"
 #include "ComponentGroup.h"
 
-#include <boost/shared_ptr.hpp>
-#include <boost/weak_ptr.hpp>
+#include <QtTreePropertyBrowser>
+#include <map>
+#include <set>
 
 class QtTreePropertyBrowser;
 class QtGroupPropertyManager;
@@ -21,23 +20,10 @@ class QTreeWidget;
 class QMenu;
 class QMimeData;
 
-namespace Foundation
-{
-    class Framework;
-    class ComponentInterface;
-    typedef boost::shared_ptr<ComponentInterface> ComponentInterfacePtr;
-    typedef boost::weak_ptr<ComponentInterface> ComponentWeakPtr;
-}
-
-namespace Scene
-{
-    class Entity;
-}
-
 namespace ECEditor
 {
     class ECComponentEditor;
-    typedef std::vector<Foundation::ComponentWeakPtr> ComponentWeakPtrVector;
+    typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
     typedef std::list<ComponentGroup*> ComponentGroupList;
 
     //! ECBrowser is a widget that will display all selected entity components and their attributes.
@@ -82,7 +68,7 @@ namespace ECEditor
         //! Emitted when component is selected from the browser widget.
         /*! @param component Pointer to a component that has just been selected.
          */
-        void ComponentSelected(Foundation::ComponentInterface *component);
+        void ComponentSelected(IComponent *component);
 
     protected:
         //! Override from QWidget.
@@ -101,7 +87,7 @@ namespace ECEditor
         //! If any component group wasn't found return .end() iterator value.
         /*! @param comp component that we want to find in some of the component group.
          */
-        ComponentGroupList::iterator FindSuitableGroup(const Foundation::ComponentInterface &comp);
+        ComponentGroupList::iterator FindSuitableGroup(const IComponent &comp);
         //! Try to find component group for spesific QTreeWidgetItem.
         /*! @param item QTreeWidgetItem that we want to use to find a right component group.
          */
@@ -110,11 +96,11 @@ namespace ECEditor
         /*! if component type is not included, create new component group and add it to editor.
          *  @param comp a new component that we want to add into the enity.
          */
-        void AddNewComponentToGroup(Foundation::ComponentInterfacePtr comp);
+        void AddNewComponentToGroup(ComponentPtr comp);
         //! Remove component from registered componentgroup. Do nothing if component was not found of any component groups.
         /*! @param comp that we want to remove from  the component group.
          */
-        void RemoveComponentFromGroup(Foundation::ComponentInterface *comp);
+        void RemoveComponentFromGroup(IComponent *comp);
         //! Remove whole component group object from the browser.
         /*! componentGroup component group object that we want to remove from the editor.
          */
@@ -131,12 +117,12 @@ namespace ECEditor
         /*! @param entity Entity that owns the component
          *  @param comp a new component that has added into the entity.
          */
-        void NewComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp);
+        void NewComponentAdded(Scene::Entity* entity, IComponent* comp);
         //! Component have been removed from the entity.
         /*! @param entity Entity that owns the component
          *  @param comp Component that is planned to be removed from the entity.
          */
-        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp);
+        void ComponentRemoved(Scene::Entity* entity, IComponent* comp);
         //! User has selected xml edit action from a QMenu.
         void OpenComponentXmlEditor();
         //! User has selected copy action from a QMenu.
