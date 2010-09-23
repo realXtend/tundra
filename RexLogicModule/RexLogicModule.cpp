@@ -35,8 +35,9 @@
 #include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
+
+#include "EC_NetworkPosition.h"
 #include "EC_HoveringWidget.h"
 
 #include "AvatarModule.h"
