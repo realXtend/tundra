@@ -53,8 +53,9 @@
 
 #include "AvatarModule.h"
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+
 #ifdef EC_AvatarAppearance_ENABLED
 #include "EntityComponent/EC_AvatarAppearance.h"
 #endif

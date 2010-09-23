@@ -16,8 +16,9 @@
 #endif
 
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+#include "AvatarEditing/AvatarSceneManager.h"
 
 namespace Avatar
 {
@@ -26,7 +27,8 @@ namespace Avatar
 
 	AvatarModule::AvatarModule() :
 		QObject(),
-		IModule(module_name)
+		IModule(module_name),
+        scene_manager_(0)
 	{
         world_stream_.reset();
         uuid_to_local_id_.clear();
@@ -54,12 +56,21 @@ namespace Avatar
         avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
+        scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
 	}
 
 	void AvatarModule::PostInitialize()
 	{
 		SubscribeToEventCategories();
-	}
+        scene_manager_->InitScene();
+
+        avatar_context_ = GetFramework()->Input().RegisterInputContext("Avatar", 100);
+        if (avatar_context_)
+        {
+            connect(avatar_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(KeyPressed(KeyEvent*)));
+            connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
+        }
+    }
 
     void AvatarModule::Uninitialize()
     {
@@ -68,6 +79,8 @@ namespace Avatar
         avatar_editor_.reset();
         world_stream_.reset();
         uuid_to_local_id_.clear();
+
+        SAFE_DELETE(scene_manager_);
     }
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(const RexUUID &uuid)
@@ -197,6 +210,23 @@ namespace Avatar
 		service_category_identifiers_.clear();
 		foreach (QString category, event_query_categories_)
 			service_category_identifiers_[category] = GetFramework()->GetEventManager()->QueryEventCategory(category.toStdString());
+    }
+
+    void AvatarModule::KeyPressed(KeyEvent *key)
+	{
+        if (key->IsRepeat())
+            return;
+
+        if (key->HasCtrlModifier() && key->keyCode == Qt::Key_A)
+        {
+            scene_manager_->ShowScene();
+            return;
+        }
+    }
+
+    void AvatarModule::KeyReleased(KeyEvent *key)
+	{
+	
     }
 }
 

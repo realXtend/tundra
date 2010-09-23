@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_LegacyAvatarSerializer_h
-#define incl_RexLogic_LegacyAvatarSerializer_h
+#ifndef incl_Avatar_LegacyAvatarSerializer_h
+#define incl_Avatar_LegacyAvatarSerializer_h
 
 #include "EntityComponent/EC_AvatarAppearance.h"
 

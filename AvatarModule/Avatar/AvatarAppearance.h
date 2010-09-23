@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_AvatarAppearance_h
-#define incl_RexLogic_AvatarAppearance_h
+#ifndef incl_Avatar_AvatarAppearance_h
+#define incl_Avatar_AvatarAppearance_h
 
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "AvatarModule.h"

@@ -2,17 +2,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "AvatarEditing/AvatarEditor.h"
 
-#include "AvatarEditor.h"
-#include "AvatarHandler.h"
-#include "AvatarAppearance.h"
+#include "Avatar/AvatarHandler.h"
+#include "Avatar/AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
-#include "UiServiceInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -61,10 +60,6 @@ namespace Avatar
     
     void AvatarEditor::InitEditorWindow()
     {
-        UiServiceInterface *ui = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
-        if (ui == 0) // If this occurs, we're most probably operating in headless mode.
-            return;
-
         QUiLoader loader;
         loader.setLanguageChangeEnabled(true);
         QFile file("./data/ui/avatareditor.ui");
@@ -105,8 +100,6 @@ namespace Avatar
             QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
 
         setWindowTitle(tr("Avatar Editor"));
-        ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this);
     }
 
     void AvatarEditor::RebuildEditView()

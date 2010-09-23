@@ -31,6 +31,7 @@ namespace CoreUi
         void SwitchToInworldScene();
         void SwitchToEtherScene();
         void SwitchToBuildScene();
+        void SwitchToAvatarScene();
         void ToggleEther();
 
         /** Registers new scene.
