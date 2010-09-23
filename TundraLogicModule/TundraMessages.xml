@@ -41,9 +41,19 @@
     <message id="111" name="RemoveEntity" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
     </message>
-    
+
+    <!-- Create component(s) inside an existing entity. The components are not deltaencoded. -->
+    <message id="112" name="CreateComponents" reliable="true" inOrder="true" priority="100">
+        <u32 name="entityID" />
+        <struct name="components" dynamicCount="8">
+            <s8 name="componentTypeName" dynamicCount="8" />
+            <s8 name="componentName" dynamicCount="8" />
+            <u8 name="componentData" dynamicCount="16" />
+        </struct>
+    </message>
+
     <!-- Update component(s) inside an existing entity. The components are deltaencoded. -->
-    <message id="112" name="UpdateComponents" reliable="true" inOrder="true" priority="100">
+    <message id="113" name="UpdateComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
             <s8 name="componentTypeName" dynamicCount="8" />
@@ -53,7 +63,7 @@
     </message>
 
     <!-- Remove component(s) from an entity -->
-    <message id="113" name="RemoveComponents" reliable="true" inOrder="true" priority="100">
+    <message id="114" name="RemoveComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
             <s8 name="componentTypeName" dynamicCount="8" />
@@ -62,7 +72,7 @@
     </message>
 
     <!-- Server to client: Entity ID collision has occurred when creating an entity. New ID is returned. -->
-    <message id="114" name="EntityIDCollision" reliable="true" inOrder="true" priority="100">
+    <message id="115" name="EntityIDCollision" reliable="true" inOrder="true" priority="100">
         <u32 name="oldEntityID" />
         <u32 name="newEntityID" />
     </message>

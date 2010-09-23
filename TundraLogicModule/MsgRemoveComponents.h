@@ -24,7 +24,7 @@ struct MsgRemoveComponents
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 113; }
+	static inline u32 MessageID() { return 114; }
 	static inline const char *Name() { return "RemoveComponents"; }
 
 	bool reliable;

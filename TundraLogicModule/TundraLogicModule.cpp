@@ -21,6 +21,7 @@
 #include "MsgClientLeft.h"
 #include "MsgCreateEntity.h"
 #include "MsgRemoveEntity.h"
+#include "MsgCreateComponents.h"
 #include "MsgUpdateComponents.h"
 #include "MsgRemoveComponents.h"
 #include "MsgEntityIDCollision.h"
@@ -448,6 +449,13 @@ void TundraLogicModule::HandleKristalliMessage(MessageConnection* source, messag
             MsgRemoveEntity msg(data, numBytes);
             if (syncManager_)
                 syncManager_->HandleRemoveEntity(source, msg);
+        }
+        break;
+    case cCreateComponentsMessage:
+        {
+            MsgCreateComponents msg(data, numBytes);
+            if (syncManager_)
+                syncManager_->HandleCreateComponents(source, msg);
         }
         break;
     case cUpdateComponentsMessage:

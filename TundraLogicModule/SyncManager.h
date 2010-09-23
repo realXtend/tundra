@@ -14,6 +14,7 @@
 
 struct MsgCreateEntity;
 struct MsgRemoveEntity;
+struct MsgCreateComponents;
 struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
@@ -66,6 +67,8 @@ public:
     void HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg);
     //! Handle remove entity message
     void HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg);
+    //! Handle create components message
+    void HandleCreateComponents(MessageConnection* source, const MsgCreateComponents& msg);
     //! Handle update components message
     void HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg);
     //! Handle remove components message
@@ -108,6 +111,11 @@ private:
         Note: This will not reset any changeflags in the components or attributes!
      */
     void SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
+    
+    //! Get a syncstate that matches the messageconnection, for reflecting arrived changes back
+    /*! For client, this will always be server_syncstate_.
+     */
+    SceneSyncState* GetSceneSyncState(MessageConnection* connection);
     
     //! Owning module
     TundraLogicModule* owner_;
