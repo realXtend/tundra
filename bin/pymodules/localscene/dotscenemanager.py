@@ -71,7 +71,7 @@ class DotSceneManager:
             try:
                 e.highlight
             except AttributeError:
-                e.createComponent("EC_Highlight")
+                e.GetOrCreateComponentRaw("EC_Highlight")
             h = e.highlight
             if not h.IsVisible():
                 h.Show()
@@ -84,10 +84,6 @@ class DotSceneManager:
             try:
                 e.highlight
             except AttributeError:
-                e.createComponent("EC_Highlight")
+                e.GetOrCreateComponentRaw("EC_Highlight")
             h = e.highlight
-            if h.IsVisible():
-                h.Hide()
-            else:
-                print "trying to unhiglight stuff that is already unhighlighted"
-        
+            e.RemoveComponentRaw(h)

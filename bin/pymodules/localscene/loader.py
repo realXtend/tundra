@@ -1,10 +1,11 @@
 import dotscene
 try:
-    import rexviewer
+    import naali
 except ImportError:
     print "NOTE: dotscene loader not able to access Naali API, is running outiside Naali?"
-    rexviewer = None
+    naali = None
 else:
+
     import PythonQt.QtGui
     Vec = PythonQt.QtGui.QVector3D
     Quat = PythonQt.QtGui.QQuaternion
@@ -33,13 +34,14 @@ class OgreNode:
     def attachObject(self, ob):
         self.object = ob
         print self, "attached object", ob
-        if rexviewer is not None: 
+        if naali is not None: 
             self.create_naali_meshentity()
 
     def create_naali_meshentity(self):
-        self.naali_ent = rexviewer.createEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
+        self.naali_ent = naali.createMeshEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
+
         e = self.naali_ent
-        print "Created naali entity:", e, e.id
+        print "Created naali entity:", e, e.Id
             
         """apply pos, rot & scale. 
         XXX this could skip all conversions, like quat now, 
@@ -49,7 +51,7 @@ class OgreNode:
         mp = self.position
         #p.Position = Vec(-mp[0], mp[2], mp[1])
         #p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+200)
-        p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+25)
+        p.Position = Vec(mp[0]+166, mp[1]+82, mp[2]+28)
         #print p.Position.toString(), self.position
             
         #print p.Orientation.toString(), self.orientation
@@ -137,7 +139,7 @@ def unload_dotscene(ds):
         # print "removing " + k
         # print oNode.naali_ent.id
         try:
-            rexviewer.removeEntity(oNode.naali_ent.id)
+            naali.removeEntity(oNode.naali_ent)
         except:
             print "failed in unload_dotscene"
 
