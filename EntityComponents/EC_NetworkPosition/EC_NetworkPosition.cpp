@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "IModule.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+#include "EC_NetworkPosition.h"
 
 EC_NetworkPosition::EC_NetworkPosition(IModule* module) :
     IComponent(module->GetFramework()),

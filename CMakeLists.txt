@@ -160,6 +160,7 @@ add_subdirectory (EntityComponents/EC_InputMapper)
 add_subdirectory (EntityComponents/EC_Movable)
 
 # The following EC's are declared by AvatarModule
+add_subdirectory (EntityComponents/EC_NetworkPosition)
 add_subdirectory (EntityComponents/EC_HoveringWidget)
 
 # Add EC's declared by other modules here:
