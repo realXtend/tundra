@@ -51,6 +51,9 @@ void ReqisterQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
+    
+    /*object = engine->newFunction(LoadWidgetFromFile, 2);
+    engine->globalObject().setProperty("LoadWidgetFromFile", object);*/
 }
 
 void ReqisterInputMetaTypes(QScriptEngine *engine)
@@ -86,4 +89,21 @@ void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Command*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 }
+
+/*QScriptValue LoadWidgetFromFile(QScriptContext *context, QScriptEngine *engine)
+{
+    QScriptValue value;
+    if(!context->argumentCount() && !context->argument(0).isString())
+        return engine->newQObject(0);
+
+    QUiLoader loader;
+    QFile file(context->argument(0).toString());
+    file.open(QFile::ReadOnly);
+    if(context->argumentCount() >= 2 && context->argument(1).isQObject())
+        value.setData(engine->newQObject(loader.load(&file, dynamic_cast<QWidget*>(context->argument(1).toQObject()))));
+    else
+        value.setData(engine->newQObject(loader.load(&file)));
+    return value;
+}*/
+
 

@@ -35,31 +35,35 @@ namespace OgreRenderer
 <tr>
 <td>
 <h2>Mesh</h2>
+EC_Mesh component can be used to set mesh to a world scene. There are options to apply new materials and skeleton to mesh.
+To use EC_Mesh user need to upload a mesh, material and skeleton (optional) assets to the server or mesh wont be diplayed on scene.
+If you aren't sure switch mesh is the skeleton made for don't try to apply it randombly on some mesh, cause this might cause a crash.
+
 Note if you are planning to remove the skeleton you need to relogin to the server.
 
 Registered by RexLogic::RexLogicModule.
 
 <b>Attributes</b>:
 <ul>
-<li>Transform: nodePosition_
-<div></div> meshResouceId_
-<li>QString: skeletonId_
-<div></div> meshMaterial_
-<li>QString: 
-<div></div> 
-<li>std::vector<QVariant>: 
-<div></div> 
-<li>float: drawDistance_
-<div></div> 
-<li>bool: castShadows_
-<div></div> 
+<li>Transform: nodePosition
+<div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
+<li>QString: meshResouceId
+<div>Mesh resource ref is a asset id for a mesh resource that user wants to apply to scene.</div>
+<li>QString: skeletonId
+<div>Skeleton asset ref is a string that should contain skeleton asset id.</div>
+<li>QVariantList: meshMaterial
+<div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
+<li>float: drawDistance
+<div>Distance where the mesh is shown from the camera.</div> 
+<li>bool: castShadows
+<div>Will the mesh cast shadows.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
 <li>"SetMesh": Add or change entity's mesh.
-<li>"RemoveMesh": 
-<li>"SetMaterial": 
+<li>"RemoveMesh": Remove mesh from entity.
+<li>"SetMaterial": Set material to a wanted subMesh.
 <li>"AttachSkeleton": Attach skeleton to entity.
 </ul>
 
@@ -74,66 +78,6 @@ Does not emit any actions.
 
 <b>Depends on the component OgrePlaceable</b>.  
 </table>
-*/
-
-
-/// Makes the mesh component.
-/**
-
-<table style="margin: 20px;">
-<tr>
-<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
-<h2>Mesh</h2>
-Makes the mesh component.
-
-User can apply new mesh to scene and change it's materials and skeleton.
-EC_Mesh component can be used to set mesh to a world scene. There are options to apply new materials and skeleton to mesh.
-
-Note! Animation or attachments are not tested with this component as yet.
-
-Note! if you are planning to remove the skeleton and want that it's realy gone you should relogin to the server.
-that is cause Ogre doesn't have a serivice that will remove applied skeleton from the mesh so we need to recreate
-the mesh to get the change shown.
-
-<b>Attributes</b>:
-<ul>
-<li>Transform: Transform.
-<div style="margin: 5px;">Transformation attribute is used to do some position, rotation and scale adjustments.</div> 
-<li>QString: Mesh ref. 
-<div style="margin: 5px;">Mesh resource ref is a asset id for a mesh resource that user wants to apply.</div> 
-<li>QString: Skeleton ref.
-<div style="margin: 5px;">Skeleton asset ref is a asset id for a mesh resource mesh will use.</div> 
-<li>QVariantList: Mesh materials.
-<div style="margin: 5px;">Mesh material ref list that can contain x number of materials.</div> 
-<li>float: Draw distance.
-<div style="margin: 5px;">Mesh draw distance.</div> 
-<li>bool: Cast shadows.
-<div style="margin: 5px;">Will the mesh cast shadows.</div> 
-</ul>
-
-<b>Exposes the following scriptable functions:</b>
-<ul>
-<li>void SetMesh(const QString &name);
-<div style="margin: 5px;">Add or change entity's mesh.</div> 
-<li>void RemoveMesh();
-<div style="margin: 5px;">Remove mesh from entity.</div> 
-<li>bool SetMaterial(uint index, const QString &material_name);
-<div style="margin: 5px;">Set material to wanted subMesh.</div> 
-<li>void AttachSkeleton(const QString &skeletonName);
-<div style="margin: 5px;">Attach skeleton to entity.</div> 
-</ul>
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
-Does not emit any actions.
-
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this mesh is placed at. 
-</table>
-
 */
 class EC_Mesh : public IComponent
 {

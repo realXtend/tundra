@@ -139,7 +139,7 @@ namespace ECEditor
         //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
         /*! @param newName component's new name.
          */
-        void ComponentNameChanged(const std::string &newName);
+        void ComponentNameChanged(const QString &newName);
         //! Show dialog, so that user can create a new attribute.
         void CreateAttribute();
         //! Remove selected attribute from the dynamic component.
@@ -147,6 +147,7 @@ namespace ECEditor
 
     private:
         ComponentGroupList componentGroups_;
+        //! @todo It's dangerous to hold entity raw pointers replace to weak pointers when have time.
         typedef std::set<Scene::Entity *> EntitySet;
         EntitySet selectedEntities_;
         QMenu *menu_;
