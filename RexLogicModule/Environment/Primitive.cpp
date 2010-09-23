@@ -1267,7 +1267,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
 {
     if (text.empty())
     {
-        boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>();
+        boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>("llSetText");
         if (!hoveringText)
             return;
 
@@ -1275,7 +1275,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     }
     else
     {
-        ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic());
+        ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic(), "llSetText");
         assert(component.get());
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
