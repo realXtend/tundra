@@ -224,7 +224,7 @@ namespace RexLogic
         void SetAllTextOverlaysVisible(bool visible);
 
         //! Handles a click event for entity, namely showing the name tag
-        void EntityClicked(Scene::Entity* entity);
+        void EntityClicked(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
 
         //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
         /*! \param x screen coordinate
@@ -242,13 +242,13 @@ namespace RexLogic
         void LogoutAndDeleteWorld();
 
         //! called when entity is hovered over with mouse
-        void EntityHovered(Scene::Entity* entity);
+        void EntityHovered(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
 
         /// Sends RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
         void SendRexPrimData(uint entityid);
 
-        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner. ///\todo Make private. -jj.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
     signals:

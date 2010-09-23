@@ -100,13 +100,13 @@ public:
     Attribute<int> hoverCursor;
 
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
-    void OnHover();
+    void OnHover(); /// \todo Move to private slots. -jj.
 
     /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER when not anymore hovered
-    void OnHoverOut();
+    void OnHoverOut(); /// \todo Move to private slots. -jj.
 
     /// Called by rexlogic when EVENT_ENTITY_CLICKED on this
-    void OnClick();
+    void OnClick(); /// \todo Move to private slots. -jj.
 
 public slots:
     /// Shows the effect.
