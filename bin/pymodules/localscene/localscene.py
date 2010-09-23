@@ -3,7 +3,6 @@
 Loads scene files to be locally in naali, currently all scene related files need to be copied to naali specific media folders by hand
 """
 
-import rexviewer as r
 from circuits import Component
 
 from PythonQt.QtUiTools import QUiLoader
