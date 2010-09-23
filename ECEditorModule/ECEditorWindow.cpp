@@ -591,7 +591,7 @@ namespace ECEditor
 
     void ECEditorWindow::SceneAdded(const QString &name)
     {
-        Scene::ScenePtr scenePtr = framework_->GetScene(name.toStdString());
+        Scene::ScenePtr scenePtr = framework_->GetScene(name);
         if(scenePtr)
         {
             // If scene has already added no need to do multiple connection.
@@ -618,7 +618,7 @@ namespace ECEditor
         return components;
     }
 
-    std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities()
+    std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     {
         std::vector<Scene::EntityPtr> ret;
 

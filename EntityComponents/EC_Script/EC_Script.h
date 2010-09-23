@@ -6,16 +6,16 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
-
-
 class IScriptInstance;
 
+/// Provides mechanism for adding scripts to entities.
 /**
 <table class="header">
 <tr>
 <td>
 <h2>Script</h2>
-Registered by PythonScript::PythonScriptModule.
+Provides mechanism for adding scripts to entities.
+Registered by PythonScript::PythonScriptModule and/or JavascriptModule.
 
 <b>Attributes</b>:
 <ul>
@@ -44,8 +44,6 @@ Does not emit any actions.
 */
 class EC_Script: public IComponent
 {
-
-
     Q_OBJECT
     DECLARE_EC(EC_Script)
 
@@ -65,7 +63,8 @@ public:
     /// Reference to a script file.
     Attribute<QString> scriptRef;
 
-    /** Sets new script instance. Unloads and deletes possible already existing script instance.
+    /// Sets new script instance.
+    /** Unloads and deletes possible already existing script instance.
         @param instance Script instance.
         @note Takes ownership of the script instace.
     */
@@ -78,28 +77,28 @@ public slots:
     /// Runs the script instance.
     void Run();
 
-    /** This is an overloaded function.
-        @param name Name of the script. The script is ran only if the script name matches.
+    /// This is an overloaded function.
+    /** @param name Name of the script. The script is ran only if the script name matches.
     */
     void Run(const QString &name);
 
     /// Stops the script instance.
     void Stop();
 
-    /** This is an overloaded function.
-        @param name Name of the script. The script is ran only if the script name matches.
+    /// This is an overloaded function.
+    /** @param name Name of the script. The script is ran only if the script name matches.
     */
     void Stop(const QString &name);
 
 signals:
-    /** Emitted when script reference changes.
-        @newRef New script reference.
+    /// Emitted when script reference changes.
+    /** @newRef New script reference.
     */
     void ScriptRefChanged(const QString &newRef);
 
 private slots:
-    /**
-        @param attribute Attribute that changed.
+    /// Handles logic regarding attribute changes of this EC.
+    /** @param attribute Attribute that changed.
         @param change Change type.
     */
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
@@ -108,8 +107,8 @@ private slots:
     void RegisterActions();
 
 private:
-    /** Constuctor.
-        @param module Declaring module.
+    /// Constuctor.
+    /** @param module Declaring module.
     */
     explicit EC_Script(IModule *module);
 

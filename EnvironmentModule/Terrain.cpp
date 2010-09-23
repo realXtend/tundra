@@ -249,14 +249,24 @@ namespace Environment
 
         manual->end();
 
-        std::string mesh_name = renderer->GetUniqueObjectName();
-        Ogre::MeshPtr terrainMesh = manual->convertToMesh(mesh_name);
+        // If there exists a previously generated GPU Mesh resource, delete it before creating a new one.
+        if (patch.meshGeometryName.length() > 0)
+        {
+            try
+            {
+                Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
+            }
+            catch (...) {}
+        }
+
+        patch.meshGeometryName = renderer->GetUniqueObjectName();
+        Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
         // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
         manual->clear();
         sceneMgr->destroyManualObject(manual);
 
-        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
+        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), patch.meshGeometryName);
         ogre_entity->setUserAny(Ogre::Any(&entity));
         ogre_entity->setCastShadows(false);
         // Set UserAny also on subentities

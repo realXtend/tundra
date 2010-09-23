@@ -35,6 +35,9 @@ def createMeshEntity(meshname, raycastprio=1):
     #ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     #ent.mesh.SetMesh(meshname)
 
+def removeEntity(entity):
+    r.removeEntity(entity.Id)
+
 def createInputContext(name, priority = 100):
     return _pythonscriptmodule.CreateInputContext(name, priority)
 
@@ -45,6 +48,8 @@ inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
 frame = _naali.GetFrame()
 console = _naali.Console()
+#input = _naali.GetInput()
+framework = _naali
 
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether
 # class Entity:

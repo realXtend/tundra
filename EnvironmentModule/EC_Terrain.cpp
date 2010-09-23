@@ -39,7 +39,9 @@ void EC_Terrain::Destroy()
     for(int y = 0; y < cNumPatchesPerEdge; ++y)
         for(int x = 0; x < cNumPatchesPerEdge; ++x)
         {
-            Ogre::SceneNode *node = GetPatch(x, y).node;
+            EC_Terrain::Patch patch = GetPatch(x, y);
+
+            Ogre::SceneNode *node = patch.node;
             if (!node)
                 continue;
 
@@ -47,6 +49,16 @@ void EC_Terrain::Destroy()
 //                sceneMgr->destroyManualObject(dynamic_cast<Ogre::ManualObject*>(node->getAttachedObject(0)));
             node->detachAllObjects();
             sceneMgr->destroySceneNode(node);
+
+            // If there exists a previously generated GPU Mesh resource, delete it before creating a new one.
+            if (patch.meshGeometryName.length() > 0)
+            {
+                try
+                {
+                    Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
+                }
+                catch (...) {}
+            }
         }
 }
 

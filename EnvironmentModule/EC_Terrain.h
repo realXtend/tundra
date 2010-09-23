@@ -77,6 +77,9 @@ Does not emit any actions.
             /// Ogre -specific: Store a reference to the actual render hierarchy node.
             Ogre::SceneNode *node;
 
+            /// The name of the Ogre Mesh resource that contains the GPU geometry data for this patch.
+            std::string meshGeometryName;
+
             /// If true, the CPU-side heightmap data has changed, but we haven't yet updated
             /// the GPU-side geometry resources since the neighboring patches haven't been loaded
             /// in yet.

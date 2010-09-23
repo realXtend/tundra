@@ -64,6 +64,7 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, IEventData* data)
     case Events::INWORLD_CLICK:
     {
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+        ///\todo Get the renderer service here directly.
         Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
         owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
         break;
@@ -71,6 +72,7 @@ bool InputEventHandler::HandleInputEvent(event_id_t event_id, IEventData* data)
     case Events::ALT_LEFTCLICK:
     {
         Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+        ///\todo Get the renderer service here directly.
         Foundation::RaycastResult result = owner_->GetOgreRendererPtr()->Raycast(movement->x_.abs_, movement->y_.abs_);
         owner_->CheckInfoIconIntersection(movement->x_.abs_, movement->y_.abs_, &result);
         owner_->FocusOnObject(result.pos_.x, result.pos_.y, result.pos_.z);
@@ -97,6 +99,8 @@ void InputEventHandler::Update(f64 frametime)
     using namespace Foundation;
 
     lastCallTime_ += frametime;
+
+    ///\todo Remove this altogether. -jj.
 
     // Do raycast if the last mouse position is valid and elapsed time has exceeded raycast interval.
     if (lastMousePosition_.first > 0 && lastMousePosition_.second > 0 && lastCallTime_ >= raycastInterval_)
