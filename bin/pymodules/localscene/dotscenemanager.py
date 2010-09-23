@@ -32,9 +32,9 @@ class DotSceneManager:
     def setOgreNodePosition(self, on, x, y ,z):
         e = on.naali_ent
         p = e.placeable
-        onx = on.position[0]
-        ony = on.position[1]
-        onz = on.position[2]
+        onx = on.position.x()
+        ony = on.position.y()
+        onz = on.position.z()
         if(self.flipZY):
             p.Position = Vec(x + onx, z + onz, y + ony)
         else:
@@ -44,9 +44,9 @@ class DotSceneManager:
     def setOgreNodeScale(self, on, x, y ,z):
         e = on.naali_ent
         p = e.placeable
-        onx = on.scale[0]
-        ony = on.scale[1]
-        onz = on.scale[2]
+        onx = on.scale.x()
+        ony = on.scale.y()
+        onz = on.scale.z()
         if(self.flipZY):
             p.Scale = Vec(x * onx, z * onz, y * ony)
         else:
