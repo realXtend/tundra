@@ -113,6 +113,9 @@ public:
     /// @note Sets the using_gradient_ boolean to true.
     void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
 
+    /// Clears the 3D subsystem resources for this object.
+    void Destroy();
+
 public slots:
     /// Shows the hovering text.
     void Show();

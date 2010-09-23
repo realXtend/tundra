@@ -9,7 +9,7 @@
 #include "EventHandlers/NetworkEventHandler.h"
 #include "RexLogicModule.h"
 #include "Avatar/AvatarControllable.h"
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Environment/Primitive.h"
 #include "Communications/ScriptDialogHandler.h"
 #include "Communications/ScriptDialogRequest.h"

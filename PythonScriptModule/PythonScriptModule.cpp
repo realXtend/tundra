@@ -57,7 +57,7 @@
 #include "Console.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
