@@ -24,7 +24,7 @@ struct MsgEntityIDCollision
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 114; }
+	static inline u32 MessageID() { return 115; }
 	static inline const char *Name() { return "EntityIDCollision"; }
 
 	bool reliable;

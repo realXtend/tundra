@@ -233,7 +233,7 @@ bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& 
     changed.clear();
     
     // First compare all and see if there's anything to write
-    bool num_changed = 0;
+    int num_changed = 0;
     for (uint i = 0; i < attributes_.size(); ++i)
     {
         if (attributes_[i]->CompareBinary(previousData))
@@ -267,7 +267,19 @@ bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& 
 
 bool IComponent::DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change)
 {
-    return false;
+    int num_changed = 0;
+    
+    for (uint i = 0; i < attributes_.size(); ++i)
+    {
+        u8 b = source.Read<bit>();
+        if (b)
+        {
+            attributes_[i]->FromBinary(source, change);
+            num_changed++;
+        }
+    }
+    
+    return num_changed != 0;
 }
 
 void IComponent::ComponentChanged(AttributeChange::Type change)

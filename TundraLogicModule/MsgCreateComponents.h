@@ -3,14 +3,14 @@
 #include "clb/Network/DataDeserializer.h"
 #include "clb/Network/DataSerializer.h"
 
-struct MsgUpdateComponents
+struct MsgCreateComponents
 {
-	MsgUpdateComponents()
+	MsgCreateComponents()
 	{
 		InitToDefault();
 	}
 
-	MsgUpdateComponents(const char *data, size_t numBytes)
+	MsgCreateComponents(const char *data, size_t numBytes)
 	{
 		InitToDefault();
 		DataDeserializer dd(data, numBytes);
@@ -24,8 +24,8 @@ struct MsgUpdateComponents
 		priority = 100;
 	}
 
-	static inline u32 MessageID() { return 113; }
-	static inline const char *Name() { return "UpdateComponents"; }
+	static inline u32 MessageID() { return 112; }
+	static inline const char *Name() { return "CreateComponents"; }
 
 	bool reliable;
 	bool inOrder;
