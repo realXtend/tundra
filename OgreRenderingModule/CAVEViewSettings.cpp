@@ -80,9 +80,9 @@ namespace OgreRenderer
 		top_left = rot * top_left;
 		bottom_right = rot * bottom_right;
 		
-		qDebug() << "dir: x = " << dir.x << " y = " << dir.y << " z = " << dir.z;
+		/*qDebug() << "dir: x = " << dir.x << " y = " << dir.y << " z = " << dir.z;
 		qDebug() << "Botleft: x = " << bottom_left.x << " y = " << bottom_left.y << " z = " << bottom_left.z;
 		qDebug() << "Topleft: x = " << top_left.x << " y = " << top_left.y << " z = " << top_left.z;
-		qDebug() << "Botright: x = " << bottom_right.x << " y = " << bottom_right.y << " z = " << bottom_right.z;
+		qDebug() << "Botright: x = " << bottom_right.x << " y = " << bottom_right.y << " z = " << bottom_right.z;*/
 	}
 }
