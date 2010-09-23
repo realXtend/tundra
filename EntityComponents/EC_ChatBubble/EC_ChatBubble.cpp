@@ -39,7 +39,7 @@ EC_ChatBubble::EC_ChatBubble(IModule *module) :
     billboardSet_(0),
     billboard_(0),
     pop_timer_(new QTimer(this)),
-    bubble_max_rect_(0,0,1000,500),
+    bubble_max_rect_(0,0,1024,512),
     current_scale_(1.0f),
     default_z_pos_(1.9f)
 {
@@ -55,8 +55,26 @@ EC_ChatBubble::EC_ChatBubble(IModule *module) :
 
 EC_ChatBubble::~EC_ChatBubble()
 {
+    Destroy();
+}
+
+void EC_ChatBubble::Destroy()
+{
     if (!renderer_.expired())
+    {
+        try{
         Ogre::TextureManager::getSingleton().remove(texture_name_);
+        } catch(...)
+        {
+        }
+        try{
+        Ogre::MaterialManager::getSingleton().remove(materialName_);
+        } catch(...)
+        {
+        }
+        texture_name_ = "";
+        materialName_ = "";
+    }
 }
 
 void EC_ChatBubble::SetPosition(const Vector3df& position)
@@ -285,7 +303,7 @@ void EC_ChatBubble::Update()
         sceneNode->attachObject(billboardSet_);
 
         // Create material
-        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
+        materialName_ = std::string("ChatBubbleMaterial") + renderer_.lock()->GetUniqueObjectName(); 
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
         billboardSet_->setMaterialName(materialName_);
 
