@@ -68,12 +68,15 @@ void EC_Touchable::OnHoverOut()
     emit MouseHoverOut();
 }
 
-void EC_Touchable::OnClick()
+void EC_Touchable::OnClick() ///\todo Remove this altogether. -jj.
 {
     emit Clicked();
 }
 
-void EC_Touchable::SetCursorVisible(bool visible)
+///\todo Remove this altogether. -jj. Integrate switching mouse cursors to input contexts so that 
+/// it is not possible to "miss" calling restoreOverrideCursor and leak a cursor to stay on screen. Releasing a context
+/// also releases the cursor.
+void EC_Touchable::SetCursorVisible(bool visible) 
 {
     if (hoverCursor.Get() != Qt::ArrowCursor)
     {

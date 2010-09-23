@@ -54,6 +54,17 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
 }
 
+namespace Avatar
+{
+    class AvatarHandler;
+    class AvatarControllable;
+    class AvatarEditor;
+
+    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
+    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
+    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
+}
+
 typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
 
 namespace RexLogic
@@ -64,10 +75,8 @@ namespace RexLogic
     class SceneEventHandler;
     class NetworkStateEventHandler;
     class FrameworkEventHandler;
-    class Avatar;
-    class AvatarEditor;
+    class AvatarEventHandler;
     class Primitive;
-    class AvatarControllable;
     class CameraControllable;
     class MainPanelHandler;
     class WorldInputLogic;
@@ -75,11 +84,7 @@ namespace RexLogic
     namespace InWorldChat { class Provider; }
 
     typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
-
-    typedef boost::shared_ptr<Avatar> AvatarPtr;
-    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
-    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
 
     //! Camera states handled by rex logic
@@ -121,6 +126,7 @@ namespace RexLogic
         Scene::EntityPtr GetCameraEntity() const;
         Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const;
         const QString &GetAvatarAppearanceProperty(const QString &name) const;
+        float GetCameraControllablePitch() const;
 
         //=============== RexLogicModule API ===============/
 
@@ -143,19 +149,19 @@ namespace RexLogic
         void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
-        AvatarPtr GetAvatarHandler() const;
+        Avatar::AvatarHandlerPtr GetAvatarHandler() const;
 
         //! @return The avatar editor.
-        AvatarEditorPtr GetAvatarEditor() const;
+        Avatar::AvatarEditorPtr GetAvatarEditor() const;
+        
+        //! Returns the avatar controllable
+        Avatar::AvatarControllablePtr GetAvatarControllable() const;
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler() const;
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() const { return camera_controllable_; }
-
-        //! Returns the avatar controllable
-        AvatarControllablePtr GetAvatarControllable() const { return avatar_controllable_; }
 
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
@@ -218,7 +224,7 @@ namespace RexLogic
         void SetAllTextOverlaysVisible(bool visible);
 
         //! Handles a click event for entity, namely showing the name tag
-        void EntityClicked(Scene::Entity* entity);
+        void EntityClicked(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
 
         //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
         /*! \param x screen coordinate
@@ -236,13 +242,13 @@ namespace RexLogic
         void LogoutAndDeleteWorld();
 
         //! called when entity is hovered over with mouse
-        void EntityHovered(Scene::Entity* entity);
+        void EntityHovered(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
 
         /// Sends RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
         void SendRexPrimData(uint entityid);
 
-        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner. ///\todo Make private. -jj.
         OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
     signals:
@@ -268,12 +274,6 @@ namespace RexLogic
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
         bool HandleResourceEvent(event_id_t event_id, IEventData* data);
-
-        //! Handle an inventory event.
-        bool HandleInventoryEvent(event_id_t event_id, IEventData* data);
-
-        //! Handle an asset event.
-        bool HandleAssetEvent(event_id_t event_id, IEventData* data);
 
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
@@ -309,6 +309,9 @@ namespace RexLogic
         //! event handler for framework events
         FrameworkEventHandler *framework_handler_;
 
+        //! event handler for avatar events
+        AvatarEventHandler *avatar_event_handler_;
+
         //! Server connection
         WorldStreamPtr world_stream_;
 
@@ -324,12 +327,6 @@ namespace RexLogic
 
         //! Event handler map.
         LogicEventHandlerMap event_handlers_;
-
-        //! Avatar handler pointer.
-        AvatarPtr avatar_;
-
-        //! Avatar editor pointer.
-        AvatarEditorPtr avatar_editor_;
 
         //! Primitive handler pointer.
         PrimitivePtr primitive_;
@@ -355,9 +352,6 @@ namespace RexLogic
         //! once the parent prim appears, the children will be assigned the parent and the key will be removed from here.
         typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
         ObjectParentMap pending_parents_;
-
-        //! An avatar controllable
-        AvatarControllablePtr avatar_controllable_;
 
         //! Camera controllable
         CameraControllablePtr camera_controllable_;
@@ -398,7 +392,7 @@ namespace RexLogic
          *  @param entity Entity from which the component was removed.
          *  @param component The removed component.
          */
-        void  ComponentRemoved(Scene::Entity *entity, IComponent *component);
+        void ComponentRemoved(Scene::Entity *entity, IComponent *component);
 
         /// Finds entity with active sound listener component and stores it.
         void FindActiveListener();
