@@ -56,13 +56,14 @@
 #include "Frame.h"
 #include "Console.h"
 
-#include "RexLogicModule.h" //much of the api is here
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
+#include "EC_NetworkPosition.h"
+
+#include "RexLogicModule.h" //much of the api is here
+#include "CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
-#include "CameraControllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)

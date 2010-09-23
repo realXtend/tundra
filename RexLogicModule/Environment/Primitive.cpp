@@ -6,18 +6,20 @@
  */
 
 #include "StableHeaders.h"
-#include "Environment/Primitive.h"
+
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
+#include "Environment/Primitive.h"
+
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
+
 #include "OgreTextureResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
@@ -26,6 +28,7 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "QuatUtils.h"
+
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "Environment/PrimGeometryUtils.h"
@@ -36,6 +39,8 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
+
+#include "EC_NetworkPosition.h"
 #include "EC_HoveringText.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_Movable.h"
