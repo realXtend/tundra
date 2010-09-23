@@ -2,15 +2,19 @@
 
 #include "StableHeaders.h"
 #include "CameraControllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+
+#include "EntityComponent/EC_AvatarAppearance.h"
+#include "EC_NetworkPosition.h"
+
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "SceneManager.h"
-#include "EC_OgrePlaceable.h"
+
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
+
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "EnvironmentModule.h"

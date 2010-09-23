@@ -4,8 +4,8 @@
 #include "Avatar/AvatarControllable.h"
 
 #include "EntityComponent/EC_Controllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
+#include "EC_NetworkPosition.h"
 
 #include "SceneEvents.h"
 #include "Entity.h"

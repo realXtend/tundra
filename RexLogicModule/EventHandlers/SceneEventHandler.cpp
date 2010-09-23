@@ -5,13 +5,14 @@
 #include "SceneEvents.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EC_OgrePlaceable.h"
 #include "SoundServiceInterface.h"
 #include "WorldStream.h"
 #include "Environment/Primitive.h"
+
 #include "EC_OpenSimPrim.h"
 #include "EC_Touchable.h"
+#include "EC_NetworkPosition.h"
 
 namespace RexLogic
 {
