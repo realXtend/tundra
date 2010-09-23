@@ -77,7 +77,18 @@ namespace OgreRenderer
 
 	void CAVESettingsWidget::ModifyViewPressed(QString name)
 	{
-		qDebug() << "Modify " << name;
+		name.chop(2);
+		Ogre::Vector3 bl, tl, br, ep;
+		 
+		emit GetCAVEViewProjParams(name,tl, bl, br,ep);
+		
+		settings_dialog_advanced_.setCaveProjectionSettings(ep,bl,tl,br);
+        if(settings_dialog_advanced_.exec() == QDialog::Accepted)
+        {
+			settings_dialog_advanced_.getCaveProjectionSettings(ep,bl,tl,br);
+			emit ModifyCAVEViewProjParams(name, tl,bl,br,ep); 
+        }
+
 	}
 	void CAVESettingsWidget::DeleteViewPressed(QString name)
 	{

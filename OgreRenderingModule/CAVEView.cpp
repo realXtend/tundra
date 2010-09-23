@@ -127,7 +127,7 @@ namespace OgreRenderer
 		render_window_ = new ExternalRenderWindow();
 		render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
 		render_window_->setGeometry(20,20,window_width,window_height);
-        camera_ = new Ogre::Camera(std_name + "_camera", renderer_->GetSceneManager());        
+		camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
 		render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);

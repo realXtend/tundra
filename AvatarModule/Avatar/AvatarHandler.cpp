@@ -12,9 +12,7 @@
 #include "Avatar/AvatarAppearance.h"
 #include "Avatar/AvatarEditor.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
-
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_Controllable.h"
 
 #include "SceneManager.h"
@@ -32,6 +30,7 @@
 #include "EC_OpenSimPresence.h"
 #include "EC_SoundListener.h"
 #include "EC_HoveringWidget.h"
+#include "EC_NetworkPosition.h"
 
 #include <QPushButton>
 

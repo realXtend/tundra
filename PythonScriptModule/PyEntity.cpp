@@ -14,7 +14,7 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreAnimationController.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+#include "EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EC_SoundRuler.h"
 #include "EC_Highlight.h"

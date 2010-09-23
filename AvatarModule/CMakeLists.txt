@@ -54,7 +54,8 @@ use_package (OGRE)
 use_package (CURL)    # NEEDED BY ProtocolUtilities
 use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_modules (AvatarModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			 AssetModule OgreRenderingModule EntityComponents/EC_HoveringText EntityComponents/EC_HoveringWidget EntityComponents/EC_OpenSimPresence EntityComponents/EC_SoundListener)
+			 AssetModule OgreRenderingModule EntityComponents/EC_HoveringText EntityComponents/EC_HoveringWidget EntityComponents/EC_OpenSimPresence 
+			 EntityComponents/EC_SoundListener EntityComponents/EC_NetworkPosition)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -66,7 +67,7 @@ link_package (OGRE)
 link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			  AssetModule OgreRenderingModule EC_HoveringText EC_HoveringWidget EC_OpenSimPresence EC_SoundListener)
+			  AssetModule OgreRenderingModule EC_HoveringText EC_HoveringWidget EC_OpenSimPresence EC_SoundListener EC_NetworkPosition)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
