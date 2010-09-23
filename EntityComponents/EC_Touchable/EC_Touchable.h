@@ -70,6 +70,10 @@ Registered by RexLogic::RexLogicModule.
 <ul>
 <li>"Show": Shows the effect.
 <li>"Hide": Hides the effect.
+<li>"MouseHoverIn": 
+<li>"MouseHover": 
+<li>"MouseHoverOut": 
+<li>"MousePressed": 
 </ul>
 </td>
 </tr>
@@ -101,15 +105,6 @@ public:
     /// Hover mouse cursor, see @see Qt::CursorShape
     Attribute<int> hoverCursor;
 
-    /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
-    void OnHover(); /// \todo Move to private slots. -jj.
-
-    /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER when not anymore hovered
-    void OnHoverOut(); /// \todo Move to private slots. -jj.
-
-    /// Called by rexlogic when EVENT_ENTITY_CLICKED on this
-    void OnClick(); /// \todo Move to private slots. -jj.
-
 public slots:
     /// Shows the effect.
     void Show();
@@ -126,7 +121,7 @@ signals:
     void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
     void MouseHoverIn();
     void MouseHoverOut();
-    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
+    void MousePressed();
 
 private:
     /// Constuctor.
@@ -145,9 +140,6 @@ private:
     /// Name of the cloned entity used for highlighting
     std::string cloneName_;
 
-    /// Bool to tell if we have emitted MouseHoverIn and are in hover state
-    bool hovering_;
-
 private slots:
     /// Creates the clone entity used for highlighting from the original.
     void Create();
@@ -155,11 +147,20 @@ private slots:
     /// Updates the component if its material changes.
     void UpdateMaterial();
 
+    /// Set our hover cursor visible
+    void SetCursorVisible(bool visible);
+
     /// Slot for emitting HoverIn the first time we get OnHover() call
     void OnHoverIn();
 
-    /// Set our hover cursor visible
-    void SetCursorVisible(bool visible);
+    /// Shows the effect and sets override cursor.
+    void OnHover();
+
+    /// Hides the effect and restores override cursor.
+    void OnHoverOut();
+
+    /// \todo Remove this altogether
+    void OnClick();
 
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();

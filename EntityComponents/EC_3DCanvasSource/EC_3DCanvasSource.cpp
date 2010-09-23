@@ -40,23 +40,18 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     manipulate_ec_3dcanvas(true)
 {
     connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
 
 EC_3DCanvasSource::~EC_3DCanvasSource()
 {
-    Scene::Entity* entity = GetParentEntity();
-
-    if (widget_)
-    {
-        // Note: content widget is inside widget_s layout,
-        // no need to do a separate deleteLater for it. This would cause problems on rundown.
-        widget_->deleteLater();
-        widget_ = 0;
-    }
+    // Note: content widget is inside widget_s layout,
+    // no need to do a separate deleteLater for it. This would cause problems on rundown.
+    SAFE_DELETE_LATER(widget_);
 }
 
-void EC_3DCanvasSource::Clicked()
+void EC_3DCanvasSource::OnClick()
 {
     if ((show2d_.Get() == true) && (widget_) && (proxy_))
     {
@@ -325,5 +320,13 @@ void EC_3DCanvasSource::CreateWidget()
     if (button) connect(button, SIGNAL( clicked() ), this, SLOT( NextPressed() ));
     button = widget_->findChild<QPushButton*>("but_end");
     if (button) connect(button, SIGNAL( clicked() ), this, SLOT( EndPressed() ));
+}
+
+void EC_3DCanvasSource::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+        entity->ConnectAction("MousePress", this, SLOT(OnClick()));
 }
 
