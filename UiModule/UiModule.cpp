@@ -99,13 +99,16 @@ namespace UiServices
             ui_state_machine_->RegisterScene("Inworld", ui_view_->scene());
             UiAction *ether_action = new UiAction(ui_state_machine_);
             UiAction *build_action = new UiAction(ui_state_machine_);
+            UiAction *avatar_action = new UiAction(ui_state_machine_);
             connect(ether_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToEtherScene()));
             connect(build_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToBuildScene()));
+            connect(avatar_action, SIGNAL(triggered()), ui_state_machine_, SLOT(SwitchToAvatarScene()));
             LogDebug("State Machine STARTED");
 
             inworld_scene_controller_ = new InworldSceneController(GetFramework(), ui_view_);
             inworld_scene_controller_->GetControlPanelManager()->SetHandler(Ether, ether_action);
             inworld_scene_controller_->GetControlPanelManager()->SetHandler(Build, build_action);
+            inworld_scene_controller_->GetControlPanelManager()->SetHandler(Avatar, avatar_action);
             LogDebug("Scene Manager service READY");
 
             inworld_notification_manager_ = new NotificationManager(inworld_scene_controller_);
@@ -333,6 +336,8 @@ namespace UiServices
         OgreRenderer::EC_OgreMesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
 
         if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
+            return;
+        if (!ec_mesh->GetEntity())
             return;
 
         // Head bone pos setup

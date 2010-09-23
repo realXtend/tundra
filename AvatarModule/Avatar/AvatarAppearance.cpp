@@ -3,9 +3,9 @@
 #include "StableHeaders.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarExporter.h"
-#include "LegacyAvatarSerializer.h"
+#include "Avatar/LegacyAvatarSerializer.h"
+#include "AvatarEditing/AvatarEditor.h"
 
 #include "EntityComponent/EC_OpenSimAvatar.h"
 

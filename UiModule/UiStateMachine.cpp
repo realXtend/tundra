@@ -164,6 +164,11 @@ namespace CoreUi
         CheckAndSwitch("WorldBuilding");
     }
 
+    void UiStateMachine::SwitchToAvatarScene()
+    {
+        CheckAndSwitch("Avatar");
+    }
+
     void UiStateMachine::CheckAndSwitch(const QString scene_name)
     {
         if (current_scene_)

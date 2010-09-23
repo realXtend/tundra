@@ -62,6 +62,7 @@ namespace CoreUi
         // Personal widget
         personal_widget_ = new PersonalWidget();
         layout_manager_->AddCornerAnchor(personal_widget_, Qt::BottomRightCorner, Qt::BottomRightCorner);
+        connect(personal_widget_, SIGNAL(ControlButtonClicked(UiServices::ControlButtonType)), SLOT(ControlButtonClicked(UiServices::ControlButtonType)));
 
         // Teleport widget
         teleport_widget_ = new TeleportWidget(layout_manager_->GetScene(), this);

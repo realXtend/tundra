@@ -10,7 +10,7 @@
 #include "AvatarEvents.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
-#include "Avatar/AvatarEditor.h"
+#include "AvatarEditing/AvatarEditor.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
