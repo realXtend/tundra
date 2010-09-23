@@ -1,6 +1,3 @@
-
-import rexviewer as r
-
 import httplib
 import socket
 import os
@@ -342,6 +339,7 @@ class SceneSaver:
         self.impl = getDOMImplementation()
     
     def save(self, filename, nodes):
+        from PythonQt.QtGui import QQuaternion
         newdoc = self.impl.createDocument(None, "scene formatVersion=\"\"", None)
         top_element = newdoc.documentElement
         nodesNode = newdoc.createElement('nodes')
@@ -362,10 +360,13 @@ class SceneSaver:
                 nodeNode.appendChild(position)
                 
                 rotation = newdoc.createElement('rotation')
-                rotation.setAttribute("qx", str(oNode.orientation.x))
-                rotation.setAttribute("qy", str(oNode.orientation.y))
-                rotation.setAttribute("qz", str(oNode.orientation.z))
-                rotation.setAttribute("qw", str(oNode.orientation.w))
+                # XXX counter the 'fix' done in loading the scene
+                # loader.py in def create_naali_meshentity()
+                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, -1, 0, 0)
+                rotation.setAttribute("qx", str(ort.x()))
+                rotation.setAttribute("qy", str(ort.y()))
+                rotation.setAttribute("qz", str(ort.z()))
+                rotation.setAttribute("qw", str(ort.scalar()))
                 nodeNode.appendChild(rotation)
                 
                 scale = newdoc.createElement('scale')

@@ -10,7 +10,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Ruler.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
@@ -24,8 +24,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
 
 #include "MemoryLeakCheck.h"
 
-EC_Ruler::EC_Ruler(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Ruler::EC_Ruler(IModule *module) :
+    IComponent(module->GetFramework()),
     typeAttr_(this, "ruler type", EC_Ruler::Rotation),
     visibleAttr_(this, "visible", false),
     axisAttr_(this, "axis", EC_Ruler::X),

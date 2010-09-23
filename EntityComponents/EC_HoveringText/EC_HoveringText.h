@@ -9,7 +9,7 @@
 #ifndef incl_EC_HoveringText_EC_HoveringText_h
 #define incl_EC_HoveringText_EC_HoveringText_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -33,8 +33,48 @@ QT_BEGIN_NAMESPACE
 class QTimeLine;
 QT_END_NAMESPACE
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>HoveringText</h2>
+HoveringText shows a hovering text attached to an entity.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"hide": Hides the hovering text
+<li>"show": Shows the hovering text.
+<li>"AnimatedShow": Shows the hovering text with animation.
+<li>"Clicked": Hovering text is clicked. Toggles the visibility.
+	@param msec_to_show Time to show in milliseconds.
+<li>"AnimatedHide": Hides the hovering text with animation.
+<li>"ShowMessage": Sets the text to be shown.
+	@param text Text to be shown.
+<li>"IsVisible": Returns if the hovering text is visible or not.
+   @true If the hovering text is visible, false if it's hidden or not initialized properly.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable</b>.  
+</table>
+*/
+
+
+
 /// Shows a hovering text attached to an entity.
-class EC_HoveringText : public Foundation::ComponentInterface
+class EC_HoveringText : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_HoveringText);
@@ -42,7 +82,7 @@ class EC_HoveringText : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_HoveringText(Foundation::ModuleInterface *module);
+    explicit EC_HoveringText(IModule *module);
 
 public:
     /// Destructor.

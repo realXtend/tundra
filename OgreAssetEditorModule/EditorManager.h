@@ -15,68 +15,66 @@
 #include <QPair>
 #include <QString>
 
-namespace Naali
+
+typedef QPair<QString, asset_type_t> EditorMapKey;
+typedef QMap<EditorMapKey, QWidget *> EditorMap;
+typedef EditorMap::iterator EditorMapIter;
+typedef QMutableMapIterator<EditorMapKey, QWidget *> MutableEditorMapIter;
+
+class EditorManager : public QObject
 {
-    typedef QPair<QString, asset_type_t> EditorMapKey;
-    typedef QMap<EditorMapKey, QWidget *> EditorMap;
-    typedef EditorMap::iterator EditorMapIter;
-    typedef QMutableMapIterator<EditorMapKey, QWidget *> MutableEditorMapIter;
+    Q_OBJECT
 
-    class EditorManager : public QObject
-    {
-        Q_OBJECT
+public:
+    /// Default constuctor.
+    EditorManager();
 
-    public:
-        /// Default constuctor.
-        EditorManager();
+    /// Destructor.
+    ~EditorManager();
 
-        /// Destructor.
-        ~EditorManager();
+public slots:
+    /// Adds new editor.
+    /// @param inventory_id Inventory id.
+    /// @param asset_type Asset type.
+    /// @param editor Editor object.
+    /// @return True if the editor was added succesfully, false otherwise.
+    bool Add(const QString &inventory_id, asset_type_t asset_type, QWidget *editor);
 
-    public slots:
-        /// Adds new editor.
-        /// @param inventory_id Inventory id.
-        /// @param asset_type Asset type.
-        /// @param editor Editor object.
-        /// @return True if the editor was added succesfully, false otherwise.
-        bool Add(const QString &inventory_id, asset_type_t asset_type, QWidget *editor);
+    /// Returns editor object.
+    /// @param inventory_id Inventory id.
+    /// @param asset_type Asset type.
+    /// @return Editor object or null if not found.
+    QWidget *GetEditor(const QString &inventory_id, asset_type_t asset_type);
 
-        /// Returns editor object.
-        /// @param inventory_id Inventory id.
-        /// @param asset_type Asset type.
-        /// @return Editor object or null if not found.
-        QWidget *GetEditor(const QString &inventory_id, asset_type_t asset_type);
+    /// Returns true if the editor with matching id and asset type exists
+    /// @param inventory_id Inventory id.
+    /// @param asset_type Asset type.
+    /// @return True if the editor with matching id and asset type exists, false otherwise.
+    bool Exists(const QString &inventory_id, asset_type_t asset_type) const;
 
-        /// Returns true if the editor with matching id and asset type exists
-        /// @param inventory_id Inventory id.
-        /// @param asset_type Asset type.
-        /// @return True if the editor with matching id and asset type exists, false otherwise.
-        bool Exists(const QString &inventory_id, asset_type_t asset_type) const;
+    /// Deletes editor.
+    /// @param inventory_id Inventory id.
+    /// @return True if editor was found and deleted succesfully, false otherwise.
+    bool Delete(const QString &inventory_id, asset_type_t asset_type);
 
-        /// Deletes editor.
-        /// @param inventory_id Inventory id.
-        /// @return True if editor was found and deleted succesfully, false otherwise.
-        bool Delete(const QString &inventory_id, asset_type_t asset_type);
+    /// Deletes all editors.
+    /// @param delete_later Sert true if you want to use QWidget::deleteLater instead of normal delete.
+    void DeleteAll(bool delete_later = false);
 
-        /// Deletes all editors.
-        /// @param delete_later Sert true if you want to use QWidget::deleteLater instead of normal delete.
-        void DeleteAll(bool delete_later = false);
+    /// Returns list of assets of spesific asset type.
+    /// @param asset_type Asset type.
+    /// @return List of assets of spesific asset type if any object of spesific asset type is not found return empty list.
+    QVector<QWidget*> GetEditorListByAssetType(asset_type_t asset_type);
 
-        /// Returns list of assets of spesific asset type.
-        /// @param asset_type Asset type.
-        /// @return List of assets of spesific asset type if any object of spesific asset type is not found return empty list.
-        QVector<QWidget*> GetEditorListByAssetType(asset_type_t asset_type);
+private:
+    /// Returns editor object and removes it from the editor map.
+    /// @param inventory_id Inventory id.
+    /// @param asset_type Asset type.
+    /// @return Editor object or null if not found.
+    QWidget *TakeEditor(const QString &inventory_id, asset_type_t asset_type);
 
-    private:
-        /// Returns editor object and removes it from the editor map.
-        /// @param inventory_id Inventory id.
-        /// @param asset_type Asset type.
-        /// @return Editor object or null if not found.
-        QWidget *TakeEditor(const QString &inventory_id, asset_type_t asset_type);
-
-        /// Map of currently existing editors.
-        EditorMap editors_;
-    };
-}
+    /// Map of currently existing editors.
+    EditorMap editors_;
+};
 
 #endif

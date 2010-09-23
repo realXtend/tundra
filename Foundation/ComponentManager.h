@@ -26,7 +26,7 @@ namespace Foundation
         typedef std::map<std::string, ComponentList> ComponentTypeMap;
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
-        typedef std::map<QString, ComponentFactoryInterfacePtr> ComponentFactoryMap;
+        typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
 
         //! default constructor
         ComponentManager(Framework *framework);
@@ -35,19 +35,10 @@ namespace Foundation
         ~ComponentManager() { }
 
         //! register factory for the component
-        void RegisterFactory(const QString &component, const ComponentFactoryInterfacePtr &factory)
-        {
-            if (factories_.find(component) == factories_.end())
-                factories_[component] = factory;
-        }
+        void RegisterFactory(const QString &component, const ComponentFactoryPtr &factory);
 
         //! Unregister the component. Removes the factory.
-        void UnregisterFactory(const QString &component)
-        {
-            ComponentFactoryMap::iterator iter = factories_.find(component);
-            if (iter != factories_.end())
-                factories_.erase(iter);
-        }
+        void UnregisterFactory(const QString &component);
 
         //! Returns true if component can be created (a factory for the component has registered itself)
         /*!
@@ -74,10 +65,10 @@ namespace Foundation
         ComponentPtr CreateComponent(const QString &type_name, const QString &name);
 
         //! Create clone of the specified component
-        ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
+        ComponentPtr CloneComponent(const ComponentPtr &component);
 
         //! Create new attribute for spesific component.
-        AttributeInterface *CreateAttribute(ComponentInterface *owner, const std::string &typeName, const std::string &name);
+        IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);
 
         //! Returns list of supported attribute types.
         StringVector GetAttributeTypes() const;

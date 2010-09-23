@@ -7,7 +7,7 @@
 #ifndef incl_ProtocolUtilities_InventoryEvents_h
 #define incl_ProtocolUtilities_InventoryEvents_h
 
-#include "EventDataInterface.h"
+#include "IEventData.h"
 #include "AssetServiceInterface.h"
 #include "RexUUID.h"
 
@@ -48,7 +48,7 @@ namespace Inventory
     };
 
     /// Event data class to be used with EVENT_INVENTORY_DESCENDENT.
-    class InventoryItemEventData : public Foundation::EventDataInterface
+    class InventoryItemEventData : public IEventData
     {
     public:
         /// Constructor.
@@ -87,7 +87,7 @@ namespace Inventory
     };
 
     /// Event data class to be used with EVENT_INVENTORY_UPLOAD_FILE.
-    class InventoryUploadEventData : public Foundation::EventDataInterface
+    class InventoryUploadEventData : public IEventData
     {
     public:
         /// Default constuctor.
@@ -103,7 +103,7 @@ namespace Inventory
     };
 
     /// Event data class to be used with EVENT_INVENTORY_UPLOAD_BUFFER.
-    class InventoryUploadBufferEventData : public Foundation::EventDataInterface
+    class InventoryUploadBufferEventData : public IEventData
     {
     public:
         /// Default constuctor.
@@ -117,7 +117,7 @@ namespace Inventory
     };
 
     /// Event data class to be used with EVENT_INVENTORY_ITEM_OPEN.
-    class InventoryItemOpenEventData : public Foundation::EventDataInterface
+    class InventoryItemOpenEventData : public IEventData
     {
     public:
         InventoryItemOpenEventData() : overrideDefaultHandler(false) {}
@@ -132,7 +132,7 @@ namespace Inventory
     };
 
     /// Event data class to be used with EVENT_INVENTORY_ITEM_DOWNLOADED.
-    class InventoryItemDownloadedEventData : public Foundation::EventDataInterface
+    class InventoryItemDownloadedEventData : public IEventData
     {
     public:
         InventoryItemDownloadedEventData() : handled(false){}
@@ -145,7 +145,7 @@ namespace Inventory
         bool handled;
     };
 
-    class WebDavInventoryUploadedData : public Foundation::EventDataInterface
+    class WebDavInventoryUploadedData : public IEventData
     {
     public:
         WebDavInventoryUploadedData(QStringList uploaded_file_list) : file_list(uploaded_file_list) {}

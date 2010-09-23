@@ -7,7 +7,6 @@
 #include "ConsoleEvents.h"
 #include "UiConsoleManager.h"
 
-#include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "Framework.h"
 #include "Profiler.h"
@@ -19,7 +18,7 @@ namespace Console
 {
     std::string ConsoleModule::type_name_static_ = "Console";
 
-    ConsoleModule::ConsoleModule() : ModuleInterface(type_name_static_), ui_console_manager_(0)
+    ConsoleModule::ConsoleModule() : IModule(type_name_static_), ui_console_manager_(0)
     {
     }
 
@@ -48,7 +47,6 @@ namespace Console
             ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
 
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
-        inputEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Input");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
     }
 
@@ -78,7 +76,7 @@ namespace Console
     }
 
     // virtual
-    bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ConsoleModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(ConsoleModule_HandleEvent);
         ///\todo Now that console UI has been moved from UiModule to ConsoleModule many

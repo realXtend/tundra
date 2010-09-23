@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_ParticleSystem.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
@@ -19,13 +19,13 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ParticleSystem")
 #include <Ogre.h>
 #include "MemoryLeakCheck.h"
 
-EC_ParticleSystem::EC_ParticleSystem(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_ParticleSystem::EC_ParticleSystem(IModule *module):
+    IComponent(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
-    particleId_(this, "Particle id"),
-    castShadows_(this, "Cast shadows", false),
-    renderingDistance_(this, "Rendering distance", 0.0f)
+    particleId(this, "Particle id"),
+    castShadows(this, "Cast shadows", false),
+    renderingDistance(this, "Rendering distance", 0.0f)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -43,7 +43,7 @@ EC_ParticleSystem::~EC_ParticleSystem()
     DeleteParticleSystem();
 }
 
-bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_ParticleSystem::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     // Making sure that event type is RESOURCE_READY before we start to dynamic cast.
     if (event_id != Resource::Events::RESOURCE_READY)
@@ -79,8 +79,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             if(!placeable)
                 return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
-            particleSystem_->setCastShadows(castShadows_.Get());
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
             return;
         }
     }
@@ -121,7 +121,7 @@ void EC_ParticleSystem::DeleteParticleSystem()
     return;
 }
 
-bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     if(category_id == resource_event_category_)
     {
@@ -133,45 +133,45 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attribute)
 {
     if(component != this)
         return;
 
-    if(attribute->GetNameString() == particleId_.GetNameString())
+    if(attribute->GetNameString() == particleId.GetNameString())
     {
-        particle_tag_ = RequestResource(particleId_.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
+        particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
-    else if(attribute->GetNameString() == castShadows_.GetNameString())
+    else if(attribute->GetNameString() == castShadows.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setCastShadows(castShadows_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
     }
-    else if(attribute->GetNameString() == renderingDistance_.GetNameString())
+    else if(attribute->GetNameString() == renderingDistance.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
     }
 }
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(!GetParentEntity())
         return;
 
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*))); 
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
 }
 
-Foundation::ComponentPtr EC_ParticleSystem::FindPlaceable() const
+ComponentPtr EC_ParticleSystem::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();

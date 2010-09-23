@@ -31,7 +31,7 @@ namespace OgreRenderer
     std::string OgreRenderingModule::type_name_static_ = "OgreRendering";
 
     OgreRenderingModule::OgreRenderingModule() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         asset_event_category_(0),
         resource_event_category_(0),
         input_event_category_(0),
@@ -114,7 +114,7 @@ namespace OgreRenderer
     }
 
     // virtual
-    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool OgreRenderingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(OgreRenderingModule_HandleEvent);
         if (!renderer_)
@@ -216,7 +216,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace OgreRenderer;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(OgreRenderingModule)
 POCO_END_MANIFEST
 

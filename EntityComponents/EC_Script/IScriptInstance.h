@@ -5,8 +5,8 @@
  *  @brief  Interface for different script instances, e.g. Javascript of Python.
  */
 
-#ifndef incl_EC_Clone_IScriptInstance_h
-#define incl_EC_Clone_IScriptInstance_h
+#ifndef incl_EC_Script_IScriptInstance_h
+#define incl_EC_Script_IScriptInstance_h
 
 /// Interface for different script instances, e.g. Javascript of Python.
 class IScriptInstance

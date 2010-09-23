@@ -7,13 +7,11 @@
 #include "Application.h"
 #include "Platform.h"
 #include "Foundation.h"
-#include "SceneManager.h"
 #include "ConfigurationManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
 #include "ComponentManager.h"
 #include "ServiceManager.h"
-#include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "ThreadTaskManager.h"
 #include "RenderServiceInterface.h"
@@ -22,6 +20,11 @@
 #include "FrameworkQtApplication.h"
 #include "CoreException.h"
 #include "InputServiceInterface.h"
+#include "Frame.h"
+#include "Console.h"
+
+#include "SceneManager.h"
+#include "SceneEvents.h"
 
 #include <Poco/Logger.h>
 #include <Poco/LoggingFactory.h>
@@ -33,6 +36,8 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QIcon>
+#include <QMetaMethod>
+
 #include "MemoryLeakCheck.h"
 
 namespace Resource
@@ -62,13 +67,15 @@ namespace Task
 
 namespace Foundation
 {
-    Framework::Framework(int argc, char** argv) : 
+    Framework::Framework(int argc, char** argv) :
         exit_signal_(false),
         argc_(argc),
         argv_(argv),
         initialized_(false),
         log_formatter_(0),
-        splitterchannel(0)
+        splitterchannel(0),
+        frame_(new Frame(this)),
+        console_(new ScriptConsole(this))
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -301,18 +308,16 @@ namespace Foundation
             }
 
             // if we have a renderer service, render now
-            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = 
-                        service_manager_->GetService<RenderServiceInterface>(Service::ST_Renderer);
-
+            boost::weak_ptr<Foundation::RenderServiceInterface> renderer = service_manager_->GetService<RenderServiceInterface>();
             if (renderer.expired() == false)
             {
                 PROFILE(FW_Render);
                 renderer.lock()->Render();
             }
 
-            emit FrameProcessed(frametime);
+            frame_->Update(frametime);
         }
-        
+
         RESETPROFILER
     }
 
@@ -372,7 +377,7 @@ namespace Foundation
         module_manager_->UnloadModules();
     }
 
-    Scene::ScenePtr Framework::CreateScene(const std::string &name)
+    Scene::ScenePtr Framework::CreateScene(const QString &name)
     {
         if (HasScene(name))
             return Scene::ScenePtr();
@@ -380,29 +385,22 @@ namespace Foundation
         Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this));
         scenes_[name] = new_scene;
 
-        Scene::Events::SceneEventData event_data(name);
+        Scene::Events::SceneEventData event_data(name.toStdString());
         event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
         GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
 
+        emit SceneAdded(name);
         return new_scene;
     }
 
-    void Framework::RemoveScene(const std::string &name)
+    void Framework::RemoveScene(const QString &name)
     {
         SceneMap::iterator scene = scenes_.find(name);
         if (default_scene_ == scene->second)
             default_scene_.reset();
         if (scene != scenes_.end())
             scenes_.erase(scene);
-    }
-
-    Scene::ScenePtr Framework::GetScene(const std::string &name) const
-    {
-        SceneMap::const_iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-            return scene->second;
-
-        return Scene::ScenePtr();
+        emit SceneRemoved(name);
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
@@ -620,6 +618,20 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
+    void Framework::DescribeQObject(QObject *obj)
+    {
+        const QMetaObject *metaObj = obj->metaObject();
+
+        RootLogInfo(std::string(metaObj->className()));
+        RootLogInfo("methods:");
+        for(int i = metaObj->methodOffset(); i < metaObj->methodCount(); ++i)
+            RootLogInfo(QString::fromLatin1(metaObj->method(i).signature()).toStdString());
+
+        RootLogInfo("properties:");
+        for(int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i)
+            RootLogInfo(QString::fromLatin1(metaObj->property(i).name()).toStdString());
+    }
+
     ComponentManagerPtr Framework::GetComponentManager() const
     {
         return component_manager_;
@@ -675,7 +687,16 @@ namespace Foundation
         return *input_logic;
     }
 
-    bool Framework::HasScene(const std::string &name) const
+    Scene::ScenePtr Framework::GetScene(const QString &name) const
+    {
+        SceneMap::const_iterator scene = scenes_.find(name);
+        if (scene != scenes_.end())
+            return scene->second;
+
+        return Scene::ScenePtr();
+    }
+
+    bool Framework::HasScene(const QString &name) const
     {
         return scenes_.find(name) != scenes_.end();
     }

@@ -4,7 +4,7 @@
 #include "EC_Terrain.h"
 
 #include "Renderer.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ServiceManager.h"
 
 #include <Ogre.h>
@@ -12,8 +12,8 @@
 namespace Environment
 {
 
-EC_Terrain::EC_Terrain(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework())
+EC_Terrain::EC_Terrain(IModule* module) :
+    IComponent(module->GetFramework())
 {
 }
 

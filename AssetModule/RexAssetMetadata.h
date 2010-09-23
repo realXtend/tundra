@@ -23,7 +23,7 @@ namespace Asset
         virtual const std::string& GetDescription() const;
 
         //! AssetMetadataInterface override
-        virtual const time_t  GetCreationDate() const;
+        virtual time_t  GetCreationDate() const;
 
         //! AssetMetadataInterface override
         virtual std::string GetCreationDateString() const;

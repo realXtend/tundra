@@ -24,6 +24,9 @@ register(animsync.COMPNAME, animsync.AnimationSync)
 import door
 register(door.COMPNAME, door.DoorHandler)
 
+import rotate
+register(rotate.COMPNAME, rotate.RotationHandler)
+
 class ComponenthandlerRegistry(circuits.BaseComponent):
     def __init__(self):
         circuits.BaseComponent.__init__(self)
@@ -34,7 +37,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         s = naali.getScene(name)
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
-        s.connect("ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)", self.onComponentAdded)
+        s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
 
     #def onComponentInitialized(self, comp):
     #    print "Comp inited:", comp
@@ -43,7 +46,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
         #print "Comp added:", entity, comp, changetype
         #print comp.className()
         if comp.className() == "EC_DynamicComponent":
-            #print "comp Name:", comp.Name
+            print "comp Name:", comp.Name
             if comp.Name in handlertypes:
                 handlertype = handlertypes[comp.Name]
                 h = handlertype(entity, comp, changetype)
