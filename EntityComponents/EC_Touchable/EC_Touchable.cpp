@@ -23,7 +23,6 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
-#include "Frame.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
@@ -121,17 +120,11 @@ EC_Touchable::EC_Touchable(IModule *module) :
     connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
-//    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
 void EC_Touchable::Create()
 {
     if (renderer_.expired())
-        return;
-
-    Ogre::SceneManager *scene = renderer_.lock()->GetSceneManager();
-    assert(scene);
-    if (!scene)
         return;
 
     Scene::Entity *entity = GetParentEntity();
