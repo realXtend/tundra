@@ -24,7 +24,7 @@ namespace OgreRenderer
         settings_widget_ = new CAVESettingsWidget(renderer_->GetFramework());
 		QObject::connect(settings_widget_, SIGNAL(ModifyCAVEViewProjParams(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), this, SLOT(ModifyView(const QString& , Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)));
 		QObject::connect(settings_widget_, SIGNAL(RemoveCAVEView(const QString&)), this, SLOT(RemoveView(const QString&)));
-		QObject::connect(settings_widget_, SIGNAL(GetCAVEViewProjParams(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), this, SLOT(GetViewParametersView(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &))); 
+		QObject::connect(settings_widget_, SIGNAL(GetCAVEViewProjParams(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), this, SLOT(GetViewParametersView(const QString&, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &, Ogre::Vector3 &)), Qt::DirectConnection); 
         QObject::connect(settings_widget_, SIGNAL(ToggleCAVE(bool)),this, SLOT(CAVEToggled(bool)) );
         QObject::connect(settings_widget_, SIGNAL(NewCAVEViewRequested(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)), this, SLOT(AddView(const QString&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&, Ogre::Vector3&)));
     }
