@@ -602,7 +602,7 @@ entity_id_t RexLogicModule::GetUserAvatarId() const
     return GetAvatarHandler()->GetUserAvatar()->GetId();
 }
 
-void RexLogicModule::EntityHovered(Scene::Entity* entity)
+void RexLogicModule::EntityHovered(Scene::Entity* entity)///\todo Remove this altogether. -jj.
 {
     // Check if raycast result gave a valid entity
     if (entity)
@@ -616,6 +616,8 @@ void RexLogicModule::EntityHovered(Scene::Entity* entity)
         scene_handler_->ClearHovers(0);
 }
 
+///\todo Remove this. Anyone wanting to get the camera viewport params should take it directly from renderer or from the camera entity in the scene.
+/// No need to read it via RexLogicModule. -jj.
 float RexLogicModule::GetCameraViewportWidth() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
@@ -625,6 +627,8 @@ float RexLogicModule::GetCameraViewportWidth() const
         return 0;
 }
 
+///\todo Remove this. Anyone wanting to get the camera viewport params should take it directly from renderer or from the camera entity in the scene.
+/// No need to read it via RexLogicModule. -jj.
 float RexLogicModule::GetCameraViewportHeight() const
 {
     OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
@@ -949,7 +953,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     }
 }
 
-void RexLogicModule::EntityClicked(Scene::Entity* entity)
+void RexLogicModule::EntityClicked(Scene::Entity* entity)///\todo Remove this altogether. -jj.
 {
     /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
     if (name_tag.get())
