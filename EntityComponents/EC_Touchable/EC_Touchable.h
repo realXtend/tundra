@@ -29,6 +29,8 @@ namespace Ogre
     class Entity;
 }
 
+/// Touchable enables visual effect for scene entity in cases where the entity can be 
+/// considered to have some kind of functionality when it is clicked i.e. touched.
 /**
 <table class="header">
 <tr>
@@ -131,9 +133,6 @@ private:
     /// @param module Owner module.
     explicit EC_Touchable(IModule *module);
 
-    /// Creates the clone entity used for highlighting from the original.
-    void Create();
-
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
@@ -150,6 +149,9 @@ private:
     bool hovering_;
 
 private slots:
+    /// Creates the clone entity used for highlighting from the original.
+    void Create();
+
     /// Updates the component if its material changes.
     void UpdateMaterial();
 

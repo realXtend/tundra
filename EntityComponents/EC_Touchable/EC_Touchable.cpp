@@ -23,7 +23,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
-//#include "Frame.h"
+#include "Frame.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
@@ -57,16 +57,6 @@ void EC_Touchable::OnHover()
     if (!hovering_)
         OnHoverIn();
     emit MouseHover();
-}
-
-
-void EC_Touchable::OnHoverIn()
-{
-    if (hovering_)
-        return;
-    hovering_ = true;
-    SetCursorVisible(true);
-    emit MouseHoverIn();
 }
 
 void EC_Touchable::OnHoverOut()
@@ -140,23 +130,6 @@ bool EC_Touchable::IsVisible() const
     return false;
 }
 
-void EC_Touchable::UpdateMaterial()
-{
-    if (!entityClone_ ||!sceneNode_)
-        return;
-    try
-    {
-        entityClone_->setMaterialName(materialName.Get().toStdString());
-    }
-    catch (Ogre::Exception &e)
-    {
-        LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
-        return;
-    }
-
-//    hover_cursor_ = QCursor((Qt::CursorShape)(hoverCursor.Get()));
-}
-
 EC_Touchable::EC_Touchable(IModule *module) :
     IComponent(module->GetFramework()),
     entityClone_(0),
@@ -197,6 +170,7 @@ EC_Touchable::EC_Touchable(IModule *module) :
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 //    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
 }
 
@@ -300,6 +274,32 @@ void EC_Touchable::Create()
 
     sceneNode_->attachObject(entityClone_);
     Hide();
+}
+
+void EC_Touchable::UpdateMaterial()
+{
+    if (!entityClone_ ||!sceneNode_)
+        return;
+    try
+    {
+        entityClone_->setMaterialName(materialName.Get().toStdString());
+    }
+    catch (Ogre::Exception &e)
+    {
+        LogError("Could not set material \"" + materialName.Get().toStdString() + "\": " + std::string(e.what()));
+        return;
+    }
+
+//    hover_cursor_ = QCursor((Qt::CursorShape)(hoverCursor.Get()));
+}
+
+void EC_Touchable::OnHoverIn()
+{
+    if (hovering_)
+        return;
+    hovering_ = true;
+    SetCursorVisible(true);
+    emit MouseHoverIn();
 }
 
 void EC_Touchable::RegisterActions()

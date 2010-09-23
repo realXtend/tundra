@@ -44,6 +44,7 @@
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
+#include "SceneInterract.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
