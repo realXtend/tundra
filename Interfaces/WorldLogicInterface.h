@@ -54,6 +54,9 @@ namespace Foundation
         /// Hack function for getting EC_AvatarAppearance info to UiModule
         virtual const QString &GetAvatarAppearanceProperty(const QString &name) const = 0;
 
+        // Hack function to get camera pitch into AvatarModule, can be removed when made better
+        virtual float GetCameraControllablePitch() const = 0;
+
     signals:
         /// Emitted just before we start to delete world (scene).
         void AboutToDeleteWorld();

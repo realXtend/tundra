@@ -108,6 +108,7 @@ add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 add_subdirectory (RexLogicModule)
 add_subdirectory (SupportModules)
+add_subdirectory (AvatarModule)
 add_subdirectory (AssetModule)
 add_subdirectory (HttpUtilities)
 add_subdirectory (RpcUtilities)
@@ -157,6 +158,9 @@ add_subdirectory (EntityComponents/EC_SoundListener)
 add_subdirectory (EntityComponents/EC_Mesh)
 add_subdirectory (EntityComponents/EC_InputMapper)
 add_subdirectory (EntityComponents/EC_Movable)
+
+# The following EC's are declared by AvatarModule
+add_subdirectory (EntityComponents/EC_HoveringWidget)
 
 # Add EC's declared by other modules here:
 # ...
