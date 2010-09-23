@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>277</width>
-    <height>203</height>
+    <width>296</width>
+    <height>247</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -97,6 +97,23 @@
          </widget>
         </item>
        </layout>
+      </item>
+      <item>
+       <widget class="Line" name="line_3">
+        <property name="orientation">
+         <enum>Qt::Horizontal</enum>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QLabel" name="views_label">
+        <property name="text">
+         <string>Views:</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <layout class="QVBoxLayout" name="viewslayout"/>
       </item>
       <item>
        <spacer name="verticalSpacer">

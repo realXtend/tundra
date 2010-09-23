@@ -37,8 +37,22 @@ namespace OgreRenderer
 
     }
 
+	void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
+	{
+			top_left = tl;
+			bottom_left = lb;
+			bottom_right = rb;
+			eye_pos = ep;
+	}
+
+
+
     void CAVEView::ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
+		lb = bottom_left;
+		rb = bottom_right;
+		tl = top_left;
+		ep = eye_pos;
 
         assert(renderer_);
         assert(camera_);
