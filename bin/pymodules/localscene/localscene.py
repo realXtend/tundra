@@ -257,6 +257,7 @@ class SceneSaver:
         self.impl = getDOMImplementation()
         
     def save(self, filename, nodes):
+        from PythonQt.QtGui import QQuaternion
         #newdoc = self.impl.createDocument(None, "some_tag", None)
         newdoc = self.impl.createDocument(None, "scene formatVersion=\"\"", None)
         top_element = newdoc.documentElement
@@ -277,6 +278,9 @@ class SceneSaver:
                 nodeNode.appendChild(position)
                 
                 rotation = newdoc.createElement('rotation')
+                # XXX counter the 'fix' done in loading the scene
+                # loader.py in def create_naali_meshentity()
+                ort = oNode.naali_ent.placeable.Orientation * QQuaternion(1, -1, 0, 0)
                 rotation.setAttribute("qx", str(oNode.naali_ent.placeable.Orientation.x()))
                 rotation.setAttribute("qy", str(oNode.naali_ent.placeable.Orientation.y()))
                 rotation.setAttribute("qz", str(oNode.naali_ent.placeable.Orientation.z()))
