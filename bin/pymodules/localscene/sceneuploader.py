@@ -1,3 +1,4 @@
+import rexviewer as r
 import httplib
 import socket
 import os
