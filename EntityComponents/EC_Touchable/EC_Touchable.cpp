@@ -267,14 +267,12 @@ void EC_Touchable::SetCursorVisible(bool visible)
 
 void EC_Touchable::OnHoverIn()
 {
-    LogInfo("OnHoverIn");
     SetCursorVisible(true);
     emit MouseHoverIn();
 }
 
 void EC_Touchable::OnHover()
 {
-    LogInfo("OnHover");
     if (!IsVisible())
         Show();
     emit MouseHover();
@@ -282,7 +280,6 @@ void EC_Touchable::OnHover()
 
 void EC_Touchable::OnHoverOut()
 {
-    LogInfo("OnHoverOut");
     if (IsVisible())
         Hide();
 
@@ -292,7 +289,6 @@ void EC_Touchable::OnHoverOut()
 
 void EC_Touchable::OnClick()
 {
-    LogInfo("OnClick");
     emit MousePressed();
 }
 
