@@ -28,8 +28,11 @@ namespace CoreUi
         //! Starts the notification timer, called by NotificationManager
         virtual void Start();
 
-        //! Ends showing this notification in the scene
+        //! Ends showing this notification in the scene, does animated hide and then emits Completed
         void Hide();
+
+        //! Ends showing this notification in the scene, hides immidiately and emits Completed
+        void HideNow();
 
         //! Animates the notification to a new position, called by NotificationManager
         void AnimateToPosition(const QPointF &end_pos);
