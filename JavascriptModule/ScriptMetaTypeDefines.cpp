@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
@@ -21,6 +22,7 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include "MemoryLeakCheck.h"
 
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
@@ -32,6 +34,7 @@ Q_DECLARE_METATYPE(KeyEvent*)
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
 Q_DECLARE_METATYPE(Scene::Entity*);
@@ -51,9 +54,6 @@ void ReqisterQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
-    
-    /*object = engine->newFunction(LoadWidgetFromFile, 2);
-    engine->globalObject().setProperty("LoadWidgetFromFile", object);*/
 }
 
 void ReqisterInputMetaTypes(QScriptEngine *engine)
@@ -80,6 +80,10 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
+    qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
+    //Add support to create proxy widget in javascript side.
+    QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
+    engine->globalObject().setProperty("UiProxyWidget", object);
 }
 
 void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
@@ -89,21 +93,5 @@ void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Command*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 }
-
-/*QScriptValue LoadWidgetFromFile(QScriptContext *context, QScriptEngine *engine)
-{
-    QScriptValue value;
-    if(!context->argumentCount() && !context->argument(0).isString())
-        return engine->newQObject(0);
-
-    QUiLoader loader;
-    QFile file(context->argument(0).toString());
-    file.open(QFile::ReadOnly);
-    if(context->argumentCount() >= 2 && context->argument(1).isQObject())
-        value.setData(engine->newQObject(loader.load(&file, dynamic_cast<QWidget*>(context->argument(1).toQObject()))));
-    else
-        value.setData(engine->newQObject(loader.load(&file)));
-    return value;
-}*/
 
 
