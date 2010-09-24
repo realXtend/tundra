@@ -6,8 +6,6 @@
 #include "ModuleManager.h"
 #include "HttpUtilities.h"
 
-#include <boost/thread.hpp>
-
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
 #include <crtdbg.h>
