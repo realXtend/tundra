@@ -1,15 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#include "DebugOperatorNew.h"
-
-#include <boost/thread.hpp>
-
-#include "MemoryLeakCheck.h"
-
 #include "Foundation.h"
 #include "ModuleManager.h"
 
 #include "HttpUtilities.h"
+
+#include "DebugOperatorNew.h"
+#include "MemoryLeakCheck.h"
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
