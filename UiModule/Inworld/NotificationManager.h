@@ -47,9 +47,13 @@ namespace UiServices
         void NotificationHideHandler(CoreUi::NotificationBaseWidget *completed_notification);
 
         void ToggleNotificationBrowser();
+        void HideAllNotifications();
+
+        void SceneAboutToChange(const QString &old_name, const QString &new_name);
 
 	signals:
 		void ShowNotificationCalled(const QString& msg);
+
     private:
         InworldSceneController *inworld_scene_controller_;
         QGraphicsScene *scene_;
