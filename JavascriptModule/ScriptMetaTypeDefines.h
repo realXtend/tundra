@@ -50,6 +50,4 @@ void ReqisterUiMetaTypes(QScriptEngine *engine);
 //! Will register all meta data types that are needed to use Naali Core API objects.
 void ReqisterCoreApiMetaTypes(QScriptEngine *engine);
 
-//QScriptValue LoadWidgetFromFile(QScriptContext *context, QScriptEngine *engine);
-
 #endif
