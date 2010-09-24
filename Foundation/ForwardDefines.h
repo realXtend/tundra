@@ -65,6 +65,11 @@ namespace Foundation
     void RootLogInfo(const std::string &msg);
     void RootLogTrace(const std::string &msg);
     void RootLogDebug(const std::string &msg);
+
+    class RenderServiceInterface;
+    typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;
+    typedef boost::weak_ptr<RenderServiceInterface> RendererWeakPtr;
+    struct RaycastResult;
 }
 
 class IAttribute;

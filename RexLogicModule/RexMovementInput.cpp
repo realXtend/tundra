@@ -172,8 +172,6 @@ void RexMovementInput::HandleMouseEvent(MouseEvent *mouse)
         }
         else if (mouse->IsLeftButtonDown())
             eventMgr->SendEvent("Input", Input::Events::MOUSEDRAG, &movement);
-        else // Neither LMB or RMB down == MOUSEMOVE.
-            eventMgr->SendEvent("Input", Input::Events::MOUSEMOVE, &movement);
         break;
     case MouseEvent::MouseScroll:
     {

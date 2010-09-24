@@ -5,8 +5,20 @@
 ///      and named actions, you should manage your own states using input contexts, which offer
 ///      more flexibility.
 
+/*
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE. USE NEW INPUT CONTEX SYSTEM INSTEAD
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+
 #ifndef incl_Input_InputEvents_h
 #define incl_Input_InputEvents_h
+
+/*
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE. USE NEW INPUT CONTEX SYSTEM INSTEAD
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
 
 #include "IEventData.h"
 #include "CoreTypes.h"
@@ -35,6 +47,14 @@ namespace Input
         //! Sent as notification for buffered keyboard input, when any key is released. Uses BufferedKey event data class.
 //        static const event_id_t BUFFERED_KEY_RELEASED = 2; // only when input state is buffered
         //! Generic scroll input event. Uses SingleAxisMovement event data class.
+
+
+        /*
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         *  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE. USE NEW INPUT CONTEX SYSTEM INSTEAD
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         */
+
         static const event_id_t SCROLL = 3;
         //! Generic move forward event
         static const event_id_t MOVE_FORWARD_PRESSED = 4;
@@ -118,9 +138,6 @@ namespace Input
         static const event_id_t ZOOM_IN_RELEASED = 52;
         static const event_id_t ZOOM_OUT_PRESSED = 53;
         static const event_id_t ZOOM_OUT_RELEASED = 54;
-
-        //! Mouse motion - uninterpreted, sent always when mouse moves
-        static const event_id_t MOUSEMOVE = 60; //stop has no meaning for this?
 /*
         static const event_id_t PY_RESTART = 71;
         static const event_id_t PY_RUN_COMMAND = 73;
@@ -153,6 +170,13 @@ namespace Input
         static const event_id_t ALT_LEFTCLICK = 109;
         static const event_id_t ALT_LEFTCLICK_REL = 110;
         static const event_id_t MOUSE_DOUBLECLICK = 111;
+
+        /*
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         *  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE. USE NEW INPUT CONTEX SYSTEM INSTEAD
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         */
+
         //! Event for buffered key input. 
         /*! Do not use for any continous input such as avatar movement, it will probably cause input lag
             General use case is text input.
