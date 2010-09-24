@@ -75,7 +75,7 @@ public slots:
     void SetDisabled(bool val);
 
     //! @ return true if widget is disabled
-    bool IsDisabled(){return disabled_;}
+    bool IsDisabled() const { return disabled_;}
 
     //! set buttons disabled, will still show the text
     void SetButtonsDisabled(bool val);
@@ -125,7 +125,7 @@ public slots:
     void SetCameraDistance(float dist);
 
     //! get widgets distance from the camera
-    float GetCameraDistance(){return cam_distance_;}
+    float GetCameraDistance() const {return cam_distance_;}
 
     //! Adjust what to show, might disable button or set the widget invisible.
     void AdjustWidgetinfo();
@@ -150,6 +150,9 @@ private slots:
 
     /// Check for name width
     int CheckNameTagWidth() const;
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 
 private:
     /// Returns pixmap with widget rendered to it

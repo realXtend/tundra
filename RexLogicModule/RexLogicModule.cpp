@@ -50,6 +50,7 @@
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
+#include "SceneInteract.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -176,6 +177,8 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
+
+    SceneInteract *sceneInteract = new SceneInteract(framework_);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -357,6 +360,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(network_state_handler_);
     SAFE_DELETE(framework_handler_);
     SAFE_DELETE(main_panel_handler_);
+    SAFE_DELETE(avatar_event_handler_);
 
     // Unregister world logic service.
     boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
@@ -430,7 +434,6 @@ void RexLogicModule::Update(f64 frametime)
         if (world_stream_->IsConnected())
         {
             camera_controllable_->AddTime(frametime);
-            input_handler_->Update(frametime);
             // Update overlays last, after camera update
             UpdateAvatarNameTags(GetAvatarHandler()->GetUserAvatar());
         }
@@ -596,47 +599,6 @@ void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
 void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
 {
     camera_controllable_->SetYawPitch(newyaw, newpitch);
-}
-
-entity_id_t RexLogicModule::GetUserAvatarId() const
-{
-    return GetAvatarHandler()->GetUserAvatar()->GetId();
-}
-
-void RexLogicModule::EntityHovered(Scene::Entity* entity)///\todo Remove this altogether. -jj.
-{
-    // Check if raycast result gave a valid entity
-    if (entity)
-    {
-        EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        if(widget)
-            widget->HoveredOver();
-    }
-    // All hovers are out, no entity was returned by raycast
-    else
-        scene_handler_->ClearHovers(0);
-}
-
-///\todo Remove this. Anyone wanting to get the camera viewport params should take it directly from renderer or from the camera entity in the scene.
-/// No need to read it via RexLogicModule. -jj.
-float RexLogicModule::GetCameraViewportWidth() const
-{
-    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (renderer.get())
-        return renderer->GetViewport()->getActualWidth();
-    else
-        return 0;
-}
-
-///\todo Remove this. Anyone wanting to get the camera viewport params should take it directly from renderer or from the camera entity in the scene.
-/// No need to read it via RexLogicModule. -jj.
-float RexLogicModule::GetCameraViewportHeight() const
-{
-    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (renderer.get())
-        return renderer->GetViewport()->getActualHeight();
-    else
-        return 0;
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()
@@ -952,21 +914,6 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         chat_bubble->SetScale(distance/10);
         widget->Hide();
     }
-}
-
-void RexLogicModule::EntityClicked(Scene::Entity* entity)///\todo Remove this altogether. -jj.
-{
-    /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-    if (name_tag.get())
-        name_tag->Clicked();
-
-/*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
-    if(info_icon.get())
-        info_icon->EntityClicked();*/
-
-    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-    if (canvas_source)
-        canvas_source->Clicked();
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const

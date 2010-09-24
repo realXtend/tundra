@@ -1,5 +1,11 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+/*
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ *                  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE.
+ *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+ */
+
 #ifndef incl_SceneManager_SceneEvents_h
 #define incl_SceneManager_SceneEvents_h
 
@@ -9,6 +15,12 @@
 
 namespace Scene
 {
+    /*
+     *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     *                  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE.
+     *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+     */
+
     class Entity;
     
     //! Events related to scene
@@ -68,9 +80,6 @@ namespace Scene
         /// Sent when ray cast result did not have a entity. For example the sky was clicked.
         static const event_id_t EVENT_ENTITY_NONE_CLICKED = 0x1b;
 
-        /// Sent when mouse is hovering above entity.
-        static const event_id_t EVENT_ENTITY_MOUSE_HOVER =  0x0c; ///<\todo Remove this altogether. -jj.
-
         // Component-related event id's:
     /** \todo For creating events that can be used to alter the scene, events like this might be useful as well:
         /// Indicates that a new component is added to an entity.
@@ -81,6 +90,12 @@ namespace Scene
         static const event_id_t EVENT_COMPONENT_UPDATED=  0x0d;
 */
         // Other events:
+
+        /*
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         *                  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE.
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         */
 
         /// Sent to register a scene entity as a controllable entity (has the Controllable component). Also sets
         /// that entity as the currently controlled entity. 
@@ -102,7 +117,13 @@ namespace Scene
         /// An internal event telling that an entity's XML serializable EC data was received from network
         /// Will possibly be removed later in favour of using only SceneManager signals for same purpose
         static const event_id_t EVENT_ENTITY_ECS_RECEIVED = 0x13;
-        
+
+        /*
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         *                  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE.
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         */
+
         /// Event data interface for Scene object related events.
         /*class SceneEventData: public IEventData
         {
@@ -154,6 +175,12 @@ namespace Scene
             /// List of component pointers.
             std::vector<IComponent> entity_ptr_list;
         };*/
+
+        /*
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         *                  THIS FILE IS DEPRECATED. DO NOT ADD NEW CODE.
+         *  !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+         */
 
         /// Soon to be deprecated class event data class.
         class SceneEventData: public IEventData

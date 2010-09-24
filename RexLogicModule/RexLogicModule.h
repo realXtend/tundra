@@ -37,11 +37,6 @@
 class QString;
 class RexUUID;
 
-namespace Foundation
-{
-    struct RaycastResult;
-}
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -213,18 +208,8 @@ namespace RexLogic
         void SetAvatarRotation(const Quaternion &newrot);
         void SetCameraYawPitch(float newyaw, float newpitch);
 
-        ///\todo Remove. Get this information using WorldStream and/or EC_OpenSimPresence.
-        entity_id_t GetUserAvatarId() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        float GetCameraViewportWidth() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        float GetCameraViewportHeight() const;
-
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
         void SetAllTextOverlaysVisible(bool visible);
-
-        //! Handles a click event for entity, namely showing the name tag
-        void EntityClicked(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
 
         //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
         /*! \param x screen coordinate
@@ -241,15 +226,9 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
-        //! called when entity is hovered over with mouse
-        void EntityHovered(Scene::Entity* entity); ///\todo Remove this altogether. -jj.
-
         /// Sends RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
         void SendRexPrimData(uint entityid);
-
-        /// Returns Ogre renderer pointer. Convenience function for making code cleaner. ///\todo Make private. -jj.
-        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
     signals:
         //! Estate Info event
@@ -290,6 +269,9 @@ namespace RexLogic
 
         //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
         Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
         //! Type name of the module.
         static std::string type_name_static_;

@@ -21,8 +21,9 @@ init_target (RexLogicModule OUTPUT modules/core)
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h EventHandlers/MainPanelHandler.h 
-                     EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h Communications/InWorldChat/*.h)
+file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h
+    EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h
+    Communications/InWorldChat/*.h SceneInteract.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)

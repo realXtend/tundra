@@ -285,7 +285,7 @@ namespace Scene
         int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (receivers == 0)
         {
-            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
+//            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
             actions_.remove(action->Name());
             SAFE_DELETE(action);
             return false;
