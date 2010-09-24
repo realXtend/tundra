@@ -4,16 +4,15 @@
 #include "DebugOperatorNew.h"
 
 #include "CommunicationWidget.h"
-
+#include "CommunicationsService.h"
 #include "UiProxyWidget.h"
 #include "UiModule.h"
 #include "ModuleManager.h"
 #include "VoiceUsersWidget.h"
 #include "VoiceControl.h"
-#include "VoiceController.h"
 #include "UiServiceInterface.h"
+#include "VoiceControllerWidget.h"
 
-#include <CommunicationsService.h>
 #include <QWidget>
 #include <QStackedLayout>
 #include <QTimer>
@@ -21,6 +20,8 @@
 #include <QApplication>
 #include <QGraphicsScene>
 #include <QTextBrowser>
+
+#include "VoiceToolWidget.h"
 
 #include "DebugOperatorNew.h"
 
@@ -81,12 +82,8 @@ namespace CoreUi
         viewmode_(Normal),
         resizing_horizontal_(false),
         resizing_vertical_(false),
-        voice_state_widget_(0),
-        voice_users_info_widget_(0),
-        voice_users_proxy_widget_(0),
         in_world_chat_session_(0),
-        voice_controller_proxy_widget_(0),
-        voice_controller_widget_(0)
+        voice_tool_(0)
     {
         Initialise();
         ChangeView(viewmode_);
@@ -129,40 +126,21 @@ namespace CoreUi
         connect(imButton, SIGNAL( clicked() ), SLOT( ToggleImWidget() ));
         connect(chatLineEdit, SIGNAL( returnPressed() ), SLOT( SendMessageRequested() ));
 
-        HideVoiceControls();
+        tool_manager_ = new ToolManagerWidget();
+        this->voiceLayoutH->addWidget(tool_manager_);
+        tool_manager_->show();
 
-        // Initialize In-World Voice
         if (framework_ &&  framework_->GetServiceManager())
         {
             Communications::ServiceInterface *comm = framework_->GetService<Communications::ServiceInterface>();
             if (comm)
             {
                 connect(comm, SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
+                connect(comm, SIGNAL(InWorldVoiceUnavailable()), SLOT(UnitializeInWorldVoice()) );
                 connect(comm, SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
                 connect(comm, SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
             }
         }
-
-    }
-
-    void CommunicationWidget::ShowVoiceControls()
-    {
-        this->voiceLabel->show();
-        this->voiceLeftBorder->show();
-        if (voice_state_widget_)
-            voice_state_widget_->show();
-        if (voice_users_info_widget_)
-            voice_users_info_widget_->show();
-    }
-
-    void CommunicationWidget::HideVoiceControls()
-    {
-        this->voiceLabel->hide();
-        this->voiceLeftBorder->hide();
-        if (voice_state_widget_)
-            voice_state_widget_->hide();
-        if (voice_users_info_widget_)
-            voice_users_info_widget_->hide();
     }
 
     void CommunicationWidget::ChangeViewPressed()
@@ -212,24 +190,6 @@ namespace CoreUi
             }
             else
                 im_proxy_->AnimatedHide();
-        }
-    }
-
-    void CommunicationWidget::ToggleVoice()
-    {
-        if (!in_world_voice_session_)
-            return;
-
-        if (voice_controller_proxy_widget_)
-        {
-            if (voice_controller_proxy_widget_->isVisible())
-                voice_controller_proxy_widget_->AnimatedHide();
-            else
-            {
-                voice_controller_proxy_widget_->show();
-                voice_controller_proxy_widget_->moveBy(1,1);
-                voice_controller_proxy_widget_->moveBy(-1,-1);
-            }
         }
     }
 
@@ -394,117 +354,11 @@ namespace CoreUi
 
     void CommunicationWidget::InitializeInWorldVoice()
     {
-        if (framework_ &&  framework_->GetServiceManager())
-        {
-            Communications::ServiceInterface *comm = framework_->GetService<Communications::ServiceInterface>();
-            if (comm)
-            {
-                in_world_voice_session_ = comm->InWorldVoiceSession();
-                connect(in_world_voice_session_, SIGNAL(StartSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(StopSendingAudio()), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantJoined(Communications::InWorldVoice::ParticipantInterface*)), SLOT(ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface*)) );
-                connect(in_world_voice_session_, SIGNAL(ParticipantLeft(Communications::InWorldVoice::ParticipantInterface*)), SLOT(UpdateInWorldVoiceIndicator()) );
-                connect(in_world_voice_session_, SIGNAL(destroyed()), SLOT(UninitializeInWorldVoice()));
-                connect(in_world_voice_session_, SIGNAL(SpeakerVoiceActivityChanged(double)), SLOT(UpdateInWorldVoiceIndicator()));
-                connect(in_world_voice_session_, SIGNAL(StateChanged(Communications::InWorldVoice::SessionInterface::State)), SLOT(UpdateInWorldVoiceIndicator()));
-            }
-        }
+        if (voice_tool_)
+            UninitializeInWorldVoice();
 
-        if (voice_state_widget_)
-        {
-            this->voiceLayoutH->removeWidget(voice_state_widget_);
-            SAFE_DELETE(voice_state_widget_);
-        }
-        voice_state_widget_ = new CommUI::VoiceStateWidget(0);
-        connect(voice_state_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
-        this->voiceLayoutH->addWidget(voice_state_widget_);
-        voice_state_widget_->show();
-
-        if (voice_users_info_widget_)
-        {
-            this->voiceLayoutH->removeWidget(voice_users_info_widget_);
-            SAFE_DELETE(voice_users_info_widget_);
-        }
-        voice_users_info_widget_ = new CommUI::VoiceUsersInfoWidget(0);
-        connect(voice_users_info_widget_, SIGNAL( clicked() ), SLOT(ToggleVoice() ) );
-        this->voiceLayoutH->addWidget(voice_users_info_widget_);
-        voice_users_info_widget_->show();
-
-        UpdateInWorldVoiceIndicator();
-
-        UiServiceInterface* ui_service = framework_->GetService<UiServiceInterface>();
-        if (ui_service)
-        {
-            if (voice_controller_widget_)
-                SAFE_DELETE(voice_controller_widget_);
-
-            voice_controller_widget_ = new CommUI::VoiceControllerWidget(in_world_voice_session_);
-
-            voice_controller_proxy_widget_ = ui_service->AddWidgetToScene(voice_controller_widget_);
-            voice_controller_proxy_widget_->setWindowTitle("In-world voice");
-            voice_controller_proxy_widget_->hide();
-
-            if (framework_)
-            {
-                input_context_ = framework_->Input()->RegisterInputContext("CommunicationWidget", 90);
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
-                connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
-                connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
-            }
-        }
-    }
-
-    void CommunicationWidget::ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p)
-    {
-        /// @todo Move all voice control widget related code to separate class
-        ///       and possible add to UiServiceInterdace methods to conrol tool widgets.
-        connect(p, SIGNAL(StartSpeaking()), this, SLOT(UpdateInWorldVoiceIndicator()));
-        connect(p, SIGNAL(StopSpeaking()), this, SLOT(UpdateInWorldVoiceIndicator()));
-    }
-    
-    void CommunicationWidget::UpdateInWorldVoiceIndicator()
-    {
-        if (!in_world_voice_session_)
-            return;
-
-        if (in_world_voice_session_->GetState() != Communications::InWorldVoice::SessionInterface::STATE_OPEN)
-        {
-            HideVoiceControls();
-            return;
-        }
-        ShowVoiceControls();
-
-        if (in_world_voice_session_->IsAudioSendingEnabled())
-        {
-            if (voice_state_widget_)
-            {
-                voice_state_widget_->setState(CommUI::VoiceStateWidget::STATE_ONLINE);
-                voice_state_widget_->SetVoiceActivity(in_world_voice_session_->SpeakerVoiceActivity());
-            }
-        }
-        else
-        {
-            if (voice_state_widget_)
-                voice_state_widget_->setState(CommUI::VoiceStateWidget::STATE_OFFLINE);
-        }
-
-        if (voice_users_info_widget_)
-        {
-            double channel_voice_activity = 0;
-            QList<Communications::InWorldVoice::ParticipantInterface*> list = in_world_voice_session_->Participants();
-            foreach(Communications::InWorldVoice::ParticipantInterface* p, list)
-            {
-                if (p->IsSpeaking())
-                {
-                    channel_voice_activity = 1;
-                    break;
-                }
-            }
-            voice_users_info_widget_->SetVoiceActivity(channel_voice_activity);
-            voice_users_info_widget_->SetUsersCount(in_world_voice_session_->Participants().count());
-        }
+        voice_tool_ = new CommUI::VoiceToolWidget(framework_);
+        tool_manager_->AddToolWidget("Voice", voice_tool_);
     }
 
     void CommunicationWidget::UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message)
@@ -517,8 +371,10 @@ namespace CoreUi
 
     void CommunicationWidget::UninitializeInWorldVoice()
     {
-        //! \todo: set indicator status -> disabled (hide voice controls)
-        in_world_voice_session_ = 0;
+        if (!voice_tool_)
+            return;
+
+        tool_manager_->RemoveToolWidget(voice_tool_);
     }
 
     // NormalChatViewWidget : QWidget
