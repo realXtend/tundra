@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "ComponentManager.h"
+#include "CoreStringUtils.h"
 #include "Framework.h"
 #include "IComponentFactory.h"
 #include "IComponent.h"
@@ -32,19 +33,30 @@ namespace Foundation
     void ComponentManager::RegisterFactory(const QString &component, const ComponentFactoryPtr &factory)
     {
         if (factories_.find(component) == factories_.end())
+        {
+            uint hash = GetHash(component);
             factories_[component] = factory;
+            factories_hash_[hash] = factory;
+            hashToTypeName_[hash] = component;
+        }
     }
 
     void ComponentManager::UnregisterFactory(const QString &component)
     {
-        ComponentFactoryMap::iterator iter = factories_.find(component);
-        if (iter != factories_.end())
-            factories_.erase(iter);
+        uint hash = GetHash(component);
+        factories_.erase(component);
+        factories_hash_.erase(hash);
+        hashToTypeName_.erase(hash);
     }
 
     bool ComponentManager::CanCreate(const QString &type_name)
     {
         return (factories_.find(type_name) != factories_.end());
+    }
+
+    bool ComponentManager::CanCreate(uint type_hash)
+    {
+        return (factories_hash_.find(type_hash) != factories_hash_.end());
     }
 
     ComponentInterfacePtr ComponentManager::CreateComponent(const QString &type_name)
@@ -57,10 +69,31 @@ namespace Foundation
         return component;
     }
 
+    ComponentInterfacePtr ComponentManager::CreateComponent(uint type_hash)
+    {
+        ComponentFactoryHashMap::const_iterator iter = factories_hash_.find(type_hash);
+        if (iter == factories_hash_.end())
+            return ComponentInterfacePtr();
+
+        ComponentInterfacePtr component = (*iter->second.get())();
+        return component;
+    }
+
     ComponentPtr ComponentManager::CreateComponent(const QString &type_name, const QString &name)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
+            return ComponentInterfacePtr();
+
+        ComponentInterfacePtr component = (*iter->second.get())();
+        component->SetName(name);
+        return component;
+    }
+
+    ComponentPtr ComponentManager::CreateComponent(uint type_hash, const QString &name)
+    {
+        ComponentFactoryHashMap::const_iterator iter = factories_hash_.find(type_hash);
+        if (iter == factories_hash_.end())
             return ComponentInterfacePtr();
 
         ComponentInterfacePtr component = (*iter->second.get())();
@@ -111,5 +144,15 @@ namespace Foundation
     StringVector ComponentManager::GetAttributeTypes() const
     {
         return attributeTypes_;
+    }
+    
+    const QString& ComponentManager::GetComponentTypeName(uint type_hash) const
+    {
+        static const QString empty;
+        std::map<uint, QString>::const_iterator i = hashToTypeName_.find(type_hash);
+        if (i == hashToTypeName_.end())
+            return empty;
+        else
+            return i->second;
     }
 }

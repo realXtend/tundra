@@ -17,7 +17,7 @@ namespace TundraLogic
 //! State of component replication for a specific user
 struct ComponentSyncState
 {
-    QString type_name_;
+    uint type_hash_;
     QString name_;
     //! Last sent component data (full binary state from IComponent::SerializeToBinary)
     std::vector<unsigned char> data_;
@@ -29,65 +29,65 @@ struct EntitySyncState
     //! Components that this client is already aware of
     std::vector<ComponentSyncState> components_;
     //! Created/modified components
-    std::set<std::pair<QString, QString> > dirty_components_;
-    //! Pending removed components (typename, name)
-    std::set<std::pair<QString, QString> > removed_components_;
+    std::set<std::pair<uint, QString> > dirty_components_;
+    //! Pending removed components (typenamehash, name)
+    std::set<std::pair<uint, QString> > removed_components_;
     
-    ComponentSyncState* GetOrCreateComponent(const QString& type_name, const QString& name)
+    ComponentSyncState* GetOrCreateComponent(uint type_hash, const QString& name)
     {
         // If we want to recreate the component and have a pending remove, remove the remove
-        removed_components_.erase(std::make_pair<QString, QString>(type_name, name));
-        ComponentSyncState* old = GetComponent(type_name, name);
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        ComponentSyncState* old = GetComponent(type_hash, name);
         if (old)
             return old;
         ComponentSyncState newstate;
-        newstate.type_name_ = type_name;
+        newstate.type_hash_ = type_hash;
         newstate.name_ = name;
         components_.push_back(newstate);
         return &components_[components_.size()-1];
     }
     
-    ComponentSyncState* GetComponent(const QString& type_name, const QString& name)
+    ComponentSyncState* GetComponent(uint type_hash, const QString& name)
     {
         for (int i = 0; i < (int)components_.size(); ++i)
         {
-            if ((components_[i].type_name_ == type_name) && (components_[i].name_ == name))
+            if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
                 return &components_[i];
         }
         return 0;
     }
     
-    void RemoveComponent(const QString& type_name, const QString& name)
+    void RemoveComponent(uint type_hash, const QString& name)
     {
-        dirty_components_.erase(std::make_pair<QString, QString>(type_name, name));
-        removed_components_.erase(std::make_pair<QString, QString>(type_name, name));
+        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
         for (int i = 0; i < (int)components_.size(); ++i)
         {
-            if ((components_[i].type_name_ == type_name) && (components_[i].name_ == name))
+            if ((components_[i].type_hash_ == type_hash) && (components_[i].name_ == name))
                 components_.erase(components_.begin() + i);
         }
     }
     
-    void OnComponentChanged(const QString& type_name, const QString& name)
+    void OnComponentChanged(uint type_hash, const QString& name)
     {
-        dirty_components_.insert(std::make_pair<QString, QString>(type_name, name));
-        removed_components_.erase(std::make_pair<QString, QString>(type_name, name));
+        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
     }
     
-    void OnComponentRemoved(const QString& type_name, const QString& name)
+    void OnComponentRemoved(uint type_hash, const QString& name)
     {
-        removed_components_.insert(std::make_pair<QString, QString>(type_name, name));
-        dirty_components_.erase(std::make_pair<QString, QString>(type_name, name));
+        removed_components_.insert(std::make_pair<uint, QString>(type_hash, name));
+        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
     }
     
-    void AckDirty(const QString& type_name, const QString& name)
+    void AckDirty(uint type_hash, const QString& name)
     {
-        dirty_components_.erase(std::make_pair<QString, QString>(type_name, name));
+        dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
     }
     
-    void AckRemove(const QString& type_name, const QString& name)
+    void AckRemove(uint type_hash, const QString& name)
     {
-        removed_components_.erase(std::make_pair<QString, QString>(type_name, name));
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
     }
 };
 
@@ -140,7 +140,7 @@ struct SceneSyncState : public IUserData
         removed_entities_.insert(id);
     }
     
-    void OnComponentChanged(entity_id_t id, const QString& type_name, const QString& name)
+    void OnComponentChanged(entity_id_t id, uint type_hash, const QString& name)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -148,10 +148,10 @@ struct SceneSyncState : public IUserData
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnComponentChanged(type_name, name);
+        entitystate->OnComponentChanged(type_hash, name);
     }
     
-    void OnComponentRemoved(entity_id_t id, const QString& type_name, const QString& name)
+    void OnComponentRemoved(entity_id_t id, uint type_hash, const QString& name)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -159,7 +159,7 @@ struct SceneSyncState : public IUserData
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnComponentRemoved(type_name, name);
+        entitystate->OnComponentRemoved(type_hash, name);
     }
     
     void AckDirty(entity_id_t id)

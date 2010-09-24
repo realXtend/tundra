@@ -31,7 +31,7 @@
     <message id="110" name="CreateEntity" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
-            <s8 name="componentTypeName" dynamicCount="8" />
+            <u32 name="componentTypeHash" />
             <s8 name="componentName" dynamicCount="8" />
             <u8 name="componentData" dynamicCount="16" />
         </struct>
@@ -46,7 +46,7 @@
     <message id="112" name="CreateComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
-            <s8 name="componentTypeName" dynamicCount="8" />
+            <u32 name="componentTypeHash" />
             <s8 name="componentName" dynamicCount="8" />
             <u8 name="componentData" dynamicCount="16" />
         </struct>
@@ -56,7 +56,7 @@
     <message id="113" name="UpdateComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
-            <s8 name="componentTypeName" dynamicCount="8" />
+            <u32 name="componentTypeHash" />
             <s8 name="componentName" dynamicCount="8" />
             <u8 name="componentData" dynamicCount="16" />
         </struct>
@@ -66,7 +66,7 @@
     <message id="114" name="RemoveComponents" reliable="true" inOrder="true" priority="100">
         <u32 name="entityID" />
         <struct name="components" dynamicCount="8">
-            <s8 name="componentTypeName" dynamicCount="8" />
+            <u32 name="componentTypeHash" />
             <s8 name="componentName" dynamicCount="8" />
         </struct>
     </message>

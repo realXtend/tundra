@@ -87,6 +87,29 @@ void ReplaceCharInplace(std::string& str, char replace_this, char replace_with)
 {
     for (uint i = 0; i < str.length(); ++i)
         if (str[i] == replace_this) str[i] = replace_with;
-}    
+}
 
+uint GetHash(const std::string& str)
+{
+    uint ret = 0;
+    
+    if (!str.length())
+        return ret;
+    
+    const char* cstr = str.c_str();
+    
+    while (*cstr)
+    {
+        // Note: calculate case-insensitive hash
+        char c = *cstr;
+        ret = tolower(c) + (ret << 6) + (ret << 16) - ret;
+        ++cstr;
+    }
+    
+    return ret;
+}
 
+uint GetHash(const QString& str)
+{
+    return GetHash(str.toStdString());
+}

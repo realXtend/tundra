@@ -9,6 +9,7 @@
 
 #include "IComponent.h"
 
+#include "CoreStringUtils.h"
 #include "Framework.h"
 #include "Entity.h"
 #include "SceneManager.h"
@@ -31,7 +32,7 @@ IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
     change_(AttributeChange::None),
-    network_sync_(true)
+    network_sync_(rhs.network_sync_)
 {
 }
 
@@ -69,6 +70,11 @@ Scene::Entity* IComponent::GetParentEntity() const
 void IComponent::SetNetworkSyncEnabled(bool enabled)
 {
     network_sync_ = enabled;
+}
+
+uint IComponent::TypeNameHash() const
+{
+    return GetHash(TypeName());
 }
 
 IAttribute* IComponent::GetAttribute(const std::string &name) const

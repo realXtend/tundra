@@ -27,7 +27,8 @@ namespace Foundation
         typedef ComponentList::iterator iterator;
         typedef ComponentList::const_iterator const_iterator;
         typedef std::map<QString, ComponentFactoryPtr> ComponentFactoryMap;
-
+        typedef std::map<uint, ComponentFactoryPtr> ComponentFactoryHashMap;
+        
         //! default constructor
         ComponentManager(Framework *framework);
 
@@ -47,6 +48,13 @@ namespace Foundation
         */
         bool CanCreate(const QString &type_name);
 
+        //! Returns true if component can be created (a factory for the component has registered itself)
+        /*!
+            \param type_hash String hash of the component typename
+            \return true if component can be created, false otherwise
+        */
+        bool CanCreate(uint type_hash);
+
         //! Create a new component
         /*!
             Precondition: CanCreate(componentName)
@@ -59,11 +67,28 @@ namespace Foundation
         /*!
             Precondition: CanCreate(componentName)
 
+            \param type_hash String hash of the component typename
+        */
+        ComponentPtr CreateComponent(uint type_hash);
+
+        //! Create a new component
+        /*!
+            Precondition: CanCreate(componentName)
+
             \param type_name type of the component to create
             \param name name of the component to create
         */
         ComponentPtr CreateComponent(const QString &type_name, const QString &name);
 
+        //! Create a new component
+        /*!
+            Precondition: CanCreate(componentName)
+
+            \param type_hash String hash of the component typename
+            \param name name of the component to create
+        */
+        ComponentPtr CreateComponent(uint type_hash, const QString &name);
+        
         //! Create clone of the specified component
         ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
 
@@ -76,9 +101,20 @@ namespace Foundation
         //! Get all component factories
         const ComponentFactoryMap GetComponentFactoryMap() const { return factories_; }
 
+        //! Get component typename from typename hash
+        /*! \param type_hash String hash of component typename
+            \return Typename, or empty if not found
+         */
+        const QString& GetComponentTypeName(uint type_hash) const;
+        
     private:
         //! Map of component factories
         ComponentFactoryMap factories_;
+        //! Map of component factories by hash
+        ComponentFactoryHashMap factories_hash_;
+        
+        //! Map of component typename hash to typename
+        std::map<uint, QString> hashToTypeName_;
 
         //! List of supported attribute types.
         StringVector attributeTypes_;
