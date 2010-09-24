@@ -112,6 +112,12 @@ std::string BufferToString(const std::vector<s8>& buffer);
 //! Convert string to vector
 std::vector<s8> StringToBuffer(const std::string& str);
 
+//! Calculate SDBM hash for a string
+uint GetHash(const std::string& str);
+
+//! Calculate SDBM hash for a string
+uint GetHash(const QString& str);
+
 #endif
 
 

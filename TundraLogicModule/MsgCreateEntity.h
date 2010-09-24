@@ -33,20 +33,18 @@ struct MsgCreateEntity
 
 	struct S_components
 	{
-		std::vector<s8> componentTypeName;
+		u32 componentTypeHash;
 		std::vector<s8> componentName;
 		std::vector<u8> componentData;
 
 		inline size_t Size() const
 		{
-			return 1 + componentTypeName.size()*1 + 1 + componentName.size()*1 + 2 + componentData.size()*1;
+			return 4 + 1 + componentName.size()*1 + 2 + componentData.size()*1;
 		}
 
 		inline void SerializeTo(DataSerializer &dst) const
 		{
-			dst.Add<u8>(componentTypeName.size());
-			if (componentTypeName.size() > 0)
-				dst.AddArray<s8>(&componentTypeName[0], componentTypeName.size());
+			dst.Add<u32>(componentTypeHash);
 			dst.Add<u8>(componentName.size());
 			if (componentName.size() > 0)
 				dst.AddArray<s8>(&componentName[0], componentName.size());
@@ -57,9 +55,7 @@ struct MsgCreateEntity
 
 		inline void DeserializeFrom(DataDeserializer &src)
 		{
-			componentTypeName.resize(src.Read<u8>());
-			if (componentTypeName.size() > 0)
-				src.ReadArray<s8>(&componentTypeName[0], componentTypeName.size());
+			componentTypeHash = src.Read<u32>();
 			componentName.resize(src.Read<u8>());
 			if (componentName.size() > 0)
 				src.ReadArray<s8>(&componentName[0], componentName.size());

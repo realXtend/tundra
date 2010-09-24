@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "ComponentManager.h"
 #include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
@@ -118,13 +119,13 @@ void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type cha
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+                state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+        state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
     }
 }
 
@@ -144,13 +145,13 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+                state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentChanged(entity->GetId(), comp->TypeName(), comp->Name());
+        state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
     }
 }
 
@@ -170,13 +171,13 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnComponentRemoved(entity->GetId(), comp->TypeName(), comp->Name());
+                state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentRemoved(entity->GetId(), comp->TypeName(), comp->Name());
+        state->OnComponentRemoved(entity->GetId(), comp->TypeNameHash(), comp->Name());
     }
 }
 
@@ -293,10 +294,10 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
                 if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
                 {
                     // Create componentstate, then fill the initial data both there and to network stream
-                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeName(), component->Name());
+                    ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
                     
                     MsgCreateEntity::S_components newComponent;
-                    newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                    newComponent.componentTypeHash = component->TypeNameHash();
                     newComponent.componentName = StringToBuffer(component->Name().toStdString());
                     newComponent.componentData.resize(64 * 1024);
                     DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
@@ -314,7 +315,7 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
                     ++num_messages_sent;
                 }
                 
-                entitystate->AckDirty(component->TypeName(), component->Name());
+                entitystate->AckDirty(component->TypeNameHash(), component->Name());
             }
         }
         else
@@ -323,24 +324,24 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
             //! \todo Renaming an existing component, that already has been replicated to client, leads to duplication.
             //! So it's not currently supported sensibly.
             {
-                std::set<std::pair<QString, QString> > dirtycomps = entitystate->dirty_components_;
+                std::set<std::pair<uint, QString> > dirtycomps = entitystate->dirty_components_;
                 MsgCreateComponents createMsg;
                 createMsg.entityID = entity->GetId();
                 MsgUpdateComponents updateMsg;
                 updateMsg.entityID = entity->GetId();
                 
-                for (std::set<std::pair<QString, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
+                for (std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
                     IComponent* component = entity->GetComponent(j->first, j->second).get();
                     if ((component) && (component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
                     {
-                        ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeName(), component->Name());
+                        ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeNameHash(), component->Name());
                         // New component or zero-size previous data
                         if ((!componentstate) || (componentstate->data_.size() == 0))
                         {
-                            componentstate = entitystate->GetOrCreateComponent(component->TypeName(), component->Name());
+                            componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
                             MsgCreateComponents::S_components newComponent;
-                            newComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                            newComponent.componentTypeHash = component->TypeNameHash();
                             newComponent.componentName = StringToBuffer(component->Name().toStdString());
                             newComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
@@ -358,7 +359,7 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
                         {
                             // Existing data, compare and deltaserialize
                             MsgUpdateComponents::S_components updComponent;
-                            updComponent.componentTypeName = StringToBuffer(component->TypeName().toStdString());
+                            updComponent.componentTypeHash = component->TypeNameHash();
                             updComponent.componentName = StringToBuffer(component->Name().toStdString());
                             updComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
@@ -390,14 +391,14 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
             
             // Check removed components
             {
-                std::set<std::pair<QString, QString> > removedcomps = entitystate->removed_components_;
+                std::set<std::pair<uint, QString> > removedcomps = entitystate->removed_components_;
                 MsgRemoveComponents removeMsg;
                 removeMsg.entityID = entity->GetId();
                 
-                for (std::set<std::pair<QString, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
+                for (std::set<std::pair<uint, QString> >::iterator j = removedcomps.begin(); j != removedcomps.end(); ++j)
                 {
                     MsgRemoveComponents::S_components remComponent;
-                    remComponent.componentTypeName = StringToBuffer(j->first.toStdString());
+                    remComponent.componentTypeHash = j->first;
                     remComponent.componentName = StringToBuffer(j->second.toStdString());
                     removeMsg.components.push_back(remComponent);
                     
@@ -508,9 +509,9 @@ void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateE
     // Read the components
     for (uint i = 0; i < msg.components.size(); ++i)
     {
-        QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -522,18 +523,18 @@ void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateE
                 }
                 catch (...)
                 {
-                    TundraLogicModule::LogError("Error while deserializing component " + type_name.toStdString());
+                    TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                 }
                 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_name, name);
+                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
                 componentstate->data_.resize(msg.components[i].componentData.size());
                 memcpy(&componentstate->data_[0], &msg.components[i].componentData[0], msg.components[i].componentData.size());
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + type_name.toStdString());
+            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Then emit the entity/componentchanges
@@ -621,9 +622,9 @@ void SyncManager::HandleCreateComponents(MessageConnection* source, const MsgCre
     std::vector<ComponentPtr> actually_changed_components;
     for (uint i = 0; i < msg.components.size(); ++i)
     {
-        QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -637,18 +638,18 @@ void SyncManager::HandleCreateComponents(MessageConnection* source, const MsgCre
                 }
                 catch (...)
                 {
-                    TundraLogicModule::LogError("Error while deserializing component " + type_name.toStdString());
+                    TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                 }
                 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_name, name);
+                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
                 componentstate->data_.resize(msg.components[i].componentData.size());
                 memcpy(&componentstate->data_[0], &msg.components[i].componentData[0], msg.components[i].componentData.size());
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + type_name.toStdString());
+            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Then emit the componentchanges
@@ -706,9 +707,9 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
     std::vector<ComponentPtr> actually_changed_components;
     for (uint i = 0; i < msg.components.size(); ++i)
     {
-        QString type_name = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -721,13 +722,13 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
                 }
                 catch (...)
                 {
-                    TundraLogicModule::LogError("Error while delta-deserializing component " + type_name.toStdString());
+                    TundraLogicModule::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                 }
                 
                 // Reflect changes back to syncstate
                 // For this, we need to do a kind of ugly thing: re-serialize the attributes to a fullstate buffer
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_name, name);
+                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
                 componentstate->data_.resize(64 * 1024);
                 DataSerializer dest((char*)&componentstate->data_[0], componentstate->data_.size());
                 new_comp->SerializeToBinary(dest);
@@ -735,7 +736,7 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
             }
         }
         else
-            TundraLogicModule::LogWarning("Could not create component " + type_name.toStdString());
+            TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
     // Then emit the componentchanges
@@ -779,10 +780,10 @@ void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRem
     
     for (unsigned i = 0; i < msg.components.size(); ++i)
     {
-        QString componentName = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        QString componentTypeName = QString::fromStdString(BufferToString(msg.components[i].componentTypeName));
+        uint type_hash = msg.components[i].componentTypeHash;
+        QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
         
-        ComponentPtr comp = entity->GetComponent(componentTypeName, componentName);
+        ComponentPtr comp = entity->GetComponent(type_hash, name);
         if (comp)
         {
             entity->RemoveComponent(comp, change);
@@ -792,7 +793,7 @@ void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRem
         // Reflect changes back to syncstate
         EntitySyncState* entitystate = state->GetEntity(entityID);
         if (entitystate)
-            entitystate->RemoveComponent(componentTypeName, componentName);
+            entitystate->RemoveComponent(type_hash, name);
     }
 }
 

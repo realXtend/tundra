@@ -45,6 +45,9 @@ public:
     //! Returns type name of the component.
     virtual const QString &TypeName() const = 0;
 
+    //! Returns type name hash of the component
+    uint TypeNameHash() const;
+
     //! Returns name of the component.
     const QString Name() const { return name_; }
 

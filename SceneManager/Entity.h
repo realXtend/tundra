@@ -65,13 +65,15 @@ namespace Scene
             \param type_name type of the component
         */
         ComponentInterfacePtr GetComponent(const QString &type_name) const;
-
+        ComponentInterfacePtr GetComponent(uint type_hash) const;
+        
         //! Returns a component with specific type and name, or empty pointer if component was not found
         /*! 
             \param type_name type of the component
             \param name name of the component
         */
         ComponentInterfacePtr GetComponent(const QString &type_name, const QString &name) const;
+        ComponentInterfacePtr GetComponent(uint type_hash, const QString &name) const;
 
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
@@ -80,6 +82,8 @@ namespace Scene
         */
         ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
         ComponentInterfacePtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentInterfacePtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentInterfacePtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! component container
         typedef std::vector<ComponentInterfacePtr> ComponentVector;
@@ -249,11 +253,13 @@ namespace Scene
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name Type of the component.
         bool HasComponent(const QString &type_name) const;
-
+        bool HasComponent(uint type_hash) const;
+        
         //! Returns whether or not this entity has a component with certain type and name.
         //! \param type_name type of the component
         //! \param name name of the component
         bool HasComponent(const QString &type_name, const QString &name) const;
+        bool HasComponent(uint type_hash, const QString &name) const;
 
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
         QString GetName() const;

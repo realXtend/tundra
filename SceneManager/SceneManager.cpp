@@ -380,7 +380,7 @@ namespace Scene
                 uint num_components = source.Read<u32>();
                 for (uint i = 0; i < num_components; ++i)
                 {
-                    QString type_name = QString::fromStdString(source.ReadString());
+                    uint type_hash = source.Read<u32>();
                     QString name = QString::fromStdString(source.ReadString());
                     bool sync = source.Read<u8>() ? true : false;
                     uint data_size = source.Read<u32>();
@@ -394,7 +394,7 @@ namespace Scene
                     
                     try
                     {
-                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
                         if (new_comp)
                         {
                             new_comp->SetNetworkSyncEnabled(sync);
@@ -405,11 +405,11 @@ namespace Scene
                             }
                         }
                         else
-                            std::cout << "Failed to load component " << type_name.toStdString() << std::endl;
+                            std::cout << "Failed to load component " << framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString() << std::endl;
                     }
                     catch (...)
                     {
-                        std::cout << "Failed to load component " << type_name.toStdString() << std::endl;
+                        std::cout << "Failed to load component " << framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString() << std::endl;
                     }
                 }
                 EmitEntityCreated(entity, change);
@@ -454,7 +454,7 @@ namespace Scene
                 {
                     if (components[i]->IsSerializable())
                     {
-                        dest.AddString(components[i]->TypeName().toStdString());
+                        dest.Add<u32>(components[i]->TypeNameHash());
                         dest.AddString(components[i]->Name().toStdString());
                         dest.Add<u8>(components[i]->GetNetworkSyncEnabled() ? 1 : 0);
                         

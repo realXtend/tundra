@@ -111,6 +111,43 @@ namespace Scene
         return ComponentInterfacePtr();
     }
     
+    ComponentInterfacePtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeNameHash() == type_hash)
+                return components_[i];
+
+        // If component was not found, try to create
+        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        if (new_comp)
+        {
+            AddComponent(new_comp, change);
+            return new_comp;
+        }
+
+        // Could not be created
+        return ComponentInterfacePtr();
+    }
+
+    ComponentInterfacePtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeNameHash() == type_hash && components_[i]->Name() == name)
+                return components_[i];
+
+        // If component was not found, try to create
+        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        if (new_comp)
+        {
+            AddComponent(new_comp, change);
+            return new_comp;
+        }
+
+        // Could not be created
+        return ComponentInterfacePtr();
+    }
+    
+    
     ComponentInterfacePtr Entity::GetComponent(const QString &type_name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
@@ -120,6 +157,15 @@ namespace Scene
         return ComponentInterfacePtr();
     }
 
+    ComponentInterfacePtr Entity::GetComponent(uint type_hash) const
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeNameHash() == type_hash)
+                return components_[i];
+
+        return ComponentInterfacePtr();
+    }
+    
     ComponentInterfacePtr Entity::GetComponent(const IComponent *component) const
     {
         for (size_t i = 0; i < components_.size(); i++)
@@ -138,10 +184,27 @@ namespace Scene
         return ComponentInterfacePtr();
     }
 
+    ComponentInterfacePtr Entity::GetComponent(uint type_hash, const QString& name) const
+    {
+        for (size_t i=0 ; i<components_.size() ; ++i)
+            if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
+                return components_[i];
+
+        return ComponentInterfacePtr();
+    }
+    
     bool Entity::HasComponent(const QString &type_name) const
     {
         for(size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
+                return true;
+        return false;
+    }
+
+    bool Entity::HasComponent(uint type_hash) const
+    {
+        for(size_t i=0 ; i<components_.size() ; ++i)
+            if (components_[i]->TypeNameHash() == type_hash)
                 return true;
         return false;
     }
@@ -162,6 +225,14 @@ namespace Scene
         return false;
     }
 
+    bool Entity::HasComponent(uint type_hash, const QString& name) const
+    {
+        for(size_t i=0 ; i<components_.size() ; ++i)
+            if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
+                return true;
+        return false;
+    }
+    
     void Entity::ResetChange()
     {
         for (size_t i = 0; i < components_.size(); ++i)
