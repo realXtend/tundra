@@ -1050,8 +1050,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderImage(bool use_main_camera)
     {
-        int window_width = renderwindow_->getWidth();
-        int window_height = renderwindow_->getHeight();
+        unsigned window_width = renderwindow_->getWidth();
+        unsigned window_height = renderwindow_->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
