@@ -6,12 +6,42 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>336</width>
-    <height>336</height>
+    <width>450</width>
+    <height>551</height>
    </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>450</width>
+    <height>0</height>
+   </size>
   </property>
   <property name="windowTitle">
    <string>Avatar Editor</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#AvatarEditor {
+	background-color: rgba(0,0,0,120);
+}
+
+QLabel {
+	font: Arial;
+	color: rgb(240, 240, 240);
+}
+
+QLabel#title_materials, #title_attachments {
+	font-size: 18px;
+	font-weight: bold;
+}
+
+QLabel#main_title {
+	font-size: 20px;
+	font-weight: bold;
+}
+
+QWidget#border_widget {
+	background-color: qlineargradient(spread:pad, x1:1, y1:1, x2:0, y2:1, stop:0 rgba(187, 187, 187, 255), stop:0.488636 rgba(147, 147, 147, 255), stop:1 rgba(216, 216, 216, 255));
+}</string>
   </property>
   <layout class="QHBoxLayout" name="horizontalLayout">
    <property name="spacing">
@@ -22,6 +52,9 @@
    </property>
    <item>
     <widget class="QFrame" name="MainFrame">
+     <property name="styleSheet">
+      <string notr="true"/>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -30,8 +63,18 @@
      </property>
      <layout class="QVBoxLayout" name="verticalLayout">
       <property name="margin">
-       <number>0</number>
+       <number>10</number>
       </property>
+      <item>
+       <widget class="QLabel" name="main_title">
+        <property name="text">
+         <string>Avatar Editor</string>
+        </property>
+        <property name="alignment">
+         <set>Qt::AlignCenter</set>
+        </property>
+       </widget>
+      </item>
       <item>
        <widget class="QTabWidget" name="tab_appearance">
         <property name="sizePolicy">
@@ -52,13 +95,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_materials">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
+       <widget class="QLabel" name="title_materials">
         <property name="text">
          <string>Textures</string>
         </property>
@@ -70,7 +107,7 @@
          <bool>true</bool>
         </property>
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -115,16 +152,7 @@
        </widget>
       </item>
       <item>
-       <widget class="QLabel" name="label_attachments">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Maximum" vsizetype="Maximum">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="styleSheet">
-         <string notr="true"/>
-        </property>
+       <widget class="QLabel" name="title_attachments">
         <property name="text">
          <string>Attachments</string>
         </property>
@@ -133,7 +161,7 @@
       <item>
        <widget class="QScrollArea" name="scroll_attachments">
         <property name="sizePolicy">
-         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+         <sizepolicy hsizetype="Preferred" vsizetype="Expanding">
           <horstretch>0</horstretch>
           <verstretch>0</verstretch>
          </sizepolicy>
@@ -169,6 +197,19 @@
        </widget>
       </item>
       <item>
+       <spacer name="verticalSpacer">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>40</height>
+         </size>
+        </property>
+       </spacer>
+      </item>
+      <item>
        <widget class="QWidget" name="widget" native="true">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
@@ -180,19 +221,6 @@
          <property name="margin">
           <number>0</number>
          </property>
-         <item>
-          <spacer name="horizontalSpacer">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
-         </item>
          <item>
           <widget class="QPushButton" name="but_load">
            <property name="text">
@@ -210,19 +238,28 @@
          <item>
           <widget class="QPushButton" name="but_revert">
            <property name="text">
-            <string>Revert</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="but_export">
-           <property name="text">
-            <string>Save</string>
+            <string>Revert Change</string>
            </property>
           </widget>
          </item>
         </layout>
        </widget>
+      </item>
+      <item>
+       <spacer name="verticalSpacer_2">
+        <property name="orientation">
+         <enum>Qt::Vertical</enum>
+        </property>
+        <property name="sizeType">
+         <enum>QSizePolicy::Fixed</enum>
+        </property>
+        <property name="sizeHint" stdset="0">
+         <size>
+          <width>20</width>
+          <height>10</height>
+         </size>
+        </property>
+       </spacer>
       </item>
       <item>
        <widget class="QWidget" name="widget2" native="true">
@@ -237,17 +274,11 @@
           <number>0</number>
          </property>
          <item>
-          <spacer name="horizontalSpacer2">
-           <property name="orientation">
-            <enum>Qt::Horizontal</enum>
+          <widget class="QPushButton" name="but_export">
+           <property name="text">
+            <string>Save To Sever</string>
            </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>40</width>
-             <height>20</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="but_exportlocal">
@@ -260,6 +291,22 @@
        </widget>
       </item>
      </layout>
+    </widget>
+   </item>
+   <item>
+    <widget class="QWidget" name="border_widget" native="true">
+     <property name="minimumSize">
+      <size>
+       <width>5</width>
+       <height>0</height>
+      </size>
+     </property>
+     <property name="maximumSize">
+      <size>
+       <width>5</width>
+       <height>16777215</height>
+      </size>
+     </property>
     </widget>
    </item>
   </layout>
