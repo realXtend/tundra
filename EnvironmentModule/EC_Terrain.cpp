@@ -44,6 +44,7 @@ EC_Terrain::EC_Terrain(IModule* module) :
     xPatches.Set(1, AttributeChange::LocalOnly);
     yPatches.Set(1, AttributeChange::LocalOnly);
     patches.resize(1);
+    MakePatchFlat(0, 0, 0.f);
 }
 
 EC_Terrain::~EC_Terrain()
