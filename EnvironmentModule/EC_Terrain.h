@@ -24,27 +24,39 @@ namespace Environment
 <tr>
 <td>
 <h2>Terrain</h2>
-Stores all the terrain patches (typically 16x16) in a given terrain.
+Adds a heightmap-based terrain to the scene. A Terrain is composed of a rectangular grid of adjacent "patches". Each patch is a fixed-size 16x16 height map.
 
 Registered by Environment::EnvironmentModule.
 
-<b>No Attributes</b>
-
-<b>Exposes the following scriptable functions:</b>
+<b>Attributes:</b>
 <ul>
-<li>...
+<li>Transform: nodeTransformation
+<div>Specifies the transformation matrix of the terrain.</div>
+<li>int: xPatches
+<div>The number of patches to generate in the terrain in the horizontal direction, in the range [0, 256].</div>
+<li>int: yPatches
+<div>The number of patches to generate in the terrain in the vertical direction, in the range [0, 256].</div>
+<li>QString: material
+<div>Specifies the material to use when rendering the terrain.</div> 
+<li>QString: texture0
+<div>Specifies the texture channel 0 for the material.</div> 
+<li>QString: texture1
+<div>Specifies the texture channel 1 for the material.</div> 
+<li>QString: texture2
+<div>Specifies the texture channel 2 for the material.</div> 
+<li>QString: texture3
+<div>Specifies the texture channel 3 for the material.</div> 
+<li>QString: texture4
+<div>Specifies the texture channel 4 for the material.</div> 
 </ul>
 
-<b>Reacts on the following actions:</b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
+Note that the way the textures are used depends completely on the material. For example, the default height-based terrain material "Rex/TerrainPCF"
+only uses the texture channels 0-3, and blends between those based on the terrain height values.
 
-Does not emit any actions.
+Does not emit or react on any actions.
 
-<b>Doesn't Depend on any components</b>. 
+<b>Does not depend on any other components</b>. Currently Terrain stores its own transform matrix, so it does not depend on the Placeable component. It might be more consistent
+to create a dependency to Placeable, so that the position of the terrain is editable in the same way the position of other placeables is done.
 </table>
 
 */
@@ -174,6 +186,12 @@ public slots:
     /// Returns how many patches there are in the terrain in the y-direction.
     /// This value is understood in the similar way as above.
     int PatchHeight() const { return patchHeight; }
+
+    ///\todo Add the following scriptable functions:
+    /// void SetHeight(int x, int y, float height);
+    /// void LoadFromFile(const char *filename);
+    /// void SaveToFile(const char *filename);
+    /// void LoadFromAsset(const char *texture); // Takes a texture and converts it to a height map.
 
 public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation NOTIFY TransformChanged);
