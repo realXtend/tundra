@@ -276,7 +276,7 @@ QWidget#border_widget {
          <item>
           <widget class="QPushButton" name="but_export">
            <property name="text">
-            <string>Save To Sever</string>
+            <string>Save To Server</string>
            </property>
           </widget>
          </item>
