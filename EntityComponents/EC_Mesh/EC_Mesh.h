@@ -150,11 +150,11 @@ signals:
     void OnSkeletonChanged(QString skeleton_name);
 
 private slots:
-    //! Emitted when the parrent entity has been setted.
+    //! Emitted when the parrent entity has been set.
     void UpdateSignals();
 
     //! Emitted when some of the attributes has been changed.
-    void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    void AttributeUpdated(IAttribute *attribute);
 
 private:
     //! Constuctor.
