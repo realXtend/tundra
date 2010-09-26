@@ -43,7 +43,6 @@
 #include "EC_NetworkPosition.h"
 #include "EC_HoveringText.h"
 #include "EC_OpenSimPrim.h"
-#include "EC_Movable.h"
 
 #include "IAttribute.h"
 
