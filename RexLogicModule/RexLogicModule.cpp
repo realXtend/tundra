@@ -77,7 +77,10 @@
 #include "EC_OgreCustomObject.h"
 
 // External EC's
+#ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
+#endif
+
 #include "EC_HoveringText.h"
 #include "EC_Clone.h"
 #include "EC_Light.h"
@@ -93,9 +96,15 @@
 #include "EC_ParticleSystem.h"
 #include "EC_SoundListener.h"
 #include "EC_Sound.h"
+#ifdef EC_Mesh_ENABLED
 #include "EC_Mesh.h"
+#endif
+#ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
+#endif
+#ifdef EC_Movable_ENABLED
 #include "EC_Movable.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -140,7 +149,10 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_FreeData);
     DECLARE_MODULE_EC(EC_AttachedSound);
     // External EC's
+#ifdef EC_Highlight_ENABLED
     DECLARE_MODULE_EC(EC_Highlight);
+#endif
+
     DECLARE_MODULE_EC(EC_HoveringText);
     DECLARE_MODULE_EC(EC_Clone);
     DECLARE_MODULE_EC(EC_Light);
@@ -155,9 +167,15 @@ void RexLogicModule::Load()
     DECLARE_MODULE_EC(EC_ParticleSystem);
     DECLARE_MODULE_EC(EC_SoundListener);
     DECLARE_MODULE_EC(EC_Sound);
+#ifdef EC_Mesh_ENABLED
     DECLARE_MODULE_EC(EC_Mesh);
+#endif
+#ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
+#endif
+#ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
+#endif
 }
 
 // virtual
@@ -271,10 +289,12 @@ void RexLogicModule::PostInitialize()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
+#ifdef EC_Highlight_ENABLED
     RegisterConsoleCommand(Console::CreateCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+#endif
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
@@ -1078,6 +1098,7 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
+#ifdef EC_Highlight_ENABLED
     if (!activeScene_)
         return Console::ResultFailure("No active scene found.");
 
@@ -1115,7 +1136,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
             }
         }
     }
-
+#endif
     return Console::ResultSuccess();
 }
 
@@ -1134,10 +1155,13 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }
+
+#ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
     else if (component->TypeName() == EC_Movable::TypeNameStatic())
     {
         entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
+#endif
 }
 
 void RexLogicModule::ComponentRemoved(Scene::Entity *entity, IComponent *component)
