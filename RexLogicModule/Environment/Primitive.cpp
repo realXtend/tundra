@@ -41,7 +41,9 @@
 #include "WorldStream.h"
 
 #include "EC_NetworkPosition.h"
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
 #include "EC_OpenSimPrim.h"
 
 #include "IAttribute.h"
@@ -1264,6 +1266,7 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
 
 void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)
 {
+#ifdef EC_HoveringText_ENABLED
     if (text.empty())
     {
         boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>("llSetText");
@@ -1280,6 +1283,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
         hoveringText.SetTextColor(color);
         hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
     }
+#endif
 }
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)

@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target (ProtocolUtilities)
 
+GetEntityComponents()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -30,14 +32,16 @@ use_package (POCO)
 use_package (QT4)
 use_package (XMLRPC)
 use_modules (Core Foundation ProtocolUtilities Interfaces RexCommon RpcUtilities
-    ProtocolModuleOpenSim ProtocolModuleTaiga SceneManager EntityComponents/EC_OpenSimPrim)
+    ProtocolModuleOpenSim ProtocolModuleTaiga SceneManager)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Foundation Interfaces RexCommon RpcUtilities SceneManager EC_OpenSimPrim)
+link_modules (Core Foundation Interfaces RexCommon RpcUtilities SceneManager)
+
+LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

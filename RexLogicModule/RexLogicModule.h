@@ -209,9 +209,11 @@ namespace RexLogic
         void SetCameraYawPitch(float newyaw, float newpitch);
 
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
+        //! Only functions if #define EC_HoveringText_ENABLED is present. Otherwise performs no function.
         void SetAllTextOverlaysVisible(bool visible);
 
-        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards. Only functions if #define EC_HoveringWidget_ENABLED was present
+        //! when RexLogicModules was built. Otherwise is a no-op that returns false immediately.
         /*! \param x screen coordinate
             \param y screen coordinate
             \param entity this is the entity that was hit with normal raycast. 
@@ -246,7 +248,8 @@ namespace RexLogic
          */
         void UpdateObjects(f64 frametime);
 
-        //! Update sound listener position
+        //! Update sound listener position. Only functions if #define EC_SoundListener_ENABLED was present when RexLogicModule was built,
+        //! otherwise is a no-op.
         /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
@@ -360,6 +363,10 @@ namespace RexLogic
 
         //! Currently active sound listener.
         Scene::EntityWeakPtr activeSoundListener_;
+
+        //! Creates a new camera entity to the scene. Marked as private since this function has some side-effects, like adding the camera
+        //! as the default current camera.
+        void CreateOpenSimViewerCamera(Scene::ScenePtr scene);
 
     private slots:
         /** Called when new component is added to the active scene.

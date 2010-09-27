@@ -161,10 +161,36 @@ add_subdirectory (SceneManager)
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 
+# The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
+# they will not be able to conditionally compile the EC.
+
+# The following EC's are declared by RexLogicModule
+AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule.
+AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
+
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
-#AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
-#AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
-#AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
+AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
+AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
+AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
+AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
+AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
+AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
+AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
+AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
+AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
+AddEntityComponent(EntityComponents/EC_Light EC_Light)
+AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
+AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
+AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
+AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+
+# The following EC's are declared by AvatarModule
+AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required.
+AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+
+# Declared by PythonScriptModule. 
+AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Used by ECEditorModule.
+AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 add_subdirectory (RexLogicModule)
 add_subdirectory (SupportModules)
@@ -199,25 +225,6 @@ add_subdirectory (CommunicationsModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.
-
-# The following EC's are declared by RexLogicModule
-AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
-AddEntityComponent(EntityComponents/EC_Light EC_Light)
-AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
-AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
-AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
-AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
-AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
-AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
-AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
-AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
-AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
-AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-
-# The following EC's are declared by AvatarModule
-AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
-AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
 # Add EC's declared by other modules here:
 # ...
