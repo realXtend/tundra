@@ -22,7 +22,7 @@
 #ifndef incl_RexLogicModule_RexLogicModule_h
 #define incl_RexLogicModule_RexLogicModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "WorldLogicInterface.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexLogicModuleApi.h"
@@ -37,11 +37,6 @@
 class QString;
 class RexUUID;
 
-namespace Foundation
-{
-    struct RaycastResult;
-}
-
 namespace OgreRenderer
 {
     class Renderer;
@@ -54,6 +49,17 @@ namespace ProtocolUtilities
     class ProtocolModuleInterface;
 }
 
+namespace Avatar
+{
+    class AvatarHandler;
+    class AvatarControllable;
+    class AvatarEditor;
+
+    typedef boost::shared_ptr<AvatarHandler> AvatarHandlerPtr;
+    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
+    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
+}
+
 typedef boost::shared_ptr<ProtocolUtilities::WorldStream> WorldStreamPtr;
 
 namespace RexLogic
@@ -64,10 +70,8 @@ namespace RexLogic
     class SceneEventHandler;
     class NetworkStateEventHandler;
     class FrameworkEventHandler;
-    class Avatar;
-    class AvatarEditor;
+    class AvatarEventHandler;
     class Primitive;
-    class AvatarControllable;
     class CameraControllable;
     class MainPanelHandler;
     class WorldInputLogic;
@@ -77,11 +81,7 @@ namespace RexLogic
     namespace InWorldChat { class Provider; }
 
     typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
-
-    typedef boost::shared_ptr<Avatar> AvatarPtr;
-    typedef boost::shared_ptr<AvatarEditor> AvatarEditorPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
-    typedef boost::shared_ptr<AvatarControllable> AvatarControllablePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<ObjectCameraController> ObjectCameraControllerPtr;
 
@@ -98,7 +98,7 @@ namespace RexLogic
         CS_FocusOnObject
     };
 
-    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public Foundation::ModuleInterface
+    class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public IModule
     {
         Q_OBJECT
 
@@ -115,7 +115,7 @@ namespace RexLogic
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
         static const std::string &NameStatic() { return type_name_static_; }
         MODULE_LOGGING_FUNCTIONS;
 
@@ -124,6 +124,7 @@ namespace RexLogic
         Scene::EntityPtr GetCameraEntity() const;
         Scene::EntityPtr GetEntityWithComponent(uint entity_id, const QString &component) const;
         const QString &GetAvatarAppearanceProperty(const QString &name) const;
+        float GetCameraControllablePitch() const;
 
         //=============== RexLogicModule API ===============/
 
@@ -146,19 +147,19 @@ namespace RexLogic
         void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
-        AvatarPtr GetAvatarHandler() const;
+        Avatar::AvatarHandlerPtr GetAvatarHandler() const;
 
         //! @return The avatar editor.
-        AvatarEditorPtr GetAvatarEditor() const;
+        Avatar::AvatarEditorPtr GetAvatarEditor() const;
+        
+        //! Returns the avatar controllable
+        Avatar::AvatarControllablePtr GetAvatarControllable() const;
 
         //! @return The primitive handler object that manages reX primitive logic.
         PrimitivePtr GetPrimitiveHandler() const;
 
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() const { return camera_controllable_; }
-
-        //! Returns the avatar controllable
-        AvatarControllablePtr GetAvatarControllable() const { return avatar_controllable_; }
 
         //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
@@ -169,11 +170,11 @@ namespace RexLogic
 
         //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
         //! are always to be present in an reX world, like terrain.
-        Scene::ScenePtr CreateNewActiveScene(const std::string &name);
+        Scene::ScenePtr CreateNewActiveScene(const QString &name);
 
         //! Deletes the scene with the given name. If that was the current active scene, the active scene will be
         //! set to null.
-        void DeleteScene(const std::string &name);
+        void DeleteScene(const QString &name);
 
         //! @return The entity corresponding to given scene entityid, or null if not found. 
         //!         This entity is guaranteed to have an existing EC_OpenSimPrim component.
@@ -210,20 +211,12 @@ namespace RexLogic
         void SetAvatarRotation(const Quaternion &newrot);
         void SetCameraYawPitch(float newyaw, float newpitch);
 
-        ///\todo Remove. Get this information using WorldStream and/or EC_OpenSimPresence.
-        entity_id_t GetUserAvatarId() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        float GetCameraViewportWidth() const;
-        ///\todo Remove. Get this information from other modules using EC_OgreCamera and/or Renderer.
-        float GetCameraViewportHeight() const;
-
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
+        //! Only functions if #define EC_HoveringText_ENABLED is present. Otherwise performs no function.
         void SetAllTextOverlaysVisible(bool visible);
 
-        //! Handles a click event for entity, namely showing the name tag
-        void EntityClicked(Scene::Entity* entity);
-
-        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards. Only functions if #define EC_HoveringWidget_ENABLED was present
+        //! when RexLogicModules was built. Otherwise is a no-op that returns false immediately.
         /*! \param x screen coordinate
             \param y screen coordinate
             \param entity this is the entity that was hit with normal raycast. 
@@ -238,15 +231,9 @@ namespace RexLogic
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
 
-        //! called when entity is hovered over with mouse
-        void EntityHovered(Scene::Entity* entity);
-
         /// Sends RexPrimData of a prim entity to server
         ///\todo Move to WorldStream?
         void SendRexPrimData(uint entityid);
-
-        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
-        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
     signals:
         //! Estate Info event
@@ -264,19 +251,14 @@ namespace RexLogic
          */
         void UpdateObjects(f64 frametime);
 
-        //! Update sound listener position
+        //! Update sound listener position. Only functions if #define EC_SoundListener_ENABLED was present when RexLogicModule was built,
+        //! otherwise is a no-op.
         /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
 
         //! Handle a resource event. Needs to be passed to several receivers (Prim, Terrain etc.)
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handle an inventory event.
-        bool HandleInventoryEvent(event_id_t event_id, Foundation::EventDataInterface* data);
-
-        //! Handle an asset event.
-        bool HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         //! Gets a map of all avatars in world and the distance from users avatar,
         //! for updating the name tag fades after certain distance.
@@ -293,6 +275,9 @@ namespace RexLogic
 
         //! Console command for test EC_Highlight. Adds EC_Highlight for every avatar.
         Console::CommandResult ConsoleHighlightTest(const StringVector &params);
+
+        /// Returns Ogre renderer pointer. Convenience function for making code cleaner.
+        OgreRenderer::RendererPtr GetOgreRendererPtr() const;
 
         //! Type name of the module.
         static std::string type_name_static_;
@@ -312,6 +297,9 @@ namespace RexLogic
         //! event handler for framework events
         FrameworkEventHandler *framework_handler_;
 
+        //! event handler for avatar events
+        AvatarEventHandler *avatar_event_handler_;
+
         //! Server connection
         WorldStreamPtr world_stream_;
 
@@ -321,18 +309,12 @@ namespace RexLogic
         //! How long to keep doing dead reckoning
         f64 dead_reckoning_time_;
 
-        typedef boost::function<bool(event_id_t,Foundation::EventDataInterface*)> LogicEventHandlerFunction;
+        typedef boost::function<bool(event_id_t,IEventData*)> LogicEventHandlerFunction;
         typedef std::vector<LogicEventHandlerFunction> EventHandlerVector;
         typedef std::map<event_category_id_t, EventHandlerVector> LogicEventHandlerMap;
 
         //! Event handler map.
         LogicEventHandlerMap event_handlers_;
-
-        //! Avatar handler pointer.
-        AvatarPtr avatar_;
-
-        //! Avatar editor pointer.
-        AvatarEditorPtr avatar_editor_;
 
         //! Primitive handler pointer.
         PrimitivePtr primitive_;
@@ -358,9 +340,6 @@ namespace RexLogic
         //! once the parent prim appears, the children will be assigned the parent and the key will be removed from here.
         typedef std::map<entity_id_t, std::set<entity_id_t> > ObjectParentMap;
         ObjectParentMap pending_parents_;
-
-        //! An avatar controllable
-        AvatarControllablePtr avatar_controllable_;
 
         //! Camera controllable
         CameraControllablePtr camera_controllable_;
@@ -390,20 +369,24 @@ namespace RexLogic
         //! Currently active sound listener.
         Scene::EntityWeakPtr activeSoundListener_;
 
+        //! Creates a new camera entity to the scene. Marked as private since this function has some side-effects, like adding the camera
+        //! as the default current camera.
+        void CreateOpenSimViewerCamera(Scene::ScenePtr scene);
+
     private slots:
         /** Called when new component is added to the active scene.
          *  Currently used for handling sound listener EC's.
          *  @param entity Entity for which the component was added.
          *  @param component The added component.
          */
-        void NewComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void NewComponentAdded(Scene::Entity *entity, IComponent *component);
 
         /** Called when component is removed from the active scene.
          *  Currently used for handling sound listener EC's.
          *  @param entity Entity from which the component was removed.
          *  @param component The removed component.
          */
-        void  ComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void ComponentRemoved(Scene::Entity *entity, IComponent *component);
 
         /// Finds entity with active sound listener component and stores it.
         void FindActiveListener();

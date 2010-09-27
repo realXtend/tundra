@@ -8,7 +8,7 @@
 #ifndef incl_EC_Movable_EC_Movable_h
 #define incl_EC_Movable_EC_Movable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -20,6 +20,35 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Movable</h2>
+Contains Entity Actions for moving entity with this component in scene.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Move": MoveForward, MoveBackward, MoveLeft, MoveRight
+<li>"Rotate": RotateLeft, RotateRight
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable and OpenSimPrim</b>.
+</table>
+*/
 /// Contains Entity Actions for moving entity with this component in scene.
 /**
         Currently this EC is pretty much for testing and debugging purposes only.
@@ -31,7 +60,7 @@ namespace ProtocolUtilities
         -Rotate(Left)
         -Rotate(Right)
 */
-class EC_Movable : public Foundation::ComponentInterface
+class EC_Movable : public IComponent
 {
     DECLARE_EC(EC_Movable);
     Q_OBJECT
@@ -57,7 +86,7 @@ private:
     /** Constructor.
         @param module Declaring module.
      */
-    explicit EC_Movable(Foundation::ModuleInterface *module);
+    explicit EC_Movable(IModule *module);
 
     void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
 

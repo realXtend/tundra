@@ -4,6 +4,7 @@
 #define incl_MumbleVoipModule_SettingsWidget_h
 
 #include "ui_VoiceSettings.h"
+#include <QTimer>
 
 namespace MumbleVoip
 {
@@ -30,9 +31,11 @@ namespace MumbleVoip
         virtual void ApplyChanges();
         virtual void UpdateUI();
         virtual void UpdateMicrophoneLevel();
+        virtual void OnSessionProviderDestroyed();
     private:
         Settings* settings_;
         Provider* provider_;
+        QTimer update_timer_;
     };
 } // MumbleVoip
 

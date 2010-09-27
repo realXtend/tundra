@@ -179,8 +179,10 @@ void MyClass::Update()
         \ingroup Services_group
         \ingroup DebugConsole_group
     */
-    class ConsoleCommandServiceInterface : public Foundation::ServiceInterface
+    class ConsoleCommandServiceInterface : public QObject, public Foundation::ServiceInterface
     {
+        Q_OBJECT
+
     public:
         //! default constructor
         ConsoleCommandServiceInterface() {}
@@ -233,6 +235,13 @@ void MyClass::Update()
             \param params Parameters to pass to the command
         */
         virtual CommandResult ExecuteCommand(const std::string &name, const StringVector &params) = 0;
+
+    signals:
+        /// Emitted when console command with no callback pointer is invoked.
+        /** @param command Command name.
+            @param params Parameters (optional).
+        */
+        void CommandInvoked(const QString &command, const QStringList &params = QStringList());
     };
 
     //! \ingroup DebugConsole_group

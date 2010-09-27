@@ -19,7 +19,8 @@ http://www.ogre3d.org/wiki/index.php/DotScene_Loader_with_User_Data_Class
 from xml.dom import minidom, Node
 import string
 #import ogre.renderer.OGRE as ogre
-from quat import Quaternion
+from PythonQt.QtGui import QQuaternion as Quaternion
+from PythonQt.QtGui import QVector3D as Vector
 
 import dotscenemanager
 from dotscenemanager import DotSceneManager as DSManager
@@ -64,7 +65,7 @@ class DotScene:
 
                 #position it
                 pos = self.findNodes(node, 'position')[0].attributes
-                newNode.position = (float(pos['x'].nodeValue), float(pos['y'].nodeValue), float(pos['z'].nodeValue))
+                newNode.position = Vector(float(pos['x'].nodeValue), float(pos['y'].nodeValue), float(pos['z'].nodeValue))
                 
                 # rotate it
                 try:
@@ -80,7 +81,7 @@ class DotScene:
                 
                 # scale it
                 scale = self.findNodes(node, 'scale')[0].attributes
-                newNode.scale = (float(scale['x'].nodeValue), float(scale['y'].nodeValue), float(scale['z'].nodeValue))
+                newNode.scale = Vector(float(scale['x'].nodeValue), float(scale['y'].nodeValue), float(scale['z'].nodeValue))
                 
                 # is it a light?
                 #try:

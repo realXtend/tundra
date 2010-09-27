@@ -7,7 +7,7 @@
 #include "CoreStdIncludes.h"
 #include "CoreAnyIterator.h"
 #include "Entity.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 
 #include <QObject>
 #include <QVariant>
@@ -16,7 +16,6 @@
 namespace Scene
 {
     typedef std::list<EntityPtr> EntityList;
-    typedef std::list<EntityPtr>::iterator EntityListIterator;
 
     //! Acts as a generic scenegraph for all entities in the world.
     /*! Contains all entities in the world in a generic fashion.
@@ -29,20 +28,16 @@ namespace Scene
     class SceneManager : public QObject
     {
         Q_OBJECT
+        Q_PROPERTY (QString Name READ Name)
 
         friend class Foundation::Framework;
+
     private:
         //! default constructor
         SceneManager();
 
         //! constructor that takes a name and parent module
-        SceneManager(const std::string &name, Foundation::Framework *framework) :  name_(name), framework_(framework) {}
-
-        //! copy constructor that also takes a name
-        SceneManager(const SceneManager &other, const std::string &name ) : framework_(other.framework_), entities_(other.entities_) { }
-
-        //! copy constuctor
-        SceneManager(const SceneManager &other);
+        SceneManager(const QString &name, Foundation::Framework *framework);
 
         //! Current global id for entities
         static uint gid_;
@@ -53,15 +48,16 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
 
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
+        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name);
 
     public:
         //! destructor
         ~SceneManager();
-        
+
         //! entity map
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
@@ -81,7 +77,7 @@ namespace Scene
         bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
 
         //! Returns scene name
-        const std::string &Name() const { return name_; }
+        const QString &Name() const { return name_; }
 
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
@@ -92,7 +88,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList());
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList());
 
         //! Returns entity with the specified id
         /*!
@@ -143,23 +139,23 @@ namespace Scene
         /*! \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentChanged(IComponent* comp, AttributeChange::Type change);
         
         //! Emit notification of an attribute changing
         /*! \param comp Component pointer
             \param attribute Attribute pointer
             \param change Type of change (local, from network...)
          */
-        void EmitAttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
+        void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
         
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
             \param change Type of change (local, from network...)
          */
-        void EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
-        //void EmitComponentInitialized(Foundation::ComponentInterface* comp); //, AttributeChange::Type change);
+        //void EmitComponentInitialized(IComponent* comp); //, AttributeChange::Type change);
         
         //! Emit a notification of a component being removed from entity. Called by the entity
         /*! \param entity Entity pointer
@@ -167,7 +163,7 @@ namespace Scene
             \param change Type of change (local, from network...)
             \note This is emitted before just before the component is removed.
          */
-        void EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
         //! Emit a notification of an entity having been created
         /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
             should not usually decide the entityID itself.
@@ -210,31 +206,31 @@ namespace Scene
         Foundation::Framework *framework_;
 
         //! Name of the scene
-        const std::string name_;
+        QString name_;
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentChanged(IComponent* comp, AttributeChange::Type change);
 
         //! Signal when an attribute of a component has changed
-        void AttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change);
+        void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
         //! Signal when a component is removed from an entity and should possibly be replicated (if the change originates from local)
         /*! Network synchronization managers should connect to this
          */
-        void ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
         //! Signal when a component is initialized.
         /*! Python and Javascript handlers use this instead of subclassing and overriding the component constructor
          *! -- not used now 'cause ComponentAdded is also emitted upon initialization (loading from server ) 
-         void ComponentInitialized(Foundation::ComponentInterface* comp);*/
+         void ComponentInitialized(IComponent* comp);*/
 
         //! Signal when an entity created
         /*! Note: currently there is also Naali scene event that duplicates this notification

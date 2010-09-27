@@ -2,16 +2,20 @@
 
 #include "StableHeaders.h"
 #include "CameraControllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+
+#include "EntityComponent/EC_AvatarAppearance.h"
+#include "EC_NetworkPosition.h"
+
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "SceneManager.h"
-#include "EC_OgrePlaceable.h"
+
 #include "Renderer.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
+
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "EnvironmentModule.h"
@@ -97,7 +101,7 @@ namespace RexLogic
         camera_entity_ = camera;
     }
     
-    bool CameraControllable::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleSceneEvent(event_id_t event_id, IEventData* data)
     {
         //! \todo This is where our user agent model design breaks down. We assume only one controllable entity exists and that it is a target for the camera.
         //!       Should be changed so in some way the target can be changed and is not automatically assigned. -cm
@@ -107,7 +111,7 @@ namespace RexLogic
         return false;
     }
 
-    bool CameraControllable::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
@@ -205,7 +209,7 @@ namespace RexLogic
         return false;
     }
 
-    bool CameraControllable::HandleActionEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool CameraControllable::HandleActionEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
@@ -478,7 +482,7 @@ namespace RexLogic
                     Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
                     if (ec_terrain && ec_terrain->AllPatchesLoaded())
                     {
-                        float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
+                        float terrain_height = ec_terrain->GetInterpolatedHeightValue(position.x, position.y);
                         min_z = terrain_height + terrainConstraintOffset_;
                         if (!useBoundaryBoxConstraint_ && position.z < min_z)
                             position.z = min_z;

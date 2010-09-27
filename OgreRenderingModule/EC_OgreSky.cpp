@@ -11,8 +11,8 @@
 namespace OgreRenderer
 {
 
-EC_OgreSky::EC_OgreSky(Foundation::ModuleInterface* module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_OgreSky::EC_OgreSky(IModule* module) :
+    IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     owner_(module),
     skyEnabled_(false),

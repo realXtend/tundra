@@ -3,45 +3,134 @@
 #ifndef incl_OgreRenderer_EC_OgreMesh_h
 #define incl_OgreRenderer_EC_OgreMesh_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
 
-namespace Ogre
-{
-    class Entity;
-    class Mesh;
-    class Node;
-    class SceneNode;
-}
-
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-    //! Ogre mesh entity component
-    /*! Needs to be attached to a placeable (aka scene node) to be visible.
-        \ingroup OgreRenderingModuleClient
-     */
-    class OGRE_MODULE_API EC_OgreMesh : public Foundation::ComponentInterface
+//! Ogre mesh entity component
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreMesh</h2>
+Ogre mesh entity component
+Needs to be attached to a placeable (aka scene node) to be visible. 
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>Attributes</b>:
+<ul>
+
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"SetPlaceable": sets placeable component
+        set a null placeable to detach the object, otherwise will attach
+        \param placeable placeable component
+<li>"SetDrawDistance": sets draw distance
+        \param draw_distance New draw distance, 0.0 = draw always (default)
+<li>"SetMesh":sets mesh
+        if mesh already sets, removes the old one
+        \param mesh_name mesh to use
+        \param clone whether mesh should be cloned for modifying geometry uniquely
+        \return true if successful 
+<li>"SetMeshWithSkeleton": sets mesh with custom skeleton
+        if mesh already sets, removes the old one
+        \param mesh_name mesh to use
+        \param skeleton_name skeleton to use
+        \param clone whether mesh should be cloned for modifying geometry uniquely
+        \return true if successful
+<li>"SetMaterial": sets material in mesh
+        \param index submesh index
+        \param material_name material name
+        \return true if successful
+<li>"SetAdjustPosition": sets adjustment (offset) position
+        \param position new position
+<li>"SetAdjustOrientation": sets adjustment orientation
+        \param orientation new orientation
+<li>"SetAdjustScale": sets adjustment scale
+        \param position new scale
+<li>"RemoveMesh": removes mesh
+<li>"SetAttachmentMesh": sets an attachment mesh
+      The mesh entity must exist before attachment meshes can be set. Setting a new mesh entity removes all attachment meshes.
+      \param index attachment index starting from 0.
+      \param mesh_name mesh to use
+      \param attach_point bone in entity's skeleton to attach to. if empty or nonexistent, attaches to entity root
+      \param share_skeleton whether to link animation (for attachments that are also skeletally animated)
+      \return true if successful 
+<li>"SetAttachmentPosition": sets position of attachment mesh, relative to attachment poiont
+<li>"SetAttachmentOrientation": sets orientation of attachment mesh, relative to attachment point
+<li>"SetAttachmentScale": sets scale of attachment mesh, relative to attachment point
+<li>"RemoveAttachmentMesh": removes an attachment mesh
+      \param index attachment index starting from 0
+<li>"RemoveAllAttachments": removes all attachments
+<li>"SetAttachmentMaterial": sets material on an attachment mesh
+     \param index attachment index starting from 0
+    \param submesh_index submesh in attachment mesh
+     \param material_name material name
+     \return true if successful 
+<li>"HasMesh": returns if mesh exists
+<li>"GetNumAttachments": returns number of attachments
+        note: returns just the size of attachment vector, so check individually that attachments actually exist
+<li>"HasAttachmentMesh": returns if attachment mesh exists
+<li>"GetPlaceable": gets placeable component
+<li>"GetMeshName": returns mesh name
+<li>"GetSkeletonName": returns mesh skeleton name
+<li>"SetCastShadows": Sets if the entity casts shadows or not.
+<li>"GetEntity": returns Ogre mesh entity 
+<li>"GetAttachmentEntity": returns Ogre attachment mesh entity
+<li>"GetNumMaterials": gets number of materials (submeshes) in mesh entity
+<li>"GetAttachmentNumMaterials": gets number of materials (submeshes) in attachment mesh entity
+<li>"GetMatName": gets material name from mesh
+    \param index submesh index
+    \return name if successful, empty if no entity / illegal index
+<li>"GetAttachmentMaterialNam": gets material name from attachment mesh
+     \param index attachment index
+     \param submesh_index submesh index
+     \return name if successful, empty if no entity / illegal index
+<li>"GetBoundingBox": returns bounding box of Ogre mesh entity
+        //! returns zero box if no entity
+<li>"GetAdjustPosition": returns adjustment position
+<li>"GetAdjustOrientation": returns adjustment orientation
+<li>"GetAdjustScale": returns adjustment scale
+<li>"GetAttachmentPosition": returns offset position of attachment
+<li>"GetAttachmentOrientation": returns offset orientation of attachment
+<li>"GetAttachmentScale": returns offset scale of attachment
+<li>"GetDrawDistance": returns draw distance
+<li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
+    class OGRE_MODULE_API EC_OgreMesh : public IComponent
     {
         Q_OBJECT
         
         DECLARE_EC(EC_OgreMesh);
     public:
         virtual ~EC_OgreMesh();
-    public slots:    
+    public slots:
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -138,7 +227,7 @@ namespace OgreRenderer
         bool HasAttachmentMesh(uint index) const;
         
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! returns mesh name
         const std::string& GetMeshName() const;
@@ -207,7 +296,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMesh(Foundation::ModuleInterface* module);
+        EC_OgreMesh(IModule* module);
         
         //! prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
         /*! \param mesh_name Mesh to prepare
@@ -223,7 +312,7 @@ namespace OgreRenderer
         void DetachEntity();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

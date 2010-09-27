@@ -4,7 +4,7 @@
 #include "QtInputModule.h"
 #include "Profiler.h"
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(QtInputModule)
 POCO_END_MANIFEST
 

@@ -9,9 +9,10 @@
 #include "Framework.h"
 #include "ComponentManager.h"
 #include "EventManager.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ForwardDefines.h"
 
+#include <QString>
 #include <QDomDocument>
 #include <QFile>
 
@@ -20,6 +21,16 @@
 namespace Scene
 {
     uint SceneManager::gid_ = 0;
+
+    SceneManager::SceneManager() : framework_(0)
+    {
+    }
+
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
+        name_(name),
+        framework_(framework)
+    {
+    }
 
     SceneManager::~SceneManager()
     {
@@ -131,27 +142,27 @@ namespace Scene
         return entities;
     }
     
-    void SceneManager::EmitComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change)
+    void SceneManager::EmitComponentChanged(IComponent* comp, AttributeChange::Type change)
     {
         emit ComponentChanged(comp, change);
     }
     
-    void SceneManager::EmitComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+    void SceneManager::EmitComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
     {
         emit ComponentAdded(entity, comp, change);
     }
     
-    void SceneManager::EmitComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change)
+    void SceneManager::EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
     {
         emit ComponentRemoved(entity, comp, change);
     }
 
-    void SceneManager::EmitAttributeChanged(Foundation::ComponentInterface* comp, AttributeInterface* attribute, AttributeChange::Type change)
+    void SceneManager::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
     {
         emit AttributeChanged(comp, attribute, change);
     }
 
-  /*void SceneManager::EmitComponentInitialized(Foundation::ComponentInterface* comp)
+  /*void SceneManager::EmitComponentInitialized(IComponent* comp)
     {
         emit ComponentInitialized(comp);
         }*/
@@ -186,6 +197,21 @@ namespace Scene
             ids.append(qv);
         }
         return ids;
+    }
+
+    QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name)
+    {
+        EntityList list = GetEntitiesWithComponent(type_name);
+        QList<Scene::Entity*> qlist;
+        EntityList::iterator iter;
+
+        for(iter = list.begin(); iter != list.end(); iter++)
+        {
+            EntityPtr ent = *iter;
+            Entity* e = ent.get();
+            qlist.append(e);
+        }
+        return qlist;
     }
     
     bool SceneManager::LoadScene(const std::string& filename, AttributeChange::Type change)
@@ -223,7 +249,7 @@ namespace Scene
                 {
                     QString type_name = comp_elem.attribute("type");
                     QString name = comp_elem.attribute("name");
-                    Foundation::ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                    ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
                     if (new_comp)
                     {
                         new_comp->DeserializeFrom(comp_elem, change);

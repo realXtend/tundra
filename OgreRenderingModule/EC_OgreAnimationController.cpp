@@ -9,8 +9,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreAnimationController::EC_OgreAnimationController(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework())
+    EC_OgreAnimationController::EC_OgreAnimationController(IModule* module) :
+        IComponent(module->GetFramework())
     {
         ResetState();
     }

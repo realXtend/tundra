@@ -3,8 +3,9 @@
 #ifndef incl_OgreRenderer_EC_OgreParticleSystem_h
 #define incl_OgreRenderer_EC_OgreParticleSystem_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
@@ -12,23 +13,41 @@
 namespace Ogre
 {
     class ParticleSystem;
-    class SceneNode;
 }
 
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-    //! Ogre particle system entity component
-    /*! May contain multiple particle systems created from templates.
-        Needs to be attached to a placeable (aka scene node) to be visible.
-        \ingroup OgreRenderingModuleClient
-     */
-    class OGRE_MODULE_API EC_OgreParticleSystem : public Foundation::ComponentInterface
+//! Ogre particle system entity component
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreParticleSystem</h2>
+Ogre particle system entity component.
+May contain multiple particle systems created from templates. Needs to be attached to a placeable (aka scene node) to be visible. 		
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>.
+</table>
+*/
+    class OGRE_MODULE_API EC_OgreParticleSystem : public IComponent
     {
         Q_OBJECT
         
@@ -37,13 +56,13 @@ namespace OgreRenderer
         virtual ~EC_OgreParticleSystem();
 
         //! gets placeable component
-        Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+        ComponentPtr GetPlaceable() const { return placeable_; }
         
         //! sets placeable component
         /*! set a null placeable to detach the system(s), otherwise will attach
             \param placeable placeable component
          */
-        void SetPlaceable(Foundation::ComponentPtr placeable);
+        void SetPlaceable(ComponentPtr placeable);
         
         //! sets draw distance
         /*! \param draw_distance New draw distance, 0.0 = draw always (default)
@@ -110,7 +129,7 @@ namespace OgreRenderer
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreParticleSystem(Foundation::ModuleInterface* module);
+        EC_OgreParticleSystem(IModule* module);
         
         //! attaches systems to placeable
         void AttachSystems();
@@ -119,7 +138,7 @@ namespace OgreRenderer
         void DetachSystems();
         
         //! placeable component 
-        Foundation::ComponentPtr placeable_;
+        ComponentPtr placeable_;
         
         //! renderer
         RendererWeakPtr renderer_;

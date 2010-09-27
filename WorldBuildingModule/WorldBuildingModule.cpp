@@ -20,7 +20,7 @@ namespace WorldBuilding
 
     WorldBuildingModule::WorldBuildingModule() :
         QObject(),
-        ModuleInterface(module_name)
+        IModule(module_name)
     {
         event_query_categories_ << "Framework" << "NetworkState" << "Scene";
     }
@@ -45,12 +45,12 @@ namespace WorldBuilding
         SubscribeToEventCategories();
 
         // Register building key context
-        input_context_ = GetFramework()->Input().RegisterInputContext("WorldBuildingContext", 90);
+        input_context_ = GetFramework()->Input()->RegisterInputContext("WorldBuildingContext", 90);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyReleased(KeyEvent*)));
     }
 
-    bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         bool handled = false;
         QString category = service_category_identifiers_.keys().value(
@@ -133,6 +133,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 }
 
 using namespace WorldBuilding;
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(WorldBuildingModule)
 POCO_END_MANIFEST

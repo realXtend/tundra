@@ -2,16 +2,14 @@
 
 \page EventSystem Viewer event system
 
-	Below is a description on how to use the viewer's internal event system and
-	the event manager. The event system is one way for viewer modules to communicate
-	between each other without explicit dependencies.
-
+	This page describes how to use the Naali internal event system and
+	the event manager. The event system is a way for viewer modules to communicate
+	between each other.
 
 	\section acquiring_ES Acquiring the EventManager	
 
 	To use the event system, a reference to the EventManager within the Foundation framework is needed.
 	Use Foundation::Framework::GetEventManager() to acquire.
-
 
 	\section events_ES Events
 	
@@ -19,7 +17,6 @@
         and an optional pointer to a event-specific data structure. The category ID and event ID 
 	identify the event to the receiver, while the data structure, if necessary, contains data specific
 	to the event.
-
 
 	\subsection categoryregistering_ES Event category ID's, registering
 
@@ -165,4 +162,17 @@ bool OgreRenderingModule::HandleEvent(
 	Use delayed events with judgement; convoluted logic could be rather easily created with them!
 	Also note that you will not get to know whether the event was handled by any subscribers.
 
+
+\section events_avoid Why avoid events?
+
+Since the creation of the core event pipe, Naali has migrated to operate on top of Qt. Several of 
+the features offered by a centralized event pipe can be achieved through Qt signals and slots. The 
+identified cases where event overriding is needed were all input-related, for which the new Input API 
+provides a built-in mechanism for overriding input signals using InputContexts.
+
+There exists a lot of burden for managing event categories and IDs, and needing to produce subclasses
+of EventDataInterface to be able to pass parameters with the events. In most cases, in the future
+the use of Naali events will be removed and no new events should be added. If possible, use Qt
+signal/slot mechanisms to provide custom inter-module communication.  
+ 
 */

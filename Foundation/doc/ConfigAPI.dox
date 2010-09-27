@@ -1,0 +1,16 @@
+/**
+
+\page ConfigAPI Config API
+
+Naali provides a unified mechanism for modules and scripts to store their system-specific configuration data on disk. These configuration variables persist between application runs.
+
+The configuration data storage does not have any security mechanisms built-in, so do not store any sensitive data in the configuration files.  
+ 
+\section ConfigReadWrite Reading and writing configuration data.
+
+todo.
+
+\section ConfigDefaultValues Using default values.
+
+todo.
+ 

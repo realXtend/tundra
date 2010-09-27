@@ -3,7 +3,7 @@
 #ifndef EC_WATERPLANE_H_
 #define EC_WATERPLANE_H_
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "CoreTypes.h"
 #include "RexTypes.h"
@@ -17,6 +17,7 @@ namespace Ogre
 {
     class Entity;
     class SceneNode;
+    class ColourValue;
 }
 
 
@@ -29,12 +30,9 @@ namespace OgreRenderer
 
 
 namespace Environment
-{ 
+{
 
-///HACK Because namespace problems with mock-compiler we need to do this. 
-//using Foundation::AttributeInterface;
-
-class EC_WaterPlane : public Foundation::ComponentInterface
+class EC_WaterPlane : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_WaterPlane);
@@ -78,11 +76,16 @@ class EC_WaterPlane : public Foundation::ComponentInterface
         Attribute<float> fogStartAttr_;
         /// Underwater fog end distance (meters)
         Attribute<float> fogEndAttr_;
-        
+        /// UnderWater fog mode, defines how Fog density increases.
+        Attribute<int> fogModeAttr_;
+
          /** 
          * Returns true if camera is inside of watercube. 
          */
         bool IsUnderWater();
+
+        /// Returns color value in Ogre format.
+        Ogre::ColourValue GetFogColorAsOgreValue() const;
        
     public slots: 
         
@@ -96,25 +99,27 @@ class EC_WaterPlane : public Foundation::ComponentInterface
         void DetachEntity();
 
         /// Called If some of the attributes has been changed.
-        void AttributeUpdated(AttributeInterface* attribute, AttributeChange::Type change);
+        void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
+
+     
 
     private:
         /** 
          * Constuctor.
          * @param module Module where component belongs.
          **/
-        explicit EC_WaterPlane(Foundation::ModuleInterface *module);
+        explicit EC_WaterPlane(IModule *module);
         
         /**
          * Finds out that is EC_OgrePlaceable component connected to same entity where waterplane compontent is placed. 
          * @returns component pointer to EC_OgrePlaceable component.
          */
-        Foundation::ComponentPtr FindPlaceable() const;
+        ComponentPtr FindPlaceable() const;
         
         /**
          * Helper function which is used to update water plane state. 
          */
-        void ChangeWaterPlane(AttributeInterface* attribute);
+        void ChangeWaterPlane(IAttribute* attribute);
         
         /**
          * Changes water plane position, this function should be called only if 

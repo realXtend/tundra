@@ -1,4 +1,5 @@
 // For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Core_HighPerfClock_h
 #define incl_Core_HighPerfClock_h
 
@@ -9,9 +10,6 @@
 #endif
 
 #include <boost/cstdint.hpp>
-
-namespace Core
-{
 
 typedef boost::uint64_t tick_t;
 
@@ -48,8 +46,6 @@ inline tick_t GetCurrentClockFreq()
 #else
     return 1;
 #endif
-}
-
 }
 
 #endif

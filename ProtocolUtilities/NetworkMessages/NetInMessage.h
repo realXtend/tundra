@@ -13,19 +13,18 @@ class RexUUID;
 
 namespace ProtocolUtilities
 {
-
     /** Helps parsing inbound packets by supporting convenient reading of new data from the message. Also
         tracks that the message is read with the right structure.
         \ingroup OpenSimProtocolClient */
-        
     class NetInMessage
     {
     public:
         /// Constructor.
-        /// @param seqNum Sequence number of this message.
-        /// @param data Data buffer.
-        /// @param numBytes Number of bytes.
-        /// @param zerEncoded Is this data zero-encoded.
+        /** @param seqNum Sequence number of this message.
+            @param data Data buffer.
+            @param numBytes Number of bytes.
+            @param zerEncoded Is this data zero-encoded.
+        */
         NetInMessage(size_t seqNum, const uint8_t *data, size_t numBytes, bool zeroEncoded);
 
         /// Destructor.
@@ -87,32 +86,41 @@ namespace ProtocolUtilities
         /// @return The number of bytes the next variable to-be-read takes.
         size_t ReadVariableSize() const { return currentVariableSize; }
 
-        /// Called to skip to the next variable. Same as private function AdvanceToNextVariable but additionally makes it possible not to increment bytesRead
-        /// if data is already read (and bytesRead incremented) with ReadBytesUnchecked. Increments bytesRead the right amount also when a NetVarBufferxxx is skipped.
+        /// Called to skip to the next variable.
+        /** Same as private function AdvanceToNextVariable but additionally makes it possible not to increment bytesRead
+            if data is already read (and bytesRead incremented) with ReadBytesUnchecked.
+            Increments bytesRead the right amount also when a NetVarBufferxxx is skipped.
+        */
         void SkipToNextVariable(bool bytesAlreadyRead = false);
         
         /// Skips to the first variable with the specified name.
         void SkipToFirstVariableByName(const std::string &variableName);
 
         /// Skips all the remaining variables in the current instance of the current block.
-        /// The new read pointer will point to the first variable of the next instance of current block type, or if this was the last instance of current block type,
-        /// then to the first variable of the first instance of the next block type (if it exists).
+        /** The new read pointer will point to the first variable of the next instance of 
+            current block type, or if this was the last instance of current block type,
+            then to the first variable of the first instance of the next block type (if it exists).
+        */
         void SkipToNextInstanceStart();
 
-        /// Returns a pointer to a stream of given amount of bytes in the inbound packet. Doesn't do any validation. Increments the bytesRead pointer, but doesn't
-        /// advance to the next variable. Use this only to do custom raw reading of the packet.
-        /// @param Amount of bytes to be read.
+        /// Returns a pointer to a stream of given amount of bytes in the inbound packet.
+        /** Doesn't do any validation. Increments the bytesRead pointer, but doesn't
+            advance to the next variable. Use this only to do custom raw reading of the packet.
+            @param Amount of bytes to be read.
+        */
         void *ReadBytesUnchecked(size_t count);
-        
+
         /// @return The message's sequence number.
         uint32_t GetSequenceNumber() const { return sequenceNumber; } 
-        
+
         /// @return Message id of this packet.
-        const NetMsgID GetMessageID() const { return messageID; }
+        NetMsgID GetMessageID() const { return messageID; }
 
         void SetMessageInfo(const NetMessageInfo *info);
 
-        /// @return A structure that represents the types and amounts of blocks and variables of this packet. Use it to examine the whole structure of this message type.
+        /// Returns a structure that represents the types and amounts of blocks and variables of this packet.
+        /** Use it to examine the whole structure of this message type.
+        */
         const NetMessageInfo *GetMessageInfo() const { return messageInfo; }
 
         /// @return The original message data.

@@ -34,57 +34,54 @@ namespace Resource
     }
 }
 
-namespace Naali
+//! AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
+class AudioPreviewEditor: public QWidget
 {
-    //! AudioPreviewEditor is used to play different audioclips from the inventory and display a audio info diagram.
-    class AudioPreviewEditor: public QWidget
-    {
-        Q_OBJECT
-    public:
-        AudioPreviewEditor(Foundation::Framework *framework,
-                           const QString &inventory_id,
-                           const asset_type_t &asset_type,
-                           const QString &name,
-                           QWidget *parent = 0);
-        virtual ~AudioPreviewEditor();
+    Q_OBJECT
+public:
+    AudioPreviewEditor(Foundation::Framework *framework,
+                       const QString &inventory_id,
+                       const asset_type_t &asset_type,
+                       const QString &name,
+                       QWidget *parent = 0);
+    virtual ~AudioPreviewEditor();
 
-        void HandleAssetReady(Foundation::AssetPtr asset);
+    void HandleAssetReady(Foundation::AssetPtr asset);
 
-        void HandleResouceReady(Resource::Events::ResourceReady *res);
+    void HandleResouceReady(Resource::Events::ResourceReady *res);
 
-    public slots:
-        /// Close the window.
-        void Closed();
+public slots:
+    /// Close the window.
+    void Closed();
 
-        //! Toggle between sound play and stop states.
-        void PlaySound();
-        void TimerTimeout();
+    //! Toggle between sound play and stop states.
+    void PlaySound();
+    void TimerTimeout();
 
-    signals:
-        //! This signal is emitted when the editor is closed.
-        void Closed(const QString &inventory_id, asset_type_t asset_type);
+signals:
+    //! This signal is emitted when the editor is closed.
+    void Closed(const QString &inventory_id, asset_type_t asset_type);
 
-        //! Signal for widget resize.
-        void WidgetResized(QSize size);
+    //! Signal for widget resize.
+    void WidgetResized(QSize size);
 
-    protected:
-        virtual void resizeEvent(QResizeEvent *ev);
+protected:
+    virtual void resizeEvent(QResizeEvent *ev);
 
-    private:
-        void InitializeEditorWidget();
+private:
+    void InitializeEditorWidget();
 
-        Foundation::Framework *framework_;
-        asset_type_t assetType_;
-        request_tag_t request_tag_;
-        QString inventoryId_;
-        QString assetId_;
-        sound_id_t soundId_;
+    Foundation::Framework *framework_;
+    asset_type_t assetType_;
+    request_tag_t request_tag_;
+    QString inventoryId_;
+    QString assetId_;
+    sound_id_t soundId_;
 
-        QWidget     *mainWidget_;
-        QPushButton *okButton_;
-        QPushButton *playButton_;
-        QTimer      *playTimer_;
-    };
-}
+    QWidget     *mainWidget_;
+    QPushButton *okButton_;
+    QPushButton *playButton_;
+    QTimer      *playTimer_;
+};
 
 #endif

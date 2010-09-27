@@ -11,8 +11,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreParticleSystem::EC_OgreParticleSystem(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+    EC_OgreParticleSystem::EC_OgreParticleSystem(IModule* module) :
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         adjustment_node_(0),
         attached_(false),
@@ -40,7 +40,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreParticleSystem::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreParticleSystem::SetPlaceable(ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {
