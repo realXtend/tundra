@@ -82,7 +82,7 @@ class AnimationSync(circuits.BaseComponent):
                 t = ent.touchable
             else:
                 print "touchable pre-existed in animated character for animsync."
-            t.connect('Clicked()', self.showgui)
+            t.connect('MousePressed()', self.showgui)
             self.inworld_inited = True        
 
         if self.proxywidget is None and self.widget is not None:

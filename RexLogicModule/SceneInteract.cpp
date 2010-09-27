@@ -2,7 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneInteract.cpp
- *  @brief  
+ *  @brief  Executes Entity Action for scene entities.
  */
 
 #include "StableHeaders.h"
