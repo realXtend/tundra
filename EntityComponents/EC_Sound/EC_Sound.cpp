@@ -29,6 +29,8 @@ EC_Sound::EC_Sound(IModule *module):
     soundGain.SetMetadata(&metaData);
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -36,11 +38,8 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
-
     if(attribute->GetNameString() == soundId.GetNameString())
     {
         Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
@@ -74,7 +73,10 @@ void EC_Sound::PlaySound()
 
     Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
     if(!soundService)
+    {
+        // log warning
         return;
+    }
 
     if(sound_id_)
         StopSound();
@@ -97,10 +99,9 @@ void EC_Sound::PlaySound()
 void EC_Sound::StopSound()
 {
     Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
-    if(!soundService)
-        return;
+    if (soundService)
+        soundService->StopSound(sound_id_);
 
-    soundService->StopSound(sound_id_);
     sound_id_ = 0;
 }
 
@@ -108,7 +109,10 @@ void EC_Sound::UpdateSoundSettings()
 {
     Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
     if(!soundService || !sound_id_)
+    {
+        // log warning
         return;
+    }
 
     soundService->SetGain(sound_id_, soundGain.Get());
     soundService->SetLooped(sound_id_, loopSound.Get());
@@ -117,15 +121,19 @@ void EC_Sound::UpdateSoundSettings()
 
 void EC_Sound::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(GetParentEntity())
+    if (!GetParentEntity())
     {
-        Scene::SceneManager *scene = GetParentEntity()->GetScene();
-        if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
-        RegisterActions();
+        // log warning
+        return;
     }
+    Scene::SceneManager *scene = GetParentEntity()->GetScene();
+    if(!scene)
+    {
+        // log warning
+        return;
+    }
+
+    RegisterActions();
 }
 
 ComponentPtr EC_Sound::FindPlaceable() const

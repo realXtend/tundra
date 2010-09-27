@@ -76,11 +76,14 @@ namespace RexLogic
     class MainPanelHandler;
     class WorldInputLogic;
     class LoginHandler;
+    class ObjectCameraController;
+
     namespace InWorldChat { class Provider; }
 
     typedef boost::shared_ptr<InWorldChat::Provider> InWorldChatProviderPtr;
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
+    typedef boost::shared_ptr<ObjectCameraController> ObjectCameraControllerPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -91,8 +94,6 @@ namespace RexLogic
         CS_Free,
         //! Camera tripod
         CS_Tripod,
-        //! Focus on object
-        CS_FocusOnObject
     };
 
     class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public IModule
@@ -133,15 +134,6 @@ namespace RexLogic
 
         //! camera tripod
         void CameraTripod();
-
-        //! focus on object, and rotate around it
-        void FocusOnObject(float, float, float);
-
-        //! return camera state
-        CameraState GetCameraState() const { return camera_state_; }
-
-        //! reset camera state to CS_Follow
-        void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
         Avatar::AvatarHandlerPtr GetAvatarHandler() const;
@@ -209,9 +201,11 @@ namespace RexLogic
         void SetCameraYawPitch(float newyaw, float newpitch);
 
         //! Sets visibility for all name display overlays, used e.g. in screenshot taking
+        //! Only functions if #define EC_HoveringText_ENABLED is present. Otherwise performs no function.
         void SetAllTextOverlaysVisible(bool visible);
 
-        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards.
+        //!Checks if ray hits an infoicon billboard, normal rayquery ignores billboards. Only functions if #define EC_HoveringWidget_ENABLED was present
+        //! when RexLogicModules was built. Otherwise is a no-op that returns false immediately.
         /*! \param x screen coordinate
             \param y screen coordinate
             \param entity this is the entity that was hit with normal raycast. 
@@ -246,7 +240,8 @@ namespace RexLogic
          */
         void UpdateObjects(f64 frametime);
 
-        //! Update sound listener position
+        //! Update sound listener position. Only functions if #define EC_SoundListener_ENABLED was present when RexLogicModule was built,
+        //! otherwise is a no-op.
         /*! Uses the default camera or avatar for now.
          */
         void UpdateSoundListener();
@@ -338,6 +333,8 @@ namespace RexLogic
         //! Camera controllable
         CameraControllablePtr camera_controllable_;
 
+        ObjectCameraControllerPtr obj_camera_controller_;
+
         //! Avatar entities found this frame. Needed so that we can update name overlays last, after all other updates
         std::vector<Scene::EntityWeakPtr> found_avatars_;
 
@@ -360,6 +357,10 @@ namespace RexLogic
 
         //! Currently active sound listener.
         Scene::EntityWeakPtr activeSoundListener_;
+
+        //! Creates a new camera entity to the scene. Marked as private since this function has some side-effects, like adding the camera
+        //! as the default current camera.
+        void CreateOpenSimViewerCamera(Scene::ScenePtr scene);
 
     private slots:
         /** Called when new component is added to the active scene.

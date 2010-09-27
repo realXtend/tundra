@@ -115,7 +115,7 @@ namespace OpenALAudio
         /*! \param id Channel id
             \return Sound name, or empty if no sound
          */
-        virtual const QString& GetSoundName(sound_id_t id) const;
+        virtual QString GetSoundName(sound_id_t id) const;
      
         //! Gets type of sound played/pending on channel (triggered/ambient etc.)
         /*! \param id Channel id

@@ -39,7 +39,7 @@ private:
     /// Input context.
     InputContextPtr input_;
 
-    /// Renderer pointre.
+    /// Renderer pointer.
     Foundation::RendererWeakPtr renderer_;
 
     /// Last known mouse cursor's x position.
@@ -64,6 +64,9 @@ private slots:
     /** @param e Mouse event.
     */
     void HandleMouseEvent(MouseEvent *e);
+
+signals:
+    void EntityClicked(Scene::Entity *entity);
 };
 
 #endif

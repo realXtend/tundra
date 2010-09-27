@@ -114,7 +114,7 @@ template<> std::string Attribute<QVariantList >::ToString() const
     QVariantList values = Get();
 
     std::string stringValue = "";
-    for(uint i = 0; i < values.size(); i++)
+    for(int i = 0; i < values.size(); i++)
     {
         stringValue += values[i].toString().toStdString();
         if(i < values.size() - 1)
@@ -343,7 +343,7 @@ template<> void Attribute<QVariantList >::FromString(const std::string& str, Att
     QString strValue = QString::fromStdString(str);
     QStringList components = strValue.split(';');
 
-    for(uint i = 0; i < components.size(); i++)
+    for(int i = 0; i < components.size(); i++)
         value.push_back(QVariant(components[i]));
     if(value.size() == 1)
         if(value[0] == "")

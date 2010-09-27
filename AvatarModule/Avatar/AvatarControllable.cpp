@@ -225,17 +225,14 @@ namespace Avatar
                         switch (event_id)
                         {
                         case RA::RotateLeft:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = -1;
+                            avatar->yaw = -1;
                             break;
                         case RA::RotateRight:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = 1;
+                            avatar->yaw = 1;
                             break;
                         case RA::RotateLeft + 1:
                         case RA::RotateRight + 1:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = 0;
+                            avatar->yaw = 0;
                             break;
                         }
                     }

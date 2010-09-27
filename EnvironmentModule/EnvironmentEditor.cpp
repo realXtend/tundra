@@ -1790,7 +1790,7 @@ namespace Environment
         assert(environment_module_);
 
         // Priority 110: Must be over EtherInput priority (100, see UiModule.cpp) to get the ESC edit cancel message.
-        terrainPaintInputContext = environment_module_->GetFramework()->Input().RegisterInputContext("TerrainPaint", 110);
+        terrainPaintInputContext = environment_module_->GetFramework()->Input()->RegisterInputContext("TerrainPaint", 110);
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 

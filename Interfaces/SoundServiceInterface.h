@@ -147,7 +147,7 @@ namespace Foundation
         /*! \param id Channel id
             \return Sound name, or empty if no sound
          */
-        virtual const QString& GetSoundName(sound_id_t id) const = 0;
+        virtual QString GetSoundName(sound_id_t id) const = 0;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id

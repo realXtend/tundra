@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target (DebugStatsModule OUTPUT modules/core)
 
+GetEntityComponents()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -23,8 +25,7 @@ use_package (CURL)
 use_package (XMLRPC)
 
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules
-    EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim AssetModule)
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules AssetModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -37,7 +38,10 @@ link_package (XMLRPC)
 
 link_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule EnvironmentModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga SupportModules
-    EC_OpenSimPresence EC_OpenSimPrim AssetModule)
+    AssetModule)
+
+LinkEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)
+LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})
