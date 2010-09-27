@@ -2,10 +2,10 @@ from PythonQt import QtGui
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton
 
-import rexviewer as r
+import rexviewer as r #only for uiscenemanager now - make that to use naali api too
 
 #componenthandlers don't necessarily need to be naali modules,
-#but this one needs to listen to update events to do mouse hover tricks
+#but this one needs to listen to update events to do the forcepos hack
 import circuits
 
 #should be in the EC data
@@ -67,7 +67,7 @@ class DoorHandler(circuits.BaseComponent):
 
     def onChanged(self):
         try:
-            ent = r.getEntity(self.comp.GetParentEntityId())
+            ent = self.comp.GetParentEntity()
         except ValueError: #the entity has been removed or something
             return
 
@@ -78,9 +78,8 @@ class DoorHandler(circuits.BaseComponent):
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in door? it doesn't persist yet? adding..", ent.id
-                ent.createComponent("EC_Touchable")
-                t = ent.touchable
+                print "no touchable in door? it doesn't persist yet? adding..", ent.Id
+                t = ent.GetOrCreateComponentRaw("EC_Touchable")
             else:
                 print "touchable pre-existed in door."
             t.connect('MousePressed()', self.open)
@@ -155,12 +154,12 @@ class DoorHandler(circuits.BaseComponent):
     @circuits.handler("update")
     def update(self, t):
         try:
-            ent = r.getEntity(self.comp.GetParentEntityId())
+            ent = self.comp.GetParentEntity()
         except ValueError: #the entity has been removed or something
             return # nothing useful to do anyway
 
         if self.forcepos is not None:
-                ent.placeable.Position = self.forcepos
+            ent.placeable.Position = self.forcepos
 
     @circuits.handler("on_logout")
     def removegui(self, evid):
