@@ -31,7 +31,7 @@
     The InputContext -based API utilizes Qt signals. The polling API can be used by any object that
     has access to QtInputService, and the event tree -based API can be used by all modules.
 */
-class QTINPUT_MODULE_API QtInputService : public QObject, public InputServiceInterface
+class QTINPUT_MODULE_API QtInputService : public InputServiceInterface
 {
     Q_OBJECT
 

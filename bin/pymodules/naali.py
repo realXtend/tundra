@@ -48,8 +48,8 @@ inputcontext = _pythonscriptmodule.GetInputContext()
 mediaplayerservice = _pythonscriptmodule.GetMediaPlayerService()
 frame = _naali.GetFrame()
 console = _naali.Console()
-#input = _naali.Input()
-#audio = _naali.Audio()
+input = _naali.Input()
+audio = _naali.Audio()
 #ui = _naali.Ui()
 framework = _naali
 

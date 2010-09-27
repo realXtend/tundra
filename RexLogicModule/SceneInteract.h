@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneInteract.h
- *  @brief  Executes Entity Action for scene entities.
+ *  @brief  Transforms generic mouse and keyboard input events to
+*           input-related Entity Action for scene entities.
  */
 
 #include "ForwardDefines.h"
@@ -12,8 +13,12 @@
 #ifndef incl_RexLogicModule_SceneInteract_h
 #define incl_RexLogicModule_SceneInteract_h
 
-/// Executes Entity Action for scene entities.
-/**
+/// Transforms generic mouse and keyboard input events to input-related Entity Action for scene entities.
+/** Peforms raycast each frame and if entity is hit, performs the following actions on it:
+    -"MouseHoverIn"
+    -"MouseHover"
+    -"MouseHoverOut"
+    -"MousePress"
 */
 class SceneInteract : public QObject
 {
