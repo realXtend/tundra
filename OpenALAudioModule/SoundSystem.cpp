@@ -151,7 +151,7 @@ namespace OpenALAudio
         return ret;
     }
     
-    const QString& SoundSystem::GetSoundName(sound_id_t id) const
+    QString SoundSystem::GetSoundName(sound_id_t id) const
     {
         static QString empty;
         

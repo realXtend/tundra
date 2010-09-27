@@ -22,7 +22,7 @@ SceneInteract::SceneInteract(Foundation::Framework *fw) :
 {
     renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer);
 
-    input_ = framework_->Input().RegisterInputContext("SceneInterract", 100);
+    input_ = framework_->Input()->RegisterInputContext("SceneInteract", 100);
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
@@ -79,8 +79,11 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
     if (lastHitEntity_.lock())
     {
         if (e->eventType == MouseEvent::MousePressed)
-            lastHitEntity_.lock()->Exec("MousePress");
-
+        {
+            lastHitEntity_.lock()->Exec("MousePress");  
+            emit EntityClicked(lastHitEntity_.lock().get());
+        }
+    
         // handle all mouse events
         //...
     }

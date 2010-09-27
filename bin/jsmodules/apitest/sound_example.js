@@ -1,6 +1,6 @@
 print("Loading sound example script.");
 
-var sound_id = sound.PlaySound("b31a9a52-fb05-4648-87de-60c8697db3ca");
+var sound_id = sound.PlaySound("b31a9a52-fb05-4648-87de-60c8697db3ca"); //Change sound asset id here
 var pitch = sound.GetPitch(sound_id)
 print("Sound's original pitch was " + pitch + " and setting it to " + pitch * 0.5);
 sound.SetPitch(sound_id, pitch * 0.5);

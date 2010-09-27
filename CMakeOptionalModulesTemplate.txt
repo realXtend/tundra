@@ -16,8 +16,6 @@
 add_subdirectory (DebugStatsModule)
 
 add_subdirectory (PythonScriptModule)
-add_subdirectory (EntityComponents/EC_DynamicComponent) # declared by PythonScriptModule
-add_subdirectory (EntityComponents/EC_Script)           # declared by PythonScriptModule
 add_subdirectory (TelepathyIMModule)
 add_subdirectory (OpenALAudioModule)
 add_subdirectory (ECEditorModule)
@@ -25,9 +23,9 @@ add_subdirectory (ECEditorModule)
 
 add_subdirectory (JavascriptModule)
 add_subdirectory (InWorldChatModule)
-add_subdirectory (EntityComponents/EC_ChatBubble)   # declared by InWorldChatModule
-add_subdirectory (EntityComponents/EC_Billboard)    # declared by InWorldChatModule
-#add_subdirectory (EntityComponents/EC_NoteCard)    # declared by NoteCardModule
+AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
+AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)    # declared by InWorldChatModule
+#add_subdirectory (EntityComponents/EC_NoteCard EC_NoteCard)    # declared by NoteCardModule
 
 #add_subdirectory (LegacyAvatarModule)
 

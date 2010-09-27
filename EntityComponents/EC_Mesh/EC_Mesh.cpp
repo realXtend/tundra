@@ -59,6 +59,8 @@ EC_Mesh::EC_Mesh(IModule *module):
     }
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Mesh::~EC_Mesh()
@@ -216,7 +218,7 @@ bool EC_Mesh::HasMaterialsChanged() const
     QVariantList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
-        // No point to continue if all materials are not setted.
+        // No point to continue if all materials are not set.
         if(i >= materials.size())
             break;
 
@@ -228,20 +230,10 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(!GetParentEntity())
-        return;
-
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
 
     QString attrName = QString::fromStdString(attribute->GetNameString());
     request_tag_t tag = 0;

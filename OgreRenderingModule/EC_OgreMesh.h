@@ -5,35 +5,22 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
 
-namespace Ogre
-{
-    class Entity;
-    class Mesh;
-    class Node;
-    class SceneNode;
-}
-
-
-
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-	/**
+//! Ogre mesh entity component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreMesh</h2>
+Ogre mesh entity component
 Needs to be attached to a placeable (aka scene node) to be visible. 
-		
+
 Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
@@ -85,9 +72,9 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"RemoveAllAttachments": removes all attachments
 <li>"SetAttachmentMaterial": sets material on an attachment mesh
      \param index attachment index starting from 0
-	 \param submesh_index submesh in attachment mesh
-	 \param material_name material name
-	 \return true if successful 
+    \param submesh_index submesh in attachment mesh
+     \param material_name material name
+     \return true if successful 
 <li>"HasMesh": returns if mesh exists
 <li>"GetNumAttachments": returns number of attachments
         note: returns just the size of attachment vector, so check individually that attachments actually exist
@@ -101,7 +88,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetNumMaterials": gets number of materials (submeshes) in mesh entity
 <li>"GetAttachmentNumMaterials": gets number of materials (submeshes) in attachment mesh entity
 <li>"GetMatName": gets material name from mesh
-	\param index submesh index
+    \param index submesh index
     \return name if successful, empty if no entity / illegal index
 <li>"GetAttachmentMaterialNam": gets material name from attachment mesh
      \param index attachment index
@@ -119,7 +106,6 @@ Registered by OgreRenderer::OgreRenderingModule.
 <li>"GetAdjustmentSceneNode": Returns adjustment scene node (used for scaling/offset/orientation modifications)
 </ul>
 
-
 <b>Reacts on the following actions:</b>
 <ul>
 <li>...
@@ -132,10 +118,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    //! Ogre mesh entity component
-    /*! Needs to be attached to a placeable (aka scene node) to be visible.
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreMesh : public IComponent
     {
         Q_OBJECT
@@ -143,7 +125,7 @@ Does not emit any actions.
         DECLARE_EC(EC_OgreMesh);
     public:
         virtual ~EC_OgreMesh();
-    public slots:    
+    public slots:
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
             \param placeable placeable component

@@ -11,16 +11,9 @@ struct Transform
     Vector3df scale;
 
     Transform():
-        position(0),
-        rotation(0),
-        scale(1)
-    {
-    }
-
-    Transform(const Transform &other):
-        position(other.position),
-        rotation(other.rotation),
-        scale(other.scale)
+        position(0,0,0),
+        rotation(0,0,0),
+        scale(1,1,1)
     {
     }
 
@@ -51,13 +44,14 @@ struct Transform
         scale.x = x;
         scale.y = y;
         scale.z = z;
-        // Ogre dont like if we are setting scale value to zero so instead we are adding a very small number.
-        if(x == 0)
-            scale.x += 0.0000001f;
-        if(y == 0)
-            scale.y += 0.0000001f;
-        if(z == 0)
-            scale.z += 0.0000001f;
+
+        // Ogre doesn't like if we are setting scale value to zero so we add very small number instead.
+        if (fabs(x) < 1e-4f)
+            scale.x = 1e-4f;
+        if (fabs(y) < 1e-4f)
+            scale.y = 1e-4f;
+        if (fabs(z) < 1e-4f)
+            scale.z = 1e-4f;
     }
 };
 #endif

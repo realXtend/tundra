@@ -1,0 +1,21 @@
+/**
+
+\page FrameAPI The Frame API
+
+The Frame API provides a Qt-signal based mechanism for performing custom periodic or delayed computation. 
+Using this method for timing is preferred over using manual timers, to allow a centralized place for
+controlling system execution speed and pausing or resuming the simulation.
+
+\section FrameAPI_Cont Per-frame events 
+
+Todo: describe here how to register to the per-frame update signal.
+
+\subpage FrameAPI_Delayed Delayed execution
+
+Todo: describe here how to have a function be called delayed, in x seconds.  
+ 
+\subpage FrameAPI_Periodic Periodic events
+
+Todo: describe here how to have a function be called continuously every n seconds.  
+
+*/

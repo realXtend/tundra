@@ -95,7 +95,7 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    void AttributeUpdated(IAttribute *attribute);
 
 private:
     explicit EC_ParticleSystem(IModule *module);

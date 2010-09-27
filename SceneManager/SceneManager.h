@@ -39,12 +39,6 @@ namespace Scene
         //! constructor that takes a name and parent module
         SceneManager(const QString &name, Foundation::Framework *framework);
 
-        //! copy constructor that also takes a name
-        SceneManager(const SceneManager &other, const QString &name);
-
-        //! copy constuctor
-        SceneManager(const SceneManager &other);
-
         //! Current global id for entities
         static uint gid_;
 

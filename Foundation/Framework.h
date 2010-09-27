@@ -37,6 +37,7 @@ namespace Foundation
     class FrameworkQtApplication;
     class KeyStateListener;
     class MainWindow;
+    class UiServiceInterface;
 
     //! contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
@@ -138,9 +139,6 @@ namespace Foundation
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
-
-        /// Returns the framework Input object.
-        InputServiceInterface &Input();
 
         //! Creates new empty scene.
         /*! 
@@ -265,6 +263,12 @@ namespace Foundation
         }
 
     public slots:
+        /// Returns the framework UI object.
+        UiServiceInterface *Ui() const;
+
+        /// Returns the framework Input object.
+        InputServiceInterface *Input();
+
         /// Returns the framework Frame object.
         Frame *GetFrame() const { return frame_; }
 

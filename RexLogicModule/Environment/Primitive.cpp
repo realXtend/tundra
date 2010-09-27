@@ -41,9 +41,10 @@
 #include "WorldStream.h"
 
 #include "EC_NetworkPosition.h"
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
 #include "EC_OpenSimPrim.h"
-#include "EC_Movable.h"
 
 #include "IAttribute.h"
 
@@ -1265,6 +1266,7 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
 
 void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)
 {
+#ifdef EC_HoveringText_ENABLED
     if (text.empty())
     {
         boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>("llSetText");
@@ -1281,6 +1283,7 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
         hoveringText.SetTextColor(color);
         hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
     }
+#endif
 }
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)
@@ -1806,7 +1809,8 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
         if (rex_ambient_sound)
         {
-            if (soundsystem->GetSoundName(rex_ambient_sound).toStdString() == prim->SoundID)
+            QString sound_name = soundsystem->GetSoundName(rex_ambient_sound);
+            if (sound_name.toStdString() == prim->SoundID)
                 same = true;
         }
         if (!same)

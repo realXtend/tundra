@@ -6,6 +6,8 @@
 #include "InputEvents.h"
 #include "ForwardDefines.h"
 #include "Vector3D.h"
+#include "SceneManager.h"
+#include "Entity.h"
 #include <QObject>
 #include <QMap>
 
@@ -39,26 +41,8 @@ namespace RexLogic
             FirstPerson,
             ThirdPerson,
             FreeLook,
-            Tripod,
-            FocusOnObject
+            Tripod
         };
-
-        float rotation_angle_phi;
-        float rotation_angle_theta;
-        float center_x, center_y, center_z;
-        // new camera coordinates after mathematical calculations
-        float new_x, new_y, new_z;
-        bool isRotating;
-        // is camera rotating up/down around object
-        bool isUpDown;
-        int rotation_direction;
-        QMap<QString, int> mouse_position_map;
-        QMap<QString, int> keep_mouse_position;
-        //camera's spherical coordinata system
-        float Radius, Theta, Phi;
-        float mouse_drag_sensitivity;
-        bool isDoubleClickZoom;
-        float doubleClickZoomDistance;
 
         //! default constructor
         //! \param fw Framework pointer
@@ -119,12 +103,9 @@ namespace RexLogic
         //! \param position Current camera position.
         void ClampPosition(Vector3df &position);
 
-        //! This function is called when the user holds ALT key and clicks somewhere;
-        void SetFocusOnObject(float, float, float);
-
-        //! Rotate camera around the point that is clicked on
-        void RotateCameraAroundObject();
-        void FocusOnObjectZoom();
+        Scene::EntityPtr GetCameraEntity();
+        void SetThirdPersonLookAt(Vector3df lookat) { third_person_lookat_ = lookat; };
+        Vector3df GetThirdPersonLookAt() { return third_person_lookat_; };
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
@@ -152,6 +133,8 @@ namespace RexLogic
 
         //! first person camera offset
         Vector3df camera_offset_firstperson_;
+
+        Vector3df third_person_lookat_;
 
         //! move speed
         float sensitivity_;

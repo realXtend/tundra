@@ -61,7 +61,7 @@
 #include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "EntityComponent/EC_AttachedSound.h"
@@ -164,7 +164,7 @@ namespace PythonScript
         scene_event_category_ = em_->QueryEventCategory("Scene");
         
         // Create a new input context with a default priority of 100.
-        input = framework_->Input().RegisterInputContext("PythonInput", 100);
+        input = framework_->Input()->RegisterInputContext("PythonInput", 100);
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
@@ -592,7 +592,7 @@ namespace PythonScript
 
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
     {
-        InputContextPtr new_input = framework_->Input().RegisterInputContext(name.toStdString().c_str(), priority);
+        InputContextPtr new_input = framework_->Input()->RegisterInputContext(name.toStdString().c_str(), priority);
         if (new_input)
         {
             LogDebug("Created new input context with name: " + name.toStdString());

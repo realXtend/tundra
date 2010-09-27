@@ -1,26 +1,7 @@
-macro (AddSourceFolder folder_name)
-    file (GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
-    file (GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
-    source_group ("Header Files\\${folder_name}" FILES ${H_FILES_IN_FOLDER_${folder_name}})
-    source_group ("Source Files\\${folder_name}" FILES ${CPP_FILES_IN_FOLDER_${folder_name}})
-    set (H_FILES ${H_FILES} ${H_FILES_IN_FOLDER_${folder_name}})
-    set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
-endmacro (AddSourceFolder)
-
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx */*/*.cxx */*/*/*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-macro (UiFolder)
-    file (GLOB GENERATED_UI_H ui_*.h)
-    source_group ("Generated UI" FILES ${GENERATED_UI_H})
-endmacro (UiFolder)
-
-#############################################################################################
-
 # Define target name and output directory
 init_target (AvatarModule OUTPUT modules/core)
+
+GetEntityComponents()
 
 # Define source files
 file (GLOB CPP_FILES *.cpp)
@@ -54,8 +35,7 @@ use_package (OGRE)
 use_package (CURL)    # NEEDED BY ProtocolUtilities
 use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_modules (AvatarModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			 AssetModule OgreRenderingModule EntityComponents/EC_HoveringText EntityComponents/EC_HoveringWidget EntityComponents/EC_OpenSimPresence 
-			 EntityComponents/EC_SoundListener EntityComponents/EC_NetworkPosition)
+			 AssetModule OgreRenderingModule)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -67,7 +47,13 @@ link_package (OGRE)
 link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities HttpUtilities RpcUtilities 
-			  AssetModule OgreRenderingModule EC_HoveringText EC_HoveringWidget EC_OpenSimPresence EC_SoundListener EC_NetworkPosition)
+			  AssetModule OgreRenderingModule)
+
+LinkEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
+LinkEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+LinkEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
+LinkEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+LinkEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

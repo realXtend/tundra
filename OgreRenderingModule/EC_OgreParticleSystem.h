@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
@@ -12,25 +13,17 @@
 namespace Ogre
 {
     class ParticleSystem;
-    class SceneNode;
 }
-
-
 
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-	/**
+//! Ogre particle system entity component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreParticleSystem</h2>
-particle system entity component.
+Ogre particle system entity component.
 May contain multiple particle systems created from templates. Needs to be attached to a placeable (aka scene node) to be visible. 		
 
 Registered by OgreRenderer::OgreRenderingModule.
@@ -54,11 +47,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    //! Ogre particle system entity component
-    /*! May contain multiple particle systems created from templates.
-        Needs to be attached to a placeable (aka scene node) to be visible.
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreParticleSystem : public IComponent
     {
         Q_OBJECT

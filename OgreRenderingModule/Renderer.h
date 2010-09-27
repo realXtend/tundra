@@ -5,6 +5,7 @@
 
 #include "RenderServiceInterface.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 #include "ForwardDefines.h"
@@ -16,47 +17,22 @@
 #include <QPixmap>
 #include <QImage>
 
-namespace Ogre
-{
-    class Root;
-    class SceneManager;
-    class Camera;
-    class RenderWindow;
-    class RaySceneQuery;
-    class Viewport;
-    class RenderTexture;
-}
-
 namespace OgreRenderer
 {
+    /// Shadow quality settings
     enum ShadowQuality
     {
-        Shadows_Off = 0,
-        Shadows_Low,
-        Shadows_High // PSSM, Direct3D only
+        Shadows_Off = 0, ///< Off
+        Shadows_Low, ///< One focused shadow map
+        Shadows_High ///< PSSM, Direct3D only
     };
 
+    /// Texture quality settings
     enum TextureQuality
     {
-        Texture_Low = 0, // Halved resolution
-        Texture_Normal
+        Texture_Low = 0, ///< Halved resolution
+        Texture_Normal ///< Normal
     };
-
-    class OgreRenderingModule;
-    class LogListener;
-    class ResourceHandler;
-    class RenderableListener;
-    class QOgreUIView;
-    class QOgreWorldView;
-    class CAVEManager;
-    class StereoController;
-    class CompositionHandler;
-    class GaussianListener;
-
-    typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
-    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
-    typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
-    typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
@@ -97,10 +73,11 @@ namespace OgreRenderer
 
     public:
         //! Constructor
-        //! \param framework Framework pointer.
-        //! \param config Config filename.
-        //! \param plugins Plugins filename.
-        //! \param window_title Renderer window title.
+        /*! \param framework Framework pointer.
+            \param config Config filename.
+            \param plugins Plugins filename.
+            \param window_title Renderer window title.
+        */
         Renderer(
             Foundation::Framework* framework,
             const std::string& config,
@@ -239,17 +216,18 @@ namespace OgreRenderer
 
         //! Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
-        
+
         //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
         void SetShadowQuality(ShadowQuality newquality);
-        
+
         //! Returns texture quality
         TextureQuality GetTextureQuality() const { return texturequality_; }
-        
+
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-		QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+        //! Returns list of CAVE rendering windows.
+        QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
 
     public slots:
         //! Toggles fullscreen

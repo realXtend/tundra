@@ -22,16 +22,13 @@ namespace Scene
 {
     uint SceneManager::gid_ = 0;
 
-    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
-        name_(name),
-        framework_(framework)
+    SceneManager::SceneManager() : framework_(0)
     {
     }
 
-    SceneManager::SceneManager(const SceneManager &other, const QString &name) :
-        framework_(other.framework_),
-        entities_(other.entities_),
-        name_(name)
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
+        name_(name),
+        framework_(framework)
     {
     }
 

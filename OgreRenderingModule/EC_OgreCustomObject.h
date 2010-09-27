@@ -5,36 +5,27 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
 #include "Vector3D.h"
 
-namespace Ogre
-{
-    class ManualObject;
-    class Entity;
-}
-
-
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-
-	/**
+//! Ogre custom object component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreCustomObject</h2>
-		Needs to be attached to a placeable (aka scene node) to be visible.
-		Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
-        related to manual objects (still unfixed as of 1.6.2)
 
+Needs to be attached to a placeable (aka scene node) to be visible.
+Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
+related to manual objects (still unfixed as of 1.6.2)
 
 Registered by OgreRenderer::OgreRenderingModule.
+
+\ingroup OgreRenderingModuleClient
 
 <b>No Attributes</b>.
 
@@ -55,12 +46,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    //! Ogre custom object component
-    /*! Needs to be attached to a placeable (aka scene node) to be visible.
-        Note that internally this converts the manual object to a mesh entity because of render queue bugs in Ogre
-        related to manual objects (still unfixed as of 1.6.2)
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
     {
         Q_OBJECT

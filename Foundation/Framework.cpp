@@ -23,6 +23,7 @@
 #include "SoundServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
+#include "UiServiceInterface.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -688,14 +689,24 @@ namespace Foundation
         return config_manager_.get();
     }
 
-    InputServiceInterface &Framework::Input()
+    UiServiceInterface *Framework::Ui() const
+    {
+        boost::shared_ptr<UiServiceInterface> ui = GetServiceManager()->
+            GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        if (!ui.get())
+            throw Exception("Fatal: Ui service not present!");
+
+        return ui.get();
+    }
+
+    InputServiceInterface *Framework::Input()
     {
         boost::shared_ptr<InputServiceInterface> input_logic = GetServiceManager()->
                 GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
         if (!input_logic.get())
             throw Exception("Fatal: Input service not present!");
 
-        return *input_logic;
+        return input_logic.get();
     }
 
     Scene::ScenePtr Framework::GetScene(const QString &name) const
@@ -712,19 +723,16 @@ namespace Foundation
         return scenes_.find(name) != scenes_.end();
     }
 
-    //! Returns the currently set default world scene, for convinience
     const Scene::ScenePtr &Framework::GetDefaultWorldScene() const
     {
         return default_scene_;
     }
 
-    //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {
         default_scene_ = scene;
     }
 
-    //! Returns the scene map for self reflection / introspection.
     const Framework::SceneMap &Framework::GetSceneMap() const
     {
         return scenes_;
