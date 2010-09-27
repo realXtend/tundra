@@ -6,11 +6,11 @@
 #include "IComponent.h"
 #include "RexUUID.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
 {
-
     /// Sky type
     //! \ingroup EnvironmentModuleClient.
     enum SkyType
@@ -165,16 +165,13 @@ namespace OgreRenderer
         }
     };
 
-    class Renderer;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
-	/**
+/// Ogre sky component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreSky</h2>
-		
 
 Registered by OgreRenderer::OgreRenderingModule.
 
@@ -197,11 +194,6 @@ Does not emit any actions.
 <b>Doesn't depend on any components</b>.
 </table>
 */
-    /** Ogre sky component
-     *
-     *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
-     *
-     */
     class OGRE_MODULE_API EC_OgreSky : public IComponent
     {
         Q_OBJECT

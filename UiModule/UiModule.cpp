@@ -148,7 +148,7 @@ namespace UiServices
                 SLOT(OnSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
-        input = framework_->Input().RegisterInputContext("EtherInput", 90);
+        input = framework_->Input()->RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
         connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
 
@@ -243,7 +243,7 @@ namespace UiServices
         if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
             return;
 
-        InputServiceInterface &inputService = framework_->Input();
+        InputServiceInterface &inputService = *framework_->Input();
 
         const QKeySequence toggleEther = inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
         const QKeySequence toggleWorldChat = inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);

@@ -68,7 +68,7 @@ namespace Console
             manager_->Update(frametime);
 
             // Read from the global top-level input context for console dropdown event.
-            if (framework_->Input().IsKeyPressed(Qt::Key_F1))
+            if (framework_->Input()->IsKeyPressed(Qt::Key_F1))
                 //manager_->ToggleConsole();
                 ui_console_manager_->ToggleConsole();
         }

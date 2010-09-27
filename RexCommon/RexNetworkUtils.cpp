@@ -225,7 +225,7 @@ namespace RexTypes
     
     NameValueMap ParseNameValueMap(const std::string& namevalue)
     {
-        // NameValue contains: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
+        // NameValue starts with: "FirstName STRING RW SV <firstName>\nLastName STRING RW SV <lastName>"
         // When using rex auth <firstName> contains both first and last name and <lastName> contains the auth server address
 
         // Split into lines
@@ -270,7 +270,6 @@ namespace RexTypes
                     }
                 }
             }
-            assert(names[0].size() >= 2);
             if (names.length() >= 1)
                 map["FirstName"] = names[0].toStdString();
             if (names.length() >= 2)
@@ -280,8 +279,10 @@ namespace RexTypes
         else if (fullname.count('@') == 2)
         {
             QStringList names = fullname.split(" ");
-            map["FirstName"] = names[0].toStdString();
-            map["LastName"] = "";
+            if (names.length() >= 1) {
+                map["FirstName"] = names[0].toStdString();
+                map["LastName"] = "";
+            }
         }
 
         return map;

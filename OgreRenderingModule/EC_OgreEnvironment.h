@@ -12,6 +12,7 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 
 #include "Color.h"
 #include "Vector3D.h"
@@ -20,11 +21,6 @@
 #include <OgreColourValue.h>
 #include <OgreVector3.h>
 #include <QFlags>
-
-namespace Ogre
-{
-    class Light;
-}
 
 namespace Caelum
 {
@@ -46,15 +42,12 @@ namespace Hydrax
     }
 }
 
-
 namespace OgreRenderer
 {
-    class Renderer;
     class GaussianListener;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
-	/**
+/// Ogre environment component.
+/**
 <table class="header">
 <tr>
 <td>
@@ -82,10 +75,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    /** Ogre environment component.
-     *  Gives an access to various scene related environment settings, such as sunlight, ambient light and fog.
-     *  \ingroup OgreRenderingModuleClient EnvironmentModuleClient.
-     */
     class OGRE_MODULE_API EC_OgreEnvironment : public IComponent
     {
         Q_OBJECT
