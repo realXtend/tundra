@@ -690,8 +690,8 @@ namespace Foundation
         boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
                 GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
         if (!sound_logic.get())
-            throw Exception("Fatal: Sound service not present!");
-
+//            throw Exception("Fatal: Sound service not present!");
+            RootLogWarning("Framework::Audio(): Sound service not present!");
         return sound_logic.get();
     }
 
