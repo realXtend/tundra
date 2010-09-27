@@ -76,6 +76,9 @@ namespace Environment
         //! @return The scene entity that represents the terrain in the currently active world.
         Scene::EntityWeakPtr GetTerrainEntity() const;
 
+        //! @return The terrain component of the currently active world.
+        EC_Terrain *GetTerrainComponent();
+
         //! Called whenever a texture is loaded so it can be attached to the terrain.
         void OnTextureReadyEvent(Resource::Events::ResourceReady *tex);
 
@@ -91,9 +94,6 @@ namespace Environment
         //! @param switch texture height value need to return range[0-3].
         const float &GetTerrainTextureHeightRange(int index) const;
 
-        //! Iterates throught whole heightmap and return the lowest value on that map.
-        float GetLowestTerrainHeight();
-
     signals:
         //! Signal is sended when height map values have changed.
         void HeightmapGeometryUpdated();
@@ -103,13 +103,16 @@ namespace Environment
 
     private:
         void CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize);
-        void RegenerateDirtyTerrainPatches();
-        void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
-        void GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch);
+//        void RegenerateDirtyTerrainPatches();
+//        void CreateOgreTerrainPatchNode(Ogre::SceneNode *&node, int patchX, int patchY);
+//        void GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch);
         void GenerateTerrainGeometry(EC_Terrain &terrain);
         void GenerateTerrainGeometryForSinglePatch(EC_Terrain &terrain, int patchX, int patchY);
         void DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize);
-        void SetTerrainMaterialTexture(int index, const char *textureName);
+//        void SetTerrainMaterialTexture(int index, const char *textureName);
+
+        /// Sets the terrain parameters to OpenSim-specific hardcoded values.
+        void SetupOpenSimTerrainParameters();
 
         /// Environment module's pointer.
         EnvironmentModule *owner_;

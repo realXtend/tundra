@@ -162,7 +162,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            ComponentInterfacePtr component = entities[i]->GetComponent(componentType, name);
+            ComponentPtr component = entities[i]->GetComponent(componentType, name);
             if(component)
             {
                 entities[i]->RemoveComponent(component, AttributeChange::Local);
@@ -184,7 +184,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for (uint i = 0; i < entities.size(); ++i)
         {
-            ComponentInterfacePtr comp;
+            ComponentPtr comp;
             comp = entities[i]->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
@@ -282,12 +282,12 @@ namespace ECEditor
                 if(components[i]->TypeName() == "EC_OgrePlaceable")
                 {
                     hasPlaceable = true;
-                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                 }
                 // Ignore all nonserializable components.
                 if(components[i]->IsSerializable())
                 {
-                    ComponentInterfacePtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
                     AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
@@ -428,13 +428,13 @@ namespace ECEditor
         emit EditEntityXml(ents);
     }
 
-    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentInterfacePtr> components)
+    void ECEditorWindow::ShowXmlEditorForComponent(std::vector<ComponentPtr> components)
     {
         if(!components.size())
             return;
 
         QList<ComponentPtr> comps;
-        foreach(ComponentInterfacePtr component, components)
+        foreach(ComponentPtr component, components)
             comps << component;
 
         emit EditComponentXml(comps);
@@ -448,7 +448,7 @@ namespace ECEditor
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
-            ComponentInterfacePtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
+            ComponentPtr component = entities[i]->GetComponent(QString::fromStdString(componentType));
             if(component)
                 emit EditComponentXml(component);
         }
@@ -591,7 +591,7 @@ namespace ECEditor
 
     void ECEditorWindow::SceneAdded(const QString &name)
     {
-        Scene::ScenePtr scenePtr = framework_->GetScene(name.toStdString());
+        Scene::ScenePtr scenePtr = framework_->GetScene(name);
         if(scenePtr)
         {
             // If scene has already added no need to do multiple connection.
@@ -618,7 +618,7 @@ namespace ECEditor
         return components;
     }
 
-    std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities()
+    std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     {
         std::vector<Scene::EntityPtr> ret;
 

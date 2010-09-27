@@ -1723,9 +1723,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         // Get Ogre meshes from terrain EC
         else if (terrain)
         {
-            for (int y = 0; y < Environment::EC_Terrain::cNumPatchesPerEdge; ++y)
-            {
-                for(int x = 0; x < Environment::EC_Terrain::cNumPatchesPerEdge; ++x)
+            for (int y = 0; y < terrain->PatchHeight(); ++y)
+                for(int x = 0; x < terrain->PatchWidth(); ++x)
                 {
                     Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
                     if (!node)
@@ -1744,7 +1743,6 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                         GetTexturesFromMaterials(temp_mat, scene_textures);
                     }
                 }
-            }
         }
         
         // Check drawtype for prims

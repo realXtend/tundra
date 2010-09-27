@@ -29,7 +29,6 @@ class IComponentFactory;
 typedef boost::shared_ptr<IComponentFactory> ComponentFactoryPtr;
 
 class IComponent;
-typedef boost::shared_ptr<IComponent> ComponentInterfacePtr;
 typedef boost::shared_ptr<IComponent> ComponentPtr;
 typedef boost::weak_ptr<IComponent> ComponentWeakPtr;
 
@@ -66,6 +65,11 @@ namespace Foundation
     void RootLogInfo(const std::string &msg);
     void RootLogTrace(const std::string &msg);
     void RootLogDebug(const std::string &msg);
+
+    class RenderServiceInterface;
+    typedef boost::shared_ptr<RenderServiceInterface> RendererPtr;
+    typedef boost::weak_ptr<RenderServiceInterface> RendererWeakPtr;
+    struct RaycastResult;
 }
 
 class IAttribute;

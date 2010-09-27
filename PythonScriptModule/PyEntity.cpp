@@ -14,7 +14,7 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreAnimationController.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+#include "EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EC_SoundRuler.h"
 #include "EC_Highlight.h"
@@ -54,7 +54,7 @@ namespace PythonScript
 
         //XXX \todo check whether a component of the given type exists already for this entity. raise exception is yes?
         //entity->GetComponent("EC_Highlight")
-        const ComponentInterfacePtr &newcomponent = owner->GetFramework()->GetComponentManager()->CreateComponent(componentname);
+        const ComponentPtr &newcomponent = owner->GetFramework()->GetComponentManager()->CreateComponent(componentname);
         if (newcomponent)
         {
             entity->AddComponent(newcomponent);
@@ -65,7 +65,7 @@ namespace PythonScript
              owner->LogInfo(componentname);
         }
 
-        //const ComponentInterfacePtr &prim_component = entity->GetComponent("EC_OpenSimPrim");        
+        //const ComponentPtr &prim_component = entity->GetComponent("EC_OpenSimPrim");        
 
         Py_RETURN_NONE;
     }
@@ -97,7 +97,7 @@ namespace PythonScript
         }
 
         Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
-        ComponentInterfacePtr component_ptr = entity->GetComponent(component_soundptr->TypeName(), component_soundptr->Name());
+        ComponentPtr component_ptr = entity->GetComponent(component_soundptr->TypeName(), component_soundptr->Name());
 
         entity->RemoveComponent(component_ptr);
 
@@ -125,7 +125,7 @@ namespace PythonScript
         Scene::EntityPtr entity = scene->GetEntity(self->ent_id);
         //XXX \todo could check if the entity is still there, in case it's deleted and py is still having a wrapper for it
 
-        const ComponentInterfacePtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent", dcname);
+        const ComponentPtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent", dcname);
         EC_DynamicComponent* dynamic_component = 0;
         if (dynamic_component_ptr)
         {
@@ -322,7 +322,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     
     else if (s_name.compare("network") == 0)
     {
-        RexLogic::EC_NetworkPosition* networkpos = dynamic_cast<RexLogic::EC_NetworkPosition*>(entity->GetComponent(RexLogic::EC_NetworkPosition::TypeNameStatic()).get());
+        EC_NetworkPosition* networkpos = dynamic_cast<EC_NetworkPosition*>(entity->GetComponent(EC_NetworkPosition::TypeNameStatic()).get());
         if (!networkpos)
         {
             PyErr_SetString(PyExc_AttributeError, "This entity does not have a networkpos component.");
@@ -357,7 +357,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("text") == 0)
     {
-        const ComponentInterfacePtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+        const ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
 
         if (!overlay)
         {
@@ -410,7 +410,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if (s_name.compare("highlight") == 0)
     {
         //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-        const ComponentInterfacePtr &highlight_componentptr = entity->GetComponent("EC_Highlight");
+        const ComponentPtr &highlight_componentptr = entity->GetComponent("EC_Highlight");
         EC_Highlight* highlight = 0;
         if (highlight_componentptr)
         {
@@ -427,7 +427,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if (s_name.compare("touchable") == 0)
     {
         //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-        const ComponentInterfacePtr &touchable_componentptr = entity->GetComponent("EC_Touchable");
+        const ComponentPtr &touchable_componentptr = entity->GetComponent("EC_Touchable");
         EC_Touchable* touchable = 0;
         if (touchable_componentptr)
         {
@@ -445,7 +445,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if (s_name.compare("dynamic") == 0)
     {
         //boost::shared_ptr<EC_Highlight> highlight = entity.GetComponent<EC_Highlight>();
-        const ComponentInterfacePtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent");
+        const ComponentPtr &dynamic_component_ptr = entity->GetComponent("EC_DynamicComponent");
         EC_DynamicComponent* dynamic_component = 0;
         if (dynamic_component_ptr)
         {
@@ -461,7 +461,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("animationcontroller") == 0)
     {
-        const ComponentInterfacePtr animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
+        const ComponentPtr animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
         OgreRenderer::EC_OgreAnimationController* animationcontrol = 0;
         if (animationcontrol_ptr)
         {
@@ -477,7 +477,7 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("camera") == 0)
     {
-        const ComponentInterfacePtr camera_ptr = entity->GetComponent("EC_OgreCamera");
+        const ComponentPtr camera_ptr = entity->GetComponent("EC_OgreCamera");
         OgreRenderer::EC_OgreCamera* camera = 0;
         if (camera_ptr)
         {
@@ -536,7 +536,7 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
 
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
     OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-    RexLogic::EC_NetworkPosition* networkpos = entity->GetComponent<RexLogic::EC_NetworkPosition>().get();
+    EC_NetworkPosition* networkpos = entity->GetComponent<EC_NetworkPosition>().get();
 
     if (s_name.compare("text") == 0)
     {

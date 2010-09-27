@@ -23,6 +23,39 @@ namespace OgreRenderer
     class EC_OgrePlaceable;
 }
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>SoundListener</h2>
+Entity-component which provides sound listener position for in-world 3D audio.
+Updates parent entity's placeable component's position to the sound service each frame.
+@note   Only one entity can have active sound listener at a time.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on OgrePlaceable.</b>
+</table>
+
+*/
+
 /** Entity-component which provides sound listener position for in-world 3D audio.
  *  Updates parent entity's placeable component's position to the sound service each frame.
  *  @note   Only one entity can have active sound listener at a time.

@@ -212,7 +212,7 @@ void EcXmlEditorWidget::Save()
                 QDomElement comp_elem = entity_elem.firstChildElement("component");
                 while (!comp_elem.isNull())
                 {
-                    ComponentInterfacePtr comp = entity->GetComponent(comp_elem.attribute("type"),
+                    ComponentPtr comp = entity->GetComponent(comp_elem.attribute("type"),
                                                                                   comp_elem.attribute("name"));
                     if (comp)
                     {

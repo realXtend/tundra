@@ -23,7 +23,59 @@ namespace Ogre
     class SceneNode;
     class ManualObject;
 }
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Ruler</h2>
+Ruler enables visual highlighting effect for of scene entity.
 
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>int: Type
+<div>Ruler type</div> 
+<li>bool: visible
+<div>Visibility.</div> 
+<li>int: axis
+<div>Axis.</div> 
+<li>bool: local
+<div>Local or global space.</div> 
+<li>float: radius
+<div></div> 
+<li>float: segments
+<div></div> 
+</ul>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Shows the highlighting effect.
+<li>"Hide": Hides the highlighting effect.
+<li>"IsVisible": 
+<li>"SetType": set the ruler type to show: 0 = translate, 1 = rotate, 2 = scale
+<li>"StartDrag": Call StartDrag to initialise some values used to update the selected ruler.
+<li>"EndDrag": Call EndDrag to tell the code we're done for now.
+<li>"UpdateRuler": Callback for OnChanged from ECEditor. 
+</ul>
+ 	
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+EC_OgreCustomObject (if prim) components available in advance</b>.
+</table>
+
+*/
 class EC_Ruler : public IComponent
 {
     Q_OBJECT

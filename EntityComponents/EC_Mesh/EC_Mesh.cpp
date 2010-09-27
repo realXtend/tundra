@@ -51,6 +51,8 @@ EC_Mesh::EC_Mesh(IModule *module):
     }
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Mesh::~EC_Mesh()
@@ -108,6 +110,15 @@ void EC_Mesh::SetMesh(const QString &name)
                           DEGTORAD * newTransform.rotation.z);
         adjust = Quaternion(PI/2, 0, PI) * adjust;
         node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+       
+        // Prevent Ogre exception from zero scale
+        if (newTransform.scale.x < 0.0000001f)
+            newTransform.scale.x = 0.0000001f;
+        if (newTransform.scale.y < 0.0000001f)
+            newTransform.scale.y = 0.0000001f;
+        if (newTransform.scale.z < 0.0000001f)
+            newTransform.scale.z = 0.0000001f;
+
         node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
     }
 
@@ -196,7 +207,7 @@ bool EC_Mesh::HasMaterialsChanged() const
     QVariantList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
-        // No point to continue if all materials are not setted.
+        // No point to continue if all materials are not set.
         if(i >= materials.size())
             break;
 
@@ -208,20 +219,10 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(!GetParentEntity())
-        return;
-
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
     QString attrName = QString::fromStdString(attribute->GetNameString());
     request_tag_t tag = 0;
     if(QString::fromStdString(meshResourceId.GetNameString()) == attrName)
@@ -292,6 +293,15 @@ void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
                               DEGTORAD * newTransform.rotation.z);
             adjust = Quaternion(PI/2, 0, PI) * adjust;
             node_->setOrientation(Ogre::Quaternion(adjust.w, adjust.x, adjust.y, adjust.z));
+            
+            // Prevent Ogre exception from zero scale
+            if (newTransform.scale.x < 0.0000001f)
+                newTransform.scale.x = 0.0000001f;
+            if (newTransform.scale.y < 0.0000001f)
+                newTransform.scale.y = 0.0000001f;
+            if (newTransform.scale.z < 0.0000001f)
+                newTransform.scale.z = 0.0000001f;
+
             node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         }
     }

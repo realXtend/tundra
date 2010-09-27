@@ -90,7 +90,7 @@ namespace Foundation
         ComponentPtr CreateComponent(uint type_hash, const QString &name);
         
         //! Create clone of the specified component
-        ComponentPtr CloneComponent(const ComponentInterfacePtr &component);
+        ComponentPtr CloneComponent(const ComponentPtr &component);
 
         //! Create new attribute for spesific component.
         IAttribute *CreateAttribute(IComponent *owner, const std::string &typeName, const std::string &name);

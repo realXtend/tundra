@@ -1,0 +1,5 @@
+<config>
+    <entry>AvatarModule</entry>
+    <dependency>AssetModule</dependency>
+    <dependency>OgreRenderingModule</dependency>
+</config>

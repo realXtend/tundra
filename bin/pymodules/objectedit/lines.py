@@ -1,3 +1,6 @@
+# This module contains the handling of the different input widget sets
+# that are available in world building tools.
+
 import rexviewer as r
 from PythonQt.QtGui import QLineEdit
 
@@ -6,6 +9,7 @@ PRIMTYPES_REVERSED = {
     "Texture": "0"
 }
 
+# Base class for having an edit line with drag and drop capabilities.
 class DragDroppableEditline(QLineEdit):
     def __init__(self, mainedit, *args):
         self.mainedit = mainedit #to be able to query the selected entity at drop
@@ -78,13 +82,15 @@ class DragDroppableEditline(QLineEdit):
     def deactivateButtons(self):
         for button in self.buttons:
             button.setEnabled(False)
-        
+
+# Edit line for mesh assigning
 class MeshAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         #print "doaction in MeshAssetidEditline-class..."
         applymesh(ent, asset_ref)
         self.deactivateButtons()
     
+    # Apply the action (click through button)
     def applyAction(self):
         #print self, "applyAction!"
         ent = self.mainedit.active
@@ -94,6 +100,7 @@ class MeshAssetidEditline(DragDroppableEditline):
             self.mainedit.window.animation_widget.show()
             self.mainedit.window.animationline.deactivateButtons()
 
+# Sound asset edit line handling
 class SoundAssetidEditline(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         self.deactivateButtons()
@@ -136,6 +143,7 @@ class AnimationAssetidEditline(DragDroppableEditline):
         else:
             self.spinners[0].setValue(1.0)
         
+# Material/Texture edit line handling
 class UUIDEditLine(DragDroppableEditline):
     def doaction(self, ent, asset_type, inv_id, inv_name, asset_ref):
         matinfo = (asset_type, asset_ref)
@@ -147,7 +155,7 @@ class UUIDEditLine(DragDroppableEditline):
         mats = qprim.Materials
         mats[index] = matinfo
         qprim.Materials = mats
-        r.sendRexPrimData(ent.id)
+        r.sendRexPrimData(ent.Id)
         
     def applyAction(self):
         ent = self.mainedit.active
@@ -160,22 +168,18 @@ class UUIDEditLine(DragDroppableEditline):
             mats[self.index]  = (asset_type, self.text)
             qprim.Materials = mats
             
-            r.sendRexPrimData(ent.id)
+            r.sendRexPrimData(ent.Id)
             
             self.deactivateButtons()
             
-        
 def applymesh(ent, meshuuid):
     try:
         ent.mesh
     except AttributeError:
         ent.prim.MeshID = meshuuid #new
-        #r.logDebug("Mesh asset UUID after before sending to server: %s" % ent.mesh)
     else:
         ent.mesh.SetMesh(meshuuid)        
-        #ent.prim.MeshID = meshuuid # change meshuuid
-    r.sendRexPrimData(ent.id)
-    #~ r.logDebug("Mesh asset UUID after prim data sent to server: %s" % ent.mesh)
+    r.sendRexPrimData(ent.Id)
 
 def applyanimation(ent, animationuuid, animationname, animationrate):
     ent.prim.AnimationPackageID = animationuuid
@@ -193,15 +197,18 @@ def applyanimation(ent, animationuuid, animationname, animationrate):
         ent.createComponent('EC_OgreAnimationController')
         ac = ent.animationcontroller
         ac.SetMeshEntity(ent.mesh)
-    r.sendRexPrimData(ent.id)
+    r.sendRexPrimData(ent.Id)
 
-
+# Apply new audio settings as set in UI.
 def applyaudio(ent, audiouuid, soundRadius, soundVolume):
+    # First try to get an existing sound component (EC_AttachedSound)
     try:
         ent.sound
     except AttributeError:
+        # It didn't exist, so we only set the ID, radius and volume.
+        # The network roundtrip will ensure that a sound component 
+        # (EC_AttachedSound) will be created
         ent.prim.SoundID = audiouuid
-        # default radius and volume
         ent.prim.SoundRadius = soundRadius
         ent.prim.SoundVolume = soundVolume
     else:
@@ -210,14 +217,12 @@ def applyaudio(ent, audiouuid, soundRadius, soundVolume):
         ent.prim.SoundVolume = soundVolume
         ent.sound.SetSound(audiouuid, ent.placeable.Position, ent.prim.SoundRadius, ent.prim.SoundVolume)
     soundRulerUpdate(ent)
-    r.sendRexPrimData(ent.id)
+    r.sendRexPrimData(ent.Id)
 
 def soundRulerUpdate(ent):
-    try:
-        ent.soundruler
-    except AttributeError:
-        ent.createComponent("EC_SoundRuler")
-
+    # Check first to see if a sound ruler exists
+    # and create it if there was none found
+    sr = ent.GetOrCreateComponentRaw("EC_SoundRuler")
     sr = ent.soundruler
     sr.Show()
     sr.UpdateSoundRuler()

@@ -28,7 +28,7 @@ namespace ECEditor
         QString typeName_;
         bool isDynamic_;
 
-        ComponentGroup(ComponentInterfacePtr component = ComponentInterfacePtr(),
+        ComponentGroup(ComponentPtr component = ComponentPtr(),
                       ECComponentEditor *editor = 0,
                       QTreeWidgetItem *listItem = 0,
                       bool isDynamic = false);
@@ -55,7 +55,7 @@ namespace ECEditor
         bool ContainAttribute(const std::string &name) const;
 
         //! If component isn't already added to component group, add it.
-        bool AddComponent(ComponentInterfacePtr comp);
+        bool AddComponent(ComponentPtr comp);
 
         //! Try to find right component from component info and if found remove it from this object and ECComponentEditor.
         //! If ECComponentEditor doesn't contain any of components editor object will be released.

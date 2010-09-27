@@ -419,7 +419,7 @@ namespace ECEditor
             if((*iterComp)->ContainComponent(comp))
                 return;
         }
-        ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+        ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
         AddNewComponentToGroup(componentPtr);
     }
@@ -437,7 +437,7 @@ namespace ECEditor
             if(!(*iterComp)->ContainComponent(comp))
                 continue;
             
-            ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
             assert(componentPtr.get());
             RemoveComponentFromGroup(comp);
             return;
@@ -511,7 +511,7 @@ namespace ECEditor
             EntitySet::iterator iter = selectedEntities_.begin();
             while(iter != selectedEntities_.end())
             {
-                ComponentInterfacePtr component;
+                ComponentPtr component;
                 QString type = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
                 if(!(*iter)->HasComponent(type, name))
@@ -551,7 +551,7 @@ namespace ECEditor
                 ComponentWeakPtr pointer = componentGroup->components_.back();
                 if(!pointer.expired())
                 {
-                    ComponentInterfacePtr comp = pointer.lock();
+                    ComponentPtr comp = pointer.lock();
                     Scene::Entity *entity = comp->GetParentEntity();
                     entity->RemoveComponent(comp, AttributeChange::Local);
                 }
@@ -572,12 +572,12 @@ namespace ECEditor
             return;
 
         Scene::Entity *entity = component->GetParentEntity();
-        ComponentInterfacePtr compPtr = entity->GetComponent(component);
+        ComponentPtr compPtr = entity->GetComponent(component);
         RemoveComponentFromGroup(component);
         AddNewComponentToGroup(compPtr);
     }
 
-    void ECBrowser::ComponentNameChanged(const std::string &newName)
+    void ECBrowser::ComponentNameChanged(const QString &newName)
     {
         IComponent *component = dynamic_cast<IComponent*>(sender());
         if(component)
@@ -586,7 +586,7 @@ namespace ECEditor
             Scene::Entity *entity = component->GetParentEntity();
             if(!entity)
                 return;
-            ComponentInterfacePtr compPtr = entity->GetComponent(component);
+            ComponentPtr compPtr = entity->GetComponent(component);
             AddNewComponentToGroup(compPtr);
         }
     }
@@ -688,7 +688,7 @@ namespace ECEditor
         return iter;
     }
 
-    void ECBrowser::AddNewComponentToGroup(ComponentInterfacePtr comp)
+    void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     {
         assert(comp.get());
         if(!comp.get() && !treeWidget_)
@@ -710,8 +710,8 @@ namespace ECEditor
                         this, SLOT(DynamicComponentChanged(const QString &)));
                 connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
                         this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                        this, SLOT(ComponentNameChanged(const std::string&)));
+                connect(dynComp, SIGNAL(OnComponentNameChanged(const QString&)), 
+                        this, SLOT(ComponentNameChanged(const QString&, const QString&)));
             }
             return;
         }

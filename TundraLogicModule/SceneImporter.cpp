@@ -506,6 +506,8 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                     meshPtr->ComponentChanged(change);
                     namePtr->ComponentChanged(change);
                 }
+                else
+                    TundraLogicModule::LogError("Could not create mesh, placeable, name components");
             }
         }
         

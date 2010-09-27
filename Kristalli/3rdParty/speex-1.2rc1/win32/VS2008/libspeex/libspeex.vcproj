@@ -114,6 +114,7 @@
 				InlineFunctionExpansion="2"
 				EnableIntrinsicFunctions="true"
 				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\..\..\include;..\.."
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB;HAVE_CONFIG_H"
 				StringPooling="true"

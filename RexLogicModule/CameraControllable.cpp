@@ -2,15 +2,19 @@
 
 #include "StableHeaders.h"
 #include "CameraControllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+
+#include "EntityComponent/EC_AvatarAppearance.h"
+#include "EC_NetworkPosition.h"
+
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "SceneManager.h"
-#include "EC_OgrePlaceable.h"
+
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
+#include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
+
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "EnvironmentModule.h"
@@ -494,7 +498,7 @@ namespace RexLogic
                     Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
                     if (ec_terrain && ec_terrain->AllPatchesLoaded())
                     {
-                        float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
+                        float terrain_height = ec_terrain->GetInterpolatedHeightValue(position.x, position.y);
                         min_z = terrain_height + terrainConstraintOffset_;
                         if (!useBoundaryBoxConstraint_ && position.z < min_z)
                             position.z = min_z;

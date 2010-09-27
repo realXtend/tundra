@@ -21,6 +21,7 @@
 #include "CoreException.h"
 #include "InputServiceInterface.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -35,6 +36,8 @@
 #include <QApplication>
 #include <QGraphicsView>
 #include <QIcon>
+#include <QMetaMethod>
+
 #include "MemoryLeakCheck.h"
 
 namespace Resource
@@ -71,7 +74,8 @@ namespace Foundation
         initialized_(false),
         log_formatter_(0),
         splitterchannel(0),
-        frame_(new Frame(this))
+        frame_(new Frame(this)),
+        console_(new ScriptConsole(this))
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -373,7 +377,7 @@ namespace Foundation
         module_manager_->UnloadModules();
     }
 
-    Scene::ScenePtr Framework::CreateScene(const std::string &name)
+    Scene::ScenePtr Framework::CreateScene(const QString &name)
     {
         if (HasScene(name))
             return Scene::ScenePtr();
@@ -381,31 +385,22 @@ namespace Foundation
         Scene::ScenePtr new_scene = Scene::ScenePtr(new Scene::SceneManager(name, this));
         scenes_[name] = new_scene;
 
-        Scene::Events::SceneEventData event_data(name);
+        Scene::Events::SceneEventData event_data(name.toStdString());
         event_category_id_t cat_id = GetEventManager()->QueryEventCategory("Scene");
         GetEventManager()->SendEvent(cat_id, Scene::Events::EVENT_SCENE_ADDED, &event_data);
 
-        emit SceneAdded(QString::fromStdString(name));
+        emit SceneAdded(name);
         return new_scene;
     }
 
-    void Framework::RemoveScene(const std::string &name)
+    void Framework::RemoveScene(const QString &name)
     {
         SceneMap::iterator scene = scenes_.find(name);
         if (default_scene_ == scene->second)
             default_scene_.reset();
         if (scene != scenes_.end())
             scenes_.erase(scene);
-        emit SceneRemoved(QString::fromStdString(name));
-    }
-
-    Scene::ScenePtr Framework::GetScene(const std::string &name) const
-    {
-        SceneMap::const_iterator scene = scenes_.find(name);
-        if (scene != scenes_.end())
-            return scene->second;
-
-        return Scene::ScenePtr();
+        emit SceneRemoved(name);
     }
 
     Console::CommandResult Framework::ConsoleLoadModule(const StringVector &params)
@@ -623,6 +618,20 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
+    void Framework::DescribeQObject(QObject *obj)
+    {
+        const QMetaObject *metaObj = obj->metaObject();
+
+        RootLogInfo(std::string(metaObj->className()));
+        RootLogInfo("methods:");
+        for(int i = metaObj->methodOffset(); i < metaObj->methodCount(); ++i)
+            RootLogInfo(QString::fromLatin1(metaObj->method(i).signature()).toStdString());
+
+        RootLogInfo("properties:");
+        for(int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i)
+            RootLogInfo(QString::fromLatin1(metaObj->property(i).name()).toStdString());
+    }
+
     ComponentManagerPtr Framework::GetComponentManager() const
     {
         return component_manager_;
@@ -678,7 +687,16 @@ namespace Foundation
         return *input_logic;
     }
 
-    bool Framework::HasScene(const std::string &name) const
+    Scene::ScenePtr Framework::GetScene(const QString &name) const
+    {
+        SceneMap::const_iterator scene = scenes_.find(name);
+        if (scene != scenes_.end())
+            return scene->second;
+
+        return Scene::ScenePtr();
+    }
+
+    bool Framework::HasScene(const QString &name) const
     {
         return scenes_.find(name) != scenes_.end();
     }

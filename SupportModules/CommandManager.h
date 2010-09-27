@@ -7,6 +7,8 @@
 #include "ConsoleServiceInterface.h"
 #include "CoreThread.h"
 
+#include <queue>
+
 class IModule;
 
 namespace Console
@@ -20,6 +22,8 @@ namespace Console
     */
     class CommandManager : public Console::ConsoleCommandServiceInterface
     {
+        Q_OBJECT
+
     public:
         //! default constructor
         CommandManager(IModule *parent, ConsoleServiceInterface *console);
@@ -27,8 +31,6 @@ namespace Console
         virtual ~CommandManager();
 
         virtual void Update();
-
-
         virtual void RegisterCommand(const Console::Command &command);
         virtual void UnregisterCommand(const std::string &name);
 

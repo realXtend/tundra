@@ -22,6 +22,7 @@ class QObject;
 
 class InputServiceInterface;
 class Frame;
+class ScriptConsole;
 
 namespace Poco
 {
@@ -55,7 +56,7 @@ namespace Foundation
         Q_OBJECT
 
     public:
-        typedef std::map<std::string, Scene::ScenePtr> SceneMap;
+        typedef std::map<QString, Scene::ScenePtr> SceneMap;
 
         //! constructor. Initializes the framework.
         Framework(int argc, char** argv);
@@ -145,7 +146,7 @@ namespace Foundation
             \param name name of the new scene
             \return The new scene, or empty pointer if scene with the specified name already exists.
         */
-        Scene::ScenePtr CreateScene(const std::string &name);
+        Scene::ScenePtr CreateScene(const QString &name);
 
         //! Removes a scene with the specified name.
         /*! The scene may not get deleted since there may be dangling references to it.
@@ -156,7 +157,7 @@ namespace Foundation
 
             \param name name of the scene to delete
         */
-        void RemoveScene(const std::string &name);
+        void RemoveScene(const QString &name);
 
         //! Returns a pointer to a scene
         /*! Manage the pointer carefully, as scenes may not get deleted properly if
@@ -168,10 +169,10 @@ namespace Foundation
             \param name Name of the scene to return
             \return The scene, or empty pointer if the scene with the specified name could not be found
         */
-        Scene::ScenePtr GetScene(const std::string &name) const;
+        Scene::ScenePtr GetScene(const QString &name) const;
 
         //! Returns true if specified scene exists, false otherwise
-        bool HasScene(const std::string &name) const;
+        bool HasScene(const QString &name) const;
 
         //! Returns the currently set default world scene, for convinience
         const Scene::ScenePtr &GetDefaultWorldScene() const;
@@ -266,15 +267,24 @@ namespace Foundation
         /// Returns the framework Frame object.
         Frame *GetFrame() const { return frame_; }
 
+        /// Returns the framework Console object.
+        ScriptConsole *Console() const { return console_; }
+
+        /// Debugging utility function for printing QObject's methods and properties to log.
+        /** @param obj Object to inspect.
+            @todo Move this function to some better place.
+        */
+        void DescribeQObject(QObject *obj);
+
     signals:
-        /** Emitted after new scene has been added to framework.
-         *  @param name new scene name.
-         */
+        /// Emitted after new scene has been added to framework.
+        /**@param name new scene name.
+        */
         void SceneAdded(const QString &name);
 
-        /** Emitted after scene has been removed from the framework.
-         *  @param name removed scene name.
-         */
+        /// Emitted after scene has been removed from the framework.
+        /** @param name removed scene name.
+        */
         void SceneRemoved(const QString &name);
 
     private:
@@ -352,6 +362,9 @@ namespace Foundation
 
         //! Exposes Naali framework's update tick.
         Frame *frame_;
+
+        //! Provides console access for scripting languages.
+        ScriptConsole *console_;
     };
 
     namespace

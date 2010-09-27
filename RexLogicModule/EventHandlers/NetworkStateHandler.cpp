@@ -125,7 +125,7 @@ bool NetworkStateEventHandler::HandleTundraEvent(event_id_t event_id, IEventData
     switch(event_id)
     {
     case TundraLogic::Events::EVENT_TUNDRA_CONNECTED:
-        owner_->CreateCamera(true);
+        owner_->CreateOpenSimViewerCamera(owner_->GetFramework()->GetDefaultWorldScene(), true);
         break;
     }
     return false;

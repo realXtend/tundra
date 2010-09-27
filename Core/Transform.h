@@ -11,16 +11,9 @@ struct Transform
     Vector3D<float> scale;
 
     Transform():
-        position(0),
-        rotation(0),
-        scale(1)
-    {
-    }
-
-    Transform(const Transform &other):
-        position(other.position),
-        rotation(other.rotation),
-        scale(other.scale)
+        position(0,0,0),
+        rotation(0,0,0),
+        scale(1,1,1)
     {
     }
 
