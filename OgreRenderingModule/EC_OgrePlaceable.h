@@ -61,9 +61,9 @@ Does not emit any actions.
      */
     class OGRE_MODULE_API EC_OgrePlaceable : public IComponent
     {
+        Q_OBJECT
         DECLARE_EC(EC_OgrePlaceable);
 
-        Q_OBJECT
         Q_PROPERTY(QVector3D Position READ GetQPosition WRITE SetQPosition)
         Q_PROPERTY(QVector3D Scale READ GetQScale WRITE SetQScale)
         Q_PROPERTY(QQuaternion Orientation READ GetQOrientation WRITE SetQOrientation)
@@ -75,6 +75,11 @@ Does not emit any actions.
         Q_PROPERTY(float Roll READ GetRoll)
 
     public:
+        //! Transformation attribute for position, rotation and scale adjustments.
+        //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+        Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
+        DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
+
         virtual ~EC_OgrePlaceable();
         
         //! Set component as serializable.
@@ -182,12 +187,6 @@ Does not emit any actions.
         QVector3D GetQScale() const;
         //! get node scale
         void SetQScale(const QVector3D newscale);
-
-        //! Transform attribute
-        /*! When this changes, syncs the Ogre scene node position to the attribute. Note that sync the other way around will not be done
-            Also RexLogic code does not use the attribute.
-         */
-        Attribute<Transform> transform;
 
     public slots:
         //! translate
