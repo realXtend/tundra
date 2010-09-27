@@ -21,12 +21,13 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
 EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),
-    active_(false)
+    active(this, "active", false)
 {
     soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
 }
 
 EC_SoundListener::~EC_SoundListener()
@@ -43,15 +44,19 @@ void EC_SoundListener::RetrievePlaceable()
         LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");
 }
 
-void EC_SoundListener::SetActive(bool active)
+void EC_SoundListener::Update()
 {
-    active_ = active;
+    if (active.Get() && !placeable_.expired() && !soundService_.expired())
+        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
+}
 
+void EC_SoundListener::OnActiveChanged()
+{
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return;
 
-    if (active_)
+    if (active.Get())
     {
         // Disable all the other listeners, only one can be active at a time.
         ///\todo Maybe not the most sophisticated way to handle this here; do this in RexLogicModule maybe.
@@ -60,14 +65,7 @@ void EC_SoundListener::SetActive(bool active)
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->SetActive(!active_);
+                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Local);
         }
     }
 }
-
-void EC_SoundListener::Update()
-{
-    if (active_ && !placeable_.expired() && !soundService_.expired())
-        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
-}
-
