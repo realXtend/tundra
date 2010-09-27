@@ -82,7 +82,7 @@ namespace RexLogic
         void FrameChanged(int);
         void TimeLineFinished();
 
-        void Update(double);
+        void Update(float);
 
     private slots:
         //! Populate service_category_identifiers_

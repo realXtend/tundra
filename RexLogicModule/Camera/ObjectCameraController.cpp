@@ -6,7 +6,7 @@
 #include "InputEvents.h"
 #include "SceneEvents.h"
 #include "Renderer.h"
-
+#include "Frame.h"
 #include "Entity.h"
 #include <QApplication>
 
@@ -68,7 +68,7 @@ namespace RexLogic
         connect(input_context_.get(), SIGNAL(MouseScroll(MouseEvent*)), this, SLOT(MouseScroll(MouseEvent*)));
         connect(input_context_.get(), SIGNAL(MouseDoubleClicked(MouseEvent*)), this, SLOT(MouseDoubleClicked(MouseEvent*)));
 
-        connect(framework_, SIGNAL(FrameProcessed(double)), this, SLOT(Update(double)));
+        connect(framework_->GetFrame(), SIGNAL(Updated(float)), this, SLOT(Update(float)));
         connect(timeline_, SIGNAL(frameChanged(int)), this, SLOT(FrameChanged(int)));
         connect(timeline_, SIGNAL(finished()), this, SLOT(TimeLineFinished()));
     }
@@ -224,6 +224,7 @@ namespace RexLogic
 
     void ObjectCameraController::MouseDoubleClicked(MouseEvent *mouse)
     {
+        
         if (object_selected_)
         {
             if (! selected_entity_)
@@ -319,7 +320,7 @@ namespace RexLogic
         }
     }
 
-    void ObjectCameraController::Update(double frametime)
+    void ObjectCameraController::Update(float frametime)
     {
         if(zoom_close_)
         {
