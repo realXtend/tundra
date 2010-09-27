@@ -61,7 +61,7 @@
 #include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "EntityComponent/EC_AttachedSound.h"
