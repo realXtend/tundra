@@ -29,6 +29,8 @@ EC_Sound::EC_Sound(IModule *module):
     soundGain.SetMetadata(&metaData);
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Sound::~EC_Sound()
@@ -36,11 +38,8 @@ EC_Sound::~EC_Sound()
     StopSound();
 }
 
-void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
-
     if(attribute->GetNameString() == soundId.GetNameString())
     {
         Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
@@ -122,7 +121,6 @@ void EC_Sound::UpdateSoundSettings()
 
 void EC_Sound::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if (!GetParentEntity())
     {
         // log warning
@@ -135,8 +133,6 @@ void EC_Sound::UpdateSignals()
         return;
     }
 
-    connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
     RegisterActions();
 }
 
