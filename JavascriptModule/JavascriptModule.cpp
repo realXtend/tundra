@@ -17,6 +17,7 @@
 #include "InputContext.h"
 #include "InputServiceInterface.h"
 #include "UiServiceInterface.h"
+#include "SoundServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -78,12 +79,11 @@ void JavascriptModule::PostInitialize()
 {
     input_ = GetFramework()->Input().RegisterInputContext("ScriptInput", 100);
     Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
-    //Foundation::SoundServiceInterface *sound = GetFramework()->GetService<Foundation::SoundServiceInterface>();
 
     // Add Naali Core API objcects as js services.
     services_["input"] = input_.get();
     services_["ui"] = ui;
-    //services_["sound"] = sound;
+    services_["sound"] = GetFramework()->Sound();
     services_["frame"] = GetFramework()->GetFrame();
     services_["console"] = GetFramework()->Console();
 
@@ -170,15 +170,19 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     if(!sender)
         return;
 
-    if (sender->type.Get() != "js" && !sender->type.Get().endsWith(".js"))
+    if (sender->type.Get() != "js")
     {
-        // If script ref is empty we need to destroy the previous script if it's type is javascript.
-        if(!dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
+        //Make sure that file type in't .js.
+        if(!sender->type.Get().endsWith(".js"))
         {
-            JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
-            sender->SetScriptInstance(javaScriptInstance);
+            // If script ref is empty we need to destroy the previous script if it's type is javascript.
+            if(!dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))
+            {
+                JavascriptEngine *javaScriptInstance = new JavascriptEngine("");
+                sender->SetScriptInstance(javaScriptInstance);
+            }
+            return;
         }
-        return;
     }
 
     JavascriptEngine *javaScriptInstance = new JavascriptEngine(scriptRef);

@@ -1806,7 +1806,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         sound_id_t rex_ambient_sound = sounds[EC_AttachedSound::RexAmbientSound];
         if (rex_ambient_sound)
         {
-            if (soundsystem->GetSoundName(rex_ambient_sound) == prim->SoundID)
+            if (soundsystem->GetSoundName(rex_ambient_sound).toStdString() == prim->SoundID)
                 same = true;
         }
         if (!same)
@@ -1818,7 +1818,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             {
                 position = placeable->GetPosition();
             }        
-            rex_ambient_sound = soundsystem->PlaySound3D(prim->SoundID, Foundation::SoundServiceInterface::Ambient, false, position);
+            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), Foundation::SoundServiceInterface::Ambient, false, position);
             // The ambient sounds will always loop
             soundsystem->SetLooped(rex_ambient_sound, true);
             
@@ -1875,7 +1875,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
         position = placeable->GetPosition();
 
     // Start new sound
-    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, Foundation::SoundServiceInterface::Triggered, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), Foundation::SoundServiceInterface::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
     if (flags & RexTypes::ATTACHED_SOUND_LOOP)
         soundsystem->SetLooped(new_sound, true);

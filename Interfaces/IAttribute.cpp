@@ -127,7 +127,7 @@ template<> std::string Attribute<Transform>::ToString() const
 {
     QString value("");
     Transform transform = Get();
-    Vector3D<float> editValues[3];
+    Vector3df editValues[3];
     editValues[0] = transform.position;
     editValues[1] = transform.rotation;
     editValues[2] = transform.scale;
@@ -356,7 +356,7 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
     QString value = QString::fromStdString(str);
     QStringList matrixElements = value.split(',');
     Transform result;
-    if(matrixElements.size() == 9) //Ensure that we have right amount of elements.
+    if(matrixElements.size() == 9) //Ensure that we a have right amount of elements.
     {
         float values[9];
         for(uint i = 0; i < 3; i++)

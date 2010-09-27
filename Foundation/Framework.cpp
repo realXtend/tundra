@@ -20,6 +20,7 @@
 #include "FrameworkQtApplication.h"
 #include "CoreException.h"
 #include "InputServiceInterface.h"
+#include "SoundServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
 
@@ -630,6 +631,16 @@ namespace Foundation
         RootLogInfo("properties:");
         for(int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i)
             RootLogInfo(QString::fromLatin1(metaObj->property(i).name()).toStdString());
+    }
+
+    SoundServiceInterface *Framework::Sound()
+    {
+        boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
+                GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!sound_logic.get())
+            throw Exception("Fatal: Sound service not present!");
+
+        return sound_logic.get();
     }
 
     ComponentManagerPtr Framework::GetComponentManager() const

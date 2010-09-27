@@ -44,7 +44,7 @@ void EC_Sound::AttributeUpdated(IComponent *component, IAttribute *attribute)
     if(attribute->GetNameString() == soundId.GetNameString())
     {
         Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
-        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get().toStdString())
+        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get())
             StopSound();
     }
     else if(attribute->GetNameString() == triggerSound.GetNameString())
@@ -82,14 +82,14 @@ void EC_Sound::PlaySound()
     OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
+        sound_id_ = soundService->PlaySound3D(soundId.Get(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain.Get());
         soundService->SetLooped(sound_id_, loopSound.Get());
         soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Ambient);
+        sound_id_ = soundService->PlaySound(soundId.Get(), Foundation::SoundServiceInterface::Ambient);
         soundService->SetGain(sound_id_, soundGain.Get());
     }
 }

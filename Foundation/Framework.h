@@ -33,6 +33,7 @@ namespace Poco
 
 namespace Foundation
 {
+    class SoundServiceInterface;
     class FrameworkQtApplication;
     class KeyStateListener;
     class MainWindow;
@@ -275,6 +276,9 @@ namespace Foundation
             @todo Move this function to some better place.
         */
         void DescribeQObject(QObject *obj);
+
+        /// Returns the sound serive object.
+        SoundServiceInterface *Sound();
 
     signals:
         /// Emitted after new scene has been added to framework.

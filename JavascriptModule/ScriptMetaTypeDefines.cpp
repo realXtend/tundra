@@ -15,6 +15,7 @@
 #include "UiProxyWidget.h"
 #include "Frame.h"
 #include "Console.h"
+#include "SoundServiceInterface.h"
 
 #include "QtInputMouseEvent.h"
 #include "QtInputKeyEvent.h"
@@ -48,7 +49,7 @@ Q_DECLARE_METATYPE(ScriptConsole*);
 Q_DECLARE_METATYPE(Command*);
 Q_DECLARE_METATYPE(DelayedSignal*);
 
-void ReqisterQtMetaTypes(QScriptEngine *engine)
+void ExposeQtMetaTypes(QScriptEngine *engine)
 {
     QScriptValue object = engine->scriptValueFromQMetaObject<QPushButton>();
     engine->globalObject().setProperty("QPushButton", object);
@@ -56,42 +57,44 @@ void ReqisterQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QWidget", object);
 }
 
-void ReqisterInputMetaTypes(QScriptEngine *engine)
+void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
+    // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
-
     qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
     qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
     qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
-}
 
-void ReqisterSceneMetaTypes(QScriptEngine *engine)
-{
+    // Scene metatypes.
     qScriptRegisterQObjectMetaType<Scene::Entity*>(engine);
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
-
     qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
     qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
-}
 
-void ReqisterUiMetaTypes(QScriptEngine *engine)
-{
+    // Console metatypes.
+    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
+    qScriptRegisterQObjectMetaType<Command*>(engine);
+
+    // Frame metatypes.
+    qScriptRegisterQObjectMetaType<Frame*>(engine);
+    qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
+
+    // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
     //Add support to create proxy widget in javascript side.
     QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
     engine->globalObject().setProperty("UiProxyWidget", object);
-}
-
-void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
-{
-    qScriptRegisterQObjectMetaType<Frame*>(engine);
-    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
-    qScriptRegisterQObjectMetaType<Command*>(engine);
-    qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
+    
+    // Sound metatypes.
+    qRegisterMetaType<sound_id_t>("sound_id_t");
+    qRegisterMetaType<Foundation::SoundServiceInterface::SoundState>("SoundState");
+    qRegisterMetaType<Foundation::SoundServiceInterface::SoundState>("Foundation::SoundServiceInterface::SoundState");
+    qRegisterMetaType<Foundation::SoundServiceInterface::SoundType>("SoundType");
+    qRegisterMetaType<Foundation::SoundServiceInterface::SoundType>("Foundation::SoundServiceInterface::SoundType");
 }
 
 

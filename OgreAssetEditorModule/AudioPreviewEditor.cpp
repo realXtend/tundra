@@ -56,7 +56,7 @@ void AudioPreviewEditor::HandleAssetReady(Foundation::AssetPtr asset)
             if(!sound_service)
                 return;
 
-            request_tag_ = sound_service->RequestSoundResource(asset->GetId());
+            request_tag_ = sound_service->RequestSoundResource(QString::fromStdString(asset->GetId()));
         }
     }
 }
@@ -100,7 +100,6 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
                     layout->addWidget(audioSignalLabel);
                 }
                 audioSignalLabel->SetAudioData(buffer.data_, buffer.frequency_, bits, buffer.stereo_);
-                QObject::connect(this, SIGNAL(WidgetResized(QSize)), audioSignalLabel, SLOT(ResizeImage(QSize)));
             }
             assetId_ = QString(sound->GetId().c_str());
         }
@@ -136,7 +135,7 @@ void AudioPreviewEditor::PlaySound()
 
             if(soundId_ == 0)
             {
-                soundId_ = sound_service->PlaySound(assetId_.toStdString(), Foundation::SoundServiceInterface::Ambient);
+                soundId_ = sound_service->PlaySound(assetId_, Foundation::SoundServiceInterface::Ambient);
                 playButton_->setText(tr("Stop"));
                 
                 AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
