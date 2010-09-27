@@ -11,7 +11,9 @@
 #include "EntityComponent/EC_Controllable.h"
 
 #include "EC_NetworkPosition.h"
+#ifdef EC_HoveringWidget_ENABLED
 #include "EC_HoveringWidget.h"
+#endif
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarEditor.h"
@@ -40,7 +42,9 @@ namespace Avatar
 		DECLARE_MODULE_EC(EC_OpenSimAvatar);
 		DECLARE_MODULE_EC(EC_NetworkPosition);
 		DECLARE_MODULE_EC(EC_Controllable);
+#ifdef EC_HoveringWidget_ENABLED
 		DECLARE_MODULE_EC(EC_HoveringWidget);
+#endif
 	}
 
 	void AvatarModule::Initialize()

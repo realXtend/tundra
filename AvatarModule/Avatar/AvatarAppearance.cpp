@@ -35,7 +35,9 @@
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "WorldStream.h"
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
 
 #include <QDomDocument>
 #include <QFile>
@@ -320,6 +322,7 @@ namespace Avatar
                         if (c > 1.0) c = 1.0;
                         offset = initial_base_pos * c;
 
+#ifdef EC_HoveringText_ENABLED
                         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
                         // Set name overlay height according to base + root distance.
                         //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
@@ -329,6 +332,7 @@ namespace Avatar
                             overlay->SetPosition(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
                             //overlay->SetOffset(Vector3df(0, 0, abs(initial_base_pos.y - initial_root_pos.y) * OVERLAY_HEIGHT_MULTIPLIER));
                         }
+#endif
                     }
                 }
             }

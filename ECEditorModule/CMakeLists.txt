@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target (ECEditorModule OUTPUT modules/core)
 
+GetEntityComponents()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -25,7 +27,7 @@ use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_DynamicComponent)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -34,7 +36,9 @@ link_package (POCO)
 link_package (QT4)
 link_package (OGRE)
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules EC_DynamicComponent)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules)
+
+LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

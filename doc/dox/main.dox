@@ -58,7 +58,7 @@ These interfaces are accessible directly through the root Framework object. The 
 
 The root object for accessing all Naali features is the Framework object. This object drives the main loop and gives access of all the core APIs to modules and scripts. For more information, see
 - \ref Foundation::Framework "the Framework class".
-- Naali frame update tick.
+- \ref FrameAPI "Naali Frame API."
 
 <h2>Core</h2>
 The Naali SDK consists of the following set of core APIs that are accessible from client modules, components and scripts.
@@ -66,13 +66,13 @@ The Naali SDK consists of the following set of core APIs that are accessible fro
 <tr>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
 <h3>Module</h3>
-The \subpage ModuleArchitecture "Module" API gives access to all the modules registered in the system. For working with modules, see the following topics:
-- Accessing modules in your code.
-- Creating a new module using C++.
-- Creating a new module using Python.
-- Setting up cmake files and PCHs for your module.
-- Module load orders.
-- Supporting localization in your module. 
+The \ref ModuleArchitecture "Module" API gives access to all the modules registered in the system. For working with modules, see the following topics:
+- \ref communication_sec "Accessing modules in your code.""
+- \ref creating_sec "Creating a new module using C++."
+- \ref module_python "Creating a new module using Python."
+- \ref module_cmake "Setting up cmake files and PCHs for your module."
+- \ref module_def_sec "Module definition file and load orders."
+- \ref module_locale "Supporting localization in your module." 
 
 Classes:
 <ul>
@@ -86,8 +86,8 @@ The Naali event pipe is a channel for system-wide inter-module messaging.
 
 Information:
 <ul>
-<li>\subpage EventSystem "Viewer event system."
-<li>Why avoid events?
+<li>\ref EventSystem "Viewer event system."
+<li>\ref events_avoid "Why avoid events?"
 </ul>
 
 Classes:

@@ -577,7 +577,7 @@ namespace ECEditor
         AddNewComponentToGroup(compPtr);
     }
 
-    void ECBrowser::ComponentNameChanged(const std::string &newName)
+    void ECBrowser::ComponentNameChanged(const QString &newName)
     {
         IComponent *component = dynamic_cast<IComponent*>(sender());
         if(component)
@@ -710,8 +710,8 @@ namespace ECEditor
                         this, SLOT(DynamicComponentChanged(const QString &)));
                 connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
                         this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                        this, SLOT(ComponentNameChanged(const std::string&)));
+                connect(dynComp, SIGNAL(OnComponentNameChanged(const QString&)), 
+                        this, SLOT(ComponentNameChanged(const QString&, const QString&)));
             }
             return;
         }

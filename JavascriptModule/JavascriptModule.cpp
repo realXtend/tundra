@@ -170,7 +170,7 @@ void JavascriptModule::ScriptChanged(const QString &scriptRef)
     if(!sender)
         return;
 
-    if (sender->type.Get() != "js" && sender->type.Get().endsWith(".js"))
+    if (sender->type.Get() != "js" && !sender->type.Get().endsWith(".js"))
     {
         // If script ref is empty we need to destroy the previous script if it's type is javascript.
         if(!dynamic_cast<JavascriptEngine*>(sender->GetScriptInstance()))

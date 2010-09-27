@@ -196,7 +196,7 @@ bool EC_Mesh::HasMaterialsChanged() const
     QVariantList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
-        // No point to continue if all materials are not setted.
+        // No point to continue if all materials are not set.
         if(i >= materials.size())
             break;
 
@@ -212,16 +212,12 @@ void EC_Mesh::UpdateSignals()
     if(!GetParentEntity())
         return;
 
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
     QString attrName = QString::fromStdString(attribute->GetNameString());
     request_tag_t tag = 0;
     if(QString::fromStdString(meshResourceId.GetNameString()) == attrName)

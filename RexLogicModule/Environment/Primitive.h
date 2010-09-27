@@ -166,7 +166,8 @@ namespace RexLogic
          */
         void AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff);
 
-        /** Creates hovering text above entity. Uses EC_HoveringText
+        /** Creates hovering text above entity. Uses EC_HoveringText. If #define #EC_HoveringText_ENABLED was not available
+            when this RexLogicModule was built, this function does nothing.
             @param entity Entity.
             @param text Text to be shown. If null ("") the EC_HoveringText compoenent will be removed from the entity.
             @param text_color Color of the text.

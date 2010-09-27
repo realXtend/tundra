@@ -175,6 +175,14 @@ namespace Foundation
          */
         virtual void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget) = 0;
 
+        /** Load widget from .ui file and as default add it to a scene. This method is for scripters.
+         *  @param file_path ui file location.
+         *  @param parent Pointer to parent widget.
+         *  @param add_to_scene do we want to add new widget to scene.
+         *  @return loaded widget's pointer (null if fail to load).
+         */
+        virtual QWidget *LoadFromFile(const QString &file_path, bool add_to_scene = true, QWidget *parent = 0) = 0;
+
     signals:
         /** Emitted when scene is changed.
          *  @param oldName Name of the old scene.

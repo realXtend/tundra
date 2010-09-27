@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
@@ -21,6 +22,7 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include "MemoryLeakCheck.h"
 
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
@@ -32,6 +34,7 @@ Q_DECLARE_METATYPE(KeyEvent*)
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
 Q_DECLARE_METATYPE(Scene::Entity*);
@@ -77,6 +80,10 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
+    qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
+    //Add support to create proxy widget in javascript side.
+    QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
+    engine->globalObject().setProperty("UiProxyWidget", object);
 }
 
 void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
@@ -86,4 +93,5 @@ void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<Command*>(engine);
     qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 }
+
 
