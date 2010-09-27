@@ -146,7 +146,7 @@ namespace MumbleVoip
                 bool sixteenbit = true;
                 bool stereo = false;
                 int buffer_size = SAMPLE_WIDTH/8*frequency*AUDIO_RECORDING_BUFFER_MS/1000;
-                sound_service->StartRecording(recording_device_, frequency, sixteenbit, stereo, buffer_size);
+                sound_service->StartRecording(QString::fromStdString(recording_device_), frequency, sixteenbit, stereo, buffer_size);
             }
 
             emit StartSendingAudio();

@@ -9,11 +9,17 @@
 #include "Quaternion.h"
 #include "ResourceInterface.h"
 
+#include <QString>
+
 namespace Foundation
 {
     //! An interface for sound functionality.
-    class SoundServiceInterface : public ServiceInterface
+    class SoundServiceInterface : public QObject, public ServiceInterface
     {
+        Q_OBJECT
+        Q_ENUMS(SoundState)
+        Q_ENUMS(SoundType)
+
     public:
         //! States of sound channels
         enum SoundState
@@ -49,14 +55,15 @@ namespace Foundation
         SoundServiceInterface() {}
         virtual ~SoundServiceInterface() {}
 
-        //! Gets playback device names
-        virtual StringVector GetPlaybackDevices() = 0;
-        
         //! (Re)initializes playback with specified device. Empty name uses default device.
         /*! \param name Playback device name
             \return true if successful
          */
         virtual bool Initialize(const std::string& name = std::string()) = 0;
+
+    public slots:
+        //! Gets playback device names
+        virtual QStringList GetPlaybackDevices() = 0;
         
         //! Sets listener position & orientation
         /*! \param position Position
@@ -88,7 +95,7 @@ namespace Foundation
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */           
-        virtual sound_id_t PlaySound(const std::string& name, SoundType type = Triggered, bool local = false, sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound(const QString& name, SoundType type = Triggered, bool local = false, sound_id_t channel = 0) = 0;
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
@@ -98,7 +105,7 @@ namespace Foundation
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */     
-        virtual sound_id_t PlaySound3D(const std::string& name, SoundType type = Triggered, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
+        virtual sound_id_t PlaySound3D(const QString& name, SoundType type = Triggered, bool local = false, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0) = 0;
 
         //! Buffers sound data into a non-positional channel
         /*! Note: use the returned channel id for continuing to feed the sound stream.
@@ -140,7 +147,7 @@ namespace Foundation
         /*! \param id Channel id
             \return Sound name, or empty if no sound
          */
-        virtual const std::string& GetSoundName(sound_id_t id) const = 0;
+        virtual const QString& GetSoundName(sound_id_t id) const = 0;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
@@ -152,12 +159,24 @@ namespace Foundation
             \param pitch Pitch relative to sound's original pitch (1.0 = original)
          */
         virtual void SetPitch(sound_id_t id, float pitch) = 0;
+
+        //! Get sound channel pitch.
+        /*! \param id Channel id
+         *  \return Channel's pitch value.
+         */
+        virtual float GetPitch(sound_id_t id) const = 0;
         
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
          */
         virtual void SetGain(sound_id_t id, float gain) = 0;
+
+        //! Get gain of channel
+        /*! \param id Channel id
+         *  \return Channel's gain.
+         */
+        virtual float GetGain(sound_id_t id) const = 0;
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
@@ -188,8 +207,10 @@ namespace Foundation
          */
         virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff) = 0;
 
+    public:
+
         //! Get recording device names
-        virtual StringVector GetRecordingDevices() = 0;
+        virtual QStringList GetRecordingDevices() = 0;
         
         //! Open sound recording device & start recording
         /*! \param name Device name, empty for default
@@ -199,7 +220,7 @@ namespace Foundation
             \param buffer_size Buffer size in bytes. Should be multiple of sample size.
             \return true if successful
          */
-        virtual bool StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size) = 0;
+        virtual bool StartRecording(const QString& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size) = 0;
         
         //! Stop recording & close sound recording device
         virtual void StopRecording() = 0;
@@ -218,7 +239,7 @@ namespace Foundation
         /*! \param assetid sound asset id. Assumed to be ogg format
             \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
          */ 
-        virtual request_tag_t RequestSoundResource(const std::string& assetid) = 0;
+        virtual request_tag_t RequestSoundResource(const QString& assetid) = 0;
     };
 
     //! A sound resource

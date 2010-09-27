@@ -115,7 +115,7 @@ namespace RexLogic
         if (!soundsystem)
             return;
         
-        sound_id_t sound_id = soundsystem->PlaySound3D(name.toStdString(), Foundation::SoundServiceInterface::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
+        sound_id_t sound_id = soundsystem->PlaySound3D(name, Foundation::SoundServiceInterface::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
         
         this->AddSound(sound_id, EC_AttachedSound::RexAmbientSound); 
         

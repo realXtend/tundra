@@ -31,14 +31,15 @@ namespace OpenALAudio
         //! Destructor.
         virtual ~SoundSystem();
         
-        //! Gets playback device names
-        virtual StringVector GetPlaybackDevices();
-        
         //! (Re)initializes playback with specified device. Empty name uses default device.
         /*! \param name Playback device name
             \return true if successful
          */
         virtual bool Initialize(const std::string& name = std::string());
+        
+    public slots:
+        //! Gets playback device names
+        virtual QStringList GetPlaybackDevices();
         
         //! Sets listener position & orientation
         /*! \param position Position
@@ -69,7 +70,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */
-        virtual sound_id_t PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound(const QString& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
@@ -78,7 +79,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */
-        virtual sound_id_t PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound3D(const QString& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
 
         //! Buffers sound data into a non-positional channel
         /*! Note: use the returned channel id for continuing to feed the sound stream.
@@ -114,7 +115,7 @@ namespace OpenALAudio
         /*! \param id Channel id
             \return Sound name, or empty if no sound
          */
-        virtual const std::string& GetSoundName(sound_id_t id) const;
+        virtual const QString& GetSoundName(sound_id_t id) const;
      
         //! Gets type of sound played/pending on channel (triggered/ambient etc.)
         /*! \param id Channel id
@@ -132,12 +133,24 @@ namespace OpenALAudio
             \param pitch Pitch relative to sound's original pitch (1.0 = original)
          */
         virtual void SetPitch(sound_id_t id, float pitch);
+
+        //! Get sound channel pitch.
+        /*! \param id Channel id
+         *  \return Channel's pitch value.
+         */
+        virtual float GetPitch(sound_id_t id) const;
         
         //! Adjusts gain of channel
         /*! \param id Channel id
             \param gain New gain value, 1.0 = full volume, 0.0 = silence
          */
         virtual void SetGain(sound_id_t id, float gain);
+        
+        //! Get gain of channel. If channel wasn't found return -1.
+        /*! \param id Channel id
+         *  \return Channel's gain.
+         */
+        virtual float GetGain(sound_id_t id) const; 
         
         //! Adjusts looping status of channel
         /*! \param id Channel id
@@ -168,8 +181,9 @@ namespace OpenALAudio
          */
         virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff); 
 
+    public:
         //! Get recording device names
-        virtual StringVector GetRecordingDevices();
+        virtual QStringList GetRecordingDevices();
         
         //! Open sound recording device & start recording
         /*! \param name Device name, empty for default
@@ -179,7 +193,7 @@ namespace OpenALAudio
             \param buffer_size Buffer size in bytes. Should be multiple of sample size.
             \return true if successful
          */
-        virtual bool StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size);
+        virtual bool StartRecording(const QString& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size);
         
         //! Stop recording & close sound recording device
         virtual void StopRecording();
@@ -198,7 +212,7 @@ namespace OpenALAudio
         /*! \param assetid sound asset id. Assumed to be ogg format
             \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
          */ 
-        virtual request_tag_t RequestSoundResource(const std::string& assetid);
+        virtual request_tag_t RequestSoundResource(const QString& assetid);
         
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(f64 frametime);

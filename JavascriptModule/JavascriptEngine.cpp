@@ -17,11 +17,8 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
 {
     engine_ = new QScriptEngine;
 
-    ReqisterInputMetaTypes(engine_);
-    ReqisterSceneMetaTypes(engine_);
-    ReqisterUiMetaTypes(engine_);
-    ReqisterQtMetaTypes(engine_);
-    ReqisterCoreApiMetaTypes(engine_);
+    ExposeQtMetaTypes(engine_);
+    ExposeCoreApiMetaTypes(engine_);
 }
 
 JavascriptEngine::~JavascriptEngine()

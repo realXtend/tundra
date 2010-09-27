@@ -49,6 +49,10 @@ namespace OpenALAudio
         const std::string& GetSoundName() const;
         //! Return sound type
         Foundation::SoundServiceInterface::SoundType GetSoundType() const { return type_; }
+        //! Return sound gain.
+        float GetGain() const {return gain_;}
+        //! Return sound pitch.
+        float GetPitch() const {return pitch_;}
         
     private:
         //! Queue buffers and start playing

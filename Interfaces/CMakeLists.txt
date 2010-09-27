@@ -13,7 +13,7 @@ file (GLOB H_FILES *.h)
 file (GLOB MOC_FILES IComponent.h CommunicationsService.h UiSettingsServiceInterface.h
     AttributeChangeType.h MediaPlayerService.h AttributeChangeType.h WorldBuildingServiceInterface.h
     UiServiceInterface.h UiWidgetProperties.h UiProxyWidget.h LoginServiceInterface.h WorldLogicInterface.h
-    ConsoleCommandServiceInterface.h)
+    ConsoleCommandServiceInterface.h SoundServiceInterface.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 MocFolder ()

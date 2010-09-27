@@ -405,7 +405,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
     std::vector<sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
     for (uint i = 0; i < playing_sounds.size(); ++i)
     {
-        if ((soundsystem->GetSoundName(playing_sounds[i]) == asset_id) &&
+        if ((soundsystem->GetSoundName(playing_sounds[i]).toStdString() == asset_id) &&
             (soundsystem->GetSoundType(playing_sounds[i]) == Foundation::SoundServiceInterface::Triggered))
         {
             same_sound_detected++;
@@ -418,7 +418,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
     if (same_sound_detected >= MAX_SOUND_INSTANCE_COUNT)
         soundsystem->StopSound(sound_to_stop);
 
-    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, Foundation::SoundServiceInterface::Triggered, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), Foundation::SoundServiceInterface::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
 
     return false;

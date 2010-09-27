@@ -36,18 +36,10 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 }
 
 //! Register Qt related stuff to QScriptEngine.
-void ReqisterQtMetaTypes(QScriptEngine *engine);
-
-//! Will register all meta data types that are needed to use input in script side.
-void ReqisterInputMetaTypes(QScriptEngine *engine);
-
-//! Will register all meta data types that are needed to use input in script side.
-void ReqisterSceneMetaTypes(QScriptEngine *engine);
-
-//! Will register all meta data types that are needed to use UI in script side.
-void ReqisterUiMetaTypes(QScriptEngine *engine);
+//! @todo repalce this with qscriptgenerator.
+void ExposeQtMetaTypes(QScriptEngine *engine);
 
 //! Will register all meta data types that are needed to use Naali Core API objects.
-void ReqisterCoreApiMetaTypes(QScriptEngine *engine);
+void ExposeCoreApiMetaTypes(QScriptEngine *engine);
 
 #endif
