@@ -657,18 +657,6 @@ void RexLogicModule::CameraTripod()
     }
 }
 
-void RexLogicModule::FocusOnObject(float x, float y, float z)
-{
-    camera_state_ = CS_FocusOnObject;
-    //camera_controllable_->SetFocusOnObject(x, y, z);
-    //obj_camera_controller_->FocusOnObject(x, y, z);
-}
-
-void RexLogicModule::ResetCameraState()
-{
-    camera_state_ = CS_Follow;
-}
-
 Avatar::AvatarHandlerPtr RexLogicModule::GetAvatarHandler() const
 {
     boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();

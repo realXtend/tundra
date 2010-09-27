@@ -94,8 +94,6 @@ namespace RexLogic
         CS_Free,
         //! Camera tripod
         CS_Tripod,
-        //! Focus on object
-        CS_FocusOnObject
     };
 
     class REXLOGIC_MODULE_API RexLogicModule : public Foundation::WorldLogicInterface, public IModule
@@ -136,15 +134,6 @@ namespace RexLogic
 
         //! camera tripod
         void CameraTripod();
-
-        //! focus on object, and rotate around it
-        void FocusOnObject(float, float, float);
-
-        //! return camera state
-        CameraState GetCameraState() const { return camera_state_; }
-
-        //! reset camera state to CS_Follow
-        void ResetCameraState();
 
         //! @return The avatar handler object that manages reX avatar logic.
         Avatar::AvatarHandlerPtr GetAvatarHandler() const;
