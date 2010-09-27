@@ -57,10 +57,6 @@ public:
     //! Sets parent entity for this component.
     void SetParentEntity(Scene::Entity* entity);
 
-    //! Returns parent entity of this component.
-    //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
-    Scene::Entity* GetParentEntity() const;
-
     //! Sets network sync enabled/disabled. By default on.
     void SetNetworkSyncEnabled(bool enabled);
 
@@ -128,6 +124,10 @@ public slots:
     /*! Note: call this when you're satisfied & done with your current modifications
      */
     void ComponentChanged(AttributeChange::Type change);
+
+    //! Returns parent entity of this component.
+    //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
+    Scene::Entity* GetParentEntity() const;
 
 signals:
     //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC

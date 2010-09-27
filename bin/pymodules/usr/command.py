@@ -1263,7 +1263,7 @@ if 0: #create a new component, hilight
         print "created a new Highlight component"
 
     h = e.highlight
-    print type(h), h
+    print type(h), h, h.GetParentEntity()
     
     h.Show()
     #h.Hide()
@@ -1280,10 +1280,10 @@ if 0: #create a new component, touchable
         t = e.touchable
     except AttributeError:
         print e.GetOrCreateComponentRaw("EC_Touchable")
-        print "created a new Touchable component", e.id
+        print "created a new Touchable component", e.Id
         t = e.touchable
 
-    print type(t), t
+    print type(t), t, t.GetParentEntity()
     
     def onhover():
         print "hover on avatar"
