@@ -39,7 +39,7 @@ private:
     /// Input context.
     InputContextPtr input_;
 
-    /// Renderer pointre.
+    /// Renderer pointer.
     Foundation::RendererWeakPtr renderer_;
 
     /// Last known mouse cursor's x position.
