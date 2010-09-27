@@ -26,10 +26,16 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
 #include "EC_OpenSimPresence.h"
+#ifdef EC_SoundListener_ENABLED
 #include "EC_SoundListener.h"
+#endif
+#ifdef EC_HoveringWidget_ENABLED
 #include "EC_HoveringWidget.h"
+#endif
 #include "EC_NetworkPosition.h"
 
 #include <QPushButton>
@@ -108,7 +114,9 @@ namespace Avatar
         defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
+#ifdef EC_HoveringWidget_ENABLED
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
+#endif
         defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
@@ -178,6 +186,7 @@ namespace Avatar
             presence->SetLastName(map["LastName"]);
             ///@note If using reX auth map["RexAuth"] contains the username and authentication address.
 
+#ifdef EC_HoveringWidget_ENABLED
             // Hide own name overlay
             EC_HoveringWidget *overlay= entity->GetComponent<EC_HoveringWidget>().get();
             if(overlay)
@@ -186,7 +195,7 @@ namespace Avatar
                 if (presence->agentId == avatar_module_->GetServerConnection()->GetInfo().agentID)
                     overlay->SetDisabled(true);
             }
-
+#endif
             // If the server sent an ObjectUpdate on a prim that is actually the client's avatar, and if the Entity that 
             // corresponds to this prim doesn't yet have a Controllable component, add it to the Entity.
             // This also causes a EVENT_CONTROLLABLE_ENTITY to be passed which will register this Entity as the currently 
@@ -199,8 +208,10 @@ namespace Avatar
                 assert (fw->GetComponentManager()->CanCreate(EC_Controllable::TypeNameStatic()));
                 entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_Controllable::TypeNameStatic()));
 
+#ifdef EC_SoundListener_ENABLED
                 // Add sound listener EC for our own avatar.
                 entity->AddComponent(fw->GetComponentManager()->CreateComponent(EC_SoundListener::TypeNameStatic()));
+#endif
 
                 Scene::Events::EntityEventData event_data;
                 event_data.entity = entity;
@@ -495,6 +506,7 @@ namespace Avatar
         if (!entity)
             return;
 
+#ifdef EC_HoveringWidget_ENABLED
         EC_HoveringWidget* overlay = entity->GetComponent<EC_HoveringWidget>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
@@ -505,8 +517,8 @@ namespace Avatar
             overlay->AddButton(*(new QPushButton("Chat")));
             overlay->AddButton(*(new QPushButton("Mute")));
             overlay->AddButton(*(new QPushButton("Follow")));*/
-
         }
+#endif
     }
 /*
     void AvatarHandler::CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id)
@@ -557,6 +569,7 @@ namespace Avatar
             overlay->SetVisible(true);
         }
 */
+#ifdef EC_HoveringText_ENABLED
         EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
@@ -567,6 +580,7 @@ namespace Avatar
             if (!visible)
                 overlay->Hide();
         }
+#endif
     }
     
     void AvatarHandler::CreateAvatarMesh(entity_id_t entity_id)

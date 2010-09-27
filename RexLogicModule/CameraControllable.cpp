@@ -492,7 +492,7 @@ namespace RexLogic
                     Environment::EC_Terrain *ec_terrain = terrain.lock()->GetComponent<Environment::EC_Terrain>().get();
                     if (ec_terrain && ec_terrain->AllPatchesLoaded())
                     {
-                        float terrain_height = ec_terrain->InterpolateHeightValue(position.x, position.y);
+                        float terrain_height = ec_terrain->GetInterpolatedHeightValue(position.x, position.y);
                         min_z = terrain_height + terrainConstraintOffset_;
                         if (!useBoundaryBoxConstraint_ && position.z < min_z)
                             position.z = min_z;

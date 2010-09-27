@@ -45,8 +45,9 @@ void IComponent::SetName(const QString& name)
     if(name_ == name)
         return;
 
+    QString oldName = name_;
     name_ = name;
-    emit OnComponentNameChanged(name.toStdString());
+    emit OnComponentNameChanged(name, oldName);
 }
 
 void IComponent::SetParentEntity(Scene::Entity* entity)

@@ -32,19 +32,32 @@
 #include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
-#include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
-#include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_Controllable.h"
 
+#ifdef EC_FreeData_ENABLED
+#include "EntityComponent/EC_FreeData.h"
+#endif
+#ifdef EC_OpenSimAvatar_ENABLED
+#include "EntityComponent/EC_OpenSimAvatar.h"
+#endif
+#ifdef EC_Controllable_ENABLED
+#include "EntityComponent/EC_Controllable.h"
+#endif
+
+#ifdef EC_NetworkPosition_ENABLED
 #include "EC_NetworkPosition.h"
+#endif
+#ifdef EC_HoveringWidget_ENABLED
 #include "EC_HoveringWidget.h"
+#endif
 
 #include "AvatarModule.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#ifdef EC_AvatarAppearance_ENABLED
 #include "EntityComponent/EC_AvatarAppearance.h"
+#endif
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
@@ -77,25 +90,64 @@
 #include "EC_OgreCustomObject.h"
 
 // External EC's
+#ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
+#endif
+
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
+#ifdef EC_Clone_ENABLED
 #include "EC_Clone.h"
+#endif
+#ifdef EC_Light_ENABLED
 #include "EC_Light.h"
+#endif
+#ifdef EC_OpenSimPresence_ENABLED
 #include "EC_OpenSimPresence.h"
+#endif
+#ifdef EC_OpenSimPrim_ENABLED
 #include "EC_OpenSimPrim.h"
+#endif
+#ifdef EC_Touchable_ENABLED
 #include "EC_Touchable.h"
+#endif
+#ifdef EC_3DCanvas_ENABLED
 #include "EC_3DCanvas.h"
+#endif
+#ifdef EC_3DCanvasSource_ENABLED
 #include "EC_3DCanvasSource.h"
+#endif
+#ifdef EC_ChatBubble_ENABLED
 #include "EC_ChatBubble.h"
+#endif
+#ifdef EC_Ruler_ENABLED
 #include "EC_Ruler.h"
+#endif
+#ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
+#endif
+#ifdef EC_Name_ENABLED
 #include "EC_Name.h"
+#endif
+#ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
+#endif
+#ifdef EC_SoundListener_ENABLED
 #include "EC_SoundListener.h"
+#endif
+#ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
+#endif
+#ifdef EC_Mesh_ENABLED
 #include "EC_Mesh.h"
+#endif
+#ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
+#endif
+#ifdef EC_Movable_ENABLED
 #include "EC_Movable.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -137,27 +189,67 @@ void RexLogicModule::Load()
 {
     PROFILE(RexLogicModule_Load);
 
+#ifdef EC_FreeData_ENABLED
     DECLARE_MODULE_EC(EC_FreeData);
+#endif
+
     DECLARE_MODULE_EC(EC_AttachedSound);
+
     // External EC's
+#ifdef EC_Highlight_ENABLED
     DECLARE_MODULE_EC(EC_Highlight);
+#endif
+#ifdef EC_HoveringText_ENABLED
     DECLARE_MODULE_EC(EC_HoveringText);
+#endif
+#ifdef EC_Clone_ENABLED
     DECLARE_MODULE_EC(EC_Clone);
+#endif
+#ifdef EC_Light_ENABLED
     DECLARE_MODULE_EC(EC_Light);
+#endif
+#ifdef EC_OpenSimPresence_ENABLED
     DECLARE_MODULE_EC(EC_OpenSimPresence);
+#endif
+#ifdef EC_OpenSimPrim_ENABLED
     DECLARE_MODULE_EC(EC_OpenSimPrim);
+#endif
+#ifdef EC_Touchable_ENABLED
     DECLARE_MODULE_EC(EC_Touchable);
+#endif
+#ifdef EC_3DCanvas_ENABLED
     DECLARE_MODULE_EC(EC_3DCanvas);
+#endif
+#ifdef EC_3DCanvasSource_ENABLED
     DECLARE_MODULE_EC(EC_3DCanvasSource);
+#endif
+#ifdef EC_Ruler_ENABLED
     DECLARE_MODULE_EC(EC_Ruler);
+#endif
+#ifdef EC_SoundRuler_ENABLED
     DECLARE_MODULE_EC(EC_SoundRuler);
+#endif
+#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
+#endif
+#ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
+#endif
+#ifdef EC_SoundListener_ENABLED
     DECLARE_MODULE_EC(EC_SoundListener);
+#endif
+#ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
+#endif
+#ifdef EC_Mesh_ENABLED
     DECLARE_MODULE_EC(EC_Mesh);
+#endif
+#ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
+#endif
+#ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
+#endif
 }
 
 // virtual
@@ -271,10 +363,12 @@ void RexLogicModule::PostInitialize()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
+#ifdef EC_Highlight_ENABLED
     RegisterConsoleCommand(Console::CreateCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+#endif
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
@@ -299,32 +393,54 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
     // Listen to component changes to serialize them via RexFreeData
     primitive_->RegisterToComponentChangeSignals(activeScene_);
 
+    CreateOpenSimViewerCamera(activeScene_);
+
+    return GetCurrentActiveScene();
+}
+
+void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
+{
+    Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeId());
+    if (!entity)
+    {
+        LogWarning("Could not create an entity to the scene!");
+        return;
+    }
+
     // Create camera entity into the scene
     Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
     ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
-    ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
-    assert(placeable && camera && sound_listener);
-    if (placeable && camera && sound_listener)
+    assert(placeable && camera);
+    if (!placeable || !camera)
     {
-        Scene::EntityPtr entity = activeScene_->CreateEntity(activeScene_->GetNextFreeId());
-        entity->AddComponent(placeable);
-        entity->AddComponent(camera);
-        entity->AddComponent(sound_listener);
-        activeScene_->EmitEntityCreated(entity);
-        
-        OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
-        camera_ptr->SetPlaceable(placeable);
-        camera_ptr->SetActive();
-        camera_entity_ = entity;
-        // Set camera controllable to use this camera entity.
-        //Note: it's a weak pointer so will not keep the camera alive needlessly
-        camera_controllable_->SetCameraEntity(entity);
+        LogWarning("Could not create EC_OgrePlaceable of EC_OgreCamera!");
+        return;
     }
 
-    event_category_id_t scene_event_category = framework_->GetEventManager()->QueryEventCategory("Scene");
+    entity->AddComponent(placeable);
+    entity->AddComponent(camera);
 
-    return GetCurrentActiveScene();
+#ifdef EC_SoundListener_ENABLED
+    ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
+    assert(sound_listener);
+    if (!sound_listener)
+    {
+        LogWarning("Could not create EC_SoundListener!");
+        return;
+    }
+    entity->AddComponent(sound_listener);
+#endif
+
+    scene->EmitEntityCreated(entity);
+    
+    OgreRenderer::EC_OgreCamera *camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+    camera_ptr->SetPlaceable(placeable);
+    camera_ptr->SetActive();
+    camera_entity_ = entity;
+    // Set camera controllable to use this camera entity.
+    //Note: it's a weak pointer so will not keep the camera alive needlessly
+    camera_controllable_->SetCameraEntity(entity);
 }
 
 void RexLogicModule::DeleteScene(const QString &name)
@@ -744,6 +860,8 @@ void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QStrin
 
 void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
+#ifdef EC_HoveringText_ENABLED
+
     if (!activeScene_)
         return;
 
@@ -757,6 +875,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
         else
             overlay->Hide();
     }
+#endif
 }
 
 void RexLogicModule::UpdateObjects(f64 frametime)
@@ -846,6 +965,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
+#ifdef EC_SoundListener_ENABLED
     if (!activeScene_)
         return;
 
@@ -862,6 +982,7 @@ void RexLogicModule::UpdateSoundListener()
         if (listener && !listener->IsActive())
             listener->SetActive(true);
     }
+#endif
 }
 
 bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
@@ -880,8 +1001,6 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
 
     // Get users position
-    boost::shared_ptr<EC_HoveringWidget> widget;
-    boost::shared_ptr<EC_ChatBubble> chat_bubble;
     boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placeable)
         return;
@@ -890,8 +1009,12 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     {
         // Update avatar name tag/hovering widget
         placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-        widget = avatar->GetComponent<EC_HoveringWidget>();
-        if (!placeable || !widget)
+        if (!placeable)
+            continue;
+
+#ifdef EC_HoveringWidget_ENABLED
+        boost::shared_ptr<EC_HoveringWidget> widget = avatar->GetComponent<EC_HoveringWidget>();
+        if (!widget)
             continue;
 
         // We need to update the positions so that the distance is right, otherwise were always one frame behind.
@@ -901,18 +1024,26 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
+#endif
 
+#ifdef EC_ChatBubble_ENABLED
         // Update chat bubble
-        chat_bubble = avatar->GetComponent<EC_ChatBubble>();
+        boost::shared_ptr<EC_ChatBubble> chat_bubble = avatar->GetComponent<EC_ChatBubble>();
         if (!chat_bubble)
             continue;
-        if (!chat_bubble->IsVisible())
+        if (chat_bubble->IsVisible())
         {
-            widget->Show();
-            continue;
+            chat_bubble->SetScale(distance/10);
         }
-        chat_bubble->SetScale(distance/10);
-        widget->Hide();
+
+#ifdef EC_HoveringWidget_ENABLED
+        if (chat_bubble->IsVisible())
+            widget->Hide();
+        else
+            widget->Show();
+#endif
+
+#endif
     }
 }
 
@@ -923,6 +1054,7 @@ InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
 
 bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
 {
+#ifdef EC_HoveringWidget_ENABLED
     bool ret_val = false;
     QList<EC_HoveringWidget*> visible_widgets;
 
@@ -1025,6 +1157,9 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     }
 
     return ret_val;
+#else
+    return false;
+#endif
 }
 
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
@@ -1078,6 +1213,7 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
+#ifdef EC_Highlight_ENABLED
     if (!activeScene_)
         return Console::ResultFailure("No active scene found.");
 
@@ -1115,7 +1251,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
             }
         }
     }
-
+#endif
     return Console::ResultSuccess();
 }
 
@@ -1126,6 +1262,7 @@ void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
 
 void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *component)
 {
+#ifdef EC_SoundListener_ENABLED ///\todo Should find a way to remove this handling of EC_SoundListener here. -jj.
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {
         LogDebug("Added new sound listener to the listener list.");
@@ -1134,19 +1271,25 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }
+#endif
+
+#ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
     else if (component->TypeName() == EC_Movable::TypeNameStatic())
     {
         entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
+#endif
 }
 
 void RexLogicModule::ComponentRemoved(Scene::Entity *entity, IComponent *component)
 {
+#ifdef EC_SoundListener_ENABLED ///\todo Should find a way to remove this handling of EC_SoundListener here. -jj.
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {
         LogDebug("Removed sound listener from the listener list.");
         soundListeners_.removeOne(entity);
     }
+#endif
 }
 
 void RexLogicModule::FindActiveListener()
