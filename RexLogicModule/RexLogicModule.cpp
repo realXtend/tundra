@@ -34,9 +34,9 @@
 #include "EventHandlers/MainPanelHandler.h"
 #include "EntityComponent/EC_AttachedSound.h"
 
-#ifdef EC_FreeData_ENABLED
+//#ifdef EC_FreeData_ENABLED
 #include "EntityComponent/EC_FreeData.h"
-#endif
+//#endif
 #ifdef EC_OpenSimAvatar_ENABLED
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #endif
@@ -129,9 +129,9 @@
 #ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
 #endif
-#ifdef EC_Name_ENABLED
+//#ifdef EC_Name_ENABLED
 #include "EC_Name.h"
-#endif
+//#endif
 #ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
 #endif
@@ -191,9 +191,9 @@ void RexLogicModule::Load()
 {
     PROFILE(RexLogicModule_Load);
 
-#ifdef EC_FreeData_ENABLED
+//#ifdef EC_FreeData_ENABLED
     DECLARE_MODULE_EC(EC_FreeData);
-#endif
+//#endif
 
     DECLARE_MODULE_EC(EC_AttachedSound);
 
@@ -231,9 +231,9 @@ void RexLogicModule::Load()
 #ifdef EC_SoundRuler_ENABLED
     DECLARE_MODULE_EC(EC_SoundRuler);
 #endif
-#ifdef EC_Name_ENABLED
+//#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
-#endif
+//#endif
 #ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
 #endif
