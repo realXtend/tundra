@@ -263,26 +263,20 @@ namespace Foundation
         }
 
     public slots:
-        /// Returns the framework UI object.
+        /// Returns the Naali core API UI object.
         UiServiceInterface *Ui() const;
 
-        /// Returns the framework Input object.
+        /// Returns the Naali core API Input object.
         InputServiceInterface *Input();
 
-        /// Returns the framework Frame object.
+        /// Returns the Naali core API Frame object.
         Frame *GetFrame() const { return frame_; }
 
-        /// Returns the framework Console object.
+        /// Returns the Naali core API Console object.
         ScriptConsole *Console() const { return console_; }
 
-        /// Debugging utility function for printing QObject's methods and properties to log.
-        /** @param obj Object to inspect.
-            @todo Move this function to some better place.
-        */
-        void DescribeQObject(QObject *obj);
-
-        /// Returns the sound serive object.
-        SoundServiceInterface *Sound();
+        /// Returns the Naali core API Audio object.
+        SoundServiceInterface *Audio();
 
     signals:
         /// Emitted after new scene has been added to framework.

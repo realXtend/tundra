@@ -83,17 +83,17 @@ void JavascriptModule::PostInitialize()
     // Add Naali Core API objcects as js services.
     services_["input"] = input_.get();
     services_["ui"] = ui;
-    services_["sound"] = GetFramework()->Sound();
+    services_["audio"] = GetFramework()->Audio();
     services_["frame"] = GetFramework()->GetFrame();
     services_["console"] = GetFramework()->Console();
 
     RegisterConsoleCommand(Console::CreateCommand(
         "JsExec", "Execute given code in the embedded Javascript interpreter. Usage: JsExec(mycodestring)", 
-        Console::Bind(this, &JavascriptModule::ConsoleRunString))); 
+        Console::Bind(this, &JavascriptModule::ConsoleRunString)));
 
     RegisterConsoleCommand(Console::CreateCommand(
-        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",  
-        Console::Bind(this, &JavascriptModule::ConsoleRunFile))); 
+        "JsLoad", "Execute a javascript file. JsLoad(myjsfile.js)",
+        Console::Bind(this, &JavascriptModule::ConsoleRunFile)));
 }
 
 void JavascriptModule::Uninitialize()

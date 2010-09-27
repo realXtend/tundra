@@ -620,21 +620,7 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
-    void Framework::DescribeQObject(QObject *obj)
-    {
-        const QMetaObject *metaObj = obj->metaObject();
-
-        RootLogInfo(std::string(metaObj->className()));
-        RootLogInfo("methods:");
-        for(int i = metaObj->methodOffset(); i < metaObj->methodCount(); ++i)
-            RootLogInfo(QString::fromLatin1(metaObj->method(i).signature()).toStdString());
-
-        RootLogInfo("properties:");
-        for(int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i)
-            RootLogInfo(QString::fromLatin1(metaObj->property(i).name()).toStdString());
-    }
-
-    SoundServiceInterface *Framework::Sound()
+    SoundServiceInterface *Framework::Audio()
     {
         boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
                 GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
