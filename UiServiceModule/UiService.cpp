@@ -15,6 +15,8 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QUiLoader>
+
 UiService::UiService(QGraphicsView *view) : view_(view), scene_(view->scene())
 {
     assert(view_);
@@ -102,6 +104,18 @@ void UiService::RemoveWidgetFromScene(QGraphicsProxyWidget *widget)
     fullScreenWidgets_.removeOne(widget);
 }
 
+QWidget *UiService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
+{
+    QWidget *widget = 0;
+    QUiLoader loader;
+    QFile file(file_path); 
+    file.open(QFile::ReadOnly);
+    widget = loader.load(&file, parent);
+    if(add_to_scene && widget)
+        AddWidgetToScene(widget);
+    return widget;
+}
+    
 void UiService::RemoveWidgetFromMenu(QWidget *widget)
 {
 }

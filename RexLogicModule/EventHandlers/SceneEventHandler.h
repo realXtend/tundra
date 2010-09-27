@@ -17,18 +17,10 @@ namespace RexLogic
     public:
         explicit SceneEventHandler(RexLogicModule *owner);
         virtual ~SceneEventHandler();
-
         bool HandleSceneEvent(event_id_t event_id, IEventData* data);
-
-        //! Clears the hovered entitys, for touchable ec:s calls HoverOut()
-        void ClearHovers(event_id_t entity_id);
 
     private:
         RexLogicModule *owner_;
-
-        //! handle entity deleted event
-        void HandleEntityDeletedEvent(event_id_t entityid);
-
         QList<event_id_t> hovered_entitys_;
     };
 }

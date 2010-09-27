@@ -127,8 +127,7 @@ class EstateManagement(Component):
         else:        
             self.estatesettings = EstateSettings(self.worldstream, self)
             s = naali.getScene("World")
-            ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
-            self.ents = [r.getEntity(id) for id in ids]
+            self.ents = s.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
             self.window.setRegionUsers(self.ents)
             #self.worldstream.SendEstateInfoRequestpacket() #!!
             self.worldstream.SendEstateOwnerMessage("getinfo", ())        
@@ -168,7 +167,7 @@ class EstateManagement(Component):
         pass
                 
     def sendEstateaccessdelta(self, pos, estateAccessType):
-        if(self.ents.__len__()>pos):
+        if len(self.ents) > pos:
             e = self.ents[pos]
             uuid = e.opensimpresence.QGetUUIDString()
             #if ((estateAccessType & 256) != 0) // Manager add
@@ -185,17 +184,15 @@ class EstateManagement(Component):
         
     def requestGodLikePowers(self):
         self.worldstream.SendRequestGodlikePowersPacket(True)
-        pass
         
     def sendKick(self, pos, message):
-        if(self.ents.__len__()>pos):
+        if len(self.ents) > pos:
             e = self.ents[pos]
             uuid = e.opensimpresence.QGetUUIDString()
             self.worldstream.SendGodKickUserPacket(uuid, message)
-        pass
         
     def saveUserInfo(self, pos):
-        if(self.ents.__len__()>pos):
+        if len(self.ents) > pos:
             e = self.ents[pos]
             info = e.opensimpresence.QGetFullName() + "|" + e.opensimpresence.QGetUUIDString() + "\n"
             
@@ -209,7 +206,6 @@ class EstateManagement(Component):
             f.close()
             self.updateSavedUsers()
             #self.updateSavedUsersTab()
-        pass
         
     def updateSavedUsers(self):
     #def updateSavedUsersTab(self):
@@ -224,8 +220,7 @@ class EstateManagement(Component):
                 self.savedusers[line.split('|')[0]] = line.split('|')[1]
                 i=i+1
             f.close()
-        pass        
-
+        
     def removeSaved(self, line):
         filepath = self.appdatafolder + os.sep + EstateManagement.ESTATE_DATA_FOLDER + os.sep + EstateManagement.SAVED_USERS_FILE
         newlines = []
@@ -245,35 +240,28 @@ class EstateManagement(Component):
             f = open(filepath, 'w')
             f.writelines(newlines)
             f.close()
-        pass
         
     def fromSavedToAccess(self, uuid, name):
         self.nameToUuidMapCache[uuid]=name
         self.worldstream.SendEstateOwnerMessage("estateaccessdelta", ("", 4, uuid))        
-        pass
         
     def fromSavedToBan(self, uuid, name):
         self.nameToUuidMapCache[uuid]=name
         self.worldstream.SendEstateOwnerMessage("estateaccessdelta", ("", 64, uuid))        
-        pass
         
     def fromSavedToManagers(self, uuid, name):
         self.nameToUuidMapCache[uuid]=name
         self.worldstream.SendEstateOwnerMessage("estateaccessdelta", ("", 256, uuid))        
-        pass
-
+        
     def setEstateAccessMode(self, mode):
         self.estatesettings.setAccessMode(mode)
-        
         
     def onEstateOwnerMessage(self, args):        
         method = args[3]
         if(method=='estateupdateinfo'):
             self.handleEstateUpdateMessage(args)
         if(method=='setaccess'):
-            self.handleSetAccess(args)
-        pass
-        
+            self.handleSetAccess(args)        
                 
     def handleEstateUpdateMessage(self, args):    
         agentid, sessionid, transactionid, method, invoice, paramlist = args

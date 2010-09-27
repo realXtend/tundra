@@ -165,11 +165,11 @@ signals:
      */
     void OnAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
-    //! Signal just before the components name is about to change.
-    /*! Note! If you are asking components name when the singal is emitted component will return old name.
-     *  /param newName new component name.
+    //! Signal when component name has been changed.
+    /*  /param new_name new component name.
+     *  /param old_name old component name.
      */
-    void OnComponentNameChanged(const std::string &newName);
+    void OnComponentNameChanged(const QString &new_name, const QString &old_name);
 
     //! Emitted when the parent entity is set.
     void ParentEntitySet();

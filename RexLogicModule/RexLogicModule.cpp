@@ -23,27 +23,47 @@
 #include "DebugOperatorNew.h"
 
 #include "RexLogicModule.h"
+#include "SceneEvents.h"
 #include "EventHandlers/NetworkEventHandler.h"
 #include "EventHandlers/NetworkStateEventHandler.h"
 #include "EventHandlers/InputEventHandler.h"
 #include "EventHandlers/SceneEventHandler.h"
 #include "EventHandlers/FrameworkEventHandler.h"
+#include "EventHandlers/AvatarEventHandler.h"
 #include "EventHandlers/LoginHandler.h"
 #include "EventHandlers/MainPanelHandler.h"
-#include "EntityComponent/EC_FreeData.h"
 #include "EntityComponent/EC_AttachedSound.h"
+
+#ifdef EC_FreeData_ENABLED
+#include "EntityComponent/EC_FreeData.h"
+#endif
+#ifdef EC_OpenSimAvatar_ENABLED
 #include "EntityComponent/EC_OpenSimAvatar.h"
-#include "EntityComponent/EC_NetworkPosition.h"
+#endif
+#ifdef EC_Controllable_ENABLED
 #include "EntityComponent/EC_Controllable.h"
-#include "EntityComponent/EC_AvatarAppearance.h"
-#include "EntityComponent/EC_HoveringWidget.h"
-#include "Avatar/Avatar.h"
+#endif
+
+#ifdef EC_NetworkPosition_ENABLED
+#include "EC_NetworkPosition.h"
+#endif
+#ifdef EC_HoveringWidget_ENABLED
+#include "EC_HoveringWidget.h"
+#endif
+
+#include "AvatarModule.h"
+#include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#ifdef EC_AvatarAppearance_ENABLED
+#include "EntityComponent/EC_AvatarAppearance.h"
+#endif
+
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
 #include "CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
+#include "SceneInteract.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -70,25 +90,64 @@
 #include "EC_OgreCustomObject.h"
 
 // External EC's
+#ifdef EC_Highlight_ENABLED
 #include "EC_Highlight.h"
+#endif
+
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
+#ifdef EC_Clone_ENABLED
 #include "EC_Clone.h"
+#endif
+#ifdef EC_Light_ENABLED
 #include "EC_Light.h"
+#endif
+#ifdef EC_OpenSimPresence_ENABLED
 #include "EC_OpenSimPresence.h"
+#endif
+#ifdef EC_OpenSimPrim_ENABLED
 #include "EC_OpenSimPrim.h"
+#endif
+#ifdef EC_Touchable_ENABLED
 #include "EC_Touchable.h"
+#endif
+#ifdef EC_3DCanvas_ENABLED
 #include "EC_3DCanvas.h"
+#endif
+#ifdef EC_3DCanvasSource_ENABLED
 #include "EC_3DCanvasSource.h"
+#endif
+#ifdef EC_ChatBubble_ENABLED
 #include "EC_ChatBubble.h"
+#endif
+#ifdef EC_Ruler_ENABLED
 #include "EC_Ruler.h"
+#endif
+#ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
+#endif
+//#ifdef EC_Name_ENABLED
 #include "EC_Name.h"
+//#endif
+#ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
+#endif
+#ifdef EC_SoundListener_ENABLED
 #include "EC_SoundListener.h"
+#endif
+#ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
+#endif
+#ifdef EC_Mesh_ENABLED
 #include "EC_Mesh.h"
+#endif
+#ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
+#endif
+#ifdef EC_Movable_ENABLED
 #include "EC_Movable.h"
+#endif
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -130,32 +189,67 @@ void RexLogicModule::Load()
 {
     PROFILE(RexLogicModule_Load);
 
+#ifdef EC_FreeData_ENABLED
     DECLARE_MODULE_EC(EC_FreeData);
+#endif
+
     DECLARE_MODULE_EC(EC_AttachedSound);
-    DECLARE_MODULE_EC(EC_OpenSimAvatar);
-    DECLARE_MODULE_EC(EC_NetworkPosition);
-    DECLARE_MODULE_EC(EC_Controllable);
-    DECLARE_MODULE_EC(EC_AvatarAppearance);
-    DECLARE_MODULE_EC(EC_HoveringWidget);
+
     // External EC's
+#ifdef EC_Highlight_ENABLED
     DECLARE_MODULE_EC(EC_Highlight);
+#endif
+#ifdef EC_HoveringText_ENABLED
     DECLARE_MODULE_EC(EC_HoveringText);
+#endif
+#ifdef EC_Clone_ENABLED
     DECLARE_MODULE_EC(EC_Clone);
+#endif
+#ifdef EC_Light_ENABLED
     DECLARE_MODULE_EC(EC_Light);
+#endif
+#ifdef EC_OpenSimPresence_ENABLED
     DECLARE_MODULE_EC(EC_OpenSimPresence);
+#endif
+#ifdef EC_OpenSimPrim_ENABLED
     DECLARE_MODULE_EC(EC_OpenSimPrim);
+#endif
+#ifdef EC_Touchable_ENABLED
     DECLARE_MODULE_EC(EC_Touchable);
+#endif
+#ifdef EC_3DCanvas_ENABLED
     DECLARE_MODULE_EC(EC_3DCanvas);
+#endif
+#ifdef EC_3DCanvasSource_ENABLED
     DECLARE_MODULE_EC(EC_3DCanvasSource);
+#endif
+#ifdef EC_Ruler_ENABLED
     DECLARE_MODULE_EC(EC_Ruler);
+#endif
+#ifdef EC_SoundRuler_ENABLED
     DECLARE_MODULE_EC(EC_SoundRuler);
+#endif
+//#ifdef EC_Name_ENABLED
     DECLARE_MODULE_EC(EC_Name);
+//#endif
+#ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_ParticleSystem);
+#endif
+#ifdef EC_SoundListener_ENABLED
     DECLARE_MODULE_EC(EC_SoundListener);
+#endif
+#ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
+#endif
+#ifdef EC_Mesh_ENABLED
     DECLARE_MODULE_EC(EC_Mesh);
+#endif
+#ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
+#endif
+#ifdef EC_Movable_ENABLED
     DECLARE_MODULE_EC(EC_Movable);
+#endif
 }
 
 // virtual
@@ -164,8 +258,6 @@ void RexLogicModule::Initialize()
     PROFILE(RexLogicModule_Initialize);
     framework_->GetEventManager()->RegisterEventCategory("Action");
 
-    avatar_ = AvatarPtr(new Avatar(this));
-    avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
     primitive_ = PrimitivePtr(new Primitive(this));
     world_stream_ = WorldStreamPtr(new ProtocolUtilities::WorldStream(framework_));
     network_handler_ = new NetworkEventHandler(this);
@@ -173,10 +265,12 @@ void RexLogicModule::Initialize()
     input_handler_ = new InputEventHandler(this);
     scene_handler_ = new SceneEventHandler(this);
     framework_handler_ = new FrameworkEventHandler(world_stream_.get(), this);
-    avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
+    avatar_event_handler_ = new AvatarEventHandler(this);
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
+
+    SceneInteract *sceneInteract = new SceneInteract(framework_);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -208,9 +302,6 @@ void RexLogicModule::PostInitialize()
 
     // Input events.
     event_category_id_t eventcategoryid = eventMgr->QueryEventCategory("Input");
-
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleInputEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -221,19 +312,13 @@ void RexLogicModule::PostInitialize()
 
     // Action events.
     eventcategoryid = eventMgr->QueryEventCategory("Action");
-
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleActionEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&CameraControllable::HandleActionEvent, camera_controllable_.get(), _1, _2));
 
     // Scene events.
     eventcategoryid = eventMgr->QueryEventCategory("Scene");
-
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &SceneEventHandler::HandleSceneEvent, scene_handler_, _1, _2));
-    event_handlers_[eventcategoryid].push_back(boost::bind(
-        &AvatarControllable::HandleSceneEvent, avatar_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
@@ -244,31 +329,26 @@ void RexLogicModule::PostInitialize()
     event_handlers_[eventcategoryid].push_back(
         boost::bind(&RexLogicModule::HandleResourceEvent, this, _1, _2));
 
-    // Inventory events
-    eventcategoryid = eventMgr->QueryEventCategory("Inventory");
-    event_handlers_[eventcategoryid].push_back(
-        boost::bind(&RexLogicModule::HandleInventoryEvent, this, _1, _2));
-
-    // Asset events
-    eventcategoryid = eventMgr->QueryEventCategory("Asset");
-    event_handlers_[eventcategoryid].push_back(
-        boost::bind(&RexLogicModule::HandleAssetEvent, this, _1, _2));
-
     // Framework events
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+
+    // Avatar events
+    eventcategoryid = eventMgr->QueryEventCategory("Avatar");
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &AvatarEventHandler::HandleAvatarEvent, avatar_event_handler_, _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
-       &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+        &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
     
     eventcategoryid = eventMgr->QueryEventCategory("Tundra");
     event_handlers_[eventcategoryid].push_back(boost::bind(
-       &NetworkStateEventHandler::HandleTundraEvent, network_state_handler_, _1, _2));
+        &NetworkStateEventHandler::HandleTundraEvent, network_state_handler_, _1, _2));
 
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
@@ -287,13 +367,15 @@ void RexLogicModule::PostInitialize()
         "Toggle flight mode.",
         Console::Bind(this, &RexLogicModule::ConsoleToggleFlyMode)));
 
+#ifdef EC_Highlight_ENABLED
     RegisterConsoleCommand(Console::CreateCommand("Highlight",
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+#endif
 }
 
-Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
+Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
 {
     if (framework_->HasScene(name))
     {
@@ -314,53 +396,66 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
     // Listen to component changes to serialize them via RexFreeData
     primitive_->RegisterToComponentChangeSignals(scene);
 
-    CreateCamera(false);
+    CreateOpenSimViewerCamera(scene, false);
     
     return scene;
 }
 
-void RexLogicModule::CreateCamera(bool tundra_mode)
+void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundra_mode)
 {
-    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-    if (!scene)
+    Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
+    if (!entity)
     {
-        LogError("No scene, can not create camera");
+        LogWarning("Could not create an entity to the scene!");
         return;
     }
-    
+
     // Create camera entity into the scene
-    Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
+    Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
     ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
-    ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
-
-    assert(placeable && camera && sound_listener);
-    if (placeable && camera && sound_listener)
+    assert(placeable && camera);
+    if (!placeable || !camera)
     {
-        Scene::EntityPtr entity = scene->CreateEntity(scene->GetNextFreeIdLocal());
-        entity->AddComponent(placeable);
-        entity->AddComponent(camera);
-        entity->AddComponent(sound_listener);
-        scene->EmitEntityCreated(entity);
-        
-        OgreRenderer::EC_OgreCamera* camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
-        camera_ptr->SetPlaceable(placeable);
-        // Lookat something to setup the weird Opensim orientation
-        OgreRenderer::EC_OgrePlaceable* placeable_ptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-        placeable_ptr->LookAt(Vector3df(0,1,0));
-        camera_ptr->SetActive();
-        camera_entity_ = entity;
-        // Set camera controllable to use this camera entity.
-        //Note: it's a weak pointer so will not keep the camera alive needlessly
-        camera_controllable_->SetCameraEntity(entity);
+        LogWarning("Could not create EC_OgrePlaceable of EC_OgreCamera!");
+        return;
     }
+
+    entity->AddComponent(placeable);
+    entity->AddComponent(camera);
+
+#ifdef EC_SoundListener_ENABLED
+    ComponentPtr sound_listener = compMgr->CreateComponent(EC_SoundListener::TypeNameStatic());
+    assert(sound_listener);
+    if (!sound_listener)
+    {
+        LogWarning("Could not create EC_SoundListener!");
+        return;
+    }
+    entity->AddComponent(sound_listener);
+#endif
+
+    scene->EmitEntityCreated(entity);
     
+    OgreRenderer::EC_OgreCamera *camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+    camera_ptr->SetPlaceable(placeable);
+    camera_ptr->SetActive();
+    camera_entity_ = entity;
+    // Set camera controllable to use this camera entity.
+    //Note: it's a weak pointer so will not keep the camera alive needlessly
+    camera_controllable_->SetCameraEntity(entity);
+
     // When connected to Tundra, start from freecam mode for now
     if (tundra_mode)
+    {
         framework_->GetEventManager()->SendEvent("Input", Input::Events::INPUTSTATE_FREECAMERA, 0);
+        OgreRenderer::EC_OgrePlaceable* placeableptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+        // Initialize viewing dir so that camera isn't upside down
+        placeableptr->LookAt(Vector3df(1,0,0));
+    }
 }
 
-void RexLogicModule::DeleteScene(const std::string &name)
+void RexLogicModule::DeleteScene(const QString &name)
 {
     if (!framework_->HasScene(name))
     {
@@ -379,10 +474,7 @@ void RexLogicModule::Uninitialize()
         LogoutAndDeleteWorld();
 
     world_stream_.reset();
-    avatar_.reset();
-    avatar_editor_.reset();
     primitive_.reset();
-    avatar_controllable_.reset();
     camera_controllable_.reset();
 
     event_handlers_.clear();
@@ -393,6 +485,7 @@ void RexLogicModule::Uninitialize()
     SAFE_DELETE(network_state_handler_);
     SAFE_DELETE(framework_handler_);
     SAFE_DELETE(main_panel_handler_);
+    SAFE_DELETE(avatar_event_handler_);
 
     // Unregister world logic service.
     boost::shared_ptr<RexLogicModule> rexlogic = framework_->GetModuleManager()->GetModule<RexLogicModule>().lock();
@@ -446,9 +539,6 @@ void RexLogicModule::Update(f64 frametime)
         // interpolate & animate objects
         UpdateObjects(frametime);
 
-        // update avatar stuff (download requests etc.)
-        avatar_->Update(frametime);
-
         // update primitive stuff (EC network sync etc.)
         primitive_->Update(frametime);
 
@@ -470,11 +560,9 @@ void RexLogicModule::Update(f64 frametime)
         // If scene exists, we should be connected and can update these
         if (framework_->GetDefaultWorldScene())
         {
-            avatar_controllable_->AddTime(frametime);
             camera_controllable_->AddTime(frametime);
-            input_handler_->Update(frametime);
             // Update overlays last, after camera update
-            UpdateAvatarNameTags(avatar_->GetUserAvatar());
+            UpdateAvatarNameTags(GetAvatarHandler()->GetUserAvatar());
         }
     }
 
@@ -528,6 +616,13 @@ const QString &RexLogicModule::GetAvatarAppearanceProperty(const QString &name) 
     return prop;
 }
 
+float RexLogicModule::GetCameraControllablePitch() const
+{
+    if (camera_controllable_)
+        return camera_controllable_->GetPitch();
+    else
+        return 0.0;
+}
 void RexLogicModule::SwitchCameraState()
 {
     if (camera_state_ == CS_Follow)
@@ -573,14 +668,34 @@ void RexLogicModule::ResetCameraState()
     camera_state_ = CS_Follow;
 }
 
-AvatarPtr RexLogicModule::GetAvatarHandler() const
+Avatar::AvatarHandlerPtr RexLogicModule::GetAvatarHandler() const
 {
-    return avatar_;
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarHandler();
+    else
+        return Avatar::AvatarHandlerPtr();
 }
 
-AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
+Avatar::AvatarEditorPtr RexLogicModule::GetAvatarEditor() const
 {
-    return avatar_editor_;
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarEditor();
+    else
+        return Avatar::AvatarEditorPtr();
+}
+
+Avatar::AvatarControllablePtr RexLogicModule::GetAvatarControllable() const
+{
+    boost::shared_ptr<Avatar::AvatarModule> avatar_module = framework_->GetModuleManager()->GetModule<Avatar::AvatarModule>().lock();
+    assert(avatar_module);
+    if (avatar_module)
+        return avatar_module->GetAvatarControllable();
+    else
+        return Avatar::AvatarControllablePtr();
 }
 
 PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
@@ -592,54 +707,17 @@ PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
 void RexLogicModule::SetAvatarYaw(float newyaw)
 {
-    avatar_controllable_->SetYaw(newyaw);
+    GetAvatarControllable()->SetYaw(newyaw);
 }
 
 void RexLogicModule::SetAvatarRotation(const Quaternion &newrot)
 {
-    avatar_controllable_->SetRotation(newrot);
+    GetAvatarControllable()->SetRotation(newrot);
 }
 
 void RexLogicModule::SetCameraYawPitch(float newyaw, float newpitch)
 {
     camera_controllable_->SetYawPitch(newyaw, newpitch);
-}
-
-entity_id_t RexLogicModule::GetUserAvatarId() const
-{
-    return GetAvatarHandler()->GetUserAvatar()->GetId();
-}
-
-void RexLogicModule::EntityHovered(Scene::Entity* entity)
-{
-    // Check if raycast result gave a valid entity
-    if (entity)
-    {
-        EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        if(widget)
-            widget->HoveredOver();
-    }
-    // All hovers are out, no entity was returned by raycast
-    else
-        scene_handler_->ClearHovers(0);
-}
-
-float RexLogicModule::GetCameraViewportWidth() const
-{
-    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (renderer.get())
-        return renderer->GetViewport()->getActualWidth();
-    else
-        return 0;
-}
-
-float RexLogicModule::GetCameraViewportHeight() const
-{
-    OgreRenderer::RendererPtr renderer = GetOgreRendererPtr();
-    if (renderer.get())
-        return renderer->GetViewport()->getActualHeight();
-    else
-        return 0;
 }
 
 void RexLogicModule::LogoutAndDeleteWorld()
@@ -649,8 +727,8 @@ void RexLogicModule::LogoutAndDeleteWorld()
     world_stream_->RequestLogout();
     world_stream_->ForceServerDisconnect(); // Because the current server doesn't send a logoutreplypacket.
 
-    if (avatar_)
-        avatar_->HandleLogout();
+    if (GetAvatarHandler())
+        GetAvatarHandler()->HandleLogout();
     if (primitive_)
         primitive_->HandleLogout();
 
@@ -686,14 +764,22 @@ Scene::EntityPtr RexLogicModule::GetAvatarEntity(const RexUUID &entityuuid) cons
 
 void RexLogicModule::RegisterFullId(const RexUUID &fullid, entity_id_t entityid)
 {
-    UUIDs_[fullid] = entityid;
+    IDMap::iterator iter = UUIDs_.find(fullid);
+    if (iter == UUIDs_.end())
+    {
+        UUIDs_[fullid] = entityid;
+        avatar_event_handler_->SendRegisterEvent(fullid, entityid);
+    }
 }
 
 void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
 {
     IDMap::iterator iter = UUIDs_.find(fullid);
     if (iter != UUIDs_.end())
+    {
         UUIDs_.erase(iter);
+        avatar_event_handler_->SendUnregisterEvent(fullid);
+    }
 }
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
@@ -778,6 +864,8 @@ void RexLogicModule::StartLoginOpensim(const QString &firstAndLast, const QStrin
 
 void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
+#ifdef EC_HoveringText_ENABLED
+
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
@@ -792,6 +880,7 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
         else
             overlay->Hide();
     }
+#endif
 }
 
 void RexLogicModule::UpdateObjects(f64 frametime)
@@ -861,7 +950,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         if (entity.GetComponent(EC_OpenSimAvatar::TypeNameStatic()))
         {
             found_avatars_.push_back(*iter);
-            avatar_->UpdateAvatarAnimations(entity.GetId(), frametime);
+            GetAvatarHandler()->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
 
         // General animation controller update
@@ -882,6 +971,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
 void RexLogicModule::UpdateSoundListener()
 {
+#ifdef EC_SoundListener_ENABLED
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
@@ -903,28 +993,14 @@ void RexLogicModule::UpdateSoundListener()
         if (listener && !listener->IsActive())
             listener->SetActive(true);
     }
+#endif
 }
 
 bool RexLogicModule::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
-    // Pass the event to the avatar manager
-    avatar_->HandleResourceEvent(event_id, data);
     // Pass the event to the primitive manager
     primitive_->HandleResourceEvent(event_id, data);
-
     return false;
-}
-
-bool RexLogicModule::HandleInventoryEvent(event_id_t event_id, IEventData* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleInventoryEvent(event_id, data);
-}
-
-bool RexLogicModule::HandleAssetEvent(event_id_t event_id, IEventData* data)
-{
-    // Pass the event to the avatar manager
-    return avatar_->HandleAssetEvent(event_id, data);
 }
 
 void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
@@ -936,8 +1012,6 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
 
     // Get users position
-    boost::shared_ptr<EC_HoveringWidget> widget;
-    boost::shared_ptr<EC_ChatBubble> chat_bubble;
     boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     if (!placeable)
         return;
@@ -946,8 +1020,12 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     {
         // Update avatar name tag/hovering widget
         placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
-        widget = avatar->GetComponent<EC_HoveringWidget>();
-        if (!placeable || !widget)
+        if (!placeable)
+            continue;
+
+#ifdef EC_HoveringWidget_ENABLED
+        boost::shared_ptr<EC_HoveringWidget> widget = avatar->GetComponent<EC_HoveringWidget>();
+        if (!widget)
             continue;
 
         // We need to update the positions so that the distance is right, otherwise were always one frame behind.
@@ -957,34 +1035,27 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
+#endif
 
+#ifdef EC_ChatBubble_ENABLED
         // Update chat bubble
-        chat_bubble = avatar->GetComponent<EC_ChatBubble>();
+        boost::shared_ptr<EC_ChatBubble> chat_bubble = avatar->GetComponent<EC_ChatBubble>();
         if (!chat_bubble)
             continue;
-        if (!chat_bubble->IsVisible())
+        if (chat_bubble->IsVisible())
         {
-            widget->Show();
-            continue;
+            chat_bubble->SetScale(distance/10);
         }
-        chat_bubble->SetScale(distance/10);
-        widget->Hide();
+
+#ifdef EC_HoveringWidget_ENABLED
+        if (chat_bubble->IsVisible())
+            widget->Hide();
+        else
+            widget->Show();
+#endif
+
+#endif
     }
-}
-
-void RexLogicModule::EntityClicked(Scene::Entity* entity)
-{
-    /*boost::shared_ptr<EC_HoveringText> name_tag = entity->GetComponent<EC_HoveringText>();
-    if (name_tag.get())
-        name_tag->Clicked();
-
-/*    boost::shared_ptr<EC_HoveringWidget> info_icon = entity->GetComponent<EC_HoveringWidget>();
-    if(info_icon.get())
-        info_icon->EntityClicked();*/
-
-    boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
-    if (canvas_source)
-        canvas_source->Clicked();
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -994,6 +1065,7 @@ InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
 
 bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::RaycastResult *result)
 {
+#ifdef EC_HoveringWidget_ENABLED
     bool ret_val = false;
     QList<EC_HoveringWidget*> visible_widgets;
 
@@ -1096,6 +1168,9 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     }
 
     return ret_val;
+#else
+    return false;
+#endif
 }
 
 OgreRenderer::RendererPtr RexLogicModule::GetOgreRendererPtr() const
@@ -1149,6 +1224,7 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
+#ifdef EC_Highlight_ENABLED
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
@@ -1187,7 +1263,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
             }
         }
     }
-
+#endif
     return Console::ResultSuccess();
 }
 
@@ -1198,6 +1274,7 @@ void RexLogicModule::EmitIncomingEstateOwnerMessageEvent(QVariantList params)
 
 void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *component)
 {
+#ifdef EC_SoundListener_ENABLED ///\todo Should find a way to remove this handling of EC_SoundListener here. -jj.
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {
         LogDebug("Added new sound listener to the listener list.");
@@ -1206,19 +1283,25 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 //            SLOT(ActiveListenerChanged());
         soundListeners_ << entity;
     }
+#endif
+
+#ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
     else if (component->TypeName() == EC_Movable::TypeNameStatic())
     {
         entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
+#endif
 }
 
 void RexLogicModule::ComponentRemoved(Scene::Entity *entity, IComponent *component)
 {
+#ifdef EC_SoundListener_ENABLED ///\todo Should find a way to remove this handling of EC_SoundListener here. -jj.
     if (component->TypeName() == EC_SoundListener::TypeNameStatic())
     {
         LogDebug("Removed sound listener from the listener list.");
         soundListeners_.removeOne(entity);
     }
+#endif
 }
 
 } // namespace RexLogic

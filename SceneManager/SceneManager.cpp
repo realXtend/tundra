@@ -12,6 +12,7 @@
 #include "IComponent.h"
 #include "ForwardDefines.h"
 
+#include <QString>
 #include <QDomDocument>
 #include <QFile>
 
@@ -23,19 +24,20 @@
 namespace Scene
 {
     SceneManager::SceneManager() :
+        framework_(0),
         gid_(1),
         gid_local_(LocalEntity + 1)
     {
     }
     
-    SceneManager::SceneManager(const std::string &name, Foundation::Framework *framework) : 
+    SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
         name_(name),
         framework_(framework),
         gid_(1),
         gid_local_(LocalEntity + 1)
     {
     }
-    
+
     SceneManager::~SceneManager()
     {
         RemoveAllEntities(false);
@@ -246,6 +248,21 @@ namespace Scene
             ids.append(qv);
         }
         return ids;
+    }
+
+    QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name)
+    {
+        EntityList list = GetEntitiesWithComponent(type_name);
+        QList<Scene::Entity*> qlist;
+        EntityList::iterator iter;
+
+        for(iter = list.begin(); iter != list.end(); iter++)
+        {
+            EntityPtr ent = *iter;
+            Entity* e = ent.get();
+            qlist.append(e);
+        }
+        return qlist;
     }
     
     bool SceneManager::LoadSceneXML(const std::string& filename, AttributeChange::Type change)

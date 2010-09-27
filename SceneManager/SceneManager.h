@@ -28,14 +28,16 @@ namespace Scene
     class SceneManager : public QObject
     {
         Q_OBJECT
+        Q_PROPERTY (QString Name READ Name)
 
         friend class Foundation::Framework;
+
     private:
         //! default constructor
         SceneManager();
 
         //! constructor that takes a name and framework
-        SceneManager(const std::string &name, Foundation::Framework *framework);
+        SceneManager(const QString &name, Foundation::Framework *framework);
 
         //! copy constuctor
         SceneManager(const SceneManager &other);
@@ -52,15 +54,16 @@ namespace Scene
         bool HasEntityId(uint id) const { return HasEntity((entity_id_t)id); }
         uint NextFreeId() { return (uint)GetNextFreeId(); }
 
-        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList::QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
+        Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
         QVariantList GetEntityIdsWithComponent(const QString &type_name);
+        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name);
 
     public:
         //! destructor
         ~SceneManager();
-        
+
         //! entity map
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
@@ -80,7 +83,7 @@ namespace Scene
         bool operator < (const SceneManager &other) const { return Name() < other.Name(); }
 
         //! Returns scene name
-        const std::string &Name() const { return name_; }
+        const QString &Name() const { return name_; }
 
         //! Creates new entity that contains the specified components
         /*! Entities should never be created directly, but instead created with this function.
@@ -91,7 +94,7 @@ namespace Scene
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
             \param change Origin of change regards to network replication
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList::QStringList());
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList());
 
         //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -244,7 +247,7 @@ namespace Scene
         Foundation::Framework *framework_;
 
         //! Name of the scene
-        const std::string name_;
+        QString name_;
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)

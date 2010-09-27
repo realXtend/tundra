@@ -30,7 +30,7 @@ namespace Foundation
 
         //! Returns creation date of asset
         //!   format: unix time stamp is now used
-        virtual const time_t  GetCreationDate() const = 0;
+        virtual time_t  GetCreationDate() const = 0;
 
         //! Returns creation date of asset as string
         virtual std::string GetCreationDateString() const = 0;

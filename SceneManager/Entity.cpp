@@ -42,7 +42,7 @@ namespace Scene
         qDeleteAll(actions_);
     }
 
-    void Entity::AddComponent(const ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
     {
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
@@ -55,7 +55,7 @@ namespace Scene
         }
     }
 
-    void Entity::RemoveComponent(const ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Type change)
     {
         if (component)
         {
@@ -75,14 +75,20 @@ namespace Scene
         }
     }
 
-    ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
+    void Entity::RemoveComponentRaw(IComponent* comp)
+    {
+        ComponentPtr ptr = GetComponent(comp->TypeName(), comp->Name()); //the shared_ptr to this component
+        RemoveComponent(ptr);
+    }
+
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
         // If component was not found, try to create
-        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -90,17 +96,17 @@ namespace Scene
         }
 
         // Could not be created
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
                 return components_[i];
 
         // If component was not found, try to create
-        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -108,17 +114,17 @@ namespace Scene
         }
 
         // Could not be created
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
-    
-    ComponentInterfacePtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
+
+    ComponentPtr Entity::GetOrCreateComponent(uint type_hash, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeNameHash() == type_hash)
                 return components_[i];
 
         // If component was not found, try to create
-        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -126,17 +132,17 @@ namespace Scene
         }
 
         // Could not be created
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    ComponentInterfacePtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeNameHash() == type_hash && components_[i]->Name() == name)
                 return components_[i];
 
         // If component was not found, try to create
-        ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_hash, name);
         if (new_comp)
         {
             AddComponent(new_comp, change);
@@ -144,53 +150,53 @@ namespace Scene
         }
 
         // Could not be created
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
     
     
-    ComponentInterfacePtr Entity::GetComponent(const QString &type_name) const
+    ComponentPtr Entity::GetComponent(const QString &type_name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    ComponentInterfacePtr Entity::GetComponent(uint type_hash) const
+    ComponentPtr Entity::GetComponent(uint type_hash) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeNameHash() == type_hash)
                 return components_[i];
 
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
-    
-    ComponentInterfacePtr Entity::GetComponent(const IComponent *component) const
+
+    ComponentPtr Entity::GetComponent(const IComponent *component) const
     {
         for (size_t i = 0; i < components_.size(); i++)
             if(component->TypeName() == components_[i]->TypeName() &&
                component->Name() == components_[i]->Name())
                return components_[i];
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    ComponentInterfacePtr Entity::GetComponent(const QString &type_name, const QString& name) const
+    ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return components_[i];
 
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    ComponentInterfacePtr Entity::GetComponent(uint type_hash, const QString& name) const
+    ComponentPtr Entity::GetComponent(uint type_hash, const QString& name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeNameHash() == type_hash) && (components_[i]->Name() == name))
                 return components_[i];
 
-        return ComponentInterfacePtr();
+        return ComponentPtr();
     }
     
     bool Entity::HasComponent(const QString &type_name) const
@@ -327,7 +333,6 @@ namespace Scene
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
         EntityAction *act = Action(action);
-        int receivers = act->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (!HasReceivers(act))
             return;
 
@@ -354,10 +359,10 @@ namespace Scene
 
     bool Entity::HasReceivers(EntityAction *action)
     {
-        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringList &)));
+        int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (receivers == 0)
         {
-            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
+//            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
             actions_.remove(action->Name());
             SAFE_DELETE(action);
             return false;

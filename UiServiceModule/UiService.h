@@ -85,6 +85,9 @@ public slots:
     QGraphicsScene *GetScene(const QString &name) const { return scene_; }
 
     /// UiServiceInterface override.
+    QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
+    
+    /// UiServiceInterface override.
     /// Does nothing.
     void RegisterScene(const QString &name, QGraphicsScene *scene) { }
 

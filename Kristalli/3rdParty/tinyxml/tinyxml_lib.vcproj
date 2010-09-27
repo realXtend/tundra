@@ -4,6 +4,7 @@
 	Version="9,00"
 	Name="tinyxml_lib"
 	ProjectGUID="{C406DAEC-0886-4771-8DEA-9D7329B46CC1}"
+	RootNamespace="tinyxml_lib"
 	TargetFrameworkVersion="131072"
 	>
 	<Platforms>
@@ -43,7 +44,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				InlineFunctionExpansion="1"
-				WholeProgramOptimization="true"
+				WholeProgramOptimization="false"
 				PreprocessorDefinitions="_CRT_SECURE_NO_WARNINGS;WIN32;NDEBUG;_LIB"
 				StringPooling="true"
 				RuntimeLibrary="2"

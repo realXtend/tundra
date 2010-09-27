@@ -13,7 +13,7 @@
 namespace RexTypes
 {
 
-const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
+asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type)
 {
     if (asset_type == ASSETTYPENAME_TEXTURE)
         return RexAT_Texture;

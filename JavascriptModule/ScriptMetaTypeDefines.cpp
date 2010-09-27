@@ -6,6 +6,7 @@
  */
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
@@ -13,6 +14,7 @@
 #include "QtInputKeyEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
+#include "Console.h"
 
 #include "QtInputMouseEvent.h"
 #include "QtInputKeyEvent.h"
@@ -20,6 +22,7 @@
 
 #include <QUiLoader>
 #include <QFile>
+#include "MemoryLeakCheck.h"
 
 //! Qt defines
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
@@ -31,6 +34,7 @@ Q_DECLARE_METATYPE(KeyEvent*)
 
 //! Naali Ui defines
 Q_DECLARE_METATYPE(UiProxyWidget*);
+Q_SCRIPT_DECLARE_QMETAOBJECT(UiProxyWidget, QWidget*)
 
 //! Naali Scene defines.
 Q_DECLARE_METATYPE(Scene::Entity*);
@@ -40,6 +44,9 @@ Q_DECLARE_METATYPE(IComponent*);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Frame*);
+Q_DECLARE_METATYPE(ScriptConsole*);
+Q_DECLARE_METATYPE(Command*);
+Q_DECLARE_METATYPE(DelayedSignal*);
 
 void ReqisterQtMetaTypes(QScriptEngine *engine)
 {
@@ -47,13 +54,16 @@ void ReqisterQtMetaTypes(QScriptEngine *engine)
     engine->globalObject().setProperty("QPushButton", object);
     object = engine->scriptValueFromQMetaObject<QWidget>();
     engine->globalObject().setProperty("QWidget", object);
-    object = engine->scriptValueFromQMetaObject<QUiLoader>();
 }
 
 void ReqisterInputMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
+
+    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
+    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
+    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
 }
 
 void ReqisterSceneMetaTypes(QScriptEngine *engine)
@@ -64,19 +74,24 @@ void ReqisterSceneMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
 
     qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
+    qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
 }
 
 void ReqisterUiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
-
-    qRegisterMetaType<KeyEvent::EventType>("KeyEvent::EventType");
-    qRegisterMetaType<MouseEvent::EventType>("MouseEvent::EventType");
-    qRegisterMetaType<MouseEvent::MouseButton>("MouseEvent::MouseButton");
+    qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
+    //Add support to create proxy widget in javascript side.
+    QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
+    engine->globalObject().setProperty("UiProxyWidget", object);
 }
 
-void ReqisterFrameMetaTypes(QScriptEngine *engine)
+void ReqisterCoreApiMetaTypes(QScriptEngine *engine)
 {
     qScriptRegisterQObjectMetaType<Frame*>(engine);
+    qScriptRegisterQObjectMetaType<ScriptConsole*>(engine);
+    qScriptRegisterQObjectMetaType<Command*>(engine);
+    qScriptRegisterQObjectMetaType<DelayedSignal*>(engine);
 }
+
 

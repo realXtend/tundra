@@ -22,8 +22,7 @@ namespace Scene
 }
 
 /// Represent an executable command on an Entity.
-/**
-    Components (or other instances) can register to these actions by using Entity::ConnectAction().
+/** Components (or other instances) can register to these actions by using Entity::ConnectAction().
     Actions allow more complicated in-world logic to be built in slightly more data-driven fashion.
     Actions cannot be created directly, they're created by Entity::RegisterAction().
 */
@@ -54,8 +53,8 @@ public:
     };
 
 signals:
-    /** Emitted when action is triggered.
-        @param param1 1st parameter for the action, if applicable.
+    /// Emitted when action is triggered.
+    /** @param param1 1st parameter for the action, if applicable.
         @param param2 2nd parameter for the action, if applicable.
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
@@ -63,21 +62,18 @@ signals:
     void Triggered(QString param1, QString param2, QString param3, QStringList params);
 
 private:
-    /** Constructor.
-        @param name Name of the action.
+    /// Constructor.
+    /** @param name Name of the action.
     */
     explicit EntityAction(const QString &name ) : name_(name) {}
 
-    /** Triggers this action i.e. emits the Triggered signal.
-        @param param1 1st parameter for the action, if applicable.
+    /// Triggers this action i.e. emits the Triggered signal.
+    /** @param param1 1st parameter for the action, if applicable.
         @param param2 2nd parameter for the action, if applicable.
         @param param3 3rd parameter for the action, if applicable.
         @param params Rest of the parameters, if applicable.
     */
-    void Trigger(const QString &param1 = "", const QString &param2 = "", const QString &param3 = "", const QStringList &params = QStringList())
-    {
-        emit Triggered(param1, param2, param3, params);
-    }
+    void Trigger(const QString &param1 = "", const QString &param2 = "", const QString &param3 = "", const QStringList &params = QStringList());
 
     /// Name of the action.
     QString name_;

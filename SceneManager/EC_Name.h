@@ -10,7 +10,44 @@
 #include "IModule.h"
 #include "Declare_EC.h"
 
-/// EC_Name provides network-synchronizable means of identification for entities in addition to the plain ID number.
+
+/// Provides network-synchronizable means of identification for entities in addition to the plain ID number
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Name</h2>
+Provides network-synchronizable means of identification for entities in addition to the plain ID number. This EC is not present by default for entities.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li> QString: Name
+<div>Name</div> 
+<li> QString: description
+<div>Description</div> 
+<li> bool: userDefined
+<div>Boolean which indicates that the current name value is defined by the user and should not be set programmatically.</div> 
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>...
+</ul>
+
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+</table>
+*/
 class EC_Name : public IComponent
 {
     DECLARE_EC(EC_Name);
@@ -20,7 +57,7 @@ public:
     /// Desctructor.
     ~EC_Name() {}
 
-    /// ComponentInterface override.
+    /// IComponent override.
     /// This component is serializable.
     virtual bool IsSerializable() const { return true; }
 

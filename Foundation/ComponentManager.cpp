@@ -59,23 +59,23 @@ namespace Foundation
         return (factories_hash_.find(type_hash) != factories_hash_.end());
     }
 
-    ComponentInterfacePtr ComponentManager::CreateComponent(const QString &type_name)
+    ComponentPtr ComponentManager::CreateComponent(const QString &type_name)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         return component;
     }
 
-    ComponentInterfacePtr ComponentManager::CreateComponent(uint type_hash)
+    ComponentPtr ComponentManager::CreateComponent(uint type_hash)
     {
         ComponentFactoryHashMap::const_iterator iter = factories_hash_.find(type_hash);
         if (iter == factories_hash_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         return component;
     }
 
@@ -83,9 +83,9 @@ namespace Foundation
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(type_name);
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         component->SetName(name);
         return component;
     }
@@ -94,20 +94,20 @@ namespace Foundation
     {
         ComponentFactoryHashMap::const_iterator iter = factories_hash_.find(type_hash);
         if (iter == factories_hash_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr component = (*iter->second.get())();
+        ComponentPtr component = (*iter->second.get())();
         component->SetName(name);
         return component;
     }
 
-    ComponentInterfacePtr ComponentManager::CloneComponent(const ComponentInterfacePtr &component)
+    ComponentPtr ComponentManager::CloneComponent(const ComponentPtr &component)
     {
         ComponentFactoryMap::const_iterator iter = factories_.find(component->TypeName());
         if (iter == factories_.end())
-            return ComponentInterfacePtr();
+            return ComponentPtr();
 
-        ComponentInterfacePtr newComponent = (*iter->second.get())(component);
+        ComponentPtr newComponent = (*iter->second.get())(component);
         return newComponent;
     }
 

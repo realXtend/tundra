@@ -34,7 +34,38 @@ QT_BEGIN_NAMESPACE
 class QTimer;
 QT_END_NAMESPACE
 
+
 /// Chat bubble component wich shows billboard with chat bubble and text on entity.
+/**
+<table class="header">
+<tr>
+<td>
+<h2>ChatBubble</h2>
+Chat bubble component wich shows billboard with chat bubble and text on entity.
+
+Registered by Naali::InWorldChatModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"ShowMessage: Adds new message to be shown on the chat bubble.
+    @param msg Message to be shown.
+    @note The time the message is shown is calculated from the message length.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable</b>.
+</table>
+*/
 class EC_ChatBubble : public IComponent
 {
     Q_OBJECT
@@ -71,6 +102,9 @@ public:
     /// Returns if the chat bubble is visible or not.
     /// @true If the chat bubble text is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
+
+    /// Clears the 3D subsystem resources for this object.
+    void Destroy();
 
 public slots:
     /// Adds new message to be shown on the chat bubble.

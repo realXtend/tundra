@@ -29,51 +29,44 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
-/// Makes the mesh component.
 /**
 
-<table style="margin: 20px;">
+<table class="header">
 <tr>
-<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<td>
 <h2>Mesh</h2>
-Makes the mesh component.
-
-User can apply new mesh to scene and change it's materials and skeleton.
 EC_Mesh component can be used to set mesh to a world scene. There are options to apply new materials and skeleton to mesh.
+To use EC_Mesh user need to upload a mesh, material and skeleton (optional) assets to the server or mesh wont be diplayed on scene.
+If you aren't sure switch mesh is the skeleton made for don't try to apply it randombly on some mesh, cause this might cause a crash.
 
-Note! Animation or attachments are not tested with this component as yet.
+Note if you are planning to remove the skeleton you need to relogin to the server.
 
-Note! if you are planning to remove the skeleton and want that it's realy gone you should relogin to the server.
-that is cause Ogre doesn't have a serivice that will remove applied skeleton from the mesh so we need to recreate
-the mesh to get the change shown.
+Registered by RexLogic::RexLogicModule.
 
 <b>Attributes</b>:
 <ul>
-<li>Transform: Transform.
-<div style="margin: 5px;">Transformation attribute is used to do some position, rotation and scale adjustments.</div> 
-<li>QString: Mesh ref. 
-<div style="margin: 5px;">Mesh resource ref is a asset id for a mesh resource that user wants to apply.</div> 
-<li>QString: Skeleton ref.
-<div style="margin: 5px;">Skeleton asset ref is a asset id for a mesh resource mesh will use.</div> 
-<li>QVariantList: Mesh materials.
-<div style="margin: 5px;">Mesh material ref list that can contain x number of materials.</div> 
-<li>float: Draw distance.
-<div style="margin: 5px;">Mesh draw distance.</div> 
-<li>bool: Cast shadows.
-<div style="margin: 5px;">Will the mesh cast shadows.</div> 
+<li>Transform: nodePosition
+<div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
+<li>QString: meshResouceId
+<div>Mesh resource ref is a asset id for a mesh resource that user wants to apply to scene.</div>
+<li>QString: skeletonId
+<div>Skeleton asset ref is a string that should contain skeleton asset id.</div>
+<li>QVariantList: meshMaterial
+<div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
+<li>float: drawDistance
+<div>Distance where the mesh is shown from the camera.</div> 
+<li>bool: castShadows
+<div>Will the mesh cast shadows.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>void SetMesh(const QString &name);
-<div style="margin: 5px;">Add or change entity's mesh.</div> 
-<li>void RemoveMesh();
-<div style="margin: 5px;">Remove mesh from entity.</div> 
-<li>bool SetMaterial(uint index, const QString &material_name);
-<div style="margin: 5px;">Set material to wanted subMesh.</div> 
-<li>void AttachSkeleton(const QString &skeletonName);
-<div style="margin: 5px;">Attach skeleton to entity.</div> 
+<li>"SetMesh": Add or change entity's mesh.
+<li>"RemoveMesh": Remove mesh from entity.
+<li>"SetMaterial": Set material to a wanted subMesh.
+<li>"AttachSkeleton": Attach skeleton to entity.
 </ul>
+
 <b>Reacts on the following actions:</b>
 <ul>
 <li>...
@@ -83,9 +76,8 @@ the mesh to get the change shown.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this mesh is placed at. 
+<b>Depends on the component OgrePlaceable</b>.  
 </table>
-
 */
 class EC_Mesh : public IComponent
 {
@@ -101,22 +93,29 @@ public:
     bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
 
     //! Transformation attribute is used to do some position, rotation and scale adjustments.
+    //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+    Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
     DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
 
     //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+    Q_PROPERTY(QString meshResourceId READ getmeshResourceId WRITE setmeshResourceId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
 
     //! Skeleton asset id, will handle request resource automaticly.
+    Q_PROPERTY(QString skeletonId READ getskeletonId WRITE setskeletonId);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, skeletonId);
 
     //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
     //! @todo replace std::vector to QVariantList.
+    Q_PROPERTY(QVariantList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
     DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, meshMaterial);
 
     //! Mesh draw distance.
+    Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
     DEFINE_QPROPERTY_ATTRIBUTE(float, drawDistance);
 
     //! Will the mesh cast shadows.
+    Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
     DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
 
 public slots:
@@ -151,11 +150,11 @@ signals:
     void OnSkeletonChanged(QString skeleton_name);
 
 private slots:
-    //! Emitted when the parrent entity has been setted.
+    //! Emitted when the parrent entity has been set.
     void UpdateSignals();
 
     //! Emitted when some of the attributes has been changed.
-    void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    void AttributeUpdated(IAttribute *attribute);
 
 private:
     //! Constuctor.

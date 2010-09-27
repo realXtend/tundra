@@ -40,15 +40,12 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "InputEvents.h"
 #include "InputServiceInterface.h"
 #include "RenderServiceInterface.h"
-#include "PythonEngine.h" //is this needed here?
+#include "PythonEngine.h"
 #include "WorldStream.h"
 #include "NetworkEvents.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
-#include "InputEvents.h" //handling input events
-#include "InputServiceInterface.h" //for getting mouse info from the input service, prolly not used anymore ?
 #include "RenderServiceInterface.h" //for getting rendering services, i.e. raycasts
 #include "Inventory/InventorySkeleton.h"
 #include "SceneManager.h"
@@ -57,14 +54,16 @@
 #include "GenericMessageUtils.h"
 #include "LoginServiceInterface.h"
 #include "Frame.h"
+#include "Console.h"
+
+#include "Avatar/AvatarHandler.h"
+#include "Avatar/AvatarControllable.h"
+#include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "Avatar/Avatar.h"
-#include "Avatar/AvatarControllable.h"
+#include "CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
-#include "CameraControllable.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
@@ -261,7 +260,7 @@ namespace PythonScript
                 Scene::Events::SceneEventData* edata = checked_static_cast<Scene::Events::SceneEventData *>(data);
                 value = PyObject_CallMethod(pmmInstance, "SCENE_ADDED", "s", edata->sceneName.c_str());
 
-                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName);
+                const Scene::ScenePtr &scene = framework_->GetScene(edata->sceneName.c_str());
                 assert(scene.get());
                 if (scene)
                 {
@@ -451,8 +450,8 @@ namespace PythonScript
             return Console::ResultFailure("Usage: PyExec(print 1 + 1)");
             //how to handle input like this? PyExec(print '1 + 1 = %d' % (1 + 1))");
             //probably better have separate py shell.
-
         engine_->RunString(QString::fromStdString(params[0]));
+
         return Console::ResultSuccess();
     }
 
@@ -574,7 +573,7 @@ namespace PythonScript
 
     Scene::SceneManager* PythonScriptModule::GetScene(const QString &name) const
     {
-        Scene::ScenePtr scene = framework_->GetScene(name.toStdString());
+        Scene::ScenePtr scene = framework_->GetScene(name);
         if (scene)
             return scene.get();
 
@@ -621,6 +620,11 @@ namespace PythonScript
         return 0;
     }
 
+    void PythonScriptModule::RemoveQtDynamicProperty(QObject* qobj, char* propname)
+    {
+        qobj->setProperty(propname, QVariant());
+    }
+
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
@@ -630,22 +634,10 @@ namespace PythonScript
         if (script->type.Get() != "py")
             return;
 
-        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get());
+        PythonScriptInstance *pyInstance = new PythonScriptInstance(script->scriptRef.Get(), script->GetParentEntity());
         script->SetScriptInstance(pyInstance);
         if (script->runOnLoad.Get())
             script->Run();
-    /*
-            check if py script
-            mikä oli vanha? jos vanha ->delete se
-            PythonQtObjectPtr context = PythonQt::self()->createUniqueModule();
-            foreach(naaliCoreFeat, NaaliCoreFeats)
-                context->addObject(const QString& name, QObject* object);
-            miten saadaan/saadanko:
-            1) python system moduulit
-            2) muut contextit
-            3) naalin /bin/pymodules/*.*
-            context->evalFile(const QString& filename);
-    */
     }
 
     void PythonScriptModule::OnComponentAdded(Scene::Entity *entity, IComponent *component)
@@ -1229,8 +1221,8 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
     if (ec_touchable)
     {
-        ec_touchable->SetHighlightOnHover(false);
-        ec_touchable->SetHoverCursor(Qt::PointingHandCursor);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::Local);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Local);
     }
 }
 
@@ -1987,6 +1979,8 @@ namespace PythonScript
 
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
+            PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
+            PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 

@@ -67,7 +67,7 @@ namespace Environment
     Terrain::~Terrain()
     {
     }
-
+/*
     /// Sets the texture of the material used to render terrain.
     void Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
     {
@@ -90,7 +90,7 @@ namespace Environment
         else
             EnvironmentModule::LogWarning("Ogre material " + std::string(terrainMaterialName) + " not found!");
     }
-
+*/
     void Terrain::DebugGenerateTerrainVisData(Ogre::SceneNode *node, const DecodedTerrainPatch &patch, int patchSize)
     {
         assert(node->numAttachedObjects() == 1);
@@ -142,7 +142,7 @@ namespace Environment
         manual->end();
         manual->setDebugDisplayEnabled(true);
     }
-
+/*
     /// Creates Ogre geometry data for the single given patch, or updates the geometry for an existing
     /// patch if the associated Ogre resources already exist.
     void Terrain::GenerateTerrainGeometryForOnePatch(Scene::Entity &entity, EC_Terrain &terrain, EC_Terrain::Patch &patch)
@@ -180,9 +180,9 @@ namespace Environment
 
         int curIndex = 0;
 
-        const int stride = (patch.x + 1 >= terrain.cNumPatchesPerEdge) ? 16 : 17;
+        const int stride = (patch.x + 1 >= cPatchSize) ? 16 : 17;
 
-        const int patchSize = EC_Terrain::Patch::cNumVerticesPerPatchEdge;
+        const int patchSize = EC_Terrain::cPatchSize;
 
         const float uScale = 1e-2f*13;
         const float vScale = 1e-2f*13;
@@ -190,8 +190,8 @@ namespace Environment
         for(int y = 0; y <= patchSize; ++y)
             for(int x = 0; x <= patchSize; ++x)
             {
-                if ((patch.x + 1 >= terrain.cNumPatchesPerEdge && x == patchSize) ||
-                    (patch.y + 1 >= terrain.cNumPatchesPerEdge && y == patchSize))
+                if ((patch.x + 1 >= cPatchSize && x == patchSize) ||
+                    (patch.y + 1 >= cPatchSize && y == patchSize))
                     continue;
                 // These coordinates are directly generated to our Ogre coordinate system, i.e. are cycled from OpenSim XYZ -> our YZX.
                 // see OpenSimToOgreCoordinateAxes.
@@ -208,8 +208,8 @@ namespace Environment
                 {
                     thisPatch = &patch;
 
-                    if ((patch.x + 1 < terrain.cNumPatchesPerEdge || x+1 < patchSize) &&
-                        (patch.y + 1 < terrain.cNumPatchesPerEdge || y+1 < patchSize))
+                    if ((patch.x + 1 < cPatchSize || x+1 < patchSize) &&
+                        (patch.y + 1 < cPatchSize || y+1 < patchSize))
                     {
                         manual->index(curIndex);
                         manual->index(curIndex+1);
@@ -249,14 +249,24 @@ namespace Environment
 
         manual->end();
 
-        std::string mesh_name = renderer->GetUniqueObjectName();
-        Ogre::MeshPtr terrainMesh = manual->convertToMesh(mesh_name);
+        // If there exists a previously generated GPU Mesh resource, delete it before creating a new one.
+        if (patch.meshGeometryName.length() > 0)
+        {
+            try
+            {
+                Ogre::MeshManager::getSingleton().remove(patch.meshGeometryName);
+            }
+            catch (...) {}
+        }
+
+        patch.meshGeometryName = renderer->GetUniqueObjectName();
+        Ogre::MeshPtr terrainMesh = manual->convertToMesh(patch.meshGeometryName);
 
         // Odd: destroyManualObject seems to leave behind a memory leak if we don't call manualObject->clear first.
         manual->clear();
         sceneMgr->destroyManualObject(manual);
 
-        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), mesh_name);
+        Ogre::Entity *ogre_entity = sceneMgr->createEntity(renderer->GetUniqueObjectName(), patch.meshGeometryName);
         ogre_entity->setUserAny(Ogre::Any(&entity));
         ogre_entity->setCastShadows(false);
         // Set UserAny also on subentities
@@ -298,7 +308,7 @@ namespace Environment
             node->setPosition(patchOrigin);
         }
     }
-
+*/
     void Terrain::CreateOrUpdateTerrainPatchHeightData(const DecodedTerrainPatch &patch, int patchSize)
     {
         if (patch.heightData.size() < patchSize * patchSize)
@@ -335,8 +345,8 @@ namespace Environment
                 {
                     int X = x + scenePatch.x;
                     int Y = y + scenePatch.y;
-                    if (X >= 0 && X < EC_Terrain::cNumPatchesPerEdge &&
-                        Y >= 0 && Y < EC_Terrain::cNumPatchesPerEdge)
+                    if (X >= 0 && X < terrainComponent->PatchWidth() &&
+                        Y >= 0 && Y < terrainComponent->PatchHeight())
                         terrainComponent->GetPatch(X, Y).patch_geometry_dirty = true;
                 }
 
@@ -353,7 +363,7 @@ namespace Environment
         }
         */
     }
-
+/*
     void Terrain::RegenerateDirtyTerrainPatches()
     {
         PROFILE(RegenerateOgreTerrainGeom);
@@ -361,8 +371,8 @@ namespace Environment
         EC_Terrain *terrainComponent = terrain->GetComponent<EC_Terrain>().get();
         assert(terrainComponent);
 
-        for(int y = 0; y < EC_Terrain::cNumPatchesPerEdge; ++y)
-            for(int x = 0; x < EC_Terrain::cNumPatchesPerEdge; ++x)
+        for(int y = 0; y < EC_Terrain::cPatchSize; ++y)
+            for(int x = 0; x < EC_Terrain::cPatchSize; ++x)
             {
                 EC_Terrain::Patch &scenePatch = terrainComponent->GetPatch(x, y);
                 if (!scenePatch.patch_geometry_dirty || scenePatch.heightData.size() == 0)
@@ -381,8 +391,8 @@ namespace Environment
                 {
                     int nX = x + neighbors[i][0];
                     int nY = y + neighbors[i][1];
-                    if (nX >= 0 && nX < EC_Terrain::cNumPatchesPerEdge &&
-                        nY >= 0 && nY < EC_Terrain::cNumPatchesPerEdge &&
+                    if (nX >= 0 && nX < EC_Terrain::cPatchSize &&
+                        nY >= 0 && nY < EC_Terrain::cPatchSize &&
                         terrainComponent->GetPatch(nX, nY).heightData.size() == 0)
                     {
                         neighborsLoaded = false;
@@ -394,7 +404,7 @@ namespace Environment
                     GenerateTerrainGeometryForOnePatch(*terrain, *terrainComponent, scenePatch);
             }
     }
-
+*/
     void Terrain::RequestTerrainTextures()
     {
         OgreRenderer::RendererPtr renderer = owner_->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -414,7 +424,22 @@ namespace Environment
                 if(terrain_textures_[i] == tex->id_.c_str())
                     index = i;
 
-                SetTerrainMaterialTexture(index, tex->id_.c_str());
+                EC_Terrain *terrainComponent = GetTerrainComponent();
+                if (!terrainComponent)
+                {
+                    EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+                    return;
+                }
+                switch(i)
+                {
+                case 0: terrainComponent->texture0.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                case 1: terrainComponent->texture1.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                case 2: terrainComponent->texture2.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                case 3: terrainComponent->texture3.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                case 4: terrainComponent->texture4.Set(tex->id_.c_str(), AttributeChange::LocalOnly); break;
+                }
+
+//                SetTerrainMaterialTexture(index, tex->id_.c_str());
             }
         }
     }
@@ -428,9 +453,38 @@ namespace Environment
         return terrain_textures_[index];
     }
 
+    void Terrain::SetupOpenSimTerrainParameters()
+    {
+        EC_Terrain *terrainComponent = GetTerrainComponent();
+        if (!terrainComponent)
+        {
+            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+            return;
+        }
+
+        Transform identity;
+        terrainComponent->nodeTransformation.Set(identity, AttributeChange::LocalOnly);
+        if (terrainComponent->PatchWidth() != 16 || terrainComponent->PatchHeight() != 16)
+        {
+            terrainComponent->xPatches.Set(16, AttributeChange::LocalOnly);
+            terrainComponent->yPatches.Set(16, AttributeChange::LocalOnly);
+        }
+        terrainComponent->material.Set("Rex/TerrainPCF", AttributeChange::LocalOnly);
+
+        terrainComponent->OnTerrainSizeChanged();
+        terrainComponent->OnMaterialChanged();
+    }
+
     /// Code adapted from libopenmetaverse.org project, TerrainCompressor.cs / TerrainManager.cs
     bool Terrain::HandleOSNE_LayerData(ProtocolUtilities::NetworkEventInboundData* data)
     {
+        EC_Terrain *terrainComponent = GetTerrainComponent();
+        if (!terrainComponent)
+        {
+            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
+            return false;
+        }
+
         PROFILE(HandleOSNE_LayerData);
 
         ProtocolUtilities::NetInMessage &msg = *data->message;
@@ -450,6 +504,9 @@ namespace Environment
         {
         case TPLayerLand:
         {
+            // First ensure that the Terrain really is in "OpenSim state".
+            SetupOpenSimTerrainParameters();
+
             std::vector<DecodedTerrainPatch> patches;
             DecompressLand(patches, bits, header);
             for(size_t i = 0; i < patches.size(); ++i)
@@ -457,7 +514,7 @@ namespace Environment
 
             // Now that we have updated all the height map data for each patch, see if
             // we have enough of the patches loaded in to regenerate the GPU-side resources as well.
-            RegenerateDirtyTerrainPatches();
+            terrainComponent->RegenerateDirtyTerrainPatches();
             break;
         }
         case TPLayerWater:
@@ -556,43 +613,6 @@ namespace Environment
         return height_ranges_[index];
     }
 
-    float Terrain::GetLowestTerrainHeight()
-    {
-        float small = 65535;
-        float current_value = 0;
-        Scene::EntityPtr entity = GetTerrainEntity().lock();
-        assert(entity.get());
-        EC_Terrain *terrainComponent = entity->GetComponent<EC_Terrain>().get();
-        if (!terrainComponent)
-        {
-            EnvironmentModule::LogWarning("EC_Terrain entity component is missing.");
-            return 0;
-        }
-        int paches_per_edge = terrainComponent->cNumPatchesPerEdge;
-        int patch_size = terrainComponent->cPatchSize;
-        if(terrainComponent->AllPatchesLoaded())
-        {
-            for(uint i = 0; i < paches_per_edge; i++)
-            {
-                for(uint j = 0; j < paches_per_edge; j++)
-                {
-                    EC_Terrain::Patch patch = terrainComponent->GetPatch(i, j);
-                    for(uint k = 0; k < patch_size; k++)
-                    {
-                        for(uint l = 0; l < patch_size; l++)
-                        {
-                            int index = (l % patch_size) * patch_size + (k % patch_size);
-                            current_value = patch.heightData[index];
-                            if(current_value < small)
-                                small = current_value;
-                        }
-                    }
-                }
-            }
-        }
-        return small;
-    }
-
     void Terrain::FindCurrentlyActiveTerrain()
     {
         Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
@@ -608,5 +628,13 @@ namespace Environment
     Scene::EntityWeakPtr Terrain::GetTerrainEntity() const
     {
         return cachedTerrainEntity_;
+    }
+
+    EC_Terrain *Terrain::GetTerrainComponent()
+    {
+        Scene::EntityPtr entity = GetTerrainEntity().lock();
+        if (!entity.get())
+            return 0;
+        return entity->GetComponent<EC_Terrain>().get();
     }
 }

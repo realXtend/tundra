@@ -269,7 +269,7 @@ namespace RexTypes
     /*! \param asset_type Asset type name
         \return non-negative asset type, or -1 if unknown
      */
-    const asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type);
+    asset_type_t GetAssetTypeFromTypeName(const std::string& asset_type);
 
     //! Returns asset type name from ReX/OpenSim asset type
     /*! \param asset_type Asset type

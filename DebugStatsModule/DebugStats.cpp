@@ -30,9 +30,9 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
+#include "Console.h"
 
 #include <utility>
-
 
 #include <QCryptographicHash>
 
@@ -69,9 +69,12 @@ void DebugStatsModule::PostInitialize()
 #endif
 
 #ifdef PROFILING
+/*
     RegisterConsoleCommand(Console::CreateCommand("Prof", 
         "Shows the profiling window.",
         Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
+*/
+    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
     RegisterConsoleCommand(Console::CreateCommand("rin", 
         "Sends a random network message in.",
@@ -134,7 +137,7 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
+Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVector &params*/)
 {
     Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)

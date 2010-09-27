@@ -23,9 +23,9 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
     IComponent(module->GetFramework()),
     particleSystem_(0),
     particle_tag_(0),
-    particleId_(this, "Particle id"),
-    castShadows_(this, "Cast shadows", false),
-    renderingDistance_(this, "Rendering distance", 0.0f)
+    particleId(this, "Particle id"),
+    castShadows(this, "Cast shadows", false),
+    renderingDistance(this, "Rendering distance", 0.0f)
 {
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
 
@@ -36,6 +36,8 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -79,8 +81,8 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
             if(!placeable)
                 return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
-            particleSystem_->setCastShadows(castShadows_.Get());
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
             return;
         }
     }
@@ -133,39 +135,28 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
-
-    if(attribute->GetNameString() == particleId_.GetNameString())
+    if(attribute->GetNameString() == particleId.GetNameString())
     {
-        particle_tag_ = RequestResource(particleId_.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
+        particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
         if(!particle_tag_) // To visualize that resource id was wrong delete previous particle effect off.
             DeleteParticleSystem();
     }
-    else if(attribute->GetNameString() == castShadows_.GetNameString())
+    else if(attribute->GetNameString() == castShadows.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setCastShadows(castShadows_.Get());
+            particleSystem_->setCastShadows(castShadows.Get());
     }
-    else if(attribute->GetNameString() == renderingDistance_.GetNameString())
+    else if(attribute->GetNameString() == renderingDistance.GetNameString())
     {
         if(particleSystem_)
-            particleSystem_->setRenderingDistance(renderingDistance_.Get());
+            particleSystem_->setRenderingDistance(renderingDistance.Get());
     }
 }
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(!GetParentEntity())
-        return;
-
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const

@@ -6,18 +6,20 @@
  */
 
 #include "StableHeaders.h"
-#include "Environment/Primitive.h"
+
 #include "RexNetworkUtils.h"
 #include "RexLogicModule.h"
 #include "EntityComponent/EC_FreeData.h"
-#include "EntityComponent/EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
+#include "Environment/Primitive.h"
+
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMesh.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
+
 #include "OgreTextureResource.h"
 #include "OgreMaterialResource.h"
 #include "OgreMeshResource.h"
@@ -26,6 +28,7 @@
 #include "OgreMaterialUtils.h"
 #include "Renderer.h"
 #include "QuatUtils.h"
+
 #include "SceneEvents.h"
 #include "ResourceInterface.h"
 #include "Environment/PrimGeometryUtils.h"
@@ -36,9 +39,12 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "WorldStream.h"
+
+#include "EC_NetworkPosition.h"
+#ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
+#endif
 #include "EC_OpenSimPrim.h"
-#include "EC_Movable.h"
 
 #include "IAttribute.h"
 
@@ -96,7 +102,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
     // Send the 'Entity Updated' event.
     /*
     event_category_id_t cat_id = framework_->GetEventManager()->QueryEventCategory("Scene");
-    ComponentInterfacePtr component = entity->GetComponent(EC_OpenSimPrim::TypeNameStatic());
+    ComponentPtr component = entity->GetComponent(EC_OpenSimPrim::TypeNameStatic());
     EC_OpenSimPrim *prim = checked_static_cast<RexLogic::EC_OpenSimPrim *>(component.get());
     Scene::SceneEventData::Events entity_event_data(entityid);
     entity_event_data.sceneName = scene->Name();
@@ -1266,9 +1272,10 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
 
 void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::string &text, const QColor &color)
 {
+#ifdef EC_HoveringText_ENABLED
     if (text.empty())
     {
-        boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>();
+        boost::shared_ptr<EC_HoveringText> hoveringText = entity->GetComponent<EC_HoveringText>("llSetText");
         if (!hoveringText)
             return;
 
@@ -1276,12 +1283,13 @@ void Primitive::AttachHoveringTextComponent(Scene::EntityPtr entity, const std::
     }
     else
     {
-        ComponentInterfacePtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic());
+        ComponentPtr component = entity->GetOrCreateComponent(EC_HoveringText::TypeNameStatic(), "llSetText");
         assert(component.get());
         EC_HoveringText &hoveringText = *(checked_static_cast<EC_HoveringText *>(component.get()));
         hoveringText.SetTextColor(color);
         hoveringText.ShowMessage(QString::fromUtf8(text.c_str()));
     }
+#endif
 }
 
 bool Primitive::HandleResourceEvent(event_id_t event_id, IEventData* data)

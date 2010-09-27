@@ -13,9 +13,9 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
-#include "EC_Water.h"
 #include "PostProcessWidget.h"
 #include "EC_WaterPlane.h"
+#include "EC_Fog.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -62,8 +62,8 @@ namespace Environment
     void EnvironmentModule::Load()
     {
         DECLARE_MODULE_EC(EC_Terrain);
-        DECLARE_MODULE_EC(EC_Water);
         DECLARE_MODULE_EC(EC_WaterPlane);
+        DECLARE_MODULE_EC(EC_Fog);
     }
 
     void EnvironmentModule::Initialize()
@@ -392,12 +392,12 @@ namespace Environment
                 {
                     return false;
                 }
-                if (environment_ != 0)
+                if (water_ != 0 )
                 {
                     // Adjust fog.
                     QVector<float> color;
                     color<<fogC_r<<fogC_g<<fogC_b;
-                    environment_->SetWaterFog(fogStart, fogEnd, color); 
+                    water_->SetWaterFog(fogStart, fogEnd, color); 
                 }
             }
             else if (methodname == "RexAmbientL")
