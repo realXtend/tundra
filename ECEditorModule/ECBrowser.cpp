@@ -745,8 +745,8 @@ namespace ECEditor
                     this, SLOT(DynamicComponentChanged(const QString &)));
             connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
                     this, SLOT(DynamicComponentChanged(const QString &)));
-            connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                    this, SLOT(ComponentNameChanged(const std::string&)));
+            connect(dynComp, SIGNAL(OnComponentNameChanged(const QString &)), 
+                    this, SLOT(ComponentNameChanged(const QString &)));
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         if(compGroup)
@@ -770,8 +770,8 @@ namespace ECEditor
                            this, SLOT(DynamicComponentChanged(const QString &)));
                 disconnect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
                         this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                           this, SLOT(ComponentNameChanged(const std::string&)));
+                disconnect(dynComp, SIGNAL(OnComponentNameChanged(const QString&)), 
+                           this, SLOT(ComponentNameChanged(const QString&)));
             }
             (*iter)->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.
