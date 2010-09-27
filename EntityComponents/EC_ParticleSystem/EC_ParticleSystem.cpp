@@ -36,6 +36,8 @@ EC_ParticleSystem::EC_ParticleSystem(IModule *module):
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
     }
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_ParticleSystem::~EC_ParticleSystem()
@@ -133,11 +135,8 @@ bool EC_ParticleSystem::HandleEvent(event_category_id_t category_id, event_id_t 
     return false;
 }
 
-void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attribute)
+void EC_ParticleSystem::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
-
     if(attribute->GetNameString() == particleId.GetNameString())
     {
         particle_tag_ = RequestResource(particleId.Get().toStdString(), OgreRenderer::OgreParticleResource::GetTypeStatic());
@@ -158,14 +157,6 @@ void EC_ParticleSystem::AttributeUpdated(IComponent *component, IAttribute *attr
 
 void EC_ParticleSystem::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(!GetParentEntity())
-        return;
-
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
 }
 
 ComponentPtr EC_ParticleSystem::FindPlaceable() const
