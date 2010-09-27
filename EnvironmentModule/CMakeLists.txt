@@ -32,6 +32,7 @@ if (CAELUM)
 	add_definitions (-DCAELUM)
 endif (CAELUM)
 
+
 if (HYDRAX)
 	add_definitions (-DHYDRAX)
 endif (HYDRAX)
@@ -43,6 +44,10 @@ use_package (XMLRPC)
 use_package (OGRE)
 use_package (QT4)
 
+if (CAELUM)
+    use_package (CAELUM)
+endif (CAELUM)
+
 use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim) 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
 link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim)
@@ -53,6 +58,11 @@ link_package (CURL)
 link_package (XMLRPC)
 link_package (OGRE)
 link_package (QT4)
+
+if (CAELUM)
+    link_package (CAELUM)
+endif (CAELUM)
+
 
 # MSVC -specific settings for preprocessor and PCH use
 if (MSVC)

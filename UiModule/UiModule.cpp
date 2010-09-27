@@ -52,7 +52,7 @@ namespace UiServices
     std::string UiModule::type_name_static_ = "UI";
 
     UiModule::UiModule() :
-        Foundation::ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         ui_state_machine_(0),
         service_getter_(0),
         inworld_scene_controller_(0),
@@ -148,7 +148,7 @@ namespace UiServices
                 SLOT(OnSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
-        input = framework_->Input().RegisterInputContext("EtherInput", 90);
+        input = framework_->Input()->RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
         connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
 
@@ -169,7 +169,7 @@ namespace UiServices
     {
     }
 
-    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool UiModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(UiModule_HandleEvent);
 
@@ -243,7 +243,7 @@ namespace UiServices
         if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
             return;
 
-        InputServiceInterface &inputService = framework_->Input();
+        InputServiceInterface &inputService = *framework_->Input();
 
         const QKeySequence toggleEther = inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
         const QKeySequence toggleWorldChat = inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
@@ -383,7 +383,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace UiServices;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
    POCO_EXPORT_CLASS(UiModule)
 POCO_END_MANIFEST
 

@@ -4,7 +4,7 @@
 #define incl_PythonScriptModule_PythonScriptModule_h
 
 #include "Foundation.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include <QObject>
@@ -55,7 +55,7 @@ namespace PythonScript
     typedef boost::shared_ptr<PythonEngine> PythonEnginePtr;
 
     //! A scripting module using Python
-    class MODULE_API PythonScriptModule : public QObject, public Foundation::ModuleInterface
+    class MODULE_API PythonScriptModule : public QObject, public IModule
     {
         Q_OBJECT
 
@@ -67,6 +67,7 @@ namespace PythonScript
         InputContext* GetInputContext() const { return input.get(); }
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
+        void RemoveQtDynamicProperty(QObject* qobj, char* propname);
 
         /** Prepares Python script instance used with EC_Script for execution.
             The script is executed instantly only if the runOnLoad attribute of the script EC is true.
@@ -85,7 +86,7 @@ namespace PythonScript
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! callback for console command
         Console::CommandResult ConsoleRunString(const StringVector &params);
@@ -170,14 +171,14 @@ namespace PythonScript
             @param entity Entity for which the component was added.
             @param component The added component.
          */
-        void OnComponentAdded(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void OnComponentAdded(Scene::Entity *entity, IComponent *component);
 
         /** Called when component is removed from the active scene.
             Currently used for handling EC_Script.
             @param entity Entity from which the component was removed.
             @param component The removed component.
         */
-        void OnComponentRemoved(Scene::Entity *entity, Foundation::ComponentInterface *component);
+        void OnComponentRemoved(Scene::Entity *entity, IComponent *component);
     };
 
     static PythonScriptModule *self() { return PythonScriptModule::GetInstance(); }

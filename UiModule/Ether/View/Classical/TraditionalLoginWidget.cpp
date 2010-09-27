@@ -78,23 +78,23 @@ namespace CoreUi
 
         void TraditionalLoginWidget::ParseInputAndConnect()
         {
-            if (lineEdit_Username->text().isEmpty())
+            if (lineEdit_Username->text().trimmed().isEmpty())
             {
                 SetStatus(tr("Username is missing!"));
                 return;
             }
 
-            if (lineEdit_WorldAddress->text().isEmpty())
+            if (lineEdit_WorldAddress->text().trimmed().isEmpty())
             {
                 SetStatus(tr("World address is missing!"));
                 return;
             }
 
             QMap<QString, QString> map;
-            map["WorldAddress"] = lineEdit_WorldAddress->text();
-            map["Username"] = lineEdit_Username->text();
-            map["Password"] = lineEdit_Password->text();
-            map["StartLocation"] = lineEdit_StartLocation->text();
+            map["WorldAddress"] = lineEdit_WorldAddress->text().trimmed();
+            map["Username"] = lineEdit_Username->text().trimmed();
+            map["Password"] = lineEdit_Password->text().trimmed();
+            map["StartLocation"] = lineEdit_StartLocation->text().trimmed();
 
             if (lineEdit_Username->text().contains('@'))
             {
@@ -107,13 +107,22 @@ namespace CoreUi
                     map["AuthenticationAddress"] = username_input.midRef(at_index+1).toString();
                     emit Connect(map);
                 }
+                else
+                {
+                    SetStatus(tr("Invalid format for user name field: The rexauth user name must be in the form 'account@server.com', and contain no spaces."));
+                }
             }
             else
             {
-                if (map["Username"].count(" ") == 1)
+                QStringList username = map["Username"].split(" ", QString::SkipEmptyParts);
+                if (username.count() == 2)
                 {
                     map["AvatarType"] = "OpenSim";
                     emit Connect(map);
+                }
+                else
+                {
+                    SetStatus(tr("Invalid format for user name field: The OpenSim user name must be in the form 'firstname lastname', and contain exactly one space in between."));
                 }
             }
 /*

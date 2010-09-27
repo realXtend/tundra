@@ -52,8 +52,8 @@ void KeyBindingsConfigWindow::CloseWindow()
 void KeyBindingsConfigWindow::ApplyKeyConfig()
 {
     ExtractBindingsList();
-    dynamic_cast<QtInputService&>(framework->Input()).SetKeyBindings(editedActions);
-    dynamic_cast<QtInputService&>(framework->Input()).SaveKeyBindingsToFile();
+    dynamic_cast<QtInputService *>(framework->Input())->SetKeyBindings(editedActions);
+    dynamic_cast<QtInputService *>(framework->Input())->SaveKeyBindingsToFile();
 }
 
 /// Read more from http://www.qtcentre.org/threads/26689-QTableWidget-one-column-editable
@@ -84,7 +84,7 @@ void KeyBindingsConfigWindow::PopulateBindingsList()
 
     configList->clear();
 
-    const QtInputService::KeyActionsMap &keyActions = dynamic_cast<QtInputService&>(framework->Input()).GetKeyBindings();
+    const QtInputService::KeyActionsMap &keyActions = dynamic_cast<QtInputService*>(framework->Input())->GetKeyBindings();
 
     for(QtInputService::KeyActionsMap::const_iterator iter = keyActions.begin(); iter != keyActions.end(); ++iter)
     {
@@ -106,7 +106,7 @@ void KeyBindingsConfigWindow::ButtonOK()
 
 void KeyBindingsConfigWindow::ButtonCancel()
 {
-    dynamic_cast<QtInputService&>(framework->Input()).LoadKeyBindingsFromFile();    
+    dynamic_cast<QtInputService *>(framework->Input())->LoadKeyBindingsFromFile();
 
     close();
 }

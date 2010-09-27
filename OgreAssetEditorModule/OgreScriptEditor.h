@@ -33,97 +33,94 @@ namespace Inventory
     class InventoryUploadBufferEventData;
 }
 
-namespace Naali
+class OgreMaterialProperties;
+class PropertyTableWidget;
+
+class OgreScriptEditor : public QWidget
 {
-    class OgreMaterialProperties;
-    class PropertyTableWidget;
+    Q_OBJECT
 
-    class OgreScriptEditor : public QWidget
-    {
-        Q_OBJECT
+public:
+    /** Constructor.
+        @param inventory_id Inventory ID unique for this item.
+        @param asset_type Asset type.
+        @param name Name.
+        @param parent Parent widget.
+    */
+    OgreScriptEditor(
+        const QString &inventory_id,
+        const asset_type_t &asset_type,
+        const QString &name,
+        QWidget *parent = 0);
 
-    public:
-        /** Constructor.
-            @param inventory_id Inventory ID unique for this item.
-            @param asset_type Asset type.
-            @param name Name.
-            @param parent Parent widget.
-        */
-        OgreScriptEditor(
-            const QString &inventory_id,
-            const asset_type_t &asset_type,
-            const QString &name,
-            QWidget *parent = 0);
+    /// Destructor.
+    virtual ~OgreScriptEditor();
 
-        /// Destructor.
-        virtual ~OgreScriptEditor();
+public slots:
+    /// Handles the asset data for script.
+    void HandleAssetReady(Foundation::AssetPtr asset);
 
-    public slots:
-        /// Handles the asset data for script.
-        void HandleAssetReady(Foundation::AssetPtr asset);
+    /// Closes the window.
+    void Close();
 
-        /// Closes the window.
-        void Close();
+signals:
+    /// This signal is emitted when the editor is closed.
+    void Closed(const QString &inventory_id, asset_type_t asset_type);
 
-    signals:
-        /// This signal is emitted when the editor is closed.
-        void Closed(const QString &inventory_id, asset_type_t asset_type);
+    /// This signal is emitted user saves modifications to a script and uploads it as a new one.
+    void UploadNewScript(Inventory::InventoryUploadBufferEventData *data);
 
-        /// This signal is emitted user saves modifications to a script and uploads it as a new one.
-        void UploadNewScript(Inventory::InventoryUploadBufferEventData *data);
+private slots:
+    /// Save As
+    void SaveAs();
 
-    private slots:
-        /// Save As
-        void SaveAs();
+    /// Validates the script name
+    /// @param name Name.
+    void ValidateScriptName(const QString &name);
 
-        /// Validates the script name
-        /// @param name Name.
-        void ValidateScriptName(const QString &name);
+    /// Validates the propertys new value.
+    /// @param row Row of the cell.
+    /// @param column Column of the cell.
+    void PropertyChanged(int row, int column);
 
-        /// Validates the propertys new value.
-        /// @param row Row of the cell.
-        /// @param column Column of the cell.
-        void PropertyChanged(int row, int column);
+private:
+    Q_DISABLE_COPY(OgreScriptEditor);
 
-    private:
-        Q_DISABLE_COPY(OgreScriptEditor);
+    /// Creates the text edit field for raw editing.
+    void CreateTextEdit();
 
-        /// Creates the text edit field for raw editing.
-        void CreateTextEdit();
+    /// Creates the property table for material property editing.
+    void CreatePropertyEditor();
 
-        /// Creates the property table for material property editing.
-        void CreatePropertyEditor();
+    /// Main widget loaded from .ui file.
+    QWidget *mainWidget_;
 
-        /// Main widget loaded from .ui file.
-        QWidget *mainWidget_;
+    /// Save As button.
+    QLineEdit *lineEditName_;
 
-        /// Save As button.
-        QLineEdit *lineEditName_;
+    /// Save As button.
+    QPushButton *buttonSaveAs_;
 
-        /// Save As button.
-        QPushButton *buttonSaveAs_;
+    /// Cancel button.
+    QPushButton *buttonCancel_;
 
-        /// Cancel button.
-        QPushButton *buttonCancel_;
+    /// Text edit field used in raw edit mode.
+    QTextEdit *textEdit_;
 
-        /// Text edit field used in raw edit mode.
-        QTextEdit *textEdit_;
+    /// Table widget for editing material properties.
+    PropertyTableWidget *propertyTable_;
 
-        /// Table widget for editing material properties.
-        PropertyTableWidget *propertyTable_;
+    /// Inventory id.
+    QString inventoryId_;
 
-        /// Inventory id.
-        QString inventoryId_;
+    /// Asset type.
+    const asset_type_t assetType_;
 
-        /// Asset type.
-        const asset_type_t assetType_;
+    /// Script name.
+    QString name_;
 
-        /// Script name.
-        QString name_;
-
-        /// Material properties.
-        OgreMaterialProperties *materialProperties_;
-    };
-}
+    /// Material properties.
+    OgreMaterialProperties *materialProperties_;
+};
 
 #endif

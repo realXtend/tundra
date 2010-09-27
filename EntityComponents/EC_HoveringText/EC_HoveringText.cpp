@@ -10,7 +10,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -31,8 +31,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_HoveringText::EC_HoveringText(IModule *module) :
+    IComponent(module->GetFramework()),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
@@ -55,8 +55,26 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
 
 EC_HoveringText::~EC_HoveringText()
 {
+    Destroy();
+}
+
+void EC_HoveringText::Destroy()
+{
     if (!renderer_.expired())
+    {
+        try{
         Ogre::TextureManager::getSingleton().remove(textureName_);
+        } catch(...)
+        {
+        }
+        try{
+        Ogre::MaterialManager::getSingleton().remove(materialName_);
+        } catch(...)
+        {
+        }
+        textureName_ = "";
+        materialName_ = "";
+    }
 }
 
 void EC_HoveringText::SetPosition(const Vector3df& position)
@@ -198,7 +216,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
         assert(billboardSet_);
 
-        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName();
+        materialName_ = std::string("HoveringTextMaterial") + renderer_.lock()->GetUniqueObjectName();
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
         billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
@@ -234,7 +252,7 @@ void EC_HoveringText::Redraw()
     {
         if (textureName_.empty())
         {
-            textureName_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
+            textureName_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
 
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
@@ -297,7 +315,7 @@ QPixmap EC_HoveringText::GetTextPixmap()
     if (renderer_.expired() || text_.isEmpty() || text_ == " ")
         return 0;
 
-    QRect max_rect(0, 0, 1600, 800);
+    QRect max_rect(0, 0, 1024, 512);
 
     // Create transparent pixmap
     QPixmap pixmap(max_rect.size());

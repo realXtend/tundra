@@ -27,7 +27,7 @@ namespace ECEditor
     {
         Q_OBJECT
     public:
-        ECComponentEditor(Foundation::ComponentInterfacePtr component, QtAbstractPropertyBrowser *propertyBrowser);
+        ECComponentEditor(ComponentPtr component, QtAbstractPropertyBrowser *propertyBrowser);
         virtual ~ECComponentEditor();
 
         //! Check if this component editor is holding spesific property as it's root property.
@@ -41,10 +41,10 @@ namespace ECEditor
         int AttributeCount() const { return attributeEditors_.size(); }
 
         //! Add new component into the editor.
-        void AddNewComponent(Foundation::ComponentInterfacePtr component, bool updateUi = true);
+        void AddNewComponent(ComponentPtr component, bool updateUi = true);
 
         //! Remove component from the editor.
-        void RemoveComponent(Foundation::ComponentInterface *component);
+        void RemoveComponent(IComponent *component);
 
         void UpdateEditorUI();
 
@@ -64,22 +64,22 @@ namespace ECEditor
         //! a new ECAttributeEditor instance is created and it's pointer returned to a user. If attribute type is not supported
         //! the method will return a null pointer.
         //! @return return attribute pointer if attribute type is supported and if not return null pointer.
-        static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor, AttributeInterface &attribute);
+        static ECAttributeEditorBase *CreateAttributeEditor(QtAbstractPropertyBrowser *browser, ECComponentEditor *editor, IAttribute &attribute);
 
         //! Initialize editor and create attribute editors.
         //! @param component component is used to figure out what attrubtes it contain and what
         //! attribute editors need to be created to this component editor.
-        void InitializeEditor(Foundation::ComponentInterfacePtr component);
+        void InitializeEditor(ComponentPtr component);
 
         //! Create new attribute editors for spesific component.
         //! @param component Compoent that we need to use, to get all attributes that we want to edit.
-        void CreateAttriubteEditors(Foundation::ComponentInterfacePtr component);
+        void CreateAttriubteEditors(ComponentPtr component);
 
         void UpdateGroupPropertyText();
 
         typedef std::map<std::string, ECAttributeEditorBase*> AttributeEditorMap;
         AttributeEditorMap attributeEditors_;
-        typedef std::set<Foundation::ComponentWeakPtr> ComponentSet;
+        typedef std::set<ComponentWeakPtr> ComponentSet;
         ComponentSet components_;
         QtProperty *groupProperty_;
         QtGroupPropertyManager *groupPropertyManager_;

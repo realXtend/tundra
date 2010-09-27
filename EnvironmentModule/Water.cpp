@@ -16,11 +16,12 @@
 #include <OgreTechnique.h>
 
 #include "EC_OgrePlaceable.h"
+#include "EC_WaterPlane.h"
 #include "Renderer.h"
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
 #include "SceneManager.h"
-#include "EC_Water.h"
+
 
 namespace Environment
 {
@@ -40,35 +41,7 @@ Water::~Water()
 
 Scene::EntityWeakPtr Water::GetActiveWater()
 {
-    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
-
-    // Check that is current water entity still valid.
-
-    if ( !activeWaterEntity_.expired() )
-        if(scene->GetEntity(activeWaterEntity_.lock()->GetId()).get() != 0)
-            return activeWaterEntity_;
-
-    // Current is not valid so search new, takes first entity which has water 
-
-    for(Scene::SceneManager::iterator iter = scene->begin();
-        iter != scene->end(); ++iter)
-    {
-        Scene::Entity &entity = **iter;
-        activeWaterComponent_ = entity.GetComponent<EC_Water>().get();
-        if (activeWaterComponent_ != 0)
-        {
-            activeWaterEntity_ = scene->GetEntity(entity.GetId());
-
-            if ( !activeWaterEntity_.expired())
-                return activeWaterEntity_;
-        }
-     }
-    
-    // There was any water entity so reset it to null state. 
-
-    activeWaterEntity_.reset();
-    activeWaterComponent_ = 0;
-    return Scene::EntityWeakPtr();
+    return activeWaterEntity_;
 }
 
 Scene::EntityWeakPtr Water::GetWaterEntity()
@@ -80,33 +53,39 @@ Scene::EntityWeakPtr Water::GetWaterEntity()
 void Water::CreateWaterGeometry(float height)
 {
     // Here we assume that there is only one water in one scene (and it is ocean). 
-
+     
     if ( !GetActiveWater().expired())
         RemoveWaterGeometry();
 
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
-    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Water::TypeNameStatic()));
-    activeWaterComponent_ = entity->GetComponent<EC_Water>().get();
-    activeWaterComponent_->SetWaterHeight(height);
+   
+
+    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_WaterPlane::TypeNameStatic()));
+    activeWaterComponent_ = entity->GetComponent<EC_WaterPlane>().get();
+    activeWaterComponent_->positionAttr_.Set(Vector3df(0.0,0.0,height), AttributeChange::Network);
+    //activeWaterComponent_->SetWaterHeight(height);
     activeWaterEntity_ = entity;
     active_scene->EmitEntityCreated(entity);
+
+
     emit WaterCreated();
-}
+
+ }
 
 void Water::RemoveWaterGeometry()
 {
-    // Adjust that we are removing correct water
-    if( GetActiveWater().expired())
-        return;
-    
+   
     // Remove component
     if ( activeWaterComponent_ != 0)
     {
         Scene::EntityPtr entity = activeWaterEntity_.lock();
-        entity->RemoveComponent(entity->GetComponent(EC_Water::TypeNameStatic()));
+        entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));
         activeWaterComponent_ = 0;
     }
+
+    if ( activeWaterEntity_.lock().get() == 0)
+        return;
 
     // Remove entity from scene
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
@@ -116,11 +95,14 @@ void Water::RemoveWaterGeometry()
     emit WaterRemoved();
 }
 
-void Water::SetWaterHeight(float height)
+void Water::SetWaterHeight(float height, AttributeChange::Type type)
 {
     if (activeWaterComponent_ != 0)
     {
-        activeWaterComponent_->SetWaterHeight(height);
+        //activeWaterComponent_->SetWaterHeight(height);
+        Vector3df vec = activeWaterComponent_->positionAttr_.Get();
+        vec.z = height;
+        activeWaterComponent_->positionAttr_.Set(vec, type);
         emit HeightChanged(static_cast<double>(height));
     }
 }
@@ -129,9 +111,75 @@ float Water::GetWaterHeight() const
 {
     float height = 0.0;
     if (activeWaterComponent_ != 0)
-        height = activeWaterComponent_->GetWaterHeight();
-
+        height = activeWaterComponent_->positionAttr_.Get().z;
+       
     return height;
+}
+
+void Water::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color)
+{
+    if ( activeWaterComponent_ == 0)
+        return;
+
+    activeWaterComponent_->fogStartAttr_.Set(fogStart,AttributeChange::Local);
+    activeWaterComponent_->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
+    activeWaterComponent_->fogColorAttr_.Set(Color(color[0]*255, color[1]*255, color[2]*255,255), AttributeChange::Local);
+ 
+    emit WaterFogAdjusted(fogStart, fogEnd, color);
+    
+}
+
+QVector<float> Water::GetFogWaterColor() const
+{
+    if ( activeWaterComponent_ == 0)
+        return QVector<float>();
+    
+    Ogre::ColourValue color = activeWaterComponent_->GetFogColorAsOgreValue();
+    QVector<float> vec; 
+    vec<<color[0]<<color[1]<<color[2];
+    return vec;
+    
+  
+}
+
+void Water::SetWaterFogColor(const QVector<float>& color)
+{
+   if ( activeWaterComponent_ == 0)
+        return;
+ 
+  
+   Color col(color[0], color[1], color[2],1.0);
+   activeWaterComponent_->fogColorAttr_.Set(col, AttributeChange::Local); 
+    
+}
+
+void Water::SetWaterFogDistance(float fogStart, float fogEnd)
+{
+    if ( activeWaterComponent_ == 0)
+        return;   
+
+    activeWaterComponent_->fogStartAttr_.Set(fogStart, AttributeChange::Local);
+    activeWaterComponent_->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
+    
+}
+
+float Water::GetWaterFogStartDistance() const
+{
+   if ( activeWaterComponent_ == 0)
+        return 0.f;   
+
+    return activeWaterComponent_->fogStartAttr_.Get();
+
+}
+
+float Water::GetWaterFogEndDistance() const
+{
+    if ( activeWaterComponent_ == 0)
+        return 0.f;   
+
+    return activeWaterComponent_->fogEndAttr_.Get();
+
+   
 }
 
 }

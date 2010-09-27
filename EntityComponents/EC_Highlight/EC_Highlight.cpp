@@ -10,7 +10,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_Highlight.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
@@ -69,8 +69,8 @@ bool EC_Highlight::IsVisible() const
     return false;
 }
 
-EC_Highlight::EC_Highlight(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Highlight::EC_Highlight(IModule *module) :
+    IComponent(module->GetFramework()),
     entityClone_(0),
     sceneNode_(0)
 {

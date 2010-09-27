@@ -1,20 +1,21 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_WaterPlane.h"
 #include "EC_OgrePlaceable.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 
-#include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include <QDebug>
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
 #include <Ogre.h>
 #include <OgreQuaternion.h>
-#include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
+#include <OgreColourValue.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -22,8 +23,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 namespace Environment
 {
    
-    EC_WaterPlane::EC_WaterPlane(Foundation::ModuleInterface *module)
-        : Foundation::ComponentInterface(module->GetFramework()),
+    EC_WaterPlane::EC_WaterPlane(IModule *module)
+        : IComponent(module->GetFramework()),
         xSizeAttr_(this, "Water plane x-size", 5000),
         ySizeAttr_(this, "Water plane y-size", 5000),
         depthAttr_(this, "Water plane depth", 20),
@@ -34,27 +35,38 @@ namespace Environment
         xSegmentsAttr_(this, "The number of segments to the plane in the x direction", 10),
         ySegmentsAttr_(this, "The number of segments to the plane in the y direction", 10),
         materialNameAttr_(this, "Water material", QString("Ocean")),
-        fogColorAttr_(this, "Underwater fog color", Color()),
-        fogStartAttr_(this, "Fog start distance", 0.0),
-        fogEndAttr_(this, "Fog end distance", 0.0),
+        fogColorAttr_(this, "Underwater fog color", Color(0.2f,0.4f,0.35f,1.0f)),
+        fogStartAttr_(this, "Fog start distance", 100.f),
+        fogEndAttr_(this, "Fog end distance", 2000.f),
+        fogModeAttr_(this, "Fog mode", 3),
         entity_(0),
         node_(0),
         attached_(false)
     {
+        static AttributeMetadata metadata;
+        static bool metadataInitialized = false;
     
-        OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-        if(!rendererModule)
-            return;
+        if(!metadataInitialized)
+        {
+            metadata.enums[Ogre::FOG_NONE] = "NoFog";
+            metadata.enums[Ogre::FOG_EXP] = "Exponentially";
+            metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
+            metadata.enums[Ogre::FOG_LINEAR] = "Linearly";
+         
+            metadataInitialized = true;
+        }
 
-        renderer_ = OgreRenderer::RendererWeakPtr(rendererModule->GetRenderer());
+        fogModeAttr_.SetMetadata(&metadata);
+
+        renderer_ = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>();
         if(!renderer_.expired())
         {
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_ = scene_mgr->createSceneNode();
         }
 
-        QObject::connect(this, SIGNAL(OnAttributeChanged(AttributeInterface*, AttributeChange::Type)), this, SLOT(AttributeUpdated(AttributeInterface*, AttributeChange::Type)));
-        //QObject::connect(framework_, SIGNAL(FrameProcessed(double)), this, SLOT(TestUnderWater()));
+        QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(AttributeUpdated(IAttribute*, AttributeChange::Type)));
 
         lastXsize_ = xSizeAttr_.Get();
         lastYsize_ = ySizeAttr_.Get();
@@ -85,7 +97,7 @@ namespace Environment
     bool EC_WaterPlane::IsUnderWater()
     {
       // Check that is camera inside of defined waterplane. 
-      ///todo this cannot be done this way, mesh orientation etc. must take care. 
+      ///todo this cannot be done this way, mesh orientation etc. must take care. Now we just assume that plane does not have orientation.
 
       if ( entity_ == 0)
         return false;
@@ -103,21 +115,24 @@ namespace Environment
       int xSize = xSizeAttr_.Get(), ySize = ySizeAttr_.Get(), depth = depthAttr_.Get();
       int x = posCamera.x, y = posCamera.y, z = posCamera.z;
     
-      int tmpMax = pos.x + 0.5*xSize;
-      int tmpMin = pos.x - 0.5*xSize;
+      // HACK this is strange, i thought that it should be 0.5 but some reason, visually it looks like that you can travel really "outside" from water. 
+      int tmpMax = pos.x + 0.25*xSize;
+      int tmpMin = pos.x - 0.25*xSize;
           
-      if ( x > tmpMin && x < tmpMax )
+      if ( x >= tmpMin && x <= tmpMax )
         {
-            tmpMax = pos.y + 0.5*ySize;
-            tmpMin = pos.y - 0.5*ySize;
+            tmpMax = pos.y + 0.25*ySize;
+            tmpMin = pos.y - 0.25*ySize;
         
-            if ( y >tmpMin && y < tmpMax)
+            if ( y >= tmpMin && y <= tmpMax)
             {
                 tmpMax = pos.z;
                 tmpMin = pos.z - depth;
             
-                if ( z> tmpMin && z < tmpMax)
+                if ( z >= tmpMin && z <= tmpMax)
+                {
                     return true;
+                }
                 else
                     return false;
             }
@@ -178,7 +193,14 @@ namespace Environment
 
     }
 
-    void EC_WaterPlane::AttributeUpdated(AttributeInterface* attribute, AttributeChange::Type change)
+    Ogre::ColourValue EC_WaterPlane::GetFogColorAsOgreValue() const
+    {
+        Color col = fogColorAttr_.Get();
+        return Ogre::ColourValue(col.r, col.g, col.b, col.a);
+
+    }
+
+    void EC_WaterPlane::AttributeUpdated(IAttribute* attribute, AttributeChange::Type change)
     {
         ChangeWaterPlane(attribute);
     }
@@ -188,13 +210,16 @@ namespace Environment
         // Is attached?
         if ( entity_ != 0 && !entity_->isAttached() && !attached_ )
         {
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            scene_mgr->getRootSceneNode()->addChild(node_);
+            node_->setVisible(true);
         }
         
         Vector3df vec = positionAttr_.Get();
         node_->setPosition(vec.x, vec.y, vec.z);
-
+     
        
     }
 
@@ -213,7 +238,7 @@ namespace Environment
 
     }
 
-    void EC_WaterPlane::ChangeWaterPlane(AttributeInterface* attribute)
+    void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
     {
         std::string name = attribute->GetNameString();
         if ( ( name == xSizeAttr_.GetNameString() 
@@ -270,10 +295,10 @@ namespace Environment
     }
 
 
-    Foundation::ComponentPtr EC_WaterPlane::FindPlaceable() const
+    ComponentPtr EC_WaterPlane::FindPlaceable() const
     {
         assert(framework_);
-        Foundation::ComponentPtr comp;
+        ComponentPtr comp;
         if(!GetParentEntity())
             return comp;
         comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();

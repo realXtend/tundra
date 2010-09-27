@@ -10,7 +10,7 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_ChatBubble.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -31,15 +31,15 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_ChatBubble");
 
 #include "MemoryLeakCheck.h"
 
-EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_ChatBubble::EC_ChatBubble(IModule *module) :
+    IComponent(module->GetFramework()),
     font_(QFont("Arial", 50)),
     bubbleColor_(QColor(48, 113, 255, 255)),
     textColor_(Qt::white),
     billboardSet_(0),
     billboard_(0),
     pop_timer_(new QTimer(this)),
-    bubble_max_rect_(0,0,1000,500),
+    bubble_max_rect_(0,0,1024,512),
     current_scale_(1.0f),
     default_z_pos_(1.9f)
 {
@@ -55,8 +55,26 @@ EC_ChatBubble::EC_ChatBubble(Foundation::ModuleInterface *module) :
 
 EC_ChatBubble::~EC_ChatBubble()
 {
+    Destroy();
+}
+
+void EC_ChatBubble::Destroy()
+{
     if (!renderer_.expired())
+    {
+        try{
         Ogre::TextureManager::getSingleton().remove(texture_name_);
+        } catch(...)
+        {
+        }
+        try{
+        Ogre::MaterialManager::getSingleton().remove(materialName_);
+        } catch(...)
+        {
+        }
+        texture_name_ = "";
+        materialName_ = "";
+    }
 }
 
 void EC_ChatBubble::SetPosition(const Vector3df& position)
@@ -285,7 +303,7 @@ void EC_ChatBubble::Update()
         sceneNode->attachObject(billboardSet_);
 
         // Create material
-        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName(); 
+        materialName_ = std::string("ChatBubbleMaterial") + renderer_.lock()->GetUniqueObjectName(); 
         Ogre::MaterialPtr material = OgreRenderer::CloneMaterial("UnlitTexturedSoftAlpha", materialName_);
         billboardSet_->setMaterialName(materialName_);
 

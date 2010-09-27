@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
+#include "Framework.h"
 
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
@@ -19,27 +20,21 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
-EC_Mesh::EC_Mesh(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
-    nodePosition_(this, "Transform"),
-    meshResouceId_(this, "Mesh id", ""),
-    skeletonId_(this, "Skeleton id", ""),
-    meshMaterial_(this, "Mesh materials"),
-    drawDistance_(this, "Draw distance", 0.0f),
-    castShadows_(this, "Cast shadows", false),
+EC_Mesh::EC_Mesh(IModule *module):
+    IComponent(module->GetFramework()),
+    nodeTransformation(this, "Transform"),
+    meshResourceId(this, "Mesh ref", ""),
+    skeletonId(this, "Skeleton ref", ""),
+    meshMaterial(this, "Mesh materials"),
+    drawDistance(this, "Draw distance", 0.0f),
+    castShadows(this, "Cast shadows", false),
     entity_(0),
     node_(0),
     skeleton_(0),
     attached_(false)
 {
-    static AttributeMetadata drawDistanceData;
-    static bool metadataInitialized = false;
-    if(!metadataInitialized)
-    {
-        drawDistanceData.min = "0";
-        drawDistanceData.max = "10000";
-    }
-    drawDistance_.SetMetadata(&drawDistanceData);
+    static AttributeMetadata drawDistanceData("", "0", "10000");
+    drawDistance.SetMetadata(&drawDistanceData);
 
     renderer_ = GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>();
     if(!renderer_.expired())
@@ -90,8 +85,8 @@ void EC_Mesh::SetMesh(const QString &name)
             return;
         }
         
-        entity_->setRenderingDistance(drawDistance_.Get());
-        entity_->setCastShadows(castShadows_.Get());
+        entity_->setRenderingDistance(drawDistance.Get());
+        entity_->setCastShadows(castShadows.Get());
         entity_->setUserAny(Ogre::Any(GetParentEntity()));
         // Set UserAny also on subentities
         for (uint i = 0; i < entity_->getNumSubEntities(); ++i)
@@ -106,7 +101,7 @@ void EC_Mesh::SetMesh(const QString &name)
 
     if(node_)
     {
-        Transform newTransform = nodePosition_.Get();
+        Transform newTransform = nodeTransformation.Get();
         node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
         Quaternion adjust(DEGTORAD * newTransform.rotation.x,
                           DEGTORAD * newTransform.rotation.y,
@@ -119,7 +114,7 @@ void EC_Mesh::SetMesh(const QString &name)
     // Check if new materials need to be requested.
     if(HasMaterialsChanged())
     {
-        std::vector<QVariant> materials = meshMaterial_.Get();
+        QVariantList materials = meshMaterial.Get();
         materialRequestTags_.resize(materials.size(), 0);
         for(uint i = 0; i < materials.size(); i++)
         {
@@ -182,7 +177,7 @@ bool EC_Mesh::SetMaterial(uint index, const QString &material_name)
     return true;
 }
 
-bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
     {
@@ -196,12 +191,12 @@ bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, 
 
 bool EC_Mesh::HasMaterialsChanged() const
 {
-    if(!entity_ || !meshMaterial_.Get().size())
+    if(!entity_ || !meshMaterial.Get().size())
         return false;
-    std::vector<QVariant> materials = meshMaterial_.Get();
+    QVariantList materials = meshMaterial.Get();
     for(uint i = 0; i < entity_->getNumSubEntities(); i++)
     {
-        // No point to continue if all materials are not setted.
+        // No point to continue if all materials are not set.
         if(i >= materials.size())
             break;
 
@@ -213,42 +208,38 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(Foundation::ComponentInterface *, AttributeInterface *)));
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
     if(!GetParentEntity())
         return;
 
-    Scene::SceneManager *scene = GetParentEntity()->GetScene();
-    if(scene)
-        connect(scene, SIGNAL(AttributeChanged(Foundation::ComponentInterface*, AttributeInterface*, AttributeChange::Type)),
-                this, SLOT(AttributeUpdated(Foundation::ComponentInterface*, AttributeInterface*)));
+    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
-void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, AttributeInterface *attribute)
+void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
-    if(component != this)
-        return;
     QString attrName = QString::fromStdString(attribute->GetNameString());
     request_tag_t tag = 0;
-    if(QString::fromStdString(meshResouceId_.GetNameString()) == attrName)
+    if(QString::fromStdString(meshResourceId.GetNameString()) == attrName)
     {
         //Ensure that mesh is requested only when it's has actualy changed.
         if(entity_)
-            if(QString::fromStdString(entity_->getMesh()->getName()) == meshResouceId_.Get())
+            if(QString::fromStdString(entity_->getMesh()->getName()) == meshResourceId.Get())
                 return;
 
-        tag = RequestResource(meshResouceId_.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
+        tag = RequestResource(meshResourceId.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
             resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
                 boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
         else
             RemoveMesh();
     }
-    else if(QString::fromStdString(meshMaterial_.GetNameString()) == attrName)
+    else if(QString::fromStdString(meshMaterial.GetNameString()) == attrName)
     {
         // We wont request materials until we are sure that mesh has been loaded and it's safe to apply materials into it.
         if(!HasMaterialsChanged())
             return;
-        std::vector<QVariant> materials = meshMaterial_.Get();
+        QVariantList materials = meshMaterial.Get();
         materialRequestTags_.resize(materials.size(), 0);
         for(uint i = 0; i < materials.size(); i++)
         {
@@ -262,35 +253,35 @@ void EC_Mesh::AttributeUpdated(Foundation::ComponentInterface *component, Attrib
             }
         }
     }
-    else if(QString::fromStdString(skeletonId_.GetNameString()) == attrName)
+    else if(QString::fromStdString(skeletonId.GetNameString()) == attrName)
     {
-        if(!skeletonId_.Get().isEmpty())
+        if(!skeletonId.Get().isEmpty())
         {
             // If same name skeleton has already setted no point to do it again.
-            if(skeleton_ && skeleton_->getName() == skeletonId_.Get().toStdString())
+            if(skeleton_ && skeleton_->getName() == skeletonId.Get().toStdString())
                 return;
 
             std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
-            tag = RequestResource(skeletonId_.Get().toStdString(), resouceType);
+            tag = RequestResource(skeletonId.Get().toStdString(), resouceType);
             if(tag)
                 resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
         }
     }
-    else if(QString::fromStdString(drawDistance_.GetNameString()) == attrName)
+    else if(QString::fromStdString(drawDistance.GetNameString()) == attrName)
     {
         if(entity_)
-            entity_->setRenderingDistance(drawDistance_.Get());
+            entity_->setRenderingDistance(drawDistance.Get());
     }
-    else if(QString::fromStdString(castShadows_.GetNameString()) == attrName)
+    else if(QString::fromStdString(castShadows.GetNameString()) == attrName)
     {
         if(entity_)
-            entity_->setCastShadows(castShadows_.Get());
+            entity_->setCastShadows(castShadows.Get());
     }
-    else if(QString::fromStdString(nodePosition_.GetNameString()) == attrName)
+    else if(QString::fromStdString(nodeTransformation.GetNameString()) == attrName)
     {
         if(node_)
         {
-            Transform newTransform = nodePosition_.Get();
+            Transform newTransform = nodeTransformation.Get();
             node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
             Quaternion adjust(DEGTORAD * newTransform.rotation.x,
                               DEGTORAD * newTransform.rotation.y,
@@ -318,10 +309,10 @@ request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string&
     return tag;
 }
 
-Foundation::ComponentPtr EC_Mesh::FindPlaceable() const
+ComponentPtr EC_Mesh::FindPlaceable() const
 {
     assert(framework_);
-    Foundation::ComponentPtr comp;
+    ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
@@ -375,7 +366,7 @@ void EC_Mesh::AttachSkeleton(const QString &skeletonName)
     }
 }
 
-bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id != Resource::Events::RESOURCE_READY)
         return false;
@@ -393,7 +384,7 @@ bool EC_Mesh::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInte
     return false;
 }
 
-bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -405,12 +396,12 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, Foundation::EventData
     OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
     //! @todo for some reason compiler will have linking error if we try to call ResourceInterface's GetId inline method
     //! remember to track the cause of this when I some extra time.
-    SetMesh(QString::fromStdString(meshResouceId_.Get().toStdString()));
+    SetMesh(QString::fromStdString(meshResourceId.Get().toStdString()));
 
     return true;
 }
 
-bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 {
     if(!entity_)
         return false;
@@ -434,7 +425,7 @@ bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, Foundation::Event
     return true;
 }
 
-bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -453,7 +444,7 @@ bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, Foundation::Event
     if(found)
     {
         //HandleMaterialReady(index, res);
-        if (!res || index > meshMaterial_.Get().size()) 
+        if (!res || index > meshMaterial.Get().size()) 
             return false;
         OgreRenderer::OgreMaterialResource* materialResource = checked_static_cast<OgreRenderer::OgreMaterialResource*>(res.get());
         QString material_name = QString::fromStdString(materialResource->GetMaterial()->getName());

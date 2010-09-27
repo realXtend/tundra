@@ -136,7 +136,7 @@ namespace Environment
         //! @param event_id Mouse event id is used to identifie what mouse event just occured.
         //! @param data Mouse movement information, used for raycast.
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleMouseDragEvent(event_id_t event_id, IEventData* data);
 
         //! Create new terrain heightmap texture using terrain height information.
         void UpdateTerrain();

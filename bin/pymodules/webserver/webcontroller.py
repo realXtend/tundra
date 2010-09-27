@@ -20,7 +20,7 @@ import PythonQt.QtGui
 from PythonQt.QtGui import QQuaternion as Quat
 from PythonQt.QtGui import QVector3D as Vec
 
-from objectedit.conversions import quat_to_euler #, euler_to_quat
+import mathutils as mu
 
 PORT = 28008
 
@@ -132,7 +132,7 @@ class WebController(Controller):
         ort = p.Orientation
         #vec, ang = toAngleAxis(p.Orientation)
         #print vec, ang
-        euler = quat_to_euler([ort.scalar(), ort.x(), ort.y(), ort.z()])
+        euler = mu.quat_to_euler(ort)
         ang = euler[0]
         if ang < 0:
             ang = 360 + ang

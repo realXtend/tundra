@@ -3,28 +3,53 @@
 #ifndef incl_OgreRenderer_EC_OgreAnimationController_h
 #define incl_OgreRenderer_EC_OgreAnimationController_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
-namespace Ogre
-{
-    class Entity;
-}
-
 #include <OgreAnimationState.h>
-#include <QStringList>
 
 namespace OgreRenderer
 {
 
-	class EC_OgreMesh;
+//! Ogre-specific mesh entity animation controller
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgreAnimationController</h2>
+Ogre-specific mesh entity animation controller
 
-    //! Ogre-specific mesh entity animation controller
-    /*! Needs to be told of an EC_OgreMesh component to be usable
-        \ingroup OgreRenderingModuleClient
-     */
-    class OGRE_MODULE_API EC_OgreAnimationController : public Foundation::ComponentInterface
+Needs to be told of an OgreMesh component to be usable
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"EnableAnimation": Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
+<li>"SetAnimationTimePosition": 
+<li>"GetAvailableAnimations": 
+<li>"OgreRenderer": Gets mesh entity component
+<li>"SetMeshEntity": Gets mesh entity component
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgreMesh</b>.
+</table>
+
+*/
+    class OGRE_MODULE_API EC_OgreAnimationController : public IComponent
     {
         Q_OBJECT
         
@@ -150,7 +175,7 @@ namespace OgreRenderer
         //! Constructor
         /*! \param module renderer module
          */
-        EC_OgreAnimationController(Foundation::ModuleInterface* module);
+        EC_OgreAnimationController(IModule* module);
         
         //! Gets Ogre entity from the mesh entity component and checks if it has changed; in that case resets internal state
         Ogre::Entity* GetEntity();

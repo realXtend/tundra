@@ -17,17 +17,27 @@ namespace Foundation
         ModuleManager is the main way to use modules, use Framework::GetModuleManager to get a pointer to it.
         There are generally only a few functions that should be used, rest are for internal use.
 
+\section communication_sec Accessing modules in the system
+
+todo: add here instructions how to use the ModuleManager in C++ to access a module. (using ModuleManager)
+How to configure cmake inter-module dependencies.
+
+Accessing modules directly using ModuleManager:
+    - Add the module's directory to includes
+    - Link against the module library
+
 
 	\section creating_sec Creating a new C++ module.
 	
         To create a new (static) module:
-            - Create a class that inherits from Foundation::ModuleInterfaceImpl
+            - Create a class that inherits from Foundation::IModule
             - In the Module's Load()-function, declare all components the new module offers with DECLARE_MODULE_EC macro.
             - In the Module's Initialize()-function, register all services the new module offers.
             - Also unregister all services in the Uninitialize()-function.
             - Declare the static module with ModuleManager::DeclareStaticModule() function. (Only for static modules).
             - Add the type of the module to both Foundation::Module::Type enumeration and
               Foundation::Module::NameFromType function, in ModuleInterface.h.
+            - All classes in the module that that are to be accessed outside the module should be declared with xxx_MODULE_API macro. (each DLL to be built has their own macro)
 
         Additional steps to create a new shared module:
             - Do not use the DeclareStaticModule() function.
@@ -58,6 +68,17 @@ void SetProfiler(Foundation::Framework *framework)
               This adds static logging functions to the class.
             - For a simple example, see TestModule.h, Exports.cpp and TestService.h. 
 
+\section module_cmake Setting up CMakeLists.txt for your module.
+todo.
+\section module_pch Setting up a Precompiled Header for your module.
+todo.
+
+\section module_locale Making your module localization-aware.
+todo.
+
+\section module_python Creating a module using Python.
+todo.
+
 	\section module_def_sec Module definition file
 		Each module library should be accompanied by a module definition file. Name of
 		the file should match the name of the module library file, f.ex. module
@@ -79,28 +100,7 @@ void SetProfiler(Foundation::Framework *framework)
    <entry>MyEntryClassNameA</entry>
    <entry>MyEntryClassNameB</entry>
 </config>
-        \endverbatim
-		
-
-	\section communication_sec Communication between modules
-        The preferred way to communicate between modules is by using events and services,
-        see Foundation::ServiceManager for more information about services and \ref EventSystem for
-        details about communicating with events. It is also possible to communicate
-        by accessing modules directly.
-
-        Accessing modules directly using ModuleManager:
-            - All classes that need to be accessed should be declared with xxx_MODULE_API macro. (each DLL to be built has their own macro)
-            - xxx_MODULE_EXPORTS should be defined in both modules.
-            - Add the module's directory to includes
-            - Link against the module library
-            
-            
- 	\section versioning_sec Module versioning
-        Core modules have the same version as the framework. Other modules are
-        responsible for handling their own versioning information by overriding
-        ModuleInterface::VersionMajor() and ModuleInterface::VersionMinor()
-        -functions.
-        
+        \endverbatim		            
         
     \section depencency_sec Module dependencies
 		Modules may depend on each other. In practical terms, when one module depends on other module(s),

@@ -11,7 +11,7 @@
 #include "ResourceInterface.h"
 #include "RexTypes.h"
 #include "RexUUID.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "SceneManager.h"
 #include "Color.h"
 
@@ -58,7 +58,7 @@ namespace RexLogic
         void HandleTerseObjectUpdateForPrim_44bytes(const uint8_t* bytes);
         void HandleTerseObjectUpdateForPrim_60bytes(const uint8_t* bytes);
 
-        bool HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
 
         void HandleLogout();
 
@@ -80,9 +80,9 @@ namespace RexLogic
         
     public slots:
         //! Trigger EC sync because of component attributes changing
-        void OnComponentChanged(Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
         //! Trigger EC sync because of components added/removed to entity
-        void OnEntityChanged(Scene::Entity* entity, Foundation::ComponentInterface* comp, AttributeChange::Type change);
+        void OnEntityChanged(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
         //! When rex prim propeties have changed, send update to sim
         void OnRexPrimDataChanged(Scene::Entity* entity);
         //! When prim shape propeties have changed, send update to sim
@@ -166,7 +166,8 @@ namespace RexLogic
          */
         void AttachLightComponent(Scene::EntityPtr entity, Color &color, float radius, float falloff);
 
-        /** Creates hovering text above entity. Uses EC_HoveringText
+        /** Creates hovering text above entity. Uses EC_HoveringText. If #define #EC_HoveringText_ENABLED was not available
+            when this RexLogicModule was built, this function does nothing.
             @param entity Entity.
             @param text Text to be shown. If null ("") the EC_HoveringText compoenent will be removed from the entity.
             @param text_color Color of the text.

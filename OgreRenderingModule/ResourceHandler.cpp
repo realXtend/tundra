@@ -139,7 +139,7 @@ namespace OgreRenderer
     }
     
     
-    bool ResourceHandler::HandleAssetEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleAssetEvent(event_id_t event_id, IEventData* data)
     {
         switch (event_id)
         {
@@ -202,7 +202,7 @@ namespace OgreRenderer
         return false;
     }
 
-    bool ResourceHandler::HandleResourceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ResourceHandler::HandleResourceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {     
@@ -237,7 +237,7 @@ namespace OgreRenderer
             if (checked_static_cast<OgreTextureResource*>(tex.get())->GetLevel() == 0)
             {
                 Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
-                framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
                 return tag;
             }
         }
@@ -271,7 +271,7 @@ namespace OgreRenderer
                     UpdateLegacyMaterials(tex->GetId());
                     resources_[tex->GetId()] = tex;
                     Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(tex->GetId(), tex, tag);
-                    framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+                    framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
                     return tag;
                 }
                 else
@@ -359,7 +359,7 @@ namespace OgreRenderer
         if (res)
         {
             Resource::Events::ResourceReady* event_data = new Resource::Events::ResourceReady(res->GetId(), res, tag);
-            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, Foundation::EventDataPtr(event_data));
+            framework_->GetEventManager()->SendDelayedEvent(resource_event_category_, Resource::Events::RESOURCE_READY, EventDataPtr(event_data));
             return tag;
         }
         

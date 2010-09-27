@@ -9,7 +9,7 @@
 #include "EventHandlers/NetworkEventHandler.h"
 #include "RexLogicModule.h"
 #include "Avatar/AvatarControllable.h"
-#include "Avatar/Avatar.h"
+#include "Avatar/AvatarHandler.h"
 #include "Environment/Primitive.h"
 #include "Communications/ScriptDialogHandler.h"
 #include "Communications/ScriptDialogRequest.h"
@@ -44,12 +44,14 @@
 namespace RexLogic
 {
 
+using namespace ProtocolUtilities;
+
 NetworkEventHandler::NetworkEventHandler(RexLogicModule *owner) :
     owner_(owner),
     ongoing_script_teleport_(false)
 {
     // Get the pointe to the current protocol module
-    ProtocolUtilities::ProtocolModuleInterface *protocol = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock().get();
+    ProtocolModuleInterface *protocol = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock().get();
     if (protocol)
         RexLogicModule::LogInfo("NetworkEventHandler: Protocol module not set yet. Will fetch when networking occurs.");
 
@@ -61,10 +63,10 @@ NetworkEventHandler::~NetworkEventHandler()
     script_dialog_handler_.reset();
 }
 
-bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, IEventData* data)
 {
     PROFILE(NetworkEventHandler_HandleOpenSimNetworkEvent);
-    ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
+    NetworkEventInboundData *netdata = checked_static_cast<NetworkEventInboundData *>(data);
     switch(event_id)
     {
     case RexNetMsgRegionHandshake:
@@ -149,9 +151,9 @@ bool NetworkEventHandler::HandleOpenSimNetworkEvent(event_id_t event_id, Foundat
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_ObjectUpdate(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
     msg.SkipToNextVariable();
     msg.SkipToNextVariable();
@@ -183,10 +185,10 @@ bool NetworkEventHandler::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEven
     return result;
 }
 
-bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_GenericMessage(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
-    std::string methodname = ProtocolUtilities::ParseGenericMessageMethod(msg);
+    NetInMessage &msg = *data->message;
+    std::string methodname = ParseGenericMessageMethod(msg);
 
     if (methodname == "RexMediaUrl")
         return owner_->GetPrimitiveHandler()->HandleRexGM_RexMediaUrl(data);
@@ -204,10 +206,10 @@ bool NetworkEventHandler::HandleOSNE_GenericMessage(ProtocolUtilities::NetworkEv
         return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_RegionHandshake(NetworkEventInboundData* data)
 {
     ///\note This message is mostly handled by EnvironmentModule.
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     msg.SkipToNextVariable(); // RegionFlags U32
@@ -218,27 +220,28 @@ bool NetworkEventHandler::HandleOSNE_RegionHandshake(ProtocolUtilities::NetworkE
     RexLogicModule::LogInfo("Joined to sim " + sim_name);
 
     // Create the "World" scene.
-    boost::shared_ptr<ProtocolUtilities::ProtocolModuleInterface> sp = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
+    boost::shared_ptr<ProtocolModuleInterface> sp = owner_->GetServerConnection()->GetCurrentProtocolModuleWeakPointer().lock();
     if (!sp.get())
     {
         RexLogicModule::LogError("NetworkEventHandler: Could not acquire Protocol Module!");
         return false;
     }
 
-    const ProtocolUtilities::ClientParameters& client = sp->GetClientParameters();
+    const ClientParameters& client = sp->GetClientParameters();
     owner_->GetServerConnection()->SendRegionHandshakeReplyPacket(client.agentID, client.sessionID, 0);
 #ifndef UISERVICE_TEST
     // Tell teleportWidget current region name
     UiServices::UiModule *ui_module = owner_->GetFramework()->GetModule<UiServices::UiModule>();
     if (ui_module)
-        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(QString(owner_->GetServerConnection()->GetSimName().c_str()));
+        ui_module->GetInworldSceneController()->GetControlPanelManager()->GetTeleportWidget()->SetCurrentRegion(
+            owner_->GetServerConnection()->GetSimName().c_str());
 #endif
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_LogoutReply(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     RexUUID aID = msg.ReadUUID();
@@ -255,9 +258,9 @@ bool NetworkEventHandler::HandleOSNE_LogoutReply(ProtocolUtilities::NetworkEvent
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     RexUUID agentid = msg.ReadUUID();
@@ -281,9 +284,9 @@ bool NetworkEventHandler::HandleOSNE_AgentMovementComplete(ProtocolUtilities::Ne
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     uint64_t regionhandle = msg.ReadU64();
@@ -333,9 +336,9 @@ bool NetworkEventHandler::HandleOSNE_ImprovedTerseObjectUpdate(ProtocolUtilities
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_KillObject(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_KillObject(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     // Variable block
@@ -352,9 +355,9 @@ bool NetworkEventHandler::HandleOSNE_KillObject(ProtocolUtilities::NetworkEventI
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_PreloadSound(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     size_t instance_count = data->message->ReadCurrentBlockInstanceCount();
@@ -376,9 +379,9 @@ bool NetworkEventHandler::HandleOSNE_PreloadSound(ProtocolUtilities::NetworkEven
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     std::string asset_id = msg.ReadUUID().ToString(); // Sound asset ID
@@ -395,8 +398,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     static const uint MAX_SOUND_INSTANCE_COUNT = 4;
     uint same_sound_detected = 0;
     sound_id_t sound_to_stop = 0;
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-        owner_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    Foundation::SoundServiceInterface *soundsystem = owner_->GetFramework()->GetService<Foundation::SoundServiceInterface>();
     if (!soundsystem)
         return false;
 
@@ -422,9 +424,9 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(ProtocolUtilities::NetworkEven
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEventInboundData* data)
+bool NetworkEventHandler::HandleOSNE_ScriptDialog(NetworkEventInboundData* data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     std::string object_id = msg.ReadUUID().ToString(); // ObjectID
@@ -452,9 +454,9 @@ bool NetworkEventHandler::HandleOSNE_ScriptDialog(ProtocolUtilities::NetworkEven
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_LoadURL(NetworkEventInboundData *data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     std::string object_name = msg.ReadString(); // FirstName
@@ -472,19 +474,19 @@ bool NetworkEventHandler::HandleOSNE_LoadURL(ProtocolUtilities::NetworkEventInbo
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_MapBlock(NetworkEventInboundData *data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     RexUUID agent_id = msg.ReadUUID();
     uint32_t flags_ = msg.ReadU32();
     size_t instance_count = msg.ReadCurrentBlockInstanceCount();
 
-    QList<ProtocolUtilities::MapBlock> mapBlocks;
+    QList<MapBlock> mapBlocks;
     for (size_t i = 0; i < instance_count; ++i)
     {
-        ProtocolUtilities::MapBlock block;
+        MapBlock block;
         block.agentID = agent_id;
         block.flags = flags_;
         block.regionX = msg.ReadU16();
@@ -505,9 +507,9 @@ bool NetworkEventHandler::HandleOSNE_MapBlock(ProtocolUtilities::NetworkEventInb
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_ScriptTeleport(NetworkEventInboundData *data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     std::string object_name = msg.ReadString(); // Sender name
@@ -559,7 +561,7 @@ bool NetworkEventHandler::HandleOSNE_ScriptTeleport(ProtocolUtilities::NetworkEv
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
 
@@ -571,7 +573,7 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
         DT_FriendshipDeclined = 40, DT_StartTyping = 41, DT_StopTyping = 42 };
 */
 
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
     msg.ResetReading();
 
     std::string from_name = msg.ReadString();
@@ -598,39 +600,39 @@ bool NetworkEventHandler::HandleOSNE_ChatFromSimulator(ProtocolUtilities::Networ
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_ImprovedInstantMessage(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_ImprovedInstantMessage(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_OnlineNotification(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_OnlineNotification(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_OfflineNotification(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_OfflineNotification(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_TerminateFriendship(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_TerminateFriendship(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_DeclineFriendship(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_DeclineFriendship(NetworkEventInboundData *data)
 {
     /// @todo: IMPLEMENT
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_KickUser(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_KickUser(NetworkEventInboundData *data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
 
     msg.ResetReading();
     msg.SkipToFirstVariableByName("AgentID");
@@ -642,15 +644,15 @@ bool NetworkEventHandler::HandleOSNE_KickUser(ProtocolUtilities::NetworkEventInb
         session_id == owner_->GetServerConnection()->GetInfo().sessionID)
     {
         Foundation::EventManagerPtr eventmgr = owner_->GetFramework()->GetEventManager();
-        eventmgr->SendDelayedEvent(eventmgr->QueryEventCategory("NetworkState"), ProtocolUtilities::Events::EVENT_USER_KICKED_OUT, Foundation::EventDataPtr());
+        eventmgr->SendDelayedEvent(eventmgr->QueryEventCategory("NetworkState"), Events::EVENT_USER_KICKED_OUT, EventDataPtr());
     }
 
     return false;
 }
 
-bool NetworkEventHandler::HandleOSNE_EstateOwnerMessage(ProtocolUtilities::NetworkEventInboundData *data)
+bool NetworkEventHandler::HandleOSNE_EstateOwnerMessage(NetworkEventInboundData *data)
 {
-    ProtocolUtilities::NetInMessage &msg = *data->message;
+    NetInMessage &msg = *data->message;
 
     msg.ResetReading();
 
@@ -680,7 +682,5 @@ bool NetworkEventHandler::HandleOSNE_EstateOwnerMessage(ProtocolUtilities::Netwo
     
     return false;
 }
-
-
 
 } //namespace RexLogic

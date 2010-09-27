@@ -1,9 +1,9 @@
 import dotscene
 try:
-    import rexviewer
+    import naali
 except ImportError:
     print "NOTE: dotscene loader not able to access Naali API, is running outiside Naali?"
-    rexviewer = None
+    naali = None
 else:
     import PythonQt.QtGui
     Vec = PythonQt.QtGui.QVector3D
@@ -33,35 +33,29 @@ class OgreNode:
     def attachObject(self, ob):
         self.object = ob
         print self, "attached object", ob
-        if rexviewer is not None: 
+        if naali is not None: 
             self.create_naali_meshentity()
 
     def create_naali_meshentity(self):
-        self.naali_ent = rexviewer.createEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
+        self.naali_ent = naali.createMeshEntity(self.object.mesh, 100002) #XXX handle name too. what about id?
+
         e = self.naali_ent
-        print "Created naali entity:", e, e.id
+        print "Created naali entity:", e, e.Id
             
         """apply pos, rot & scale. 
-        XXX this could skip all conversions, like quat now, 
-        by dotscene.py doing the qt types directly"""
+        dotscene.py uses qt types now directly"""
         p = e.placeable
-        #p.Position = Vec(*self.position)
         mp = self.position
-        #p.Position = Vec(-mp[0], mp[2], mp[1])
-        #p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+200)
-        p.Position = Vec(mp[0]+127, mp[1]+127, mp[2]+25)
-        #print p.Position.toString(), self.position
+        p.Position = self.position
             
-        #print p.Orientation.toString(), self.orientation
-        mo = self.orientation #mock to where dotscene was read
-        o = Quat(mo.w, mo.x, mo.y, mo.z)
-        #print dir(o)
-        o.__imul__(Quat(1, 1, 0, 0))
-        #o.__imul__(Quat(1, 0, 1, 0))
-        p.Orientation = o
-        #print p.Orientation.toString(), o.toString()
+        o = self.orientation
+        # XXX IMO this is wrong: content creators should export their assets correctly, instead of doing
+        # this kind of rotations during import. But I guess this is old problem and similar rotations
+        # are being done elsewhere too.
+        # looks like objects are often exported wrong, so rotate along x axis
+        p.Orientation = o * Quat(1,1,0,0)
 
-        p.Scale = Vec(*self.scale)
+        p.Scale = self.scale
 
 """
 the server side importer in modrex does conversions like this:
@@ -137,7 +131,7 @@ def unload_dotscene(ds):
         # print "removing " + k
         # print oNode.naali_ent.id
         try:
-            rexviewer.removeEntity(oNode.naali_ent.id)
+            naali.removeEntity(oNode.naali_ent)
         except:
             print "failed in unload_dotscene"
 

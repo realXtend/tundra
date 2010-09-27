@@ -30,7 +30,7 @@ namespace Asset
         return description_;
     }
 
-    const time_t RexAssetMetadata::GetCreationDate() const
+    time_t RexAssetMetadata::GetCreationDate() const
     {
         return creation_date_;
     }

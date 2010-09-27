@@ -9,7 +9,7 @@
 #ifndef incl_EC_Billboard_EC_BillBoard_h
 #define incl_EC_Billboard_EC_BillBoard_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -19,8 +19,43 @@ namespace Ogre
     class Billboard;
 }
 
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Billboard</h2>
+Billboard shows a billboard (3D sprite) that is attached to an entity.
+
+
+Registered by Naali::InWorldChatModule.
+
+<b>No Attributes</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Creates and shows billboard.
+    @param imageName Name of the image file. Note the image must be located in the OGRE resource group.
+    @param timeToShow How long this billboard is visible in seconds.
+<li>"Hide: Hides the billboard.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable</b>.  
+</table>
+
+*/
+
 /// EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
-class EC_Billboard : public Foundation::ComponentInterface
+class EC_Billboard : public IComponent
 {
     Q_OBJECT
 
@@ -29,7 +64,7 @@ class EC_Billboard : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Module.
-    explicit EC_Billboard(Foundation::ModuleInterface *module);
+    explicit EC_Billboard(IModule *module);
 
 public:
     /// Destructor.

@@ -83,7 +83,7 @@ class DoorHandler(circuits.BaseComponent):
                 t = ent.touchable
             else:
                 print "touchable pre-existed in door."
-            t.connect('Clicked()', self.open)
+            t.connect('MousePressed()', self.open)
             t.connect('MouseHoverIn()', self.hover_in)
             t.connect('MouseHoverOut()', self.hover_out)
             self.inworld_inited = True
