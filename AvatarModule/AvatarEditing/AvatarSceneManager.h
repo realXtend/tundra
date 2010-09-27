@@ -5,7 +5,7 @@
 
 #include "Foundation.h"
 #include "AvatarModule.h"
-
+#include "UiHelper.h"
 
 #include <QObject>
 #include <QGraphicsScene>
@@ -25,7 +25,9 @@ namespace Avatar
 
     public slots:
         void InitScene();
+        void ToggleScene();
         void ShowScene();
+        void ExitScene();
 
     private slots:
         void SceneChanged(const QString &old_name, const QString &new_name);
@@ -40,6 +42,8 @@ namespace Avatar
         AnchorLayout *scene_layout_;
 
         QWidget *avatar_editor_;
+
+        Helpers::UiHelper *ui_helper_;
     };
 }
 

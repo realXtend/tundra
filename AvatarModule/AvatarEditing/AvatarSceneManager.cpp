@@ -14,7 +14,8 @@ namespace Avatar
         framework_(avatar_module->GetFramework()),
         avatar_editor_(avatar_editor),
         scene_name_("Avatar"),
-        avatar_scene_(0)
+        avatar_scene_(0),
+        ui_helper_(new Helpers::UiHelper(this))
     {
     }
 
@@ -38,19 +39,36 @@ namespace Avatar
         scene_layout_->AddCornerAnchor(editor_proxy, Qt::TopLeftCorner, Qt::TopLeftCorner);
         scene_layout_->AddCornerAnchor(editor_proxy, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
 
+        QGraphicsProxyWidget *toolbar_proxy = ui_helper_->CreateToolbar();
+        scene_layout_->AddCornerAnchor(toolbar_proxy, Qt::TopRightCorner, Qt::TopRightCorner);
+
         ui_service->RegisterScene(scene_name_, avatar_scene_);
         connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), SLOT(SceneChanged(const QString&, const QString&)));
-        connect(ui_service, SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), SLOT(HandleTransferRequest(const QString&, QGraphicsProxyWidget*)));    
+        connect(ui_service, SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), SLOT(HandleTransferRequest(const QString&, QGraphicsProxyWidget*)));
+
+        connect(ui_helper_, SIGNAL(ExitRequest()), SLOT(ExitScene()));
+    }
+
+    void AvatarSceneManager::ToggleScene()
+    {
+        if (avatar_scene_->isActive())
+            ExitScene();
+        else
+            ShowScene();
     }
 
     void AvatarSceneManager::ShowScene()
     {
-        if (avatar_scene_->isActive())
-            return;
-
         Foundation::UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
-        if (ui_service) 
+        if (ui_service)
             ui_service->SwitchToScene(scene_name_);
+    }
+
+    void AvatarSceneManager::ExitScene()
+    {
+        Foundation::UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        if (ui_service)
+            ui_service->SwitchToScene("Inworld");
     }
 
     void AvatarSceneManager::SceneChanged(const QString &old_name, const QString &new_name)
