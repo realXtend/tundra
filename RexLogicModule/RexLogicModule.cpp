@@ -42,8 +42,10 @@
 #include "Avatar/AvatarControllable.h"
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
+
+#include "Camera/ObjectCameraController.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -177,7 +179,8 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
-
+    obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
+    
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
 
@@ -215,6 +218,9 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleInputEvent, obj_camera_controller_, _1, _2));
+    
 
     // Create the input handler that reacts to avatar-related input events and moves the avatar and default camera accordingly.
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
@@ -238,6 +244,8 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleSceneEvent, obj_camera_controller_.get(), _1, _2));
 
     // Resource events
     eventcategoryid = eventMgr->QueryEventCategory("Resource");
@@ -258,6 +266,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleFrameworkEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
@@ -270,7 +280,7 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-
+    
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -287,6 +297,8 @@ void RexLogicModule::PostInitialize()
         "Adds/removes EC_Highlight for every prim and mesh. Usage: highlight(add|remove)."
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
+
+    obj_camera_controller_->PostInitialize();
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const std::string &name)
@@ -543,7 +555,8 @@ void RexLogicModule::CameraTripod()
 void RexLogicModule::FocusOnObject(float x, float y, float z)
 {
     camera_state_ = CS_FocusOnObject;
-    camera_controllable_->SetFocusOnObject(x, y, z);
+    //camera_controllable_->SetFocusOnObject(x, y, z);
+    //obj_camera_controller_->FocusOnObject(x, y, z);
 }
 
 void RexLogicModule::ResetCameraState()
@@ -965,6 +978,7 @@ void RexLogicModule::EntityClicked(Scene::Entity* entity)
     boost::shared_ptr<EC_3DCanvasSource> canvas_source = entity->GetComponent<EC_3DCanvasSource>();
     if (canvas_source)
         canvas_source->Clicked();
+    obj_camera_controller_->EntityClicked(entity);
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const

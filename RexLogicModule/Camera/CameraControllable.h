@@ -6,6 +6,8 @@
 #include "InputEvents.h"
 #include "ForwardDefines.h"
 #include "Vector3D.h"
+#include "SceneManager.h"
+#include "Entity.h"
 #include <QObject>
 #include <QMap>
 
@@ -125,6 +127,9 @@ namespace RexLogic
         //! Rotate camera around the point that is clicked on
         void RotateCameraAroundObject();
         void FocusOnObjectZoom();
+        Scene::EntityPtr GetCameraEntity();
+        void SetThirdPersonLookAt(Vector3df lookat) { third_person_lookat_ = lookat; };
+        Vector3df GetThirdPersonLookAt() { return third_person_lookat_; };
 
     private:
         typedef std::map<int, Vector3df> ActionTransMap;
@@ -152,6 +157,8 @@ namespace RexLogic
 
         //! first person camera offset
         Vector3df camera_offset_firstperson_;
+
+        Vector3df third_person_lookat_;
 
         //! move speed
         float sensitivity_;
