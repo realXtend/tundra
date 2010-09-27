@@ -13,13 +13,16 @@ class QGraphicsItem;
 class QGraphicsView;
 class QWidget;
 
-class InputServiceInterface : public Foundation::ServiceInterface
+class InputServiceInterface : public QObject, public Foundation::ServiceInterface
 {
+    Q_OBJECT
+
 public:
     InputServiceInterface() {}
     virtual ~InputServiceInterface() {}
 
-	virtual QGraphicsItem *GetVisibleItemAtCoords(int x, int y) = 0;
+public slots:
+    virtual QGraphicsItem *GetVisibleItemAtCoords(int x, int y) = 0;
     virtual void SetMouseCursorVisible(bool visible) = 0;
     virtual bool IsMouseCursorVisible() const = 0;
     virtual bool IsKeyDown(Qt::Key keyCode) const = 0;

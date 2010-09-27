@@ -55,6 +55,7 @@
 #include "LoginServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
+#include "SoundServiceInterface.h"
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
@@ -1983,6 +1984,10 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
+
+            PythonQt::self()->registerClass(&Foundation::UiServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&Foundation::SoundServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&InputServiceInterface::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);

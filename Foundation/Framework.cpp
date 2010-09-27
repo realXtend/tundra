@@ -620,16 +620,6 @@ namespace Foundation
         engine_->SetUIView(view);
     }
 
-    SoundServiceInterface *Framework::Audio()
-    {
-        boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
-                GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
-        if (!sound_logic.get())
-            throw Exception("Fatal: Sound service not present!");
-
-        return sound_logic.get();
-    }
-
     ComponentManagerPtr Framework::GetComponentManager() const
     {
         return component_manager_;
@@ -685,7 +675,7 @@ namespace Foundation
         return ui.get();
     }
 
-    InputServiceInterface *Framework::Input()
+    InputServiceInterface *Framework::Input() const
     {
         boost::shared_ptr<InputServiceInterface> input_logic = GetServiceManager()->
                 GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
@@ -693,6 +683,16 @@ namespace Foundation
             throw Exception("Fatal: Input service not present!");
 
         return input_logic.get();
+    }
+
+    SoundServiceInterface *Framework::Audio() const
+    {
+        boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
+                GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        if (!sound_logic.get())
+            throw Exception("Fatal: Sound service not present!");
+
+        return sound_logic.get();
     }
 
     Scene::ScenePtr Framework::GetScene(const QString &name) const

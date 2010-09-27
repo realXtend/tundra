@@ -267,7 +267,7 @@ namespace Foundation
         UiServiceInterface *Ui() const;
 
         /// Returns the Naali core API Input object.
-        InputServiceInterface *Input();
+        InputServiceInterface *Input() const;
 
         /// Returns the Naali core API Frame object.
         Frame *GetFrame() const { return frame_; }
@@ -276,7 +276,7 @@ namespace Foundation
         ScriptConsole *Console() const { return console_; }
 
         /// Returns the Naali core API Audio object.
-        SoundServiceInterface *Audio();
+        SoundServiceInterface *Audio() const;
 
     signals:
         /// Emitted after new scene has been added to framework.

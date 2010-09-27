@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneInteract.cpp
- *  @brief  Executes Entity Action for scene entities.
+ *  @brief  Transforms generic mouse and keyboard input events to 
+ *          input-related Entity Action for scene entities.
  */
 
 #include "StableHeaders.h"
@@ -78,14 +79,24 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
     if (lastHitEntity_.lock())
     {
-        if (e->eventType == MouseEvent::MousePressed)
+        /// @todo handle all mouse events properly
+        switch(e->eventType)
         {
-            lastHitEntity_.lock()->Exec("MousePress");  
+        case  MouseEvent::MouseMove:
+            break;
+        case  MouseEvent::MouseScroll:
+            break;
+        case  MouseEvent::MousePressed:
+            lastHitEntity_.lock()->Exec("MousePress");
             emit EntityClicked(lastHitEntity_.lock().get());
+            break;
+        case  MouseEvent::MouseReleased:
+            break;
+        case  MouseEvent::MouseDoubleClicked:
+            break;
+        default:
+            break;
         }
-    
-        // handle all mouse events
-        //...
     }
 }
 
