@@ -61,9 +61,11 @@
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
 #include "SceneInteract.h"
+
+#include "Camera/ObjectCameraController.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -269,7 +271,8 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
-
+    obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
+    
     SceneInteract *sceneInteract = new SceneInteract(framework_);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
@@ -306,6 +309,9 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleInputEvent, obj_camera_controller_, _1, _2));
+    
 
     // Create the input handler that reacts to avatar-related input events and moves the avatar and default camera accordingly.
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
@@ -323,6 +329,8 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleSceneEvent, obj_camera_controller_.get(), _1, _2));
 
     // Resource events
     eventcategoryid = eventMgr->QueryEventCategory("Resource");
@@ -333,6 +341,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleFrameworkEvent, obj_camera_controller_.get(), _1, _2));
 
     // Avatar events
     eventcategoryid = eventMgr->QueryEventCategory("Avatar");
@@ -350,7 +360,7 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-
+    
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -369,6 +379,8 @@ void RexLogicModule::PostInitialize()
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 #endif
+
+    obj_camera_controller_->PostInitialize();
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
@@ -647,7 +659,8 @@ void RexLogicModule::CameraTripod()
 void RexLogicModule::FocusOnObject(float x, float y, float z)
 {
     camera_state_ = CS_FocusOnObject;
-    camera_controllable_->SetFocusOnObject(x, y, z);
+    //camera_controllable_->SetFocusOnObject(x, y, z);
+    //obj_camera_controller_->FocusOnObject(x, y, z);
 }
 
 void RexLogicModule::ResetCameraState()
@@ -1137,6 +1150,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
+            obj_camera_controller_->EntityClicked(result->entity_);
             EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
             if (widget)
                 widget->EntityClicked();
