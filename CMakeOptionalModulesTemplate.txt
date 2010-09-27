@@ -16,8 +16,6 @@
 add_subdirectory (DebugStatsModule)
 
 add_subdirectory (PythonScriptModule)
-AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent) # declared by PythonScriptModule
-AddEntityComponent(EntityComponents/EC_Script EC_Script)           # declared by PythonScriptModule
 add_subdirectory (TelepathyIMModule)
 add_subdirectory (OpenALAudioModule)
 add_subdirectory (ECEditorModule)
