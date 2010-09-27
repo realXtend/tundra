@@ -5,32 +5,23 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
-#include <QtGui/qquaternion.h>
-#include <QtGui/qvector3d.h>
 
-namespace Ogre
-{
-    class SceneNode;
-}
-
-
+#include <QQuaternion>
+#include <QVector3D>
 
 namespace OgreRenderer
 {
-    class Renderer;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-	/**
+//! Ogre placeable (scene node) component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgrePlaceable</h2>
-		(scene node) component.
+Ogre (scene node) component.
 
 Registered by OgreRenderer::OgreRenderingModule.
 
@@ -53,10 +44,7 @@ Does not emit any actions.
 
 <b>Doesn't depend on any components</b>.
 </table>
-*/   
-	//! Ogre placeable (scene node) component
-    /*! \ingroup OgreRenderingModuleClient
-     */
+*/
     class OGRE_MODULE_API EC_OgrePlaceable : public IComponent
     {
         DECLARE_EC(EC_OgrePlaceable);

@@ -5,30 +5,24 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Declare_EC.h"
-
-namespace Ogre
-{
-    class Camera;
-}
-
 
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-	/**
+
+/// Ogre camera entity component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreCamera</h2>
 Ogre camera entity component
+Needs to be attached to a placeable (aka scene node) to be useful.
 
 Registered by OgreRenderer::OgreRenderingModule.
+
+\ingroup OgreRenderingModuleClient
 
 <b>No Attributes</b>.
 
@@ -63,10 +57,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    //! Ogre camera entity component
-    /*! Needs to be attached to a placeable (aka scene node) to be useful.
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreCamera : public IComponent
     {
         Q_OBJECT

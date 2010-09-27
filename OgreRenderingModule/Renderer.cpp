@@ -372,7 +372,7 @@ namespace OgreRenderer
     {
         resource_handler_->PostInitialize();
         cave_manager_->InitializeUi();
-		stereo_controller_->InitializeUi();
+        stereo_controller_->InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -383,13 +383,10 @@ namespace OgreRenderer
             main_window_->showNormal();
     }
 
-
-	QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
-	{
-		
-		return cave_manager_->getExternalWindows();
-
-	}
+    QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
+    {
+        return cave_manager_->getExternalWindows();
+    }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
     {

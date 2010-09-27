@@ -45,7 +45,7 @@ namespace WorldBuilding
         SubscribeToEventCategories();
 
         // Register building key context
-        input_context_ = GetFramework()->Input().RegisterInputContext("WorldBuildingContext", 90);
+        input_context_ = GetFramework()->Input()->RegisterInputContext("WorldBuildingContext", 90);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyReleased(KeyEvent*)));
     }
