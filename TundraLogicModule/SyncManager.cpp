@@ -5,10 +5,12 @@
 #include "CoreStringUtils.h"
 #include "DebugOperatorNew.h"
 #include "KristalliProtocolModule.h"
+#include "KristalliProtocolModuleEvents.h"
 #include "SyncManager.h"
 #include "SceneManager.h"
 #include "Entity.h"
 #include "TundraLogicModule.h"
+#include "TundraMessages.h"
 #include "MsgCreateEntity.h"
 #include "MsgCreateComponents.h"
 #include "MsgUpdateComponents.h"
@@ -76,6 +78,58 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
         this, SLOT( OnEntityRemoved(Scene::Entity*, AttributeChange::Type) ));
 }
 
+void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
+{
+    if (event_id == KristalliProtocol::Events::NETMESSAGE_IN)
+    {
+        KristalliProtocol::Events::KristalliNetMessageIn* eventData = checked_static_cast<KristalliProtocol::Events::KristalliNetMessageIn*>(data);
+        HandleKristalliMessage(eventData->source, eventData->id, eventData->data, eventData->numBytes);
+    }
+}
+
+void SyncManager::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
+{
+    switch (id)
+    {
+    case cCreateEntityMessage:
+        {
+            MsgCreateEntity msg(data, numBytes);
+            HandleCreateEntity(source, msg);
+        }
+        break;
+    case cRemoveEntityMessage:
+        {
+            MsgRemoveEntity msg(data, numBytes);
+            HandleRemoveEntity(source, msg);
+        }
+        break;
+    case cCreateComponentsMessage:
+        {
+            MsgCreateComponents msg(data, numBytes);
+            HandleCreateComponents(source, msg);
+        }
+        break;
+    case cUpdateComponentsMessage:
+        {
+            MsgUpdateComponents msg(data, numBytes);
+            HandleUpdateComponents(source, msg);
+        }
+        break;
+    case cRemoveComponentsMessage:
+        {
+            MsgRemoveComponents msg(data, numBytes);
+            HandleRemoveComponents(source, msg);
+        }
+        break;
+    case cEntityIDCollisionMessage:
+        {
+            MsgEntityIDCollision msg(data, numBytes);
+            HandleEntityIDCollision(source, msg);
+        }
+        break;
+    }
+}
+
 void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
 {
     PROFILE(SyncManager_NewUserConnected);
@@ -114,7 +168,7 @@ void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type cha
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -140,7 +194,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -166,7 +220,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -188,7 +242,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -212,7 +266,7 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
     
     if (owner_->IsServer())
     {
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -245,7 +299,7 @@ void SyncManager::Update(f64 frametime)
     if (owner_->IsServer())
     {
         // If we are server, process all users
-        KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+        KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
         for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
@@ -256,7 +310,7 @@ void SyncManager::Update(f64 frametime)
     else
     {
         // If we are client, process just the server sync state
-        MessageConnection* connection = owner_->ClientGetConnection();
+        MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
         if (connection)
             ProcessSyncState(connection, &server_syncstate_);
     }
@@ -442,7 +496,7 @@ bool SyncManager::ValidateAction(MessageConnection* source, unsigned messageID, 
         return true;
     
     // And for now, always also trust scene actions from clients, if they are known and authenticated
-    KristalliProtocol::UserConnection* user = owner_->GetUserConnection(source);
+    KristalliProtocol::UserConnection* user = owner_->GetKristalliModule()->GetUserConnection(source);
     if ((!user) || (!user->authenticated))
         return false;
     
@@ -826,7 +880,7 @@ SceneSyncState* SyncManager::GetSceneSyncState(MessageConnection* connection)
     if (!owner_->IsServer())
         return &server_syncstate_;
     
-    KristalliProtocol::UserConnectionList& users = owner_->ServerGetUserConnections();
+    KristalliProtocol::UserConnectionList& users = owner_->GetKristalliModule()->GetUserConnections();
     for (KristalliProtocol::UserConnectionList::iterator i = users.begin(); i != users.end(); ++i)
     {
         if (i->connection == connection)
