@@ -7,8 +7,6 @@
 #include "SceneEvents.h"
 #include "Renderer.h"
 
-#include "Avatar/Avatar.h"
-
 #include "Entity.h"
 #include <QApplication>
 
@@ -61,7 +59,7 @@ namespace RexLogic
         SubscribeToEventCategories();
 
         // Register building key context
-        input_context_ = framework_->Input().RegisterInputContext("ObjectCameraContext", 100);
+        input_context_ = framework_->Input()->RegisterInputContext("ObjectCameraContext", 100);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), this, SLOT(KeyReleased(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(MouseMove(MouseEvent*)));
@@ -281,7 +279,7 @@ namespace RexLogic
         cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
         cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic()));
         scene->EmitEntityCreated(cam_entity);
-        Foundation::ComponentInterfacePtr component_placable = cam_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr component_placable = cam_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
 
         if (!component_placable.get() || !ec_camera)

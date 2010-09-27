@@ -274,6 +274,7 @@ void RexLogicModule::Initialize()
     obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
+    QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -1150,7 +1151,6 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
-            obj_camera_controller_->EntityClicked(result->entity_);
             EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
             if (widget)
                 widget->EntityClicked();

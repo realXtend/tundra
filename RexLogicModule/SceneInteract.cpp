@@ -79,8 +79,11 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
     if (lastHitEntity_.lock())
     {
         if (e->eventType == MouseEvent::MousePressed)
-            lastHitEntity_.lock()->Exec("MousePress");
-
+        {
+            lastHitEntity_.lock()->Exec("MousePress");  
+            emit EntityClicked(lastHitEntity_.lock().get());
+        }
+    
         // handle all mouse events
         //...
     }

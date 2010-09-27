@@ -64,6 +64,9 @@ private slots:
     /** @param e Mouse event.
     */
     void HandleMouseEvent(MouseEvent *e);
+
+signals:
+    void EntityClicked(Scene::Entity *entity);
 };
 
 #endif
