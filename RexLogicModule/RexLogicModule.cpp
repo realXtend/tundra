@@ -1058,7 +1058,6 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
 
 #endif
     }
-    obj_camera_controller_->EntityClicked(entity);
 }
 
 InWorldChatProviderPtr RexLogicModule::GetInWorldChatProvider() const
@@ -1151,6 +1150,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
         //if true, the entity is closer to camera
         if (Ogre::Vector3(ent_pos-cam_pos).length()<Ogre::Vector3(nearest_world_pos-cam_pos).length())
         {
+            obj_camera_controller_->EntityClicked(result->entity_);
             EC_HoveringWidget* widget = result->entity_->GetComponent<EC_HoveringWidget>().get();
             if (widget)
                 widget->EntityClicked();
