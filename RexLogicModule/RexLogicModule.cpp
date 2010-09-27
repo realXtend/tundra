@@ -973,14 +973,14 @@ void RexLogicModule::UpdateSoundListener()
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
         EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
-        if (listener && !listener->IsActive())
-            listener->SetActive(true);
+        if (listener && !listener->active.Get())
+            listener->active.Set(true, AttributeChange::Local);
     }
     else if (GetUserAvatarEntity())
     {
         EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
-        if (listener && !listener->IsActive())
-            listener->SetActive(true);
+        if (listener && !listener->active.Get())
+            listener->active.Set(true, AttributeChange::Local);
     }
 #endif
 }
