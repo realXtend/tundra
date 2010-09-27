@@ -19,6 +19,8 @@ struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
 
+typedef unsigned long message_id_t;
+
 namespace KristalliProtocol
 {
     struct UserConnection;
@@ -63,32 +65,47 @@ public:
     //! Create new replication state for user and dirty it (server operation only)
     void NewUserConnected(KristalliProtocol::UserConnection* user);
     
-    //! Handle create entity message
-    void HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg);
-    //! Handle remove entity message
-    void HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg);
-    //! Handle create components message
-    void HandleCreateComponents(MessageConnection* source, const MsgCreateComponents& msg);
-    //! Handle update components message
-    void HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg);
-    //! Handle remove components message
-    void HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg);
-    //! Handle entityID collision message
-    void HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg);
+    //! Handle Kristalli event
+    void HandleKristalliEvent(event_id_t event_id, IEventData* data);
     
 private slots:
     //! Trigger EC sync because of component attributes changing
     void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
+    
     //! Trigger EC sync because of component added to entity
     void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    
     //! Trigger EC sync because of component removed from entity
     void OnComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+    
     //! Trigger sync of entity creation
     void OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change);
+    
     //! Trigger sync of entity removal
     void OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
     
 private:
+    /// Handle a Kristalli protocol message
+    void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
+    
+    //! Handle create entity message
+    void HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg);
+    
+    //! Handle remove entity message
+    void HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg);
+    
+    //! Handle create components message
+    void HandleCreateComponents(MessageConnection* source, const MsgCreateComponents& msg);
+    
+    //! Handle update components message
+    void HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg);
+    
+    //! Handle remove components message
+    void HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg);
+    
+    //! Handle entityID collision message
+    void HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg);
+    
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages

@@ -6,36 +6,24 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
-struct MsgLogin;
-struct MsgLoginReply;
-struct MsgClientJoined;
-struct MsgClientLeft;
 class MessageConnection;
 
 typedef unsigned long message_id_t;
 
 namespace KristalliProtocol
 {
-    struct UserConnection;
     class KristalliProtocolModule;
-    typedef std::list<UserConnection> UserConnectionList;
 }
 
 namespace TundraLogic
 {
 
+class Client;
+class Server;
 class SyncManager;
 
 class TundraLogicModule : public IModule
 {
-    enum ClientLoginState
-    {
-        NotConnected = 0,
-        ConnectionPending,
-        Connected,
-        LoggedIn
-    };
-    
 public:
     /// Default constructor.
     TundraLogicModule();
@@ -86,74 +74,32 @@ public:
     
     /// Imports a dotscene
     Console::CommandResult ConsoleImportScene(const StringVector& params);
-
-    /// Check whether we are a server (from KristalliProtocolModule)
+    
+    /// Check whether we are a server
     bool IsServer() const;
     
-    /// Create server scene & start server
-    void ServerStart(unsigned short port);
+    /// Return pointer to KristalliProtocolModule for convenience
+    const boost::shared_ptr<KristalliProtocol::KristalliProtocolModule>& GetKristalliModule() const { return kristalliModule_; }
     
-    /// Stop server & delete server scene
-    void ServerStop();
+    /// Return syncmanager
+    const boost::shared_ptr<SyncManager>& GetSyncManager() const { return syncManager_; }
     
-    /// Get matching userconnection from a messageconnection, or null if unknown
-    KristalliProtocol::UserConnection* GetUserConnection(MessageConnection* source);
+    /// Return client
+    const boost::shared_ptr<Client>& GetClient() const { return client_; }
     
-    /// Get connected users from KristalliProtocolModule
-    KristalliProtocol::UserConnectionList& ServerGetUserConnections();
-    
-    /// Connect and login
-    void ClientLogin(const std::string& address, unsigned short port, const std::string& username, const std::string& password);
-    
-    /// Disconnect and delete client scene
-    /// \param fail True if logout was due to connection/login failure
-    void ClientLogout(bool fail = false);
-    
-    /// Get connection/login state
-    ClientLoginState ClientGetLoginState() { return loginstate_; }
-    
-    /// Get client message connection from KristalliProtocolModule
-    MessageConnection* ClientGetConnection();
-    
-    /// Get client connection ID (from loginreply message)
-    u8 ClientGetConnectionID() { return client_id_; }
+    /// Return server
+    const boost::shared_ptr<Server>& GetServer() const { return server_; }
     
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
     
-    /// Server: Handle a user disconnecting
-    void ServerHandleUserDisconnected(KristalliProtocol::UserConnection* user);
-    
-    /// Server: Handle a login message
-    void ServerHandleLogin(MessageConnection* source, const MsgLogin& msg);
-    
-    /// Client: handle pending login to server
-    void ClientCheckLogin();
-    
-    /// Client: Handle a loginreply message
-    void ClientHandleLoginReply(MessageConnection* source, const MsgLoginReply& msg);
-    
-    /// Client: Handle a client joined message
-    void ClientHandleClientJoined(MessageConnection* source, const MsgClientJoined& msg);
-    
-    /// Client: Handle a client left message
-    void ClientHandleClientLeft(MessageConnection* source, const MsgClientLeft& msg);
-    
-    /// Client's connection/login state
-    ClientLoginState loginstate_;
-    /// Whether the connect attempt is a reconnect because of dropped connection
-    bool reconnect_;
-    
-    /// Stored username for login
-    std::string username_;
-    /// Stored password for login
-    std::string password_;
-    /// User ID, once known
-    u8 client_id_;
-    
     /// Sync manager
     boost::shared_ptr<SyncManager> syncManager_;
+    /// Client
+    boost::shared_ptr<Client> client_;
+    /// Server
+    boost::shared_ptr<Server> server_;
     
     /// Kristalli event category
     event_category_id_t kristalliEventCategory_;
