@@ -9,7 +9,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES RexLogicModule.h EventHandlers/LoginHandler.h RexMovementInput.h
     EventHandlers/MainPanelHandler.h EntityComponent/EC_*.h Environment/Primitive.h Communications/*.h
-    Communications/InWorldChat/*.h SceneInteract.h Camera/ObjectCameraController.h)
+    Communications/InWorldChat/*.h Camera/ObjectCameraController.h SceneInteract.h)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)

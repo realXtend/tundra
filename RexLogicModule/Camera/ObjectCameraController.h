@@ -8,7 +8,9 @@
 #include "Foundation.h"
 #include "CameraControllable.h"
 #include "InputServiceInterface.h"
-#include "ModuleInterface.h"
+//#include "ModuleInterface.h"
+#include "IModule.h"
+#include "IEventData.h"
 #include "Renderer.h"
 #include "RexLogicModule.h"
 
@@ -45,12 +47,12 @@ namespace RexLogic
         ~ObjectCameraController();
 
         //! Input event handler for handling controllable events
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Scene event handler for handling controllable events
-        bool HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleSceneEvent(event_id_t event_id, IEventData* data);
 
-        bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
 
         void RotateObject(qreal x, qreal y);
 

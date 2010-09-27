@@ -75,17 +75,17 @@ namespace RexLogic
         connect(timeline_, SIGNAL(finished()), this, SLOT(TimeLineFinished()));
     }
 
-    bool ObjectCameraController::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ObjectCameraController::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         return false;
     }
 
-    bool ObjectCameraController::HandleSceneEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ObjectCameraController::HandleSceneEvent(event_id_t event_id, IEventData* data)
     {
         return false;
     }
 
-    bool ObjectCameraController::HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool ObjectCameraController::HandleFrameworkEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Foundation::WORLD_STREAM_READY)
         {
