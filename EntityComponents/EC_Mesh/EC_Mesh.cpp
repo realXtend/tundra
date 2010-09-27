@@ -51,6 +51,8 @@ EC_Mesh::EC_Mesh(IModule *module):
     }
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_Mesh::~EC_Mesh()
@@ -208,12 +210,6 @@ bool EC_Mesh::HasMaterialsChanged() const
 
 void EC_Mesh::UpdateSignals()
 {
-    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
-    if(!GetParentEntity())
-        return;
-
-    connect(this, SIGNAL(AttributeChanged(IAttribute*, AttributeChange::Type)),
-            this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 void EC_Mesh::AttributeUpdated(IAttribute *attribute)

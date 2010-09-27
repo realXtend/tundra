@@ -87,7 +87,7 @@ public slots:
 
 private slots:
     void UpdateSignals();
-    void AttributeUpdated(IComponent *component, IAttribute *attribute);
+    void AttributeUpdated(IAttribute *attribute);
     /// Registers the action this EC provides to the parent entity, when it's set.
     void RegisterActions();
 
