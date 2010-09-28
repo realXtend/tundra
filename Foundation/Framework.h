@@ -20,6 +20,7 @@ class QGraphicsView;
 class QWidget;
 class QObject;
 
+class ISoundService;
 class InputServiceInterface;
 class UiServiceInterface;
 class Frame;
@@ -34,7 +35,6 @@ namespace Poco
 
 namespace Foundation
 {
-    class SoundServiceInterface;
     class FrameworkQtApplication;
     class KeyStateListener;
     class MainWindow;
@@ -276,7 +276,7 @@ namespace Foundation
         ScriptConsole *Console() const { return console_; }
 
         /// Returns the Naali core API Audio object.
-        SoundServiceInterface *Audio() const;
+        ISoundService *Audio() const;
 
     signals:
         /// Emitted after new scene has been added to framework.

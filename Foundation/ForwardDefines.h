@@ -13,6 +13,8 @@
 
 #include <vector>
 
+class ISoundService;
+
 namespace Scene
 {
     class Entity;

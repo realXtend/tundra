@@ -20,7 +20,7 @@
 #include "FrameworkQtApplication.h"
 #include "CoreException.h"
 #include "InputServiceInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Frame.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
@@ -684,10 +684,10 @@ namespace Foundation
         return input_logic.get();
     }
 
-    SoundServiceInterface *Framework::Audio() const
+    ISoundService *Framework::Audio() const
     {
-        boost::shared_ptr<SoundServiceInterface> sound_logic = GetServiceManager()->
-                GetService<SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_logic = GetServiceManager()->
+                GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!sound_logic.get())
 //            throw Exception("Fatal: Sound service not present!");
             RootLogWarning("Framework::Audio(): Sound service not present!");

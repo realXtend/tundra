@@ -35,10 +35,10 @@ Registered by RexLogic::RexLogicModule.
         @param soundRadius The radius for the sound to be heard at
         @param soundVolume The volume for the sound to play at
 <li>"AddSound": Add sound to entity. 
-        @param sound Channel id from SoundServiceInterface
+        @param sound Channel id from ISoundService
         @param slot Sound slot definition
 <li>"RemoveSound": Stop and remove sound from entity by channel id or by sound slot
-        @param sound Channel id from SoundServiceInterface
+        @param sound Channel id from ISoundService
         or
         @param slot Sound slot definition, only OpenSimAttachedSound or RexAmbientSound will have effect
 <li>"RemoveAllSounds": Stop and remove all sounds from entity.
@@ -88,13 +88,13 @@ Does not emit any actions.
         void SetSound(const QString& name, QVector3D& pos, float soundRadius, float soundVolume);
 
         //! Add sound to entity. 
-        /*! \param sound Channel id from SoundServiceInterface
+        /*! \param sound Channel id from ISoundService
             \param slot Sound slot definition
          */
         void AddSound(sound_id_t sound, SoundSlot slot = Other);
 
         //! Stop and remove sound from entity by channel id
-        /*! \param sound Channel id from SoundServiceInterface
+        /*! \param sound Channel id from ISoundService
          */
         void RemoveSound(sound_id_t sound);
 

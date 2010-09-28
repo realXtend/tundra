@@ -8,7 +8,7 @@
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
@@ -42,7 +42,7 @@ void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
     if(attribute->GetNameString() == soundId.GetNameString())
     {
-        Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundService = framework_->GetService<ISoundService>();
         if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get())
             StopSound();
     }
@@ -71,7 +71,7 @@ void EC_Sound::PlaySound()
     triggerSound.Set(false, AttributeChange::LocalOnly);
     ComponentChanged(AttributeChange::LocalOnly);
 
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->GetService<ISoundService>();
     if(!soundService)
     {
         // log warning
@@ -84,21 +84,21 @@ void EC_Sound::PlaySound()
     OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundId.Get(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
+        sound_id_ = soundService->PlaySound3D(soundId.Get(), ISoundService::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain.Get());
         soundService->SetLooped(sound_id_, loopSound.Get());
         soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundId.Get(), Foundation::SoundServiceInterface::Ambient);
+        sound_id_ = soundService->PlaySound(soundId.Get(), ISoundService::Ambient);
         soundService->SetGain(sound_id_, soundGain.Get());
     }
 }
 
 void EC_Sound::StopSound()
 {
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->GetService<ISoundService>();
     if (soundService)
         soundService->StopSound(sound_id_);
 
@@ -107,7 +107,7 @@ void EC_Sound::StopSound()
 
 void EC_Sound::UpdateSoundSettings()
 {
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->GetService<ISoundService>();
     if(!soundService || !sound_id_)
     {
         // log warning

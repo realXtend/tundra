@@ -2,7 +2,7 @@
 #ifndef incl_OpenALAudio_SoundSystem_h
 #define incl_OpenALAudio_SoundSystem_h
 
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Sound.h"
 #include "SoundChannel.h"
 
@@ -22,7 +22,7 @@ namespace OpenALAudio
     typedef std::map<std::string, SoundPtr> SoundMap;
       
     //! Sound service implementation. Owned by OpenALAudioModule.
-    class SoundSystem : public Foundation::SoundServiceInterface
+    class SoundSystem : public ISoundService
     {
     public:
         //! Constructor. Initializes OpenAL audio using default device.
@@ -56,13 +56,13 @@ namespace OpenALAudio
         /*! \param type Sound channel type to adjust
             \param master_gain New master gain, in range 0.0 - 1.0
          */
-        virtual void SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, float master_gain);
+        virtual void SetSoundMasterGain(ISoundService::SoundType type, float master_gain);
         
         //! Gets master gain of whole sound system
         virtual float GetMasterGain();
         
         //! Sets master gain of certain sound types
-        virtual float GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type);        
+        virtual float GetSoundMasterGain(ISoundService::SoundType type);        
         
         //! Plays non-positional sound
         /*! \param name Sound file name or asset id
@@ -70,7 +70,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)
          */
-        virtual sound_id_t PlaySound(const QString& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound(const QString& name, ISoundService::SoundType type = Triggered, bool local = false, sound_id_t channel = 0);
         
         //! Plays positional sound. Returns sound id to adjust parameters
         /*! \param name Sound file name or asset id
@@ -79,7 +79,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful (in case of loading from asset, actual sound may start later)            
          */
-        virtual sound_id_t PlaySound3D(const QString& name, Foundation::SoundServiceInterface::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
+        virtual sound_id_t PlaySound3D(const QString& name, ISoundService::SoundType type = Triggered, bool local = false, Vector3df position = Vector3df::ZERO, sound_id_t channel = 0);
 
         //! Buffers sound data into a non-positional channel
         /*! Note: use the returned channel id for continuing to feed the sound stream.
@@ -89,7 +89,7 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful
          */
-        virtual sound_id_t PlaySoundBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, sound_id_t channel = 0);
+        virtual sound_id_t PlaySoundBuffer(const ISoundService::SoundBuffer& buffer, ISoundService::SoundType type = Triggered, sound_id_t channel = 0);
         
         //! Buffers sound data into a positional channel
         /*! Note: use the returned channel id for continuing to feed the sound stream.
@@ -100,13 +100,13 @@ namespace OpenALAudio
             \param channel Channel id. If non-zero, and is a valid channel, will use that channel instead of making new
             \return nonzero channel id, if successful
          */
-        virtual sound_id_t PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0);
+        virtual sound_id_t PlaySoundBuffer3D(const ISoundService::SoundBuffer& buffer, ISoundService::SoundType type = Triggered, Vector3df position = Vector3df(0.0f, 0.0f, 0.0f), sound_id_t channel = 0);
 
         //! Gets state of channel
         /*! \param id Channel id
             \return Current state (stopped, pending & loading sound asset, playing)
          */
-        virtual Foundation::SoundServiceInterface::SoundState GetSoundState(sound_id_t id) const;
+        virtual ISoundService::SoundState GetSoundState(sound_id_t id) const;
         
         //! Gets all non-stopped channels id's
         virtual std::vector<sound_id_t> GetActiveSounds() const;
@@ -121,7 +121,7 @@ namespace OpenALAudio
         /*! \param id Channel id
             \return Sound type
          */
-        virtual Foundation::SoundServiceInterface::SoundType GetSoundType(sound_id_t id) const;
+        virtual ISoundService::SoundType GetSoundType(sound_id_t id) const;
         
         //! Stops sound that's playing & destroys the channel
         /*! \param id Channel id
@@ -179,7 +179,13 @@ namespace OpenALAudio
             If outer_radius is 0, there will be no attenuation (sound is always played at gain)
             Also, for non-positional channels the range parameters have no effect.
          */
-        virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff); 
+        virtual void SetRange(sound_id_t id, float inner_radius, float outer_radius, float rolloff);
+
+        //! Request decoded sound resource. Note: this is strictly for inspecting the sound data, not needed for playback
+        /*! \param assetid sound asset id. Assumed to be ogg format
+            \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
+         */ 
+        virtual request_tag_t RequestSoundResource(const QString& assetid);
 
     public:
         //! Get recording device names
@@ -207,12 +213,6 @@ namespace OpenALAudio
             \return Amount of bytes returned
          */
         virtual uint GetRecordedSoundData(void* buffer, uint size);
-
-        //! Request decoded sound resource. Note: this is strictly for inspecting the sound data, not needed for playback
-        /*! \param assetid sound asset id. Assumed to be ogg format
-            \return Request tag; a matching RESOURCE_READY event with this tag will be sent once sound has been decoded
-         */ 
-        virtual request_tag_t RequestSoundResource(const QString& assetid);
         
         //! Update. Cleans up channels not playing anymore, and checks sound cache. Called from OpenALAudioModule.
         void Update(f64 frametime);
@@ -282,7 +282,7 @@ namespace OpenALAudio
         //! Master gain for whole sound system
         float master_gain_;
         //! Master gain for individual sound types
-        std::map<Foundation::SoundServiceInterface::SoundType, float> sound_master_gain_;
+        std::map<ISoundService::SoundType, float> sound_master_gain_;
 
         boost::mutex mutex;
     };
