@@ -55,7 +55,7 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type type)
     plane->positionAttr_.Set(vec, type);
     plane->ComponentChanged(type);
     
-    //emit WaterCreated();    
+   
 
  }
 
@@ -65,14 +65,18 @@ void Water::RemoveWaterGeometry()
     Scene::Entity* entity = active_scene->GetEntityByName("Environment").get();
     
     if ( entity == 0)
-        return;
-    else
-    {   
-        entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()),AttributeChange::Local);  
+    {
+       entity = active_scene->GetEntityByName("LocalEnvironment").get();
+       if ( entity == 0)
+           return;
     }
+    
+       
+    entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()),AttributeChange::Local);  
+    
 
   
-    //emit WaterRemoved();
+   
 }
 
 void Water::Update()
@@ -81,7 +85,7 @@ void Water::Update()
     // Now we need to update scene, if there exist a real enviroment entity, so that we do not get two ocean water planes. 
     
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
-    if ( plane != 0)
+    if ( IsWaterPlane())
     {
         emit ExistWater(true);
     }
@@ -111,10 +115,15 @@ EC_WaterPlane* Water::GetEnvironmentWaterComponent()
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::Entity* entity = active_scene->GetEntityByName("Environment").get();
     
-    if ( entity == 0)
-        entity = owner_->CreateEnvironmentEntity(EC_WaterPlane::TypeNameStatic()).get();
-    else
+    if (entity != 0 )
         owner_->RemoveLocalEnvironment();
+    else
+    {
+        entity =  active_scene->GetEntityByName("LocalEnvironment").get();
+        if ( entity == 0)
+            return 0;
+    }
+  
     
     EC_WaterPlane* plane = entity->GetComponent<EC_WaterPlane >().get();
     
