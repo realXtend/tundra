@@ -78,7 +78,7 @@ void JavascriptModule::Initialize()
 void JavascriptModule::PostInitialize()
 {
     input_ = GetFramework()->Input()->RegisterInputContext("ScriptInput", 100);
-    Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
 
     // Add Naali Core API objcects as js services.
     services_["input"] = input_.get();

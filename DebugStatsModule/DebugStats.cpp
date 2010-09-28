@@ -123,7 +123,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     if (profilerWindow_)
         return;
 
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -147,7 +147,7 @@ void DebugStatsModule::StartProfiling(bool visible)
 
 Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVector &params*/)
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
 
@@ -163,7 +163,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVecto
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
 

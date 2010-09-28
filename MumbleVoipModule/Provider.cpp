@@ -119,7 +119,7 @@ namespace MumbleVoip
 
     void Provider::ShowMicrophoneAdjustmentDialog()
     {
-        Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
 
         if (!ui_service)
             return;

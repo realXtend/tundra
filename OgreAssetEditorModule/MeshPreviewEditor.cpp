@@ -197,7 +197,7 @@ void MeshPreviewEditor::Update()
         label_->setPixmap(QPixmap::fromImage(img));
     
 
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -340,7 +340,7 @@ void MeshPreviewEditor::CreateRenderTexture()
 
 void MeshPreviewEditor::Closed()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     ui->RemoveWidgetFromScene(this);
 
     emit Closed(inventoryId_, assetType_);
@@ -348,7 +348,7 @@ void MeshPreviewEditor::Closed()
 
 void MeshPreviewEditor::InitializeEditorWidget()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 

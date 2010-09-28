@@ -129,9 +129,7 @@
 #ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
 #endif
-//#ifdef EC_Name_ENABLED
-#include "EC_Name.h"
-//#endif
+#include <EC_Name.h>
 #ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
 #endif

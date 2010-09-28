@@ -91,7 +91,7 @@ TexturePreviewEditor::TexturePreviewEditor(Foundation::Framework *framework, QWi
 
 void TexturePreviewEditor::Closed()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return
 
@@ -208,7 +208,7 @@ void TexturePreviewEditor::resizeEvent(QResizeEvent *ev)
 
 void TexturePreviewEditor::Initialize()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 

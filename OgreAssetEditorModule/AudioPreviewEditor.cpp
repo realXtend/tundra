@@ -108,7 +108,7 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
 
 void AudioPreviewEditor::Closed()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -199,7 +199,7 @@ void AudioPreviewEditor::resizeEvent(QResizeEvent *ev)
 void AudioPreviewEditor::InitializeEditorWidget()
 {
     // Get ui service and create canvas
-    Foundation::UiServiceInterface *ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
