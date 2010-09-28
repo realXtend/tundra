@@ -34,7 +34,7 @@
 #include "Environment/PrimGeometryUtils.h"
 #include "SceneManager.h"
 #include "AssetServiceInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "GenericMessageUtils.h"
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -1779,8 +1779,8 @@ void Primitive::ParseTextureEntryData(EC_OpenSimPrim& prim, const uint8_t* bytes
 
 void Primitive::HandleAmbientSound(entity_id_t entityid)
 {
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    boost::shared_ptr<ISoundService> soundsystem =
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return;
         
@@ -1822,7 +1822,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
             {
                 position = placeable->GetPosition();
             }        
-            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), Foundation::SoundServiceInterface::Ambient, false, position);
+            rex_ambient_sound = soundsystem->PlaySound3D(QString::fromStdString(prim->SoundID), ISoundService::Ambient, false, position);
             // The ambient sounds will always loop
             soundsystem->SetLooped(rex_ambient_sound, true);
             
@@ -1864,8 +1864,8 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
     if (!entity)
         return false;
 
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    boost::shared_ptr<ISoundService> soundsystem =
+        rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
 
@@ -1879,7 +1879,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
         position = placeable->GetPosition();
 
     // Start new sound
-    sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), Foundation::SoundServiceInterface::Triggered, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), ISoundService::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
     if (flags & RexTypes::ATTACHED_SOUND_LOOP)
         soundsystem->SetLooped(new_sound, true);
@@ -1904,7 +1904,7 @@ bool Primitive::HandleOSNE_AttachedSoundGainChange(ProtocolUtilities::NetworkEve
     if (!entity)
         return false;   
 
-    boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+    boost::shared_ptr<ISoundService> soundsystem = rexlogicmodule_->GetFramework()->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
     if (!soundsystem)
         return false;
 

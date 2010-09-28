@@ -13,7 +13,7 @@
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "LoggingFunctions.h"
 #include "Frame.h"
 
@@ -23,11 +23,12 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),
     active(this, "active", false)
 {
-    soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
+    soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
     connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
 EC_SoundListener::~EC_SoundListener()
@@ -67,5 +68,15 @@ void EC_SoundListener::OnActiveChanged()
             if (ec != this)
                 listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Local);
         }
+    }
+}
+
+void EC_SoundListener::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
     }
 }

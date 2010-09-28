@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "IModule.h"
 #include "ServiceManager.h"
 #include "EC_AttachedSound.h"
@@ -21,20 +21,20 @@ namespace RexLogic
 
     void EC_AttachedSound::Update(f64 frametime)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (!soundsystem)
             return;
 
         // Check if any of the sounds have stopped, remove from list in that case
         for(uint i = 0; i < sounds_.size(); ++i)
             if (sounds_[i])
-                if (soundsystem->GetSoundState(sounds_[i]) == Foundation::SoundServiceInterface::Stopped)
+                if (soundsystem->GetSoundState(sounds_[i]) == ISoundService::Stopped)
                     sounds_[i] = 0;
     }
 
     void EC_AttachedSound::SetPosition(const Vector3df &position)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (!soundsystem)
             return;
 
@@ -48,7 +48,7 @@ namespace RexLogic
         if (sound == 0)
             return;
 
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
 
         for (uint i = 0; i < sounds_.size(); ++i)
             if (sounds_[i] == sound)
@@ -61,7 +61,7 @@ namespace RexLogic
 
     void EC_AttachedSound::RemoveSound(SoundSlot slot)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
 
         uint i = (uint)slot;
         if (i < (uint)Other)
@@ -75,7 +75,7 @@ namespace RexLogic
 
     void EC_AttachedSound::RemoveAllSounds()
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (soundsystem)
             for (uint i = 0; i < sounds_.size(); ++i)
                 if (sounds_[i])
@@ -95,11 +95,11 @@ namespace RexLogic
 
     void EC_AttachedSound::SetSound(const QString& name, QVector3D& pos, float soundRadius, float soundVolume)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (!soundsystem)
             return;
 
-        sound_id_t sound_id = soundsystem->PlaySound3D(name, Foundation::SoundServiceInterface::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
+        sound_id_t sound_id = soundsystem->PlaySound3D(name, ISoundService::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
 
         this->AddSound(sound_id, EC_AttachedSound::RexAmbientSound); 
 
