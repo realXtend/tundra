@@ -1660,22 +1660,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
-/*
-PyObject* GetUiSceneManager(PyObject *self)
-{
-    UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
-    if (!ui)
-    {
-        // If this occurs, we're most probably operating in headless mode.
-        //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
-        return NULL;
-    }
-
-    return PythonScriptModule::GetInstance()->WrapQObject(ui);
-}
-*/
-
 PyObject* DisconnectUIViewSignals(PyObject *self)
 {
     QGraphicsView *view = PythonScript::self()->GetFramework()->GetUIView();
@@ -1881,9 +1865,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-
-//    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
-//    "Gets the Naali-Qt UI scene manager"},
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
