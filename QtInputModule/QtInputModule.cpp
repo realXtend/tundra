@@ -58,7 +58,7 @@ const std::string &QtInputModule::NameStatic()
 
 void QtInputModule::ShowBindingsWindow()
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return;
 

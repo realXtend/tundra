@@ -38,7 +38,7 @@ namespace RexLogic
 
     void ScriptDialogHandler::ShowDialog(ScriptDialogRequest& request)
     {
-        Foundation::UiServiceInterface *ui = owner_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = owner_->GetFramework()->GetService<UiServiceInterface>();
         if (!ui)
         {
             RexLogicModule::LogError("Cannot show ScriptDialogWidget, UI service pointer not valid.");

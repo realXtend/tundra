@@ -279,7 +279,7 @@ void EC_3DCanvasSource::ChangeLanguage()
 
 void EC_3DCanvasSource::CreateWidget()
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
     {
         LogError("Failed to acquire UI service");

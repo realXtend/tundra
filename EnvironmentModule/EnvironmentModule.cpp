@@ -87,7 +87,7 @@ namespace Environment
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
-            Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
                 return;
 

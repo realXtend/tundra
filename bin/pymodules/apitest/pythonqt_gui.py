@@ -1,4 +1,5 @@
 import rexviewer as r
+import naali
 import PythonQt
 from PythonQt import QtGui
 from PythonQt.QtGui import QLineEdit, QGroupBox, QVBoxLayout, QPushButton
@@ -38,7 +39,7 @@ class TestGui(Component):
 
         self.widget = group
 
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uiprops = r.createUiWidgetProperty(1)
         uiprops.widget_name_ = "Test Widget"
         #uiprops.my_size_ = QSize(width, height)
@@ -63,6 +64,6 @@ class TestGui(Component):
         #qtmod = r.getQtModule()
         #qtmod.DeleteCanvas(self.canvas)
 
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.RemoveProxyWidgetFromScene(self.proxywidget)
         r.logInfo("TestGui proxywidget removed from scene.")

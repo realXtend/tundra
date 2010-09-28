@@ -21,6 +21,7 @@ class QWidget;
 class QObject;
 
 class InputServiceInterface;
+class UiServiceInterface;
 class Frame;
 class ScriptConsole;
 
@@ -37,7 +38,6 @@ namespace Foundation
     class FrameworkQtApplication;
     class KeyStateListener;
     class MainWindow;
-    class UiServiceInterface;
 
     //! contains entry point for the framework.
     /*! Allows access to various managers and services. The standard way of using
