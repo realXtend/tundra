@@ -28,6 +28,70 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
 
+/// Makes the entity a water plane.
+
+/**
+
+<table class="header">
+<tr>
+<td>
+<h2>Water plane</h2>
+
+Registered by Enviroment::EnvironmentModule. Water plane component defines into world actually water cube. Inside of that water cube scene fog is changed to correspond, given
+water plane underwater fog properties. Water plane cannot visualize outside as a water cube (it still looks just plane). 
+
+<b>Attributes</b>:
+<ul>
+<li> int : xSizeAttr.
+<div> Water plane size in x-axis. </div>
+<li> int : ySizeAttr. 
+<div> Water plane size in y-axis. </div>
+<li> int : depthAttr.
+<div> Depth value defines that how much below from surface water fog colour is used. Meaning this attribute defines how "deep" is our ocean/pond. </div>
+<li> Vector3df : positionAttr.
+<div> Defines position of water plane in world coordinate system. </div>
+<li> Quaternion : rotationAttr.
+<div> Defines rotation of water plane in world coordinate system. </div>
+<li> float : scaleUfactorAttr.
+<div> Water plane texture factor which defines how many times the texture should be repeated in the u direction. Note current default value 
+ is so small 0.002, so it does not show up correctly in EC-editor. </div>
+<li> float : scaleVfactorAttr.
+<div> Water plane texture factor which defines how many times the texture should be repeated in the v direction. Note current default value 
+ is so small 0.002, so it does not show up correctly in EC-editor. </div>
+<li> int : xSegmentsAttr.
+<div> The number of segments to the plane in the x direction.  </div>
+<li> int : ySegmentsAttr.
+<div> The number of segments to the plane in the y direction.  </div>
+<li> QString : materialNameAttr.
+<div> Defines what material is used in creating plane. </div>
+<li> Color : fogColorAttr.
+<div> Defines what is fog color when camera is inside of water cube which this plane defines. </div>
+<li> float : fogStartAttr.
+<div> Underwater fog start distance (meters) </div>
+<li> float : fogEndAttr.
+<div> Underwater fog end distance (meters) </div>
+<li> enum :  fogModeAttr.
+<div> UnderWater fog mode, defines how Fog density increases. </div>
+</ul>
+
+<b> Exposes the following scriptable functions: </b>
+<ul>
+<li>...
+</ul>
+
+<b> Reacts on the following actions: </b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
+</table>
+
+*/
 
 namespace Environment
 {
@@ -43,53 +107,78 @@ class EC_WaterPlane : public IComponent
         virtual bool IsSerializable() const { return true; }
        
         /// Water plane x-size
-        Attribute<int> xSizeAttr_;
-        /// Water plane y-size
-        Attribute<int> ySizeAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(int, xSizeAttr);
+        Q_PROPERTY(int xSizeAttr READ getxSizeAttr WRITE setxSizeAttr); 
        
+        /// Water plane y-size
+        DEFINE_QPROPERTY_ATTRIBUTE(int, ySizeAttr);
+        Q_PROPERTY(int ySizeAttr READ getySizeAttr WRITE setySizeAttr); 
+
+      
         /**
          * Water plane "depth". This is used to define when we are below water. 
          * and inside of watercube. 
          */
-        Attribute<int> depthAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(int, depthAttr);
+        Q_PROPERTY(int depthAttr READ getdepthAttr WRITE setdepthAttr); 
         
         /// Water plane position (this is used if there is not EC_Placeable)
-        Attribute<Vector3df> positionAttr_;
-        /// Water plane rotation
-        Attribute<Quaternion> rotationAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
+        Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr); 
         
-        ///todo U Scale 
-        Attribute<float> scaleUfactorAttr_;
-        ///todo V Scale
-        Attribute<float> scaleVfactorAttr_;
-
+        /// Water plane rotation
+        DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, rotationAttr);
+        Q_PROPERTY(Quaternion rotationAttr READ getrotationAttr WRITE setrotationAttr); 
+        
+        ///U Scale, factor which defines how many times the texture should be repeated in the u direction    
+        DEFINE_QPROPERTY_ATTRIBUTE(float, scaleUfactorAttr);
+        Q_PROPERTY(float scaleUfactorAttr READ getscaleUfactorAttr WRITE setscaleUfactorAttr); 
+        
+        ///V Scale, factor which defines how many times the texture should be repeated in the v direction   
+        DEFINE_QPROPERTY_ATTRIBUTE(float, scaleVfactorAttr);
+        Q_PROPERTY(float scaleVfactorAttr READ getscaleVfactorAttr WRITE setscaleVfactorAttr); 
+       
         /// The number of segments to the plane in the x direction 
-        Attribute<int> xSegmentsAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(int, xSegmentsAttr);
+        Q_PROPERTY(int xSegmentsAttr READ getxSegmentsAttr WRITE setxSegmentsAttr); 
+
         /// The number of segments to the plane in the y direction 
-        Attribute<int> ySegmentsAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(int, ySegmentsAttr);
+        Q_PROPERTY(int ySegmentsAttr READ getySegmentsAttr WRITE setySegmentsAttr); 
 
         /// Material name
-        Attribute<QString> materialNameAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(QString, materialNameAttr);
+        Q_PROPERTY(QString materialNameAttr READ getmaterialNameAttr WRITE setmaterialNameAttr); 
+        
         /// Underwater fog color
-        Attribute<Color> fogColorAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(Color,  fogColorAttr);
+        Q_PROPERTY(Color fogColorAttr READ getfogColorAttr WRITE setfogColorAttr); 
+   
         /// Underwater fog start distance (meters)
-        Attribute<float> fogStartAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(float, fogStartAttr);
+        Q_PROPERTY(float fogStartAttr READ getfogStartAttr WRITE setfogStartAttr); 
+        
         /// Underwater fog end distance (meters)
-        Attribute<float> fogEndAttr_;
+        DEFINE_QPROPERTY_ATTRIBUTE(float, fogEndAttr);
+        Q_PROPERTY(float fogEndAttr READ getfogEndAttr WRITE setfogEndAttr); 
+        
         /// UnderWater fog mode, defines how Fog density increases.
-        Attribute<int> fogModeAttr_;
-
-         /** 
-         * Returns true if camera is inside of watercube. 
-         */
-        bool IsUnderWater();
-
+        DEFINE_QPROPERTY_ATTRIBUTE(int, fogModeAttr);
+        Q_PROPERTY(int fogModeAttr READ getfogModeAttr WRITE setfogModeAttr); 
+        
         /// Returns color value in Ogre format.
         Ogre::ColourValue GetFogColorAsOgreValue() const;
        
     public slots: 
         
+        /** 
+         * Returns true if camera is inside of watercube. 
+         */
+        bool IsUnderWater();
+
+        /// When called creates new water plane into world and tries to attacht it.
         void CreateWaterPlane();
+        /// When called removes water plane from world.
         void RemoveWaterPlane();
         
         //! Attach a new entity to scene node that world scene owns.

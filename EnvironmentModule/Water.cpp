@@ -50,9 +50,9 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type type)
              return;
     }
         
-    Vector3df vec = plane->positionAttr_.Get();
+    Vector3df vec = plane->positionAttr.Get();
     vec.z = height;
-    plane->positionAttr_.Set(vec, type);
+    plane->positionAttr.Set(vec, type);
     plane->ComponentChanged(type);
     
    
@@ -102,9 +102,9 @@ void Water::SetWaterHeight(float height, AttributeChange::Type type)
     if ( plane == 0)
         return;
 
-    Vector3df vec = plane->positionAttr_.Get();
+    Vector3df vec = plane->positionAttr.Get();
     vec.z = height;
-    plane->positionAttr_.Set(vec, type);
+    plane->positionAttr.Set(vec, type);
     plane->ComponentChanged(type);
     emit HeightChanged(static_cast<double>(height));
     
@@ -154,7 +154,7 @@ float Water::GetWaterHeight()
     if ( plane == 0)
         return 0.0;
 
-    return plane->positionAttr_.Get().z;
+    return plane->positionAttr.Get().z;
 
 }
 
@@ -164,9 +164,9 @@ void Water::SetWaterFog(float fogStart, float fogEnd, const QVector<float>& colo
      if ( plane == 0)
         return;
 
-    plane->fogStartAttr_.Set(fogStart,AttributeChange::Local);
-    plane->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
-    plane->fogColorAttr_.Set(Color(color[0], color[1], color[2],1.0), AttributeChange::Local);
+    plane->fogStartAttr.Set(fogStart,AttributeChange::Local);
+    plane->fogEndAttr.Set(fogEnd, AttributeChange::Local);
+    plane->fogColorAttr.Set(Color(color[0], color[1], color[2],1.0), AttributeChange::Local);
     plane->ComponentChanged(AttributeChange::Local);
 
 
@@ -197,7 +197,7 @@ void Water::SetWaterFogColor(const QVector<float>& color)
         return;
 
    Color col(color[0], color[1], color[2],1.0);
-   plane->fogColorAttr_.Set(col, AttributeChange::Local); 
+   plane->fogColorAttr.Set(col, AttributeChange::Local); 
    plane->ComponentChanged(AttributeChange::Local);
    
 }
@@ -208,8 +208,8 @@ void Water::SetWaterFogDistance(float fogStart, float fogEnd)
   if ( plane == 0)
         return;
   
-  plane->fogStartAttr_.Set(fogStart, AttributeChange::Local);
-  plane->fogEndAttr_.Set(fogEnd, AttributeChange::Local);
+  plane->fogStartAttr.Set(fogStart, AttributeChange::Local);
+  plane->fogEndAttr.Set(fogEnd, AttributeChange::Local);
   plane->ComponentChanged(AttributeChange::Local);
 
  
@@ -218,7 +218,7 @@ void Water::SetWaterFogDistance(float fogStart, float fogEnd)
 float Water::GetWaterFogStartDistance() 
 {
   EC_WaterPlane* plane = GetEnvironmentWaterComponent();
-  return plane->fogStartAttr_.Get();
+  return plane->fogStartAttr.Get();
     
  
 }
@@ -226,10 +226,7 @@ float Water::GetWaterFogStartDistance()
 float Water::GetWaterFogEndDistance() 
 {
      EC_WaterPlane* plane = GetEnvironmentWaterComponent();
-     return plane->fogEndAttr_.Get();
-    
- 
-   
+     return plane->fogEndAttr.Get();   
 }
 
 }
