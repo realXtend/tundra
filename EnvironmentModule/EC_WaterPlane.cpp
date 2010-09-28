@@ -232,8 +232,16 @@ namespace Environment
         
         Vector3df vec = positionAttr_.Get();
         //node_->setPosition(vec.x, vec.y, vec.z);
+
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+        Ogre::Vector3 current_pos = node_->_getDerivedPosition();
+        Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
+        tmp = current_pos + tmp;
+        node_->setPosition(tmp);
+#else
         node_->_setDerivedPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
-       
+#endif
+
     }
 
     void EC_WaterPlane::SetOrientation()
@@ -251,8 +259,16 @@ namespace Environment
 
          // Set orientation
         Quaternion rot = rotationAttr_.Get();
-        node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
 
+#if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
+        Ogre::Quaternion current_rot = node_->_getDerivedOrientation();
+        Ogre::Quaternion tmp(rot.w, rot.x, rot.y, rot.z);
+        Ogre::Quaternion rota = current_rot +  tmp;
+        node_->setOrientation(rota);
+        
+#else
+        node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+#endif
     }
 
     void EC_WaterPlane::ChangeWaterPlane(IAttribute* attribute)
