@@ -1,4 +1,5 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+#if 0
+/// For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_Foundation_Application_h
 #define incl_Foundation_Application_h
@@ -9,9 +10,9 @@ namespace Foundation
 {
     class Framework;
 
-    //! shortcuts for accessing application specific data, such as name and version.
+    //! shortcuts for accessing application specific data, such as name and version. //\todo Refactor-remote this. -jj.
     /*! \ingroup Foundation_group
-    */
+    */   
     class Application : public boost::noncopyable
     {
         Application();
@@ -40,4 +41,5 @@ namespace Foundation
     };
 }
 
+#endif
 #endif

@@ -158,6 +158,10 @@ add_subdirectory (Foundation)
 add_subdirectory (Interfaces)
 add_subdirectory (RexCommon)
 add_subdirectory (SceneManager)
+
+add_subdirectory (Input)
+add_subdirectory (Ui)
+
 add_subdirectory (OgreRenderingModule)
 add_subdirectory (Application)
 
@@ -168,25 +172,25 @@ add_subdirectory (Application)
 AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule.
 AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
 
-AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
-AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
-AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
-AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
-AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
-AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
-AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
-AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
-AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
-AddEntityComponent(EntityComponents/EC_Light EC_Light)
-AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
-AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
-AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
-AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+#AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+#AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
+#AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
+#AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
+#AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
+#AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
+#AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
+#AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
+#AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
+#AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
+#AddEntityComponent(EntityComponents/EC_Light EC_Light)
+#AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
+#AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
+#AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
+#AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 
 # The following EC's are declared by AvatarModule
 AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required.
-AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+#AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
 # Declared by PythonScriptModule. 
 AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Used by ECEditorModule.
@@ -207,7 +211,7 @@ endif ()
 # The following are not really core modules,
 # but you can't do anything practical without
 # having them so, they're effectively required.
-add_subdirectory (QtInputModule)
+#add_subdirectory (QtInputModule)
 add_subdirectory (TextureDecoderModule)
 add_subdirectory (ProtocolModuleOpenSim)
 add_subdirectory (ProtocolModuleTaiga)
@@ -219,9 +223,9 @@ endif ()
 
 # The following are optional, but contain 
 # commonly used functionality.
-add_subdirectory (InventoryModule)
-add_subdirectory (OgreAssetEditorModule)
-add_subdirectory (CommunicationsModule)
+#add_subdirectory (InventoryModule)
+#add_subdirectory (OgreAssetEditorModule)
+#add_subdirectory (CommunicationsModule)
 
 # Entity components. Note: at the current system if you disable one of these you must
 # comment out the declaration at the responsible module's Load() function.

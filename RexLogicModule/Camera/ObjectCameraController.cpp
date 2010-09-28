@@ -59,7 +59,7 @@ namespace RexLogic
         SubscribeToEventCategories();
 
         // Register building key context
-        input_context_ = framework_->Input()->RegisterInputContext("ObjectCameraContext", 100);
+        input_context_ = framework_->GetInput()->RegisterInputContext("ObjectCameraContext", 100);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), this, SLOT(KeyReleased(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(MouseMove(MouseEvent*)), this, SLOT(MouseMove(MouseEvent*)));
@@ -368,7 +368,7 @@ namespace RexLogic
             camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgreCamera>().get()->SetActive();
 
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
 
             object_selected_ = false;
             selected_entity_ = 0;

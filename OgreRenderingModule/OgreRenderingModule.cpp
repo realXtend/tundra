@@ -130,10 +130,10 @@ namespace OgreRenderer
             return renderer_->GetResourceHandler()->HandleResourceEvent(event_id, data);
         }
 
-        if (category_id == input_event_category_ && event_id == Input::Events::INWORLD_CLICK)
+        if (category_id == input_event_category_ && event_id == InputEvents::INWORLD_CLICK)
         {
             // do raycast into the world when user clicks mouse button
-            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            InputEvents::Movement *movement = checked_static_cast<InputEvents::Movement*>(data);
             assert(movement);
             Foundation::RaycastResult result = renderer_->Raycast(movement->x_.abs_, movement->y_.abs_);
 

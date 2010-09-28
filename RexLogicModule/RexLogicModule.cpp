@@ -77,7 +77,7 @@
 #include "IEventData.h"
 #include "TextureInterface.h"
 #include "SoundServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "Renderer.h"
@@ -160,7 +160,7 @@
 
 #include <boost/make_shared.hpp>
 
-#include <QApplication>
+#include "NaaliApplication.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -295,7 +295,7 @@ void RexLogicModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
-    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
+    connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual
@@ -555,9 +555,9 @@ void RexLogicModule::Update(f64 frametime)
             send_input_state = false;
             event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
             else
-                GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+                GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
         }
 
         if (world_stream_->IsConnected())
@@ -630,14 +630,14 @@ void RexLogicModule::SwitchCameraState()
         camera_state_ = CS_Free;
 
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -647,13 +647,13 @@ void RexLogicModule::CameraTripod()
     {
         camera_state_ = CS_Tripod;
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
         event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-        GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -1209,7 +1209,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
     event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
-    GetFramework()->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 

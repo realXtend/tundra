@@ -28,7 +28,7 @@ namespace Foundation
     class KeyBindings;
 }
 
-namespace Input
+namespace InputEvents
 {
     //! Contains some fo the input events in generic fashion. Does not depend on any one input method
     /*!
@@ -36,8 +36,8 @@ namespace Input
         
         \ingroup Input_group
     */
-    namespace Events
-    {
+//    namespace Events
+//    {
         // Note: Continous events should go in pairs and in sequence; for every
         //       'start' event (MOVE_FORWARD_PRESSED) there should be an
         //       'end' event (MOVE_FORWARD_RELEASED) and (MOVE_FORWARD_PRESSED == MOVE_FORWARD_RELEASED - 1)
@@ -257,7 +257,7 @@ namespace Input
             Axis y_;
             Axis z_;
         };
-    }
+//    }
 }
 
 #endif

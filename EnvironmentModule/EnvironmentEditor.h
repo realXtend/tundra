@@ -7,7 +7,7 @@
 
 #include "Color.h"
 
-#include "InputServiceInterface.h"
+#include "../Input/InputFwd.h"
 
 #include <QPair>
 #include <QTimer>
