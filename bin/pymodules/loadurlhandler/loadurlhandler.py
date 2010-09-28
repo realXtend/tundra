@@ -1,4 +1,5 @@
 import rexviewer as r
+import naali
 import PythonQt
 
 from circuits import Component
@@ -92,7 +93,7 @@ class LoadURLHandler(Component):
         self.progress_label = ui.findChild("QLabel", "label_Status")
         
         # Add to scene
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.container)
         self.proxywidget.setWindowTitle("Naali Web Browser")
         self.proxywidget.connect("Visible(bool)", self.vibibility_changed)

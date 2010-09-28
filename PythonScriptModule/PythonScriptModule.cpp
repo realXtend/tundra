@@ -1634,7 +1634,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    Foundation::UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
     if (!ui)
     {
         // If this occurs, we're most probably operating in headless mode.
@@ -1660,9 +1660,10 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
+/*
 PyObject* GetUiSceneManager(PyObject *self)
 {
-    Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
     if (!ui)
     {
         // If this occurs, we're most probably operating in headless mode.
@@ -1673,6 +1674,7 @@ PyObject* GetUiSceneManager(PyObject *self)
 
     return PythonScriptModule::GetInstance()->WrapQObject(ui);
 }
+*/
 
 PyObject* DisconnectUIViewSignals(PyObject *self)
 {
@@ -1879,9 +1881,9 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-    
-    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
-    "Gets the Naali-Qt UI scene manager"},
+
+//    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
+//    "Gets the Naali-Qt UI scene manager"},
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
@@ -1985,7 +1987,8 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
-            PythonQt::self()->registerClass(&Foundation::UiServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
+//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
             PythonQt::self()->registerClass(&Foundation::SoundServiceInterface::staticMetaObject);
             PythonQt::self()->registerClass(&InputServiceInterface::staticMetaObject);
 
@@ -2001,7 +2004,7 @@ namespace PythonScript
             pythonqt_inited = true;
 
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
+            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly

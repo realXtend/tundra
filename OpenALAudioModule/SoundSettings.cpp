@@ -23,7 +23,7 @@ namespace OpenALAudio
         framework_(framework),
         settings_widget_(0)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 
