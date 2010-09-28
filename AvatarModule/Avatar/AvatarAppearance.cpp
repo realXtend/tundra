@@ -1084,6 +1084,7 @@ namespace Avatar
                 strings.push_back(connection->GetInfo().agentID.ToString());
                 strings.push_back(avatar->GetAppearanceAddress());
                 connection->SendGenericMessage("RexSetAppearance", strings);
+                emit AppearanceStatus("Exporting avatar to webdav inventory completed");
             }
             inv_export_state_ = Idle;
             inv_export_entity_.reset();
@@ -1338,6 +1339,7 @@ namespace Avatar
         if (inv_export_state_ != Idle)
         {
             AvatarModule::LogInfo("Avatar export already running");
+            emit AppearanceError("Avatar export already running, please wait...", 120000);
             return;
         }
 
@@ -1392,6 +1394,8 @@ namespace Avatar
         EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
         if (!avatar)
             return;
+
+        emit AppearanceStatus("Exporting avatar description...");
 
         QString app_address = QString::fromStdString(avatar->GetAppearanceAddress());
         if (app_address.endsWith("Avatar.xml"))
@@ -1536,9 +1540,9 @@ namespace Avatar
         if (avatar_exporter_)
         {
             AvatarModule::LogInfo("Avatar export already running");
+            emit AppearanceError("Avatar export already running, please wait...", 120000);
             return;
         }
-        
         AvatarModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
         
         // Instantiate new avatar exporter & give it the work request
@@ -1568,7 +1572,7 @@ namespace Avatar
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
-        
+
         boost::filesystem::path path(outname);
         std::string dirname = path.branch_path().string();
         
@@ -1583,8 +1587,10 @@ namespace Avatar
             avatarxmlfile.close();
         }
         else
+        {
             AvatarModule::LogError("Could not save avatar description file " + outname);
-        
+            emit AppearanceError("Could not open local file for avatar export");
+        }
         // Get assets & dump them all
         AvatarExporterRequestPtr request(new AvatarExporterRequest());
         GetAvatarAssetsForExport(request, *appearance, false);
@@ -1608,6 +1614,7 @@ namespace Avatar
                 AvatarModule::LogError("Could not save avatar asset " + filename);
             ++i;
         }
+        emit AppearanceStatus("Exporting avatar to local file completed");
     }
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
@@ -1905,6 +1912,7 @@ namespace Avatar
                 if (result->success_)
                 {
                     AvatarModule::LogInfo("Avatar exported successfully");
+                    emit AppearanceStatus("Exporting avatar to avatar storage completed");
                     // Send information of appearance change
                     ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
                     if (conn)
@@ -1915,8 +1923,10 @@ namespace Avatar
                     }
                 }
                 else
+                {
                     AvatarModule::LogInfo("Avatar export failed: " + result->message_);
-                
+                    emit AppearanceError("Exporting avatar to avatar storage failed");
+                }
                 avatar_exporter_.reset();
             }
         }
@@ -1953,6 +1963,7 @@ namespace Avatar
         catch (Ogre::Exception& e)
         {
             AvatarModule::LogError("Error while loading avatar " + filename + ": " + e.what());
+            emit AppearanceError("Error while loading appearance from avatar file");
             return false;
         }
         
@@ -1976,6 +1987,7 @@ namespace Avatar
         if (!file.open(QIODevice::ReadOnly))
         {
             AvatarModule::LogError("Could not open avatar appearance file " + filename);
+            emit AppearanceError("Could not open avatar file");
             return false;
         }
         
@@ -1983,19 +1995,22 @@ namespace Avatar
         {
             file.close();
             AvatarModule::LogError("Could not parse avatar appearance file " + filename);
+            emit AppearanceError("Could not parse avatar file");
             return false;
         }
         file.close();
         
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
+        {
+            emit AppearanceError("No avatar element in avatar file");
             return false;
-            
-        AvatarAsset mesh = appearance->GetMesh();
+        }
+
         // If mesh name is empty, deduce mesh name from filename
+        AvatarAsset mesh = appearance->GetMesh();
         if (mesh.name_.empty())
         {
             AvatarModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
-
             mesh.name_ = ReplaceSubstring(leafname, ".xml", ".mesh");
             appearance->SetMesh(mesh);
         }      
@@ -2161,6 +2176,7 @@ namespace Avatar
         if (!file.open(QIODevice::ReadOnly))
         {
             AvatarModule::LogError("Could not open attachment description file " + filename);
+            emit AppearanceError("Could not open attachment description file");
             return false;
         }
         
@@ -2168,14 +2184,19 @@ namespace Avatar
         {
             file.close();
             AvatarModule::LogError("Could not parse attachment description file " + filename);
+            emit AppearanceError("Could not parse attachment description file");
             return false;
         }
         file.close();  
         
         AvatarAttachment new_attachment;
-        if (!LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, *appearance, leafname))
+        LegacyAvatarSerializer::SerializeResult result = LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, *appearance, leafname);
+        if (!result.first)
+        {
+            emit AppearanceError(result.second);
             return false;
-        
+        }
+
         AvatarAttachmentVector attachments = appearance->GetAttachments();
         attachments.push_back(new_attachment);
         appearance->SetAttachments(attachments);

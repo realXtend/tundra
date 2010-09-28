@@ -32,8 +32,10 @@ namespace Avatar
     typedef boost::shared_ptr<AvatarExporterRequest> AvatarExporterRequestPtr;
 
     //! Handles setting up and updating avatars' appearance. Owned by RexLogicModule::Avatar.
-    class AV_MODULE_API AvatarAppearance
+    class AV_MODULE_API AvatarAppearance : public QObject
     {
+        Q_OBJECT
+        
         //! States of inventory-based export. Must go input-first
         enum InventoryExportState
         {
@@ -41,7 +43,7 @@ namespace Avatar
             Assets,
             Avatar
         };
-        
+
     public:
         AvatarAppearance(AvatarModule *avatar_module);
         ~AvatarAppearance();
@@ -87,15 +89,6 @@ namespace Avatar
         bool HandleAssetEvent(event_id_t event_id, IEventData* data);
         //! Handles inventory event
         bool HandleInventoryEvent(event_id_t event_id, IEventData* data);        
-        
-        //! Exports avatar to an authentication/avatar storage server account
-        void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
-        
-        //! Exports avatar to a local directory, including appearance xml and all assets
-        void ExportAvatarLocal(Scene::EntityPtr entity, const std::string& outname);
-        
-        //! Exports avatar via webdav inventory
-        void WebDavExportAvatar(Scene::EntityPtr entity);
 
         //! Finalize the webdav export by sending xml file that points to uploaded files
         void WebDavExportAvatarFinalize(Scene::EntityPtr entity, const QStringList &file_list);
@@ -115,6 +108,26 @@ namespace Avatar
         //! Adds an attachment on the avatar. Filename is the xml attachment description.
         bool AddAttachment(Scene::EntityPtr entity, const std::string& filename);
         
+    public slots:            
+        //! Exports avatar to an authentication/avatar storage server account
+        void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
+        
+        //! Exports avatar to a local directory, including appearance xml and all assets
+        void ExportAvatarLocal(Scene::EntityPtr entity, const std::string& outname);
+        
+        //! Exports avatar via webdav inventory
+        void WebDavExportAvatar(Scene::EntityPtr entity);
+
+        void EmitAppearanceStatus(const QString &message, int timeout = 7000)
+        {
+            emit AppearanceStatus(message, timeout);
+        }
+
+    signals:
+        void AppearanceStatus(const QString &message, int timeout = 7000);
+        void AppearanceError(const QString &message, int timeout = 7000);
+        void AppearanceHideMessages();
+
     private:
         //! Sets up an avatar mesh
         void SetupMeshAndMaterials(Scene::EntityPtr entity);

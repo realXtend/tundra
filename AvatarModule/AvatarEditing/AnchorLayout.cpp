@@ -66,6 +66,13 @@ namespace Avatar
         CheckVisibility(layout_item);
     }
 
+    void AnchorLayout::AddCornerAnchor(QGraphicsLayoutItem *first, Qt::Corner first_anchor_corner, QGraphicsLayoutItem *second, Qt::Corner second_anchor_corner)
+    {
+        addCornerAnchors(first, first_anchor_corner, second, second_anchor_corner);
+        CheckVisibility(first);
+        CheckVisibility(second);
+    }
+
     void AnchorLayout::AddSideAnchor(QGraphicsLayoutItem *layout_item, Qt::Orientation orientation)
     {
         addAnchors(this, layout_item, orientation);
