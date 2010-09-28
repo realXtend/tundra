@@ -336,7 +336,7 @@ namespace UiServices
             return;
 
         // Head bone pos setup
-        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Vector3df avatar_position = ec_placeable->GetPosition();
         Quaternion avatar_orientation = ec_placeable->GetOrientation();
         Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
         float adjustheight = ec_mesh->GetAdjustPosition().z;

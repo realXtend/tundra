@@ -29,6 +29,7 @@
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 
+///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
@@ -59,8 +60,6 @@ void ExposeQtMetaTypes(QScriptEngine *engine)
 
 void ExposeCoreApiMetaTypes(QScriptEngine *engine)
 {
-    qRegisterMetaType<Vector3df>("Vector3df");
-
     // Input metatypes.
     qScriptRegisterQObjectMetaType<MouseEvent*>(engine);
     qScriptRegisterQObjectMetaType<KeyEvent*>(engine);
