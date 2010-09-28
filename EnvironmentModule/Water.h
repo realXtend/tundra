@@ -19,6 +19,10 @@ namespace Environment
     /**
      * Water class is used to control default water plane, this is depricated way to control environment water. 
      * This class handles all environment editor changes, and deals RexDrawWater-message information from server. 
+     * Note! This class uses a idea of Environment - entity. IF there exist a entity in world which has component @p EC_NAME
+     * which name attribute is Environment, then it will be used as enviroment control entity (and all syncronization of ocean etc.) is done through
+     * that entity. IF there does not exist a entity EnviromenModule will (and this class) create LocalEnviroment entity, which owns ocean etc. this will be not syncronizable.
+     *
      */
 
     class ENVIRONMENT_MODULE_API Water : public QObject
@@ -35,7 +39,13 @@ namespace Environment
 
             void Update();
 
+            /**
+             * Exist there waterplane?
+             * @returns true if there is false if not. 
+             */
+
             bool IsWaterPlane() const;
+            
             /**
              * Creates water geometry, uses a given value to water height. 
              * @param height is a water height for newly created water plane.
@@ -104,15 +114,10 @@ namespace Environment
             //! height New water height.
             void HeightChanged(double height);
 
-            //! Emited when water has been removed
-            //void WaterRemoved();
-
-            //! Emitted when water has been created
-            //void WaterCreated();
-
             //! Emitted when water fog is adjusted.
             void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
+            //! Emitted in each update loop.
             void ExistWater(bool on);
           
 

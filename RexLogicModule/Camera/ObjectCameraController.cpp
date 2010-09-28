@@ -158,6 +158,8 @@ namespace RexLogic
         {
             if (object_selected_)
             {
+                if (zoom_close_)
+                    return;
                 ReturnToAvatarCamera();
             }
 
