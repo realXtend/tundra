@@ -10,11 +10,10 @@
 
 #include <QVector3D>
 
-
 namespace RexLogic
 {
-	/**
-
+/// Component which holds references to attached spatial sounds.
+/**
 <table class="header">
 <tr>
 <td>
@@ -24,12 +23,9 @@ Their positions will be updated automatically to match the position of the entit
 To use, first setup the sound usually using the sound service, then use AddSound()
 To be useful, the entity also needs the EC_OgrePlaceable component.
 
-
-
 Registered by RexLogic::RexLogicModule.
 
 <b>No Attributes</b>
-
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -37,14 +33,14 @@ Registered by RexLogic::RexLogicModule.
         @param name The asset_id of the sound to add
         @param pos The position for the sound to play at
         @param soundRadius The radius for the sound to be heard at
-        @param soundVolume The volume for the sound to play at     
+        @param soundVolume The volume for the sound to play at
 <li>"AddSound": Add sound to entity. 
         @param sound Channel id from SoundServiceInterface
         @param slot Sound slot definition
 <li>"RemoveSound": Stop and remove sound from entity by channel id or by sound slot
         @param sound Channel id from SoundServiceInterface
-		or
-		@param slot Sound slot definition, only OpenSimAttachedSound or RexAmbientSound will have effect
+        or
+        @param slot Sound slot definition, only OpenSimAttachedSound or RexAmbientSound will have effect
 <li>"RemoveAllSounds": Stop and remove all sounds from entity.
         Also called automatically upon destruction of this EntityComponent.
 <li>"SetPosition":Syncs position. Called from RexLogicModule.
@@ -57,19 +53,11 @@ Registered by RexLogic::RexLogicModule.
 </td>
 </tr>
 
-
 Does not emit any actions.
 
 <b>Doesn't depend on other components.</b>
 </table>
-
 */
-
-    //! Component which holds references to attached spatial sounds.
-    /*! Their positions will be updated automatically to match the position of the entity
-        To use, first setup the sound usually using the sound service, then use AddSound()
-        To be useful, the entity also needs the EC_OgrePlaceable component.
-     */
     class REXLOGIC_MODULE_API EC_AttachedSound : public IComponent
     {
         Q_OBJECT
@@ -89,7 +77,7 @@ Does not emit any actions.
         };
 
         virtual ~EC_AttachedSound();
-        
+
     public slots:
         //! Set a new sound and properties for it
         /*! \param name The asset_id of the sound to add
@@ -97,7 +85,8 @@ Does not emit any actions.
             \param soundRadius The radius for the sound to be heard at
             \param soundVolume The volume for the sound to play at
         */
-        void SetSound(QString& name, QVector3D& pos, float soundRadius, float soundVolume);
+        void SetSound(const QString& name, QVector3D& pos, float soundRadius, float soundVolume);
+
         //! Add sound to entity. 
         /*! \param sound Channel id from SoundServiceInterface
             \param slot Sound slot definition
@@ -120,10 +109,9 @@ Does not emit any actions.
         void RemoveAllSounds();
 
         //! Syncs position. Called from RexLogicModule.
-        void SetPosition(const Vector3df position);
-        
-    public:
+        void SetPosition(const Vector3df &position);
 
+    public:
         //! Get channel ids of currently playing sounds. Note that some may be zero (stopped)
         const std::vector<sound_id_t>& GetSounds() const { return sounds_; }
 
