@@ -33,17 +33,16 @@ namespace Environment
             //! Destructor.
             virtual ~Water();
 
-           
-            //! @return The scene entity that represents the water in the currently active world.
-            Scene::EntityWeakPtr GetWaterEntity();
+            void Update();
 
+            bool IsWaterPlane() const;
             /**
              * Creates water geometry, uses a given value to water height. 
              * @param height is a water height for newly created water plane.
              *
              **/
             
-            void CreateWaterGeometry(float height = 20.f);
+            void CreateWaterGeometry(float height = 20.f, AttributeChange::Type type = AttributeChange::Network);
 
             /** 
              * Removes water geometry totally. 
@@ -52,7 +51,7 @@ namespace Environment
 
             //! @return The scene water height.
             //! @note If error occuers returns 0.0
-            float GetWaterHeight() const;
+            float GetWaterHeight();
         
              /** 
               * Sets a water fog for default water plane.
@@ -81,24 +80,24 @@ namespace Environment
              /**
               * @return underwater fog start distance. 
               */
-            float GetWaterFogStartDistance() const;
+            float GetWaterFogStartDistance();
 
             /**
              * @return underwater fog end distance. 
              */
-            float GetWaterFogEndDistance() const;
+            float GetWaterFogEndDistance();
 
              /** 
               * Returns current fog water color.
               **/
-            QVector<float> GetFogWaterColor() const;
+            QVector<float> GetFogWaterColor();
 
 
         public slots:
 
             //! Sets a new water height to scene water.
             //! height New water height.
-            void SetWaterHeight(float height, AttributeChange::Type type = AttributeChange::Network);
+            void SetWaterHeight(float height, AttributeChange::Type type );
 
         signals:
             //! Emited when water height has been changed.
@@ -106,29 +105,26 @@ namespace Environment
             void HeightChanged(double height);
 
             //! Emited when water has been removed
-            void WaterRemoved();
+            //void WaterRemoved();
 
             //! Emitted when water has been created
-            void WaterCreated();
+            //void WaterCreated();
 
             //! Emitted when water fog is adjusted.
             void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
+            void ExistWater(bool on);
+          
 
         private:
 
-            //! Looks through all the entities in RexLogic's currently active scene to find the Water
-            //! entity. Caches it internally. Use GetWaterEntity to obtain it afterwards.
-            Scene::EntityWeakPtr GetActiveWater();
-
+            
             //! EnvironmentModule pointer.
             EnvironmentModule *owner_;
 
-            //! Water EC pointer.
-            EC_WaterPlane* activeWaterComponent_;
+            EC_WaterPlane* GetEnvironmentWaterComponent();
 
-            //! Cached water entity pointer.
-            Scene::EntityWeakPtr activeWaterEntity_;
+           
             
     };
 }

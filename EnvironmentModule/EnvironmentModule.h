@@ -115,10 +115,16 @@ namespace Environment
          */
         void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
+
+        Scene::EntityPtr CreateEnvironmentEntity(const QString& component_name);
+        void RemoveLocalEnvironment();
+
         MODULE_LOGGING_FUNCTIONS
 
         //! @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
+
+
 
     private:
         EnvironmentModule(const EnvironmentModule &);
