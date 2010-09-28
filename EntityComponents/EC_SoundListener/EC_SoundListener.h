@@ -13,10 +13,8 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
-namespace Foundation
-{
-    class SoundServiceInterface;
-}
+
+class ISoundService;
 
 namespace OgreRenderer
 {
@@ -87,7 +85,7 @@ private:
     boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;
 
     /// Sound service.
-    boost::weak_ptr<Foundation::SoundServiceInterface> soundService_;
+    boost::weak_ptr<ISoundService> soundService_;
 
 private slots:
     /// Called when component changes.
@@ -95,6 +93,9 @@ private slots:
         disables all the other sound listeners.
     */
     void OnActiveChanged();
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif

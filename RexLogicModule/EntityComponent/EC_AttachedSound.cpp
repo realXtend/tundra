@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "IModule.h"
 #include "ServiceManager.h"
 #include "EC_AttachedSound.h"
@@ -21,8 +21,8 @@ namespace RexLogic
     
     void EC_AttachedSound::Update(f64 frametime)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-            framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem =
+            framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
 
@@ -31,7 +31,7 @@ namespace RexLogic
         {
             if (sounds_[i])
             {
-                if (soundsystem->GetSoundState(sounds_[i]) == Foundation::SoundServiceInterface::Stopped)
+                if (soundsystem->GetSoundState(sounds_[i]) == ISoundService::Stopped)
                     sounds_[i] = 0;
             }
         }
@@ -39,7 +39,7 @@ namespace RexLogic
     
     void EC_AttachedSound::SetPosition(Vector3df position)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
             
@@ -55,7 +55,7 @@ namespace RexLogic
         if (sound == 0)
             return;
                 
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
       
         for (uint i = 0; i < sounds_.size(); ++i)
         {
@@ -70,7 +70,7 @@ namespace RexLogic
     
     void EC_AttachedSound::RemoveSound(SoundSlot slot)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
 
         uint i = (uint)slot;
         if (i < (uint)Other)
@@ -86,7 +86,7 @@ namespace RexLogic
          
     void EC_AttachedSound::RemoveAllSounds()
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
  
         if (soundsystem)
         {    
@@ -110,12 +110,12 @@ namespace RexLogic
     }   
     void EC_AttachedSound::SetSound(QString& name, QVector3D& pos, float soundRadius, float soundVolume)
     {
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem =
-            framework_->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem =
+            framework_->GetServiceManager()->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem)
             return;
         
-        sound_id_t sound_id = soundsystem->PlaySound3D(name, Foundation::SoundServiceInterface::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
+        sound_id_t sound_id = soundsystem->PlaySound3D(name, ISoundService::Ambient, false, Vector3df(pos.x(), pos.y(), pos.z()), 0);
         
         this->AddSound(sound_id, EC_AttachedSound::RexAmbientSound); 
         

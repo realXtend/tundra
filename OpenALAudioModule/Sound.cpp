@@ -19,7 +19,7 @@ namespace OpenALAudio
         DeleteBuffer();
     }
     
-    bool Sound::LoadFromBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer)
+    bool Sound::LoadFromBuffer(const ISoundService::SoundBuffer& buffer)
     {
         DeleteBuffer();
         
