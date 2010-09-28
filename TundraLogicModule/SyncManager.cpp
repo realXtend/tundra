@@ -400,13 +400,15 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
                             newComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
                             component->SerializeToBinary(dest);
-                            newComponent.componentData.resize(dest.BytesFilled());
-                            // Copy to state if data size nonzero
-                            if (newComponent.componentData.size())
+                            
+                            // Send if data size nonzero
+                            if (dest.BytesFilled())
                             {
+                                newComponent.componentData.resize(dest.BytesFilled());
+                                createMsg.components.push_back(newComponent);
+                                
                                 componentstate->data_.resize(newComponent.componentData.size());
                                 memcpy(&componentstate->data_[0], &newComponent.componentData[0], newComponent.componentData.size());
-                                createMsg.components.push_back(newComponent);
                             }
                         }
                         else
@@ -418,12 +420,18 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
                             updComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
                             DataDeserializer prev((char*)&componentstate->data_[0], componentstate->data_.size());
-                            // Copy to state & add to message if there was something to write
+                            
+                            // Send if something was changed
                             if ((component->SerializeToDeltaBinary(dest, prev)) && (dest.BytesFilled()))
                             {
                                 updComponent.componentData.resize(dest.BytesFilled());
-                                memcpy(&componentstate->data_[0], &updComponent.componentData[0], updComponent.componentData.size());
                                 updateMsg.components.push_back(updComponent);
+                                
+                                // Write the full state (SerializeToBinary) for future comparision
+                                componentstate->data_.resize(64 * 1024);
+                                DataSerializer fulldata((char*)&componentstate->data_[0], componentstate->data_.size());
+                                component->SerializeToBinary(fulldata);
+                                componentstate->data_.resize(fulldata.BytesFilled());
                             }
                         }
                     }
