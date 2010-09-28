@@ -33,6 +33,12 @@
 #include "Console.h"
 
 #include <utility>
+#include <QDebug>
+
+#ifdef Q_WS_WIN
+#include "Performance.h"
+#endif 
+
 
 #include <QCryptographicHash>
 
@@ -114,6 +120,13 @@ void DebugStatsModule::PostInitialize()
         Console::Bind(this, &DebugStatsModule::Exec)));
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
+
+
+//#ifdef Q_WS_WIN
+// 
+//    PDH::PerformanceMonitor monitor;
+//    int treads = monitor.GetThreadCount();
+//#endif 
 
     AddProfilerWidgetToUi();
 }
