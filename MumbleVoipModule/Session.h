@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include <QMap>
 
 namespace Foundation
@@ -70,7 +70,7 @@ namespace MumbleVoip
         void SendRecordedAudio();
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
-        boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
+        boost::shared_ptr<ISoundService> SoundService();
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
 
         Foundation::Framework* framework_;

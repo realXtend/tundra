@@ -17,7 +17,7 @@
 #include "InputContext.h"
 #include "InputServiceInterface.h"
 #include "UiServiceInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"

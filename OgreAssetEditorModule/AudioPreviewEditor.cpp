@@ -8,7 +8,7 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "ModuleManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "AssetInterface.h"
 
 #include <QUiLoader>
@@ -51,8 +51,8 @@ void AudioPreviewEditor::HandleAssetReady(Foundation::AssetPtr asset)
     {
         if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
         {
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = 
-                service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+            boost::shared_ptr<ISoundService> sound_service = 
+                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
@@ -65,11 +65,11 @@ void AudioPreviewEditor::HandleResouceReady(Resource::Events::ResourceReady *res
 {
     if(request_tag_ == res->tag_)
     {
-        Foundation::SoundResource *sound = dynamic_cast<Foundation::SoundResource *>(res->resource_.get());
+        SoundResource *sound = dynamic_cast<SoundResource *>(res->resource_.get());
         if(sound)
         {
             QLabel *audioInfoLabel = findChild<QLabel*>("descriptionLabel");
-            Foundation::SoundServiceInterface::SoundBuffer buffer = sound->GetBuffer();
+            ISoundService::SoundBuffer buffer = sound->GetBuffer();
             audioInfoLabel->setText(QString(tr("Frequency: %1Hz")).arg(buffer.frequency_));
             
             int bits = 16;
@@ -128,14 +128,14 @@ void AudioPreviewEditor::PlaySound()
     {
         if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
         {
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = 
-                service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+            boost::shared_ptr<ISoundService> sound_service = 
+                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
             if(soundId_ == 0)
             {
-                soundId_ = sound_service->PlaySound(assetId_, Foundation::SoundServiceInterface::Ambient);
+                soundId_ = sound_service->PlaySound(assetId_, ISoundService::Ambient);
                 playButton_->setText(tr("Stop"));
                 
                 AudioSignalLabel *audioSignalLabel = mainWidget_->findChild<AudioSignalLabel *>("audioSignalLabel");
@@ -178,8 +178,8 @@ void AudioPreviewEditor::TimerTimeout()
     {
         if(service_manager->IsRegistered(Foundation::Service::ST_Sound))
         {
-            boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = 
-                service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+            boost::shared_ptr<ISoundService> sound_service = 
+                service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
             if(!sound_service)
                 return;
 
