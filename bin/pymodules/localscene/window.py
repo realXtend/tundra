@@ -1,4 +1,5 @@
 import rexviewer as r
+import naali
 import PythonQt
 from PythonQt.QtGui import QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QComboBox, QFileDialog, QMessageBox, QWidget, QTableWidgetItem
 
@@ -23,7 +24,7 @@ class ToolBarWindow():
         width = ui.size.width()
         height = ui.size.height()
         
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         
         # uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
         # uiprops.SetMenuGroup(2) #2 is server tools group
@@ -54,7 +55,7 @@ class ToolBarWindow():
             self.inputQueue.put('__end__', '')
             
             self.proxywidget.hide()
-            uism = r.getUiSceneManager()
+            uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True

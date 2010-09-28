@@ -102,7 +102,7 @@ class ObjectEdit(Component):
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         proxy = r.createUiProxyWidget(self.selection_rect)
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.AddWidgetToScene(proxy)
         proxy.setWindowFlags(0) #changing it to Qt::Widget
         

@@ -230,7 +230,7 @@ namespace Environment
 
     void EnvironmentEditor::InitEditorWindow()
     {
-        Foundation::UiServiceInterface *ui = environment_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = environment_module_->GetFramework()->GetService<UiServiceInterface>();
         if (!ui) // If this occurs, we're most probably operating in headless mode.
             return;
 

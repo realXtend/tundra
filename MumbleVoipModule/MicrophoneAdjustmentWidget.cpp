@@ -6,7 +6,7 @@
 #include "MicrophoneAdjustmentWidget.h"
 #include "Settings.h"
 #include "PCMAudioFrame.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "MumbleDefines.h"
 
 #include "MemoryLeakCheck.h"
@@ -51,7 +51,7 @@ namespace MumbleVoip
         if (!service_manager.get())
             return;
 
-        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
 
         if (!sound_service.get())
             return;
@@ -73,7 +73,7 @@ namespace MumbleVoip
         if (!service_manager.get())
             return;
 
-        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
 
         if (!sound_service.get())
             return;
@@ -103,12 +103,12 @@ namespace MumbleVoip
         if (!service_manager.get())
             return ;
 
-        boost::shared_ptr<Foundation::SoundServiceInterface> sound_service = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> sound_service = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
 
         if (!sound_service)
             return ;
 
-        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        ISoundService::SoundBuffer sound_buffer;
         
         sound_buffer.data_.resize(frame->DataSize());
         memcpy(&sound_buffer.data_[0], frame->DataPtr(), frame->DataSize());
@@ -124,7 +124,7 @@ namespace MumbleVoip
         else
             sound_buffer.stereo_ = false;
 
-        sound_id_ = sound_service->PlaySoundBuffer(sound_buffer, Foundation::SoundServiceInterface::Voice, sound_id_);
+        sound_id_ = sound_service->PlaySoundBuffer(sound_buffer, ISoundService::Voice, sound_id_);
     }
 
     void MicrophoneAdjustmentWidget::UpdateUI()

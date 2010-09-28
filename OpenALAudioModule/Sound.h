@@ -5,7 +5,7 @@
 #include <AL/al.h>
 #include <AL/alc.h>
 
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 
 namespace OpenALAudio
 {
@@ -21,7 +21,7 @@ namespace OpenALAudio
         //! Load raw data from buffer
         /*! Any existing sound data will be erased.
          */
-        bool LoadFromBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer);
+        bool LoadFromBuffer(const ISoundService::SoundBuffer& buffer);
 
         //! Return sound name
         const std::string& GetName() const { return name_; }

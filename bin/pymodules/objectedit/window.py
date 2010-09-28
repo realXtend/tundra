@@ -1,4 +1,5 @@
 import rexviewer as r
+import naali
 
 import PythonQt
 from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox
@@ -41,7 +42,7 @@ class ObjectEditWindow:
         width = ui.size.width()
         height = ui.size.height()
         
-        uism = r.getUiSceneManager()
+        uism = naali.ui
 
         self.widget = ui
 
