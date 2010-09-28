@@ -1,0 +1,139 @@
+# The CMakeBuildConfigTemplate.txt defines the default build settings
+# that are used when you build a clean checkout.
+
+# CMakeBuildConfigTemplate.txt is only a template file! Changes to that file
+# do not have any effect on the actual CMake execution.
+
+# For the actual configuration, the file CMakeBuildConfigTemplate.txt gets 
+# copied to CMakeBuildConfig.txt, in which you can customize your own settings. 
+
+# The CMakeBuildConfig.txt is not part of the repository, and do not add it there!
+# The idea is that everyone can customize the set of modules to build using that 
+# file, without having to fear about an accidental commit of these changes.
+
+# Configure the use of Caelum. http://www.ogre3d.org/tikiwiki/Caelum
+if (MSVC)
+  SET (CAELUM 1)
+  configure_caelum ()
+endif()
+
+# Configure the use of Hydrax. By default Hydrax is disabled. http://www.ogre3d.org/tikiwiki/Hydrax
+if (MSVC)
+  SET (HYDRAX 0)
+#  configure_hydrax ()
+endif()
+
+# If WINDOWS_APP == 0, the console (output log) window is created and shown when Naali starts on Windows.
+# If WINDOWS_APP == 1, this window is not shown. This flag only affects when building on Windows.
+SET (WINDOWS_APP 0)
+
+# Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
+SET (DYNAMIC_LOGIN_SCENE 1)
+
+# If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
+# add_definitions (-DPROFILING)
+
+# If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
+if (MSVC)
+    add_definitions (-DMEMORY_LEAK_CHECK)
+endif (MSVC)
+
+# UiServiceModule is an experimental light-weight UI module 
+# which can be used as a substitute for UiModule.
+# If you want to test UiServiceModule, uncomment the following line.
+# The define also enables LoginScreenModule which is an experimental module 
+# for abstracting the login screen / main menu from the main application:
+# currently this functionality resides in RexLogicModule and UiModule.
+SET (UISERVICE_TEST 0)
+
+# The following are the core modules that are required for the project to build. None of these can be omitted.
+add_subdirectory (Core)
+add_subdirectory (Foundation)
+add_subdirectory (Interfaces)
+add_subdirectory (RexCommon)
+add_subdirectory (SceneManager)
+add_subdirectory (OgreRenderingModule)
+add_subdirectory (Application)
+
+# The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
+# they will not be able to conditionally compile the EC.
+
+# The following ECs are required for Naali to build.
+AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule. Declared by RexLogicModule.
+AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence) # Declared by RexLogicModule.
+AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required. Declared by AvatarModule.
+
+# The following EC's are declared by RexLogicModule and are optional. You may comment these lines out to disable any ECs you do not want to include.
+AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
+AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
+AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
+AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
+AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
+AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
+AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
+AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
+AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
+AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
+AddEntityComponent(EntityComponents/EC_Light EC_Light)
+AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
+AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
+AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
+AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
+
+# The following EC's are declared by AvatarModule. Optional.
+AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
+
+# Declared by PythonScriptModule. Optional.
+AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Used by ECEditorModule.
+AddEntityComponent(EntityComponents/EC_Script EC_Script)
+
+# The following modules are required.
+add_subdirectory (RexLogicModule)
+add_subdirectory (SupportModules)
+add_subdirectory (AvatarModule)
+add_subdirectory (AssetModule)
+add_subdirectory (HttpUtilities)
+add_subdirectory (RpcUtilities)
+add_subdirectory (ProtocolUtilities)
+add_subdirectory (EnvironmentModule)
+
+# The following are not core modules, but you cannot do anything practical without
+# having them, so they are effectively required.
+add_subdirectory (QtInputModule)         # This module will be removed in the future.
+add_subdirectory (TextureDecoderModule)  # Required with OpenSim.
+add_subdirectory (ProtocolModuleOpenSim) # Required with OpenSim.
+add_subdirectory (ProtocolModuleTaiga)   # Required with OpenSim.
+
+if (UISERVICE_TEST)
+    add_subdirectory(UiServiceModule)
+    add_subdirectory(LoginScreenModule)
+else()
+    add_subdirectory(UiModule)
+endif ()
+    
+# The following are optional.
+add_subdirectory (OpenALAudioModule)     # Enables audio playback.
+add_subdirectory (ECEditorModule)        # Tool for editing Naali scene data.
+add_subdirectory (InventoryModule)       # OpenSim and Taiga WebDAV inventory.
+add_subdirectory (OgreAssetEditorModule) # Enables Ogre-specific asset editors.
+add_subdirectory (DebugStatsModule)      # Enables a developer window for debugging.
+add_subdirectory (PythonScriptModule)    # Allows Python-created modules and scene script instances.
+add_subdirectory (JavascriptModule)      # Allows QtScript-created scene script instances.
+add_subdirectory (CommunicationsModule)  # Enables communication capabilities.
+add_subdirectory (TelepathyIMModule)     # Telepathy Messaging support.
+add_subdirectory (InWorldChatModule)     # Implements in-world text communication.
+#add_subdirectory (NoteCardModule)       # A module created to test EC sync. Implements a free-form note creator. Will be deleted in the future.
+
+AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
+AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
+#add_subdirectory (EntityComponents/EC_NoteCard EC_NoteCard)       # declared by NoteCardModule. Will be deleted in the future.
+
+#add_subdirectory (LegacyAvatarModule)
+
+if (MSVC)
+   add_subdirectory (MumbleVoipModule)   # VOIP communication using the Mumble library.
+endif()
+
+add_subdirectory (WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined).
+add_subdirectory (PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
+add_subdirectory (WorldMapModule)        # Implements OpenSim grid world map. 
