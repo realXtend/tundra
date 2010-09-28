@@ -425,9 +425,7 @@ namespace Environment
                 // If water is created after, this connection must be made!
                 QObject::connect(water.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
                 QObject::connect(water.get(), SIGNAL(ExistWater(bool)), water_toggle_box, SLOT(setChecked(bool)));
-                // Idea here is that if for some reason server removes water it state is updated to editor correctly.
-                //QObject::connect(water.get(), SIGNAL(WaterRemoved()), this, SLOT(ToggleWaterCheckButton()));
-                //QObject::connect(water.get(), SIGNAL(WaterCreated()), this, SLOT(ToggleWaterCheckButton()));
+           
               
             }
             else
@@ -1637,24 +1635,7 @@ namespace Environment
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
-    void EnvironmentEditor::ToggleWaterCheckButton()
-    {
-        /*
-        QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
-        WaterPtr water = environment_module_->GetWaterHandler();
-
-        // Dirty way to check that what is state of water. 
-        if ( water.get() != 0 && water_toggle_box != 0)
-        {
-            
-            if (water->IsWaterPlane())
-                water_toggle_box->setChecked(true); 
-            else
-                water_toggle_box->setChecked(false);
-        }
-        */
-    }
-
+   
     void EnvironmentEditor::UpdateTerrainTextureRanges()
     {
         assert(environment_module_);

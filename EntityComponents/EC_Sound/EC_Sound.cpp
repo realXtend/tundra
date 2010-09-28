@@ -71,13 +71,14 @@ void EC_Sound::PlaySound()
     triggerSound.Set(false, AttributeChange::LocalOnly);
     ComponentChanged(AttributeChange::LocalOnly);
 
-    ISoundService *soundService = framework_->GetService<ISoundService>();
+    ISoundService *soundService = framework_->Audio();
     if(!soundService)
     {
-        // log warning
+        LogWarning("Failed to get sound service from the framework.");
         return;
     }
 
+    // If previous sound is still playing stop it before we apply a new sound.
     if(sound_id_)
         StopSound();
 
@@ -107,10 +108,10 @@ void EC_Sound::StopSound()
 
 void EC_Sound::UpdateSoundSettings()
 {
-    ISoundService *soundService = framework_->GetService<ISoundService>();
+    ISoundService *soundService = framework_->Audio();
     if(!soundService || !sound_id_)
     {
-        // log warning
+        LogWarning("Cannot update the sound settings cause sound service is not intialized or a sound wasn't on active state.");
         return;
     }
 
@@ -123,13 +124,13 @@ void EC_Sound::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        // log warning
+        LogError("Couldn't update singals cause component dont have parent entity setted.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(!scene)
     {
-        // log warning
+        LogError("Fail to update signals cause parent entity's scene is null.");
         return;
     }
 
