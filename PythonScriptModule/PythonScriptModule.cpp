@@ -55,7 +55,7 @@
 #include "LoginServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
@@ -1634,7 +1634,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    Foundation::UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
     if (!ui)
     {
         // If this occurs, we're most probably operating in headless mode.
@@ -1658,20 +1658,6 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     UiProxyWidget* proxy = new UiProxyWidget(widget);
     PythonScriptModule::GetInstance()->proxyWidgets << proxy;
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
-}
-
-PyObject* GetUiSceneManager(PyObject *self)
-{
-    Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
-    if (!ui)
-    {
-        // If this occurs, we're most probably operating in headless mode.
-        //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
-        return NULL;
-    }
-
-    return PythonScriptModule::GetInstance()->WrapQObject(ui);
 }
 
 PyObject* DisconnectUIViewSignals(PyObject *self)
@@ -1879,9 +1865,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-    
-    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
-    "Gets the Naali-Qt UI scene manager"},
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
@@ -1985,8 +1968,9 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
-            PythonQt::self()->registerClass(&Foundation::UiServiceInterface::staticMetaObject);
-            PythonQt::self()->registerClass(&Foundation::SoundServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
+//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+            PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
             PythonQt::self()->registerClass(&InputServiceInterface::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
@@ -2001,7 +1985,7 @@ namespace PythonScript
             pythonqt_inited = true;
 
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
+            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly

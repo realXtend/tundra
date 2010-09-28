@@ -1,4 +1,5 @@
 import rexviewer as r
+import naali
 import PythonQt
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtGui import QWidget, QMessageBox
@@ -25,7 +26,7 @@ class IncomingMessagesHandler():
             self.queue.put('__end__', 'none')
             
             self.proxywidget.hide()
-            uism = r.getUiSceneManager()
+            uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True
@@ -77,7 +78,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
         self.controller = controller
         IncomingMessagesHandler.__init__(self, queue, self.endMethod)        
         
-        uism = r.getUiSceneManager()
+        uism = naali.ui
 #        uiprops = r.createUiWidgetProperty(1) # 1 = Qt::Dialog
 #        uiprops.SetMenuGroup("Server Tools")
 #        uiprops.name_ = "Estate Management"
@@ -189,7 +190,7 @@ class EstateManagementWindow(QWidget, IncomingMessagesHandler):
             self.controller.isrunning = 0
             
             self.proxywidget.hide()
-            uism = r.getUiSceneManager()
+            uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
             uism.RemoveWidgetFromScene(self.proxywidget)
             return True

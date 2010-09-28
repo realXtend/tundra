@@ -1006,8 +1006,8 @@ if 0:
     loader = QUiLoader()
     uifile = QFile("pymodules/editgui/materials.ui")
     ui = loader.load(uifile)
-    uism = r.getUiSceneManager()
-    uiprops = r.createUiWidgetProperty()
+    uism = naali.ui
+    uiprops = r.createUiWidgetProperty() #note: createUiWidgetProperty doesn't exist anymore -Stinkfist
     uiprops.show_at_toolbar_ = False
     uiprops.widget_name_ = "Test"
     uiprops.my_size_ = QSize(ui.size.width(), ui.size.height())
@@ -1107,7 +1107,7 @@ if 0:
     from PythonQt.QtCore import QFile, QSize
     from PythonQt.QtGui import QLineEdit, QHBoxLayout, QComboBox, QLabel, QPushButton, QSizePolicy, QIcon
     loader = QUiLoader()
-    uism = r.getUiSceneManager()
+    uism = naali.ui
     
     #~ uifile3 = QFile("pymodules/editgui/tab.ui")
     #~ ui3 = loader.load(uifile3)
@@ -1169,7 +1169,7 @@ if 0:
     #~ props.widget_name_ = "property editor"
     #~ r.test = r.createUiProxyWidget(r.c.propedit, props)
     #~ r.test.show()
-    uism = r.getUiSceneManager()
+    uism = naali.ui
     uism.AddProxyWidget(r.test)
     print r.test
     r.test.show()
@@ -1184,7 +1184,7 @@ if 0:
     uifile = QFile("pymodules/objectedit/selection.ui")
     ui = loader.load(uifile)
     uism = r.getUiSceneManager()
-    uiprops = r.createUiWidgetProperty(2)
+    uiprops = r.createUiWidgetProperty(2) #note: createUiWidgetProperty doesn't exist anymore -Stinkfist
     uiprops.widget_name_ = "Thingie Rect"
     
     #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it

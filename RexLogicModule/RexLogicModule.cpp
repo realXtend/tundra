@@ -76,7 +76,7 @@
 #include "ComponentManager.h"
 #include "IEventData.h"
 #include "TextureInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "InputServiceInterface.h"
 #include "SceneManager.h"
 #include "WorldStream.h"

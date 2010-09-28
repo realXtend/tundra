@@ -434,7 +434,7 @@ namespace CoreUi
 
         UpdateInWorldVoiceIndicator();
 
-        Foundation::UiServiceInterface* ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface* ui_service = framework_->GetService<UiServiceInterface>();
         if (ui_service)
         {
             if (voice_controller_widget_)
