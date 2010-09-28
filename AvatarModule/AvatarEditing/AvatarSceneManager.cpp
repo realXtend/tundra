@@ -4,6 +4,9 @@
 #include "AvatarEditing/AvatarSceneManager.h"
 #include "AvatarEditing/AnchorLayout.h"
 
+#include "Avatar/AvatarHandler.h"
+#include "Avatar/AvatarAppearance.h"
+
 #include "UiServiceInterface.h"
 
 namespace Avatar
@@ -32,15 +35,35 @@ namespace Avatar
         if (!ui_service) 
             return;
 
+        // Scene
         avatar_scene_ = new QGraphicsScene(this);
         QGraphicsProxyWidget *editor_proxy = avatar_scene_->addWidget(avatar_editor_);
 
+        // Layout
         scene_layout_ = new AnchorLayout(this, avatar_scene_);
         scene_layout_->AddCornerAnchor(editor_proxy, Qt::TopLeftCorner, Qt::TopLeftCorner);
         scene_layout_->AddCornerAnchor(editor_proxy, Qt::BottomLeftCorner, Qt::BottomLeftCorner);
 
+        // Toolbar
         QGraphicsProxyWidget *toolbar_proxy = ui_helper_->CreateToolbar();
         scene_layout_->AddCornerAnchor(toolbar_proxy, Qt::TopRightCorner, Qt::TopRightCorner);
+
+        // Info
+        QGraphicsProxyWidget *info_proxy = ui_helper_->CreateInfoWidget();
+        scene_layout_->AddCornerAnchor(editor_proxy, Qt::TopRightCorner, info_proxy, Qt::TopLeftCorner);
+        scene_layout_->AddCornerAnchor(info_proxy, Qt::TopRightCorner, toolbar_proxy, Qt::TopLeftCorner);
+        info_proxy->hide();
+
+        // Hook info signals to ui
+        connect(avatar_editor_, SIGNAL(EditorStatus(const QString&, int)), ui_helper_, SLOT(ShowStatus(const QString&, int)));
+        connect(avatar_editor_, SIGNAL(EditorError(const QString&, int)), ui_helper_, SLOT(ShowError(const QString&, int)));
+        connect(avatar_editor_, SIGNAL(EditorHideMessages()), ui_helper_, SLOT(HideInfo()));
+        AvatarAppearance *appearance_handler = &avatar_module_->GetAvatarHandler()->GetAppearanceHandler();
+        if (appearance_handler)
+        {
+            connect(appearance_handler, SIGNAL(AppearanceStatus(const QString&, int)), ui_helper_, SLOT(ShowStatus(const QString&, int)));
+            connect(appearance_handler, SIGNAL(AppearanceError(const QString&, int)), ui_helper_, SLOT(ShowError(const QString&, int)));
+        }
 
         ui_service->RegisterScene(scene_name_, avatar_scene_);
         connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), SLOT(SceneChanged(const QString&, const QString&)));

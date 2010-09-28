@@ -7,6 +7,9 @@
 #include <QList>
 #include <QGraphicsProxyWidget>
 
+#include "ui_AvatarToolbar.h"
+#include "ui_AvatarInfoWidget.h"
+
 namespace Avatar
 {
     namespace Helpers
@@ -22,12 +25,23 @@ namespace Avatar
 
         public slots:
             QGraphicsProxyWidget *CreateToolbar();
+            QGraphicsProxyWidget *CreateInfoWidget();
+            QGraphicsProxyWidget *CreateProxy(QWidget *widget);
+
+            void ShowStatus(const QString &message, int msec_timeout = 0);
+            void ShowError(const QString &error, int msec_timeout = 0);
+            void HideInfo();
 
         signals:
             void ExitRequest();
         
         private:
             QList<QWidget*> cleanup_widgets_;
+
+            Ui::AvatarToolbar toolbar_ui_;
+            Ui::AvatarInfoWidget info_ui_;
+
+            QGraphicsProxyWidget *info_proxy_;
         };
     }
 }

@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "UiHelper.h"
 
-#include "ui_AvatarToolbar.h"
+#include <QTimer>
 
 namespace Avatar
 {
@@ -23,15 +23,49 @@ namespace Avatar
         QGraphicsProxyWidget *UiHelper::CreateToolbar()
         {
             QWidget *toolbar = new QWidget();
-            Ui::AvatarToolbar *toolbar_ui = new Ui::AvatarToolbar();
-            toolbar_ui->setupUi(toolbar);
+            toolbar_ui_.setupUi(toolbar);
+            connect(toolbar_ui_.button_exit, SIGNAL(clicked()), SIGNAL(ExitRequest()));
+            return CreateProxy(toolbar);
+        }
 
-            connect(toolbar_ui->button_exit, SIGNAL(clicked()), SIGNAL(ExitRequest()));
-            
-            cleanup_widgets_ << toolbar;
-            QGraphicsProxyWidget *toolbar_proxy = new QGraphicsProxyWidget(0, Qt::Widget);
-            toolbar_proxy->setWidget(toolbar);
-            return toolbar_proxy;
+        QGraphicsProxyWidget *UiHelper::CreateInfoWidget()
+        {
+            QWidget *info = new QWidget();
+            info_ui_.setupUi(info);
+            info_ui_.icon_label->hide();
+            info_proxy_ = CreateProxy(info);
+            return info_proxy_;
+        }
+
+        QGraphicsProxyWidget *UiHelper::CreateProxy(QWidget *widget)
+        {
+            cleanup_widgets_ << widget;
+            QGraphicsProxyWidget *proxy = new QGraphicsProxyWidget(0, Qt::Widget);
+            proxy->setWidget(widget);
+            return proxy;
+        }
+
+        void UiHelper::ShowStatus(const QString &message, int msec_timeout)
+        {
+            info_ui_.info_label->setText(message);
+            info_proxy_->show();
+
+            if (msec_timeout > 0)
+                QTimer::singleShot(msec_timeout, this, SLOT(HideInfo()));
+        }
+
+        void UiHelper::ShowError(const QString &error, int msec_timeout)
+        {
+            info_ui_.info_label->setText(error);
+            info_proxy_->show();
+
+            if (msec_timeout > 0)
+                QTimer::singleShot(msec_timeout, this, SLOT(HideInfo()));
+        }
+
+        void UiHelper::HideInfo()
+        {
+            info_proxy_->hide();
         }
     }
 }
