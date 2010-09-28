@@ -3,7 +3,8 @@
 #ifndef incl_RexLogicModule_RexMovementInput_h
 #define incl_RexLogicModule_RexMovementInput_h
 
-#include "InputContext.h"
+#include "InputFwd.h"
+#include <QObject>
 
 namespace Foundation
 {

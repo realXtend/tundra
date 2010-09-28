@@ -19,7 +19,7 @@
 #include "View/EtherScene.h"
 
 #include "UiServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 
 #include "CoreDefines.h"
 #include <QStringList>

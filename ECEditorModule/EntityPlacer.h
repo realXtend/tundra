@@ -5,9 +5,11 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-#include "InputContext.h"
+#include "../Input/InputFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
+
+#include <QObject>
 
 namespace OgreRenderer
 {
@@ -24,7 +26,7 @@ namespace Ogre
 
 namespace ECEditor
 {
-    class EntityPlacer: public QObject
+    class EntityPlacer : public QObject
     {
         Q_OBJECT
     public:

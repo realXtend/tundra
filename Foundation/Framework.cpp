@@ -17,13 +17,16 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "FrameworkQtApplication.h"
+#include "NaaliApplication.h"
 #include "CoreException.h"
-#include "InputServiceInterface.h"
+#include "../Input/Input.h"
 #include "SoundServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
+
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -41,6 +44,16 @@
 #include <QMetaMethod>
 
 #include "MemoryLeakCheck.h"
+
+class FrameworkImpl
+{
+public:
+    explicit FrameworkImpl(Foundation::Framework *owner)
+    :input(owner)
+    {
+    }
+    Input input;
+};
 
 namespace Resource
 {
@@ -91,7 +104,7 @@ namespace Foundation
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
-            application_ = ApplicationPtr(new Application(this));
+//            application_ = ApplicationPtr(new Application(this));
             platform_ = PlatformPtr(new Platform(this));
         
             // Create config manager
@@ -133,15 +146,20 @@ namespace Foundation
             Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
-            engine_.reset (new FrameworkQtApplication(this, argc_, argv_));
+            naaliApplication = std::auto_ptr<NaaliApplication>(new NaaliApplication(this, argc_, argv_));
 
             initialized_ = true;
+
+            ui = new NaaliUi(this);
+            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+
+            impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
         }
     }
 
     Framework::~Framework()
     {
-        engine_.reset();
+        naaliApplication.reset();
         thread_task_manager_.reset();
         event_manager_.reset();
         service_manager_.reset();
@@ -330,7 +348,7 @@ namespace Foundation
             PostInitialize();
         }
         
-        engine_->Go();
+        naaliApplication->Go();
         exit_signal_ = true;
 
         UnloadModules();
@@ -339,15 +357,15 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (engine_.get())
-            engine_->AboutToExit();
+        if (naaliApplication.get())
+            naaliApplication->AboutToExit();
     }
     
     void Framework::ForceExit()
     {
         exit_signal_ = true;
-        if (engine_.get())
-            engine_->quit();
+        if (naaliApplication.get())
+            naaliApplication->quit();
     }
     
     void Framework::CancelExit()
@@ -593,32 +611,12 @@ namespace Foundation
         }
     }
 
-    QApplication *Framework::GetQApplication() const
-    {
-        return engine_.get();
-    }
-
-    MainWindow *Framework::GetMainWindow() const
-    {
-        return engine_->GetMainWindow();
-    }
-
-    QGraphicsView *Framework::GetUIView() const
-    {
-        return engine_->GetUIView();
-    }
-
 #ifdef PROFILING
     Profiler &Framework::GetProfiler()
     {
         return profiler_;
     }
 #endif
-
-    void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
-    {
-        engine_->SetUIView(view);
-    }
 
     ComponentManagerPtr Framework::GetComponentManager() const
     {
@@ -665,24 +663,24 @@ namespace Foundation
         return config_manager_.get();
     }
 
-    UiServiceInterface *Framework::Ui() const
+    Frame *Framework::GetFrame() const
     {
-        boost::shared_ptr<UiServiceInterface> ui = GetServiceManager()->
-            GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-        if (!ui.get())
-            throw Exception("Fatal: Ui service not present!");
-
-        return ui.get();
+        return frame_;
     }
 
-    InputServiceInterface *Framework::Input() const
+    Input *Framework::GetInput() const
     {
-        boost::shared_ptr<InputServiceInterface> input_logic = GetServiceManager()->
-                GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (!input_logic.get())
-            throw Exception("Fatal: Input service not present!");
+        return &impl->input;
+    }
 
-        return input_logic.get();
+    NaaliUi *Framework::Ui() const
+    {
+        return ui;
+    }
+
+    ScriptConsole *Framework::Console() const
+    { 
+        return console_;
     }
 
     SoundServiceInterface *Framework::Audio() const

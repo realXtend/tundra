@@ -7,12 +7,14 @@
 #include "ConsoleEvents.h"
 #include "UiConsoleManager.h"
 
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "ServiceManager.h"
 #include "EventManager.h"
 #include "ModuleManager.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
 
 namespace Console
 {
@@ -42,7 +44,7 @@ namespace Console
 
     void ConsoleModule::PostInitialize()
     {
-        QGraphicsView *ui_view = GetFramework()->GetUIView();
+        QGraphicsView *ui_view = GetFramework()->Ui()->GraphicsView();
         if (ui_view)
             ui_console_manager_ = new UiConsoleManager(GetFramework(), ui_view);
 
@@ -68,7 +70,7 @@ namespace Console
             manager_->Update(frametime);
 
             // Read from the global top-level input context for console dropdown event.
-            if (framework_->Input()->IsKeyPressed(Qt::Key_F1))
+            if (framework_->GetInput()->IsKeyPressed(Qt::Key_F1))
                 //manager_->ToggleConsole();
                 ui_console_manager_->ToggleConsole();
         }

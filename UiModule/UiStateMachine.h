@@ -75,7 +75,6 @@ namespace CoreUi
         void DelayedSceneChange();
         void SetTransitions();
         void ViewKeyEvent(QKeyEvent *key_event);
-        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
         void StateSwitch();
         void AnimationsStart();
