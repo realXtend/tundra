@@ -25,12 +25,6 @@ class ToolBarWindow():
         height = ui.size.height()
         
         uism = naali.ui
-        print "INPUT"
-        print dir(naali.input)
-        print "AUDIO"
-        print dir(naali.audio)
-        print "UI"
-        print dir(naali.ui)
         
         # uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
         # uiprops.SetMenuGroup(2) #2 is server tools group
