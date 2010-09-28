@@ -2,4 +2,6 @@
     <entry>PythonScriptModule</entry>
     <dependency>ConsoleModule</dependency>
     <dependency>RexLogicModule</dependency>
+    <dependency>UiModule</dependency>
+    <dependency>OpenALAudioModule</dependency>
 </config>

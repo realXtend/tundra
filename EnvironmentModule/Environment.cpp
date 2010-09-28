@@ -98,7 +98,7 @@ void Environment::CreateEnvironment()
     
     // Creates default fog component
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic()));
-    activeFogComponent_ = entity->GetComponent<EC_Fog>().get();
+    activeFogComponent_ = entity->GetComponent<EC_Fog >().get();
     
     active_scene->EmitEntityCreated(entity);
     activeEnvEntity_ = entity;
@@ -208,6 +208,7 @@ void Environment::Update(f64 frametime)
     OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
+
 
      // Currently updates other then water and fog.
     env->UpdateVisualEffects(frametime);

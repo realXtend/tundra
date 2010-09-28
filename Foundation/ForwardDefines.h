@@ -84,4 +84,8 @@ typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 class IEventData;
 
+class UiServiceInterface;
+typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
+typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
+
 #endif

@@ -667,8 +667,7 @@ namespace Foundation
 
     UiServiceInterface *Framework::Ui() const
     {
-        boost::shared_ptr<UiServiceInterface> ui = GetServiceManager()->
-            GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = GetServiceManager()->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (!ui.get())
             throw Exception("Fatal: Ui service not present!");
 
