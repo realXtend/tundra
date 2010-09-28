@@ -424,9 +424,10 @@ namespace Environment
                 water_toggle_box->setChecked(true);
                 // If water is created after, this connection must be made!
                 QObject::connect(water.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
+                QObject::connect(water.get(), SIGNAL(ExistWater(bool)), water_toggle_box, SLOT(setChecked(bool)));
                 // Idea here is that if for some reason server removes water it state is updated to editor correctly.
-                QObject::connect(water.get(), SIGNAL(WaterRemoved()), this, SLOT(ToggleWaterCheckButton()));
-                QObject::connect(water.get(), SIGNAL(WaterCreated()), this, SLOT(ToggleWaterCheckButton()));
+                //QObject::connect(water.get(), SIGNAL(WaterRemoved()), this, SLOT(ToggleWaterCheckButton()));
+                //QObject::connect(water.get(), SIGNAL(WaterCreated()), this, SLOT(ToggleWaterCheckButton()));
               
             }
             else
@@ -600,24 +601,25 @@ namespace Environment
                     return;
 
                 QVector<float> color = water->GetFogWaterColor();
-
+            
                 fog_water_red->setMinimum(0.0);
-                fog_water_red->setValue(color[0]);   
-
                 fog_water_blue->setMinimum(0.0);
-                fog_water_blue->setValue(color[1]);
-
                 fog_water_green->setMinimum(0.0);
-                fog_water_green->setValue(color[2]);
-                
                 fog_water_start_distance->setMaximum(1000.0);
-                fog_water_start_distance->setValue(water->GetWaterFogStartDistance());
                 fog_water_end_distance->setMaximum(1000.0);
-                fog_water_end_distance->setValue(water->GetWaterFogEndDistance());
-
                 fog_water_start_distance->setMinimum(0.0);
                 fog_water_end_distance->setMinimum(0.0);
 
+                if ( color.size() != 0)
+                {
+                
+                    fog_water_red->setValue(color[0]);   
+                    fog_water_blue->setValue(color[1]);
+                    fog_water_green->setValue(color[2]);
+                    fog_water_start_distance->setValue(water->GetWaterFogStartDistance());
+                    fog_water_end_distance->setValue(water->GetWaterFogEndDistance());
+                }
+                
                 QObject::connect(water.get(), SIGNAL(WaterFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateWaterFog(float, float, const QVector<float>&)));
                 QObject::connect(fog_water_color_button, SIGNAL(clicked()), this, SLOT(SetWaterFog()));
                 QObject::connect(fog_water_distance_button, SIGNAL(clicked()), this, SLOT(SetWaterFogDistance()));
@@ -1392,7 +1394,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         WaterPtr water = environment_module_->GetWaterHandler();
         if (water.get() != 0 && water_height_box != 0)
-            water->SetWaterHeight(static_cast<float>(water_height_box->value(), AttributeChange::Local)); 
+            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Local); 
     }
 
     void EnvironmentEditor::UpdateWaterGeometry(int state)
@@ -1405,7 +1407,11 @@ namespace Environment
         case Qt::Checked:
             {
                 if ( water_height_box != 0 && water.get() != 0 )
-                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()));
+                {
+                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Local);
+                    // If water is re-created it will be always created to fixed height.
+                    water->SetWaterHeight(20.0, AttributeChange::Local);
+                }
                 else if ( water.get() != 0)
                     water->CreateWaterGeometry();
                 
@@ -1633,17 +1639,20 @@ namespace Environment
 
     void EnvironmentEditor::ToggleWaterCheckButton()
     {
+        /*
         QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
         WaterPtr water = environment_module_->GetWaterHandler();
 
         // Dirty way to check that what is state of water. 
         if ( water.get() != 0 && water_toggle_box != 0)
         {
-            if (water->GetWaterEntity().expired())
-                water_toggle_box->setChecked(false); 
+            
+            if (water->IsWaterPlane())
+                water_toggle_box->setChecked(true); 
             else
-                water_toggle_box->setChecked(true);
+                water_toggle_box->setChecked(false);
         }
+        */
     }
 
     void EnvironmentEditor::UpdateTerrainTextureRanges()

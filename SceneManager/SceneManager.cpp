@@ -11,6 +11,7 @@
 #include "EventManager.h"
 #include "IComponent.h"
 #include "ForwardDefines.h"
+#include "EC_Name.h"
 
 #include <QString>
 #include <QDomDocument>
@@ -75,6 +76,24 @@ namespace Scene
             return it->second;
 
         return Scene::EntityPtr();
+    }
+
+    Scene::EntityPtr SceneManager::GetEntityByName(const QString& name) const
+    {
+        EntityMap::const_iterator it = entities_.begin();
+        while(it != entities_.end())
+        {
+            EntityPtr entity = it->second;
+            if (entity->HasComponent(EC_Name::TypeNameStatic()))
+            {
+                QString nam = entity->GetComponent<EC_Name >().get()->name.Get();
+                if ( nam == name )
+                    return entity;              
+                
+            }
+            ++it;
+        }   
+        return Scene::EntityPtr();               
     }
 
     entity_id_t SceneManager::GetNextFreeId()

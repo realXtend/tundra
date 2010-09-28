@@ -97,6 +97,13 @@ namespace Scene
         */
         EntityPtr GetEntity(entity_id_t id) const;
 
+        //! Returns entity with the specified name, searches through only those entities which has EC_Name-component.
+        /*!
+            \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,
+                  to avoid dangling references that prevent entities from being properly destroyed.
+        */
+        EntityPtr GetEntityByName(const QString& name) const;
+
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         bool HasEntity(entity_id_t id) const { return (entities_.find(id) != entities_.end()); }
 

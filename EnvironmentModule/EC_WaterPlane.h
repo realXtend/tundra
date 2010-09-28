@@ -101,8 +101,6 @@ class EC_WaterPlane : public IComponent
         /// Called If some of the attributes has been changed.
         void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
 
-     
-
     private:
         /** 
          * Constuctor.

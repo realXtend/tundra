@@ -25,17 +25,17 @@ namespace Environment
    
     EC_WaterPlane::EC_WaterPlane(IModule *module)
         : IComponent(module->GetFramework()),
-        xSizeAttr_(this, "Water plane x-size", 5000),
-        ySizeAttr_(this, "Water plane y-size", 5000),
-        depthAttr_(this, "Water plane depth", 20),
-        positionAttr_(this, "Water plane position", Vector3df()),
-        rotationAttr_(this, "Water plane rotation", Quaternion()),
-        scaleUfactorAttr_(this, "U scale factor", 0.0002f),
-        scaleVfactorAttr_(this, "V scale factor", 0.0002f),
-        xSegmentsAttr_(this, "The number of segments to the plane in the x direction", 10),
-        ySegmentsAttr_(this, "The number of segments to the plane in the y direction", 10),
-        materialNameAttr_(this, "Water material", QString("Ocean")),
-        fogColorAttr_(this, "Underwater fog color", Color(0.2f,0.4f,0.35f,1.0f)),
+        xSizeAttr_(this, "x-size", 5000),
+        ySizeAttr_(this, "y-size", 5000),
+        depthAttr_(this, "Depth", 20),
+        positionAttr_(this, "Position", Vector3df()),
+        rotationAttr_(this, "Rotation", Quaternion()),
+        scaleUfactorAttr_(this, "U factor", 0.0002f),
+        scaleVfactorAttr_(this, "V factor", 0.0002f),
+        xSegmentsAttr_(this, "Segments x direction", 10),
+        ySegmentsAttr_(this, "Segments y direction", 10),
+        materialNameAttr_(this, "Material", QString("Ocean")),
+        fogColorAttr_(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
         fogStartAttr_(this, "Fog start distance", 100.f),
         fogEndAttr_(this, "Fog end distance", 2000.f),
         fogModeAttr_(this, "Fog mode", 3),
@@ -73,7 +73,19 @@ namespace Environment
         
         CreateWaterPlane();
         QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(AttachEntity()));
-      
+        
+        // If there exist placeable copy its position for default position and rotation.
+       
+        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        if ( placeable != 0)
+        {
+            Vector3df vec = placeable->GetPosition();
+            positionAttr_.Set(vec,AttributeChange::Local);
+       
+            Quaternion rot =placeable->GetOrientation();
+            rotationAttr_.Set(rot, AttributeChange::Local);
+            ComponentChanged(AttributeChange::Local);
+        }
     }
     
     EC_WaterPlane::~EC_WaterPlane()
@@ -215,11 +227,12 @@ namespace Environment
             attached_ = true;
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
+            
         }
         
         Vector3df vec = positionAttr_.Get();
-        node_->setPosition(vec.x, vec.y, vec.z);
-     
+        //node_->setPosition(vec.x, vec.y, vec.z);
+        node_->_setDerivedPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
        
     }
 
@@ -228,13 +241,17 @@ namespace Environment
         // Is attached?
         if ( entity_ != 0 && !entity_->isAttached() && attached_  )
         {
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            scene_mgr->getRootSceneNode()->addChild(node_);
+            node_->setVisible(true);
+            
         }
 
          // Set orientation
         Quaternion rot = rotationAttr_.Get();
-        node_->setOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+        node_->_setDerivedOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
 
     }
 
@@ -257,23 +274,18 @@ namespace Environment
         else if ( name == positionAttr_.GetNameString() )
         {
             // Change position
-            
-            // Is there placeable component? If not use given default position.
-            if ( dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get()) == 0 )
-            {
-               SetPosition();
-            }
+            SetPosition();
            
         }
         else if ( name == rotationAttr_.GetNameString() )
         {
             // Change rotation
 
-             // Is there placeable component? If not use given rotation 
-            if ( dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get()) == 0 )
-            {
+            // Is there placeable component? If not use given rotation 
+            //if ( dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get()) == 0 )
+            //{
                SetOrientation();
-            }
+            //}
             
         }
         else if ( name == depthAttr_.GetNameString() )
@@ -316,6 +328,8 @@ namespace Environment
         Ogre::SceneNode* node = placeable->GetSceneNode();
         node->addChild(node_);
         node_->attachObject(entity_);
+
+      
         attached_ = true;
 
     }

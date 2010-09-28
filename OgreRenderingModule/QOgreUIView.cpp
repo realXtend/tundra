@@ -31,6 +31,7 @@ namespace OgreRenderer
 
     void QOgreUIView::Initialize_()
     {
+  
         // Setup QGrapchicsView
         setUpdatesEnabled (false);
         setAutoFillBackground (false);
