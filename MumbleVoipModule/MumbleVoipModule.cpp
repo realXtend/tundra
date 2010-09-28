@@ -338,7 +338,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::SetupSettingsWidget()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 

@@ -175,7 +175,7 @@ namespace Communication
     void TelepathyIMModule::AddWidgetToUi(const QString &name)
     {
         UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui_module && ui)
         {
             if (name == "IM")
@@ -190,7 +190,7 @@ namespace Communication
 
     void TelepathyIMModule::RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
             ui->RemoveWidgetFromScene(proxy_widget);
     }
