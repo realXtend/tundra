@@ -46,7 +46,7 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"Active": Make this sound listener active and put other listeners to inactive state.
 </ul>
 </td>
 </tr>

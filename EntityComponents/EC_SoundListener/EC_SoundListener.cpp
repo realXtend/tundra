@@ -55,7 +55,10 @@ void EC_SoundListener::OnActiveChanged()
 {
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
+    {
+        LogError("Failed on OnActiveChanged method cause default world scene isn't set.");
         return;
+    }
 
     if (active.Get())
     {
@@ -78,5 +81,9 @@ void EC_SoundListener::RegisterActions()
     if (entity)
     {
         entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
+    }
+    else
+    {
+        LogError("Fail to register actions cause compoent's parent entity is null.");
     }
 }
