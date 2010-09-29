@@ -15,8 +15,9 @@ compshorthand = {
     'EC_Highlight': 'highlight',
     'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',
-    "EC_OpenSimPresence": 'opensimpresence',
-    'EC_SoundRuler': 'soundruler'
+    'EC_OpenSimPresence': 'opensimpresence',
+    'EC_SoundRuler': 'soundruler',
+    'EC_Ruler': 'ruler'
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
