@@ -171,8 +171,8 @@ namespace PythonScript
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
-        /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
-        PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
+        /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", InputEvents::MOVE_FORWARD_PRESSED);
+        PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", InputEvents::MOVE_FORWARD_RELEASED);
         LogInfo("Added event constants.");*/
 
         /* TODO: add other categories and expose the hierarchy as py submodules or something,
@@ -250,9 +250,9 @@ namespace PythonScript
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        /*if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
+        /*if (category_id == inputeventcategoryid && event_id == InputEvents::INWORLD_CLICK)
         {
-            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            InputEvents::Movement *movement = checked_static_cast<InputEvents::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
         }
@@ -1459,7 +1459,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 //camera zoom - send an event like logic CameraControllable does:
             CameraZoomEvent event_data;
             //event_data.entity = entity_.lock(); // no entity for camera, :( -cm
-            event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+            event_data.amount = checked_static_cast<InputEvents::SingleAxisMovement*>(data)->z_.rel_;
             //if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
             framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
 */

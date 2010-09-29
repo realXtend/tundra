@@ -117,27 +117,27 @@ namespace RexLogic
                 
                 ActionInputMap input_map;
 
-                input_map[Input::Events::MOVE_FORWARD_PRESSED] = MoveForward;
-                input_map[Input::Events::MOVE_FORWARD_RELEASED] = MoveForward + 1;
-                input_map[Input::Events::MOVE_BACK_PRESSED] = MoveBackward;
-                input_map[Input::Events::MOVE_BACK_RELEASED] = MoveBackward + 1;
-                input_map[Input::Events::MOVE_LEFT_PRESSED] = MoveLeft;
-                input_map[Input::Events::MOVE_LEFT_RELEASED] = MoveLeft + 1;
-                input_map[Input::Events::MOVE_RIGHT_PRESSED] = MoveRight;
-                input_map[Input::Events::MOVE_RIGHT_RELEASED] = MoveRight + 1;
-                input_map[Input::Events::ROTATE_LEFT_PRESSED] = RotateLeft;
-                input_map[Input::Events::ROTATE_LEFT_RELEASED] = RotateLeft + 1;
-                input_map[Input::Events::ROTATE_RIGHT_PRESSED] = RotateRight;
-                input_map[Input::Events::ROTATE_RIGHT_RELEASED] = RotateRight + 1;
+                input_map[InputEvents::MOVE_FORWARD_PRESSED] = MoveForward;
+                input_map[InputEvents::MOVE_FORWARD_RELEASED] = MoveForward + 1;
+                input_map[InputEvents::MOVE_BACK_PRESSED] = MoveBackward;
+                input_map[InputEvents::MOVE_BACK_RELEASED] = MoveBackward + 1;
+                input_map[InputEvents::MOVE_LEFT_PRESSED] = MoveLeft;
+                input_map[InputEvents::MOVE_LEFT_RELEASED] = MoveLeft + 1;
+                input_map[InputEvents::MOVE_RIGHT_PRESSED] = MoveRight;
+                input_map[InputEvents::MOVE_RIGHT_RELEASED] = MoveRight + 1;
+                input_map[InputEvents::ROTATE_LEFT_PRESSED] = RotateLeft;
+                input_map[InputEvents::ROTATE_LEFT_RELEASED] = RotateLeft + 1;
+                input_map[InputEvents::ROTATE_RIGHT_PRESSED] = RotateRight;
+                input_map[InputEvents::ROTATE_RIGHT_RELEASED] = RotateRight + 1;
 
-                input_map[Input::Events::MOVE_UP_PRESSED] = MoveUp;
-                input_map[Input::Events::MOVE_UP_RELEASED] = MoveUp + 1;
-                input_map[Input::Events::MOVE_DOWN_PRESSED] = MoveDown;
-                input_map[Input::Events::MOVE_DOWN_RELEASED] = MoveDown + 1;
-                input_map[Input::Events::ROTATE_UP_PRESSED] = RotateUp;
-                input_map[Input::Events::ROTATE_UP_RELEASED] = RotateUp + 1;
-                input_map[Input::Events::ROTATE_DOWN_PRESSED] = RotateUp;
-                input_map[Input::Events::ROTATE_DOWN_RELEASED] = RotateUp + 1;
+                input_map[InputEvents::MOVE_UP_PRESSED] = MoveUp;
+                input_map[InputEvents::MOVE_UP_RELEASED] = MoveUp + 1;
+                input_map[InputEvents::MOVE_DOWN_PRESSED] = MoveDown;
+                input_map[InputEvents::MOVE_DOWN_RELEASED] = MoveDown + 1;
+                input_map[InputEvents::ROTATE_UP_PRESSED] = RotateUp;
+                input_map[InputEvents::ROTATE_UP_RELEASED] = RotateUp + 1;
+                input_map[InputEvents::ROTATE_DOWN_PRESSED] = RotateUp;
+                input_map[InputEvents::ROTATE_DOWN_RELEASED] = RotateUp + 1;
 
                 return input_map;
             }

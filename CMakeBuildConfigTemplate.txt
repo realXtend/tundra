@@ -44,7 +44,7 @@ endif()
 # The define also enables LoginScreenModule which is an experimental module 
 # for abstracting the login screen / main menu from the main application:
 # currently this functionality resides in RexLogicModule and UiModule.
-SET(UISERVICE_TEST 0)
+SET(UISERVICE_TEST 1)
 
 # The following are the core modules that are required for the project to build. None of these can be omitted.
 add_subdirectory(Core)
@@ -53,10 +53,14 @@ add_subdirectory(Interfaces)
 add_subdirectory(RexCommon)
 add_subdirectory(SceneManager)
 add_subdirectory(OgreRenderingModule)
-add_subdirectory(Application)
+add_subdirectory(Viewer)
+add_subdirectory(Server)
 
 add_subdirectory(Input)
 add_subdirectory(Ui)
+
+add_subdirectory(KristalliProtocolModule)
+add_subdirectory(TundraLogicModule)
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.
@@ -111,7 +115,7 @@ if (UISERVICE_TEST)
     add_subdirectory(LoginScreenModule)
 else()
     add_subdirectory(UiModule)          # Depends on OgreRenderingModule.
-endif ()
+endif()
     
 # The following are optional.
 add_subdirectory(OpenALAudioModule)     # Enables audio playback.

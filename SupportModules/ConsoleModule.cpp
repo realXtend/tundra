@@ -7,7 +7,6 @@
 #include "ConsoleEvents.h"
 #include "UiConsoleManager.h"
 
-#include "Input.h"
 #include "Framework.h"
 #include "Profiler.h"
 #include "ServiceManager.h"
@@ -50,6 +49,16 @@ namespace Console
 
         consoleEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Console");
         manager_->SetUiInitialized(!manager_->IsUiInitialized());
+
+        inputContext = framework_->GetInput()->RegisterInputContext("Console", 100);
+        inputContext->SetTakeKeyboardEventsOverQt(true);
+        connect(inputContext.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
+    }
+
+    void ConsoleModule::HandleKeyEvent(KeyEvent *keyEvent)
+    {
+        if (keyEvent->keyCode == Qt::Key_F1 && keyEvent->eventType == KeyEvent::KeyPressed)
+            ui_console_manager_->ToggleConsole();
     }
 
     // virtual 

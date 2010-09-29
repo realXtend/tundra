@@ -31,10 +31,6 @@ namespace Scene
     {
     }
     
-    SceneManager::SceneManager() : framework_(0)
-    {
-    }
-
     SceneManager::SceneManager(const QString &name, Foundation::Framework *framework) :
         name_(name),
         framework_(framework),

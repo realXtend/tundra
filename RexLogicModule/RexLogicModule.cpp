@@ -459,7 +459,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
     // When connected to Tundra, start from freecam mode for now
     if (tundra_mode)
     {
-        framework_->GetEventManager()->SendEvent("Input", Input::Events::INPUTSTATE_FREECAMERA, 0);
+        framework_->GetEventManager()->SendEvent("Input", InputEvents::INPUTSTATE_FREECAMERA, 0);
         OgreRenderer::EC_OgrePlaceable* placeableptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
         // Initialize viewing dir so that camera isn't upside down
         placeableptr->LookAt(Vector3df(1,0,0));
@@ -563,9 +563,9 @@ void RexLogicModule::Update(f64 frametime)
             send_input_state = false;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
             else
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
         }
         
         // If scene exists, we should be connected and can update these
@@ -641,14 +641,14 @@ void RexLogicModule::SwitchCameraState()
         camera_state_ = CS_Free;
 
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -658,13 +658,13 @@ void RexLogicModule::CameraTripod()
     {
         camera_state_ = CS_Tripod;
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -1218,7 +1218,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
     event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-    framework_->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    framework_->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 

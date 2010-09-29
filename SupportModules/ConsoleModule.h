@@ -7,6 +7,9 @@
 #include "ModuleLoggingFunctions.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleModuleApi.h"
+#include "Input.h"
+#include "KeyEvent.h"
+#include "InputContext.h"
 
 /*! \defgroup DebugConsole_group Debug Console Client Interface
     \copydoc Console
@@ -22,8 +25,10 @@ namespace Console
     //! Debug console module
     /*! See \ref DebugConsole "Using the debug console".
     */
-    class CONSOLE_MODULE_API ConsoleModule : public IModule
+    class CONSOLE_MODULE_API ConsoleModule : public QObject, public IModule
     {
+        Q_OBJECT
+
     public:
         ConsoleModule();
         virtual ~ConsoleModule();
@@ -55,6 +60,12 @@ namespace Console
 
         //! Console UI manager
         UiConsoleManager *ui_console_manager_;
+
+        InputContextPtr inputContext;
+
+    private slots:
+        void HandleKeyEvent(KeyEvent *keyEvent);
+
     };
 }
 
