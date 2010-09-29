@@ -80,11 +80,7 @@ if (HYDRAX)
     link_package (HYDRAX)
 endif (HYDRAX)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
 SetupCompileFlagsWithPCH()
+CopyModuleXMLFile()
 
 final_target ()

@@ -68,6 +68,8 @@ macro(SetupCompileFlagsWithPCH)
 endmacro()
 
 # Sets up the compilation flags without PCH. For now just set the DEBUG_CPP_NAME to each compilation unit.
+# TODO: The SetupCompileFlags and SetupCompileFlagsWithPCH macros should be merged, and the option to use PCH be passed in as a param. However,
+# CMake string ops in PROPERTIES COMPILE_FLAGS gave some problems with this, so these are separate for now.
 macro(SetupCompileFlags)
     if (MSVC)
         # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
@@ -79,6 +81,14 @@ macro(SetupCompileFlags)
             endif()
         endforeach(src_file ${CPP_FILES})
     endif (MSVC)
+endmacro()
+
+# Adds a compilation step that copies the module entry & dependency XML file to the runtime /bin/modules/core directory.
+# Before calling this, define the XML_FILES list in your module.
+macro(CopyModuleXMLFile)
+    foreach(XML_FILE ${XML_FILES})
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
+    endforeach(XML_FILE)
 endmacro()
 
 # Moves all Qt ui copmiler-generated .h files into their own folder in the Visual Studio project. Call this once after having added all source files in the build in your module.

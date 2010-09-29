@@ -122,11 +122,9 @@ add_subdirectory (JavascriptModule)      # Allows QtScript-created scene script 
 add_subdirectory (CommunicationsModule)  # Enables communication capabilities.
 add_subdirectory (TelepathyIMModule)     # Telepathy Messaging support.
 add_subdirectory (InWorldChatModule)     # Implements in-world text communication.
-#add_subdirectory (NoteCardModule)       # A module created to test EC sync. Implements a free-form note creator. Will be deleted in the future.
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
-#add_subdirectory (EntityComponents/EC_NoteCard EC_NoteCard)       # declared by NoteCardModule. Will be deleted in the future.
 
 #add_subdirectory (LegacyAvatarModule)
 
