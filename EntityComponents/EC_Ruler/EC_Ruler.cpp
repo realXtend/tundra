@@ -237,8 +237,6 @@ void EC_Ruler::SetupRotationRuler()
             break;
     }
     
-    std::cout << " angel: " << a2 << std::endl;
-    
     if (a2 < 0.0f) {
         a1 = a2;
         a2 = 0.0f;
@@ -316,7 +314,6 @@ void EC_Ruler::StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale)
     pos_ = newpos_ = pos;
     rot_ = newrot_ = rot;
     scale_ = newscale_ = scale;
-    std::cout << "@@@@ Starting DRAG" << std::endl;
     UpdateRuler();
 }
 
@@ -325,12 +322,10 @@ void EC_Ruler::DoDrag(QVector3D pos, QQuaternion rot, QVector3D scale)
     newpos_ = pos;
     newrot_ = rot;
     newscale_ = scale;
-    std::cout << "~~~~ Do DRAG" << std::endl;
     UpdateRuler();
 }
 
 void EC_Ruler::EndDrag() {
-    std::cout << "#### End DRAG" << std::endl;
     pos_ = newpos_;
     rot_ = newrot_;
     scale_ = newscale_;

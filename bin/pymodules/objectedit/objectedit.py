@@ -170,7 +170,6 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_FREEMOVE] =  manipulator.FreeMoveManipulator(self)
         self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotationManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
-        print "manipulators reset"
  
     def baseselect(self, ent):
         ent, children = self.parentalCheck(ent)
