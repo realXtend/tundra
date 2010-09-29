@@ -31,7 +31,8 @@
 namespace Avatar
 {
     AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
-        avatar_module_(avatar_module)
+        avatar_module_(avatar_module),
+        reverting_(false)
     {
         InitEditorWindow();
 
@@ -361,7 +362,11 @@ namespace Avatar
             total_height = 250;
         tab_appearance->setFixedHeight(total_height + 30);
 
-        emit EditorHideMessages();
+        if (reverting_)
+        {
+            reverting_ = false;
+            emit EditorHideMessages();
+        }
     }
 
     void AvatarEditor::ClearPanel(QWidget* panel)
@@ -479,6 +484,7 @@ namespace Avatar
 
     void AvatarEditor::RevertAvatar()
     {
+        reverting_ = true;
         emit EditorStatus("Reverting all local changes to avatar...");
         // Reload avatar from storage, or reload default
         avatar_module_->GetAvatarHandler()->ReloadUserAvatar();

@@ -87,6 +87,8 @@ signals:
 
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
+
+        bool reverting_;
     };
 }
 

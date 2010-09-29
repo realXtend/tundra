@@ -32,6 +32,7 @@ namespace Avatar
     private slots:
         void SceneChanged(const QString &old_name, const QString &new_name);
         void HandleTransferRequest(const QString &widget_name, QGraphicsProxyWidget *widget);
+        void SendModeEvents(bool mode_activated);
 
     private:
         Foundation::Framework *framework_;
