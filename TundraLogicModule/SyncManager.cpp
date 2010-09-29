@@ -69,6 +69,8 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     scene_ = scene;
     Scene::SceneManager* sceneptr = scene.get();
     
+    connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
+        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
         SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
@@ -165,6 +167,12 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
             break;
         state->OnEntityChanged(id);
     }
+}
+
+void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+{
+    // The attribute doesn't interest us in the least. Just mark the whole component dirty for update
+    OnComponentChanged(comp, change);
 }
 
 void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
