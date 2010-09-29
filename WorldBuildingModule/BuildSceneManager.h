@@ -16,7 +16,8 @@
 #include "ui_ObjectInfoWidget.h"
 #include "ui_ObjectManipulationsWidget.h"
 
-#include <QtInputKeyEvent.h>
+#include "KeyEvent.h"
+
 #include <QObject>
 #include <QTimer>
 #include <QPair>

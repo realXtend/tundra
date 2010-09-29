@@ -2,7 +2,8 @@ from PythonQt import QtGui
 from PythonQt.QtGui import QVector3D as Vec
 from PythonQt.QtGui import QGroupBox, QVBoxLayout, QPushButton
 
-import rexviewer as r #only for uiscenemanager now - make that to use naali api too
+import rexviewer as r #only for createProxyWidget now - make that to use naali api too
+import naali
 
 #componenthandlers don't necessarily need to be naali modules,
 #but this one needs to listen to update events to do the forcepos hack
@@ -58,7 +59,7 @@ class DoorHandler(circuits.BaseComponent):
         self.forcepos = None
 
         #naali proxywidget boilerplate
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
@@ -164,7 +165,7 @@ class DoorHandler(circuits.BaseComponent):
     @circuits.handler("on_logout")
     def removegui(self, evid):
         self.proxywidget.hide()
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.RemoveWidgetFromMenu(self.proxywidget)
         uism.RemoveWidgetFromScene(self.proxywidget)
         

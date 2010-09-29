@@ -15,12 +15,13 @@
 #include "EC_Script.h"
 #include "SceneManager.h"
 #include "InputContext.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "UiServiceInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "NaaliCoreTypeDefines.h"
 
 #include <QtScript>
 
@@ -77,8 +78,10 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    input_ = GetFramework()->Input()->RegisterInputContext("ScriptInput", 100);
-    Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+    input_ = GetFramework()->GetInput()->RegisterInputContext("ScriptInput", 100);
+    UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+
+    RegisterNaaliCoreMetaTypes();
 
     // Add Naali Core API objcects as js services.
     services_["input"] = input_.get();

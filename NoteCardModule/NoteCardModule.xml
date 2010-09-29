@@ -1,5 +1,0 @@
-<config>
-    <entry>NoteCardModule</entry>
-    <dependency>UiModule</dependency>
-    <dependency>RexLogicModule</dependency>
-</config>

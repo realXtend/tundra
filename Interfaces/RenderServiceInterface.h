@@ -108,7 +108,7 @@ namespace Foundation
 
         //! Render current main window with focus on the avatar
         //! @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation) = 0;
+        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation) = 0;
 
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request

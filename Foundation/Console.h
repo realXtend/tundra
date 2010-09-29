@@ -122,8 +122,6 @@ private:
     /// List of registered console commands.
     QMap<QString, Command *> commands_;
 
-    bool invokeSignalConnected_;
-
 private slots:
     /// Checks if we have executed console command object stored. If we have, we invoke it.
     /** @param name Name of the command.

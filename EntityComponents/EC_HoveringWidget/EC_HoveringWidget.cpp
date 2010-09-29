@@ -74,7 +74,7 @@ EC_HoveringWidget::EC_HoveringWidget(IModule* module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-    Foundation::UiServiceInterface *ui = module->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = module->GetFramework()->GetService<UiServiceInterface>();
     if (!ui)
         return;
 

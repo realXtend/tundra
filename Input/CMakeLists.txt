@@ -29,13 +29,6 @@ link_package (POCO)
 link_package (QT4)
 link_modules (Core Ui)
 
-# MSVC -specific settings for preprocessor use
-# Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
-if (MSVC)
-    foreach(src_file ${CPP_FILES})
-        get_filename_component(basename ${src_file} NAME)
-        set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "-DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
-    endforeach(src_file ${CPP_FILES})
-endif (MSVC)
+SetupCompileFlags()
 
 final_target ()

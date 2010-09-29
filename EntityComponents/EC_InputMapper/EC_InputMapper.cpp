@@ -10,7 +10,7 @@
 #include "EC_InputMapper.h"
 
 #include "IAttribute.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "Entity.h"
 
 #include "LoggingFunctions.h"
@@ -45,7 +45,7 @@ EC_InputMapper::EC_InputMapper(IModule *module):
     connect(this, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)),
         SLOT(AttributeUpdated(IAttribute *, AttributeChange::Type)));
 
-    input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+    input_ = GetFramework()->GetInput()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
     input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
@@ -65,7 +65,7 @@ void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Ty
     if(name == contextName.GetNameString() || name == contextPriority.GetNameString())
     {
         input_.reset();
-        input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
+        input_ = GetFramework()->GetInput()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
         connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
         connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }

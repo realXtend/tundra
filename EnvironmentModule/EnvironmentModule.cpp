@@ -28,6 +28,7 @@
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
+#include <EC_Name.h>
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -87,7 +88,7 @@ namespace Environment
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
-            Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
                 return;
 
@@ -139,8 +140,10 @@ namespace Environment
 
         if ((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
-            if (environment_.get())
+            if (environment_.get() != 0)
                 environment_->Update(frametime);
+            if (water_.get() !=0 )
+                water_->Update();
         }
     }
 
@@ -309,7 +312,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height);
+                        water_->SetWaterHeight(height, AttributeChange::Network);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -424,6 +427,65 @@ namespace Environment
         return false;
     }
 
+    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& component_name) 
+    {
+        
+        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        // Search first that does there exist environment entity
+        Scene::EntityPtr entity = active_scene->GetEntityByName("Environment");
+        if (entity != 0)
+        {
+            // Does it have component? If not create. 
+            if ( !entity->HasComponent(component_name) )
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+        
+        
+            return entity;
+        }
+       
+
+        entity = active_scene->GetEntityByName("LocalEnvironment");
+
+        if (entity != 0)
+        {
+             // Does it have component? If not create. 
+            if ( !entity->HasComponent(component_name) )
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+
+        }
+        else
+        {
+            int id = active_scene->GetNextFreeId();
+            entity = active_scene->CreateEntity(id);
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Name::TypeNameStatic()));
+            EC_Name* nameComp = entity->GetComponent<EC_Name >().get();
+            nameComp->name.Set("LocalEnvironment", AttributeChange::LocalOnly);
+            
+            // Create param component.
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+        }
+        
+        return entity;
+  
+    }
+
+    void EnvironmentModule::RemoveLocalEnvironment()
+    {
+        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        Scene::Entity* entity = active_scene->GetEntityByName("LocalEnvironment").get();
+    
+        if ( entity == 0)
+            return;
+        else
+        {   
+            entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+        }
+
+        active_scene->RemoveEntity(entity->GetId());
+
+
+    }
+
     bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         return false;
@@ -443,7 +505,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height);
+            water_->SetWaterHeight(water_height, AttributeChange::Network);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID

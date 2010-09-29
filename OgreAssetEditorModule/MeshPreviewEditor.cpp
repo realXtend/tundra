@@ -173,7 +173,8 @@ void MeshPreviewEditor::Update()
         
     }
     // Hide ui
-    renderer_->HideCurrentWorldView();
+    ///\todo Disabled for now, regression. Enable. -jj.
+//    renderer_->HideCurrentWorldView();
 
     AdjustScene();
 
@@ -197,7 +198,7 @@ void MeshPreviewEditor::Update()
         label_->setPixmap(QPixmap::fromImage(img));
     
 
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -207,7 +208,8 @@ void MeshPreviewEditor::Update()
     delete[] pixelData;
     
     // Show ui
-    renderer_->ShowCurrentWorldView();  
+    ///\todo Disabled for now, regression. Enable. -jj.
+//    renderer_->ShowCurrentWorldView();  
 }
 
 void MeshPreviewEditor::AdjustScene()
@@ -340,7 +342,7 @@ void MeshPreviewEditor::CreateRenderTexture()
 
 void MeshPreviewEditor::Closed()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     ui->RemoveWidgetFromScene(this);
 
     emit Closed(inventoryId_, assetType_);
@@ -348,7 +350,7 @@ void MeshPreviewEditor::Closed()
 
 void MeshPreviewEditor::InitializeEditorWidget()
 {
-    Foundation::UiServiceInterface* ui= framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface* ui= framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
