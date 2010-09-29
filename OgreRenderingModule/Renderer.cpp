@@ -1220,6 +1220,13 @@ namespace OgreRenderer
 
     void Renderer::InitShadows()
     {
+        Ogre::SceneManager* sceneManager = scenemanager_;
+        // Debug mode Ogre might assert due to illegal shadow camera AABB, with empty scene. Disable shadows in debug mode.
+        #ifdef _DEBUG
+            sceneManager->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
+            return;
+        #endif
+
         bool using_pssm = (shadowquality_ == Shadows_High);
         bool soft_shadow = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "soft_shadow", false);
         
@@ -1234,7 +1241,6 @@ namespace OgreRenderer
             shadowTextureCount = 3;
         }
         
-        Ogre::SceneManager* sceneManager = scenemanager_;
         Ogre::ColourValue shadowColor(0.6f, 0.6f, 0.6f);
 
         // This is the default material to use for shadow buffer rendering pass, overridable in script.
