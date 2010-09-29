@@ -74,7 +74,7 @@ namespace Console
         this->ui_initialized_ = initialized;
         if (ui_initialized_)
         {
-            for(int i=0; i<early_messages_.size();i++)
+            for(unsigned i=0; i<early_messages_.size();i++)
                 Print(early_messages_.at(i));
 
             early_messages_.clear();

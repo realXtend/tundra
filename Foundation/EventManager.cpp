@@ -117,12 +117,12 @@ namespace Foundation
         }
 
         // Send event in priority order, until someone returns true
-        for (unsigned i = 0; i < module_subscribers_.size(); ++i)
+        for (int i = 0; i < module_subscribers_.size(); ++i)
             if (SendEvent(module_subscribers_[i], category_id, event_id, data))
                 return true;
 
         // After that send events to components
-        for (unsigned i = 0; i < component_subscribers_.size(); ++i)
+        for (int i = 0; i < component_subscribers_.size(); ++i)
             if (SendEvent(component_subscribers_[i], category_id, event_id, data))
                 return true;
 

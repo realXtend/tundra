@@ -68,7 +68,7 @@ void OgreAssetEditorModule::PostInitialize()
     connect(materialWizard_, SIGNAL(NewMaterial(Inventory::InventoryUploadEventData *)),
         this, SLOT(UploadFile(Inventory::InventoryUploadEventData *)));
 
-    uiService_ = framework_->GetServiceManager()->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui);
+    uiService_ = framework_->GetServiceManager()->GetService<UiServiceInterface>(Foundation::Service::ST_Gui);
     if (!uiService_.expired())
     {
         UiProxyWidget *proxy  = uiService_.lock()->AddWidgetToScene(materialWizard_);

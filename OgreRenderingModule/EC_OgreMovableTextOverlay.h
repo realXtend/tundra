@@ -5,6 +5,7 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Color.h"
@@ -17,26 +18,18 @@ namespace Ogre
     class TextAreaOverlayElement;
     class OverlayContainer;
     class Overlay;
-    class SceneNode;
-    class MovableObject;
-    class Camera;
     class Font;
 }
 
-
 namespace OgreRenderer
 {
-    class Renderer;
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-
-	
+/// Movable Ogre text overlay. 
 /**
 <table class="header">
 <tr>
 <td>
 <h2>OgreMovableTextOverlay</h2>
-		Movable Ogre text overlay. 
+Movable Ogre text overlay. 
 
 Registered by OgreRenderer::OgreRenderingModule.
 
@@ -59,9 +52,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    //! Movable Ogre text overlay.
-    /*! \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreMovableTextOverlay : public IComponent
     {
         Q_OBJECT

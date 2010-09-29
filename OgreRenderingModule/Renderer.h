@@ -5,6 +5,7 @@
 
 #include "RenderServiceInterface.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "RenderServiceInterface.h"
 #include "CompositionHandler.h"
 #include "ForwardDefines.h"
@@ -16,38 +17,29 @@
 #include <QPixmap>
 #include <QImage>
 
-namespace Ogre
-{
-    class Root;
-    class SceneManager;
-    class Camera;
-    class RenderWindow;
-    class RaySceneQuery;
-    class Viewport;
-    class RenderTexture;
-}
+class NaaliRenderWindow;
 
 namespace OgreRenderer
 {
+    /// Shadow quality settings
     enum ShadowQuality
     {
-        Shadows_Off = 0,
-        Shadows_Low,
-        Shadows_High // PSSM, Direct3D only
+        Shadows_Off = 0, ///< Off
+        Shadows_Low, ///< One focused shadow map
+        Shadows_High ///< PSSM, Direct3D only
     };
 
+    /// Texture quality settings
     enum TextureQuality
     {
-        Texture_Low = 0, // Halved resolution
-        Texture_Normal
+        Texture_Low = 0, ///< Halved resolution
+        Texture_Normal ///< Normal
     };
 
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
     class RenderableListener;
-    class QOgreUIView;
-    class QOgreWorldView;
     class CAVEManager;
     class StereoController;
     class CompositionHandler;
@@ -78,10 +70,10 @@ namespace OgreRenderer
 
         //! Hides world view
         //also added for the webserver plugin
-        void HideCurrentWorldView(); 
+//        void HideCurrentWorldView(); 
 
         //! Shows world view
-        void ShowCurrentWorldView();
+//        void ShowCurrentWorldView();
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -97,10 +89,11 @@ namespace OgreRenderer
 
     public:
         //! Constructor
-        //! \param framework Framework pointer.
-        //! \param config Config filename.
-        //! \param plugins Plugins filename.
-        //! \param window_title Renderer window title.
+        /*! \param framework Framework pointer.
+            \param config Config filename.
+            \param plugins Plugins filename.
+            \param window_title Renderer window title.
+        */
         Renderer(
             Foundation::Framework* framework,
             const std::string& config,
@@ -190,7 +183,7 @@ namespace OgreRenderer
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
+        Ogre::RenderWindow* GetCurrentRenderWindow() const;// { return renderwindow_; }
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
@@ -227,29 +220,27 @@ namespace OgreRenderer
         //! returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
-        //! Update key bindings to QGraphicsView
-        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
-
         //! Returns the main window.
-        Foundation::MainWindow *GetMainWindow() const { return main_window_; }
+//        Foundation::MainWindow *GetMainWindow() const { return main_window_; }
 
         /// Returns the backbuffer image that contains the UI layer of the application screen.
         /// Used to perform alpha-keying based input.
-        QImage &GetBackBuffer() { return backBuffer; }
+//        QImage &GetBackBuffer() { return backBuffer; }
 
         //! Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
-        
+
         //! Sets shadow quality. Note: changes need viewer restart to take effect due to Ogre resource system
         void SetShadowQuality(ShadowQuality newquality);
-        
+
         //! Returns texture quality
         TextureQuality GetTextureQuality() const { return texturequality_; }
-        
+
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-		QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+        //! Returns list of CAVE rendering windows.
+        QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
 
     public slots:
         //! Toggles fullscreen
@@ -260,7 +251,7 @@ namespace OgreRenderer
 
         //! Render current main window with focus on the avatar
         //! @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation);
+        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
 
         //! Prepapres the texture and entities used in texture rendering
         void PrepareImageRendering(int width, int height);
@@ -312,8 +303,9 @@ namespace OgreRenderer
         //! Viewport
         Ogre::Viewport* viewport_;
 
+        NaaliRenderWindow *renderWindow;
         //! Rendering window
-        Ogre::RenderWindow* renderwindow_;
+//        Ogre::RenderWindow* renderwindow_;
 
         //! Framework we belong to
         Foundation::Framework* framework_;
@@ -352,19 +344,21 @@ namespace OgreRenderer
         StringVector added_resource_directories_;
 
         //! Qt main window widget
-        Foundation::MainWindow *main_window_;
+//        Foundation::MainWindow *main_window_;
 
         //! Ogre UI View Widget, inherits QGraphicsView
-        QOgreUIView *q_ogre_ui_view_;
+//        QOgreUIView *q_ogre_ui_view_;
 
         //! Ogre World View
-        QOgreWorldView *q_ogre_world_view_;
+//        QOgreWorldView *q_ogre_world_view_;
+
+//        QWidget *viewportWidget;
 
         //! handler for post-processing effects
         CompositionHandler *c_handler_;
 
         // Compositing back buffer
-        QImage backBuffer;
+//        QImage backBuffer;
 
         //! last width/height
         int last_height_;

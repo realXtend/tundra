@@ -13,7 +13,7 @@ namespace Foundation
 
     template <typename T, typename U> bool EventManager::AddSubscriber(T* subscriber, QList<U>& subscribers, int priority)
     {
-        for(unsigned int i = 0; i < subscribers.size(); ++i)
+        for(int i = 0; i < subscribers.size(); ++i)
             // If subscriber found, just readjust the priority
             if (subscribers[i].subscriber_ == subscriber)
             {
@@ -52,7 +52,7 @@ namespace Foundation
 
     template <typename T, typename U> bool EventManager::RemoveSubscriber(T* subscriber, QList<U>& subscribers )
     {
-        for (unsigned i = 0; i < subscribers.size(); ++i)
+        for (int i = 0; i < subscribers.size(); ++i)
             if (subscribers[i].subscriber_ == subscriber)
             {
                 subscribers.erase(subscribers.begin() + i);

@@ -5,32 +5,25 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Color.h"
 #include "Vector3D.h"
 #include "Declare_EC.h"
 
-namespace Ogre
-{
-    class Light;
-}
-
-
 namespace OgreRenderer
 {
-    class Renderer;
-    class EC_OgrePlaceable;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-	/**
+//! Ogre light component
+/**
 <table class="header">
 <tr>
 <td>
 <h2>OgreLight</h2>
-		
+
+A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
 
 Registered by OgreRenderer::OgreRenderingModule.
+
+\ingroup OgreRenderingModuleClient
 
 <b>No Attributes</b>.
 
@@ -51,11 +44,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-
-    //! Ogre light component
-    /*! A light can optionally be attached to a placeable (ie. a scene node) but it can also exist without one.
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreLight : public IComponent
     {
         Q_OBJECT

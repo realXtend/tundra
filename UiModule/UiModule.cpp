@@ -8,7 +8,7 @@
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
 #include "ServiceGetter.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 
 #include "Ether/EtherLogic.h"
 #include "Ether/EtherSceneController.h"
@@ -23,6 +23,8 @@
 #include "Inworld/Notifications/ProgressNotification.h"
 #include "Common/UiAction.h"
 #include "UiSceneService.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
 
 #include "EventManager.h"
 #include "ServiceManager.h"
@@ -92,7 +94,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-        ui_view_ = GetFramework()->GetUIView();
+        ui_view_ = GetFramework()->Ui()->GraphicsView();
         if (ui_view_)
         {
             ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
@@ -148,7 +150,7 @@ namespace UiServices
                 SLOT(OnSceneChanged(const QString&, const QString&)));
         LogDebug("Ether Logic STARTED");
 
-        input = framework_->Input().RegisterInputContext("EtherInput", 90);
+        input = framework_->GetInput()->RegisterInputContext("EtherInput", 90);
         input->SetTakeKeyboardEventsOverQt(true);
         connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
 
@@ -243,10 +245,10 @@ namespace UiServices
         if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
             return;
 
-        InputServiceInterface &inputService = framework_->Input();
+        Input *inputService = framework_->GetInput();
 
-        const QKeySequence toggleEther = inputService.KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
-        const QKeySequence toggleWorldChat = inputService.KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
+        const QKeySequence toggleEther = inputService->KeyBinding("Ether.ToggleEther", Qt::Key_Escape);
+        const QKeySequence toggleWorldChat = inputService->KeyBinding("Ether.ToggleWorldChat", Qt::Key_F2);
 
         if (key->keyCode == toggleEther)
             ui_state_machine_->ToggleEther();
@@ -336,7 +338,7 @@ namespace UiServices
             return;
 
         // Head bone pos setup
-        Vector3Df avatar_position = ec_placeable->GetPosition();
+        Vector3df avatar_position = ec_placeable->GetPosition();
         Quaternion avatar_orientation = ec_placeable->GetOrientation();
         Ogre::SkeletonInstance* skel = ec_mesh->GetEntity()->getSkeleton();
         float adjustheight = ec_mesh->GetAdjustPosition().z;

@@ -16,7 +16,7 @@ namespace OgreRenderer
         setupUi(this);
 
         framework_ = framework;
-        Foundation::UiServiceInterface *ui = framework->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
             if (!ui)
                 return;
         ui->AddSettingsWidget(this, "Stereo");

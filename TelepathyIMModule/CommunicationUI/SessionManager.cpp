@@ -160,7 +160,7 @@ namespace UiManagers
     void SessionManager::CreateFriendListWidget()
     {
         // Add friend list to scene, no toolbar button
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 

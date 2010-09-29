@@ -4,7 +4,7 @@
 
 #include "EC_OgrePlaceable.h"
 #include "Renderer.h"
-#include "InputServiceInterface.h"
+#include "../Input/Input.h"
 #include "EC_OgreMesh.h"
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
@@ -20,7 +20,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
     previousScrollValue_(0)
 {
     static const std::string customMeshName("Selection.mesh");
-    input_ = framework_->Input().RegisterInputContext("EntityPlacement", 110);
+    input_ = framework_->GetInput()->RegisterInputContext("EntityPlacement", 110);
     
     entity_ = framework_->GetDefaultWorldScene()->GetEntity(entityId);
     if(!entity_.expired())

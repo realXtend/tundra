@@ -1,4 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   ForwardDefines.h
+ *  @brief  Forward declarations and type defines for commonly used Naali framework classes.
+ */
 
 #ifndef incl_Framework_ForwardDefines_h
 #define incl_Framework_ForwardDefines_h
@@ -7,6 +12,8 @@
 #include <boost/smart_ptr.hpp>
 
 #include <vector>
+
+class ISoundService;
 
 namespace Scene
 {
@@ -78,8 +85,13 @@ typedef std::vector<IAttribute*> AttributeVector;
 class KeyEvent;
 class MouseEvent;
 class InputContext;
+class InputServiceInterface;
 typedef boost::shared_ptr<InputContext> InputContextPtr;
 
 class IEventData;
+
+class UiServiceInterface;
+typedef boost::shared_ptr<UiServiceInterface> UiServicePtr;
+typedef boost::weak_ptr<UiServiceInterface> UiServiceWeakPtr;
 
 #endif

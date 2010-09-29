@@ -7,7 +7,7 @@
 #define incl_UiModule_ServiceGetter_h
 
 #include "Foundation.h"
-#include "KeyBindings.h"
+//#include "KeyBindings.h"
 
 #include <QObject>
 
@@ -23,12 +23,10 @@ namespace CoreUi
 
     public slots:
         void GetKeyBindings();
-        void SetKeyBindings(Foundation::KeyBindings *bindings);
         void RestoreKeyBindings();
-        void PublishChangedBindings(Foundation::KeyBindings *bindings);
 
     signals:
-        void KeyBindingsChanged(Foundation::KeyBindings*);
+        void KeyBindingsChanged(void*);
 
     private:
         Foundation::Framework *framework_;

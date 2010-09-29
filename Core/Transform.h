@@ -4,11 +4,13 @@
 #include "CoreMath.h"
 #include "Vector3D.h"
 
+#include <QMetaType>
+
 struct Transform
 {
-    Vector3D<float> position;
-    Vector3D<float> rotation;
-    Vector3D<float> scale;
+    Vector3df position;
+    Vector3df rotation;
+    Vector3df scale;
 
     Transform():
         position(0,0,0),
@@ -17,7 +19,7 @@ struct Transform
     {
     }
 
-    Transform(const Vector3D<float> &pos, const Vector3D<float> &rot, const Vector3D<float> &scale):
+    Transform(const Vector3df &pos, const Vector3df &rot, const Vector3df &scale):
         position(pos),
         rotation(rot),
         scale(scale)
@@ -56,4 +58,7 @@ struct Transform
         return !(*this == rhs);
     }
 };
+
+Q_DECLARE_METATYPE(Transform)
+
 #endif

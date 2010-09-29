@@ -124,7 +124,7 @@ namespace Console
         if (it == commandline_tok.end())
         {
             console_->Print("Failed to parse malformed command line: " + commandline);
-            Console::CommandResult result = { false, "" };
+            Console::CommandResult result = { false, "", false };
             return result;
         }
 
@@ -150,7 +150,7 @@ namespace Console
             catch (boost::escaped_list_error &/*e*/)
             {
                 console_->Print("Invalid use of escaping.");
-                Console::CommandResult result = { false, "" };
+                Console::CommandResult result = { false, "", false };
                 return result;
             }
         }
@@ -182,7 +182,7 @@ namespace Console
             if (iter == commands_.end())
             {
                 console_->Print("Command: " + name + " not found. Type 'help' for list of available commands.");
-                Console::CommandResult result = { false, "" };
+                Console::CommandResult result = { false, "", false };
                 return result;
             }
             callback = iter->second.callback_;

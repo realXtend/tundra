@@ -67,7 +67,7 @@ private:
     static std::string type_name_static_;
 
     /// UI service.
-    boost::weak_ptr<Foundation::UiServiceInterface> uiService_;
+    boost::weak_ptr<UiServiceInterface> uiService_;
 
     /// Event manager pointer.
     Foundation::EventManagerPtr eventManager_;

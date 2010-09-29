@@ -6,7 +6,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "SceneManager.h"
 
 #include "WorldStream.h"

@@ -2,7 +2,7 @@
 #ifndef incl_OpenALAudio_SoundChannel_h
 #define incl_OpenALAudio_SoundChannel_h
 
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Sound.h"
 
 namespace OpenALAudio
@@ -12,7 +12,7 @@ namespace OpenALAudio
     {
     public:
         //! Constructor.
-        SoundChannel(Foundation::SoundServiceInterface::SoundType type);
+        SoundChannel(ISoundService::SoundType type);
         //! Destructor.
         ~SoundChannel();
         
@@ -23,7 +23,7 @@ namespace OpenALAudio
             more sound data for the moment. This is to ensure that the sound system will not automatically
             dispose of the channel.
          */ 
-        void AddBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer);
+        void AddBuffer(const ISoundService::SoundBuffer& buffer);
         
         //! Set positional state
         void SetPositional(bool enable);
@@ -44,11 +44,15 @@ namespace OpenALAudio
         //! Per-frame update with new listener position
         void Update(const Vector3df& listener_pos);
         //! Return current state of channel.
-        Foundation::SoundServiceInterface::SoundState GetState() const { return state_; }
+        ISoundService::SoundState GetState() const { return state_; }
         //! Return name/id of sound that's playing, empty if nothing playing
         const std::string& GetSoundName() const;
         //! Return sound type
-        Foundation::SoundServiceInterface::SoundType GetSoundType() const { return type_; }
+        ISoundService::SoundType GetSoundType() const { return type_; }
+        //! Return sound gain.
+        float GetGain() const {return gain_;}
+        //! Return sound pitch.
+        float GetPitch() const {return pitch_;}
         
     private:
         //! Queue buffers and start playing
@@ -67,7 +71,7 @@ namespace OpenALAudio
         void SetAttenuatedGain();
         
         //! Sound type
-        Foundation::SoundServiceInterface::SoundType type_;
+        ISoundService::SoundType type_;
         //! OpenAL handle
         ALuint handle_;
         //! Sounds buffers pending to be played
@@ -97,7 +101,7 @@ namespace OpenALAudio
         //! Position
         Vector3df position_;
         //! State 
-        Foundation::SoundServiceInterface::SoundState state_;
+        ISoundService::SoundState state_;
     };
     
     typedef boost::shared_ptr<SoundChannel> SoundChannelPtr;

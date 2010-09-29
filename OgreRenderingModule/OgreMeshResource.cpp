@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreMeshResource.h"
 #include "OgreRenderingModule.h"
+#include "Profiler.h"
 
 #include <Ogre.h>
 
@@ -26,6 +27,7 @@ namespace OgreRenderer
 
     bool OgreMeshResource::SetData(Foundation::AssetPtr source)
     {
+        PROFILE(OgreMeshResource_SetData);
         if (!source)
         {
             OgreRenderingModule::LogError("Null source asset data pointer");     
