@@ -31,7 +31,7 @@ SET (WINDOWS_APP 0)
 SET (DYNAMIC_LOGIN_SCENE 1)
 
 # If the following flag is defined, Naali will be compiled with the built-in execution time profiler enabled.
-# add_definitions (-DPROFILING)
+add_definitions (-DPROFILING)
 
 # If the following flag is defined, memory leak checking is enabled in all modules when building on MSVC.
 if (MSVC)
