@@ -54,19 +54,7 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type type)
     vec.z = height;
     plane->positionAttr.Set(vec, type);
     plane->ComponentChanged(type);
-    
-   
-
-    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_WaterPlane::TypeNameStatic()));
-    activeWaterComponent_ = entity->GetComponent<EC_WaterPlane>().get();
-    activeWaterComponent_->positionAttr_.Set(Vector3df(0.0,0.0,height), AttributeChange::Network);
-    //activeWaterComponent_->SetWaterHeight(height);
-    activeWaterEntity_ = entity;
-    active_scene->EmitEntityCreated(entity);
-
-    emit WaterCreated();
-
- }
+}
 
 void Water::RemoveWaterGeometry()
 {
