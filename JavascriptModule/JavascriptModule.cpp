@@ -21,6 +21,7 @@
 #include "Frame.h"
 #include "Console.h"
 #include "ConsoleCommandServiceInterface.h"
+#include "NaaliCoreTypeDefines.h"
 
 #include <QtScript>
 
@@ -79,6 +80,8 @@ void JavascriptModule::PostInitialize()
 {
     input_ = GetFramework()->Input()->RegisterInputContext("ScriptInput", 100);
     UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+
+    RegisterNaaliCoreMetaTypes();
 
     // Add Naali Core API objcects as js services.
     services_["input"] = input_.get();

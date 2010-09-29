@@ -129,7 +129,7 @@ namespace RexLogic
         float camera_max_distance_;
 
         //! third person camera offset
-        Vector3Df camera_offset_;
+        Vector3df camera_offset_;
 
         //! first person camera offset
         Vector3df camera_offset_firstperson_;

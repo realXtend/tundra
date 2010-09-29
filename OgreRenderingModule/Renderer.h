@@ -238,7 +238,7 @@ namespace OgreRenderer
 
         //! Render current main window with focus on the avatar
         //! @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation);
+        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation);
 
         //! Prepapres the texture and entities used in texture rendering
         void PrepareImageRendering(int width, int height);
