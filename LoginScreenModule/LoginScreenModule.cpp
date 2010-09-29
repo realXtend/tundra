@@ -81,9 +81,8 @@ void LoginScreenModule::PostInitialize()
         window_ = new LoginWidget(QMap<QString, QString>());
         connect(window_, SIGNAL(ExitClicked()), SLOT(Exit()));
 
-        window_->show();
-//        ui->AddWidgetToScene(window_, Qt::Widget);
- //       ui->ShowWidget(window_);
+        ui->AddWidgetToScene(window_, Qt::Widget);
+        ui->ShowWidget(window_);
 
         Foundation::LoginServiceInterface *login = framework_->GetService<Foundation::LoginServiceInterface>();
         if (login)
