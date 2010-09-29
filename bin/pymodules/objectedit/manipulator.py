@@ -108,7 +108,11 @@ class Manipulator:
         self.grabbed_axis = None
         self.grabbed = False
         remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
-        self.manipulator.ruler.EndDrag()
+        try:
+            self.manipulator.ruler.EndDrag()
+        except:
+            # TODO fix stopManipulating usage so it isn't called when manipulators aren't initialised properly yet
+            pass
     
     def initVisuals(self):
         #r.logInfo("initVisuals in manipulator " + str(self.NAME))
