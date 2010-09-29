@@ -4,9 +4,13 @@
 #include "AvatarEditing/AvatarSceneManager.h"
 #include "AvatarEditing/AnchorLayout.h"
 
+#include "AvatarEvents.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 
+#include "EC_OgrePlaceable.h"
+
+#include "EventManager.h"
 #include "UiServiceInterface.h"
 
 namespace Avatar
@@ -31,7 +35,7 @@ namespace Avatar
         if (avatar_scene_)
             return;
 
-        Foundation::UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (!ui_service) 
             return;
 
@@ -82,14 +86,14 @@ namespace Avatar
 
     void AvatarSceneManager::ShowScene()
     {
-        Foundation::UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (ui_service)
             ui_service->SwitchToScene(scene_name_);
     }
 
     void AvatarSceneManager::ExitScene()
     {
-        Foundation::UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui_service = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (ui_service)
             ui_service->SwitchToScene("Inworld");
     }
@@ -97,9 +101,9 @@ namespace Avatar
     void AvatarSceneManager::SceneChanged(const QString &old_name, const QString &new_name)
     {
         if (new_name == scene_name_)
-        {
-            // focus camera to avatar etc.
-        }
+            SendModeEvents(true);
+        else if (old_name == scene_name_)
+            SendModeEvents(false);
     }
 
     void AvatarSceneManager::HandleTransferRequest(const QString &widget_name, QGraphicsProxyWidget *widget)
@@ -109,5 +113,48 @@ namespace Avatar
         if (widget_name != "Console")
             return;
         avatar_scene_->addItem(widget);
+    }
+
+    void AvatarSceneManager::SendModeEvents(bool mode_activated)
+    {
+        Foundation::EventManagerPtr e_manager = framework_->GetEventManager();
+        if (!e_manager)
+            return;
+
+        if (mode_activated)
+        {
+            // Users avatar entity
+            Scene::EntityPtr av_entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
+            if (!av_entity)
+            {
+                AvatarModule::LogDebug("Could not accuire user av entity, cannot send av mode begin event");
+                return;
+            }
+    
+            // Avatar placeable
+            OgreRenderer::EC_OgrePlaceable *placeable = av_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            if (!placeable)
+            {
+                AvatarModule::LogDebug("Could not accuire av placeable component, cannot send av mode begin event");
+                return;
+            }
+
+            Vector3df av_position = placeable->GetPosition();
+            Quaternion av_orientation = placeable->GetOrientation();
+            
+            Vector3df end_pos = av_position;
+            end_pos += (av_orientation * Vector3df(2.8f, 1.5f, 0.5f));
+
+            Vector3df end_lookat = av_position;
+            end_lookat += (Vector3df::UNIT_Z * 0.5f);
+
+            Events::AvatarModeBeginData data(av_entity.get(), end_pos, end_lookat);
+            e_manager->SendEvent("Avatar", Events::EVENT_AVATAR_MODE_BEGIN, &data);
+        }
+        else    
+        {
+            e_manager->SendEvent("Avatar", Events::EVENT_AVATAR_MODE_END, 0);
+        }
+
     }
 }
