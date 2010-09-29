@@ -18,6 +18,8 @@
 #include "EC_OgreMesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
+#include "RexUUID.h"
+#include "CoreMath.h"
 #include <Ogre.h>
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Ruler")
@@ -37,6 +39,10 @@ EC_Ruler::EC_Ruler(IModule *module) :
     type(EC_Ruler::Rotation)
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    
+    RexUUID uuid = RexUUID::CreateRandom();
+    rulerName = uuid.ToString() + "ruler";
+    nodeName = uuid.ToString() + "node";
     
     QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateRuler()));
 }
@@ -120,8 +126,8 @@ void EC_Ruler::Create()
     if (!sceneNode_)
         return;
     
-    if(scene_mgr->hasManualObject("translateRuler")){
-        rulerObject = scene_mgr->getManualObject("translateRuler");
+    if(scene_mgr->hasManualObject(rulerName)){
+        rulerObject = scene_mgr->getManualObject(rulerName);
         if(rulerObject->isAttached())
 #if OGRE_VERSION_MINOR <= 6 && OGRE_VERSION_MAJOR <= 1
             rulerObject->detatchFromParent();
@@ -129,7 +135,7 @@ void EC_Ruler::Create()
             rulerObject->detachFromParent();
 #endif
     } else {
-        rulerObject = scene_mgr->createManualObject("translateRuler");
+        rulerObject = scene_mgr->createManualObject(rulerName);
     }
     
     switch(typeAttr_.Get()) {
@@ -148,10 +154,10 @@ void EC_Ruler::Create()
         sceneNode_->attachObject(rulerObject);
     } else {
         // get translateNode only when we are working in world space
-        if(scene_mgr->hasSceneNode("translateNode")) {
-            globalSceneNode = scene_mgr->getSceneNode("translateNode");
+        if(scene_mgr->hasSceneNode(nodeName)) {
+            globalSceneNode = scene_mgr->getSceneNode(nodeName);
         } else {
-            globalSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode("translateNode");
+            globalSceneNode = scene_mgr->getRootSceneNode()->createChildSceneNode(nodeName);
             globalSceneNode->setVisible(true);
         }
         assert(globalSceneNode);
@@ -259,12 +265,31 @@ void EC_Ruler::SetupTranslateRuler() {
     rulerObject->end();
 }
 
-void EC_Ruler::SetType(EC_Ruler::Type type) {
+void EC_Ruler::StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale)
+{
+    pos_ = newpos_ = pos;
+    rot_ = newrot_ = rot;
+    scale_ = newscale_ = scale;
+    std::cout << "@@@@ Starting DRAG" << std::endl;
+    UpdateRuler();
 }
 
-void EC_Ruler::StartDrag() {}
+void EC_Ruler::DoDrag(QVector3D pos, QQuaternion rot, QVector3D scale)
+{
+    newpos_ = pos;
+    newrot_ = rot;
+    newscale_ = scale;
+    std::cout << "~~~~ Do DRAG" << std::endl;
+    UpdateRuler();
+}
 
-void EC_Ruler::EndDrag() {}
+void EC_Ruler::EndDrag() {
+    std::cout << "#### End DRAG" << std::endl;
+    pos_ = newpos_;
+    rot_ = newrot_;
+    scale_ = newscale_;
+    UpdateRuler();
+}
 
 void EC_Ruler::UpdateRuler() {
     Create();
