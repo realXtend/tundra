@@ -41,15 +41,9 @@ Command *ScriptConsole::RegisterCommand(const QString &name, const QString &desc
         Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
         consoleCommand->RegisterCommand(cmd);
 
-        // Dirty hack: we would like to connect this signal only once when we create Console object, but
-        // Cannot do it because the service is not there at that time.
-        // This hack will not be necessary when console refactor is made.
-        if (!invokeSignalConnected_)
-        {
-            connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
-                SLOT(CheckForCommand(const QString &, const QStringList &)));
-            invokeSignalConnected_ = true;
-        }
+        // Use UniqueConnection so that we don't have duplicate connections.
+        connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
+            SLOT(CheckForCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 
     return command;
@@ -67,15 +61,9 @@ void ScriptConsole::RegisterCommand(const QString &name, const QString &desc, co
         Console::Command cmd = { name.toStdString(), desc.toStdString(), Console::CallbackPtr(), false };
         consoleCommand->RegisterCommand(cmd);
 
-        // Dirty hack: we would like to connect this signal only once when we create Console object, but
-        // Cannot do it because the service is not there at that time.
-        // This hack will not be necessary when console refactor is made.
-        if (!invokeSignalConnected_)
-        {
-            connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
-                SLOT(CheckForCommand(const QString &, const QStringList &)));
-            invokeSignalConnected_ = true;
-        }
+        // Use UniqueConnection so that we don't have duplicate connections.
+        connect(consoleCommand, SIGNAL(CommandInvoked(const QString &, const QStringList &)),
+            SLOT(CheckForCommand(const QString &, const QStringList &)), Qt::UniqueConnection);
     }
 }
 
@@ -95,8 +83,7 @@ void ScriptConsole::Print(const QString &message)
 
 ScriptConsole::ScriptConsole(Foundation::Framework *fw) :
     QObject(fw),
-    framework_(fw),
-    invokeSignalConnected_(false)
+    framework_(fw)
 {
 }
 

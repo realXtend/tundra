@@ -20,6 +20,8 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 
+#include <QMetaType>
+
 //! Quaternion class for representing rotations.
 /** It provides cheap combinations and avoids gimbal locks.
 Also useful for interpolations. */
@@ -580,6 +582,7 @@ inline Quaternion& Quaternion::rotationFromTo(const Vector3df& from, const Vecto
 	return *this;
 }
 
+Q_DECLARE_METATYPE(Quaternion)
 
 #endif
 

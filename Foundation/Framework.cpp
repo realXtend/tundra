@@ -17,11 +17,16 @@
 #include "RenderServiceInterface.h"
 #include "ConsoleServiceInterface.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "FrameworkQtApplication.h"
+#include "NaaliApplication.h"
 #include "CoreException.h"
-#include "InputServiceInterface.h"
+#include "../Input/Input.h"
+#include "ISoundService.h"
 #include "Frame.h"
 #include "Console.h"
+#include "UiServiceInterface.h"
+
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
@@ -39,6 +44,16 @@
 #include <QMetaMethod>
 
 #include "MemoryLeakCheck.h"
+
+class FrameworkImpl
+{
+public:
+    explicit FrameworkImpl(Foundation::Framework *owner)
+    :input(owner)
+    {
+    }
+    Input input;
+};
 
 namespace Resource
 {
@@ -89,7 +104,7 @@ namespace Foundation
             ProfilerSection::SetProfiler(&profiler_);
 #endif
             PROFILE(FW_Startup);
-            application_ = ApplicationPtr(new Application(this));
+//            application_ = ApplicationPtr(new Application(this));
             platform_ = PlatformPtr(new Platform(this));
         
             // Create config manager
@@ -131,15 +146,20 @@ namespace Foundation
             Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
-            engine_.reset (new FrameworkQtApplication(this, argc_, argv_));
+            naaliApplication = std::auto_ptr<NaaliApplication>(new NaaliApplication(this, argc_, argv_));
 
             initialized_ = true;
+
+            ui = new NaaliUi(this);
+            connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
+
+            impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
         }
     }
 
     Framework::~Framework()
     {
-        engine_.reset();
+        naaliApplication.reset();
         thread_task_manager_.reset();
         event_manager_.reset();
         service_manager_.reset();
@@ -328,7 +348,7 @@ namespace Foundation
             PostInitialize();
         }
         
-        engine_->Go();
+        naaliApplication->Go();
         exit_signal_ = true;
 
         UnloadModules();
@@ -337,15 +357,15 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (engine_.get())
-            engine_->AboutToExit();
+        if (naaliApplication.get())
+            naaliApplication->AboutToExit();
     }
     
     void Framework::ForceExit()
     {
         exit_signal_ = true;
-        if (engine_.get())
-            engine_->quit();
+        if (naaliApplication.get())
+            naaliApplication->quit();
     }
     
     void Framework::CancelExit()
@@ -591,46 +611,12 @@ namespace Foundation
         }
     }
 
-    QApplication *Framework::GetQApplication() const
-    {
-        return engine_.get();
-    }
-
-    MainWindow *Framework::GetMainWindow() const
-    {
-        return engine_->GetMainWindow();
-    }
-
-    QGraphicsView *Framework::GetUIView() const
-    {
-        return engine_->GetUIView();
-    }
-
 #ifdef PROFILING
     Profiler &Framework::GetProfiler()
     {
         return profiler_;
     }
 #endif
-
-    void Framework::SetUIView(std::auto_ptr <QGraphicsView> view)
-    {
-        engine_->SetUIView(view);
-    }
-
-    void Framework::DescribeQObject(QObject *obj)
-    {
-        const QMetaObject *metaObj = obj->metaObject();
-
-        RootLogInfo(std::string(metaObj->className()));
-        RootLogInfo("methods:");
-        for(int i = metaObj->methodOffset(); i < metaObj->methodCount(); ++i)
-            RootLogInfo(QString::fromLatin1(metaObj->method(i).signature()).toStdString());
-
-        RootLogInfo("properties:");
-        for(int i = metaObj->propertyOffset(); i < metaObj->propertyCount(); ++i)
-            RootLogInfo(QString::fromLatin1(metaObj->property(i).name()).toStdString());
-    }
 
     ComponentManagerPtr Framework::GetComponentManager() const
     {
@@ -677,14 +663,34 @@ namespace Foundation
         return config_manager_.get();
     }
 
-    InputServiceInterface &Framework::Input()
+    Frame *Framework::GetFrame() const
     {
-        boost::shared_ptr<InputServiceInterface> input_logic = GetServiceManager()->
-                GetService<InputServiceInterface>(Foundation::Service::ST_Input).lock();
-        if (!input_logic.get())
-            throw Exception("Fatal: Input service not present!");
+        return frame_;
+    }
 
-        return *input_logic;
+    Input *Framework::GetInput() const
+    {
+        return &impl->input;
+    }
+
+    NaaliUi *Framework::Ui() const
+    {
+        return ui;
+    }
+
+    ScriptConsole *Framework::Console() const
+    { 
+        return console_;
+    }
+
+    ISoundService *Framework::Audio() const
+    {
+        boost::shared_ptr<ISoundService> sound_logic = GetServiceManager()->
+                GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
+        if (!sound_logic.get())
+//            throw Exception("Fatal: Sound service not present!");
+            RootLogWarning("Framework::Audio(): Sound service not present!");
+        return sound_logic.get();
     }
 
     Scene::ScenePtr Framework::GetScene(const QString &name) const
@@ -701,19 +707,16 @@ namespace Foundation
         return scenes_.find(name) != scenes_.end();
     }
 
-    //! Returns the currently set default world scene, for convinience
     const Scene::ScenePtr &Framework::GetDefaultWorldScene() const
     {
         return default_scene_;
     }
 
-    //! Sets the default world scene, for convinient retrieval with GetDefaultWorldScene().
     void Framework::SetDefaultWorldScene(const Scene::ScenePtr &scene)
     {
         default_scene_ = scene;
     }
 
-    //! Returns the scene map for self reflection / introspection.
     const Framework::SceneMap &Framework::GetSceneMap() const
     {
         return scenes_;

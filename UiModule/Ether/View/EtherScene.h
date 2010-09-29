@@ -3,7 +3,7 @@
 #ifndef incl_UiModule_EtherScene_h
 #define incl_UiModule_EtherScene_h
 
-#include "QtInputKeyEvent.h"
+#include "../Input/InputFwd.h"
 
 #include <QGraphicsScene>
 #include <QStateMachine>

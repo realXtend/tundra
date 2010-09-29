@@ -7,8 +7,6 @@
 #include "Color.h"
 #include <map>
 
-Q_DECLARE_METATYPE(Color)
-
 namespace ECEditor
 {
     //! MultiEditorPropertyManager will listen if property value has been changed by user and it will inform them to a MultiEditPropertyFactory.

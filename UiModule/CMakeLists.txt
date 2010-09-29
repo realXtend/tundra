@@ -44,8 +44,7 @@ use_package (POCO)
 use_package (CURL)
 use_package (XMLRPC)
 use_package (OGRE)
-use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules
-    OgreRenderingModule )
+use_modules (UiModule Core Foundation Interfaces SceneManager RexCommon ProtocolUtilities SupportModules OgreRenderingModule Ui Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 
@@ -57,29 +56,13 @@ link_package (XMLRPC)
 link_package (CURL)
 link_package (OGRE)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
 # ETHER TYPE DEFINE
 if (DYNAMIC_LOGIN_SCENE)
    add_definitions (-DDYNAMIC_LOGIN_SCENE)
 endif (DYNAMIC_LOGIN_SCENE)
 
-# MSVC -specific settings for preprocessor and PCH use
-if (MSVC)
-    # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
-    # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
-    foreach(src_file ${CPP_FILES})
-            if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
-            else()
-                get_filename_component(basename ${src_file} NAME)
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
-            endif()
-    endforeach(src_file ${CPP_FILES})
-endif (MSVC)
+SetupCompileFlagsWithPCH()
+CopyModuleXMLFile()
 
 final_target ()
 

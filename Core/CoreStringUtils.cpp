@@ -1,4 +1,4 @@
-#include "CoreStableHeaders.h"
+#include "StableHeaders.h"
 #include "CoreStringUtils.h"
 
 std::string BufferToString(const std::vector<s8>& buffer)

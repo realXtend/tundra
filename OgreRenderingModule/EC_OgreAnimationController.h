@@ -5,23 +5,16 @@
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
-namespace Ogre
-{
-    class Entity;
-}
-
 #include <OgreAnimationState.h>
-#include <QStringList>
 
 namespace OgreRenderer
 {
 
-
-	class EC_OgreMesh;
-
-	/**
+//! Ogre-specific mesh entity animation controller
+/**
 <table class="header">
 <tr>
 <td>
@@ -56,10 +49,6 @@ Does not emit any actions.
 </table>
 
 */
-    //! Ogre-specific mesh entity animation controller
-    /*! Needs to be told of an EC_OgreMesh component to be usable
-        \ingroup OgreRenderingModuleClient
-     */
     class OGRE_MODULE_API EC_OgreAnimationController : public IComponent
     {
         Q_OBJECT

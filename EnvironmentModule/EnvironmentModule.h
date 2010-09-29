@@ -115,10 +115,23 @@ namespace Environment
          */
         void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
+        /**
+         * Creates a local enviroment entity. This is called if there does not exist outside enviroment entity (entity, which has EC_NAME component which attribute name is Enviroment).
+         * IF there exist a that kind entity it will be used to syncronize water, fog etc. things to other clients/server. 
+         * @param component_name is name of component which is added into local enviroment entity.
+         */
+        Scene::EntityPtr CreateEnvironmentEntity(const QString& component_name);
+        /** 
+         * Removes local dump enviroment entity. 
+         */ 
+        void RemoveLocalEnvironment();
+
         MODULE_LOGGING_FUNCTIONS
 
         //! @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
+
+
 
     private:
         EnvironmentModule(const EnvironmentModule &);

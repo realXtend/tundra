@@ -48,15 +48,11 @@ namespace ECEditor
 
         selectedEntities_.insert(entity);
 
-        QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
-                         this,
-                         SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
+        connect(entity->GetScene(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
 
-        QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
-                         this,
-                         SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
+        connect(entity->GetScene(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
     }
 
     void ECBrowser::RemoveEntity(Scene::Entity *entity)
@@ -310,8 +306,9 @@ namespace ECEditor
 
     void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     {
-        //! @todo position should be converted to treeWidget's space so that editor will select the right component when user right clicks on the browser.
-        //! right now position is bit off and wrong item is selected. Included fast fix that wont make it work perfectly.
+        //! @todo position should be converted to treeWidget's space so that editor will select the right
+        //! component when user right clicks on the browser. right now position is bit off and wrong item 
+        //! is selected. Included fast fix that wont make it work perfectly.
         if(!treeWidget_)
             return;
 
@@ -331,8 +328,9 @@ namespace ECEditor
             QAction *copyComponent = new QAction(tr("Copy"), menu_);
             QAction *pasteComponent = new QAction(tr("Paste"), menu_);
             QAction *editXml= new QAction(tr("Edit XML..."), menu_);
-            //Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
-            //If root item is selected we assume that we want to remove component and if attributes root node is selected we want to remove that attribute instead.
+            // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
+            // If root item is selected we assume that we want to remove component and if attributes root
+            // node is selected we want to remove that attribute instead.
             QAction *deleteAction= new QAction(tr("Delete"), menu_);
 
             //Add shortcuts for actions
@@ -444,7 +442,6 @@ namespace ECEditor
         }
     }
 
-    
     void ECBrowser::OpenComponentXmlEditor()
     {
         QTreeWidgetItem *item = treeWidget_->currentItem();
@@ -564,7 +561,7 @@ namespace ECEditor
             break;
         }
     }
-    
+
     void ECBrowser::DynamicComponentChanged(const QString &name)
     {
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
@@ -613,7 +610,8 @@ namespace ECEditor
         for(uint i = 0; i < attributeTypes.size(); i++)
             attributeList.push_back(QString::fromStdString(attributeTypes[i]));
 
-        //! @todo replace this code with a one that will use Dialog::open method and listens a signal that will tell us when dialog is closed. Should be more safe way to get this done.
+        //! @todo replace this code with a one that will use Dialog::open method and listens a signal
+        //! that will tell us when dialog is closed. Should be more safe way to get this done.
         QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, &ok);
         if (!ok)
             return;
@@ -705,13 +703,11 @@ namespace ECEditor
             (*iter)->components_.push_back(ComponentWeakPtr(comp));
             if((*iter)->IsDynamic())
             {
-                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent*>(comp.get());
-                connect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(OnComponentNameChanged(const QString&)), 
-                        this, SLOT(ComponentNameChanged(const QString&, const QString&)));
+                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
+                connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
+                    SLOT(ComponentNameChanged(const QString&)));
             }
             return;
         }
@@ -740,13 +736,10 @@ namespace ECEditor
         bool dynamic = comp->TypeName() == "EC_DynamicComponent";
         if(dynamic)
         {
-            EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent*>(comp.get());
-            connect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                    this, SLOT(DynamicComponentChanged(const QString &)));
-            connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                    this, SLOT(DynamicComponentChanged(const QString &)));
-            connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                    this, SLOT(ComponentNameChanged(const std::string&)));
+            EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
+            connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)));
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         if(compGroup)
@@ -765,13 +758,10 @@ namespace ECEditor
                 continue;
             if((*iter)->IsDynamic())
             {
-                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp);
-                disconnect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                           this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                           this, SLOT(ComponentNameChanged(const std::string&)));
+                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp);
+                disconnect(dc, SIGNAL(AttributeAdded(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
             }
             (*iter)->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.
