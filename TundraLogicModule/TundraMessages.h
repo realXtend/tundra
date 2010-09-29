@@ -13,4 +13,5 @@ const unsigned long cCreateComponentsMessage = 112;
 const unsigned long cUpdateComponentsMessage = 113;
 const unsigned long cRemoveComponentsMessage = 114;
 const unsigned long cEntityIDCollisionMessage = 115;
+const unsigned long cEntityActionMessage = 116;
 

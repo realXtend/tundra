@@ -207,6 +207,14 @@ namespace Scene
          */
         void EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
 
+        //! Emits a notification of an entity action being triggered.
+        /*! \param entity Entity pointer
+            \param action Name of the action
+            \param params Parameters
+            \type Execution type.
+         */
+        void EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+
         //! Load the scene from XML
         /*! Note: will remove all existing entities
             \param filename File name
@@ -236,18 +244,6 @@ namespace Scene
             \return true if successful
          */
         bool SaveSceneBinary(const std::string& filename);
-        
-    private:
-        SceneManager &operator =(const SceneManager &other);
-
-        //! Entities in a map
-        EntityMap entities_;
-
-        //! parent framework
-        Foundation::Framework *framework_;
-
-        //! Name of the scene
-        QString name_;
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
@@ -282,6 +278,26 @@ namespace Scene
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
         void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
+
+        //! Emitted when entity action is triggered.
+        /*! \param entity Entity for which action was executed.
+            \param action Name of action that was triggered.
+            \param params Parameters of the action.
+            \param type Execution type.
+        */
+        void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+
+    private:
+        SceneManager &operator =(const SceneManager &other);
+
+        //! Entities in a map
+        EntityMap entities_;
+
+        //! parent framework
+        Foundation::Framework *framework_;
+
+        //! Name of the scene
+        QString name_;
     };
 }
 

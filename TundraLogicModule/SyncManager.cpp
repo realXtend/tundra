@@ -17,6 +17,9 @@
 #include "MsgRemoveComponents.h"
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
+#include "MsgEntityAction.h"
+
+#include <clb/Network/Network.h>
 
 #include <cstring>
 
@@ -67,15 +70,17 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     Scene::SceneManager* sceneptr = scene.get();
     
     connect(sceneptr, SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
-        this, SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
+        SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
-        this, SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
+        SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
-        this, SLOT( OnComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ));
+        SLOT( OnComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( EntityCreated(Scene::Entity*, AttributeChange::Type) ),
-        this, SLOT( OnEntityCreated(Scene::Entity*, AttributeChange::Type) ));
+        SLOT( OnEntityCreated(Scene::Entity*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( EntityRemoved(Scene::Entity*, AttributeChange::Type) ),
-        this, SLOT( OnEntityRemoved(Scene::Entity*, AttributeChange::Type) ));
+        SLOT( OnEntityRemoved(Scene::Entity*, AttributeChange::Type) ));
+    connect(sceneptr, SIGNAL( ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
+        SLOT( OnActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
 }
 
 void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
@@ -127,6 +132,12 @@ void SyncManager::HandleKristalliMessage(MessageConnection* source, message_id_t
             HandleEntityIDCollision(source, msg);
         }
         break;
+    case cEntityActionMessage:
+        {
+            MsgEntityAction msg(data, numBytes);
+            HandleEntityAction(source, msg);
+        }
+
     }
 }
 
@@ -279,6 +290,13 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
         SceneSyncState* state = &server_syncstate_;
         state->OnEntityRemoved(entity->GetId());
     }
+}
+
+void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+{
+//EntityAction::Local
+//EntityAction::Peers
+//EntityAction::Server
 }
 
 void SyncManager::Update(f64 frametime)
@@ -881,6 +899,39 @@ void SyncManager::HandleEntityIDCollision(MessageConnection* source, const MsgEn
         state->entities_[msg.newEntityID] = state->entities_[msg.oldEntityID];
         state->RemoveEntity(msg.oldEntityID);
     }
+}
+
+void SyncManager::HandleEntityAction(MessageConnection* source, const MsgEntityAction& msg)
+{
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
+        return;
+
+    // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
+    entity_id_t entityId = msg.entityId;
+    Scene::EntityPtr entity = scene->GetEntity(entityId);
+    if (!entity)
+    {
+        TundraLogicModule::LogWarning("Entity " + ToString<int>(entityId) + " not found for EntityAction message.");
+        return;
+    }
+
+    QString action = BufferToString(msg.name).c_str();
+    QStringList params;
+    for (uint i = 0; i < msg.parameters.size(); ++i)
+        params << BufferToString(msg.parameters[i].parameter).c_str();
+
+    EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
+
+    // If execution type is Server, execute entity action.
+    if (type & EntityAction::Server)
+        entity->Exec(action, params);
+
+    // If execution type is Peers, replicate to all peers but the sender.
+    if (type & EntityAction::Peers)
+        foreach(KristalliProtocol::UserConnection userConn, owner_->GetKristalliModule()->GetUserConnections())
+            if (userConn.connection != source)
+                userConn.connection->Send(msg);
 }
 
 SceneSyncState* SyncManager::GetSceneSyncState(MessageConnection* connection)
