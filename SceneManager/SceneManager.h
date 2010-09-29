@@ -39,9 +39,6 @@ namespace Scene
         //! constructor that takes a name and framework
         SceneManager(const QString &name, Foundation::Framework *framework);
 
-        //! copy constuctor
-        SceneManager(const SceneManager &other);
-
         //! Current global id for networked entities
         uint gid_;
 
@@ -251,14 +248,6 @@ namespace Scene
             \return true if successful
          */
         bool SaveSceneBinary(const std::string& filename);
-
-        //! Emits a notification of an entity action being triggered.
-        /*! \param entity Entity pointer
-            \param action Name of the action
-            \param params Parameters
-            \type Execution type.
-         */
-        void EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)

@@ -7,7 +7,6 @@
 #include "ModuleLoggingFunctions.h"
 
 class UiService;
-typedef boost::shared_ptr<UiService> UiServicePtr;
 
 class UiServiceModule : public IModule
 {
@@ -46,7 +45,7 @@ private:
     static std::string type_name_static_;
 
     //! UI service.
-    UiServicePtr service_;
+    boost::shared_ptr<UiService> service_;
 };
 
 #endif
