@@ -233,6 +233,11 @@ namespace Scene
         emit EntityRemoved(entity, change);
     }
 
+    void SceneManager::EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+    {
+        emit ActionTriggered(entity, action, params, type);
+    }
+
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name)
     {
         EntityList list = GetEntitiesWithComponent(type_name);
