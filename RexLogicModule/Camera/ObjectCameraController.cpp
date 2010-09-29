@@ -455,9 +455,6 @@ namespace RexLogic
             returning_to_avatar_ = false;
             camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgreCamera>().get()->SetActive();
 
-            event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
-
             object_selected_ = false;
             selected_entity_ = 0;
 
