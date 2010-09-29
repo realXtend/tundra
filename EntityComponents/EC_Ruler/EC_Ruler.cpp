@@ -211,23 +211,68 @@ void EC_Ruler::SetupRotationRuler()
     rulerObject->clear();
     rulerObject->setCastShadows(false);
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
-
-    unsigned i = 0;
+    
+    Quaternion start = Quaternion(rot_.x(), rot_.y(), rot_.z(), rot_.scalar());
+    Vector3df seul;
+    Quaternion end= Quaternion(newrot_.x(), newrot_.y(), newrot_.z(), newrot_.scalar());
+    Vector3df eeul;
+    
+    start.toEuler(seul);
+    end.toEuler(eeul);
+    
+    float a1 = 0.0f;
+    float a2 = 0.0f;
+    switch(axisAttr_.Get()) {
+        case EC_Ruler::X:
+                a1 = seul.x;
+                a2 = eeul.x;
+            break;
+        case EC_Ruler::Y:
+                a1 = seul.y;
+                a2 = eeul.y;
+            break;
+        case EC_Ruler::Z:
+                a1 = seul.z;
+                a2 = eeul.z;
+            break;
+    }
+    
+    if (a2 < a1) {
+        float tmp = a1;
+        a1 = a2;
+        a2 = tmp;
+    }
+    
     for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 rulerObject->position(0, radius * cos(theta), radius * sin(theta));
                 break;
             case EC_Ruler::Y:
-                rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-                break;
-            case EC_Ruler::Z:
                 rulerObject->position(radius * cos(theta), 0, radius * sin(theta));
                 break;
+            case EC_Ruler::Z:
+                rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
+                break;
         }
-        rulerObject->index(i++);
     }
-    rulerObject->index(0); // Close the line = circle
+    rulerObject->end();
+    
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_FAN);
+    rulerObject->position(0, 0, 0);
+    for(float theta = a1; theta <= a2; theta += Ogre::Math::PI/ segments) {
+        switch(axisAttr_.Get()) {
+            case EC_Ruler::X:
+                rulerObject->position(0, radius * cos(theta), radius * sin(theta));
+                break;
+            case EC_Ruler::Y:
+                rulerObject->position(radius * cos(theta), 0, radius * sin(theta));
+                break;
+            case EC_Ruler::Z:
+                rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
+                break;
+        }
+    } 
     rulerObject->end();
 }
 
