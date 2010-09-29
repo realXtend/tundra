@@ -93,6 +93,11 @@ class Manipulator:
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
+            ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+            print "Setting ruler type to", self.MANIPULATOR_RULER_TYPE
+            ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+            ruler.SetVisible(True)
+            print type(ruler), dir(ruler), dir(type(ruler))
             return ent 
 
     def stopManipulating(self):
