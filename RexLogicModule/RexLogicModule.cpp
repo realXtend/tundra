@@ -76,7 +76,7 @@
 #include "ComponentManager.h"
 #include "IEventData.h"
 #include "TextureInterface.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Input.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
@@ -129,9 +129,7 @@
 #ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
 #endif
-//#ifdef EC_Name_ENABLED
-#include "EC_Name.h"
-//#endif
+#include <EC_Name.h>
 #ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
 #endif
@@ -1023,7 +1021,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+        Vector3df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 #endif

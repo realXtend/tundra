@@ -2,7 +2,7 @@
 #ifndef incl_OpenALAudio_VorbisDecoder_h
 #define incl_OpenALAudio_VorbisDecoder_h
 
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "ThreadTask.h"
 
 namespace OpenALAudio
@@ -25,7 +25,7 @@ namespace OpenALAudio
         //! Decoded audio data buffer. Will always be 16bit signed
         /*! If decode failed, will be zero size
          */
-        Foundation::SoundServiceInterface::SoundBuffer buffer_;
+        ISoundService::SoundBuffer buffer_;
     };
     
     typedef boost::shared_ptr<VorbisDecodeRequest> VorbisDecodeRequestPtr;

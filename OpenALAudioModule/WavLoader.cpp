@@ -146,7 +146,7 @@ namespace OpenALAudio
         msg << "Loaded WAV sound with " << channels << " channels " << bits << " bits, frequency " << frequency << " datasize " << data_length; 
         OpenALAudioModule::LogDebug(msg.str());
         
-        Foundation::SoundServiceInterface::SoundBuffer wav_buffer;
+        ISoundService::SoundBuffer wav_buffer;
         wav_buffer.data_.resize(data_length);
         memcpy(&wav_buffer.data_[0], &data[index], data_length);
         wav_buffer.frequency_ = frequency;

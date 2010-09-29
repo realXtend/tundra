@@ -34,7 +34,7 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 

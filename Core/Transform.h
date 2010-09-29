@@ -4,6 +4,8 @@
 #include "CoreMath.h"
 #include "Vector3D.h"
 
+#include <QMetaType>
+
 struct Transform
 {
     Vector3df position;
@@ -54,4 +56,7 @@ struct Transform
             scale.z = 1e-4f;
     }
 };
+
+Q_DECLARE_METATYPE(Transform)
+
 #endif

@@ -47,9 +47,9 @@ public:
     */
     enum ExecutionType
     {
-        Local = 1, ///< Executed only.locally.
-        Server = 2, ///< Executed only on server.
-        Peers = 4 ///< Executed only on peers.
+        Local = 1, ///< Executed locally.
+        Server = 2, ///< Executed on server.
+        Peers = 4 ///< Executed on peers.
     };
 
 signals:
@@ -65,7 +65,7 @@ private:
     /// Constructor.
     /** @param name Name of the action.
     */
-    explicit EntityAction(const QString &name ) : name_(name) {}
+    explicit EntityAction(const QString &name) : name_(name) {}
 
     /// Triggers this action i.e. emits the Triggered signal.
     /** @param param1 1st parameter for the action, if applicable.

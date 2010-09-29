@@ -10,15 +10,13 @@
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
-#include "QtInputMouseEvent.h"
-#include "QtInputKeyEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
 #include "Console.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 
-#include "QtInputMouseEvent.h"
-#include "QtInputKeyEvent.h"
 #include "EntityAction.h"
 
 #include <QUiLoader>
@@ -29,6 +27,7 @@
 Q_SCRIPT_DECLARE_QMETAOBJECT(QPushButton, QWidget*)
 Q_SCRIPT_DECLARE_QMETAOBJECT(QWidget, QWidget*)
 
+///\todo Remove these two and move to Input API once NaaliCore is merged.
 //! Naali input defines
 Q_DECLARE_METATYPE(MouseEvent*)
 Q_DECLARE_METATYPE(KeyEvent*)
@@ -85,16 +84,16 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     // Ui metatypes.
     qScriptRegisterQObjectMetaType<UiProxyWidget*>(engine);
     qScriptRegisterQObjectMetaType<QGraphicsScene*>(engine);
-    //Add support to create proxy widget in javascript side.
+    //Add support to create proxy widgets in javascript side.
     QScriptValue object = engine->scriptValueFromQMetaObject<UiProxyWidget>();
     engine->globalObject().setProperty("UiProxyWidget", object);
     
     // Sound metatypes.
     qRegisterMetaType<sound_id_t>("sound_id_t");
-    qRegisterMetaType<Foundation::SoundServiceInterface::SoundState>("SoundState");
-    qRegisterMetaType<Foundation::SoundServiceInterface::SoundState>("Foundation::SoundServiceInterface::SoundState");
-    qRegisterMetaType<Foundation::SoundServiceInterface::SoundType>("SoundType");
-    qRegisterMetaType<Foundation::SoundServiceInterface::SoundType>("Foundation::SoundServiceInterface::SoundType");
+    qRegisterMetaType<ISoundService::SoundState>("SoundState");
+    qRegisterMetaType<ISoundService::SoundState>("ISoundService::SoundState");
+    qRegisterMetaType<ISoundService::SoundType>("SoundType");
+    qRegisterMetaType<ISoundService::SoundType>("ISoundService::SoundType");
 }
 
 

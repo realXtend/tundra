@@ -98,7 +98,7 @@ void Environment::CreateEnvironment()
     
     // Creates default fog component
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic()));
-    activeFogComponent_ = entity->GetComponent<EC_Fog>().get();
+    activeFogComponent_ = entity->GetComponent<EC_Fog >().get();
     
     active_scene->EmitEntityCreated(entity);
     activeEnvEntity_ = entity;
@@ -209,6 +209,7 @@ void Environment::Update(f64 frametime)
     if (!env)
         return;
 
+
      // Currently updates other then water and fog.
     env->UpdateVisualEffects(frametime);
 
@@ -268,10 +269,10 @@ void Environment::Update(f64 frametime)
     {
        // We're below the water.
        
-       float fogStart =plane->fogStartAttr_.Get();
-       float fogEnd = plane->fogEndAttr_.Get();
+       float fogStart =plane->fogStartAttr.Get();
+       float fogEnd = plane->fogEndAttr.Get();
        float farClip = fogEnd+10.f;
-       Ogre::FogMode mode = static_cast<Ogre::FogMode>(plane->fogModeAttr_.Get());
+       Ogre::FogMode mode = static_cast<Ogre::FogMode>(plane->fogModeAttr.Get());
        
        if (farClip > cameraFarClip)
            farClip = cameraFarClip;            
@@ -281,7 +282,7 @@ void Environment::Update(f64 frametime)
             // Hide the Caelum subsystems.
             caelumSystem->forceSubcomponentVisibilityFlags(Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE);
 #endif    
-            Color col = plane->fogColorAttr_.Get();
+            Color col = plane->fogColorAttr.Get();
             Ogre::ColourValue color = plane->GetFogColorAsOgreValue();
             
             //@note default values are 0.2f, 0.4f, 0.35f

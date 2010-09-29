@@ -228,38 +228,22 @@ namespace Scene
 
     void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
     {
-        EntityAction *act = Action(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger();
+        Exec(action, QStringList(), type);
     }
 
     void Entity::Exec(const QString &action, const QString &param, EntityAction::ExecutionType type)
     {
-        EntityAction *act = Action(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param);
+        Exec(action, QStringList(QStringList() << param), type);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, EntityAction::ExecutionType type)
     {
-        EntityAction *act = Action(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param1, param2);
+        Exec(action, QStringList(QStringList() << param1 << param2), type);
     }
 
     void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
     {
-        EntityAction *act = Action(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param1, param2, param3);
+        Exec(action, QStringList(QStringList() << param1 << param2 << param3), type);
     }
 
     void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
@@ -278,6 +262,8 @@ namespace Scene
             act->Trigger(params[0], params[1], params[2]);
         else if (params.size() >= 4)
             act->Trigger(params[0], params[1], params[2], params.mid(3));
+
+        GetScene()->EmitActionTriggered(this, action, params, type);
     }
 
     bool Entity::HasReceivers(EntityAction *action)

@@ -61,7 +61,7 @@ namespace Avatar
     
     void AvatarEditor::InitEditorWindow()
     {
-        Foundation::UiServiceInterface *ui = avatar_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
         if (ui == 0) // If this occurs, we're most probably operating in headless mode.
             return;
 
