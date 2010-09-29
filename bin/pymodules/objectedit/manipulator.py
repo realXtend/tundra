@@ -167,7 +167,7 @@ class Manipulator:
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
     
-    def initManipulation(self, ent, results):
+    def initManipulation(self, ent, results, ents):
         if self.usesManipulator:
             if ent is None:
                 return
@@ -193,9 +193,15 @@ class Manipulator:
                     self.grabbed = False
                     
                 if self.grabbed_axis != None:
+                    self.manipulator.ruler.SetAxis(self.grabbed_axis)
+                    self.manipulator.ruler.SetVisible(True)
+                    if ents[0]:
+                        placeable = ents[0].placeable
+                        self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
                     set_custom_cursor(self.CURSOR_HOLD_SHAPE)
                 else:
                     remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                    self.manipulator.ruler.SetVisible(False)
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -244,6 +250,11 @@ class Manipulator:
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, changevec)
                 self.controller.soundRuler(ent)
+            if len(ents) > 0:
+                placeable = ents[0].placeable
+                self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+
+            self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)

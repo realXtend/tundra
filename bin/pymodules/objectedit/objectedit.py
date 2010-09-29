@@ -170,6 +170,7 @@ class ObjectEdit(Component):
         self.manipulators[self.MANIPULATE_FREEMOVE] =  manipulator.FreeMoveManipulator(self)
         self.manipulators[self.MANIPULATE_ROTATE] =  manipulator.RotationManipulator(self)
         self.manipulator = self.manipulators[self.MANIPULATE_FREEMOVE]
+        print "manipulators reset"
  
     def baseselect(self, ent):
         ent, children = self.parentalCheck(ent)
@@ -363,7 +364,8 @@ class ObjectEdit(Component):
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
-        self.manipulator.initManipulation(ent, results)
+
+        self.manipulator.initManipulation(ent, results, self.sels)
         self.usingManipulator = True
 
         if ent is not None:
