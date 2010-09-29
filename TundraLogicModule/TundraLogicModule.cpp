@@ -74,18 +74,13 @@ void TundraLogicModule::PostInitialize()
         Console::Bind(this, &TundraLogicModule::ConsoleLoadScene)));
     
     RegisterConsoleCommand(Console::CreateCommand("importscene",
-        "Loads scene from a dotscene file. Optionally clears the existing scene. Usage: loadscene(filename,clearscene)",
+        "Loads scene from a dotscene file. Optionally clears the existing scene. Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
         LogFatal("Could not get KristalliProtocolModule");
-        
-    // If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
-    ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-    if (!loginModule.lock().get())
-        server_->Start(cDefaultPort);
 }
 
 void TundraLogicModule::Uninitialize()
@@ -98,6 +93,17 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::Update(f64 frametime)
 {
+    static bool check_default_server_start = true;
+    if (check_default_server_start)
+    {
+        //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
+        ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
+        if (!loginModule.lock().get())
+            server_->Start(cDefaultPort);
+        check_default_server_start = false;
+        LogInfo("Started server by default");
+    }
+    
     // Update client & server
     if (client_)
         client_->Update(frametime);
@@ -222,15 +228,18 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     if (params.size() < 1)
         return Console::ResultFailure("No filename given.");
     bool clearscene = false;
+    bool replace = true;
     if (params.size() > 1)
         clearscene = ParseBool(params[1]);
+    if (params.size() > 2)
+        replace = ParseBool(params[2]);
     
     std::string filename = params[0];
     boost::filesystem::path path(filename);
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(framework_);
-    bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true);
+    bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true, replace);
     
     if (success)
         return Console::ResultSuccess();

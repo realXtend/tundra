@@ -55,6 +55,11 @@ bool Server::Start(unsigned short port)
         Scene::ScenePtr scene = framework_->CreateScene("TundraServer");
         framework_->SetDefaultWorldScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
+        
+        //! \todo Hack - find better way and remove! Allow environment and fly camera also on server by sending a fake connect event
+        Events::TundraConnectedEventData event_data;
+        event_data.user_id_ = 0;
+        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
     }
     
     return true;
