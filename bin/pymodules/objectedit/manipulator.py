@@ -15,6 +15,8 @@ import PythonQt.QtGui
 from PythonQt.QtGui import QQuaternion
 from PythonQt.QtGui import QVector3D
 
+from PythonQt.private import EC_Ruler
+
 try:
     qapp = PythonQt.Qt.QApplication.instance()
 except:
@@ -56,6 +58,8 @@ class Manipulator:
     
     MANIPULATORORIENTATION = QQuaternion(1, 0, 0, 0)
     MANIPULATORSCALE = QVector3D(1, 1, 1)
+
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
     
     MATERIALNAMES = None
     
@@ -116,6 +120,15 @@ class Manipulator:
         if self.usesManipulator and len(ents)>0:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE
+            try:
+                r = self.manipulator.ruler
+            except:
+                print "no ruler yet O.o"
+            else:
+                print "Setting ruler to type", self.MANIPULATOR_RULER_TYPE
+                r.SetType(self.MANIPULATOR_RULER_TYPE)
+                r.SetVisible(True)
+                r.UpdateRuler()
             if self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
@@ -144,6 +157,8 @@ class Manipulator:
                 if self.manipulator is not None:
                     self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
                     self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
+                    self.manipulator.ruler.SetVisible(False)
+                    self.manipulator.ruler.UpdateRuler()
                 
                 self.grabbed_axis = None
                 self.grabbed = False
@@ -265,6 +280,7 @@ class Manipulator:
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Translation
     
     GREENARROW = [0]
     REDARROW = [1]
@@ -305,6 +321,7 @@ class MoveManipulator(Manipulator):
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
     MANIPULATOR_MESH_NAME = "scale1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Scale
 
     MATERIALNAMES = {
         0: "axis_green",
@@ -346,6 +363,7 @@ class FreeMoveManipulator(Manipulator):
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
     
     MATERIALNAMES = {
         0: "axis_green",
