@@ -7,6 +7,9 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
+#include "clb/Network/DataDeserializer.h"
+#include "clb/Network/DataSerializer.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 #include <QDomDocument>
@@ -65,6 +68,11 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         child = child.nextSiblingElement("attribute");
     }
 
+    DeserializeCommon(deserializedAttributes, change);
+}
+
+void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change)
+{
     // Sort both lists in alphabetical order.
     AttributeVector oldAttributes = attributes_;
     std::stable_sort(oldAttributes.begin(), oldAttributes.end(), &CmpAttributeByName);
@@ -120,7 +128,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         DeserializeData attributeData = addAttributes.back();
         IAttribute *attribute = CreateAttribute(attributeData.type_.c_str(), attributeData.name_.c_str());
         if (attribute)
-            attribute->FromString(attributeData.value_, AttributeChange::Local);
+            attribute->FromString(attributeData.value_, change);
         addAttributes.pop_back();
     }
     while(!remAttributes.empty())
@@ -410,3 +418,79 @@ bool EC_DynamicComponent::ContainAttribute(const QString &name) const
     }
     return false;
 }
+
+void EC_DynamicComponent::SerializeToBinary(DataSerializer& dest) const
+{
+    dest.Add<u8>(attributes_.size());
+    // For now, transmit all values as strings
+    AttributeVector::const_iterator iter = attributes_.begin();
+    while(iter != attributes_.end())
+    {
+        dest.AddString((*iter)->GetNameString());
+        dest.AddString((*iter)->TypenameToString());
+        dest.AddString((*iter)->ToString());
+        ++iter;
+    }
+}
+
+void EC_DynamicComponent::DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    u8 num_attributes = source.Read<u8>();
+    std::vector<DeserializeData> deserializedAttributes;
+    for (uint i = 0; i < num_attributes; ++i)
+    {
+        std::string name = source.ReadString();
+        std::string type = source.ReadString();
+        std::string value = source.ReadString();
+        DeserializeData attributeData(name, type, value);
+        deserializedAttributes.push_back(attributeData);
+    }
+    
+    DeserializeCommon(deserializedAttributes, change);
+}
+
+bool EC_DynamicComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const
+{
+    // Currently, since DynamicComponent is a bit scary, we either send all attributes, or none
+    // Furthermore, the compare code is quite ugly & slow
+    bool changed = false;
+    u8 num_attributes = previousData.Read<u8>();
+    if (num_attributes != attributes_.size())
+        changed = true;
+    else
+    {
+        AttributeVector::const_iterator iter = attributes_.begin();
+        while(iter != attributes_.end())
+        {
+            if ((*iter)->GetNameString() != previousData.ReadString())
+            {
+                changed = true;
+                break;
+            }
+            if ((*iter)->TypenameToString() != previousData.ReadString())
+            {
+                changed = true;
+                break;
+            }
+            if ((*iter)->ToString() != previousData.ReadString())
+            {
+                changed = true;
+                break;
+            }
+            ++iter;
+        }
+    }
+    
+    if (changed)
+        SerializeToBinary(dest);
+    
+    return changed;
+}
+
+bool EC_DynamicComponent::DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change)
+{
+    // Assume there is data, otherwise we shouldn't be here
+    DeserializeFromBinary(source, change);
+    return true;
+}
+
