@@ -1,8 +1,10 @@
+#include "StableHeaders.h"
 #include "Color.h"
 #include "Quaternion.h"
 #include "Transform.h"
 #include "Vector3D.h"
 #include "Matrix4.h"
+
 
 #include <QScriptEngine>
 #include <QColor>
