@@ -57,18 +57,13 @@ link_package (XMLRPC)
 link_package (CURL)
 link_package (OGRE)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
 # ETHER TYPE DEFINE
 if (DYNAMIC_LOGIN_SCENE)
    add_definitions (-DDYNAMIC_LOGIN_SCENE)
 endif (DYNAMIC_LOGIN_SCENE)
 
 SetupCompileFlagsWithPCH()
-
+CopyModuleXMLFile()
 
 final_target ()
 
