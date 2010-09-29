@@ -123,6 +123,8 @@ public:
 
     void DeserializeFrom(QDomElement& element, AttributeChange::Type change);
 
+    void DeserializeCommon(std::vector<DeserializeData>& deserializedAttributes, AttributeChange::Type change);
+
     /// Constructs a new attribute of type Attribute<T>.
     template<typename T>
     void AddAttribute(const QString &name)
@@ -134,6 +136,20 @@ public:
             emit AttributeAdded(name);
         }
     }
+
+    /// IComponent override
+    virtual void SerializeToBinary(DataSerializer& dest) const;
+
+    /// IComponent override
+    virtual void DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change);
+
+    /// IComponent override
+    virtual bool SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const;
+    
+    /// IComponent override
+    virtual bool DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change);
+
+
 
 public slots:
     //! A factory method that constructs a new attribute given the typename. This factory is not extensible.
