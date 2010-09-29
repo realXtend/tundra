@@ -224,23 +224,24 @@ void EC_Ruler::SetupRotationRuler()
     float a2 = 0.0f;
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
-                a1 = seul.x;
-                a2 = eeul.x;
+                //a1 = seul.x;
+                a2 = seul.x - eeul.x;
             break;
         case EC_Ruler::Y:
-                a1 = seul.y;
-                a2 = eeul.y;
+                //a1 = seul.y;
+                a2 = seul.y - eeul.y;
             break;
         case EC_Ruler::Z:
-                a1 = seul.z;
-                a2 = eeul.z;
+                //a1 = seul.z;
+                a2 = seul.z - eeul.z;
             break;
     }
     
-    if (a2 < a1) {
-        float tmp = a1;
+    std::cout << " angel: " << a2 << std::endl;
+    
+    if (a2 < 0.0f) {
         a1 = a2;
-        a2 = tmp;
+        a2 = 0.0f;
     }
     
     for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
