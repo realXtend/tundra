@@ -189,6 +189,8 @@ namespace Environment
         /// Creates the global sunlight.
         void CreateGlobalLight();
 
+        EC_Fog* GetEnvironmentFog();
+
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
@@ -216,9 +218,7 @@ namespace Environment
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
 
-        //! Fog EC pointer.
-        EC_Fog* activeFogComponent_;
-
+        
 
     };
 }
