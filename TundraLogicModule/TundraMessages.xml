@@ -76,4 +76,16 @@
         <u32 name="oldEntityID" />
         <u32 name="newEntityID" />
     </message>
+
+    <!-- ENTITY ACTIONS -->
+
+    <!-- Replicates entity action. Client<->Server -->
+    <message id="116" name="EntityAction" reliable="true" inOrder="true" priority="100">
+        <u32 name="entityId" />
+        <s8 name="name" dynamicCount="8"/>
+        <u8 name="executionType" />
+        <struct name="parameters" dynamicCount="8">
+            <s8 name="parameter" dynamicCount="8" />
+        </struct>
+    </message>
 </xml>

@@ -18,6 +18,7 @@ struct MsgCreateComponents;
 struct MsgUpdateComponents;
 struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
+struct MsgEntityAction;
 
 typedef unsigned long message_id_t;
 
@@ -83,7 +84,10 @@ private slots:
     
     //! Trigger sync of entity removal
     void OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
-    
+
+    //! Trigger sync of entity action.
+    void OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+
 private:
     /// Handle a Kristalli protocol message
     void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
@@ -105,7 +109,10 @@ private:
     
     //! Handle entityID collision message
     void HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg);
-    
+
+    //! Handle entity action message.
+    void HandleEntityAction(MessageConnection* source, const MsgEntityAction& msg);
+
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages
