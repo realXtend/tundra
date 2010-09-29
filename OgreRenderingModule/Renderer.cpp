@@ -1109,7 +1109,7 @@ namespace OgreRenderer
         return return_pixmap;
     }
 
-    QPixmap Renderer::RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation)
+    QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
     {
         int window_width = renderwindow_->getWidth();
         int window_height = renderwindow_->getHeight();

@@ -82,33 +82,9 @@ include (ConfigurePackages)
 # Disable unnecessary build types
 set (CMAKE_CONFIGURATION_TYPES "Release;RelWithDebInfo;Debug" CACHE STRING "Configurations" FORCE)
 
-if (MSVC)
-  # Use Caelum, but not Hydrax for now.
-  SET (CAELUM 1)
-  SET (HYDRAX 0)
-else ()
-  SET (CAELUM 0)
-  SET (HYDRAX 0)
-endif()
-
-
-# Possibility to disable console output and make viewer a true Windows application (Windows only)
-SET (WINDOWS_APP 0)
-
-# Set login scene type: 1 = dynamic switchable ether + normal login, 0 = static classical login
-SET (DYNAMIC_LOGIN_SCENE 1)
-
 # In Visual Studio, use unicode character set
 if (MSVC)
     add_definitions (-DUNICODE -D_UNICODE)
-endif (MSVC)
-
-# Generate profiling data.
-add_definitions (-DPROFILING)
-
-# Enable memory leak checking in all core modules.
-if (MSVC)
-    add_definitions (-DMEMORY_LEAK_CHECK)
 endif (MSVC)
 
 # On all platforms, we enable PCH files by default.
@@ -132,115 +108,18 @@ configure_curl ()
 configure_openjpeg ()
 configure_qtpropertybrowser ()
 
-if (CAELUM)
-    configure_caelum ()
-endif (CAELUM)
-
-if (HYDRAX)
-    configure_hydrax ()
-endif (HYDRAX)
-
-# UiServiceModule is an experimental light-weight UI module 
-# which can be used as a substitute for UiModule.
-# If you want to test UiServiceModule, uncomment the following line.
-# The define also enables LoginScreenModule which is an experimental module 
-# for abstracting the login screen / main menu from the main application:
-# currently this functionality resides in RexLogicModule and UiModule.
-SET (UISERVICE_TEST 0)
-
-# Add all the subprojects in the rex viewer.
-
-# The following are the core modules that are 
-# required for the project to build. None of
-# these can't be omitted.
-add_subdirectory (Core)
-add_subdirectory (Foundation)
-add_subdirectory (Interfaces)
-add_subdirectory (RexCommon)
-add_subdirectory (SceneManager)
-add_subdirectory (OgreRenderingModule)
-add_subdirectory (Application)
-
-# The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
-# they will not be able to conditionally compile the EC.
-
-# The following EC's are declared by RexLogicModule
-AddEntityComponent(EntityComponents/EC_OpenSimPrim EC_OpenSimPrim)         # Required by ProtocolUtilities and RexLogicModule.
-AddEntityComponent(EntityComponents/EC_OpenSimPresence EC_OpenSimPresence)
-
-AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
-AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
-AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
-AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
-AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
-AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
-AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
-AddEntityComponent(EntityComponents/EC_3DCanvasSource EC_3DCanvasSource)
-AddEntityComponent(EntityComponents/EC_HoveringText EC_HoveringText)
-AddEntityComponent(EntityComponents/EC_Clone EC_Clone)
-AddEntityComponent(EntityComponents/EC_Light EC_Light)
-AddEntityComponent(EntityComponents/EC_Touchable EC_Touchable)
-AddEntityComponent(EntityComponents/EC_Ruler EC_Ruler)
-AddEntityComponent(EntityComponents/EC_SoundRuler EC_SoundRuler)
-AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
-
-# The following EC's are declared by AvatarModule
-AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Required.
-AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
-
-# Declared by PythonScriptModule. 
-AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Used by ECEditorModule.
-AddEntityComponent(EntityComponents/EC_Script EC_Script)
-
-add_subdirectory (RexLogicModule)
-add_subdirectory (SupportModules)
-add_subdirectory (AvatarModule)
-add_subdirectory (AssetModule)
-add_subdirectory (HttpUtilities)
-add_subdirectory (RpcUtilities)
-add_subdirectory (ProtocolUtilities)
-add_subdirectory (EnvironmentModule)
-if (NOT UISERVICE_TEST)
-    add_subdirectory (UiModule)
-endif ()
-
-# The following are not really core modules,
-# but you can't do anything practical without
-# having them so, they're effectively required.
-add_subdirectory (QtInputModule)
-add_subdirectory (TextureDecoderModule)
-add_subdirectory (ProtocolModuleOpenSim)
-add_subdirectory (ProtocolModuleTaiga)
-
-if (UISERVICE_TEST)
-    add_subdirectory (UiServiceModule)
-    add_subdirectory (LoginScreenModule)
-endif ()
-
-# The following are optional, but contain 
-# commonly used functionality.
-add_subdirectory (InventoryModule)
-add_subdirectory (OgreAssetEditorModule)
-add_subdirectory (CommunicationsModule)
-
-# Entity components. Note: at the current system if you disable one of these you must
-# comment out the declaration at the responsible module's Load() function.
-
-# Add EC's declared by other modules here:
-# ...
-
 # If the custom optional modules configuration file does not yet
-# exist, create it from a template.
-if (NOT EXISTS CMakeOptionalModules.txt)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModulesTemplate.txt
-        ${CMAKE_CURRENT_SOURCE_DIR}/CMakeOptionalModules.txt)
+# exist, create it from the template file.
+if (NOT EXISTS CMakeBuildConfig.txt)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfigTemplate.txt
+        ${CMAKE_CURRENT_SOURCE_DIR}/CMakeBuildConfig.txt)
 endif ()
 
 # Read the set of optional modules from another file
 # that is kept outside the source control. 
 # To configure the set of optional modules to add to the build,
-# edit CMakeOptionalModules.txt and rerun cmake.
-include (CMakeOptionalModules.txt)
+# edit CMakeBuildConfig.txt and rerun cmake.
+include (CMakeBuildConfig.txt)
 
 # Collect translation files.
 file (GLOB TRANSLATIONS_FILES bin/data/translations/*.ts)
