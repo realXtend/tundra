@@ -53,7 +53,7 @@ SceneImporter::~SceneImporter()
 }
 
 bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
-    AttributeChange::Type change, bool clearscene, bool localassets)
+    AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
 {
     try
     {
@@ -130,7 +130,7 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         TundraLogicModule::LogInfo("Creating entities");
-        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz);
+        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
         
     }
     catch (Exception& e)
@@ -355,7 +355,7 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
 }
 
 void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
-    AttributeChange::Type change, bool localassets, bool flipyz)
+    AttributeChange::Type change, bool localassets, bool flipyz, bool replace)
 {
     while (!node_elem.isNull())
     {
@@ -425,10 +425,13 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
             
             Scene::EntityPtr entity;
             bool new_entity = false;
+            QString node_name_qstr = QString::fromStdString(node_name);
             
             // Try to find existing entity by name
-            QString node_name_qstr = QString::fromStdString(node_name);
-            entity = scene->GetEntity(node_name_qstr);
+            if (replace)
+            {
+                entity = scene->GetEntity(node_name_qstr);
+            }
             if (!entity)
             {
                 entity = scene->CreateEntity(scene->GetNextFreeId());
@@ -514,7 +517,7 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForCreation(scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz);
+            ProcessNodeForCreation(scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
         
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");

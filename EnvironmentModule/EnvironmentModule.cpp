@@ -184,7 +184,6 @@ namespace Environment
                 ReleaseEnvironment();
                 ReleaseSky();
                 firstTime_ = true;
-               
             }
         }
         else if(category_id == input_event_category_)
@@ -199,8 +198,8 @@ namespace Environment
                 if (GetFramework()->GetDefaultWorldScene().get())
                 {
                     CreateEnvironment();
-                    CreateTerrain();
-                    CreateWater();
+                    //CreateTerrain();
+                    //CreateWater();
                     //CreateEnvironment();
                     CreateSky();
                 }
@@ -210,8 +209,8 @@ namespace Environment
             {
                 if(postprocess_dialog_)
                     postprocess_dialog_->DisableAllEffects();
-                ReleaseTerrain();
-                ReleaseWater();
+                //ReleaseTerrain();
+                //ReleaseWater();
                 ReleaseEnvironment();
                 ReleaseSky();
                 firstTime_ = true;

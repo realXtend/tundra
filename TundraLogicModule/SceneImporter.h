@@ -25,20 +25,19 @@ public:
     ~SceneImporter();
     
     //! Import a dotscene
-    /*! The behaviour is as follows: if an entity with same name is already found in the scene, the entity is just updated with information from the
-        dotscene (placeable and mesh) and other components are left alone. Otherwise, a new entity is created.
-        
-        \param scene Destination scene
+    /*! \param scene Destination scene
         \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
         \param change What changetype to use in scene operations
-        \param clearscene Whether to clear scene first
+        \param clearscene Whether to clear scene first. Default false
         \param localassets Whether to put file:// prefix into all asset references
+        \param replace Whether to search for entities by name and replace just the visual components (placeable, mesh) if an existing entity is found.
+               Default true. If this is false, all entities will be created as new
         \return true if successful
      */
     bool Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, AttributeChange::Type change,
-        bool clearscene = false, bool localassets = true);
+        bool clearscene = false, bool localassets = true, bool replace = true);
     
 private:
     //! Process the asset references of a node, and its child nodes
@@ -64,9 +63,10 @@ private:
         \param change What changetype to use in scene operations
         \param localassets Whether to put file:// prefix into all asset references
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
+        \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
      */
     void ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
-        AttributeChange::Type change, bool localassets, bool flipyz);
+        AttributeChange::Type change, bool localassets, bool flipyz, bool replace);
     
     //! Materials encountered in scene
     std::set<std::string> material_names_;
