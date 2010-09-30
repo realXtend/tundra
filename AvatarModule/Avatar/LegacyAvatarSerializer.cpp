@@ -118,7 +118,7 @@ namespace Avatar
         AvatarAttachmentVector attachments;
         while (!attachment_elem.isNull())
         {
-            ReadAttachment(attachments, attachment_elem);
+            SerializeResult result = ReadAttachment(attachments, attachment_elem);
             attachment_elem = attachment_elem.nextSiblingElement("attachment");
         }
         dest.SetAttachments(attachments);
@@ -396,9 +396,11 @@ namespace Avatar
         return true;
     }
     
-    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem)
+    LegacyAvatarSerializer::SerializeResult LegacyAvatarSerializer::ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& elem)
     {
         AvatarAttachment attachment;
+        SerializeResult result;
+        result.first = false;
         
         QDomElement name = elem.firstChildElement("name");
         if (!name.isNull())
@@ -408,7 +410,8 @@ namespace Avatar
         else
         {
             AvatarModule::LogError("Attachment without name element");
-            return false;
+            result.second = "Attachment missing name element";
+            return result;
         }
 
         QDomElement category = elem.firstChildElement("category");
@@ -426,7 +429,8 @@ namespace Avatar
         else
         {
             AvatarModule::LogError("Attachment without mesh element");
-            return false;
+            result.second = "Attachment missing mesh element";
+            return result;
         }
         
         QDomElement avatar = elem.firstChildElement("avatar");
@@ -454,20 +458,26 @@ namespace Avatar
         else
         {
             AvatarModule::LogError("Attachment without avatar element");
-            return false;
+            result.second = "Attachment missing avatar element";
+            return result;
         }
         
         dest.push_back(attachment);
-        return true;
+        result.first = true;
+        return result;
     }
     
-    bool LegacyAvatarSerializer::ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name)
+    LegacyAvatarSerializer::SerializeResult LegacyAvatarSerializer::ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name)
     {
+        SerializeResult result;
+        result.first = false;
+
         QDomElement attachment_elem = source.firstChildElement("attachment");
         if (attachment_elem.isNull())
         {
             AvatarModule::LogError("Attachment without attachment element");
-            return false;
+            result.second = "Attachment missing attachment element";
+            return result;
         }
 
         dest.name_ = attachment_name;
@@ -491,7 +501,8 @@ namespace Avatar
         if (!found)
         {
             AvatarModule::LogError("No matching avatar mesh found in attachment. This attachment cannot be used for this avatar mesh");
-            return false;
+            result.second = "This attachment cannot be used with this avatar mesh";
+            return result;
         }
         
         QDomElement mesh_elem = attachment_elem.firstChildElement("mesh");
@@ -503,7 +514,8 @@ namespace Avatar
         else
         {
             AvatarModule::LogError("Attachment without mesh element");
-            return false;
+            result.second = "Attachment missing mesh element";
+            return result;
         }
         
         QDomElement bone = avatar_elem.firstChildElement("bone");
@@ -531,7 +543,8 @@ namespace Avatar
             dest.category_ = category_elem.attribute("name").toStdString();
         }    
         
-        return true;        
+        result.first = true;
+        return result;        
     }     
  
     void LegacyAvatarSerializer::WriteAvatarAppearance(QDomDocument& dest, const EC_AvatarAppearance& source, bool write_assetmap)

@@ -2,17 +2,16 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "AvatarEditing/AvatarEditor.h"
 
-#include "AvatarEditor.h"
-#include "AvatarHandler.h"
-#include "AvatarAppearance.h"
+#include "Avatar/AvatarHandler.h"
+#include "Avatar/AvatarAppearance.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 
 #include "SceneManager.h"
 #include "QtUtils.h"
 #include "ConfigurationManager.h"
 #include "ModuleManager.h"
-#include "UiServiceInterface.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -24,6 +23,8 @@
 #include <QApplication>
 #include <QVBoxLayout>
 #include <QGraphicsProxyWidget>
+#include <QSpacerItem>
+#include <QTimer>
 
 #include "MemoryLeakCheck.h"
 
@@ -31,7 +32,7 @@ namespace Avatar
 {
     AvatarEditor::AvatarEditor(AvatarModule *avatar_module) :
         avatar_module_(avatar_module),
-        avatar_widget_(0)
+        reverting_(false)
     {
         InitEditorWindow();
 
@@ -42,7 +43,6 @@ namespace Avatar
 
     AvatarEditor::~AvatarEditor()
     {
-        SAFE_DELETE(avatar_widget_);
         avatar_module_->GetFramework()->GetDefaultConfig().SetSetting("RexAvatar", "last_avatar_editor_dir", last_directory_);
     }
 
@@ -61,247 +61,339 @@ namespace Avatar
     
     void AvatarEditor::InitEditorWindow()
     {
-        UiServiceInterface *ui = avatar_module_->GetFramework()->GetService<UiServiceInterface>();
-        if (ui == 0) // If this occurs, we're most probably operating in headless mode.
-            return;
+        setupUi(this);
 
-        QUiLoader loader;
-        loader.setLanguageChangeEnabled(true);
-        QFile file("./data/ui/avatareditor.ui");
-        if (!file.exists())
-        {
-            AvatarModule::LogError("Cannot find avatar editor .ui file.");
-            return;
-        }
+        // Connect signals
+        connect(but_export, SIGNAL(clicked()), SLOT(ExportAvatar()));
+        connect(but_exportlocal, SIGNAL(clicked()), SLOT(ExportAvatarLocal()));
+        connect(but_load, SIGNAL(clicked()), SLOT(LoadAvatar()));
+        connect(but_revert, SIGNAL(clicked()), SLOT(RevertAvatar()));
+        connect(but_attachment, SIGNAL(clicked()), this, SLOT(AddAttachment()));
 
-        avatar_widget_ = loader.load(&file, this);
-        if (!avatar_widget_)
-            return;
+        QVBoxLayout *layout = new QVBoxLayout();
+        layout->setContentsMargins(0,0,0,0);
+        layout->setSpacing(0);
+        panel_materials->setLayout(layout);
 
-        QVBoxLayout *layout = new QVBoxLayout(this);
-        layout->addWidget(avatar_widget_);
-        layout->setContentsMargins(0, 0, 0, 0);
-        setLayout(layout);
-
-        // Connect signals.
-        QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
-        if (button)
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ExportAvatar()));
-
-        button = avatar_widget_->findChild<QPushButton *>("but_exportlocal");
-        if (button)
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ExportAvatarLocal()));
-
-        button = avatar_widget_->findChild<QPushButton *>("but_load");
-        if (button)
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(LoadAvatar()));
-
-        button = avatar_widget_->findChild<QPushButton *>("but_revert");
-        if (button)
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(RevertAvatar()));
-
-        button = avatar_widget_->findChild<QPushButton *>("but_attachment");
-        if (button)
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(AddAttachment()));
+        layout = new QVBoxLayout();
+        layout->setContentsMargins(0,0,0,0);
+        layout->setSpacing(0);
+        panel_attachments->setLayout(layout);
 
         setWindowTitle(tr("Avatar Editor"));
-        ui->AddWidgetToScene(this);
-        ui->AddWidgetToMenu(this);
     }
 
     void AvatarEditor::RebuildEditView()
     {
-        if (!avatar_widget_)
-            return;
-
         // Activate/deactivate export button based on whether export currently supported
-        QPushButton *button = avatar_widget_->findChild<QPushButton *>("but_export");
-        if (button)
-            button->setEnabled(avatar_module_->GetAvatarHandler()->AvatarExportSupported());
+        but_export->setEnabled(avatar_module_->GetAvatarHandler()->AvatarExportSupported());
 
-        QWidget* mat_panel = avatar_widget_->findChild<QWidget *>("panel_materials");
-        QWidget* attachment_panel = avatar_widget_->findChild<QWidget *>("panel_attachments");
-        if (!mat_panel || !attachment_panel)    
-            return;
-                
+        // Get users avatar appearance
         Scene::EntityPtr entity = avatar_module_->GetAvatarHandler()->GetUserAvatar();
         if (!entity)
             return;
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
-
-        int width = 308-10;
-        int tab_width = 302-10;
-        int itemheight = 20;
+        
+        QHBoxLayout *v_box = 0;
+        QPushButton *button = 0;
+        QLabel *label = 0;
+        QScrollBar* slider = 0;
+        int total_height;
 
         // Materials
-        ClearPanel(mat_panel); 
+        ClearPanel(panel_materials); 
         const AvatarMaterialVector& materials = appearance->GetMaterials();
-        mat_panel->resize(width, itemheight * (materials.size() + 1));
+
+        QVBoxLayout *materials_layout = dynamic_cast<QVBoxLayout*>(panel_materials->layout());
+        if (!materials_layout)
+            return;
 
         for (uint y = 0; y < materials.size(); ++y)
         {
-            QPushButton* button = new QPushButton("Change", mat_panel);
-            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
-            button->resize(50, 20);
-            button->move(width - 50, y*itemheight);
-            button->show();
+            // New horizontal layout
+            v_box = new QHBoxLayout();
+            v_box->setContentsMargins(6,3,6,3);
+            v_box->setSpacing(6);
 
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(ChangeTexture()));
-            // If there's a texture name, use it, because it is probably more understandable than material name
+            // If there's a texture name, use it
             std::string texname = materials[y].asset_.name_;
             if (materials[y].textures_.size())
                 texname = materials[y].textures_[0].name_;
 
-            QLabel* label = new QLabel(QString::fromStdString(texname), mat_panel);
-            label->resize(200,20);
-            label->move(0, y*itemheight);
-            label->show();
+            // Create elements
+            label = new QLabel(QString::fromStdString(texname));
+            label->setFixedWidth(200);
+
+            button = new QPushButton("Change");
+            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Material index
+            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            connect(button, SIGNAL(clicked()), SLOT(ChangeTexture()));
+
+            // Add to layouts
+            v_box->addWidget(label);
+            v_box->addWidget(button);
+            materials_layout->addLayout(v_box);
         }
+        total_height = (materials_layout->count()) * 35;
+        if (total_height < 35)
+            total_height = 35;
+        scroll_materials->setFixedHeight(total_height);
 
         // Attachments
-        ClearPanel(attachment_panel);
+        ClearPanel(panel_attachments);
         const AvatarAttachmentVector& attachments = appearance->GetAttachments();
-        attachment_panel->resize(width, itemheight * (attachments.size() + 1));
+
+        QVBoxLayout *attachments_layout = dynamic_cast<QVBoxLayout*>(panel_attachments->layout());
+        if (!attachments_layout)
+            return;
 
         for (uint y = 0; y < attachments.size(); ++y)
         {
-            QPushButton* button = new QPushButton("Remove", attachment_panel);
-            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Attachment index
-            button->resize(50, 20);
-            button->move(width - 50, y*itemheight);  
-            button->show();
+            // New horizontal layout
+            v_box = new QHBoxLayout();
+            v_box->setContentsMargins(6,3,6,3);
+            v_box->setSpacing(6);
 
-            QObject::connect(button, SIGNAL(clicked()), this, SLOT(RemoveAttachment()));
-
-            std::string attachment_name = attachments[y].name_;
             // Strip away .xml from the attachment name for slightly nicer display
+            std::string attachment_name = attachments[y].name_;
             std::size_t pos = attachment_name.find(".xml");
             if (pos != std::string::npos)
                 attachment_name = attachment_name.substr(0, pos);
 
-            QLabel* label = new QLabel(QString::fromStdString(attachment_name), attachment_panel);
-            label->resize(200,20);
-            label->move(0, y*itemheight);
-            label->show();
-        }
+            // Create elements
+            label = new QLabel(QString::fromStdString(attachment_name));
+            label->setFixedWidth(200);
 
-        // Modifiers
-        QTabWidget* tabs = avatar_widget_->findChild<QTabWidget *>("tab_appearance");
-        if (!tabs)
-            return;
+            button = new QPushButton("Remove");
+            button->setObjectName(QString::fromStdString(ToString<int>(y))); // Attachment index
+            button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+            connect(button, SIGNAL(clicked()), SLOT(RemoveAttachment()));
+
+            // Add to layouts
+            v_box->addWidget(label);
+            v_box->addWidget(button);
+            attachments_layout->addLayout(v_box);
+        }
+        total_height = (attachments_layout->count()) * 35;
+        if (total_height < 35)
+            total_height = 35;
+        scroll_attachments->setFixedHeight(total_height);
+
+        // Clear out all tabs
         for (;;)
         {
-            QWidget* tab = tabs->widget(0);
+            QWidget* tab = tab_appearance->widget(0);
             if (!tab)
                 break;
-            tabs->removeTab(0);
+            tab_appearance->removeTab(0);
             delete tab;
         }
 
-        const MasterModifierVector& master_modifiers = appearance->GetMasterModifiers();
+        // Modifiers
         // If no master modifiers, show the individual morph/bone controls
+        int max_items = 0;
+        const MasterModifierVector& master_modifiers = appearance->GetMasterModifiers();
         if (!master_modifiers.size())
         {
-            QWidget* morph_panel = GetOrCreateTabScrollArea(tabs, "Morphs");
-            QWidget* bone_panel = GetOrCreateTabScrollArea(tabs, "Bones");
+            QWidget* morph_panel = GetOrCreateTabScrollArea(tab_appearance, "Morphs");
+            QWidget* bone_panel = GetOrCreateTabScrollArea(tab_appearance, "Bones");
             if (!morph_panel || !bone_panel)
                 return;
 
+            QVBoxLayout *morph_layout = new QVBoxLayout();
+            morph_layout->setContentsMargins(0,0,0,0);
+            morph_layout->setSpacing(0);
+            morph_panel->setLayout(morph_layout);
+
+            QVBoxLayout *bone_layout = new QVBoxLayout();
+            bone_layout->setContentsMargins(0,0,0,0);
+            bone_layout->setSpacing(0);
+            bone_panel->setLayout(bone_layout);
+
             const BoneModifierSetVector& bone_modifiers = appearance->GetBoneModifiers();
             const MorphModifierVector& morph_modifiers = appearance->GetMorphModifiers();  
-            morph_panel->resize(tab_width, itemheight * (morph_modifiers.size() + 1));
-            bone_panel->resize(tab_width, itemheight * (bone_modifiers.size() + 1));
 
             for (uint i = 0; i < bone_modifiers.size(); ++i)
             {
-                QScrollBar* slider = new QScrollBar(Qt::Horizontal, bone_panel);
+                // New horizontal layout
+                v_box = new QHBoxLayout();
+                v_box->setContentsMargins(6,3,6,3);
+                v_box->setSpacing(6);
+
+                // Create elements
+                label = new QLabel(QString::fromStdString(bone_modifiers[i].name_));
+                label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+                label->setFixedWidth(200);
+
+                slider = new QScrollBar(Qt::Horizontal);
+                slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+                slider->setFixedHeight(20);
                 slider->setObjectName(QString::fromStdString(bone_modifiers[i].name_));
                 slider->setMinimum(0);
                 slider->setMaximum(100);
                 slider->setPageStep(10);
                 slider->setValue(bone_modifiers[i].value_ * 100.0f);
-                slider->resize(150, 20);
-                slider->move(tab_width - 150, i * itemheight);  
-                slider->show();
+                connect(slider, SIGNAL(valueChanged(int)), SLOT(BoneModifierValueChanged(int)));
 
-                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(BoneModifierValueChanged(int)));
+                // Add to layouts
+                v_box->addWidget(label);
+                v_box->addWidget(slider);
+                bone_layout->addLayout(v_box);
 
-                QLabel* label = new QLabel(QString::fromStdString(bone_modifiers[i].name_), bone_panel);
-                label->resize(100,20);
-                label->move(0, i * itemheight);
-                label->show();
+                if (max_items < bone_layout->count())
+                    max_items = bone_layout->count();
             }
 
             for (uint i = 0; i < morph_modifiers.size(); ++i)
             {
-                QScrollBar* slider = new QScrollBar(Qt::Horizontal, morph_panel);
+                // New horizontal layout
+                v_box = new QHBoxLayout();
+                v_box->setContentsMargins(6,3,6,3);
+                v_box->setSpacing(6);
+
+                // Create elements
+                label = new QLabel(QString::fromStdString(morph_modifiers[i].name_));
+                label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
+                label->setFixedWidth(200);
+
+                slider = new QScrollBar(Qt::Horizontal);
+                slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+                slider->setFixedHeight(20);
                 slider->setObjectName(QString::fromStdString(morph_modifiers[i].name_));
                 slider->setMinimum(0);
                 slider->setMaximum(100);
                 slider->setPageStep(10);
                 slider->setValue(morph_modifiers[i].value_ * 100.0f);
-                slider->resize(150, 20);
-                slider->move(tab_width - 150, i * itemheight);  
-                slider->show();
+                connect(slider, SIGNAL(valueChanged(int)), SLOT(MorphModifierValueChanged(int)));
+                
+                // Add to layouts
+                v_box->addWidget(label);
+                v_box->addWidget(slider);
+                morph_layout->addLayout(v_box);
 
-                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MorphModifierValueChanged(int)));
-
-                QLabel* label = new QLabel(QString::fromStdString(morph_modifiers[i].name_), morph_panel);
-                label->resize(100,20);
-                label->move(0, i * itemheight);
-                label->show();
+                if (max_items < morph_layout->count())
+                    max_items = morph_layout->count();
             }
+
+            // Add spacer for looks to tabs that have < max_items
+            if (morph_layout->count() > bone_layout->count())
+                bone_layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+            else
+                morph_layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::Expanding));
         }
         // Otherwise show only the master modifier controls
         else
         {
             std::map<std::string, uint> item_count;
-
             for (uint i = 0; i < master_modifiers.size(); ++i)
             {
                 std::string category_name = master_modifiers[i].category_;
-
                 if (item_count.find(category_name) == item_count.end())
                     item_count[category_name] = 0;
 
-                QWidget* panel = GetOrCreateTabScrollArea(tabs, category_name);
+                // Create panel
+                QWidget* panel = GetOrCreateTabScrollArea(tab_appearance, category_name);
                 if (!panel)
                     continue;
 
-                QScrollBar* slider = new QScrollBar(Qt::Horizontal, panel);
+                QVBoxLayout *panel_layout = dynamic_cast<QVBoxLayout*>(panel->layout());
+                if (!panel_layout)
+                {
+                    panel_layout = new QVBoxLayout();
+                    panel_layout->setContentsMargins(0,0,0,0);
+                    panel_layout->setSpacing(0);
+                    panel->setLayout(panel_layout);
+                }
+
+                // New horizontal layout
+                v_box = new QHBoxLayout();
+                v_box->setContentsMargins(6,3,6,3);
+                v_box->setSpacing(6);
+
+                // Create elements
+                label = new QLabel(QString::fromStdString(master_modifiers[i].name_));
+                label->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+                label->setFixedWidth(200);
+
+                slider = new QScrollBar(Qt::Horizontal);
+                slider->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+                slider->setFixedHeight(20);
                 slider->setObjectName(QString::fromStdString(master_modifiers[i].name_));
                 slider->setMinimum(0);
                 slider->setMaximum(100);
                 slider->setPageStep(10);
                 slider->setValue(master_modifiers[i].value_ * 100.0f);
-                slider->resize(150, 20);
-                slider->move(tab_width - 150, item_count[category_name] * itemheight);  
-                slider->show();
+                connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MasterModifierValueChanged(int)));
 
-                QObject::connect(slider, SIGNAL(valueChanged(int)), this, SLOT(MasterModifierValueChanged(int)));
-
-                QLabel* label = new QLabel(QString::fromStdString(master_modifiers[i].name_), panel);
-                label->resize(100,20);
-                label->move(0, item_count[category_name] * itemheight);
-                label->show();
+                // Add to layouts
+                v_box->addWidget(label);
+                v_box->addWidget(slider);
+                panel_layout->addLayout(v_box);
 
                 item_count[category_name]++;
-                panel->resize(tab_width, (item_count[category_name] + 1) * itemheight);
+
+                if (max_items < panel_layout->count())
+                    max_items = panel_layout->count();
             }
+
+            // Add spacer for looks to tabs that have < max_items
+            std::map<std::string, uint>::const_iterator iter = item_count.begin();
+            while(iter != item_count.end())
+            {
+                QWidget* panel = GetOrCreateTabScrollArea(tab_appearance, (*iter).first);
+                if (panel)
+                {
+                    QVBoxLayout *panel_layout = dynamic_cast<QVBoxLayout*>(panel->layout());
+                    if (panel_layout)
+                    {
+                        if (panel_layout->count() < max_items)
+                            panel_layout->addSpacerItem(new QSpacerItem(1, 1, QSizePolicy::Fixed, QSizePolicy::Expanding));
+                    }
+                }
+                ++iter;
+            }
+        }
+        total_height = max_items * 26;
+        if (total_height < 26)
+            total_height = 26;
+        else if (total_height > 250)
+            total_height = 250;
+        tab_appearance->setFixedHeight(total_height + 30);
+
+        if (reverting_)
+        {
+            reverting_ = false;
+            emit EditorHideMessages();
         }
     }
 
     void AvatarEditor::ClearPanel(QWidget* panel)
     {
-        QList<QWidget*> old_children = panel->findChildren<QWidget*>();
-        QList<QWidget*>::iterator i = old_children.begin();
-        while (i != old_children.end())
+        QLayoutItem *child, *subchild;
+        while ((child = panel->layout()->takeAt(0)) != 0)
         {
-            (*i)->deleteLater();
-            ++i;
+            QLayout *child_layout = child->layout();
+            if (child_layout)
+            {
+                while ((subchild = child_layout->takeAt(0)) != 0)
+                {
+                    QWidget *widget = subchild->widget();
+                    delete subchild;
+                    if (widget)
+                    {
+                        widget->setParent(0);
+                        widget->deleteLater();
+                    }
+                }
+            }
+            delete child;
         }
+
+        //QVBoxLayout *box_layout = dynamic_cast<QVBoxLayout*>(panel->layout());
+        //if (box_layout)
+        //    box_layout->addSpacerItem(new QSpacerItem(1,1, QSizePolicy::Fixed, QSizePolicy::Expanding));
     }
 
     void AvatarEditor::MorphModifierValueChanged(int value)
@@ -392,6 +484,8 @@ namespace Avatar
 
     void AvatarEditor::RevertAvatar()
     {
+        reverting_ = true;
+        emit EditorStatus("Reverting all local changes to avatar...");
         // Reload avatar from storage, or reload default
         avatar_module_->GetAvatarHandler()->ReloadUserAvatar();
     }
@@ -414,7 +508,7 @@ namespace Avatar
                 return;
                 
             avatar_module_->GetAvatarHandler()->GetAppearanceHandler().ChangeAvatarMaterial(entity, index, filename);
-            RebuildEditView();
+            QTimer::singleShot(250, this, SLOT(RebuildEditView()));
         }
     }
 
@@ -440,7 +534,7 @@ namespace Avatar
             attachments.erase(attachments.begin() + index);
             appearance->SetAttachments(attachments);
             avatar_module_->GetAvatarHandler()->GetAppearanceHandler().SetupAppearance(entity);
-            RebuildEditView();
+            QTimer::singleShot(250, this, SLOT(RebuildEditView()));
         }
     }
     
@@ -456,7 +550,7 @@ namespace Avatar
                 return;
                 
             avatar_module_->GetAvatarHandler()->GetAppearanceHandler().AddAttachment(entity, filename);
-            RebuildEditView();
+            QTimer::singleShot(250, this, SLOT(RebuildEditView()));
         }
     }
     
@@ -477,13 +571,12 @@ namespace Avatar
             }
         }
                
-        QScrollArea* tab_scroll = new QScrollArea();
         QWidget* tab_panel = new QWidget();
         
-        tab_scroll->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-        tab_scroll->setWidgetResizable(false);
-        tab_scroll->resize(tabs->contentsRect().size());
+        QScrollArea* tab_scroll = new QScrollArea();
+        tab_scroll->setWidgetResizable(true);
         tab_scroll->setWidget(tab_panel);
+
         tabs->addTab(tab_scroll, name_with_space);
         return tab_panel;
     }

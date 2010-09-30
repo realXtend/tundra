@@ -1,9 +1,10 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_LegacyAvatarSerializer_h
-#define incl_RexLogic_LegacyAvatarSerializer_h
+#ifndef incl_Avatar_LegacyAvatarSerializer_h
+#define incl_Avatar_LegacyAvatarSerializer_h
 
 #include "EntityComponent/EC_AvatarAppearance.h"
+#include <QPair>
 
 class QDomDocument;
 class QDomElement;
@@ -13,7 +14,10 @@ namespace Avatar
     //! Utility functions for dealing with reX legacy avatar definitions (xml data). Used by RexLogicModule::AvatarAppearance.
     class LegacyAvatarSerializer
     {
+
     public:
+        typedef QPair<bool, QString> SerializeResult;
+
         //! Reads avatar definition into an EC_AvatarAppearance from an xml document
         /*! \param dest Destination EC_AvatarAppearance
             \param source Source XML document
@@ -38,7 +42,7 @@ namespace Avatar
             for the current avatar mesh. 
             \return False if important data is missing or if the attachment cannot be attached to the current mesh.
          */
-        static bool ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name);
+        static SerializeResult ReadAttachment(AvatarAttachment& dest, const QDomDocument source, const EC_AvatarAppearance& appearance, const std::string& attachment_name);
         
     private:
         //! Reads a bone modifier set from an xml node, and adds it to the vector
@@ -64,7 +68,7 @@ namespace Avatar
          
         //! Reads an avatar attachment from an xml node, and adds it to the vector
         //! \return true if successful
-        static bool ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& source);
+        static SerializeResult ReadAttachment(AvatarAttachmentVector& dest, const QDomElement& source);
         
         //! Writes bone modifiers to xml document
         static void WriteBoneModifierSet(QDomDocument& dest, QDomElement& dest_elem, const BoneModifierSet& bones);

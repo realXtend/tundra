@@ -1,10 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_AvatarEditor_h
-#define incl_RexLogic_AvatarEditor_h
+#ifndef incl_Avatar_AvatarEditor_h
+#define incl_Avatar_AvatarEditor_h
 
 #include "AvatarModule.h"
 #include "AvatarModuleApi.h"
+
+#include "ui_avatareditor.h"
 
 #include <QWidget>
 
@@ -13,7 +15,7 @@ class QTabWidget;
 namespace Avatar
 {
     //! Avatar editing window. Owned by RexLogicModule.
-    class AV_MODULE_API AvatarEditor : public QWidget
+    class AV_MODULE_API AvatarEditor : public QWidget, public Ui::AvatarEditor
     {
         Q_OBJECT
 
@@ -21,10 +23,10 @@ namespace Avatar
         explicit AvatarEditor(AvatarModule *avatar_module);
         ~AvatarEditor();
 
+    public slots:
         //! Rebuild edit view
         void RebuildEditView();
-
-    public slots:
+        
         //! Export click handler
         void ExportAvatar();
 
@@ -59,6 +61,11 @@ namespace Avatar
         /// QWidget override.
         void changeEvent(QEvent* e);
 
+signals:
+        void EditorStatus(const QString &message, int timeout = 7000);
+        void EditorError(const QString &message, int timeout = 7000);
+        void EditorHideMessages();
+
     private:
         //! Owner module.
         AvatarModule *avatar_module_;
@@ -78,11 +85,10 @@ namespace Avatar
         //! Ask a filename from the user for saving. Store the directory used.
         std::string GetSaveFileName(const std::string& filter, const std::string& prompt);
 
-        //! Main widget for avatar editor
-        QWidget *avatar_widget_;
-
         //! Last used directory for selecting avatars, attachments, textures
         std::string last_directory_;
+
+        bool reverting_;
     };
 }
 

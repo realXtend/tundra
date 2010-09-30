@@ -83,6 +83,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_Touchable.h"
+#include "EC_Ruler.h"
 
 //ECs declared by PythonScriptModule
 #include "EC_DynamicComponent.h"
@@ -1981,6 +1982,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
             PythonQt::self()->registerClass(&MouseEvent::staticMetaObject);
             PythonQt::self()->registerClass(&InputContext::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_Ruler::staticMetaObject);
 
             pythonqt_inited = true;
 
