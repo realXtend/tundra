@@ -82,7 +82,7 @@ def apply_js(jssrc, comp):
         'component': comp
     }
 
-    ent = r.getEntity(comp.GetParentEntityId())
+    ent = comp.GetParentEntity()
     try:
         ent.touchable
     except AttributeError:
