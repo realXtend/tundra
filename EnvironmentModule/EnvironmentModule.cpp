@@ -201,7 +201,7 @@ namespace Environment
                     //CreateTerrain();
                     //CreateWater();
                     //CreateEnvironment();
-                    CreateSky();
+                    //CreateSky();
                 }
             }
 
@@ -212,7 +212,7 @@ namespace Environment
                 //ReleaseTerrain();
                 //ReleaseWater();
                 ReleaseEnvironment();
-                ReleaseSky();
+                //ReleaseSky();
                 firstTime_ = true;
                
             }
