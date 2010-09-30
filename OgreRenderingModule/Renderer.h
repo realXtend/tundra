@@ -226,8 +226,7 @@ namespace OgreRenderer
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-        //! Returns list of CAVE rendering windows.
-        QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+
 
     public slots:
         //! Toggles fullscreen
@@ -351,11 +350,7 @@ namespace OgreRenderer
         //! resized dirty count
         int resized_dirty_;
 
-        //!Manager to handle Cave rendering
-        CAVEManager *cave_manager_;
-
-        //!Manager to Handle Stereo rendering
-        StereoController *stereo_controller_;
+    
 
         //! For render function
         QImage ui_buffer_;

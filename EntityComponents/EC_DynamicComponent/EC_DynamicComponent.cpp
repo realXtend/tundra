@@ -13,6 +13,28 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 namespace
 {
+    struct DeserializeData
+    {
+        DeserializeData(const std::string name = std::string(""),
+                        const std::string type = std::string(""),
+                        const std::string value = std::string("")):
+            name_(name),
+            type_(type),
+            value_(value)
+        {
+        }
+
+        //! Checks if any of data structure's values are null.
+        bool isNull() const
+        {
+            return name_ == "" || type_ == "" || value_ == "";
+        }
+
+        std::string name_;
+        std::string type_;
+        std::string value_;
+    };
+
     //! Function that is used by std::sort algorithm to sort attributes by their name.
     bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
     {
@@ -20,7 +42,7 @@ namespace
     }
 
     //! Function that is used by std::sort algorithm to sort DeserializeData by their name.
-    bool CmpAttributeDataByName(const EC_DynamicComponent::DeserializeData &a, const EC_DynamicComponent::DeserializeData &b)
+    bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
     {
         return a.name_ < b.name_;
     }
@@ -339,11 +361,6 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
         return attributes_[index]->GetName();
     }
     return QString();
-}
-
-uint EC_DynamicComponent::GetParentEntityId() const
-{
-    return GetParentEntity()->GetId();
 }
 
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const
