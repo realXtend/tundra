@@ -294,9 +294,40 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
 
 void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
 {
-//EntityAction::Local
-//EntityAction::Peers
-//EntityAction::Server
+    Scene::SceneManager* scene = scene_.lock().get();
+    assert(scene);
+
+    // Disconnect ActionTriggered() signal while we process and execute actions so that we don't cause neverending loop.
+    disconnect(scene, SIGNAL( ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
+        this, SLOT( OnActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
+
+    if (type & EntityAction::Local || type & EntityAction::Server)
+    {
+        TundraLogicModule::LogInfo("local or server " + action.toStdString());
+        entity->Exec(action, params);
+    }
+
+    if (type & EntityAction::Peers)
+    {
+        MsgEntityAction msg;
+        msg.entityId = entity->GetId();
+        msg.executionType = (u8)type;
+        msg.name = StringToBuffer(action.toStdString());
+        for(int i = 0; i < params.size(); ++i)
+        {
+            MsgEntityAction::S_parameters p = { StringToBuffer(params[i].toStdString()) };
+            msg.parameters.push_back(p);
+        }
+
+        foreach(KristalliProtocol::UserConnection c, owner_->GetKristalliModule()->GetUserConnections())
+        {
+            TundraLogicModule::LogInfo("peer " + action.toStdString());
+            c.connection->Send(msg);
+        }
+    }
+
+    connect(scene, SIGNAL( ActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType) ),
+        this, SLOT( OnActionTriggered(Scene::Entity *, const QString &, const QStringList &, EntityAction::ExecutionType)));
 }
 
 void SyncManager::Update(f64 frametime)
@@ -920,6 +951,8 @@ void SyncManager::HandleEntityAction(MessageConnection* source, const MsgEntityA
     QStringList params;
     for (uint i = 0; i < msg.parameters.size(); ++i)
         params << BufferToString(msg.parameters[i].parameter).c_str();
+
+    TundraLogicModule::LogDebug(std::string("EntityAction ") + ToString<int>(entityId));
 
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
