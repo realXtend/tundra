@@ -363,7 +363,8 @@ class ObjectEdit(Component):
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
-        self.manipulator.initManipulation(ent, results)
+
+        self.manipulator.initManipulation(ent, results, self.sels)
         self.usingManipulator = True
 
         if ent is not None:
@@ -467,7 +468,7 @@ class ObjectEdit(Component):
             
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
-            if id != naali.worldlogic.GetUserAvatarEntityRaw().Id: #XXX add other avatar id's check
+            if id != naali.getUserAvatar().Id: #XXX add other avatar id's check
                 if not self.manipulator.compareIds(id):  #and id != self.selection_box.Id:
                     return True
         return False

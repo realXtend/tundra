@@ -126,17 +126,10 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-        //if (name == "Inventory")
         if ( name.contains("inv", Qt::CaseInsensitive))
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-        }
-        //else if (name == "Avatar Editor")
-        else if ( name.contains("avatar", Qt::CaseInsensitive) )
-        {
-            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
-            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
         }
         else
             menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
@@ -424,6 +417,11 @@ namespace UiServices
             return;
         if (widget->scene() == inworld_scene_)
             return;
+        if (name == "Console")
+        {
+            inworld_scene_->addItem(widget);
+            return;
+        }
 
         inworld_scene_->addItem(widget);
         widget->setPos(50,250);

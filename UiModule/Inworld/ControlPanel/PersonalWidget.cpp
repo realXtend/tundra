@@ -27,8 +27,6 @@ namespace CoreUi
 
     void PersonalWidget::SetAvatarWidget(UiProxyWidget *avatar_widget)
     {
-        avatar_widget_ = avatar_widget;
-        connect(avatar_widget_, SIGNAL(Visible(bool)), SLOT(AvatarVisibilityChanged(bool)));
     }
 
     void PersonalWidget::SetInventoryWidget(UiProxyWidget *inventory_widget)
@@ -39,6 +37,9 @@ namespace CoreUi
 
     void PersonalWidget::AvatarToggle()
     {
+        emit ControlButtonClicked(UiServices::Avatar);
+
+        /*
         if (!avatar_widget_)
             return;
 
@@ -55,6 +56,7 @@ namespace CoreUi
             avatar_widget_->AnimatedHide();
         else
             avatar_widget_->show();
+        */
     }
 
     void PersonalWidget::InventoryToggle()
