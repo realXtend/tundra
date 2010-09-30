@@ -308,9 +308,9 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     // If we are the server and the local script on this machine has requested a script to be executed on the server, it
     // means we just execute the action locally here, without sending to network.
     bool isServer = owner_->IsServer();
-    if (isServer && (type & EntityAction::Server != 0))
+    if (isServer && (type & EntityAction::Server) != 0)
     {
-        TundraLogicModule::LogInfo("local or server " + action.toStdString());
+        TundraLogicModule::LogInfo("action server exec on server " + action.toStdString());
         entity->Exec(action, params);
     }
 
@@ -325,14 +325,14 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.parameters.push_back(p);
     }
 
-    if (!isServer && ((type & EntityAction::Server != 0) || (type & EntityAction::Peers != 0)))
+    if (!isServer && (((type & EntityAction::Server != 0) || (type & EntityAction::Peers != 0))))
     {
         // send without Local flag
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
 
-    if (isServer && (type & EntityAction::Peers != 0))
+    if (isServer && (type & EntityAction::Peers) != 0)
     {
         msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
         foreach(KristalliProtocol::UserConnection c, owner_->GetKristalliModule()->GetUserConnections())
@@ -970,7 +970,7 @@ void SyncManager::HandleEntityAction(MessageConnection* source, MsgEntityAction&
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
     bool isServer = owner_->IsServer();
-    if (type & EntityAction::Local || (isServer && (type & EntityAction::Server) != 0))
+    if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
         entity->Exec(action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
 
     // If execution type is Peers, replicate to all peers but the sender.
