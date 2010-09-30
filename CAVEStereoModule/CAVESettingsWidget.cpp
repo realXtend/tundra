@@ -7,7 +7,7 @@
 #include <Ogre.h>
 #include <QDebug>
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
     CAVESettingsWidget::CAVESettingsWidget(Foundation::Framework* framework, QWidget* parent)

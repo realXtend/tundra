@@ -1,7 +1,7 @@
 #include "StableHeaders.h"
 #include "CAVEViewSettingsAdvanced.h"
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
     CAVEViewSettingsAdvanced::CAVEViewSettingsAdvanced(QWidget* parent) :
         QDialog(parent)

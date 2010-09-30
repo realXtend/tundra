@@ -9,10 +9,10 @@
 #include "ExternalRenderWindow.h"
 
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
-    CAVEView::CAVEView(Renderer* renderer)
+	CAVEView::CAVEView(OgreRenderer::Renderer* renderer)
         :camera_(0),
         render_window_(0)
     {
