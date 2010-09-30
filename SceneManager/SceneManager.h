@@ -51,8 +51,8 @@ namespace Scene
         Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
-        QVariantList GetEntityIdsWithComponent(const QString &type_name);
-        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name);
+        QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
+        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
     public:
         //! destructor
@@ -140,7 +140,7 @@ namespace Scene
 
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
-        EntityList GetEntitiesWithComponent(const QString &type_name);
+        EntityList GetEntitiesWithComponent(const QString &type_name) const;
 
         //! Emit a notification of a component's attributes changing. Called by the components themselves
         /*! \param comp Component pointer
@@ -202,18 +202,14 @@ namespace Scene
             \return true if successful
          */
         bool SaveScene(const std::string& filename);
-        
-    private:
-        SceneManager &operator =(const SceneManager &other);
 
-        //! Entities in a map
-        EntityMap entities_;
-
-        //! parent framework
-        Foundation::Framework *framework_;
-
-        //! Name of the scene
-        QString name_;
+        //! Emits a notification of an entity action being triggered.
+        /*! \param entity Entity pointer
+            \param action Name of the action
+            \param params Parameters
+            \type Execution type.
+         */
+        void EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
     signals:
         //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
@@ -248,6 +244,26 @@ namespace Scene
         /*! Note: currently there is also Naali scene event that duplicates this notification
          */
         void EntityRemoved(Scene::Entity* entity, AttributeChange::Type change);
+
+        //! Emitted when entity action is triggered.
+        /*! \param entity Entity for which action was executed.
+            \param action Name of action that was triggered.
+            \param params Parameters of the action.
+            \param type Execution type.
+        */
+        void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
+
+    private:
+        Q_DISABLE_COPY(SceneManager);
+
+        //! Entities in a map
+        EntityMap entities_;
+
+        //! parent framework
+        Foundation::Framework *framework_;
+
+        //! Name of the scene
+        QString name_;
     };
 }
 

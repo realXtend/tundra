@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_AvatarExporter_h
-#define incl_RexLogic_AvatarExporter_h
+#ifndef incl_Avatar_AvatarExporter_h
+#define incl_Avatar_AvatarExporter_h
 
 #include "ThreadTask.h"
 
