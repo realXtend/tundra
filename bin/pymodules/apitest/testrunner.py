@@ -119,11 +119,13 @@ class TestCreateDestroy(TestRunner):
         # are left over from failed tests)
 
         try:
-            netp = ent.EC_NetworkPosition.Position
+            ec_netp = ent.network
         except AttributeError:
-            if 0: print "skip unplaceable entity"
+            if 0: print "skip entity without EC_NetworkPosition", dir(ent)
         else:
+            netp = ec_netp.Position
             # for some reason z coord ends up as 22.25
+            r.logInfo("found entity with netpos %s %s %s" % (netp.x(), netp.y(), netp.z()))
             if netp.x() == 42.0 and netp.y() == 42.0 and int(netp.z()) == 22:
                 r.logInfo("found created test prim - naming, moving and deleting (finished=%s)" % self.finished)
                 ent.prim.Name = "Seppo"
@@ -134,7 +136,7 @@ class TestCreateDestroy(TestRunner):
                 r.logInfo("Moving to move to pos: %s" % pos)
                 
                 r.getServerConnection().SendObjectDeRezPacket(
-                    ent_id, r.getTrashFolderId())
+                    ent.Id, r.getTrashFolderId())
                 self.finished = True
 
 class TestDynamicProperties(TestRunner):
