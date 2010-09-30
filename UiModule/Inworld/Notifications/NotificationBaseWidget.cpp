@@ -117,6 +117,15 @@ namespace CoreUi
         TimedOut();
     }
 
+    void NotificationBaseWidget::HideNow()
+    {
+        progress_animation_->stop();
+        fade_animation_->stop();
+        hide();
+
+        emit Completed(this);
+    }
+
     void NotificationBaseWidget::AnimateToPosition(const QPointF &end_pos)
     {
         move_animation_->setStartValue(scenePos());

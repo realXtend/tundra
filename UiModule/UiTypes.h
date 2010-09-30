@@ -24,7 +24,8 @@ namespace UiServices
         Quit,
         Settings,
         Notifications,
-        Teleport
+        Teleport,
+        Avatar
     };
 }
 
