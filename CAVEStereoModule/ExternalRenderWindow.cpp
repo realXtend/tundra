@@ -10,7 +10,7 @@
 #ifdef Q_WS_WIN
 #include <windows.h>
 #endif
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
 	ExternalRenderWindow::ExternalRenderWindow()

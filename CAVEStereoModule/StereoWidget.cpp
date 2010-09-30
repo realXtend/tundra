@@ -1,12 +1,11 @@
 #include "StableHeaders.h"
 #include "StereoWidget.h"
-//#include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "UiServiceInterface.h"
 #include "Framework.h"
 #include <QColorDialog>
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
     StereoWidget::StereoWidget(Foundation::Framework* framework, QWidget* parent)

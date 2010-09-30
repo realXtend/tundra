@@ -9,15 +9,19 @@
 class QResizeEvent;
 class QKeyEvent;
 
-//!this class is responsible of calculating the projection matrices and manage the render window and camera of the view
 namespace OgreRenderer
 {
+	class Renderer;
+}
+
+//!this class is responsible of calculating the projection matrices and manage the render window and camera of the view
+namespace CAVEStereo
+{
 	class ExternalRenderWindow;
-    class Renderer;
     class CAVEView: public QObject
     {
     public:
-        CAVEView(Renderer* renderer);
+		CAVEView(OgreRenderer::Renderer* renderer);
         ~CAVEView();
 
         /*Initialize AFTER the main camera has already been attached to a scenenode etc.
@@ -61,7 +65,7 @@ namespace OgreRenderer
 		Ogre::Vector3 lb, rb, tl, ep;
         Ogre::Camera* camera_;
         ExternalRenderWindow* render_window_;
-        Renderer* renderer_;
+		OgreRenderer::Renderer* renderer_;
     };
 }
 #endif

@@ -3,7 +3,7 @@
 #include <Ogre.h>
 #include <QDebug>
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
     CAVEViewSettings::CAVEViewSettings(QWidget* parent) :
         QDialog(parent)

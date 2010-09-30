@@ -11,9 +11,14 @@ namespace Ogre
 	class RenderWindow;
     class Vector3;
 }
+
 namespace OgreRenderer
 {
-    class Renderer;
+	class Renderer;
+}
+namespace CAVEStereo
+{
+    
     class CAVESettingsWidget;
     class CAVEView;
 
@@ -22,7 +27,7 @@ namespace OgreRenderer
     {
         Q_OBJECT
         public:
-            CAVEManager(Renderer* r);
+			CAVEManager(OgreRenderer::Renderer* r);
             virtual ~CAVEManager();
 
 			//!Disable cave (will also remove all views)
@@ -57,7 +62,7 @@ namespace OgreRenderer
 			//! is cave enabled
             bool enabled_;
 			//! renderer handle
-            Renderer* renderer_;
+			OgreRenderer::Renderer* renderer_;
 			//! views
             QMap<QString, CAVEView*> view_map_;
 			//! settings widget

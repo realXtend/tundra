@@ -9,7 +9,7 @@ namespace Foundation
 {
     class Framework;
 }
-namespace OgreRenderer
+namespace CAVEStereo
 {
     
 	class StereoWidget: public QWidget, private Ui::StereoUI 

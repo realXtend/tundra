@@ -8,10 +8,10 @@
 
 #include <QDebug>
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
-    CAVEManager::CAVEManager(Renderer* r)
+	CAVEManager::CAVEManager(OgreRenderer::Renderer* r)
         :enabled_(false),
         renderer_(r),
         settings_widget_(0)
