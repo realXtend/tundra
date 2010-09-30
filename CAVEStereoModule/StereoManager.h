@@ -53,7 +53,7 @@ For the latest info, see http://www.ogre3d.org/
 	for example two non-fullscreen windows or a windows with two viewports inside.
 */
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 	class StereoManager
 	{

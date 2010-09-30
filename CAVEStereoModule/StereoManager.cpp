@@ -38,7 +38,7 @@ For the latest info, see http://www.ogre3d.org/
 #include <limits>
 
 
-namespace OgreRenderer
+namespace CAVEStereo
 	{
 	//-------------- Stereo Camera listener -------------------------------
 	void StereoManager::StereoCameraListener::init(StereoManager *stereoMgr, Ogre::Viewport *viewport, bool isLeftEye)	
