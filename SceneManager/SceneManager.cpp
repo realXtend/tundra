@@ -85,15 +85,12 @@ namespace Scene
         {
             EntityPtr entity = it->second;
             if (entity->HasComponent(EC_Name::TypeNameStatic()))
-            {
-                QString nam = entity->GetComponent<EC_Name >().get()->name.Get();
-                if ( nam == name )
-                    return entity;              
-                
-            }
+                if (entity->GetComponent<EC_Name>()->name.Get() == name)
+                    return entity;
             ++it;
-        }   
-        return Scene::EntityPtr();               
+        }
+
+        return Scene::EntityPtr();
     }
 
     entity_id_t SceneManager::GetNextFreeId()
@@ -208,33 +205,24 @@ namespace Scene
 
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
     {
-        EntityList list = GetEntitiesWithComponent(type_name);
-        QVariantList ids;
-        EntityList::const_iterator iter;
+        QVariantList ret;
 
-        for(iter = list.begin(); iter != list.end(); iter++)
-        {
-            EntityPtr ent = *iter;
-            Entity* e = ent.get();
-            entity_id_t id = e->GetId();
-            QVariant qv(id);
-            ids.append(qv);
-        }
-        return ids;
+        EntityList entities = GetEntitiesWithComponent(type_name);
+        foreach(EntityPtr e, entities)
+            ret.append(QVariant(e->GetId()));
+
+        return ret;
     }
 
     QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name) const
     {
-        EntityList list = GetEntitiesWithComponent(type_name);
-        QList<Scene::Entity*> qlist;
-        EntityList::const_iterator iter;
-        for(iter = list.begin(); iter != list.end(); iter++)
-        {
-            EntityPtr ent = *iter;
-            Entity* e = ent.get();
-            qlist.append(e);
-        }
-        return qlist;
+        QList<Scene::Entity*> ret;
+
+        EntityList entities = GetEntitiesWithComponent(type_name);
+        foreach(EntityPtr e, entities)
+            ret.append(e.get());
+
+        return ret;
     }
     
     bool SceneManager::LoadScene(const std::string& filename, AttributeChange::Type change)
@@ -274,9 +262,8 @@ namespace Scene
                     QString name = comp_elem.attribute("name");
                     ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
                     if (new_comp)
-                    {
                         new_comp->DeserializeFrom(comp_elem, change);
-                    }
+
                     comp_elem = comp_elem.nextSiblingElement("component");
                 }
                 EmitEntityCreated(entity, change);
