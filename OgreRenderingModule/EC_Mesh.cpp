@@ -7,7 +7,7 @@
 #include "Entity.h"
 #include "EventManager.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "RexTypes.h"
 #include "OgreMeshResource.h"
 #include "OgreMaterialResource.h"
@@ -16,14 +16,14 @@
 #include <OgreTagPoint.h>
 
 #include "LoggingFunctions.h"
-DEFINE_POCO_LOGGING_FUNCTIONS("EC_OgreMesh")
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
 namespace OgreRenderer
 {
 
-EC_OgreMesh::EC_OgreMesh(IModule* module) :
+EC_Mesh::EC_Mesh(IModule* module) :
     IComponent(module->GetFramework()),
     // Note: we put the opensim haxor adjust right here in the defaults, instead of hardcoding it in code.
     nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(180,0,90),Vector3df(1,1,1))),
@@ -60,7 +60,7 @@ EC_OgreMesh::EC_OgreMesh(IModule* module) :
         this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
-EC_OgreMesh::~EC_OgreMesh()
+EC_Mesh::~EC_Mesh()
 {
     if (renderer_.expired())
         return;
@@ -76,7 +76,7 @@ EC_OgreMesh::~EC_OgreMesh()
     }
 }
 
-void EC_OgreMesh::SetPlaceable(ComponentPtr placeable)
+void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 {
     if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
     {
@@ -89,14 +89,14 @@ void EC_OgreMesh::SetPlaceable(ComponentPtr placeable)
     AttachEntity();
 }
 
-void EC_OgreMesh::SetAdjustPosition(const Vector3df& position)
+void EC_Mesh::SetAdjustPosition(const Vector3df& position)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetPos(position.x, position.y, position.z);
     nodeTransformation.Set(transform, AttributeChange::Local);
 }
 
-void EC_OgreMesh::SetAdjustOrientation(const Quaternion& orientation)
+void EC_Mesh::SetAdjustOrientation(const Quaternion& orientation)
 {
     Transform transform = nodeTransformation.Get();
     Vector3df euler;
@@ -105,14 +105,14 @@ void EC_OgreMesh::SetAdjustOrientation(const Quaternion& orientation)
     nodeTransformation.Set(transform, AttributeChange::Local);
 }
 
-void EC_OgreMesh::SetAdjustScale(const Vector3df& scale)
+void EC_Mesh::SetAdjustScale(const Vector3df& scale)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetScale(scale.x, scale.y, scale.z);
     nodeTransformation.Set(transform, AttributeChange::Local);
 }
 
-void EC_OgreMesh::SetAttachmentPosition(uint index, const Vector3df& position)
+void EC_Mesh::SetAttachmentPosition(uint index, const Vector3df& position)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
@@ -120,7 +120,7 @@ void EC_OgreMesh::SetAttachmentPosition(uint index, const Vector3df& position)
     attachment_nodes_[index]->setPosition(Ogre::Vector3(position.x, position.y, position.z));
 }
 
-void EC_OgreMesh::SetAttachmentOrientation(uint index, const Quaternion& orientation)
+void EC_Mesh::SetAttachmentOrientation(uint index, const Quaternion& orientation)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
@@ -128,7 +128,7 @@ void EC_OgreMesh::SetAttachmentOrientation(uint index, const Quaternion& orienta
     attachment_nodes_[index]->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
 }
 
-void EC_OgreMesh::SetAttachmentScale(uint index, const Vector3df& scale)
+void EC_Mesh::SetAttachmentScale(uint index, const Vector3df& scale)
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return;
@@ -136,13 +136,13 @@ void EC_OgreMesh::SetAttachmentScale(uint index, const Vector3df& scale)
     attachment_nodes_[index]->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
 }
 
-Vector3df EC_OgreMesh::GetAdjustPosition() const
+Vector3df EC_Mesh::GetAdjustPosition() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.position;
 }
 
-Quaternion EC_OgreMesh::GetAdjustOrientation() const
+Quaternion EC_Mesh::GetAdjustOrientation() const
 {
     Transform transform = nodeTransformation.Get();
     Quaternion orientation(DEGTORAD * transform.rotation.x,
@@ -151,13 +151,13 @@ Quaternion EC_OgreMesh::GetAdjustOrientation() const
     return orientation;
 }
 
-Vector3df EC_OgreMesh::GetAdjustScale() const
+Vector3df EC_Mesh::GetAdjustScale() const
 {
     Transform transform = nodeTransformation.Get();
     return transform.scale;
 }
 
-Vector3df EC_OgreMesh::GetAttachmentPosition(uint index) const
+Vector3df EC_Mesh::GetAttachmentPosition(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return Vector3df(0.0f, 0.0f, 0.0f);
@@ -166,7 +166,7 @@ Vector3df EC_OgreMesh::GetAttachmentPosition(uint index) const
     return Vector3df(pos.x, pos.y, pos.z);
 }
 
-Quaternion EC_OgreMesh::GetAttachmentOrientation(uint index) const
+Quaternion EC_Mesh::GetAttachmentOrientation(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return Quaternion();
@@ -175,7 +175,7 @@ Quaternion EC_OgreMesh::GetAttachmentOrientation(uint index) const
     return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
 }     
 
-Vector3df EC_OgreMesh::GetAttachmentScale(uint index) const
+Vector3df EC_Mesh::GetAttachmentScale(uint index) const
 {
     if (index >= attachment_nodes_.size() || attachment_nodes_[index] == 0)
         return Vector3df(1.0f, 1.0f, 1.0f);
@@ -184,12 +184,12 @@ Vector3df EC_OgreMesh::GetAttachmentScale(uint index) const
     return Vector3df(scale.x, scale.y, scale.z);
 }
 
-void EC_OgreMesh::SetDrawDistance(float draw_distance)
+void EC_Mesh::SetDrawDistance(float draw_distance)
 {
     drawDistance.Set(draw_distance, AttributeChange::Local);
 }
 
-bool EC_OgreMesh::SetMesh(const std::string& mesh_name, bool clone)
+bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
 {
     if (renderer_.expired())
         return false;
@@ -273,12 +273,12 @@ bool EC_OgreMesh::SetMesh(const std::string& mesh_name, bool clone)
     return true;
 }
 
-bool EC_OgreMesh::SetMesh(const QString& mesh_name) 
+bool EC_Mesh::SetMesh(const QString& mesh_name) 
 {
     return SetMesh(mesh_name.toStdString(), false);
 }
 
-bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
+bool EC_Mesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::string& skeleton_name, bool clone)
 {
     if (renderer_.expired())
         return false;
@@ -348,7 +348,7 @@ bool EC_OgreMesh::SetMeshWithSkeleton(const std::string& mesh_name, const std::s
 }
 
 
-void EC_OgreMesh::RemoveMesh()
+void EC_Mesh::RemoveMesh()
 {
     if (renderer_.expired())
         return;
@@ -380,7 +380,7 @@ void EC_OgreMesh::RemoveMesh()
     }
 }
 
-bool EC_OgreMesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
+bool EC_Mesh::SetAttachmentMesh(uint index, const std::string& mesh_name, const std::string& attach_point, bool share_skeleton)
 {
     if (renderer_.expired())
         return false;
@@ -484,7 +484,7 @@ bool EC_OgreMesh::SetAttachmentMesh(uint index, const std::string& mesh_name, co
     return true;
 }
 
-void EC_OgreMesh::RemoveAttachmentMesh(uint index)
+void EC_Mesh::RemoveAttachmentMesh(uint index)
 {
     if (renderer_.expired())
         return;
@@ -527,7 +527,7 @@ void EC_OgreMesh::RemoveAttachmentMesh(uint index)
     }
 }
 
-void EC_OgreMesh::RemoveAllAttachments()
+void EC_Mesh::RemoveAllAttachments()
 {
     for (uint i = 0; i < attachment_entities_.size(); ++i)
         RemoveAttachmentMesh(i);
@@ -535,7 +535,7 @@ void EC_OgreMesh::RemoveAllAttachments()
     attachment_nodes_.clear();
 }
 
-bool EC_OgreMesh::SetMaterial(uint index, const std::string& material_name)
+bool EC_Mesh::SetMaterial(uint index, const std::string& material_name)
 {
     if (!entity_)
         return false;
@@ -559,7 +559,7 @@ bool EC_OgreMesh::SetMaterial(uint index, const std::string& material_name)
     return true;
 }
 
-bool EC_OgreMesh::SetMaterial(uint index, const QString& material_name) 
+bool EC_Mesh::SetMaterial(uint index, const QString& material_name) 
 {
     if (SetMaterial(index, material_name.toStdString()))
     {
@@ -570,7 +570,7 @@ bool EC_OgreMesh::SetMaterial(uint index, const QString& material_name)
         return false;
 }
 
-bool EC_OgreMesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
+bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::string& material_name)
 {
     if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
     {
@@ -597,12 +597,12 @@ bool EC_OgreMesh::SetAttachmentMaterial(uint index, uint submesh_index, const st
     return true;
 }
 
-void EC_OgreMesh::SetCastShadows(bool enabled)
+void EC_Mesh::SetCastShadows(bool enabled)
 {
     castShadows.Set(enabled, AttributeChange::Local);
 }
 
-uint EC_OgreMesh::GetNumMaterials() const
+uint EC_Mesh::GetNumMaterials() const
 {
     if (!entity_)
         return 0;
@@ -610,7 +610,7 @@ uint EC_OgreMesh::GetNumMaterials() const
     return entity_->getNumSubEntities();
 }
 
-uint EC_OgreMesh::GetAttachmentNumMaterials(uint index) const
+uint EC_Mesh::GetAttachmentNumMaterials(uint index) const
 {
     if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
         return 0;
@@ -618,7 +618,7 @@ uint EC_OgreMesh::GetAttachmentNumMaterials(uint index) const
     return attachment_entities_[index]->getNumSubEntities();
 }
 
-const std::string& EC_OgreMesh::GetMaterialName(uint index) const
+const std::string& EC_Mesh::GetMaterialName(uint index) const
 {
     const static std::string empty;
     
@@ -631,13 +631,13 @@ const std::string& EC_OgreMesh::GetMaterialName(uint index) const
     return entity_->getSubEntity(index)->getMaterialName();
 }
 
-const QString& EC_OgreMesh::GetMatName(uint index) const
+const QString& EC_Mesh::GetMatName(uint index) const
 {
     const QString &name(GetMaterialName(index).c_str());
     return name;
 }
 
-const std::string& EC_OgreMesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
+const std::string& EC_Mesh::GetAttachmentMaterialName(uint index, uint submesh_index) const
 {
     const static std::string empty;
     
@@ -649,7 +649,7 @@ const std::string& EC_OgreMesh::GetAttachmentMaterialName(uint index, uint subme
     return attachment_entities_[index]->getSubEntity(submesh_index)->getMaterialName();
 }
 
-bool EC_OgreMesh::HasAttachmentMesh(uint index) const
+bool EC_Mesh::HasAttachmentMesh(uint index) const
 {
     if (index >= attachment_entities_.size() || attachment_entities_[index] == 0)
         return false;
@@ -657,14 +657,14 @@ bool EC_OgreMesh::HasAttachmentMesh(uint index) const
     return true;
 }
 
-Ogre::Entity* EC_OgreMesh::GetAttachmentEntity(uint index) const
+Ogre::Entity* EC_Mesh::GetAttachmentEntity(uint index) const
 {
     if (index >= attachment_entities_.size())
         return 0;
     return attachment_entities_[index];
 }
 
-const std::string& EC_OgreMesh::GetMeshName() const
+const std::string& EC_Mesh::GetMeshName() const
 {
     static std::string empty_name;
     
@@ -675,7 +675,7 @@ const std::string& EC_OgreMesh::GetMeshName() const
 }
 
 
-const std::string& EC_OgreMesh::GetSkeletonName() const
+const std::string& EC_Mesh::GetSkeletonName() const
 {
     static std::string empty_name;
     
@@ -693,7 +693,7 @@ const std::string& EC_OgreMesh::GetSkeletonName() const
     }
 }    
     
-void EC_OgreMesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
+void EC_Mesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
 {
     if (!entity_)
     {
@@ -710,7 +710,7 @@ void EC_OgreMesh::GetBoundingBox(Vector3df& min, Vector3df& max) const
     max = Vector3df(bboxmax.x, bboxmax.y, bboxmax.z);
 }
 
-void EC_OgreMesh::DetachEntity()
+void EC_Mesh::DetachEntity()
 {
     if ((!attached_) || (!entity_) || (!placeable_))
         return;
@@ -723,7 +723,7 @@ void EC_OgreMesh::DetachEntity()
     attached_ = false;
 }
 
-void EC_OgreMesh::AttachEntity()
+void EC_Mesh::AttachEntity()
 {
     if ((attached_) || (!entity_) || (!placeable_))
         return;
@@ -736,7 +736,7 @@ void EC_OgreMesh::AttachEntity()
     attached_ = true;
 }
 
-Ogre::Mesh* EC_OgreMesh::PrepareMesh(const std::string& mesh_name, bool clone)
+Ogre::Mesh* EC_Mesh::PrepareMesh(const std::string& mesh_name, bool clone)
 {
     if (renderer_.expired())
         return 0;
@@ -795,11 +795,11 @@ Ogre::Mesh* EC_OgreMesh::PrepareMesh(const std::string& mesh_name, bool clone)
     return mesh.get();
 }
     
-void EC_OgreMesh::UpdateSignals()
+void EC_Mesh::UpdateSignals()
 {
 }
 
-void EC_OgreMesh::AttributeUpdated(IAttribute *attribute)
+void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
     if (attribute == &drawDistance)
     {
@@ -857,7 +857,7 @@ void EC_OgreMesh::AttributeUpdated(IAttribute *attribute)
         tag = RequestResource(meshResourceId.Get().toStdString(), OgreRenderer::OgreMeshResource::GetTypeStatic());
         if(tag)
             resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMeshResource::GetTypeStatic())] = 
-                boost::bind(&EC_OgreMesh::HandleMeshResourceEvent, this, _1, _2);
+                boost::bind(&EC_Mesh::HandleMeshResourceEvent, this, _1, _2);
         else
             RemoveMesh();
     }
@@ -875,7 +875,7 @@ void EC_OgreMesh::AttributeUpdated(IAttribute *attribute)
             if(tag)
             {
                 resRequestTags_[ResourceKeyPair(tag, OgreRenderer::OgreMaterialResource::GetTypeStatic())] = 
-                    boost::bind(&EC_OgreMesh::HandleMaterialResourceEvent, this, _1, _2);
+                    boost::bind(&EC_Mesh::HandleMaterialResourceEvent, this, _1, _2);
                 materialRequestTags_[i] = tag;
             }
         }
@@ -891,12 +891,12 @@ void EC_OgreMesh::AttributeUpdated(IAttribute *attribute)
             std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
             tag = RequestResource(skeletonId.Get().toStdString(), resouceType);
             if(tag)
-                resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_OgreMesh::HandleSkeletonResourceEvent, this, _1, _2);
+                resRequestTags_[ResourceKeyPair(tag, resouceType)] = boost::bind(&EC_Mesh::HandleSkeletonResourceEvent, this, _1, _2);
         }
     }
 }
 
-bool EC_OgreMesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
+bool EC_Mesh::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
     {
@@ -908,7 +908,7 @@ bool EC_OgreMesh::HandleEvent(event_category_id_t category_id, event_id_t event_
     return false;
 }
 
-request_tag_t EC_OgreMesh::RequestResource(const std::string& id, const std::string& type)
+request_tag_t EC_Mesh::RequestResource(const std::string& id, const std::string& type)
 {
     request_tag_t tag = 0;
     if(renderer_.expired())
@@ -924,7 +924,7 @@ request_tag_t EC_OgreMesh::RequestResource(const std::string& id, const std::str
     return tag;
 }
 
-bool EC_OgreMesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
+bool EC_Mesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
 {
     if (event_id != Resource::Events::RESOURCE_READY)
         return false;
@@ -942,7 +942,7 @@ bool EC_OgreMesh::HandleResourceEvent(event_id_t event_id, IEventData* data)
     return false;
 }
 
-bool EC_OgreMesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
+bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -959,7 +959,7 @@ bool EC_OgreMesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
     return true;
 }
 
-bool EC_OgreMesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
+bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 {
     if(!entity_)
         return false;
@@ -985,7 +985,7 @@ bool EC_OgreMesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* d
     return true;
 }
 
-bool EC_OgreMesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
+bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
 {
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
@@ -1016,7 +1016,7 @@ bool EC_OgreMesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* d
     return true;
 }
 
-bool EC_OgreMesh::HasMaterialsChanged() const
+bool EC_Mesh::HasMaterialsChanged() const
 {
     if(!entity_ || !meshMaterial.Get().size())
         return false;
@@ -1033,7 +1033,7 @@ bool EC_OgreMesh::HasMaterialsChanged() const
     return false;
 }
 
-void EC_OgreMesh::AttachSkeleton(const QString &skeletonName)
+void EC_Mesh::AttachSkeleton(const QString &skeletonName)
 {
     if(!entity_)
     {

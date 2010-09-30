@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_OgreRenderer_EC_OgreMesh_h
-#define incl_OgreRenderer_EC_OgreMesh_h
+#ifndef incl_OgreRenderer_EC_Mesh_h
+#define incl_OgreRenderer_EC_Mesh_h
 
 #include "IComponent.h"
 #include "OgreModuleApi.h"
@@ -139,11 +139,11 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable</b>.
 </table>
 */
-    class OGRE_MODULE_API EC_OgreMesh : public IComponent
+    class OGRE_MODULE_API EC_Mesh : public IComponent
     {
         Q_OBJECT
         
-        DECLARE_EC(EC_OgreMesh);
+        DECLARE_EC(EC_Mesh);
     public:
         //! Transformation attribute is used to do some position, rotation and scale adjustments.
         //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
@@ -179,7 +179,7 @@ Does not emit any actions.
         
         bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
         
-        virtual ~EC_OgreMesh();
+        virtual ~EC_Mesh();
     public slots:
         //! sets placeable component
         /*! set a null placeable to detach the object, otherwise will attach
@@ -368,7 +368,7 @@ Does not emit any actions.
         //! constructor
         /*! \param module renderer module
          */
-        EC_OgreMesh(IModule* module);
+        EC_Mesh(IModule* module);
         
         //! prepares a mesh for creating an entity. some safeguards are needed because of Ogre "features"
         /*! \param mesh_name Mesh to prepare

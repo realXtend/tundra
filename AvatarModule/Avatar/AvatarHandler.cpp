@@ -22,7 +22,7 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
@@ -122,7 +122,7 @@ namespace Avatar
 #ifdef EC_HoveringWidget_ENABLED
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
 #endif
-        defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
         // Note: we assume the avatar is created because of a message from network
@@ -141,7 +141,7 @@ namespace Avatar
             placeable->SetNetworkSyncEnabled(false);
         }
         // Switch also networksync off from the mesh
-        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
         if (mesh)
             mesh->SetNetworkSyncEnabled(false);
 
@@ -604,12 +604,12 @@ namespace Avatar
             return;
 
         ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        ComponentPtr meshptr = entity->GetComponent(EC_OgreMesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
         ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {
-            EC_OgreMesh* mesh = checked_static_cast<EC_OgreMesh*>(meshptr.get());
+            EC_Mesh* mesh = checked_static_cast<EC_Mesh*>(meshptr.get());
             mesh->SetPlaceable(placeableptr);
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
@@ -617,7 +617,7 @@ namespace Avatar
         if (animctrlptr && meshptr)
         {
             EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
-            animctrl->SetMeshEntity(dynamic_cast<EC_OgreMesh*>(meshptr.get()));
+            animctrl->SetMeshEntity(dynamic_cast<EC_Mesh*>(meshptr.get()));
         }
     }
     

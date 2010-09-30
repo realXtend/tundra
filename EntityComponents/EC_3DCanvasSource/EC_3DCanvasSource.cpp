@@ -6,7 +6,7 @@
 #include "EC_3DCanvasSource.h"
 
 #include "EC_3DCanvas.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "IModule.h"
 #include "ModuleManager.h"
@@ -215,7 +215,7 @@ void EC_3DCanvasSource::UpdateCanvas()
     }
     
     // If entity has no valid mesh or prim yet, start a retry timer and try to set the canvas later
-    if ((!entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic())) && 
+    if ((!entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic())) && 
         (!entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic())))
     {
         //LogInfo("Mesh or prim did not exist yet, retrying");
