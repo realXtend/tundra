@@ -9,6 +9,7 @@
 #define incl_Avatar_Avatarhandler_h
 
 #include "Foundation.h"
+#include "ForwardDefines.h"
 #include "AvatarModule.h"
 #include "SceneEvents.h"
 #include "RexUUID.h"
@@ -29,8 +30,11 @@ namespace OgreRenderer
 
 namespace Avatar
 {
-    class AV_MODULE_API AvatarHandler
+    class AV_MODULE_API AvatarHandler : public QObject
     {
+
+    Q_OBJECT
+
     public:
         //! Constructor.
         //! \param owner Owner module.
@@ -104,6 +108,10 @@ namespace Avatar
 
         //! Returns the avatar appearance handler
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
+
+    signals:
+        void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
+        void WebDavExportAvatar(Scene::EntityPtr entity);
 
     private:
         /*! Returns entity pointer to an avatar entity. If the entity doesn't exist,

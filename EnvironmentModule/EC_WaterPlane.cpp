@@ -171,10 +171,10 @@ namespace Environment
                 int ySize = ySizeAttr.Get();
                 float uTile =  scaleUfactorAttr.Get() * xSize; /// Default x-size 5000 --> uTile 1.0
                 float vTile =  scaleVfactorAttr.Get() * ySize;
-
+                
                 Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
                     Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
-
+                
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName(), name_.toStdString().c_str());
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
                 entity_->setCastShadows(false);

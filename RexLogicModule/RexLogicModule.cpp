@@ -53,8 +53,9 @@
 
 #include "AvatarModule.h"
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+
 #ifdef EC_AvatarAppearance_ENABLED
 #include "EntityComponent/EC_AvatarAppearance.h"
 #endif
@@ -341,6 +342,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Avatar");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarEventHandler::HandleAvatarEvent, avatar_event_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleAvatarEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
@@ -348,6 +351,8 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleNetworkStateEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");

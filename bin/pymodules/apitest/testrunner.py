@@ -118,10 +118,8 @@ class TestCreateDestroy(TestRunner):
         # this often cleans up >1 test objects (in case any
         # are left over from failed tests)
 
-        ent_id = ent.Id
-        ent = naali.getEntity(ent.Id)
         try:
-            netp = ent.netpos.Position
+            netp = ent.EC_NetworkPosition.Position
         except AttributeError:
             if 0: print "skip unplaceable entity"
         else:

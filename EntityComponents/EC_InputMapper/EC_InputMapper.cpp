@@ -61,23 +61,22 @@ EC_InputMapper::EC_InputMapper(IModule *module):
 
 void EC_InputMapper::AttributeUpdated(IAttribute *attribute, AttributeChange::Type change)
 {
-    const std::string &name = attribute->GetNameString();
-    if(name == contextName.GetNameString() || name == contextPriority.GetNameString())
+    if(attribute == &contextName || attribute == &contextPriority)
     {
         input_.reset();
         input_ = GetFramework()->Input()->RegisterInputContext(contextName.Get().toStdString().c_str(), contextPriority.Get());
         connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
         connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
     }
-    else if(name == takeKeyboardEventsOverQt.GetNameString())
+    else if(attribute == &takeKeyboardEventsOverQt)
     {
         input_->SetTakeKeyboardEventsOverQt(takeKeyboardEventsOverQt.Get());
     }
-    else if(name == takeMouseEventsOverQt.GetNameString())
+    else if(attribute == &takeMouseEventsOverQt)
     {
         input_->SetTakeMouseEventsOverQt(takeMouseEventsOverQt.Get());
     }
-    else if(name == mappings.GetNameString())
+    else if(attribute == &mappings)
     {
     }
 }

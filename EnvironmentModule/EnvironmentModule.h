@@ -116,11 +116,12 @@ namespace Environment
         void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
         /**
-         * Creates a local enviroment entity. This is called if there does not exist outside enviroment entity (entity, which has EC_NAME component which attribute name is Enviroment).
+         * Creates a local enviroment entity. This is called if there does not exist outside enviroment entity (entity, which has EC_NAME component which attribute name is entity_name + Enviroment example WaterEnviroment).
          * IF there exist a that kind entity it will be used to syncronize water, fog etc. things to other clients/server. 
+         * @param entity_name is entity which exist in world.
          * @param component_name is name of component which is added into local enviroment entity.
          */
-        Scene::EntityPtr CreateEnvironmentEntity(const QString& component_name);
+        Scene::EntityPtr CreateEnvironmentEntity(const QString& entity_name, const QString& component_name);
         /** 
          * Removes local dump enviroment entity. 
          */ 

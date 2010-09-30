@@ -10,7 +10,7 @@
 #include "AvatarEvents.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
-#include "Avatar/AvatarEditor.h"
+#include "AvatarEditing/AvatarEditor.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
@@ -56,6 +56,11 @@ namespace Avatar
         avatar_states_[RexUUID("4ae8016b-31b9-03bb-c401-b1ea941db41d")] = EC_OpenSimAvatar::Hover;
         avatar_states_[RexUUID("20f063ea-8306-2562-0b07-5c853b37b31e")] = EC_OpenSimAvatar::Hover;
         avatar_states_[RexUUID("62c5de58-cb33-5743-3d07-9e4cd4352864")] = EC_OpenSimAvatar::Hover;
+
+        connect(this, SIGNAL(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)),
+            &avatar_appearance_, SLOT(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)));
+        connect(this, SIGNAL(WebDavExportAvatar(Scene::EntityPtr)),
+            &avatar_appearance_, SLOT(WebDavExportAvatar(Scene::EntityPtr)));
     }
 
     AvatarHandler::~AvatarHandler()
@@ -780,10 +785,17 @@ namespace Avatar
         
         // Legacy avatar
         if (conn->GetAuthenticationType() == ProtocolUtilities::AT_RealXtend)
-            avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        {
+            avatar_appearance_.EmitAppearanceStatus("Exporting avatar to avatar storage, please wait...", 120000);
+            emit ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        }
         // Webdav avatar
         else if (conn->GetAuthenticationType() == ProtocolUtilities::AT_Taiga)
-            avatar_appearance_.WebDavExportAvatar(entity);
+        {
+            avatar_appearance_.EmitAppearanceStatus("Exporting avatar to webdav inventory, please wait...", 120000);
+            QApplication::processEvents();
+            emit WebDavExportAvatar(entity);
+        }
         // Inventory avatar
         else
             avatar_appearance_.InventoryExportAvatar(entity);
