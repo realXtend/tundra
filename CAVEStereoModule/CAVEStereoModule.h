@@ -16,31 +16,31 @@ namespace Foundation
 //! Main class of the module.
 namespace CAVEStereo
 {
-	class StereoController;
-	class CAVEManager;
-	class CAVESTEREO_MODULE_API CAVEStereoModule : public IModule
+    class StereoController;
+    class CAVEManager;
+    class CAVESTEREO_MODULE_API CAVEStereoModule : public IModule
     {
-	public:
-		MODULE_LOGGING_FUNCTIONS;
-		CAVEStereoModule();
-		~CAVEStereoModule();
-		virtual void Load();
+    public:
+        MODULE_LOGGING_FUNCTIONS;
+        CAVEStereoModule();
+        ~CAVEStereoModule();
+        virtual void Load();
         virtual void PreInitialize();
         virtual void Initialize();
         virtual void PostInitialize();
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
-		static const std::string &NameStatic() { return type_name_static_; }
+        static const std::string &NameStatic() { return type_name_static_; }
 
-		QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
-	private:
-		//! Type name of the module.
+        QVector<Ogre::RenderWindow*> GetCAVERenderWindows();
+    private:
+        //! Type name of the module.
         static std::string type_name_static_;
-		//! Manager for stereo
-		StereoController* stereo_;
-		//! Manager for CAVE
-		CAVEManager* cave_;
-	};
+        //! Manager for stereo
+        StereoController* stereo_;
+        //! Manager for CAVE
+        CAVEManager* cave_;
+    };
 
 }
 
