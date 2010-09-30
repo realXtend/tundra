@@ -44,7 +44,8 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type type)
     EC_WaterPlane* plane = GetEnvironmentWaterComponent();
     if ( plane == 0)
     {
-         owner_->CreateEnvironmentEntity(EC_WaterPlane::TypeNameStatic()); 
+         QString name = "WaterEnvironment";
+         owner_->CreateEnvironmentEntity(name, EC_WaterPlane::TypeNameStatic()); 
          plane = GetEnvironmentWaterComponent();
          if ( plane == 0)
              return;
@@ -62,7 +63,7 @@ void Water::CreateWaterGeometry(float height, AttributeChange::Type type)
 void Water::RemoveWaterGeometry()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
-    Scene::Entity* entity = active_scene->GetEntityByName("Environment").get();
+    Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     
     if ( entity == 0)
     {
@@ -113,7 +114,7 @@ void Water::SetWaterHeight(float height, AttributeChange::Type type)
 EC_WaterPlane* Water::GetEnvironmentWaterComponent()
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
-    Scene::Entity* entity = active_scene->GetEntityByName("Environment").get();
+    Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     
     if (entity != 0 )
         owner_->RemoveLocalEnvironment();
@@ -133,7 +134,7 @@ EC_WaterPlane* Water::GetEnvironmentWaterComponent()
 bool Water::IsWaterPlane() const
 {
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
-    Scene::Entity* entity = active_scene->GetEntityByName("Environment").get();
+    Scene::Entity* entity = active_scene->GetEntityByName("WaterEnvironment").get();
     
     if ( entity == 0)
     {

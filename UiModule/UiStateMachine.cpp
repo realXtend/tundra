@@ -164,6 +164,11 @@ namespace CoreUi
         CheckAndSwitch("WorldBuilding");
     }
 
+    void UiStateMachine::SwitchToAvatarScene()
+    {
+        CheckAndSwitch("Avatar");
+    }
+
     void UiStateMachine::CheckAndSwitch(const QString scene_name)
     {
         if (current_scene_)
@@ -213,10 +218,13 @@ namespace CoreUi
         else
         {
             disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-         
+
             QString old_scene_name = current_scene_name_;
             current_scene_ = scene_map_[name];
             current_scene_name_ = name;
+
+            // About to change, for change preparations in scene managers
+            emit SceneAboutToChange(old_scene_name, current_scene_name_);
 
             current_scene_->setSceneRect(view_->viewport()->rect());
             if (view_->scene() != current_scene_)
@@ -232,7 +240,10 @@ namespace CoreUi
                 animations->start();
             }
 
+            // Emit that invokes sransfering all universal widget
             emit SceneChanged(old_scene_name, current_scene_name_);
+
+            // All transfers done, emit completed signal
             emit SceneChangeComplete();
         }
         return true;

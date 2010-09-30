@@ -13,6 +13,9 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
+#include <QVector3D>
+#include <QQuaternion>
+
 namespace OgreRenderer
 {
     class Renderer;
@@ -96,8 +99,8 @@ public:
     
     enum Axis
     {
-        X,
         Y,
+        X,
         Z
     };
     
@@ -118,21 +121,24 @@ public:
     Attribute<float> segmentsAttr_;
 
 public slots:
-    /// Shows the highlighting effect.
-    void Show();
-
-    /// Hides the highlighting effect.
-    void Hide();
 
     /// Returns if the ruler component is visible or not.
     /// @true If the rule component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
     
+    void SetVisible(bool visible) { visibleAttr_.Set(visible, AttributeChange::LocalOnly); }
+    
+    void SetRadius(float radius) { radiusAttr_.Set(radius, AttributeChange::LocalOnly); }
+    
     //! set the ruler type to show: 0 = translate, 1 = rotate, 2 = scale
-    void SetType(EC_Ruler::Type type);
+    void SetType(EC_Ruler::Type type) { typeAttr_.Set(type, AttributeChange::LocalOnly); }
+    
+    void SetAxis(int axis) { axisAttr_.Set(axis, AttributeChange::LocalOnly); }
     
     //! Call StartDrag to initialise some values used to update the selected ruler
-    void StartDrag();
+    void StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
+    
+    void DoDrag(QVector3D pos, QQuaternion rot, QVector3D scale);
     
     //! Call EndDrag to tell the code we're done for now
     void EndDrag();
@@ -152,6 +158,12 @@ private:
     void SetupTranslateRuler();
     void SetupScaleRuler();
 
+    /// Shows the highlighting effect.
+    void Show();
+
+    /// Hides the highlighting effect.
+    void Hide();
+    
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
 
@@ -164,7 +176,18 @@ private:
     /// Ogre scene node to attach EC to when we want global space axis vis
     Ogre::SceneNode *globalSceneNode;
     
+    std::string rulerName;
+    std::string nodeName;
+    
     EC_Ruler::Type type;
+    
+    QVector3D pos_;
+    QVector3D scale_;
+    QQuaternion rot_;
+    
+    QVector3D newpos_;
+    QVector3D newscale_;
+    QQuaternion newrot_;
 };
 
 #endif

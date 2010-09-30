@@ -2,6 +2,7 @@
 
 #include "Foundation.h"
 #include "IEventData.h"
+#include "Entity.h"
 #include "RexUUID.h"
 
 namespace Avatar
@@ -16,6 +17,12 @@ namespace Avatar
 
         /// Used for rexlogic to handle avatar parent checks. Sent from avatar module to rexlogic
         static const event_id_t EVENT_HANDLE_AVATAR_PARENT = 0x2;
+
+        /// Used for starting build mode, providing camera logic the pos and lookat for animating camera
+        static const event_id_t EVENT_AVATAR_MODE_BEGIN = 0x3;
+
+        /// Used for ending the avatar editor mode, so camera logic can return
+        static const event_id_t EVENT_AVATAR_MODE_END = 0x4;
 
         class SceneRegisterEntityData : public IEventData
         {
@@ -38,6 +45,18 @@ namespace Avatar
             virtual ~SceneHandleParentData() {};
             
             uint32_t local_id;
+        };
+
+        class AvatarModeBeginData : public IEventData
+        {
+        public:
+            explicit AvatarModeBeginData(Scene::Entity *av_entity, Vector3df position, Vector3df lookat) :
+            avatar_entity(av_entity), end_position(position), end_lookat(lookat) {}
+            virtual ~AvatarModeBeginData() {};
+
+            Scene::Entity *avatar_entity;
+            Vector3df end_position;
+            Vector3df end_lookat;
         };
     }
 }
