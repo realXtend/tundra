@@ -45,7 +45,7 @@ class AnimationSync(circuits.BaseComponent):
         self.widget.connect('valueChanged(int)', self.sliderChanged)
 
         #naali proxywidget boilerplate
-        uism = naali.Ui()
+        uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
@@ -79,7 +79,7 @@ class AnimationSync(circuits.BaseComponent):
                 t = ent.touchable
             except AttributeError:
                 print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.Id
-                print ent.createComponent("EC_Touchable")
+                print ent.GetOrCreateComponentRaw("EC_Touchable")
                 t = ent.touchable
             else:
                 print "touchable pre-existed in animated character for animsync."
