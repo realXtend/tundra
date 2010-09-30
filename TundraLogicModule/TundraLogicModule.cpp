@@ -215,7 +215,13 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
         success = scene->LoadSceneBinary(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
     
     if (success)
+    {
+        //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because loadscene clears it
+        Events::TundraConnectedEventData event_data;
+        event_data.user_id_ = 0;
+        framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
         return Console::ResultSuccess();
+    }
     else
         return Console::ResultFailure("Failed to load the scene.");
 }
@@ -242,7 +248,16 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true, replace);
     
     if (success)
+    {
+        //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because import in clearscene mode clears it
+        if (clearscene)
+        {
+            Events::TundraConnectedEventData event_data;
+            event_data.user_id_ = 0;
+            framework_->GetEventManager()->SendEvent(tundraEventCategory_, Events::EVENT_TUNDRA_CONNECTED, &event_data);
+        }
         return Console::ResultSuccess();
+    }
     else
         return Console::ResultFailure("Failed to import the scene.");
 }
