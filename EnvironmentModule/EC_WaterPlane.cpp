@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
+#include <OgreMaterialUtils.h>
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
@@ -32,12 +33,13 @@ namespace Environment
         rotationAttr(this, "Rotation", Quaternion()),
         scaleUfactorAttr(this, "U factor", 0.0002f),
         scaleVfactorAttr(this, "V factor", 0.0002f),
-        xSegmentsAttr(this, "Segments x direction", 10),
-        ySegmentsAttr(this, "Segments y direction", 10),
+        xSegmentsAttr(this, "Segments in x", 10),
+        ySegmentsAttr(this, "Segments in y", 10),
         materialNameAttr(this, "Material", QString("Ocean")),
+       //textureNameAttr(this, "Texture", QString("DefaultOceanSkyCube.dds")),
         fogColorAttr(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
-        fogStartAttr(this, "Fog start distance", 100.f),
-        fogEndAttr(this, "Fog end distance", 2000.f),
+        fogStartAttr(this, "Fog start dist.", 100.f),
+        fogEndAttr(this, "Fog end dist.", 2000.f),
         fogModeAttr(this, "Fog mode", 3),
         entity_(0),
         node_(0),
@@ -49,9 +51,9 @@ namespace Environment
         if(!metadataInitialized)
         {
             metadata.enums[Ogre::FOG_NONE] = "NoFog";
-            metadata.enums[Ogre::FOG_EXP] = "Exponentially";
+            metadata.enums[Ogre::FOG_EXP] = "Exponential";
             metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
-            metadata.enums[Ogre::FOG_LINEAR] = "Linearly";
+            metadata.enums[Ogre::FOG_LINEAR] = "Linear";
          
             metadataInitialized = true;
         }
@@ -287,6 +289,11 @@ namespace Environment
             lastYsize_ = ySizeAttr.Get();
 
         }
+        else if ( name == xSegmentsAttr.GetNameString() || name == ySegmentsAttr.GetNameString() )
+        {
+            RemoveWaterPlane();
+            CreateWaterPlane();
+        }
         else if ( name == positionAttr.GetNameString() )
         {
             // Change position
@@ -318,6 +325,37 @@ namespace Environment
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
             }
         }
+        /*
+        // Currently commented out, working feature but not enabled yet.
+        else if (name == textureNameAttr.GetNameString() )
+        {
+
+            QString currentMaterial = materialNameAttr.Get();
+            
+            // Check that has texture really changed. 
+            
+            StringVector names;
+            Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
+            
+            if ( materialPtr.get() == 0)
+                return;
+
+            OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
+            
+            QString textureName = textureNameAttr.Get();
+            
+            for (StringVector::iterator iter = names.begin(); iter != names.end(); ++iter)
+            {
+                QString currentTextureName(iter->c_str());
+                if ( currentTextureName == textureName)
+                    return;
+            }
+
+            // So texture has really changed, let's change it. 
+            OgreRenderer::SetTextureUnitOnMaterial(materialPtr, textureName.toStdString(), 0);
+
+        }
+        */
         
         
     }
