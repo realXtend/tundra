@@ -108,7 +108,7 @@ endif (COMMAND cmake_policy)
 if (MSVC)
     add_definitions (/W2)
 else ()
-    add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch)
+    add_definitions (-Wall -Wextra -Wno-unknown-pragmas -Wno-unused -Wno-reorder -Wno-switch -Wno-write-strings)
 endif()
 
 # Set CMake custom module path & include them
