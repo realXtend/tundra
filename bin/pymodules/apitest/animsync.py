@@ -45,7 +45,7 @@ class AnimationSync(circuits.BaseComponent):
         self.widget.connect('valueChanged(int)', self.sliderChanged)
 
         #naali proxywidget boilerplate
-        uism = naali.Ui()
+        uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
@@ -71,15 +71,15 @@ class AnimationSync(circuits.BaseComponent):
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
             try:
-                ent = r.getEntity(self.comp.GetParentEntityId())
+                ent = self.comp.GetParentEntity()
             except ValueError:
                 return
 
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
-                print ent.createComponent("EC_Touchable")
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.Id
+                print ent.GetOrCreateComponentRaw("EC_Touchable")
                 t = ent.touchable
             else:
                 print "touchable pre-existed in animated character for animsync."
@@ -97,7 +97,7 @@ class AnimationSync(circuits.BaseComponent):
         if comp is not None:
             #print comp.GetAttribute()
             try:
-                ent = r.getEntity(comp.GetParentEntityId())
+                ent = comp.GetParentEntity()
             except ValueError:
                 print "No entity"
                 return
