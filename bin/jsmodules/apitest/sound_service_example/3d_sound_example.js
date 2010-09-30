@@ -4,7 +4,7 @@ var audio_asset_ref = "b31a9a52-fb05-4648-87de-60c8697db3ca";
 // Sound file should be physically located at \bin\data\assets.
 var local_audio = "file://rapinaa.ogg";
 
-// Javascript engine will call this function before it destoy the script instance.
+// Javascript engine will call this function before it destroy the script instance.
 function OnScriptDestoyed()
 {
 	if (sound_rotator != undefined)
@@ -17,7 +17,6 @@ function OnScriptDestoyed()
 function SoundRotator(sound_ref, radius, speed, comp)
 {
 	this.SoundRef = sound_ref;	//Sound resource id or local asset name.
-	print(this.SoundRef);
 	this.LoopSound = true;		//Loop the sound
 	this.Radius = radius;		//Distance from the origin.
 	this.Speed = speed; 		//Rotation speed.
@@ -66,6 +65,7 @@ SoundRotator.prototype.Update = function(frame_time)
 		this.Rotation += 360.0;
 }
 
+// Wait until EC_OgrePlaceable object has been added to entity.
 function componentAdded(entity, component)
 {
 	if (entity.GetId != me.GetId && component.TypeName != "EC_OgrePleacable")
@@ -75,9 +75,8 @@ function componentAdded(entity, component)
 	sound_rotator.Start();
 }
 
-
 var sound_rotator = 0;
 if(me.GetComponentRaw("EC_OgrePlaceable"))
 	componentAdded(me, me.GetComponentRaw("EC_OgrePlaceable"));
-else
+else //If user login to server and script is run before EC_OgrePlaceable has been created this ensures that we get the actual component when it's added to scene.
 	scene.ComponentAdded.connect(componentAdded);
