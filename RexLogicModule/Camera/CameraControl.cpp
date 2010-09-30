@@ -7,28 +7,28 @@
 
 namespace RexLogic
 {
-	CameraControl::CameraControl(QWidget *parent) :
-		QWidget(parent)
-	{
-		setupUi(this);
-		
-		connect(cameraUP_button, SIGNAL(clicked()), this, SIGNAL(CameraUp()));
-		connect(cameraDOWN_button, SIGNAL(clicked()), this, SIGNAL(CameraDown()));
-		connect(cameraLEFT_button, SIGNAL(clicked()), this, SIGNAL(CameraLeft()));
-		connect(cameraRIGHT_button, SIGNAL(clicked()), this, SIGNAL(CameraRight()));
+    CameraControl::CameraControl(QWidget *parent) :
+        QWidget(parent)
+    {
+        setupUi(this);
 
-		connect(moveFORWARD_button, SIGNAL(clicked()), this, SIGNAL(MoveForward()));
-		connect(moveBACKWARD_button, SIGNAL(clicked()), this, SIGNAL(MoveBackward()));
-		connect(moveLEFT_button, SIGNAL(clicked()), this, SIGNAL(MoveLeft()));
-		connect(moveRIGHT_button, SIGNAL(clicked()), this, SIGNAL(MoveRight()));
+        connect(cameraUP_button, SIGNAL(clicked()), this, SIGNAL(CameraUp()));
+        connect(cameraDOWN_button, SIGNAL(clicked()), this, SIGNAL(CameraDown()));
+        connect(cameraLEFT_button, SIGNAL(clicked()), this, SIGNAL(CameraLeft()));
+        connect(cameraRIGHT_button, SIGNAL(clicked()), this, SIGNAL(CameraRight()));
 
-		connect(zoomIN_button, SIGNAL(clicked()), this, SIGNAL(ZoomIn()));
-		connect(zoomOUT_button, SIGNAL(clicked()), this, SIGNAL(ZoomOut()));
+        connect(moveFORWARD_button, SIGNAL(clicked()), this, SIGNAL(MoveForward()));
+        connect(moveBACKWARD_button, SIGNAL(clicked()), this, SIGNAL(MoveBackward()));
+        connect(moveLEFT_button, SIGNAL(clicked()), this, SIGNAL(MoveLeft()));
+        connect(moveRIGHT_button, SIGNAL(clicked()), this, SIGNAL(MoveRight()));
 
-		connect(cameraTRIPOD_button, SIGNAL(toggled(bool)), this, SLOT(camera_TRIPOD(bool)));
-		connect(cameraFREE_button, SIGNAL(toggled(bool)), this, SLOT(camera_FREE(bool)));
-		connect(cameraFOCUS_button, SIGNAL(toggled(bool)), this, SLOT(camera_FOCUS(bool)));
-		connect(cameraAVATAR_button, SIGNAL(toggled(bool)), this, SLOT(camera_AVATAR(bool)));
+        connect(zoomIN_button, SIGNAL(clicked()), this, SIGNAL(ZoomIn()));
+        connect(zoomOUT_button, SIGNAL(clicked()), this, SIGNAL(ZoomOut()));
+
+        connect(cameraTRIPOD_button, SIGNAL(toggled(bool)), this, SLOT(CameraTripod(bool)));
+        connect(cameraFREE_button, SIGNAL(toggled(bool)), this, SLOT(CameraFree(bool)));
+        connect(cameraFOCUS_button, SIGNAL(toggled(bool)), this, SLOT(CameraFocus(bool)));
+        connect(cameraAVATAR_button, SIGNAL(toggled(bool)), this, SLOT(CameraAvatar(bool)));
 
         // Init styles for actions
         QString style_start = "QPushButton{border-image:url(./data/ui/images/cameracontrol/";
@@ -69,21 +69,21 @@ namespace RexLogic
                 break;
             case MOVE_BACK_RELEASED:
                 manipulate_button = moveBACKWARD_button;
-                released_ =true;
+                released_ = true;
                 break;
             case MOVE_LEFT_PRESSED:
                 manipulate_button = moveLEFT_button;
                 break;
             case MOVE_LEFT_RELEASED:
                 manipulate_button = moveLEFT_button;
-                released_ =true;
+                released_ = true;
                 break;
             case MOVE_RIGHT_PRESSED:
                 manipulate_button = moveRIGHT_button;
                 break;
             case MOVE_RIGHT_RELEASED:
                 manipulate_button = moveRIGHT_button;
-                released_ =true;
+                released_ = true;
             
             case INPUTSTATE_THIRDPERSON:
                 cameraAVATAR_button->setChecked(true);
@@ -100,83 +100,35 @@ namespace RexLogic
         }
     }
 
-    /*
-	void CameraControl::camera_DOWN()
-	{
-		qDebug() << "Camera DOWN";
-	}
-
-	void CameraControl::camera_LEFT()
-	{
-		qDebug() << "Camera LEFT";
-	}
-
-	void CameraControl::camera_RIGHT()
-	{
-		qDebug() << "Camera RIGHT";
-	}
-
-	void CameraControl::move_FORWARD()
-	{
-		qDebug() << "Move FORWARD";
-	}
-
-	void CameraControl::move_BACKWARD()
-	{
-		qDebug() << "Move BACKWARD";
-	}
-
-	void CameraControl::move_LEFT()
-	{
-		qDebug() << "Move LEFT";
-	}
-
-	void CameraControl::move_RIGHT()
-	{
-		qDebug() << "Move RIGHT";
-	}
-
-	void CameraControl::zoom_IN()
-	{
-		qDebug() << "Zoom IN";
-	}
-
-	void CameraControl::zoom_OUT()
-	{
-		qDebug() << "Zoom OUT";
-	}
-    */
-
-	void CameraControl::camera_TRIPOD(bool checked)
+	void CameraControl::CameraTripod(bool checked)
 	{
 		if (checked)
 		{
 			emit CameraStateChange(Tripod);
-			qDebug() << "Camera state: TRIPOD VIEW";
 		}
 	}
 
-	void CameraControl::camera_FREE(bool checked)
+	void CameraControl::CameraFree(bool checked)
 	{
 		if (checked)
 		{
-			qDebug() << "Camera state: FREE VIEW ";
+            emit CameraStateChange(Free);
 		}
 	}
 
-	void CameraControl::camera_FOCUS(bool checked)
+	void CameraControl::CameraFocus(bool checked)
 	{
 		if (checked)
 		{
-		   qDebug() << "Camera state: FOCUS ON VIEW ";
+            emit CameraStateChange(Object);
 		}
-	}
+	}   
 
-	void CameraControl::camera_AVATAR(bool checked)
+	void CameraControl::CameraAvatar(bool checked)
 	{
 		if (checked)
 		{
-		   qDebug() << "Camera state: AVATAR VIEW ";
+            emit CameraStateChange(Avatar);
 		}
 	}
 }

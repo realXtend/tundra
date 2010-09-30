@@ -33,10 +33,10 @@ namespace RexLogic
         void HandleInputEvent(event_id_t event_id, IEventData* data);
 
     private slots:
-        void camera_TRIPOD(bool);
-        void camera_FREE(bool);
-        void camera_FOCUS(bool);
-        void camera_AVATAR(bool);
+        void CameraTripod(bool);
+        void CameraFree(bool);
+        void CameraFocus(bool);
+        void CameraAvatar(bool);
 
     signals:
         void CameraUp();
