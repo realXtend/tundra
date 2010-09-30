@@ -67,7 +67,6 @@ AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Req
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
 AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
-AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)

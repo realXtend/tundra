@@ -8,7 +8,17 @@
 #include "OgreModuleFwd.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
+#include "Transform.h"
 #include "Declare_EC.h"
+
+#include <QVariant>
+
+namespace Ogre
+{
+    class Mesh;
+    class SceneNode;
+    class Skeleton;
+};
 
 namespace OgreRenderer
 {
@@ -25,7 +35,18 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Attributes</b>:
 <ul>
-
+<li>Transform: nodePosition
+<div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
+<li>QString: meshResouceId
+<div>Mesh resource ref is a asset id for a mesh resource that user wants to apply to scene.</div>
+<li>QString: skeletonId
+<div>Skeleton asset ref is a string that should contain skeleton asset id.</div>
+<li>QVariantList: meshMaterial
+<div>Mesh material ref is a string list that can contain x number of materials and each material is applied to.</div> 
+<li>float: drawDistance
+<div>Distance where the mesh is shown from the camera.</div> 
+<li>bool: castShadows
+<div>Will the mesh cast shadows.</div> 
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -124,6 +145,40 @@ Does not emit any actions.
         
         DECLARE_EC(EC_OgreMesh);
     public:
+        //! Transformation attribute is used to do some position, rotation and scale adjustments.
+        //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+        Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation);
+        DEFINE_QPROPERTY_ATTRIBUTE(Transform, nodeTransformation);
+
+        //! Mesh resource id is a asset id for a mesh resource that user wants to apply (Will handle resource request automaticly).
+        Q_PROPERTY(QString meshResourceId READ getmeshResourceId WRITE setmeshResourceId);
+        DEFINE_QPROPERTY_ATTRIBUTE(QString, meshResourceId);
+
+        //! Skeleton asset id, will handle request resource automaticly.
+        Q_PROPERTY(QString skeletonId READ getskeletonId WRITE setskeletonId);
+        DEFINE_QPROPERTY_ATTRIBUTE(QString, skeletonId);
+
+        //! Mesh material id list that can contain x number of materials, material requests are handled automaticly.
+        //! @todo replace std::vector to QVariantList.
+        Q_PROPERTY(QVariantList meshMaterial READ getmeshMaterial WRITE setmeshMaterial);
+        DEFINE_QPROPERTY_ATTRIBUTE(QVariantList, meshMaterial);
+
+        //! Mesh draw distance.
+        Q_PROPERTY(float drawDistance READ getdrawDistance WRITE setdrawDistance);
+        DEFINE_QPROPERTY_ATTRIBUTE(float, drawDistance);
+
+        //! Will the mesh cast shadows.
+        Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows);
+        DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
+
+        //! Set component as serializable.
+        /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
+            as mesh attributes are being transmitted through RexPrimData instead.
+         */
+        virtual bool IsSerializable() const { return true; }
+        
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data);
+        
         virtual ~EC_OgreMesh();
     public slots:
         //! sets placeable component
@@ -139,7 +194,7 @@ Does not emit any actions.
         
         //! sets mesh
         /*! if mesh already sets, removes the old one
-            \param mesh_name mesh to use
+            \param mesh_name mesh to use. This will not initiate an asset request, but assumes the mesh already exists as a loaded Ogre resource
             \param clone whether mesh should be cloned for modifying geometry uniquely
             \return true if successful
          */
@@ -287,11 +342,28 @@ Does not emit any actions.
         Vector3df GetAttachmentScale(uint index) const;
 
         //! returns draw distance
-        float GetDrawDistance() const { return draw_distance_; }
+        float GetDrawDistance() const { return drawDistance.Get(); }
 
         //! Returns adjustment scene node (used for scaling/offset/orientation modifications)
         Ogre::SceneNode* GetAdjustmentSceneNode() const { return adjustment_node_; }
 
+    signals:
+        //! Signal is emitted when mesh has successfully loaded and applied to entity.
+        void OnMeshChanged();
+
+        //! Signal is emitted when material has succussfully applied to sub mesh.
+        void OnMaterialChanged(uint index, const QString &material_name);
+
+        //! Signal is emitted when skeleton has successfully applied to entity.
+        void OnSkeletonChanged(QString skeleton_name);
+
+    private slots:
+        //! Called when the parent entity has been set.
+        void UpdateSignals();
+
+        //! Called when some of the attributes has been changed.
+        void AttributeUpdated(IAttribute *attribute);
+        
     private:
         //! constructor
         /*! \param module renderer module
@@ -311,6 +383,14 @@ Does not emit any actions.
         //! detaches entity from placeable
         void DetachEntity();
         
+        bool HandleResourceEvent(event_id_t event_id, IEventData* data);
+        bool HandleMeshResourceEvent(event_id_t event_id, IEventData* data);
+        bool HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data);
+        bool HandleMaterialResourceEvent(event_id_t event_id, IEventData* data);
+        request_tag_t RequestResource(const std::string& id, const std::string& type);
+        bool HasMaterialsChanged() const;
+        void AttachSkeleton(const QString &skeletonName);
+        
         //! placeable component 
         ComponentPtr placeable_;
         
@@ -319,6 +399,9 @@ Does not emit any actions.
         
         //! Ogre mesh entity
         Ogre::Entity* entity_;
+        
+        //! Ogre skeleton
+        Ogre::Skeleton* skeleton_;
         
         //! Attachment entities
         std::vector<Ogre::Entity*> attachment_entities_;
@@ -334,11 +417,15 @@ Does not emit any actions.
         //! mesh entity attached to placeable -flag
         bool attached_;
         
-        //! cast shadows flag
-        bool cast_shadows_;
-        
-        //! draw distance
-        float draw_distance_;
+        typedef std::vector<request_tag_t> AssetRequestArray;
+        AssetRequestArray materialRequestTags_;
+
+        event_category_id_t resource_event_category_;
+    
+        typedef std::pair<request_tag_t, std::string> ResourceKeyPair;
+        typedef boost::function<bool(event_id_t,IEventData*)> MeshEventHandlerFunction;
+        typedef std::map<ResourceKeyPair, MeshEventHandlerFunction> MeshResourceHandlerMap;
+        MeshResourceHandlerMap resRequestTags_;
     };
 }
 

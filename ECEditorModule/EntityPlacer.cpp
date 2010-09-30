@@ -31,7 +31,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
             return;
 
         // If entity dont hold any visual element create a custom mesh.
-        if(entity->HasComponent("EC_Mesh") == false)
+        if(entity->HasComponent("EC_OgreMesh") == false)
         {
             useCustomMesh_ = true;
             OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();

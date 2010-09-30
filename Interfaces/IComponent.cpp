@@ -28,7 +28,7 @@ IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
     change_(AttributeChange::None),
-    network_sync_(true)
+    network_sync_(rhs.network_sync_)
 {
 }
 

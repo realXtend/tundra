@@ -120,17 +120,17 @@ void EC_Light::DetachLight()
 
 void EC_Light::UpdateOgreLight()
 {
-    // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
-    if (parent_entity_)
+    // If placeable is not set yet, set it manually by searching it from the parent entity
+    if (!placeable_)
     {
-        ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        if (placeable)
-            SetPlaceable(placeable);
-        else
-            LogError("No EC_OgrePlaceable in entity, EC_Light could not attach itself to scenenode");
+        Scene::Entity* entity = GetParentEntity();
+        if (entity)
+        {
+            ComponentPtr placeable = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            if (placeable)
+                SetPlaceable(placeable);
+        }
     }
-    else
-        LogError("Parent entity not set, EC_Light could not auto-set placeable");
     
     Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
 

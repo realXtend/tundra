@@ -46,14 +46,16 @@ struct Transform
         scale.x = x;
         scale.y = y;
         scale.z = z;
-
-        // Ogre doesn't like if we are setting scale value to zero so we add very small number instead.
-        if (fabs(x) < 1e-4f)
-            scale.x = 1e-4f;
-        if (fabs(y) < 1e-4f)
-            scale.y = 1e-4f;
-        if (fabs(z) < 1e-4f)
-            scale.z = 1e-4f;
+    }
+    
+    bool operator == (const Transform& rhs) const
+    {
+        return (position == rhs.position) && (rotation == rhs.rotation) && (scale == rhs.scale);
+    }
+    
+    bool operator != (const Transform& rhs) const
+    {
+        return !(*this == rhs);
     }
 };
 

@@ -73,7 +73,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -114,7 +114,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -123,8 +123,13 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(EC_NetworkPosition::TypeNameStatic());
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
-    // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components);
+
+    // Now switch networksync off from the placeable, before we do any damage
+    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    if (placeable)
+        placeable->SetNetworkSyncEnabled(false);
+
     return entity;
 }
 
@@ -274,8 +279,9 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-            scene->EmitEntityCreated(entity, AttributeChange::Network);
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            if (scene)
+                scene->EmitEntityCreated(entity, AttributeChange::Network);
         }
     }
 
@@ -784,7 +790,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return false;
 
@@ -879,6 +885,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
         if (!meshptr)
             return;
         OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
+        // Make sure network sync is off
+        mesh.SetNetworkSyncEnabled(false);
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())

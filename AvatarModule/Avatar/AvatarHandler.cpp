@@ -131,7 +131,14 @@ namespace Avatar
             //ShowAvatarNameOverlay(entityid);
             CreateWidgetOverlay(placeable, entityid);
             CreateAvatarMesh(entityid);
+            
+            // Now switch networksync off from the placeable, before we do any damage
+            placeable->SetNetworkSyncEnabled(false);
         }
+        // Switch also networksync off from the mesh
+        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        if (mesh)
+            mesh->SetNetworkSyncEnabled(false);
 
         return entity;
     }
