@@ -237,9 +237,9 @@ void EC_Ruler::SetupRotationRuler()
             break;
     }
     
+    int dir = 1;
     if (a2 < 0.0f) {
-        a1 = a2;
-        a2 = 0.0f;
+        dir = -1;
     }
     
     for(float theta = 0; theta <= 2 * Ogre::Math::PI; theta += Ogre::Math::PI / segments) {
@@ -257,21 +257,39 @@ void EC_Ruler::SetupRotationRuler()
     }
     rulerObject->end();
     
-    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_TRIANGLE_FAN);
-    rulerObject->position(0, 0, 0);
-    for(float theta = a1; theta <= a2; theta += Ogre::Math::PI/ segments) {
-        switch(axisAttr_.Get()) {
-            case EC_Ruler::X:
-                rulerObject->position(0, radius * cos(theta), radius * sin(theta));
-                break;
-            case EC_Ruler::Y:
-                rulerObject->position(radius * cos(theta), 0, radius * sin(theta));
-                break;
-            case EC_Ruler::Z:
-                rulerObject->position(radius * cos(theta), radius * sin(theta), 0);
-                break;
-        }
-    } 
+    float outer_radius = radius + 0.5f;
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_STRIP);
+    rulerObject->position(0,0,0);
+    if(dir==1) {
+        for(float theta = a1; theta <= a2; theta += Ogre::Math::PI/ segments) {
+            switch(axisAttr_.Get()) {
+                case EC_Ruler::X:
+                    rulerObject->position(0, outer_radius * cos(theta), radius * sin(theta));
+                    break;
+                case EC_Ruler::Y:
+                    rulerObject->position(outer_radius * cos(theta), 0, radius * sin(theta));
+                    break;
+                case EC_Ruler::Z:
+                    rulerObject->position(outer_radius * cos(theta), radius * sin(theta), 0);
+                    break;
+            }
+        } 
+    } else {
+        for(float theta = a1; theta >= a2; theta -= Ogre::Math::PI/ segments) {
+            switch(axisAttr_.Get()) {
+                case EC_Ruler::X:
+                    rulerObject->position(0, outer_radius * cos(theta), radius * sin(theta));
+                    break;
+                case EC_Ruler::Y:
+                    rulerObject->position(outer_radius * cos(theta), 0, radius * sin(theta));
+                    break;
+                case EC_Ruler::Z:
+                    rulerObject->position(outer_radius * cos(theta), radius * sin(theta), 0);
+                    break;
+            }
+        } 
+    }
+    rulerObject->position(0,0,0);
     rulerObject->end();
 }
 
