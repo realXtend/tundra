@@ -1,4 +1,10 @@
-print("Loading sound fade example script.");
+print("Loading AudioPlayer example script.");
+
+// Javascript engine will call this function before it destroy the script instance.
+function OnScriptDestoyed()
+{
+	//No cleaning atm.
+}
 
 //------------------------------
 //------DEFINE AUDIOPLAYER------
@@ -10,14 +16,14 @@ function AudioPlayer(filepath)
 	this.SoundStateEnum = {"Stopped" : 0, "Pending" : 1, "Playing" : 2};
 	
 	// MEMBER VARIABLES
-	this.AudioRef    = filepath; // Audio file id or physical location.
-	this.LocalFile   = true; // Do we request sound asset from the server.
+	this.AudioRef    = filepath; 	// Audio file id or physical location.
+	this.LocalFile   = true; 		// Do we request sound asset from the server.
 	this.SoundType   = this.SoundTypeEnum.Ambient;
 	this.SoundState  = this.SoundStateEnum.Stopped;
-	this.FadeTime    = 1; // Fade time in seconds.
-	this.FadeCurTime = 0;
-	this.SoundID     = 0; // Sound service will return sound_id when it has first time played.
-	this.OldSoundID  = 0; // When we want to switch two sounds in smooth way this is used.
+	this.FadeTime    = 1; 			// Fade time in seconds.
+	this.FadeCurTime = 0; 			// Current fade time to check when we can stop sound fade effect.
+	this.SoundID     = 0; 			// Sound service will return sound_id when we begin to play it.
+	this.OldSoundID  = 0; 			// When we want to switch two sounds in smooth way this is used.
 }
 
 // Play audio clip as ambient sound.
@@ -114,6 +120,10 @@ var local_audio  = "file://rat-a-tat.ogg";
 var local_audio2 = "file://rat-a-tat.ogg";
 
 var sound_player = new AudioPlayer(local_audio);
+// We use local sound asset in this example. set this to true if you want to use asset references.
 sound_player.LocalFile = false;
+// We could request sound asset before the actual sound is played. This is recomented if we want to sound be played as fast as possible.
+//sound_player.RequestSoundAsset();
 sound_player.PlaySound();
+//Switch from sound to another by slowly faiding those two sounds.
 sound_player.SwitchToSound(local_audio2);
