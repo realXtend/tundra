@@ -114,7 +114,7 @@ private:
     void HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg);
 
     //! Handle entity action message.
-    void HandleEntityAction(MessageConnection* source, const MsgEntityAction& msg);
+    void HandleEntityAction(MessageConnection* source, MsgEntityAction& msg);
 
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
