@@ -291,7 +291,7 @@ namespace ECEditor
                     AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString().c_str());
                         if(attribute)
                             attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
                     }

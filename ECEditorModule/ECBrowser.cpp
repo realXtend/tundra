@@ -189,7 +189,7 @@ namespace ECEditor
                 IAttribute *attr = 0;
                 for(uint i = 0; i < names.size(); i++)
                 {
-                    attr = compWeak.lock()->GetAttribute(names[i].toStdString());
+                    attr = compWeak.lock()->GetAttribute(names[i]);
                     if(attr)
                         break;
                 }
