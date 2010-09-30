@@ -20,6 +20,7 @@ namespace ProtocolUtilities
     typedef boost::shared_ptr<WorldStream> WorldStreamPtr;
 }
 
+/// Contains Entity Actions for moving entity with this component in scene.
 /**
 <table class="header">
 <tr>
@@ -33,8 +34,8 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"Move": MoveForward, MoveBackward, MoveLeft, MoveRight
-<li>"Rotate": RotateLeft, RotateRight
+<li>"Move": Move(Forward), Move(Backward), Move(Left), Move(Right)
+<li>"Rotate": Rotate(Left), Rotate(Right)
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -49,17 +50,6 @@ Does not emit any actions.
 <b>Depends on the component OgrePlaceable and OpenSimPrim</b>.
 </table>
 */
-/// Contains Entity Actions for moving entity with this component in scene.
-/**
-        Currently this EC is pretty much for testing and debugging purposes only.
-        Supports the following actions:
-        -Move(Forward)
-        -Move(Backward)
-        -Move(Left)
-        -Move(Right)
-        -Rotate(Left)
-        -Rotate(Right)
-*/
 class EC_Movable : public IComponent
 {
     DECLARE_EC(EC_Movable);
@@ -72,13 +62,13 @@ public:
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:
-    /** Moves the entity this component is attached to.
-        @param direction Forward, Backward, Left or Right
+    /// Moves the entity this component is attached to.
+    /** @param direction Forward, Backward, Left or Right
     */
     void Move(const QString &direction);
 
-    /** Rotates the entity this component is attached to.
-        @param direction Left or Right
+    /// Rotates the entity this component is attached to.
+    /** @param direction Left or Right
     */
     void Rotate(const QString &direction);
 

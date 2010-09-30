@@ -5,7 +5,6 @@
 #include "Vector3D.h"
 #include "Matrix4.h"
 
-
 #include <QScriptEngine>
 #include <QColor>
 #include <QVector3D>
