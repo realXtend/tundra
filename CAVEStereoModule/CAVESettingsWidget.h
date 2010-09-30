@@ -12,7 +12,7 @@ namespace Foundation
 {
     class Framework;
 }
-namespace OgreRenderer
+namespace CAVEStereo
 {
     
     class CAVESettingsWidget: public QWidget, private Ui::CAVESettings 

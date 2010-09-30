@@ -12,7 +12,7 @@ namespace Ogre
 class QResizeEvent;
 class QKeyEvent;
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 	class ExternalRenderWindow: public QWidget
 	{

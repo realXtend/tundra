@@ -11,7 +11,7 @@ namespace Ogre
     class Vector3;
 }
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
     class CAVEViewSettingsAdvanced: public QDialog, private Ui::CaveViewSettingsDialogAdvanced

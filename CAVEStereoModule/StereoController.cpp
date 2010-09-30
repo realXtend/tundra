@@ -6,17 +6,18 @@
 #include <QVector>
 #include <QDebug>
 #include "ExternalRenderWindow.h"
-#include "OgreRenderingModule.h"
+#include "CAVEStereoModule.h"
 
 
 
 
 
-namespace OgreRenderer
+namespace CAVEStereo
 {
 
-    StereoController::StereoController(Renderer* r)
+	StereoController::StereoController(OgreRenderer::Renderer* r, CAVEStereoModule* mod)
         :renderer_(r),
+		module_(mod),
         settings_widget_(0),
 		number_of_views_(0),
 		prefix_("stereoview")
@@ -33,7 +34,7 @@ namespace OgreRenderer
 	{
 		QVector<Ogre::RenderWindow*> vec;
 		vec.append(renderer_->GetCurrentRenderWindow());
-		vec += renderer_->GetCAVERenderWindows();
+		vec += module_->GetCAVERenderWindows();
 		return vec;
 	}
 
@@ -49,8 +50,8 @@ namespace OgreRenderer
 			
 		}catch (Ogre::Exception &e)
         {
-            OgreRenderingModule::LogWarning(e.what());
-            OgreRenderingModule::LogWarning("Failed to set Anaglyph shader constant.");
+            CAVEStereoModule::LogWarning(e.what());
+            CAVEStereoModule::LogWarning("Failed to set Anaglyph shader constant.");
 		}
 	}
 

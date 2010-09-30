@@ -8,17 +8,23 @@
 #include <QVector>
 #include <Ogre.h>
 
+
 namespace OgreRenderer
+{
+	class Renderer;
+}
+
+namespace CAVEStereo
 {
 	class ExternalRenderWindow;
 	class StereoManager;
-    class Renderer;
     class StereoWidget;
+	class CAVEStereoModule;
     class StereoController: public QObject
     {
         Q_OBJECT
         public:
-            StereoController(Renderer* r);
+			StereoController(OgreRenderer::Renderer* r,CAVEStereoModule* mod);
             virtual ~StereoController();
 
             
@@ -40,7 +46,8 @@ namespace OgreRenderer
 			QVector<Ogre::RenderWindow*> getRenderWindows();
 			QMap<QString,StereoManager*> stereo_views_;
 			QVector<ExternalRenderWindow*> windows_to_dispose_;
-            Renderer* renderer_;
+			OgreRenderer::Renderer* renderer_;
+			CAVEStereoModule *module_;
             StereoWidget* settings_widget_;
 			int number_of_views_;
 			QString prefix_;
