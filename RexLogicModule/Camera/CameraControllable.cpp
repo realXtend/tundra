@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "CameraControllable.h"
+#include "CameraControl.h"
 
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EC_NetworkPosition.h"
@@ -25,6 +26,8 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "ModuleManager.h"
+
+#include "UiServiceInterface.h"
 
 #include <Ogre.h>
 
@@ -86,6 +89,16 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
+
+		camera_control_widget_ = new CameraControl();
+        /*
+		Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui_service)
+		{
+			ui_service->AddWidgetToScene(camera_control_widget_);
+			ui_service->AddWidgetToMenu(camera_control_widget_);
+		}
+        */
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -105,6 +118,8 @@ namespace RexLogic
 
     bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
+        camera_control_widget_->HandleInputEvent(event_id, data);
+
         if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
