@@ -91,12 +91,14 @@ namespace RexLogic
         movement_.y_.rel_ = 0;
 
 		camera_control_widget_ = new CameraControl();
+        /*
 		Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
         if (ui_service)
 		{
 			ui_service->AddWidgetToScene(camera_control_widget_);
 			ui_service->AddWidgetToMenu(camera_control_widget_);
 		}
+        */
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)

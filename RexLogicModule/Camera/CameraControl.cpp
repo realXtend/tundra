@@ -3,8 +3,6 @@
 #include "StableHeaders.h"
 #include "CameraControl.h"
 
-#include <QDebug>
-
 namespace RexLogic
 {
     CameraControl::CameraControl(QWidget *parent) :
@@ -40,8 +38,6 @@ namespace RexLogic
         event_to_image_[MOVE_BACK_PRESSED] = style_start + "arrow_down_green1.png" + style_end;
         event_to_image_[MOVE_LEFT_PRESSED] = style_start + "arrow_left_green1.png" + style_end;
         event_to_image_[MOVE_RIGHT_PRESSED] = style_start + "arrow_right_green1.png" + style_end;
-
-        qDebug() << event_to_image_[MOVE_FORWARD_PRESSED] << endl << release_style_;
 	}
 
 	CameraControl::~CameraControl()
@@ -100,35 +96,35 @@ namespace RexLogic
         }
     }
 
-	void CameraControl::CameraTripod(bool checked)
-	{
-		if (checked)
-		{
-			emit CameraStateChange(Tripod);
-		}
-	}
+    void CameraControl::CameraTripod(bool checked)
+    {
+        if (checked)
+        {
+            emit CameraStateChange(Tripod);
+        }
+    }
 
-	void CameraControl::CameraFree(bool checked)
-	{
-		if (checked)
-		{
+    void CameraControl::CameraFree(bool checked)
+    {
+        if (checked)
+        {
             emit CameraStateChange(Free);
-		}
-	}
+        }
+    }
 
-	void CameraControl::CameraFocus(bool checked)
-	{
-		if (checked)
-		{
+    void CameraControl::CameraFocus(bool checked)
+    {
+        if (checked)
+        {
             emit CameraStateChange(Object);
-		}
-	}   
+        }
+    }   
 
-	void CameraControl::CameraAvatar(bool checked)
-	{
-		if (checked)
-		{
+    void CameraControl::CameraAvatar(bool checked)
+    {
+        if (checked)
+        {
             emit CameraStateChange(Avatar);
-		}
-	}
+        }
+    }
 }
