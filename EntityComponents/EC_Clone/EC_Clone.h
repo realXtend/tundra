@@ -4,7 +4,7 @@
  *  @file   EC_Clone.h
  *  @brief  EC_Clone creates an OGRE clone entity from the the original entity.
  *          This component can be used e.g. when visualizing object duplication in the world.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -59,7 +59,7 @@ Registered by RexLogic::RexLogicModule.
 </td>
 </tr>
 
-<b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+<b>The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
 EC_OgreCustomObject (if prim) components available in advance.</b>
 </table>
 */

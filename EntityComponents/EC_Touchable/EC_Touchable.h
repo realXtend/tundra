@@ -7,7 +7,7 @@
  *          when it is clicked i.e. touched. The effect is not visible by default.
  *          You must call Show() function separately. The effect is visible only
  *          for certain time.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -80,7 +80,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+<b>The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
 EC_OgreCustomObject (if prim) components available in advance.</b>. 
 </table>
 */

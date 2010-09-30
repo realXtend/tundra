@@ -7,7 +7,7 @@
  *          when it is clicked i.e. touched. The effect is not visible by default.
  *          You must call Show() function separately. The effect is visible only
  *          for certain time.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -21,7 +21,7 @@
 #include "Renderer.h"
 //#include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
@@ -137,11 +137,11 @@ void EC_Touchable::Create()
     if (!placeable)
         return;
 
-    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
+    // Check out if this entity has EC_Mesh or EC_OgreCustomObject.
     Ogre::Entity *originalEntity  = 0;
-    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic()))
+    if (entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic()))
     {
-        OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         assert(ec_mesh);
 
         originalEntity = ec_mesh->GetEntity();
@@ -162,7 +162,7 @@ void EC_Touchable::Create()
     }
     else
     {
-        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Touchable.");
+        LogError("This entity doesn't have either EC_Mesh or EC_OgreCustomObject present. Cannot create EC_Touchable.");
         return;
     }
 

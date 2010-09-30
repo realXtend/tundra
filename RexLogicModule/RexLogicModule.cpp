@@ -88,7 +88,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
@@ -1215,7 +1215,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
         OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
         {

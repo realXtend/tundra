@@ -5,7 +5,7 @@
 #include "EC_OgrePlaceable.h"
 #include "Renderer.h"
 #include "InputServiceInterface.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
@@ -31,7 +31,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
             return;
 
         // If entity dont hold any visual element create a custom mesh.
-        if(entity->HasComponent("EC_OgreMesh") == false)
+        if(entity->HasComponent("EC_Mesh") == false)
         {
             useCustomMesh_ = true;
             OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();

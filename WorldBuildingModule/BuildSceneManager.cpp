@@ -609,7 +609,7 @@ namespace WorldBuilding
         if (!prim)
         {
             // Manipulators wont have prim, but will have mesh
-            if (entity->HasComponent("EC_OgreMesh"))
+            if (entity->HasComponent("EC_Mesh"))
                 return;
             ObjectSelected(false);
             python_handler_->EmitRemoveHightlight();

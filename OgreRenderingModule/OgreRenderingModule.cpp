@@ -5,7 +5,7 @@
 #include "Renderer.h"
 #include "ResourceHandler.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
@@ -47,7 +47,7 @@ namespace OgreRenderer
     void OgreRenderingModule::Load()
     {
         DECLARE_MODULE_EC(EC_OgrePlaceable);
-        DECLARE_MODULE_EC(EC_OgreMesh);
+        DECLARE_MODULE_EC(EC_Mesh);
         DECLARE_MODULE_EC(EC_OgreLight);
         DECLARE_MODULE_EC(EC_OgreSky);
         DECLARE_MODULE_EC(EC_OgreCustomObject);

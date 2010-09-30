@@ -9,7 +9,7 @@ compshorthand = {
     'EC_OpenSimPrim': 'prim',
     'EC_OgrePlaceable': 'placeable',
     'EC_NetworkPosition': 'network',
-    'EC_OgreMesh':'mesh',
+    'EC_Mesh':'mesh',
     'EC_OgreCamera': 'camera',
     'EC_OgreAnimationController': 'animationcontroller',
     'EC_Highlight': 'highlight',
