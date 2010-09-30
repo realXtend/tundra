@@ -111,7 +111,7 @@ void EC_Sound::UpdateSoundSettings()
     ISoundService *soundService = framework_->Audio();
     if(!soundService || !sound_id_)
     {
-        LogWarning("Cannot update the sound settings cause sound service is not intialized or a sound wasn't on active state.");
+        //LogWarning("Cannot update the sound settings cause sound service is not intialized or a sound wasn't on active state.");
         return;
     }
 
@@ -142,7 +142,10 @@ ComponentPtr EC_Sound::FindPlaceable() const
     assert(framework_);
     ComponentPtr comp;
     if(!GetParentEntity())
+    {
+        LogError("Fail to find a placeable component cause parent entity is null.");
         return comp;
+    }
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     return comp;
 }
