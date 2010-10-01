@@ -54,6 +54,8 @@ namespace Scene
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
+        Scene::Entity* GetEntityByNameRaw(const QString& name) const;
+
     public:
         //! destructor
         ~SceneManager();
