@@ -24,17 +24,17 @@ EC_Light::EC_Light(IModule *module) :
     IComponent(module->GetFramework()),
     light_(0),
     attached_(false),
-    typeAttr_(this, "light type", LT_Point),
-    directionAttr_(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
-    diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
-    specColorAttr_(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
-    castShadowsAttr_(this, "cast shadows", false),
-    rangeAttr_(this, "light range", 100.0f),
-    constAttenAttr_(this, "constant atten", 0.0f),
-    linearAttenAttr_(this, "linear atten", 0.01f),
-    quadraAttenAttr_(this, "quadratic atten", 0.01f),
-    innerAngleAttr_(this, "light inner angle", 30.0f),
-    outerAngleAttr_(this, "light outer angle", 40.0f)
+    type(this, "light type", LT_Point),
+    direction(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
+    diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
+    specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
+    castShadows(this, "cast shadows", false),
+    range(this, "light range", 100.0f),
+    constAtten(this, "constant atten", 0.0f),
+    linearAtten(this, "linear atten", 0.01f),
+    quadraAtten(this, "quadratic atten", 0.01f),
+    innerAngle(this, "light inner angle", 30.0f),
+    outerAngle(this, "light outer angle", 40.0f)
 {
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;
@@ -45,7 +45,7 @@ EC_Light::EC_Light(IModule *module) :
         typeAttrData.enums[LT_Directional] = "Directional";
         metadataInitialized = true;
     }
-    typeAttr_.SetMetadata(&typeAttrData);
+    type.SetMetadata(&typeAttrData);
 
     boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -134,7 +134,7 @@ void EC_Light::UpdateOgreLight()
     
     Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
 
-    switch (typeAttr_.Get())
+    switch (type.Get())
     {
         case LT_Spot:
         ogre_type = Ogre::Light::LT_SPOTLIGHT;
@@ -148,13 +148,13 @@ void EC_Light::UpdateOgreLight()
     try
     {
         light_->setType(ogre_type);
-        light_->setDirection(ToOgreVector3(directionAttr_.Get()));
-        light_->setDiffuseColour(ToOgreColor(diffColorAttr_.Get()));
-        light_->setSpecularColour(ToOgreColor(specColorAttr_.Get()));
-        light_->setAttenuation(rangeAttr_.Get(), constAttenAttr_.Get(), linearAttenAttr_.Get(), quadraAttenAttr_.Get());
+        light_->setDirection(ToOgreVector3(direction.Get()));
+        light_->setDiffuseColour(ToOgreColor(diffColor.Get()));
+        light_->setSpecularColour(ToOgreColor(specColor.Get()));
+        light_->setAttenuation(range.Get(), constAtten.Get(), linearAtten.Get(), quadraAtten.Get());
         // Note: Ogre throws exception if we try to set this when light is not spotlight
-        if (typeAttr_.Get() == LT_Spot)
-            light_->setSpotlightRange(Ogre::Degree(innerAngleAttr_.Get()), Ogre::Degree(outerAngleAttr_.Get()));
+        if (type.Get() == LT_Spot)
+            light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));
     }
     catch (Ogre::Exception& e)
     {
