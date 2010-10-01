@@ -25,6 +25,9 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
 
 JavascriptEngine::~JavascriptEngine()
 {
+    QScriptValue destructor = engine_->globalObject().property("OnScriptDestoyed");
+    if (!destructor.isUndefined())
+        destructor.call();
     SAFE_DELETE(engine_);
 }
 

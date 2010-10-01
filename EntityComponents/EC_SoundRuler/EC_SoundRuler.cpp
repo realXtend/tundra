@@ -15,7 +15,7 @@
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OpenSimPrim.h"
 #include "LoggingFunctions.h"

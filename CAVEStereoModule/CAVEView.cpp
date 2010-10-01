@@ -21,7 +21,7 @@ namespace CAVEStereo
 
     CAVEView::~CAVEView()
     {
-		Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
+        Ogre::Root::getSingleton().detachRenderTarget(render_window_->getRenderWindow()->getName());
         renderer_->GetSceneManager()->destroyCamera(camera_);
 
     }
@@ -37,37 +37,37 @@ namespace CAVEStereo
 
     }
 
-	void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
-	{
-			top_left = tl;
-			bottom_left = lb;
-			bottom_right = rb;
-			eye_pos = ep;
-	}
+    void CAVEView::GetProjectionParameters( Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
+    {
+            top_left = tl;
+            bottom_left = lb;
+            bottom_right = rb;
+            eye_pos = ep;
+    }
 
 
 
     void CAVEView::ReCalculateProjection(Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos)
     {
-		lb = bottom_left;
-		rb = bottom_right;
-		tl = top_left;
-		ep = eye_pos;
+        lb = bottom_left;
+        rb = bottom_right;
+        tl = top_left;
+        ep = eye_pos;
 
         assert(renderer_);
         assert(camera_);
         assert(render_window_);
-		bool openGL = false;
-		if(renderer_->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
-		{
-			openGL = true;
-		}
+        bool openGL = false;
+        if(renderer_->GetRoot()->getRenderSystem()->getName() == "OpenGL Rendering Subsystem")
+        {
+            openGL = true;
+        }
         qreal pi = Ogre::Math::PI;
 
         //Projection magic be happening here.
         double n = camera_->getNearClipDistance();
-		double f = camera_->getFarClipDistance();
-		double l, r, b, t;
+        double f = camera_->getFarClipDistance();
+        double l, r, b, t;
  
         //screenspace axes
         Ogre::Vector3 sr, su, sn;
@@ -87,19 +87,19 @@ namespace CAVEStereo
         etl = top_left-eye_pos;
         ebr = bottom_right-eye_pos;
 
-		qreal distance_to_plane;
-		if(openGL)
-		{
-			sn = -sn;
-			distance_to_plane = -sn.dotProduct(ebl);
-		}
-		else
-		{
-			distance_to_plane = sn.dotProduct(ebl);
-		}
+        qreal distance_to_plane;
+        if(openGL)
+        {
+            sn = -sn;
+            distance_to_plane = -sn.dotProduct(ebl);
+        }
+        else
+        {
+            distance_to_plane = sn.dotProduct(ebl);
+        }
 
 
-		
+
         l = sr.dotProduct(ebl)*n/distance_to_plane;
         r = sr.dotProduct(ebr)*n/distance_to_plane;
         b = su.dotProduct(ebl)*n/distance_to_plane;
@@ -124,11 +124,11 @@ namespace CAVEStereo
         assert(renderer_);
         Ogre::Camera* original_cam = renderer_->GetCurrentCamera();
         std::string std_name = name.toStdString();
-		render_window_ = new ExternalRenderWindow();
-		render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
-		render_window_->setGeometry(20,20,window_width,window_height);
-		camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
-		render_window_->getRenderWindow()->addViewport(camera_);
+        render_window_ = new ExternalRenderWindow();
+        render_window_->CreateRenderWindow(std_name, window_width, window_height,0,0,false);
+        render_window_->setGeometry(20,20,window_width,window_height);
+        camera_ = renderer_->GetSceneManager()->createCamera(std_name + "_camera");
+        render_window_->getRenderWindow()->addViewport(camera_);
         camera_->getViewport()->setOverlaysEnabled(false);
         camera_->getViewport()->setShadowsEnabled(true);
 

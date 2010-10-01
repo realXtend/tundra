@@ -62,10 +62,10 @@ Does not emit any actions.
         QStringList GetAvailableAnimations();
 
         //! Gets mesh entity component
-        OgreRenderer::EC_OgreMesh *GetMeshEntity() const { return mesh; }
+        OgreRenderer::EC_Mesh *GetMeshEntity() const { return mesh; }
         
         //! Gets mesh entity component
-        void SetMeshEntity(OgreRenderer::EC_OgreMesh *new_mesh);
+        void SetMeshEntity(OgreRenderer::EC_Mesh *new_mesh);
 
     public:
         
@@ -191,7 +191,7 @@ Does not emit any actions.
         void ResetState();
         
         //! Mesh entity component 
-        EC_OgreMesh *mesh;
+        EC_Mesh *mesh;
         
         //! Current mesh name
         std::string mesh_name_;

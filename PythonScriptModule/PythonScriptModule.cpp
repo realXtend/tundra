@@ -68,11 +68,11 @@
 #include "EntityComponent/EC_AttachedSound.h"
 
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
-//#include "../OgreRenderingModule/EC_OgreMesh.h"
+//#include "../OgreRenderingModule/EC_Mesh.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreMovableTextOverlay.h"
 
@@ -946,15 +946,15 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
             ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
             
-            OgreRenderer::EC_OgreMesh *meshptr = 0;
+            OgreRenderer::EC_Mesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
             if (mesh) 
             {
-                meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+                meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
                 if (!meshptr)
                     continue;
                 if (!meshptr->GetEntity())
@@ -1057,15 +1057,15 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
             ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
-            OgreRenderer::EC_OgreMesh *meshptr = 0;
+            OgreRenderer::EC_Mesh *meshptr = 0;
             OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
             if (mesh)
             {
-                meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+                meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
                 if (!meshptr)
                     continue;
                 if (!meshptr->GetEntity())
@@ -1253,15 +1253,15 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
-        ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
         ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
 
-        OgreRenderer::EC_OgreMesh *meshptr = 0;
+        OgreRenderer::EC_Mesh *meshptr = 0;
         OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
 
         if (mesh)
         {
-            meshptr = checked_static_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
             if (!meshptr)
                 Py_RETURN_NONE;
             if (!meshptr->GetEntity())
@@ -1431,19 +1431,19 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
     QStringList defaultcomponents;
     defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     //defaultcomponents.append(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-    defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
     //defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
         
     Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
 
     ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
     if (placeable)
     {
         OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
         if (prio != 0)
             ogrepos.SetSelectPriority(prio);
-        OgreRenderer::EC_OgreMesh &ogremesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+        OgreRenderer::EC_Mesh &ogremesh = *checked_static_cast<OgreRenderer::EC_Mesh*>(component_meshptr.get());
         ogremesh.SetPlaceable(placeable);
         ogremesh.SetMesh(meshname, true);
         scene->EmitEntityCreated(entity);
@@ -1976,7 +1976,7 @@ namespace PythonScript
 
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
-            PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
+            PythonQt::self()->registerClass(&OgreRenderer::EC_Mesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);

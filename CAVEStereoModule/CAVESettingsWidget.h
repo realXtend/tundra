@@ -24,20 +24,20 @@ namespace CAVEStereo
     signals:
         void ToggleCAVE(bool);
         void NewCAVEViewRequested(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
-		void GetCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
-		void ModifyCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
-		void RemoveCAVEView(const QString& name);
+        void GetCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
+        void ModifyCAVEViewProjParams(const QString& name, Ogre::Vector3 &tl, Ogre::Vector3 &bl, Ogre::Vector3 &br, Ogre::Vector3 &eye);
+        void RemoveCAVEView(const QString& name);
 
     public slots:
         void CAVEButtonToggled(bool v);
         void AddNewCAVEView();
         void AddNewCAVEViewAdvanced();
-		void BNAVE();
-		void VCAVE();
-		void MiniCAVE();
-		void AddViewToUi(const QString& name);
-		void ModifyViewPressed(QString name);
-		void DeleteViewPressed(QString name);
+        void BNAVE();
+        void VCAVE();
+        void MiniCAVE();
+        void AddViewToUi(const QString& name);
+        void ModifyViewPressed(QString name);
+        void DeleteViewPressed(QString name);
 
     private:
         QString GetNextName();
@@ -46,8 +46,8 @@ namespace CAVEStereo
         CAVEViewSettingsAdvanced settings_dialog_advanced_;
         int next_view_num_;
         QString view_prefix_;
-		QSignalMapper modmapper_;
-		QSignalMapper remmapper_;
+        QSignalMapper modmapper_;
+        QSignalMapper remmapper_;
 
     };
 

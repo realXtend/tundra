@@ -3,7 +3,7 @@
  *
  *  @file   EC_Ruler.cpp
  *  @brief  EC_Ruler enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -15,7 +15,7 @@
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 #include "RexUUID.h"

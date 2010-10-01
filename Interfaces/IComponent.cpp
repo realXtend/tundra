@@ -28,7 +28,7 @@ IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
     change_(AttributeChange::None),
-    network_sync_(true)
+    network_sync_(rhs.network_sync_)
 {
 }
 
@@ -69,10 +69,10 @@ void IComponent::SetNetworkSyncEnabled(bool enabled)
     network_sync_ = enabled;
 }
 
-IAttribute* IComponent::GetAttribute(const std::string &name) const
+IAttribute* IComponent::GetAttribute(QString name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)
-        if(attributes_[i]->GetNameString() == name)
+        if(attributes_[i]->GetNameString() == name.toStdString())
             return attributes_[i];
     return 0;
 }

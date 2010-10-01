@@ -15,7 +15,7 @@
 #include "EC_OgreCamera.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 
 #include "InputEvents.h"
 #include "InputServiceInterface.h"
@@ -264,7 +264,7 @@ namespace RexLogic
                     bool fallback = true;
 
                     // Try to use head bone from target entity to get the first person camera position
-                    OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                    OgreRenderer::EC_Mesh *mesh = target->GetComponent<OgreRenderer::EC_Mesh>().get();
                     EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
                     if (mesh && appearance)
                     {

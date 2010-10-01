@@ -14,7 +14,7 @@
 #include "Environment/Primitive.h"
 
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreAnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
@@ -73,7 +73,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -114,7 +114,7 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -123,8 +123,13 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(EC_NetworkPosition::TypeNameStatic());
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
-    // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components); 
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components);
+
+    // Now switch networksync off from the placeable, before we do any damage
+    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    if (placeable)
+        placeable->SetNetworkSyncEnabled(false);
+
     return entity;
 }
 
@@ -274,8 +279,9 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-            scene->EmitEntityCreated(entity, AttributeChange::Network);
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            if (scene)
+                scene->EmitEntityCreated(entity, AttributeChange::Network);
         }
     }
 
@@ -397,10 +403,10 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
     if (!anim)
         return false;
     // Attach the mesh entity to animationcontroller, if not yet attached
-    ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
     if (!mesh)
         return false;
-    OgreRenderer::EC_OgreMesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+    OgreRenderer::EC_Mesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
     if (anim->GetMeshEntity() != ogre_mesh)
         anim->SetMeshEntity(ogre_mesh);
     
@@ -784,7 +790,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return false;
 
@@ -854,8 +860,8 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     return false;
 }
 
-///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_OgreMesh component.
-/// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_OgreMesh in question.
+///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_Mesh component.
+/// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_Mesh in question.
 void Primitive::HandleDrawType(entity_id_t entityid)
 {
     ///\todo Make this only discard mesh resource request tags.
@@ -875,10 +881,12 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
         if (!meshptr)
             return;
-        OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
+        OgreRenderer::EC_Mesh& mesh = *(dynamic_cast<OgreRenderer::EC_Mesh*>(meshptr.get()));
+        // Make sure network sync is off
+        mesh.SetNetworkSyncEnabled(false);
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
@@ -931,7 +939,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         // Remove mesh component if exists
-        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
@@ -1079,7 +1087,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
     if (!entity) 
         return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();                    
-    OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
     if (!meshptr)
         return;
         
@@ -1163,10 +1171,10 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
         if (anim)
         {
             // Attach the mesh entity to animationcontroller, if not yet attached
-            ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
             if (!mesh)
                 return;
-            OgreRenderer::EC_OgreMesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            OgreRenderer::EC_Mesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
             if (anim->GetMeshEntity() != ogre_mesh)
                 anim->SetMeshEntity(ogre_mesh);
             
@@ -1349,7 +1357,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     if (!entity) return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
-    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
     if (!mesh) return;
 
     // Use optionally skeleton if it's used and we already have the resource
@@ -1455,7 +1463,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         if (!meshptr) return;
         // If don't have the actual mesh entity yet, no use trying to set texture
         if (!meshptr->GetEntity()) return;
@@ -1516,7 +1524,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     // Handle material ready for mesh
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         if (meshptr) 
         {
             // If don't have the actual mesh entity yet, no use trying to set the material
@@ -1585,7 +1593,7 @@ void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
         return;
             
     // Handle scale mesh to prim-setting
-    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
     if (mesh)
     {
         Vector3df adjust_scale(1.0, 1.0, 1.0);

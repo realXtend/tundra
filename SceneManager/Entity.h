@@ -182,8 +182,11 @@ namespace Scene
         //! Returns scene
         SceneManager* GetScene() const { return scene_; }
 
-        //! Returns pointer to the first attribute with spesific name.
-        /*! \param T Typename/class of the attribute.
+        //! Reset change status of all components
+        void ResetChange();
+
+        /*! Returns pointer to the first attribute with spesific name.
+            \param T Typename/class of the attribute.
             \param name Name of the attribute.
             \return Pointer to the attribute.
             \note Always remember to check for null pointer.
