@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneInteract.h
- *  @brief  
+ *  @brief  Transforms generic mouse and keyboard input events to
+*           input-related Entity Action for scene entities.
  */
 
 #include "ForwardDefines.h"
@@ -12,8 +13,12 @@
 #ifndef incl_RexLogicModule_SceneInteract_h
 #define incl_RexLogicModule_SceneInteract_h
 
-///
-/**
+/// Transforms generic mouse and keyboard input events to input-related Entity Action for scene entities.
+/** Peforms raycast each frame and if entity is hit, performs the following actions on it:
+    -"MouseHoverIn"
+    -"MouseHover"
+    -"MouseHoverOut"
+    -"MousePress"
 */
 class SceneInteract : public QObject
 {
@@ -29,6 +34,12 @@ public:
     /// Destructor.
     ~SceneInteract() {}
 
+signals:
+    /// Emitted when scene was clicked and raycast hit an entity.
+    /** @param entity Hit entity.
+    */
+    void EntityClicked(Scene::Entity *entity);
+
 private:
     /// Peforms raycast to last known mouse cursor position.
     void Raycast();
@@ -39,7 +50,7 @@ private:
     /// Input context.
     InputContextPtr input_;
 
-    /// Renderer pointre.
+    /// Renderer pointer.
     Foundation::RendererWeakPtr renderer_;
 
     /// Last known mouse cursor's x position.

@@ -60,10 +60,6 @@ public:
     //! Sets parent entity for this component.
     void SetParentEntity(Scene::Entity* entity);
 
-    //! Returns parent entity of this component.
-    //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
-    Scene::Entity* GetParentEntity() const;
-
     //! Sets network sync enabled/disabled. By default on.
     void SetNetworkSyncEnabled(bool enabled);
 
@@ -121,25 +117,25 @@ public:
     /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
-    virtual void SerializeToBinary(DataSerializer& dest) const;
+    virtual void SerializeToBinary(kNet::DataSerializer& dest) const;
 
     //! Deserialize attributes from binary
     /*! Note: does not include syncmode, typename or name. These are left for higher-level logic, and
         it depends on the situation if they are needed or not
      */
-    virtual void DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change);
+    virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
     //! Serialize attributes to deltaencoded binary
     /*! Before an attribute, there is 1 bit that tells whether the attribute changed or not.
         Requires a previous full state (from SerializeToBinary) to compare with
         \return true if at least 1 attribute changed, false if no data produced
      */
-    virtual bool SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const;
+    virtual bool SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const;
     
     //! Deserialize attributes from deltaencoded binary
     /* \return true if at least 1 attribute changed
      */
-    virtual bool DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change);
+    virtual bool DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
     /** Handles an event. Override in your own module if you want to receive events. Do not call.
         @param category_id Category id of the event
@@ -155,6 +151,10 @@ public slots:
     /*! Note: call this when you're satisfied & done with your current modifications
      */
     void ComponentChanged(AttributeChange::Type change);
+
+    //! Returns parent entity of this component.
+    //! \note Returns null if called in the component's constuctor because the parent entity is not yet set there.
+    Scene::Entity* GetParentEntity() const;
 
 signals:
     //! Signal when component data has changed. Often used internally to sync eg. renderer state with EC

@@ -12,8 +12,9 @@
 #include "LoginWidget.h"
 
 #include "UiServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "LoginServiceInterface.h"
+#include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EventManager.h"
 #include "../ProtocolUtilities/NetworkEvents.h"
@@ -70,11 +71,11 @@ void LoginScreenModule::Initialize()
 
 void LoginScreenModule::PostInitialize()
 {
-    input_ = framework_->Input().RegisterInputContext("LoginScreenInput", 101);
+    input_ = framework_->GetInput()->RegisterInputContext("LoginScreenInput", 101);
     input_->SetTakeKeyboardEventsOverQt(true);
     connect(input_.get(), SIGNAL(KeyPressed(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
 
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (ui)
     {
         window_ = new LoginWidget(QMap<QString, QString>());
@@ -120,7 +121,7 @@ void LoginScreenModule::Update(f64 frametime)
 // virtual
 bool LoginScreenModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     
     if (category_id == framework_category_ && event_id == Foundation::NETWORKING_REGISTERED)
     {
@@ -179,10 +180,10 @@ void LoginScreenModule::HandleKeyEvent(KeyEvent *key)
     if (key->eventType != KeyEvent::KeyPressed || key->keyPressCount > 1)
         return;
 
-    const QKeySequence &toggleMenu = framework_->Input().KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
+    const QKeySequence &toggleMenu = framework_->GetInput()->KeyBinding("LoginScreen.ToggleLoginScreen", Qt::Key_Escape);
     if (key->keyCode == toggleMenu)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (connected_ && ui)
             if (!window_->isVisible())
                 ui->ShowWidget(window_);

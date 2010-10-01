@@ -5,6 +5,7 @@
 
 #include "CoreTypes.h"
 
+#include <QMetaType>
 //! A 4-component color value.
 class Color
 {
@@ -36,5 +37,7 @@ public:
         return !(*this == rhs);
     }
 };
+
+Q_DECLARE_METATYPE(Color)
 
 #endif

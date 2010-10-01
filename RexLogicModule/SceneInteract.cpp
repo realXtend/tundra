@@ -2,7 +2,8 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneInteract.cpp
- *  @brief  
+ *  @brief  Transforms generic mouse and keyboard input events to 
+ *          input-related Entity Action for scene entities.
  */
 
 #include "StableHeaders.h"
@@ -10,7 +11,7 @@
 
 #include "Framework.h"
 #include "Frame.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "RenderServiceInterface.h"
 #include "Entity.h"
 
@@ -22,7 +23,7 @@ SceneInteract::SceneInteract(Foundation::Framework *fw) :
 {
     renderer_ = framework_->GetServiceManager()->GetService<Foundation::RenderServiceInterface>(Foundation::Service::ST_Renderer);
 
-    input_ = framework_->Input().RegisterInputContext("SceneInterract", 100);
+    input_ = framework_->GetInput()->RegisterInputContext("SceneInteract", 100);
     connect(input_.get(), SIGNAL(OnKeyEvent(KeyEvent *)), SLOT(HandleKeyEvent(KeyEvent *)));
     connect(input_.get(), SIGNAL(OnMouseEvent(MouseEvent *)), SLOT(HandleMouseEvent(MouseEvent *)));
 
@@ -78,11 +79,24 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
 
     if (lastHitEntity_.lock())
     {
-        if (e->eventType == MouseEvent::MousePressed)
+        /// @todo handle all mouse events properly
+        switch(e->eventType)
+        {
+        case  MouseEvent::MouseMove:
+            break;
+        case  MouseEvent::MouseScroll:
+            break;
+        case  MouseEvent::MousePressed:
             lastHitEntity_.lock()->Exec("MousePress");
-
-        // handle all mouse events
-        //...
+            emit EntityClicked(lastHitEntity_.lock().get());
+            break;
+        case  MouseEvent::MouseReleased:
+            break;
+        case  MouseEvent::MouseDoubleClicked:
+            break;
+        default:
+            break;
+        }
     }
 }
 

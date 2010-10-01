@@ -14,8 +14,11 @@
 
 #include <map>
 
+namespace kNet
+{
 class DataSerializer;
 class DataDeserializer;
+}
 
 class IComponent;
 
@@ -123,15 +126,15 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change) = 0;
 
     //! Write attribute to binary for binary serialization
-    virtual void ToBinary(DataSerializer& dest) const = 0;
+    virtual void ToBinary(kNet::DataSerializer& dest) const = 0;
     
     //! Read attribute from binary for binary deserialization
-    virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change) = 0;
+    virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change) = 0;
 
     //! Compare current value of attribute to binary deserialized data
     /*! \return true if different (deltaserialization needed)
      */
-    virtual bool CompareBinary(DataDeserializer& source) const = 0;
+    virtual bool CompareBinary(kNet::DataDeserializer& source) const = 0;
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
@@ -214,13 +217,13 @@ public:
     virtual void FromString(const std::string& str, AttributeChange::Type change);
 
     //! IAttribute override.
-    virtual void ToBinary(DataSerializer& dest) const;
+    virtual void ToBinary(kNet::DataSerializer& dest) const;
 
     //! IAttribute override.
-    virtual void FromBinary(DataDeserializer& source, AttributeChange::Type change);
+    virtual void FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
     //! IAttribute override
-    virtual bool CompareBinary(DataDeserializer& source) const;
+    virtual bool CompareBinary(kNet::DataDeserializer& source) const;
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;

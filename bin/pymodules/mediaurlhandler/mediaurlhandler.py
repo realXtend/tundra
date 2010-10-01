@@ -54,8 +54,9 @@ class MediaurlView:
         return self.__url
 
     def mouse_clicked(self):
-        if not self.__media_player_service_used:
-            loadurlhandler.loadurl(self.__url)
+        #if not self.__media_player_service_used:
+        print "clicked:", self.__url
+        loadurlhandler.loadurl(self.__url)
         
     def mouse_hover_in(self):
         pass
@@ -161,13 +162,13 @@ class MediaURLHandler(Component):
                 else:
                     r.applyUICanvasToSubmeshes(entid, submeshes, mediaurlview.playback_widget, mediaurlview.refreshrate)
                 # Get entity for id and hook to Touchable signals
-                entity = r.getEntity(entid)
+                entity = naali.getEntity(entid)
                 self.connect_touchable(mediaurlview, entity)
                 
     def connect_touchable(self, mediaurlview, entity):
         if mediaurlview == None or entity == None:
             return
-        entid = entity.id
+        entid = entity.Id
         try:
             mediaurlview.entid_clicked_connected.index(entid) # already hooked up this entity
             return

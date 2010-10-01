@@ -8,7 +8,7 @@
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Sound")
@@ -42,8 +42,8 @@ void EC_Sound::AttributeUpdated(IAttribute *attribute)
 {
     if(attribute->GetNameString() == soundId.GetNameString())
     {
-        Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
-        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get().toStdString())
+        ISoundService *soundService = framework_->GetService<ISoundService>();
+        if(soundService && soundService->GetSoundName(sound_id_) != soundId.Get())
             StopSound();
     }
     else if(attribute->GetNameString() == triggerSound.GetNameString())
@@ -71,34 +71,35 @@ void EC_Sound::PlaySound()
     triggerSound.Set(false, AttributeChange::LocalOnly);
     ComponentChanged(AttributeChange::LocalOnly);
 
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->Audio();
     if(!soundService)
     {
-        // log warning
+        LogWarning("Failed to get sound service from the framework.");
         return;
     }
 
+    // If previous sound is still playing stop it before we apply a new sound.
     if(sound_id_)
         StopSound();
 
     OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
     if(placeable)
     {
-        sound_id_ = soundService->PlaySound3D(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Triggered, false, placeable->GetPosition());
+        sound_id_ = soundService->PlaySound3D(soundId.Get(), ISoundService::Triggered, false, placeable->GetPosition());
         soundService->SetGain(sound_id_, soundGain.Get());
         soundService->SetLooped(sound_id_, loopSound.Get());
         soundService->SetRange(sound_id_, soundInnerRadius.Get(), soundOuterRadius.Get(), 2.0f);
     }
     else // If entity isn't holding placeable component treat sound as ambient sound.
     {
-        sound_id_ = soundService->PlaySound(soundId.Get().toStdString(), Foundation::SoundServiceInterface::Ambient);
+        sound_id_ = soundService->PlaySound(soundId.Get(), ISoundService::Ambient);
         soundService->SetGain(sound_id_, soundGain.Get());
     }
 }
 
 void EC_Sound::StopSound()
 {
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->GetService<ISoundService>();
     if (soundService)
         soundService->StopSound(sound_id_);
 
@@ -107,10 +108,10 @@ void EC_Sound::StopSound()
 
 void EC_Sound::UpdateSoundSettings()
 {
-    Foundation::SoundServiceInterface *soundService = framework_->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundService = framework_->Audio();
     if(!soundService || !sound_id_)
     {
-        // log warning
+        LogWarning("Cannot update the sound settings cause sound service is not intialized or a sound wasn't on active state.");
         return;
     }
 
@@ -123,13 +124,13 @@ void EC_Sound::UpdateSignals()
 {
     if (!GetParentEntity())
     {
-        // log warning
+        LogError("Couldn't update singals cause component dont have parent entity setted.");
         return;
     }
     Scene::SceneManager *scene = GetParentEntity()->GetScene();
     if(!scene)
     {
-        // log warning
+        LogError("Fail to update signals cause parent entity's scene is null.");
         return;
     }
 

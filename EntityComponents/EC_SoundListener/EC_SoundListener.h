@@ -13,18 +13,16 @@
 #include "IComponent.h"
 #include "Declare_EC.h"
 
-namespace Foundation
-{
-    class SoundServiceInterface;
-}
+
+class ISoundService;
 
 namespace OgreRenderer
 {
     class EC_OgrePlaceable;
 }
 
+/// Entity-component which provides sound listener position for in-world 3D audio.
 /**
-
 <table class="header">
 <tr>
 <td>
@@ -35,7 +33,11 @@ Updates parent entity's placeable component's position to the sound service each
 
 Registered by RexLogic::RexLogicModule.
 
-<b>No Attributes</b>.
+<b>Attributes</b>.
+<ul>
+<li>bool: active
+<div>Is this listener active or not.</div>
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -44,7 +46,7 @@ Registered by RexLogic::RexLogicModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"Active": Make this sound listener active and put other listeners to inactive state.
 </ul>
 </td>
 </tr>
@@ -53,13 +55,7 @@ Does not emit any actions.
 
 <b>Depends on OgrePlaceable.</b>
 </table>
-
 */
-
-/** Entity-component which provides sound listener position for in-world 3D audio.
- *  Updates parent entity's placeable component's position to the sound service each frame.
- *  @note   Only one entity can have active sound listener at a time.
- */
 class EC_SoundListener : public IComponent
 {
     DECLARE_EC(EC_SoundListener);
@@ -69,15 +65,8 @@ public:
     /// Destructor. Detaches placeable component from this entity.
     ~EC_SoundListener();
 
-    /// Is this listener active.
-    bool IsActive() const { return active_; }
-
-    /** Sets listener active or not.
-     *  If this listener component is set active it iterates the scene and
-     *  disables all the other sound listeners.
-     *  @param active activeness.
-     */
-    void SetActive(bool active);
+    Q_PROPERTY(bool active READ getactive WRITE setactive);
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, active);
 
 private slots:
     /// Retrieves placeable component when parent entity is set.
@@ -87,19 +76,26 @@ private slots:
     void Update();
 
 private:
-    /** Constructor.
-     *  @param module Declaring module.
-     */
+    /// Constructor.
+    /** @param module Declaring module.
+    */
     explicit EC_SoundListener(IModule *module);
 
     /// Parent entity's placeable component.
     boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;
 
     /// Sound service.
-    boost::weak_ptr<Foundation::SoundServiceInterface> soundService_;
+    boost::weak_ptr<ISoundService> soundService_;
 
-    /// Is this listener active.
-    bool active_;
+private slots:
+    /// Called when component changes.
+    /** If this listener component is set active it iterates the scene and
+        disables all the other sound listeners.
+    */
+    void OnActiveChanged();
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif

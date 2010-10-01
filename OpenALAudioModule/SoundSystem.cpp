@@ -45,9 +45,9 @@ namespace OpenALAudio
         
         // Set default master gains for sound types
         master_gain_ = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "master_gain", 1.0f);
-        sound_master_gain_[Foundation::SoundServiceInterface::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0f);
-        sound_master_gain_[Foundation::SoundServiceInterface::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0f);
-        sound_master_gain_[Foundation::SoundServiceInterface::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
+        sound_master_gain_[ISoundService::Triggered] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "triggered_sound_gain", 1.0f);
+        sound_master_gain_[ISoundService::Ambient] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "ambient_sound_gain", 1.0f);
+        sound_master_gain_[ISoundService::Voice] = framework_->GetDefaultConfig().DeclareSetting("SoundSystem", "voice_sound_gain", 1.0f);
     }
 
     SoundSystem::~SoundSystem()
@@ -55,28 +55,11 @@ namespace OpenALAudio
         Uninitialize();
 
         framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "master_gain", master_gain_);
-        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Triggered]);
-        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Ambient]);
-        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", sound_master_gain_[Foundation::SoundServiceInterface::Voice]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "triggered_sound_gain", sound_master_gain_[ISoundService::Triggered]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "ambient_sound_gain", sound_master_gain_[ISoundService::Ambient]);
+        framework_->GetDefaultConfig().SetSetting<float>("SoundSystem", "voice_sound_gain", sound_master_gain_[ISoundService::Voice]);
     }
 
-    StringVector SoundSystem::GetPlaybackDevices()
-    {
-        StringVector names;
-        
-        const char* device_names = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
-        if (device_names)
-        {
-            while (*device_names)
-            {
-                names.push_back(std::string(device_names));
-                device_names += strlen(device_names) + 1;
-            }
-        }
-        
-        return names;
-    }
-    
     bool SoundSystem::Initialize(const std::string& name)
     {
         if (initialized_)
@@ -106,6 +89,23 @@ namespace OpenALAudio
         return true;
     }
 
+    QStringList SoundSystem::GetPlaybackDevices()
+    {
+        QStringList names;
+        
+        const char* device_names = alcGetString(NULL, ALC_DEVICE_SPECIFIER);
+        if (device_names)
+        {
+            while (*device_names)
+            {
+                names.push_back(QString(device_names));
+                device_names += strlen(device_names) + 1;
+            }
+        }
+        
+        return names;
+    }
+
     void SoundSystem::Uninitialize()
     {
         StopRecording();
@@ -128,11 +128,11 @@ namespace OpenALAudio
         initialized_ = false;
     }
 
-    Foundation::SoundServiceInterface::SoundState SoundSystem::GetSoundState(sound_id_t id) const
+    ISoundService::SoundState SoundSystem::GetSoundState(sound_id_t id) const
     {
         SoundChannelMap::const_iterator i = channels_.find(id);
         if (i == channels_.end())
-            return Foundation::SoundServiceInterface::Stopped;
+            return ISoundService::Stopped;
         return i->second->GetState();
     }
     
@@ -143,7 +143,7 @@ namespace OpenALAudio
         SoundChannelMap::const_iterator i = channels_.begin();
         while (i != channels_.end())
         {
-            if (i->second->GetState() != Foundation::SoundServiceInterface::Stopped)
+            if (i->second->GetState() != ISoundService::Stopped)
                 ret.push_back(i->first);
             ++i;
         }
@@ -151,21 +151,21 @@ namespace OpenALAudio
         return ret;
     }
     
-    const std::string& SoundSystem::GetSoundName(sound_id_t id) const
+    QString SoundSystem::GetSoundName(sound_id_t id) const
     {
-        static std::string empty;
+        static QString empty;
         
         SoundChannelMap::const_iterator i = channels_.find(id);
         if (i == channels_.end())
             return empty;
-        return i->second->GetSoundName();
+        return QString::fromStdString(i->second->GetSoundName());
     }    
 
-    Foundation::SoundServiceInterface::SoundType SoundSystem::GetSoundType(sound_id_t id) const
+    ISoundService::SoundType SoundSystem::GetSoundType(sound_id_t id) const
     {
         SoundChannelMap::const_iterator i = channels_.find(id);
         if (i == channels_.end())
-            return Foundation::SoundServiceInterface::Triggered;
+            return ISoundService::Triggered;
         return i->second->GetSoundType();
     }    
     
@@ -190,7 +190,7 @@ namespace OpenALAudio
         while (i != channels_.end())
         {
             i->second->Update(listener_position_);
-            if (i->second->GetState() == Foundation::SoundServiceInterface::Stopped)
+            if (i->second->GetState() == ISoundService::Stopped)
             {
                 channels_to_delete.push_back(i);
             }
@@ -216,12 +216,12 @@ namespace OpenALAudio
         listener_orientation_ = orientation;
     }
       
-    sound_id_t SoundSystem::PlaySound(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound(const QString& name, ISoundService::SoundType type, bool local, sound_id_t channel)
     {
         if (!initialized_)
             return 0;
             
-        SoundPtr sound = GetSound(name, local);
+        SoundPtr sound = GetSound(name.toStdString(), local);
         if (!sound)
             return 0;
 
@@ -239,12 +239,12 @@ namespace OpenALAudio
         return i->first;
     }
     
-    sound_id_t SoundSystem::PlaySound3D(const std::string& name, Foundation::SoundServiceInterface::SoundType type, bool local, Vector3df position, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySound3D(const QString& name, ISoundService::SoundType type, bool local, Vector3df position, sound_id_t channel)
     {
         if (!initialized_)
             return 0;
             
-        SoundPtr sound = GetSound(name, local);
+        SoundPtr sound = GetSound(name.toStdString(), local);
         if (!sound)
             return 0;
                 
@@ -263,7 +263,7 @@ namespace OpenALAudio
         return i->first;
     }
 
-    sound_id_t SoundSystem::PlaySoundBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySoundBuffer(const ISoundService::SoundBuffer& buffer, ISoundService::SoundType type, sound_id_t channel)
     {
         if (!initialized_)
             return 0;
@@ -282,7 +282,7 @@ namespace OpenALAudio
         return i->first;
     }
     
-    sound_id_t SoundSystem::PlaySoundBuffer3D(const Foundation::SoundServiceInterface::SoundBuffer& buffer, Foundation::SoundServiceInterface::SoundType type, Vector3df position, sound_id_t channel)
+    sound_id_t SoundSystem::PlaySoundBuffer3D(const ISoundService::SoundBuffer& buffer, ISoundService::SoundType type, Vector3df position, sound_id_t channel)
     {
         if (!initialized_)
             return 0;
@@ -319,7 +319,19 @@ namespace OpenALAudio
             
         i->second->SetPitch(pitch);
     }
-    
+
+    float SoundSystem::GetPitch(sound_id_t id) const
+    {
+        SoundChannelMap::const_iterator i = channels_.find(id);
+        if (i == channels_.end())
+        {
+            OpenALAudioModule::LogWarning("Fail to find sound channel for id:" + id);
+            return -1.0f;
+        }
+
+        return i->second->GetPitch();
+    }
+
     void SoundSystem::SetGain(sound_id_t id, float gain)
     {
         SoundChannelMap::iterator i = channels_.find(id);
@@ -327,6 +339,18 @@ namespace OpenALAudio
             return;
         
         i->second->SetGain(gain);
+    }
+
+    float SoundSystem::GetGain(sound_id_t id) const
+    {
+        SoundChannelMap::const_iterator i = channels_.find(id);
+        if (i == channels_.end())
+        {
+            OpenALAudioModule::LogWarning("Fail to find sound channel for id:" + id);
+            return -1.0f;
+        }
+
+        return i->second->GetGain();
     }
     
     void SoundSystem::SetLooped(sound_id_t id, bool looped)
@@ -363,6 +387,22 @@ namespace OpenALAudio
             return;
         
         i->second->SetRange(inner_radius, outer_radius, rolloff);
+    }
+
+    request_tag_t SoundSystem::RequestSoundResource(const QString& assetid)
+    {
+        // Loading of sound from assetdata, assumed to be vorbis compressed stream
+        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
+        if (asset_service)
+        {
+            request_tag_t tag = asset_service->RequestAsset(assetid.toStdString(), RexTypes::ASSETTYPENAME_SOUNDVORBIS);
+            if (tag)
+                sound_resource_requests_[tag] = assetid.toStdString();
+            
+            return tag;
+        }
+        
+        return 0;
     }
 
     sound_id_t SoundSystem::GetNextSoundChannelID()
@@ -528,7 +568,7 @@ namespace OpenALAudio
             {
                 // Note: the decoded sound resource is not stored anywhere, just sent in the event wrapped to a smart pointer.
                 // It's up to the caller to do whatever wanted with it.
-                Foundation::SoundResource* res = new Foundation::SoundResource(result->name_, result->buffer_);
+                SoundResource* res = new SoundResource(result->name_, result->buffer_);
                 Foundation::ResourcePtr res_ptr(res);
                 
                 Resource::Events::ResourceReady event_data(result->name_, res_ptr, tag);
@@ -603,13 +643,13 @@ namespace OpenALAudio
         return master_gain_;
     }
     
-    void SoundSystem::SetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type, float master_gain)
+    void SoundSystem::SetSoundMasterGain(ISoundService::SoundType type, float master_gain)
     {
         sound_master_gain_[type] = master_gain;
         ApplyMasterGain();
     }
     
-    float SoundSystem::GetSoundMasterGain(Foundation::SoundServiceInterface::SoundType type)
+    float SoundSystem::GetSoundMasterGain(ISoundService::SoundType type)
     {
         return sound_master_gain_[type];
     }
@@ -624,16 +664,16 @@ namespace OpenALAudio
         }
     }
     
-    StringVector SoundSystem::GetRecordingDevices()
+    QStringList SoundSystem::GetRecordingDevices()
     {
-        StringVector names;
+        QStringList names;
         
         const char* capture_device_names = alcGetString(NULL, ALC_CAPTURE_DEVICE_SPECIFIER);
         if (capture_device_names)
         {
             while (*capture_device_names)
             {
-                names.push_back(std::string(capture_device_names));
+                names.push_back(QString(capture_device_names));
                 capture_device_names += strlen(capture_device_names) + 1;
             }
         }
@@ -641,7 +681,7 @@ namespace OpenALAudio
         return names;
     }
     
-    bool SoundSystem::StartRecording(const std::string& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size)
+    bool SoundSystem::StartRecording(const QString& name, uint frequency, bool sixteenbit, bool stereo, uint buffer_size)
     {
         if (!initialized_)
             return false;
@@ -671,20 +711,20 @@ namespace OpenALAudio
                 openal_format = AL_FORMAT_STEREO16;
         }
         
-        if (name.empty())
+        if (name.isEmpty())
             capture_device_ = alcCaptureOpenDevice(NULL, frequency, openal_format, buffer_size / capture_sample_size_);
         else
-            capture_device_ = alcCaptureOpenDevice(name.c_str(), frequency, openal_format, buffer_size / capture_sample_size_);
+            capture_device_ = alcCaptureOpenDevice(name.toStdString().c_str(), frequency, openal_format, buffer_size / capture_sample_size_);
         
         if (!capture_device_)
         {
-            OpenALAudioModule::LogError("Could not open OpenAL recording device " + name);
+            OpenALAudioModule::LogError("Could not open OpenAL recording device " + name.toStdString());
             return false;
         }
         
         alcCaptureStart(capture_device_);
         
-        OpenALAudioModule::LogInfo("Opened OpenAL recording device " + name);
+        OpenALAudioModule::LogInfo("Opened OpenAL recording device " + name.toStdString());
         return true;
     }
     
@@ -721,21 +761,5 @@ namespace OpenALAudio
         
         alcCaptureSamples(capture_device_, buffer, samples);
         return samples * capture_sample_size_;
-    }
-    
-    request_tag_t SoundSystem::RequestSoundResource(const std::string& assetid)
-    {
-        // Loading of sound from assetdata, assumed to be vorbis compressed stream
-        boost::shared_ptr<Foundation::AssetServiceInterface> asset_service = framework_->GetServiceManager()->GetService<Foundation::AssetServiceInterface>(Foundation::Service::ST_Asset).lock();
-        if (asset_service)
-        {
-            request_tag_t tag = asset_service->RequestAsset(assetid, RexTypes::ASSETTYPENAME_SOUNDVORBIS);
-            if (tag)
-                sound_resource_requests_[tag] = assetid;
-            
-            return tag;
-        }
-        
-        return 0;
     }
 }

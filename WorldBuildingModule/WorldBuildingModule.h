@@ -6,7 +6,7 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldBuildingModuleApi.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 
 #include <QObject>
 #include <QStringList>

@@ -34,9 +34,9 @@
 #include "EventHandlers/MainPanelHandler.h"
 #include "EntityComponent/EC_AttachedSound.h"
 
-#ifdef EC_FreeData_ENABLED
+//#ifdef EC_FreeData_ENABLED
 #include "EntityComponent/EC_FreeData.h"
-#endif
+//#endif
 #ifdef EC_OpenSimAvatar_ENABLED
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #endif
@@ -61,9 +61,11 @@
 
 #include "RexMovementInput.h"
 #include "Environment/Primitive.h"
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Communications/InWorldChat/Provider.h"
 #include "SceneInteract.h"
+
+#include "Camera/ObjectCameraController.h"
 
 #include "EventManager.h"
 #include "ConfigurationManager.h"
@@ -74,8 +76,8 @@
 #include "ComponentManager.h"
 #include "IEventData.h"
 #include "TextureInterface.h"
-#include "SoundServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "ISoundService.h"
+#include "Input.h"
 #include "SceneManager.h"
 #include "WorldStream.h"
 #include "Renderer.h"
@@ -127,9 +129,7 @@
 #ifdef EC_SoundRuler_ENABLED
 #include "EC_SoundRuler.h"
 #endif
-//#ifdef EC_Name_ENABLED
-#include "EC_Name.h"
-//#endif
+#include <EC_Name.h>
 #ifdef EC_ParticleSystem_ENABLED
 #include "EC_ParticleSystem.h"
 #endif
@@ -158,7 +158,7 @@
 
 #include <boost/make_shared.hpp>
 
-#include <QApplication>
+#include "NaaliApplication.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -189,9 +189,9 @@ void RexLogicModule::Load()
 {
     PROFILE(RexLogicModule_Load);
 
-#ifdef EC_FreeData_ENABLED
+//#ifdef EC_FreeData_ENABLED
     DECLARE_MODULE_EC(EC_FreeData);
-#endif
+//#endif
 
     DECLARE_MODULE_EC(EC_AttachedSound);
 
@@ -269,8 +269,10 @@ void RexLogicModule::Initialize()
     camera_controllable_ = CameraControllablePtr(new CameraControllable(framework_));
     main_panel_handler_ = new MainPanelHandler(this);
     in_world_chat_provider_ = InWorldChatProviderPtr(new InWorldChat::Provider(framework_));
-
+    obj_camera_controller_ = ObjectCameraControllerPtr(new ObjectCameraController(this, camera_controllable_.get()));
+    
     SceneInteract *sceneInteract = new SceneInteract(framework_);
+    QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -291,7 +293,7 @@ void RexLogicModule::Initialize()
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Login, login_service_);
 
     // For getting ether shots upon exit, desconstuctor LogoutAndDeleteWorld() call is too late
-    connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
+    connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), this, SIGNAL(AboutToDeleteWorld()));
 }
 
 // virtual
@@ -306,6 +308,9 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleInputEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InputEventHandler::HandleInputEvent, input_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleInputEvent, obj_camera_controller_, _1, _2));
+    
 
     // Create the input handler that reacts to avatar-related input events and moves the avatar and default camera accordingly.
     avatarInput = boost::make_shared<RexMovementInput>(framework_);
@@ -323,6 +328,8 @@ void RexLogicModule::PostInitialize()
         &CameraControllable::HandleSceneEvent, camera_controllable_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &InWorldChat::Provider::HandleSceneEvent, in_world_chat_provider_.get(), _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleSceneEvent, obj_camera_controller_.get(), _1, _2));
 
     // Resource events
     eventcategoryid = eventMgr->QueryEventCategory("Resource");
@@ -333,6 +340,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Framework");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &FrameworkEventHandler::HandleFrameworkEvent, framework_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleFrameworkEvent, obj_camera_controller_.get(), _1, _2));
 
     // Avatar events
     eventcategoryid = eventMgr->QueryEventCategory("Avatar");
@@ -354,7 +363,7 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkEventHandler::HandleOpenSimNetworkEvent, network_handler_, _1, _2));
-
+    
     RegisterConsoleCommand(Console::CreateCommand("Login", 
         "Login to server. Usage: Login(user=Test User, passwd=test, server=localhost",
         Console::Bind(this, &RexLogicModule::ConsoleLogin)));
@@ -373,6 +382,8 @@ void RexLogicModule::PostInitialize()
         "If add is called and EC already exists for entity, EC's visibility is toggled.",
         Console::Bind(this, &RexLogicModule::ConsoleHighlightTest)));
 #endif
+
+    obj_camera_controller_->PostInitialize();
 }
 
 Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
@@ -448,7 +459,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
     // When connected to Tundra, start from freecam mode for now
     if (tundra_mode)
     {
-        framework_->GetEventManager()->SendEvent("Input", Input::Events::INPUTSTATE_FREECAMERA, 0);
+        framework_->GetEventManager()->SendEvent("Input", InputEvents::INPUTSTATE_FREECAMERA, 0);
         OgreRenderer::EC_OgrePlaceable* placeableptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
         // Initialize viewing dir so that camera isn't upside down
         placeableptr->LookAt(Vector3df(1,0,0));
@@ -552,9 +563,9 @@ void RexLogicModule::Update(f64 frametime)
             send_input_state = false;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
             else
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
         }
         
         // If scene exists, we should be connected and can update these
@@ -630,14 +641,14 @@ void RexLogicModule::SwitchCameraState()
         camera_state_ = CS_Free;
 
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -647,25 +658,14 @@ void RexLogicModule::CameraTripod()
     {
         camera_state_ = CS_Tripod;
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
-}
-
-void RexLogicModule::FocusOnObject(float x, float y, float z)
-{
-    camera_state_ = CS_FocusOnObject;
-    camera_controllable_->SetFocusOnObject(x, y, z);
-}
-
-void RexLogicModule::ResetCameraState()
-{
-    camera_state_ = CS_Follow;
 }
 
 Avatar::AvatarHandlerPtr RexLogicModule::GetAvatarHandler() const
@@ -982,16 +982,16 @@ void RexLogicModule::UpdateSoundListener()
         Scene::EntityPtr camera = GetCameraEntity();
         if (!camera) return;
         EC_SoundListener *listener = camera->GetComponent<EC_SoundListener>().get();
-        if (listener && !listener->IsActive())
-            listener->SetActive(true);
+        if (listener && !listener->active.Get())
+            listener->active.Set(true, AttributeChange::Local);
     }
     else
     {
         Scene::EntityPtr avatar = GetUserAvatarEntity();
         if (!avatar) return;
         EC_SoundListener *listener = avatar->GetComponent<EC_SoundListener>().get();
-        if (listener && !listener->IsActive())
-            listener->SetActive(true);
+        if (listener && !listener->active.Get())
+            listener->active.Set(true, AttributeChange::Local);
     }
 #endif
 }
@@ -1032,7 +1032,7 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
         GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3Df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+        Vector3df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 #endif
@@ -1218,7 +1218,7 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
     event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-    framework_->GetEventManager()->SendEvent(event_category, Input::Events::TOGGLE_FLYMODE, 0);
+    framework_->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 

@@ -19,6 +19,7 @@
 #include "CoreMath.h"
 #include "CoreStringUtils.h"
 
+#include <QMetaType>
 //! 3d vector template class with lots of operators and methods.
 /** The Vector3D class is used in Irrlicht for three main purposes: 
 	1) As a direction vector (most of the methods assume this).
@@ -412,8 +413,8 @@ public:
 
 //! Typedef for a f32 3d vector.
 typedef Vector3D<f32> Vector3df;
-typedef Vector3df Vector3Df;
-//typedef Vector3df Vector3;
+
+Q_DECLARE_METATYPE(Vector3df)
 
 //! Typedef for an integer 3d vector.
 typedef Vector3D<s32> Vector3di;

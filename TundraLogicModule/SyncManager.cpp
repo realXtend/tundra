@@ -20,11 +20,13 @@
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
 
-#include <clb/Network/Network.h>
+#include "kNet.h"
 
 #include <cstring>
 
 #include "MemoryLeakCheck.h"
+
+using namespace kNet;
 
 namespace TundraLogic
 {
@@ -95,7 +97,7 @@ void SyncManager::HandleKristalliEvent(event_id_t event_id, IEventData* data)
     }
 }
 
-void SyncManager::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
+void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     switch (id)
     {
@@ -372,13 +374,13 @@ void SyncManager::Update(f64 frametime)
     else
     {
         // If we are client, process just the server sync state
-        MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
+        kNet::MessageConnection* connection = owner_->GetKristalliModule()->GetMessageConnection();
         if (connection)
             ProcessSyncState(connection, &server_syncstate_);
     }
 }
 
-void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncState* state)
+void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state)
 {
     PROFILE(SyncManager_ProcessSyncState);
     
@@ -553,7 +555,7 @@ void SyncManager::ProcessSyncState(MessageConnection* destination, SceneSyncStat
         TundraLogicModule::LogDebug("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
-bool SyncManager::ValidateAction(MessageConnection* source, unsigned messageID, entity_id_t entityID)
+bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
 {
     if (entityID & Scene::LocalEntity)
     {
@@ -573,7 +575,7 @@ bool SyncManager::ValidateAction(MessageConnection* source, unsigned messageID, 
     return true;
 }
 
-void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg)
+void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -673,7 +675,7 @@ void SyncManager::HandleCreateEntity(MessageConnection* source, const MsgCreateE
         entity->ResetChange();
 }
 
-void SyncManager::HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg)
+void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -703,7 +705,7 @@ void SyncManager::HandleRemoveEntity(MessageConnection* source, const MsgRemoveE
 }
 
 
-void SyncManager::HandleCreateComponents(MessageConnection* source, const MsgCreateComponents& msg)
+void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -788,7 +790,7 @@ void SyncManager::HandleCreateComponents(MessageConnection* source, const MsgCre
     }
 }
 
-void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg)
+void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -875,7 +877,7 @@ void SyncManager::HandleUpdateComponents(MessageConnection* source, const MsgUpd
     }
 }
 
-void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg)
+void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -921,7 +923,7 @@ void SyncManager::HandleRemoveComponents(MessageConnection* source, const MsgRem
     }
 }
 
-void SyncManager::HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg)
+void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -945,7 +947,7 @@ void SyncManager::HandleEntityIDCollision(MessageConnection* source, const MsgEn
     }
 }
 
-void SyncManager::HandleEntityAction(MessageConnection* source, MsgEntityAction& msg)
+void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -983,7 +985,7 @@ void SyncManager::HandleEntityAction(MessageConnection* source, MsgEntityAction&
     }
 }
 
-SceneSyncState* SyncManager::GetSceneSyncState(MessageConnection* connection)
+SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)
 {
     if (!owner_->IsServer())
         return &server_syncstate_;

@@ -12,7 +12,7 @@
 #include <CommunicationService.h>
 #include "ServiceManager.h"
 #include "VoiceSessionParticipant.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "Contact.h"
 #include "CoreException.h"
 
@@ -141,7 +141,7 @@ namespace TelepathyIM
         Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
         if (!service_manager.get())
             return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;   
 
@@ -703,7 +703,7 @@ namespace TelepathyIM
         Foundation::ServiceManagerPtr service_manager = framework->GetServiceManager();
         if (!service_manager.get())
             return;
-        boost::shared_ptr<Foundation::SoundServiceInterface> soundsystem = service_manager->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock();
+        boost::shared_ptr<ISoundService> soundsystem = service_manager->GetService<ISoundService>(Foundation::Service::ST_Sound).lock();
         if (!soundsystem.get())
             return;     
         if (!farsight_channel_)
@@ -718,7 +718,7 @@ namespace TelepathyIM
         int sample_width = farsight_channel_->GetSampleWidth();
         int sample_rate = farsight_channel_->GetSampleRate();
 
-        Foundation::SoundServiceInterface::SoundBuffer sound_buffer;
+        ISoundService::SoundBuffer sound_buffer;
         sound_buffer.data_.resize(size);
         memcpy(&sound_buffer.data_[0], audio_buffer, size);
         sound_buffer.frequency_ = sample_rate;
@@ -730,9 +730,9 @@ namespace TelepathyIM
         if (size > 0 && sample_rate != -1 && sample_width != -1 && (channel_count == 1 || channel_count == 2) )
         {
             if (spatial_audio_playback_)
-                audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_position_, audio_playback_channel_);
+                audio_playback_channel_ = soundsystem->PlaySoundBuffer3D(sound_buffer,  ISoundService::Voice, audio_playback_position_, audio_playback_channel_);
             else
-                audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  Foundation::SoundServiceInterface::Voice, audio_playback_channel_);
+                audio_playback_channel_ = soundsystem->PlaySoundBuffer(sound_buffer,  ISoundService::Voice, audio_playback_channel_);
         }
     }
 

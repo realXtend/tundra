@@ -72,7 +72,7 @@ namespace Foundation
 
         /// Returns the backbuffer image that contains the UI layer of the application screen.
         /// Used to perform alpha-keying based input.
-        virtual QImage &GetBackBuffer() = 0;
+//        virtual QImage &GetBackBuffer() = 0;
 
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;
@@ -108,7 +108,7 @@ namespace Foundation
 
         //! Render current main window with focus on the avatar
         //! @todo make this focus non hard coded but as param
-        virtual QPixmap RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation) = 0;
+        virtual QPixmap RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation) = 0;
 
         //! Gets a renderer-specific resource
         /*! Does not automatically queue a download request

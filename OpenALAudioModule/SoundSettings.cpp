@@ -8,7 +8,7 @@
 
 #include "Framework.h"
 #include "ServiceManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "UiServiceInterface.h"
 
 #include <QUiLoader>
@@ -23,7 +23,7 @@ namespace OpenALAudio
         framework_(framework),
         settings_widget_(0)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 
@@ -42,7 +42,7 @@ namespace OpenALAudio
 
         ui->AddSettingsWidget(settings_widget_, "Sound");
 
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (!soundsystem)
             return;
         QAbstractSlider* slider = settings_widget_->findChild<QAbstractSlider*>("slider_master");
@@ -54,19 +54,19 @@ namespace OpenALAudio
         slider = settings_widget_->findChild<QAbstractSlider*>("slider_triggered");
         if (slider)
         {
-            slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Triggered) * 100);
+            slider->setValue(soundsystem->GetSoundMasterGain(ISoundService::Triggered) * 100);
             connect(slider, SIGNAL(valueChanged(int)), this, SLOT(TriggeredGainChanged(int)));
         }
         slider = settings_widget_->findChild<QAbstractSlider*>("slider_ambient");
         if (slider)
         {
-            slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Ambient) * 100);
+            slider->setValue(soundsystem->GetSoundMasterGain(ISoundService::Ambient) * 100);
             connect(slider, SIGNAL(valueChanged(int)), this, SLOT(AmbientGainChanged(int)));
         }
         slider = settings_widget_->findChild<QAbstractSlider*>("slider_voice");
         if (slider)
         {
-            slider->setValue(soundsystem->GetSoundMasterGain(Foundation::SoundServiceInterface::Voice) * 100);
+            slider->setValue(soundsystem->GetSoundMasterGain(ISoundService::Voice) * 100);
             connect(slider, SIGNAL(valueChanged(int)), this, SLOT(VoiceGainChanged(int)));
         }
     }
@@ -78,29 +78,29 @@ namespace OpenALAudio
 
     void SoundSettings::MasterGainChanged(int value)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (soundsystem)
             soundsystem->SetMasterGain(value / 100.0);
     }
 
     void SoundSettings::TriggeredGainChanged(int value)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (soundsystem)
-            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Triggered, value / 100.0);
+            soundsystem->SetSoundMasterGain(ISoundService::Triggered, value / 100.0);
     }
 
     void SoundSettings::AmbientGainChanged(int value)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (soundsystem)
-            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Ambient, value / 100.0);
+            soundsystem->SetSoundMasterGain(ISoundService::Ambient, value / 100.0);
     }
     
     void SoundSettings::VoiceGainChanged(int value)
     {
-        Foundation::SoundServiceInterface *soundsystem = framework_->GetService<Foundation::SoundServiceInterface>();
+        ISoundService *soundsystem = framework_->GetService<ISoundService>();
         if (soundsystem)
-            soundsystem->SetSoundMasterGain(Foundation::SoundServiceInterface::Voice, value / 100.0);
+            soundsystem->SetSoundMasterGain(ISoundService::Voice, value / 100.0);
     }
 }

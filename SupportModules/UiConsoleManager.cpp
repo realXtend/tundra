@@ -35,7 +35,7 @@ namespace Console
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
-        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (ui)
         {
             proxy_widget_ = ui->AddWidgetToScene(console_widget_);
@@ -110,7 +110,7 @@ namespace Console
 
         if (!hooked_to_scenes_)
         {
-            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
             if (ui)
             {
                 QGraphicsScene *scene = ui->GetScene("Inworld");

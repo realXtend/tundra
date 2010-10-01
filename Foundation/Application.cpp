@@ -1,3 +1,5 @@
+#include "StableHeaders.h"
+/*
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -40,3 +42,4 @@ std::string Application::Version()
 Framework *Application::framework_ = 0;
 
 }
+*/

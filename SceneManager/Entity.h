@@ -213,15 +213,15 @@ namespace Scene
             return 0;
         }
 
-        /*! Returns attribute interface pointer to attribute with spesific name.
-            \param name Name of the attribute.
+        //! Returns attribute interface pointer to attribute with spesific name.
+        /*! \param name Name of the attribute.
             \return IAttribute pointer to the attribute.
             \note Always remember to check for null pointer.
         */
         IAttribute *GetAttributeInterface(const std::string &name) const;
 
-        /*! Returns list of attributes with spesific name.
-            \param T Typename/class of the attribute.
+        //! Returns list of attributes with spesific name.
+        /*! \param T Typename/class of the attribute.
             \param name Name of the attribute.
             \return List of attributes, or empty list if no attributes are found.
         */
@@ -238,8 +238,8 @@ namespace Scene
             return ret;
         }
 
-        /*! Returns list of attributes with spesific name.
-            \param name Name of the attribute.
+        //! Returns list of attributes with spesific name.
+        /*! \param name Name of the attribute.
             \return List of attribute interface pointers, or empty list if no attributes are found.
         */
         AttributeVector GetAttributes(const std::string &name) const;
@@ -352,9 +352,8 @@ namespace Scene
         void Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type = EntityAction::Local);
 
     private:
-        /** Validates that the action has receivers. If not, deletes the action and removes it from
-            the registered actions.
-            @param action Action to be validated.
+        /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.
+        /** @param action Action to be validated.
         */
         bool HasReceivers(EntityAction *action);
 

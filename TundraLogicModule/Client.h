@@ -10,9 +10,11 @@ struct MsgLoginReply;
 struct MsgClientJoined;
 struct MsgClientLeft;
 
+namespace kNet
+{
 class MessageConnection;
-
 typedef unsigned long message_id_t;
+}
 
 namespace KristalliProtocol
 {
@@ -57,7 +59,7 @@ public:
     ClientLoginState GetLoginState() { return loginstate_; }
     
     /// Get client message connection from KristalliProtocolModule
-    MessageConnection* GetConnection();
+    kNet::MessageConnection* GetConnection();
     
     /// Get client connection ID (from loginreply message)
     u8 GetConnectionID() { return client_id_; }
@@ -67,19 +69,19 @@ public:
     
 private:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     /// Handle pending login to server
     void CheckLogin();
     
     /// Handle a loginreply message
-    void HandleLoginReply(MessageConnection* source, const MsgLoginReply& msg);
+    void HandleLoginReply(kNet::MessageConnection* source, const MsgLoginReply& msg);
     
     /// Handle a client joined message
-    void HandleClientJoined(MessageConnection* source, const MsgClientJoined& msg);
+    void HandleClientJoined(kNet::MessageConnection* source, const MsgClientJoined& msg);
     
     /// Client: Handle a client left message
-    void HandleClientLeft(MessageConnection* source, const MsgClientLeft& msg);
+    void HandleClientLeft(kNet::MessageConnection* source, const MsgClientLeft& msg);
     
     /// Client's connection/login state
     ClientLoginState loginstate_;

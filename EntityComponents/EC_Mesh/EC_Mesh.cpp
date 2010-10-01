@@ -42,12 +42,20 @@ EC_Mesh::EC_Mesh(IModule *module):
         Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
         node_ = scene_mgr->createSceneNode();
     }
+    else
+    {
+        LogWarning("Renderer has been expired.");
+    }
 
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
+    }
+    else
+    {
+        LogWarning("Event manager was not valid.");
     }
 
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
@@ -58,7 +66,11 @@ EC_Mesh::EC_Mesh(IModule *module):
 EC_Mesh::~EC_Mesh()
 {
     if (renderer_.expired())
+    {
+        LogWarning("Renderer has expired.");
         return;
+    }
+
     OgreRenderer::RendererPtr renderer = renderer_.lock();
     RemoveMesh();
     
@@ -121,6 +133,8 @@ void EC_Mesh::SetMesh(const QString &name)
 
         node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
     }
+    else
+        LogWarning("Couln't change node's transformation, cause attach node was a null.");
 
     // Check if new materials need to be requested.
     if(HasMaterialsChanged())
@@ -153,7 +167,10 @@ void EC_Mesh::SetMesh(const QString &name)
 void EC_Mesh::RemoveMesh()
 {
     if (renderer_.expired() || !entity_)
+    {
+        LogWarning("Couldn't remove mesh cause renderer was expired or entity was null.");
         return;
+    }
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
     DetachEntity();
@@ -165,7 +182,10 @@ void EC_Mesh::RemoveMesh()
 bool EC_Mesh::SetMaterial(uint index, const QString &material_name)
 {
     if(!entity_)
+    {
+        LogWarning("Couldn't set material to mesh cause entity was null.");
         return false;
+    }
 
     if (index >= entity_->getNumSubEntities())
     {
@@ -223,6 +243,7 @@ void EC_Mesh::UpdateSignals()
 
 void EC_Mesh::AttributeUpdated(IAttribute *attribute)
 {
+
     QString attrName = QString::fromStdString(attribute->GetNameString());
     request_tag_t tag = 0;
     if(QString::fromStdString(meshResourceId.GetNameString()) == attrName)
@@ -328,7 +349,10 @@ ComponentPtr EC_Mesh::FindPlaceable() const
     assert(framework_);
     ComponentPtr comp;
     if(!GetParentEntity())
+    {
+        LogWarning("Fail to find placeable cause the parent entity was not setted.");
         return comp;
+    }
     comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
     return comp;
 }
@@ -336,7 +360,13 @@ ComponentPtr EC_Mesh::FindPlaceable() const
 void EC_Mesh::AttachEntity()
 {
     OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
-    if ((!entity_) || (!placeable) || attached_)
+    if (!entity_ || !placeable)
+    {
+        LogWarning("Fail to attach an entity cause placeable object was not found.");
+        return;
+    }
+    // No point to reattach same entity again.
+    if (attached_)
         return;
 
     Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -349,7 +379,13 @@ void EC_Mesh::AttachEntity()
 void EC_Mesh::DetachEntity()
 {
     OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
-    if ((!attached_) || (!entity_) || (!placeable))
+    if (!entity_ || !placeable)
+    {
+        LogWarning("Fail to detach an entity cause placeable object was not found.");
+        return;
+    }
+    // No point to detach object that has not been attached.
+    if (!attached_)
         return;
 
     Ogre::SceneNode* node = placeable->GetSceneNode();
@@ -362,7 +398,10 @@ void EC_Mesh::DetachEntity()
 void EC_Mesh::AttachSkeleton(const QString &skeletonName)
 {
     if(!entity_)
+    {
+        LogWarning("Couldn't attach a skeleton to entity cause entity is null.");
         return;
+    }
 
     try
     {
@@ -436,6 +475,8 @@ bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 
         AttachSkeleton(QString::fromStdString(skeleton_->getName()));
     }
+    else
+        LogWarning("Fail to handle skeleton resource ready event cause skeletonRes was null.");
     return true;
 }
 
@@ -465,5 +506,7 @@ bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
         SetMaterial(index, material_name);
         materialRequestTags_[index] = 0;
     }
+    else
+        LogWarning("Failed to set a new material to mesh.");
     return true;
 }

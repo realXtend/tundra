@@ -4,8 +4,8 @@
 #define incl_OgreAssetEditorModule_MeshPreviewEditor_h
 
 #include "RexTypes.h"
-#include "InputServiceInterface.h"
-#include "QtInputMouseEvent.h"
+#include "Input.h"
+#include "MouseEvent.h"
 #include "OgreMeshResource.h"
 
 #include <QWidget>

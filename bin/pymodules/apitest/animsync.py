@@ -21,6 +21,7 @@ Now finally for Naali 0.3.0 this system is quite full featured: the DynamicCompo
 from __future__ import division
 import time
 import rexviewer as r
+import naali
 
 import PythonQt
 from PythonQt import QtGui, QtCore
@@ -44,7 +45,7 @@ class AnimationSync(circuits.BaseComponent):
         self.widget.connect('valueChanged(int)', self.sliderChanged)
 
         #naali proxywidget boilerplate
-        uism = r.getUiSceneManager()
+        uism = naali.Ui()
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
@@ -82,7 +83,7 @@ class AnimationSync(circuits.BaseComponent):
                 t = ent.touchable
             else:
                 print "touchable pre-existed in animated character for animsync."
-            t.connect('Clicked()', self.showgui)
+            t.connect('MousePressed()', self.showgui)
             self.inworld_inited = True        
 
         if self.proxywidget is None and self.widget is not None:
@@ -120,7 +121,7 @@ class AnimationSync(circuits.BaseComponent):
     @circuits.handler("on_logout")
     def removegui(self, evid):
         self.proxywidget.hide()
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.RemoveWidgetFromScene(self.proxywidget)
 
 COMPNAME = "animsync"

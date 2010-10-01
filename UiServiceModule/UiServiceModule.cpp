@@ -5,6 +5,8 @@
 
 #include "UiServiceModule.h"
 #include "UiService.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -25,8 +27,8 @@ void UiServiceModule::PreInitialize()
 void UiServiceModule::Initialize()
 {
     // Register UI service.
-    assert(GetFramework()->GetUIView());
-    service_ = UiServicePtr(new UiService(GetFramework()->GetUIView()));
+    assert(GetFramework()->Ui()->GraphicsView());
+    service_ = boost::shared_ptr<UiService>(new UiService(GetFramework()->Ui()->GraphicsView()));
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, service_);
 }
 

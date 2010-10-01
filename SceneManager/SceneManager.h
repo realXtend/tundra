@@ -39,9 +39,6 @@ namespace Scene
         //! constructor that takes a name and framework
         SceneManager(const QString &name, Foundation::Framework *framework);
 
-        //! copy constuctor
-        SceneManager(const SceneManager &other);
-
         //! Current global id for networked entities
         uint gid_;
 
@@ -57,8 +54,8 @@ namespace Scene
         Scene::Entity* CreateEntityRaw(uint id = 0, const QStringList &components = QStringList()) { return CreateEntity((entity_id_t)id, components).get(); }
 
         Scene::Entity* GetEntityRaw(uint id) { return GetEntity(id).get(); }
-        QVariantList GetEntityIdsWithComponent(const QString &type_name);
-        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name);
+        QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
+        QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
     public:
         //! destructor
@@ -116,6 +113,13 @@ namespace Scene
          */
         EntityPtr GetEntity(const QString& name) const;
         
+        //! Returns entity with the specified name, searches through only those entities which has EC_Name-component.
+        /*!
+            \note Returns a shared pointer, but it is preferable to use a weak pointer, Scene::EntityWeakPtr,
+                  to avoid dangling references that prevent entities from being properly destroyed.
+        */
+        EntityPtr GetEntityByName(const QString& name) const;
+
         //! Returns true if entity with the specified id exists in this scene, false otherwise
         bool HasEntity(entity_id_t id) const { return (entities_.find(id) != entities_.end()); }
 
@@ -159,7 +163,7 @@ namespace Scene
 
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
-        EntityList GetEntitiesWithComponent(const QString &type_name);
+        EntityList GetEntitiesWithComponent(const QString &type_name) const;
 
         //! Emit a notification of a component's attributes changing. Called by the components themselves
         /*! \param comp Component pointer
@@ -288,7 +292,7 @@ namespace Scene
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
     private:
-        SceneManager &operator =(const SceneManager &other);
+        Q_DISABLE_COPY(SceneManager);
 
         //! Entities in a map
         EntityMap entities_;
