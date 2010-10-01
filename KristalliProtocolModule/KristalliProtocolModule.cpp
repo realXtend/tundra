@@ -271,8 +271,8 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
             Events::KristalliUserDisconnected msg(&(*iter));
             framework_->GetEventManager()->SendEvent(networkEventCategory, Events::USER_DISCONNECTED, &msg);
             
-            connections.erase(iter);
             LogInfo("User disconnected, connection ID " + ToString((int)iter->userID));
+            connections.erase(iter);
             return;
         }
     }
