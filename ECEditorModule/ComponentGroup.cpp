@@ -84,7 +84,7 @@ namespace ECEditor
         {
             if(components_[i].expired())
                 continue;
-            if(components_[i].lock()->GetAttribute(name))
+            if(components_[i].lock()->GetAttribute(name.c_str()))
                 return true;
         }
         return false;
