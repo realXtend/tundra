@@ -7,6 +7,12 @@
 #include "IAttribute.h"
 #include "Declare_EC.h"
 
+namespace kNet
+{
+    class DataSerializer;
+    class DataDeserializer;
+}
+
 #include <QVariant>
 
 //! EC_DynamicComponent is a component where user can add or delete attributes in a runtime.
@@ -138,18 +144,16 @@ public:
     }
 
     /// IComponent override
-    virtual void SerializeToBinary(DataSerializer& dest) const;
+    virtual void SerializeToBinary(kNet::DataSerializer& dest) const;
 
     /// IComponent override
-    virtual void DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change);
+    virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
     /// IComponent override
-    virtual bool SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const;
+    virtual bool SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const;
     
     /// IComponent override
-    virtual bool DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change);
-
-
+    virtual bool DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
 public slots:
     //! A factory method that constructs a new attribute given the typename. This factory is not extensible.
