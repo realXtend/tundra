@@ -21,6 +21,19 @@ namespace Scene
         the entity is and what it does.
         Entities should not be directly created, instead use SceneManager::CreateEntity().
 
+        Each component type that is added to this entity is registered as
+        Q_PROPETY as in following syntax EC_Light -> light, where EC_ is cutted off
+        and name is converted to low case format. This allow scripter to get access to
+        component using a following code "entity.mesh.SetMesh("mesh id");"
+        
+        \note If there are several components that have a same typename only first component
+        is accessable through Q_PROERTY and if you want to edit other same type of components
+        you should use GetComponent mehtod instead.
+
+        When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        the component. Incase there are several components that typename is same, there is 
+        a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+
         \note   Entity can have multiple components with same component type name as long as
                 the component names are unique.
 
@@ -101,6 +114,15 @@ namespace Scene
         /*! Entities can contain any number of components of any type.
             It is also possible to have several components of the same type,
             although in most cases it is probably not sensible.
+            
+            Each component type that is added to this entity is registered as
+            Q_PROPETY as in following syntax EC_Light -> light, where EC_ is cutted off
+            and name is converted to low case format. This allow scripter to get access to
+            component using a following code "entity.mesh.SetMesh("mesh id");"
+            
+            \note If there are several components that have a same typename only first component
+            is accessable through Q_PROERTY and if you want to edit other same type of components
+            you should use GetComponent mehtod instead.
 
             \param component An entity component
             \param change Origin of change for network replication
@@ -108,7 +130,10 @@ namespace Scene
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
-        /*! 
+        /*! When component is removed from the entity a Q_PROPERTY connection is destoyed from
+            the component. Incase there are several components that typename is same, there is 
+            a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+            
             \param component Pointer to the component to remove
         */
         void RemoveComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
