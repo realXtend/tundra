@@ -6,9 +6,11 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
+namespace kNet
+{
 class MessageConnection;
-
 typedef unsigned long message_id_t;
+}
 
 namespace KristalliProtocol
 {
@@ -92,7 +94,7 @@ public:
     
 private:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     /// Sync manager
     boost::shared_ptr<SyncManager> syncManager_;

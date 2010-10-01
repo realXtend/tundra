@@ -21,12 +21,6 @@ macro (init_target NAME)
     # Define target name and output directory
     set (TARGET_NAME ${NAME})
     set (${TARGET_NAME}_OUTPUT ${ARGV1})
-
-    # Add Kristalli (Interfaces needs it, so pretty much every module does)
-    if (MSVC)
-        include_directories(${KRISTALLI_CORE_PATH}/include)
-        link_directories(${KRISTALLI_CORE_PATH}/build/win)
-    endif()
     
     message (STATUS "Found build target: " ${TARGET_NAME})
 

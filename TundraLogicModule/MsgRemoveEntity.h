@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgRemoveEntity
 {
@@ -13,7 +12,7 @@ struct MsgRemoveEntity
 	MsgRemoveEntity(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -38,12 +37,12 @@ struct MsgRemoveEntity
 		return 4;
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u32>(entityID);
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		entityID = src.Read<u32>();
 	}

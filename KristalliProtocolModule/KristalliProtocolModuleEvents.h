@@ -4,8 +4,11 @@
 
 #include "IEventData.h"
 
+namespace kNet
+{
 class MessageConnection;
 typedef unsigned long message_id_t;
+}
 
 namespace KristalliProtocol
 {
@@ -29,13 +32,13 @@ namespace Events
     class KristalliNetMessageIn : public IEventData
     {
     public:
-        KristalliNetMessageIn(MessageConnection *source_, message_id_t id_, const char *data_, size_t numBytes_)
+        KristalliNetMessageIn(kNet::MessageConnection *source_, kNet::message_id_t id_, const char *data_, size_t numBytes_)
         :source(source_), id(id_), data(data_), numBytes(numBytes_)
         {
         }
 
-        MessageConnection *source;
-        message_id_t id;
+        kNet::MessageConnection *source;
+        kNet::message_id_t id;
         const char *data;
         size_t numBytes;
     };

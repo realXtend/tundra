@@ -8,6 +8,8 @@
 #include "SceneManager.h"
 #include "SyncState.h"
 
+#include "kNet.h"
+
 #include <QObject>
 #include <map>
 #include <set>
@@ -20,14 +22,16 @@ struct MsgRemoveComponents;
 struct MsgEntityIDCollision;
 struct MsgEntityAction;
 
+namespace kNet
+{
+class MessageConnection;
 typedef unsigned long message_id_t;
+}
 
 namespace KristalliProtocol
 {
     struct UserConnection;
 }
-
-class MessageConnection;
 
 namespace TundraLogic
 {
@@ -90,42 +94,42 @@ private slots:
 
 private:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     //! Handle create entity message
-    void HandleCreateEntity(MessageConnection* source, const MsgCreateEntity& msg);
+    void HandleCreateEntity(kNet::MessageConnection* source, const MsgCreateEntity& msg);
     
     //! Handle remove entity message
-    void HandleRemoveEntity(MessageConnection* source, const MsgRemoveEntity& msg);
+    void HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg);
     
     //! Handle create components message
-    void HandleCreateComponents(MessageConnection* source, const MsgCreateComponents& msg);
+    void HandleCreateComponents(kNet::MessageConnection* source, const MsgCreateComponents& msg);
     
     //! Handle update components message
-    void HandleUpdateComponents(MessageConnection* source, const MsgUpdateComponents& msg);
+    void HandleUpdateComponents(kNet::MessageConnection* source, const MsgUpdateComponents& msg);
     
     //! Handle remove components message
-    void HandleRemoveComponents(MessageConnection* source, const MsgRemoveComponents& msg);
+    void HandleRemoveComponents(kNet::MessageConnection* source, const MsgRemoveComponents& msg);
     
     //! Handle entityID collision message
-    void HandleEntityIDCollision(MessageConnection* source, const MsgEntityIDCollision& msg);
+    void HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg);
 
     //! Handle entity action message.
-    void HandleEntityAction(MessageConnection* source, const MsgEntityAction& msg);
+    void HandleEntityAction(kNet::MessageConnection* source, const MsgEntityAction& msg);
 
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management
         \param destination MessageConnection where to send the messages
         \param state Syncstate to process
      */
-    void ProcessSyncState(MessageConnection* destination, SceneSyncState* state);
+    void ProcessSyncState(kNet::MessageConnection* destination, SceneSyncState* state);
     
     //! Validate the scene manipulation action. If returns false, it is ignored
     /*! \param source Where the action came from
         \param messageID Network message id
         \param entityID What entity it affects
      */
-    bool ValidateAction(MessageConnection* source, unsigned messageID, entity_id_t entityID);
+    bool ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID);
     
     //! Send serializable components of an entity to a connection, using either a CreateEntity or UpdateComponents packet
     /*! \param connections MessageConnection(s) to use
@@ -134,12 +138,12 @@ private:
         \param allComponents Whether to send all components, or only those that are dirty
         Note: This will not reset any changeflags in the components or attributes!
      */
-    void SerializeAndSendComponents(const std::vector<MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
+    void SerializeAndSendComponents(const std::vector<kNet::MessageConnection*>& connections, Scene::EntityPtr entity, bool createEntity = false, bool allComponents = false);
     
     //! Get a syncstate that matches the messageconnection, for reflecting arrived changes back
     /*! For client, this will always be server_syncstate_.
      */
-    SceneSyncState* GetSceneSyncState(MessageConnection* connection);
+    SceneSyncState* GetSceneSyncState(kNet::MessageConnection* connection);
     
     //! Owning module
     TundraLogicModule* owner_;

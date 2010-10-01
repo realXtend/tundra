@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgLogin
 {
@@ -13,7 +12,7 @@ struct MsgLogin
 	MsgLogin(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+        kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -39,7 +38,7 @@ struct MsgLogin
 		return 1 + userName.size()*1 + 1 + password.size()*1;
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u8>(userName.size());
 		if (userName.size() > 0)
@@ -49,7 +48,7 @@ struct MsgLogin
 			dst.AddArray<s8>(&password[0], password.size());
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		userName.resize(src.Read<u8>());
 		if (userName.size() > 0)

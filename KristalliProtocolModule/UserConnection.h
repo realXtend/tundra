@@ -5,7 +5,10 @@
 
 #include "Foundation.h"
 
+namespace kNet
+{
 class MessageConnection;
+}
 
 //! Class for holding complex connection-related info, such as currently replicated scene state
 struct IUserData
@@ -25,7 +28,7 @@ namespace KristalliProtocol
         {
         }
         
-        MessageConnection* connection;
+        kNet::MessageConnection* connection;
         u8 userID;
         bool authenticated;
         std::string userName;
