@@ -258,7 +258,7 @@ namespace Scene
         if (!HasReceivers(act))
             return;
 
-        if ((type & EntityAction::Local != 0))
+        if ((type & EntityAction::Local) != 0)
         {
             if (params.size() == 0)
                 act->Trigger();
