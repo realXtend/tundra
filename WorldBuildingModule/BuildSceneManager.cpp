@@ -14,6 +14,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "UiServiceInterface.h"
+#include "NaaliApplication.h"
 
 #include <QPixmap>
 #include <QDebug>
@@ -39,7 +40,7 @@ namespace WorldBuilding
         override_server_time_(false)
     {
         setParent(parent);
-        connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
+        connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
 
         InitScene();
@@ -105,7 +106,7 @@ namespace WorldBuilding
         layout_ = new AnchorLayout(this, scene_);
 
         // Register scene to ui service
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             ui->RegisterScene(scene_name_, scene_);
@@ -492,7 +493,7 @@ namespace WorldBuilding
         if (!inworld_state)
             return;
 
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             ui->SwitchToScene(scene_name_);
@@ -503,7 +504,7 @@ namespace WorldBuilding
 
     void BuildSceneManager::HideBuildScene()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             if (inworld_state)

@@ -6,12 +6,12 @@ import socket #just for exception handling for restarts here
 import circuits
 import eventlet
 from eventlet import websocket
-
-import naali
-import rexviewer as r
 from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
+import naali
+import rexviewer as r
+import mathutils
 
 import async_eventlet_wsgiserver
 
@@ -38,6 +38,9 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         self.previd += 1
 
         ent.placeable.Position = Vec3(position[0], position[1], position[2])
+        print Quat(mathutils.euler_to_quat(orientation))
+        ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
+
         print "New entity for web socket presence at", ent.placeable.Position
 
         self.clientavs[clientid] = ent
@@ -45,7 +48,7 @@ class NaaliWebsocketServer(circuits.BaseComponent):
     def updateclient(self, clientid, position, orientation):
         ent = self.clientavs[clientid]
         ent.placeable.Position = Vec3(position[0], position[1], position[2])
-        ent.placeable.Orientation = Quat(orientation[0], orientation[1], orientation[2], orientation[3])
+        ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
 
     @circuits.handler("update")
     def update(self, t):
@@ -94,8 +97,8 @@ def handle_clients(ws):
 
             x, y, z = SPAWNPOS[0], SPAWNPOS[1], SPAWNPOS[2]
             position = (x, y, z)
-            orientation = (0.0021971773821860552, 0.0, 0.0, 0.99999761581420898)
-            NaaliWebsocketServer.instance.newclient(myid, position, (1, 0, 0, 0))
+            orientation = (1.57, 0, 0)
+            NaaliWebsocketServer.instance.newclient(myid, position, orientation)
 
             ws.send(json.dumps(['setId', {'id': myid}]))
             sendAll(['newAvatar', {'id': myid, 'position': position, 'orientation': orientation}])
@@ -104,34 +107,30 @@ def handle_clients(ws):
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
             
         elif function == 'giev update':
-
+            print params
             id = params.get('id')
             position = params.get('position')
             orientation = params.get('orientation')
-
+            print 'orioriori', orientation
             NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
-            s = naali.getScene("World")
-            ids = s.GetEntityIdsWithComponent("EC_OpenSimPresence")
-            ents = [r.getEntity(id) for id in ids]
-                
+            scene = naali.getScene("World")
+            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
+
             for ent in ents:
 
                 x = ent.placeable.Position.x()
                 y = ent.placeable.Position.y()
                 z = ent.placeable.Position.z()
-                
-                w_ori = ent.placeable.Orientation.scalar()
-                x_ori = ent.placeable.Orientation.x()
-                y_ori = ent.placeable.Orientation.y()
-                z_ori = ent.placeable.Orientation.z()
-                
-                id = ent.id
+
+                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+
+                id = ent.Id
 
                 sendAll(['updateAvatar',
                          {'id': id,
                           'position': (x, y, z),
-                          'oritentation': (w_ori, x_ori, y_ori, z_ori),
+                          'orientation': orientation,
                           }])
 
                 

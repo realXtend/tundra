@@ -22,7 +22,7 @@ namespace UiServices
      *  Basically this class is just a wrapper around InworldSceneController
      *  and UiStateMachine.
      */
-    class UiSceneService : public Foundation::UiServiceInterface
+    class UiSceneService : public UiServiceInterface
     {
         Q_OBJECT
 

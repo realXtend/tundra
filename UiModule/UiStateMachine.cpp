@@ -3,7 +3,6 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "UiStateMachine.h"
-#include "KeyBindings.h"
 
 #include <QPropertyAnimation>
 #include <QGraphicsWidget>
@@ -48,23 +47,6 @@ namespace CoreUi
             return;      
         if (ether_toggle_seq_list_.contains(QKeySequence(key_event->key() + key_event->modifiers())))
             ToggleEther();
-    }
-
-    void UiStateMachine::UpdateKeyBindings(Foundation::KeyBindings *bindings)
-    {
-        std::list<Foundation::Binding> bind_list = bindings->GetBindings("naali.toggle.ether");
-        std::list<Foundation::Binding>::const_iterator iter = bind_list.begin();
-        std::list<Foundation::Binding>::const_iterator end = bind_list.end();
-
-        if (iter == end)
-            return;
-
-        ether_toggle_seq_list_.clear();
-        while (iter != end)
-        {
-            ether_toggle_seq_list_.append((*iter).sequence);
-            iter++;
-        }
     }
 
     void UiStateMachine::StateSwitch()
@@ -212,7 +194,7 @@ namespace CoreUi
         }
         else
         {
-            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT(HandleSceneChanged(const QList<QRectF> &) ));
          
             QString old_scene_name = current_scene_name_;
             current_scene_ = scene_map_[name];
@@ -222,7 +204,7 @@ namespace CoreUi
             if (view_->scene() != current_scene_)
                 view_->setScene(current_scene_);
 
-            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
+            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT(HandleSceneChanged(const QList<QRectF> &) ));
 
             if (animations_map_.contains(current_scene_))
             {

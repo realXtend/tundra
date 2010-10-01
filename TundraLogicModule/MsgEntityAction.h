@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgEntityAction
 {
@@ -13,7 +12,7 @@ struct MsgEntityAction
 	MsgEntityAction(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -40,14 +39,14 @@ struct MsgEntityAction
 			return 1 + parameter.size()*1;
 		}
 
-		inline void SerializeTo(DataSerializer &dst) const
+		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
 			dst.Add<u8>(parameter.size());
 			if (parameter.size() > 0)
 				dst.AddArray<s8>(&parameter[0], parameter.size());
 		}
 
-		inline void DeserializeFrom(DataDeserializer &src)
+		inline void DeserializeFrom(kNet::DataDeserializer &src)
 		{
 			parameter.resize(src.Read<u8>());
 			if (parameter.size() > 0)
@@ -63,10 +62,10 @@ struct MsgEntityAction
 
 	inline size_t Size() const
 	{
-		return 4 + 1 + name.size()*1 + 1 + 1 + SumArray(parameters, parameters.size());
+		return 4 + 1 + name.size()*1 + 1 + 1 + kNet::SumArray(parameters, parameters.size());
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u32>(entityId);
 		dst.Add<u8>(name.size());
@@ -78,7 +77,7 @@ struct MsgEntityAction
 			parameters[i].SerializeTo(dst);
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		entityId = src.Read<u32>();
 		name.resize(src.Read<u8>());

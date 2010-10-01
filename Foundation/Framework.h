@@ -11,6 +11,8 @@
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 
+#include "../Ui/NaaliUiFwd.h"
+
 #include <boost/smart_ptr.hpp>
 #include <boost/program_options.hpp>
 #include <boost/timer.hpp>
@@ -20,9 +22,13 @@ class QGraphicsView;
 class QWidget;
 class QObject;
 
-class InputServiceInterface;
+class ISoundService;
+class UiServiceInterface;
 class Frame;
 class ScriptConsole;
+
+class Input;
+class FrameworkImpl;
 
 namespace Poco
 {
@@ -33,6 +39,7 @@ namespace Poco
 
 namespace Foundation
 {
+    class NaaliApplication;
     class FrameworkQtApplication;
     class KeyStateListener;
     class MainWindow;
@@ -109,9 +116,6 @@ namespace Foundation
         //! Returns thread task manager.
         ThreadTaskManagerPtr GetThreadTaskManager();
 
-        //! Signal the framework to exit
-        void Exit();
-
         //! Cancel a pending exit
         void CancelExit();
 
@@ -137,9 +141,6 @@ namespace Foundation
         //! Shortcut for retrieving a service. See ServiceManager::GetService() for more info
         template <class T>
         __inline const boost::weak_ptr<T> GetService(service_type_t type) const { return service_manager_->GetService<T>(type); }
-
-        /// Returns the framework Input object.
-        InputServiceInterface &Input();
 
         //! Creates new empty scene.
         /*! 
@@ -232,16 +233,16 @@ namespace Foundation
         void UnloadModules();
 
         //! Get main QApplication
-        QApplication *GetQApplication() const;
+        NaaliApplication *GetNaaliApplication() const { return naaliApplication.get(); }
 
         //! Get main window
-        MainWindow *GetMainWindow() const;
+//        MainWindow *GetMainWindow() const;
 
         //! Get main UI View
-        QGraphicsView *GetUIView() const;
+//        QGraphicsView *GetUIView() const;
 
         //! Set main UI View
-        void SetUIView(std::auto_ptr <QGraphicsView> view);
+//        void SetUIView(std::auto_ptr <QGraphicsView> view);
 
         /** Returns module by class T.
             @param T class type of the module.
@@ -264,17 +265,20 @@ namespace Foundation
         }
 
     public slots:
-        /// Returns the framework Frame object.
-        Frame *GetFrame() const { return frame_; }
+        /// Returns the Naali core API UI object.
+        NaaliUi *Ui() const;
 
-        /// Returns the framework Console object.
-        ScriptConsole *Console() const { return console_; }
+        /// Returns the Naali core API Input object.
+        Input *GetInput() const;
 
-        /// Debugging utility function for printing QObject's methods and properties to log.
-        /** @param obj Object to inspect.
-            @todo Move this function to some better place.
-        */
-        void DescribeQObject(QObject *obj);
+        /// Returns the Naali core API Frame object.
+        Frame *GetFrame() const;
+
+        /// Returns the Naali core API Console object.
+        ScriptConsole *Console() const;
+
+        /// Returns the Naali core API Audio object.
+        ISoundService *Audio() const;
 
     signals:
         /// Emitted after new scene has been added to framework.
@@ -286,6 +290,10 @@ namespace Foundation
         /** @param name removed scene name.
         */
         void SceneRemoved(const QString &name);
+
+    public slots:
+        //! Signal the framework to exit
+        void Exit();
 
     private:
         //! Registers framework specific console commands
@@ -334,8 +342,11 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
-        //! Bridges QtApplication and Framework bridge object.
-        std::auto_ptr <FrameworkQtApplication> engine_;
+        /// Naali implementation of the main QApplication object.
+        std::auto_ptr<NaaliApplication> naaliApplication;
+
+        /// Provides a pimpl-guard to hide all core API implementation code.
+        std::auto_ptr<FrameworkImpl> impl;
 
 #ifdef PROFILING
         //! profiler
@@ -346,6 +357,8 @@ namespace Foundation
 
         //! program option descriptions
         boost::program_options::options_description cm_descriptions_;
+
+        NaaliUi *ui;
 
         //! command line arguments as supplied by the operating system
         int argc_;
@@ -367,6 +380,7 @@ namespace Foundation
         ScriptConsole *console_;
     };
 
+    ///\todo Refactor-remove these. -jj.
     namespace
     {
         const event_id_t PROGRAM_OPTIONS = 1;
@@ -377,6 +391,7 @@ namespace Foundation
     //! Contains pre-parsed program options and non-parsed command line arguments.
     /*! Options contains program options pre-parsed by framework. If modules wish
         to use their own command line arguments, the arguments are also supplied.
+        ///\todo Refactor-remove these. -jj.
     */
     class ProgramOptionsEvent : public IEventData
     {

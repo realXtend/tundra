@@ -572,6 +572,7 @@ void TimeProfilerWindow::RedrawFrameTimeHistoryGraph(const std::vector<std::pair
     if (!tab_widget_ || tab_widget_->currentIndex() != 1)
         return;
 
+    PROFILE(DebugStats_DrawTimeHistoryGraph);
 //    QPixmap picture(label_frame_time_history_->width(), label_frame_time_history_->height());
     const QPixmap *pixmap = label_frame_time_history_->pixmap();
     QImage image = pixmap->toImage();

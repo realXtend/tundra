@@ -1,6 +1,0 @@
-The library has been configured to be built on VS2008SP1.
-To build the library, find build\Win\clbLib.sln
-
-Build the targets "Debug" and "Release". Other configurations can be ignored.
-After this, the necessary libraries will have been produced and building 
-KristalliProtocolModule and SpeexVoipModule is possible.

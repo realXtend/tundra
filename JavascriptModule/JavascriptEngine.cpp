@@ -5,6 +5,7 @@
 #include "JavascriptEngine.h"
 #include "JavascriptModule.h"
 #include "ScriptMetaTypeDefines.h"
+#include "NaaliCoreTypeDefines.h"
 
 #include <QFile>
 #include <QUiLoader>
@@ -17,11 +18,9 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
 {
     engine_ = new QScriptEngine;
 
-    ReqisterInputMetaTypes(engine_);
-    ReqisterSceneMetaTypes(engine_);
-    ReqisterUiMetaTypes(engine_);
-    ReqisterQtMetaTypes(engine_);
-    ReqisterCoreApiMetaTypes(engine_);
+    ExposeQtMetaTypes(engine_);
+    ExposeNaaliCoreTypes(engine_);
+    ExposeCoreApiMetaTypes(engine_);
 }
 
 JavascriptEngine::~JavascriptEngine()

@@ -19,7 +19,7 @@
 #include "View/EtherScene.h"
 
 #include "UiServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 
 #include "CoreDefines.h"
 #include <QStringList>
@@ -62,7 +62,7 @@ namespace Ether
 
             // Create ether scene, store current scene
             scene_ = new View::EtherScene(this, QRectF(0,0,100,100));
-            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
             if (ui)
             {
                 connect(ui.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)), 

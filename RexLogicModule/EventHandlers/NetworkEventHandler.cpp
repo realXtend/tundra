@@ -37,7 +37,7 @@
 #endif
 
 #include "ServiceManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "AssetServiceInterface.h"
 #include "ScriptServiceInterface.h" // LoadURL webview opening code is not on the py side, experimentally at least
 
@@ -398,15 +398,15 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
     static const uint MAX_SOUND_INSTANCE_COUNT = 4;
     uint same_sound_detected = 0;
     sound_id_t sound_to_stop = 0;
-    Foundation::SoundServiceInterface *soundsystem = owner_->GetFramework()->GetService<Foundation::SoundServiceInterface>();
+    ISoundService *soundsystem = owner_->GetFramework()->GetService<ISoundService>();
     if (!soundsystem)
         return false;
 
     std::vector<sound_id_t> playing_sounds = soundsystem->GetActiveSounds();
     for (uint i = 0; i < playing_sounds.size(); ++i)
     {
-        if ((soundsystem->GetSoundName(playing_sounds[i]) == asset_id) &&
-            (soundsystem->GetSoundType(playing_sounds[i]) == Foundation::SoundServiceInterface::Triggered))
+        if ((soundsystem->GetSoundName(playing_sounds[i]).toStdString() == asset_id) &&
+            (soundsystem->GetSoundType(playing_sounds[i]) == ISoundService::Triggered))
         {
             same_sound_detected++;
             // This should be the oldest instance of the sound, because soundsystem gives channel ids from a map (ordered).
@@ -418,7 +418,7 @@ bool NetworkEventHandler::HandleOSNE_SoundTrigger(NetworkEventInboundData* data)
     if (same_sound_detected >= MAX_SOUND_INSTANCE_COUNT)
         soundsystem->StopSound(sound_to_stop);
 
-    sound_id_t new_sound = soundsystem->PlaySound3D(asset_id, Foundation::SoundServiceInterface::Triggered, false, position);
+    sound_id_t new_sound = soundsystem->PlaySound3D(QString::fromStdString(asset_id), ISoundService::Triggered, false, position);
     soundsystem->SetGain(new_sound, gain);
 
     return false;

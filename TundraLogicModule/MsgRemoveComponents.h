@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgRemoveComponents
 {
@@ -13,7 +12,7 @@ struct MsgRemoveComponents
 	MsgRemoveComponents(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -41,7 +40,7 @@ struct MsgRemoveComponents
 			return 4 + 1 + componentName.size()*1;
 		}
 
-		inline void SerializeTo(DataSerializer &dst) const
+		inline void SerializeTo(kNet::DataSerializer &dst) const
 		{
 			dst.Add<u32>(componentTypeHash);
 			dst.Add<u8>(componentName.size());
@@ -49,7 +48,7 @@ struct MsgRemoveComponents
 				dst.AddArray<s8>(&componentName[0], componentName.size());
 		}
 
-		inline void DeserializeFrom(DataDeserializer &src)
+		inline void DeserializeFrom(kNet::DataDeserializer &src)
 		{
 			componentTypeHash = src.Read<u32>();
 			componentName.resize(src.Read<u8>());
@@ -64,10 +63,10 @@ struct MsgRemoveComponents
 
 	inline size_t Size() const
 	{
-		return 4 + 1 + SumArray(components, components.size());
+		return 4 + 1 + kNet::SumArray(components, components.size());
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u32>(entityID);
 		dst.Add<u8>(components.size());
@@ -75,7 +74,7 @@ struct MsgRemoveComponents
 			components[i].SerializeTo(dst);
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		entityID = src.Read<u32>();
 		components.resize(src.Read<u8>());

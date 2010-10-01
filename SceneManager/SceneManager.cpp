@@ -11,15 +11,17 @@
 #include "EventManager.h"
 #include "IComponent.h"
 #include "ForwardDefines.h"
+#include "EC_Name.h"
 
 #include <QString>
 #include <QDomDocument>
 #include <QFile>
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 #include "MemoryLeakCheck.h"
+
+using namespace kNet;
 
 namespace Scene
 {
@@ -94,6 +96,24 @@ namespace Scene
         }
         
         return Scene::EntityPtr();
+    }
+
+    Scene::EntityPtr SceneManager::GetEntityByName(const QString& name) const
+    {
+        EntityMap::const_iterator it = entities_.begin();
+        while(it != entities_.end())
+        {
+            EntityPtr entity = it->second;
+            if (entity->HasComponent(EC_Name::TypeNameStatic()))
+            {
+                QString nam = entity->GetComponent<EC_Name >().get()->name.Get();
+                if ( nam == name )
+                    return entity;              
+                
+            }
+            ++it;
+        }   
+        return Scene::EntityPtr();               
     }
 
     entity_id_t SceneManager::GetNextFreeId()
@@ -178,7 +198,7 @@ namespace Scene
         entities_.clear();
     }
     
-    EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name)
+    EntityList SceneManager::GetEntitiesWithComponent(const QString &type_name) const
     {
         std::list<EntityPtr> entities;
         EntityMap::const_iterator it = entities_.begin();
@@ -238,11 +258,11 @@ namespace Scene
         emit ActionTriggered(entity, action, params, type);
     }
 
-    QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name)
+    QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
     {
         EntityList list = GetEntitiesWithComponent(type_name);
         QVariantList ids;
-        EntityList::iterator iter;
+        EntityList::const_iterator iter;
 
         for(iter = list.begin(); iter != list.end(); iter++)
         {
@@ -255,12 +275,11 @@ namespace Scene
         return ids;
     }
 
-    QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name)
+    QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name) const
     {
         EntityList list = GetEntitiesWithComponent(type_name);
         QList<Scene::Entity*> qlist;
-        EntityList::iterator iter;
-
+        EntityList::const_iterator iter;
         for(iter = list.begin(); iter != list.end(); iter++)
         {
             EntityPtr ent = *iter;

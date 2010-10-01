@@ -7,7 +7,7 @@
 
 #include "Color.h"
 
-#include "InputServiceInterface.h"
+#include "../Input/InputFwd.h"
 
 #include <QPair>
 #include <QTimer>
@@ -203,9 +203,7 @@ namespace Environment
         //! Called when apply button have been pressed on terrain texture tab window.
         void ChangeTerrainTexture();
 
-        //! Adjust Water check button.
-        void ToggleWaterCheckButton();
-
+     
         //! Update ground fog.
         //! @param fogStart fog start distance
         //! @param fogEnd fog end distance

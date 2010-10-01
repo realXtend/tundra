@@ -11,7 +11,7 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_OgrePlaceable.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "EventManager.h"
 #include "ConfigurationManager.h"
 #include "WorldStream.h"
@@ -113,8 +113,8 @@ namespace Avatar
             /// EVENT_MAKE_ENTITY_A_CONTROLLABLE_ENTITY and EVENT_SET_AS_CURRENT_CONTROLLABLE_ENTITY? -jj.
             controllable->AddAction(RA::FlyMode);
             controllable->SetType(CT_AVATAR);
-            input_events_[Input::Events::TOGGLE_FLYMODE] = RA::FlyMode;
-            input_events_[Input::Events::TOGGLE_FLYMODE_REL] = RA::FlyMode + 1;
+            input_events_[InputEvents::TOGGLE_FLYMODE] = RA::FlyMode;
+            input_events_[InputEvents::TOGGLE_FLYMODE_REL] = RA::FlyMode + 1;
             input_events_ = ControllableActions::AssignCommonActions(controllable);
         }
 
@@ -125,7 +125,7 @@ namespace Avatar
     {
         // switch between first and third person modes
 
-        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+        if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
 
@@ -140,7 +140,7 @@ namespace Avatar
             }
         }
 
-        if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
+        if (event_id == InputEvents::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
         {
             current_state_ = FirstPerson;
 
@@ -156,19 +156,19 @@ namespace Avatar
 
         // The INPUTSTATE_FREECAMERA event moves the view mode to free camera mode. This is controlled by the CameraControllable
         // object, and in this case we set the AvatarControllable as InActive.
-        if (event_id == Input::Events::INPUTSTATE_FREECAMERA && current_state_ != InActive)
+        if (event_id == InputEvents::INPUTSTATE_FREECAMERA && current_state_ != InActive)
         {
             current_state_ = InActive;
         }
 
-		if (event_id == Input::Events::INPUTSTATE_FOCUSONOBJECT && current_state_ != InActive)
+		if (event_id == InputEvents::INPUTSTATE_FOCUSONOBJECT && current_state_ != InActive)
         {
             current_state_ = InActive;
         }
 
-        if (event_id == Input::Events::MOUSELOOK)
+        if (event_id == InputEvents::MOUSELOOK)
         {
-            Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
+            InputEvents::Movement *m = checked_static_cast <InputEvents::Movement *> (data);
 
             // mouse movement coordinates: 
             // relative coordinates: relative to last movement
@@ -230,17 +230,14 @@ namespace Avatar
                         switch (event_id)
                         {
                         case RA::RotateLeft:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = -1;
+                            avatar->yaw = -1;
                             break;
                         case RA::RotateRight:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = 1;
+                            avatar->yaw = 1;
                             break;
                         case RA::RotateLeft + 1:
                         case RA::RotateRight + 1:
-							//if(rexlogic_->GetCameraState() != CS_FocusOnObject) // remove these when obj focus has own camera
-								avatar->yaw = 0;
+                            avatar->yaw = 0;
                             break;
                         }
                     }

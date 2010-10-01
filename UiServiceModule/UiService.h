@@ -20,7 +20,7 @@ class QRectF;
  *  means of embedding Qt widgets to the same scene/canvas as the 3D in-world
  *  view. Uses only one UI scene for everything.
  */
-class UiService : public Foundation::UiServiceInterface
+class UiService : public UiServiceInterface
 {
     Q_OBJECT
 

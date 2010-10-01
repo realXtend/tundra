@@ -22,6 +22,7 @@
 #include "MemoryLeakCheck.h"
 
 using namespace RexTypes;
+using namespace kNet;
 
 namespace TundraLogic
 {
@@ -59,7 +60,7 @@ void Client::Login(const std::string& address, unsigned short port, const std::s
     password_ = password;
     reconnect_ = false;
     
-    owner_->GetKristalliModule()->Connect(address.c_str(), port, SocketOverTCP);
+    owner_->GetKristalliModule()->Connect(address.c_str(), port, kNet::SocketOverTCP);
     loginstate_ = ConnectionPending;
     client_id_ = 0;
 }
@@ -87,12 +88,12 @@ void Client::Logout(bool fail)
 
 void Client::CheckLogin()
 {
-    MessageConnection* connection = GetConnection();
+    kNet::MessageConnection* connection = GetConnection();
     
     switch (loginstate_)
     {
     case ConnectionPending:
-        if ((connection) && (connection->GetConnectionState() == ConnectionOK))
+        if ((connection) && (connection->GetConnectionState() == kNet::ConnectionOK))
         {
             loginstate_ = Connected;
             MsgLogin msg;
@@ -104,7 +105,7 @@ void Client::CheckLogin()
     
     case LoggedIn:
         // If we have logged in, but connection dropped, prepare to resend login
-        if ((!connection) || (connection->GetConnectionState() != ConnectionOK))
+        if ((!connection) || (connection->GetConnectionState() != kNet::ConnectionOK))
         {
             loginstate_ = ConnectionPending;
         }
@@ -112,7 +113,7 @@ void Client::CheckLogin()
     }
 }
 
-MessageConnection* Client::GetConnection()
+kNet::MessageConnection* Client::GetConnection()
 {
     return owner_->GetKristalliModule()->GetMessageConnection();
 }

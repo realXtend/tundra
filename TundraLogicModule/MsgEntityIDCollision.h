@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgEntityIDCollision
 {
@@ -13,7 +12,7 @@ struct MsgEntityIDCollision
 	MsgEntityIDCollision(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -39,13 +38,13 @@ struct MsgEntityIDCollision
 		return 4 + 4;
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u32>(oldEntityID);
 		dst.Add<u32>(newEntityID);
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		oldEntityID = src.Read<u32>();
 		newEntityID = src.Read<u32>();

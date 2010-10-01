@@ -40,7 +40,7 @@
 #include "EventManager.h"
 #include "ServiceManager.h"
 #include "ConsoleCommandServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "RenderServiceInterface.h"
 #include "PythonEngine.h"
 #include "WorldStream.h"
@@ -55,13 +55,16 @@
 #include "LoginServiceInterface.h"
 #include "Frame.h"
 #include "Console.h"
+#include "ISoundService.h"
+#include "NaaliUi.h"
+#include "NaaliGraphicsView.h"
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
 #include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
-#include "CameraControllable.h"
+#include "Camera/CameraControllable.h"
 #include "Environment/Primitive.h"
 #include "Environment/PrimGeometryUtils.h"
 #include "EntityComponent/EC_AttachedSound.h"
@@ -99,8 +102,8 @@
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
-#include "QtInputKeyEvent.h"
-#include "QtInputMouseEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
 
 //#include <QDebug>
 
@@ -164,12 +167,12 @@ namespace PythonScript
         scene_event_category_ = em_->QueryEventCategory("Scene");
         
         // Create a new input context with a default priority of 100.
-        input = framework_->Input().RegisterInputContext("PythonInput", 100);
+        input = framework_->GetInput()->RegisterInputContext("PythonInput", 100);
 
         /* add events constants - now just the input events */
         //XXX move these to some submodule ('input'? .. better than 'constants'?)
-        /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", Input::Events::MOVE_FORWARD_PRESSED);
-        PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", Input::Events::MOVE_FORWARD_RELEASED);
+        /*PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_PRESSED", InputEvents::MOVE_FORWARD_PRESSED);
+        PyModule_AddIntConstant(apiModule, "MOVE_FORWARD_RELEASED", InputEvents::MOVE_FORWARD_RELEASED);
         LogInfo("Added event constants.");*/
 
         /* TODO: add other categories and expose the hierarchy as py submodules or something,
@@ -247,9 +250,9 @@ namespace PythonScript
         //input events. 
         //another option for enabling py handlers for these would be to allow
         //implementing input state in py, see the AvatarController and CameraController in rexlogic
-        /*if (category_id == inputeventcategoryid && event_id == Input::Events::INWORLD_CLICK)
+        /*if (category_id == inputeventcategoryid && event_id == InputEvents::INWORLD_CLICK)
         {
-            Input::Events::Movement *movement = checked_static_cast<Input::Events::Movement*>(data);
+            InputEvents::Movement *movement = checked_static_cast<InputEvents::Movement*>(data);
             
             value = PyObject_CallMethod(pmmInstance, "MOUSE_INPUT_EVENT", "iiiii", event_id, movement->x_.abs_, movement->y_.abs_, movement->x_.rel_, movement->y_.rel_);
         }
@@ -592,7 +595,7 @@ namespace PythonScript
 
     InputContext* PythonScriptModule::CreateInputContext(const QString &name, int priority)
     {
-        InputContextPtr new_input = framework_->Input().RegisterInputContext(name.toStdString().c_str(), priority);
+        InputContextPtr new_input = framework_->GetInput()->RegisterInputContext(name.toStdString().c_str(), priority);
         if (new_input)
         {
             LogDebug("Created new input context with name: " + name.toStdString());
@@ -805,7 +808,7 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     //ent_id = (entity_id_t) ent_id_int;
     event_id = (event_id_t) event_id_int;
     event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-    if (event_id == Input::Events::SWITCH_CAMERA_STATE) 
+    if (event_id == InputEvents::SWITCH_CAMERA_STATE) 
     {
         std::cout << "switch camera state gotten!" << std::endl;
         framework_->GetEventManager()->SendEvent(event_category, event_id, NULL);//&event_data);
@@ -1456,7 +1459,7 @@ PyObject* CreateEntity(PyObject *self, PyObject *value)
 //camera zoom - send an event like logic CameraControllable does:
             CameraZoomEvent event_data;
             //event_data.entity = entity_.lock(); // no entity for camera, :( -cm
-            event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+            event_data.amount = checked_static_cast<InputEvents::SingleAxisMovement*>(data)->z_.rel_;
             //if (event_data.entity) // only send the event if we have an existing entity, no point otherwise
             framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
 */
@@ -1633,7 +1636,7 @@ PyObject* SetAvatarYaw(PyObject *self, PyObject *args)
 
 PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
 {
-    Foundation::UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = PythonScript::self()->GetFramework()->GetService<UiServiceInterface>();
     if (!ui)
     {
         // If this occurs, we're most probably operating in headless mode.
@@ -1659,30 +1662,16 @@ PyObject* CreateUiProxyWidget(PyObject* self, PyObject *args)
     return PythonScriptModule::GetInstance()->WrapQObject(proxy);
 }
 
-PyObject* GetUiSceneManager(PyObject *self)
-{
-    Foundation::UiServiceInterface* ui= PythonScript::self()->GetFramework()->GetService<Foundation::UiServiceInterface>();
-    if (!ui)
-    {
-        // If this occurs, we're most probably operating in headless mode.
-        //XXX perhaps should not be an error, 'cause some things should just work in headless without complaining
-        PyErr_SetString(PyExc_RuntimeError, "UI service is missing.");
-        return NULL;
-    }
-
-    return PythonScriptModule::GetInstance()->WrapQObject(ui);
-}
-
 PyObject* DisconnectUIViewSignals(PyObject *self)
 {
-    QGraphicsView *view = PythonScript::self()->GetFramework()->GetUIView();
+    QGraphicsView *view = PythonScript::self()->GetFramework()->Ui()->GraphicsView();
     view->disconnect();
     Py_RETURN_NONE;
 }
 
 PyObject* GetUIView(PyObject *self)
 {
-    return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->GetFramework()->GetUIView());
+    return PythonScriptModule::GetInstance()->WrapQObject(PythonScript::self()->GetFramework()->Ui()->GraphicsView());
 }
 
 PyObject* GetRexLogic(PyObject *self)
@@ -1878,9 +1867,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"logError", (PyCFunction)PyLogError, METH_VARARGS,
     "Prints a text using the LogError-method."},
-    
-    {"getUiSceneManager", (PyCFunction)GetUiSceneManager, METH_NOARGS, 
-    "Gets the Naali-Qt UI scene manager"},
 
     {"getUiView", (PyCFunction)GetUIView, METH_NOARGS, 
     "Gets the Naali-Qt UI main view"},
@@ -1984,6 +1970,11 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);
             PythonQt::self()->registerClass(&EntityAction::staticMetaObject);
 
+            PythonQt::self()->registerClass(&UiServiceInterface::staticMetaObject);
+//            PythonQt::self()->registerClass(&UiProxyWidget::staticMetaObject);
+            PythonQt::self()->registerClass(&ISoundService::staticMetaObject);
+            PythonQt::self()->registerClass(&Input::staticMetaObject);
+
             //add placeable and friends when PyEntity goes?
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
             PythonQt::self()->registerClass(&OgreRenderer::EC_OgreMesh::staticMetaObject);
@@ -1996,7 +1987,7 @@ namespace PythonScript
             pythonqt_inited = true;
 
             //PythonQt::self()->registerCPPClass("Vector3df", "","", PythonQtCreateObject<Vector3Wrapper>);
-            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);            
+            //PythonQt::self()->registerClass(&Vector3::staticMetaObject);
         }
 
         //load the py written module manager using the py c api directly
