@@ -12,6 +12,8 @@
 
 #include <algorithm>
 
+using namespace kNet;
+
 namespace KristalliProtocol
 {
 
@@ -186,7 +188,8 @@ void KristalliProtocolModule::PerformConnection()
 {
     if (Connected() && serverConnection)
     {
-        network.CloseMessageConnection(serverConnection);
+        serverConnection->Close();
+//        network.CloseMessageConnection(serverConnection);
         serverConnection = 0;
     }
 
@@ -204,7 +207,8 @@ void KristalliProtocolModule::Disconnect()
     if (serverConnection)
     {
         serverConnection->Disconnect();
-        network.CloseMessageConnection(serverConnection);
+//        network.CloseMessageConnection(serverConnection);
+        ///\todo Wait? This closes the connection.
         serverConnection = 0;
     }
 
@@ -240,10 +244,11 @@ void KristalliProtocolModule::StopServer()
     }
 }
 
-void KristalliProtocolModule::NewConnectionEstablished(MessageConnection *source)
+void KristalliProtocolModule::NewConnectionEstablished(kNet::MessageConnection *source)
 {
     source->RegisterInboundMessageHandler(this);
-    source->SetDatagramInFlowRatePerSecond(200);
+    ///\todo Regression. Re-enable. -jj.
+//    source->SetDatagramInFlowRatePerSecond(200);
     
     UserConnection connection;
     connection.userID = AllocateNewConnectionID();

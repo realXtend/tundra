@@ -22,6 +22,7 @@
 
 #include "MemoryLeakCheck.h"
 
+using namespace kNet;
 using namespace RexTypes;
 
 namespace TundraLogic
@@ -79,7 +80,7 @@ KristalliProtocol::UserConnectionList& Server::GetUserConnections()
     return owner_->GetKristalliModule()->GetUserConnections();
 }
 
-KristalliProtocol::UserConnection* Server::GetUserConnection(MessageConnection* source)
+KristalliProtocol::UserConnection* Server::GetUserConnection(kNet::MessageConnection* source)
 {
     return owner_->GetKristalliModule()->GetUserConnection(source);
 }
@@ -103,7 +104,7 @@ void Server::HandleKristalliEvent(event_id_t event_id, IEventData* data)
     }
 }
 
-void Server::HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes)
+void Server::HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes)
 {
     if (!owner_->IsServer())
         return;
@@ -132,7 +133,7 @@ void Server::HandleKristalliMessage(MessageConnection* source, message_id_t id, 
     }
 }
 
-void Server::HandleLogin(MessageConnection* source, const MsgLogin& msg)
+void Server::HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg)
 {
     // For now, automatically accept the connection if it's from a known user
     KristalliProtocol::UserConnection* user = GetUserConnection(source);

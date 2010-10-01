@@ -5,6 +5,8 @@
 
 #include "ForwardDefines.h"
 
+#include "kNet.h"
+
 struct MsgLogin;
 class MessageConnection;
 
@@ -46,7 +48,7 @@ public:
     bool IsRunning() const;
     
     //! Get matching userconnection from a messageconnection, or null if unknown
-    KristalliProtocol::UserConnection* GetUserConnection(MessageConnection* source);
+    KristalliProtocol::UserConnection* GetUserConnection(kNet::MessageConnection* source);
     
     //! Get all connected users
     KristalliProtocol::UserConnectionList& GetUserConnections();
@@ -56,13 +58,13 @@ public:
     
 private:
     /// Handle a Kristalli protocol message
-    void HandleKristalliMessage(MessageConnection* source, message_id_t id, const char* data, size_t numBytes);
+    void HandleKristalliMessage(kNet::MessageConnection* source, kNet::message_id_t id, const char* data, size_t numBytes);
     
     /// Handle a user disconnecting
     void HandleUserDisconnected(KristalliProtocol::UserConnection* user);
     
     /// Handle a login message
-    void HandleLogin(MessageConnection* source, const MsgLogin& msg);
+    void HandleLogin(kNet::MessageConnection* source, const MsgLogin& msg);
     
     /// Kristalli event category
     event_category_id_t kristalliEventCategory_;

@@ -1,7 +1,6 @@
 #pragma once
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 struct MsgClientJoined
 {
@@ -13,7 +12,7 @@ struct MsgClientJoined
 	MsgClientJoined(const char *data, size_t numBytes)
 	{
 		InitToDefault();
-		DataDeserializer dd(data, numBytes);
+		kNet::DataDeserializer dd(data, numBytes);
 		DeserializeFrom(dd);
 	}
 
@@ -39,7 +38,7 @@ struct MsgClientJoined
 		return 1 + 1 + userName.size()*1;
 	}
 
-	inline void SerializeTo(DataSerializer &dst) const
+	inline void SerializeTo(kNet::DataSerializer &dst) const
 	{
 		dst.Add<u8>(userID);
 		dst.Add<u8>(userName.size());
@@ -47,7 +46,7 @@ struct MsgClientJoined
 			dst.AddArray<s8>(&userName[0], userName.size());
 	}
 
-	inline void DeserializeFrom(DataDeserializer &src)
+	inline void DeserializeFrom(kNet::DataDeserializer &src)
 	{
 		userID = src.Read<u8>();
 		userName.resize(src.Read<u8>());

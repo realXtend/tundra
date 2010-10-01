@@ -17,8 +17,7 @@
 
 #include <QDomDocument>
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 IComponent::IComponent(Foundation::Framework* framework) :
     parent_entity_(0),
@@ -208,14 +207,14 @@ void IComponent::DeserializeFrom(QDomElement& element, AttributeChange::Type cha
     }
 }
 
-void IComponent::SerializeToBinary(DataSerializer& dest) const
+void IComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(attributes_.size());
     for (uint i = 0; i < attributes_.size(); ++i)
         attributes_[i]->ToBinary(dest);
 }
 
-void IComponent::DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change)
+void IComponent::DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     u8 num_attributes = source.Read<u8>();
     if (num_attributes != attributes_.size())
@@ -227,7 +226,7 @@ void IComponent::DeserializeFromBinary(DataDeserializer& source, AttributeChange
         attributes_[i]->FromBinary(source, change);
 }
 
-bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const
+bool IComponent::SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const
 {
     u8 num_attributes = previousData.Read<u8>();
     if (num_attributes != attributes_.size())
@@ -259,11 +258,11 @@ bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& 
         {
             if (changed[i])
             {
-                dest.Add<bit>(1);
+                dest.Add<kNet::bit>(1);
                 attributes_[i]->ToBinary(dest);
             }
             else
-                dest.Add<bit>(0);
+                dest.Add<kNet::bit>(0);
         }
         
         return true;
@@ -272,13 +271,13 @@ bool IComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& 
     return false;
 }
 
-bool IComponent::DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change)
+bool IComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     int num_changed = 0;
     
     for (uint i = 0; i < attributes_.size(); ++i)
     {
-        u8 b = source.Read<bit>();
+        u8 b = source.Read<kNet::bit>();
         if (b)
         {
             attributes_[i]->FromBinary(source, change);

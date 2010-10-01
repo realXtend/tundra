@@ -28,6 +28,7 @@ add_definitions (-DMODULE_EXPORTS)
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
+use_package_knet()
 use_modules (Core Foundation SceneManager Interfaces)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
@@ -35,11 +36,12 @@ build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
+link_package_knet()
 link_modules (Core Foundation SceneManager Interfaces)
 
 SetupCompileFlagsWithPCH()
 
 # Add Kristalli needed for the binary serializer/deserializer
-target_link_libraries (${TARGET_NAME} Core.lib Network.lib)
+target_link_libraries (${TARGET_NAME})
 
 final_target ()

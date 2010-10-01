@@ -9,8 +9,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "UserConnection.h"
 
-#include "clb/Network/Network.h"
-#include "clb/Time/PolledTimer.h"
+#include "kNet.h"
 
 namespace KristalliProtocol
 {
@@ -18,7 +17,7 @@ namespace KristalliProtocol
     
     //  warning C4275: non dll-interface class 'IMessageHandler' used as base for dll-interface class 'KristalliProtocolModule'
     // Tämän voi ignoroida, koska base classiin ei tarvitse kajota ulkopuolelta - restrukturoin jos/kun on tarvetta.
-    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public IMessageHandler, public INetworkServerListener
+    class KRISTALLIPROTOCOL_MODULE_API KristalliProtocolModule : public IModule, public kNet::IMessageHandler, public kNet::INetworkServerListener
     {
     public:
         KristalliProtocolModule();
@@ -35,25 +34,25 @@ namespace KristalliProtocol
         MODULE_LOGGING_FUNCTIONS;
 
         /// Connects to the Kristalli server at the given address.
-        void Connect(const char *ip, unsigned short port, SocketTransportLayer transport);
+        void Connect(const char *ip, unsigned short port, kNet::SocketTransportLayer transport);
 
         void Disconnect();
 
         /// Starts a Kristalli server at the given port/transport.
         /// \return true if successful
-        bool StartServer(unsigned short port, SocketTransportLayer transport);
+        bool StartServer(unsigned short port, kNet::SocketTransportLayer transport);
         
         /// Stops Kristalli server
         void StopServer();
         
         /// Invoked by the Network library for each received network message.
-        void HandleMessage(MessageConnection *source, message_id_t id, const char *data, size_t numBytes);
+        void HandleMessage(kNet::MessageConnection *source, kNet::message_id_t id, const char *data, size_t numBytes);
 
         /// Invoked by the Network library for each new connection
-        void NewConnectionEstablished(MessageConnection* source);
+        void NewConnectionEstablished(kNet::MessageConnection* source);
         
         /// Invoked by the Network library for disconnected client
-        void ClientDisconnected(MessageConnection* source);
+        void ClientDisconnected(kNet::MessageConnection* source);
 
         bool Connected() const { return serverConnection != 0; }
 
@@ -67,10 +66,10 @@ namespace KristalliProtocol
         void SubscribeToNetworkEvents();
 
         /// Return message connection, for use by other modules (null if no connection made)
-        MessageConnection* GetMessageConnection() const { return serverConnection; }
+        kNet::MessageConnection* GetMessageConnection() const { return serverConnection; }
         
         /// Return server, for use by other modules (null if not running)
-        NetworkServer* GetServer() const { return server; }
+        kNet::NetworkServer* GetServer() const { return server; }
         
         /// Return whether we are a server
         bool IsServer() const { return server != 0; }
@@ -82,13 +81,13 @@ namespace KristalliProtocol
         UserConnectionList GetAuthenticatedUsers() const;
         
         /// Gets user by message connection. Returns null if no such connection
-        UserConnection* GetUserConnection(MessageConnection* source);
+        UserConnection* GetUserConnection(kNet::MessageConnection* source);
         /// Gets user by connection ID. Returns null if no such connection
         UserConnection* GetUserConnection(u8 id);
         
     private:
         /// This timer tracks when we perform the next reconnection attempt when the connection is lost.
-        clb::PolledTimer reconnectTimer;
+        kNet::PolledTimer reconnectTimer;
 
         /// Amount of retries remaining for reconnection. Is low for the initial connection, higher for reconnection
         int reconnectAttempts;
@@ -108,11 +107,11 @@ namespace KristalliProtocol
         /// Store the port number we are desiring to connect to. Used for reconnecting
         unsigned short serverPort;
         /// Store the transport type. Used for reconnecting
-        SocketTransportLayer serverTransport;
+        kNet::SocketTransportLayer serverTransport;
 
-        Network network;
-        MessageConnection *serverConnection;
-        NetworkServer *server;
+        kNet::Network network;
+        kNet::MessageConnection *serverConnection;
+        kNet::NetworkServer *server;
         
         /// Users that are connected to server
         UserConnectionList connections;

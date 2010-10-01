@@ -17,10 +17,11 @@
 #include <QDomDocument>
 #include <QFile>
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 #include "MemoryLeakCheck.h"
+
+using namespace kNet;
 
 namespace Scene
 {

@@ -151,6 +151,8 @@ configure_curl()
 configure_openjpeg()
 configure_qtpropertybrowser()
 
+use_package_knet()
+
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.
 if (NOT EXISTS CMakeBuildConfig.txt)

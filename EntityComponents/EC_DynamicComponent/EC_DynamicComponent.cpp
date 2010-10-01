@@ -7,8 +7,7 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
-#include "clb/Network/DataDeserializer.h"
-#include "clb/Network/DataSerializer.h"
+#include "kNet.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
