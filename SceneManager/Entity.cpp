@@ -202,7 +202,7 @@ namespace Scene
     {
         for(size_t i = 0; i < components_.size() ; ++i)
         {
-            IAttribute *attr = components_[i]->GetAttribute(name);
+            IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
             if (attr)
                 return attr;
         }
@@ -214,7 +214,7 @@ namespace Scene
         std::vector<IAttribute *> ret;
         for(size_t i = 0; i < components_.size() ; ++i)
         {
-            IAttribute *attr = components_[i]->GetAttribute(name);
+            IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
             if (attr)
                 ret.push_back(attr);
         }
@@ -282,16 +282,19 @@ namespace Scene
         if (!HasReceivers(act))
             return;
 
-        if (params.size() == 0)
-            act->Trigger();
-        else if (params.size() == 1)
-            act->Trigger(params[0]);
-        else if (params.size() == 2)
-            act->Trigger(params[0], params[1]);
-        else if (params.size() == 3)
-            act->Trigger(params[0], params[1], params[2]);
-        else if (params.size() >= 4)
-            act->Trigger(params[0], params[1], params[2], params.mid(3));
+        if ((type & EntityAction::Local) != 0)
+        {
+            if (params.size() == 0)
+                act->Trigger();
+            else if (params.size() == 1)
+                act->Trigger(params[0]);
+            else if (params.size() == 2)
+                act->Trigger(params[0], params[1]);
+            else if (params.size() == 3)
+                act->Trigger(params[0], params[1], params[2]);
+            else if (params.size() >= 4)
+                act->Trigger(params[0], params[1], params[2], params.mid(3));
+        }
 
         GetScene()->EmitActionTriggered(this, action, params, type);
     }
