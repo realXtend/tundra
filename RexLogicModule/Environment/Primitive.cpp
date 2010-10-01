@@ -403,7 +403,8 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
     if (!anim)
         return false;
     // Attach the mesh entity to animationcontroller, if not yet attached
-    ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+    //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+    ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
     if (!mesh)
         return false;
     OgreRenderer::EC_Mesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
@@ -881,7 +882,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), "rex");
         if (!meshptr)
             return;
         OgreRenderer::EC_Mesh& mesh = *(dynamic_cast<OgreRenderer::EC_Mesh*>(meshptr.get()));
@@ -939,7 +941,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         // Remove mesh component if exists
-        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
@@ -1171,7 +1174,8 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
         if (anim)
         {
             // Attach the mesh entity to animationcontroller, if not yet attached
-            ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+            //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+            ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
             if (!mesh)
                 return;
             OgreRenderer::EC_Mesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
