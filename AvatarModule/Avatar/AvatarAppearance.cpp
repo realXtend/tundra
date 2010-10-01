@@ -11,7 +11,7 @@
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialUtils.h"
@@ -187,7 +187,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -268,7 +268,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -284,7 +284,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -344,7 +344,7 @@ namespace Avatar
     void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
                 
         // Mesh needs to be cloned if there are attachments which need to hide vertices
         bool need_mesh_clone = false;
@@ -395,7 +395,7 @@ namespace Avatar
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
                 
         mesh->RemoveAllAttachments();
         
@@ -419,7 +419,7 @@ namespace Avatar
     void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
                 
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -482,7 +482,7 @@ namespace Avatar
     void AvatarAppearance::ResetBones(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
                 
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -510,7 +510,7 @@ namespace Avatar
     
     void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, float value)
     {
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -664,7 +664,7 @@ namespace Avatar
     {
         if (!entity)
             return 0;            
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         if (!mesh)
             return 0;
         
@@ -2080,7 +2080,7 @@ namespace Avatar
             return false; 
                    
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         
         if (!mesh || !appearance)
             return false;       
@@ -2165,7 +2165,7 @@ namespace Avatar
             return false; 
                    
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         
         if (!mesh || !appearance)
             return false;    

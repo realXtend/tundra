@@ -32,7 +32,7 @@ namespace OgreRenderer
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
     class EC_OgrePlaceable;
-    class EC_OgreMesh;
+    class EC_Mesh;
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;

@@ -8,13 +8,13 @@
 
 namespace Ogre
 {
-	class RenderWindow;
+    class RenderWindow;
     class Vector3;
 }
 
 namespace OgreRenderer
 {
-	class Renderer;
+    class Renderer;
 }
 namespace CAVEStereo
 {
@@ -22,50 +22,50 @@ namespace CAVEStereo
     class CAVESettingsWidget;
     class CAVEView;
 
-	//! This class handles the CAVE view managing
+    //! This class handles the CAVE view managing
     class CAVEManager: public QObject 
     {
         Q_OBJECT
         public:
-			CAVEManager(OgreRenderer::Renderer* r);
+            CAVEManager(OgreRenderer::Renderer* r);
             virtual ~CAVEManager();
 
-			//!Disable cave (will also remove all views)
+            //!Disable cave (will also remove all views)
             void DisableCAVE();
-			//!Enable cave
+            //!Enable cave
             void EnableCAVE();
 
-			//! get windows used by cavemanager. NOTE: when cave is shutdown, the manager will destroy the windows
-			QVector<Ogre::RenderWindow*> getExternalWindows();
+            //! get windows used by cavemanager. NOTE: when cave is shutdown, the manager will destroy the windows
+            QVector<Ogre::RenderWindow*> getExternalWindows();
             
         public slots:
-			//initializes ui
+            //initializes ui
             void InitializeUi();
 
-			//Slot to toggle cave on/off
+            //Slot to toggle cave on/off
             void CAVEToggled(bool val);
-			//Add view, this version lets you to decide on window width/height
+            //Add view, this version lets you to decide on window width/height
             void AddView(const QString& name, qreal window_width, qreal window_height, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
-			/*Add view
-			@param name of the view (must be unique)
-			@param top_left topleft corner of the view
-			@param bottom_left bottom left corner of the view
-			@param bottom_right bottom right corner of the view
-			@param eye_pos position of the eye, relative to view
-			*/
+            /*Add view
+            @param name of the view (must be unique)
+            @param top_left topleft corner of the view
+            @param bottom_left bottom left corner of the view
+            @param bottom_right bottom right corner of the view
+            @param eye_pos position of the eye, relative to view
+            */
             void AddView(const QString& name,  Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos);
 
-			void RemoveView(const QString& name);
-			void ModifyView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
-			void GetViewParametersView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
+            void RemoveView(const QString& name);
+            void ModifyView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
+            void GetViewParametersView(const QString& name, Ogre::Vector3 &top_left, Ogre::Vector3 &bottom_left, Ogre::Vector3 &bottom_right, Ogre::Vector3 &eye_pos); 
         private:
-			//! is cave enabled
+            //! is cave enabled
             bool enabled_;
-			//! renderer handle
-			OgreRenderer::Renderer* renderer_;
-			//! views
+            //! renderer handle
+            OgreRenderer::Renderer* renderer_;
+            //! views
             QMap<QString, CAVEView*> view_map_;
-			//! settings widget
+            //! settings widget
             CAVESettingsWidget* settings_widget_;
             
     };

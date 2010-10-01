@@ -142,7 +142,7 @@ namespace ECEditor
         AttributeEditorMap::iterator iter = attributeEditors_.begin();
         while(iter != attributeEditors_.end())
         {
-            IAttribute *attribute = component->GetAttribute(iter->second->GetAttributeName().toStdString());
+            IAttribute *attribute = component->GetAttribute(iter->second->GetAttributeName());
             if(attribute)
                 iter->second->AddNewAttribute(attribute);
             iter++;
@@ -168,7 +168,7 @@ namespace ECEditor
                 AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
                 while(attributeIter != attributeEditors_.end())
                 {
-                    IAttribute *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName().toStdString());
+                    IAttribute *attribute = componentPtr->GetAttribute(attributeIter->second->GetAttributeName());
                     if(attribute)
                         attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;

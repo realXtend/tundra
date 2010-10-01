@@ -91,7 +91,12 @@ void IModule::InitializeInternal()
 void IModule::UninitializeInternal()
 {
     assert(framework_ != 0);
-    assert(state_ == MS_Initialized);
+    if (state_ != MS_Initialized)
+    {
+        Poco::Logger::get(Name()).error("Uninitialize called on non-initialized module");
+        // Initialization failed somehow, can't do proper uninit
+        return;
+    }
 
     for(size_t n=0 ; n<component_registrars_.size() ; ++n)
         component_registrars_[n]->Unregister(framework_);

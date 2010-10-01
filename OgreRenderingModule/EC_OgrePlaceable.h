@@ -6,6 +6,7 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
+#include "Transform.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
@@ -25,7 +26,11 @@ Ogre (scene node) component.
 
 Registered by OgreRenderer::OgreRenderingModule.
 
-<b>No Attributes</b>:
+<b>Attributes</b>:
+<ul>
+<li>Transform: transform
+<div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
@@ -61,7 +66,18 @@ Does not emit any actions.
         Q_PROPERTY(float Roll READ GetRoll)
 
     public:
+        //! Transformation attribute for position, rotation and scale adjustments.
+        //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+        Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
+        DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
+
         virtual ~EC_OgrePlaceable();
+        
+        //! Set component as serializable.
+        /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
+            as EC_NetworkPosition controls the actual authoritative position (including interpolation)
+         */
+        virtual bool IsSerializable() const { return true; }
         
         //! sets parent placeable
         /*! set null placeable to attach to scene root (the default)
@@ -172,6 +188,13 @@ Does not emit any actions.
         //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
         void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
+    private slots:
+        //! Handle attributechange
+        /*! \param attribute Attribute that changed.
+            \param change Change type.
+         */
+        void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    
     private:
         //! constructor
         /*! \param module renderer module

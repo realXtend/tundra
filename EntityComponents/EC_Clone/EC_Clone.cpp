@@ -4,7 +4,7 @@
  *  @file   EC_Clone.cpp
  *  @brief  EC_Clone creates an OGRE clone entity from the the original entity.
  *          This component can be used e.g. when visualizing object duplication in the world.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -16,7 +16,7 @@
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
@@ -124,10 +124,10 @@ void EC_Clone::Create()
     Ogre::Entity *originalEntity  = 0;
     Ogre::SceneNode *originalNode = 0;
 
-    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
-    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic()))
+    // Check out if this entity has EC_Mesh or EC_OgreCustomObject.
+    if (entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic()))
     {
-        OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         assert(ec_mesh);
 
         originalEntity = ec_mesh->GetEntity();
@@ -157,7 +157,7 @@ void EC_Clone::Create()
     }
     else
     {
-        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Clone.");
+        LogError("This entity doesn't have either EC_Mesh or EC_OgreCustomObject present. Cannot create EC_Clone.");
         return;
     }
 

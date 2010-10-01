@@ -5,7 +5,7 @@
 #include "EC_OgrePlaceable.h"
 #include "Renderer.h"
 #include "InputServiceInterface.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 

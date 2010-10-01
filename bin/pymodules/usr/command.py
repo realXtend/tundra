@@ -1466,7 +1466,7 @@ if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's re
 
 if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEntity
     #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
-    ent = naali.createEntity(["EC_OgrePlaceable", "EC_OgreMesh"])
+    ent = naali.createEntity(["EC_OgrePlaceable", "EC_Mesh"])
 
     ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     ent.mesh.SetMesh("axes.mesh")

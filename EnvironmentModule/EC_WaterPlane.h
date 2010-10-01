@@ -150,6 +150,10 @@ class EC_WaterPlane : public IComponent
         DEFINE_QPROPERTY_ATTRIBUTE(QString, materialNameAttr);
         Q_PROPERTY(QString materialNameAttr READ getmaterialNameAttr WRITE setmaterialNameAttr); 
         
+        // Material texture, currently commented out, working feature.
+        //DEFINE_QPROPERTY_ATTRIBUTE(QString, textureNameAttr);
+        //Q_PROPERTY(QString textureNameAttr READ gettextureNameAttr WRITE settextureNameAttr); 
+
         /// Underwater fog color
         DEFINE_QPROPERTY_ATTRIBUTE(Color,  fogColorAttr);
         Q_PROPERTY(Color fogColorAttr READ getfogColorAttr WRITE setfogColorAttr); 

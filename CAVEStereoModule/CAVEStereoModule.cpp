@@ -11,57 +11,56 @@ namespace CAVEStereo
 
     CAVEStereoModule::CAVEStereoModule() :
         IModule(type_name_static_),
-		stereo_(0),
-		cave_(0)
-	{
+        stereo_(0),
+        cave_(0)
+    {
 
-	}
-	CAVEStereoModule::~CAVEStereoModule()
-	{
-		SAFE_DELETE(stereo_);
-		SAFE_DELETE(cave_);
-	}
-	QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
-	{
-		return cave_->getExternalWindows();
-	}
+    }
+    CAVEStereoModule::~CAVEStereoModule()
+    {
+        SAFE_DELETE(stereo_);
+        SAFE_DELETE(cave_);
+    }
+    QVector<Ogre::RenderWindow*> CAVEStereoModule::GetCAVERenderWindows()
+    {
+        return cave_->getExternalWindows();
+    }
 
-	void CAVEStereoModule::Load()
-	{
-		
-	}
+    void CAVEStereoModule::Load()
+    {
+
+    }
     void CAVEStereoModule::PreInitialize()
-	{
+    {
 
-	}
+    }
     void CAVEStereoModule::Initialize()
-	{
+    {
 
-	}
+    }
     void CAVEStereoModule::PostInitialize()
-	{
-		OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
-		if(rendererModule)
-		{
-			OgreRenderer::RendererPtr renderer = rendererModule->GetRenderer();
-			if(renderer.get())
-			{
-				stereo_ = new StereoController(renderer.get(),this);
-				cave_ = new CAVEManager(renderer.get());
-				stereo_->InitializeUi();
-				cave_->InitializeUi();
-			}
-		}
-		
-	}
+    {
+        OgreRenderer::OgreRenderingModule *rendererModule = framework_->GetModuleManager()->GetModule<OgreRenderer::OgreRenderingModule>().lock().get();
+        if(rendererModule)
+        {
+            OgreRenderer::RendererPtr renderer = rendererModule->GetRenderer();
+            if(renderer.get())
+            {
+                stereo_ = new StereoController(renderer.get(),this);
+                cave_ = new CAVEManager(renderer.get());
+                stereo_->InitializeUi();
+                cave_->InitializeUi();
+            }
+        }
+    }
     void CAVEStereoModule::Uninitialize()
-	{
+    {
 
-	}
+    }
     void CAVEStereoModule::Update(f64 frametime)
-	{
+    {
 
-	}
+    }
 }
 //! --- POCO Manifest Stuff ---
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);

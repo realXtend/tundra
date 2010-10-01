@@ -13,13 +13,13 @@
 namespace CAVEStereo
 {
 
-	ExternalRenderWindow::ExternalRenderWindow()
-	{
-	}
-	ExternalRenderWindow::~ExternalRenderWindow()
-	{
-	}
-	Ogre::RenderWindow* ExternalRenderWindow::CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen)
+    ExternalRenderWindow::ExternalRenderWindow()
+    {
+    }
+    ExternalRenderWindow::~ExternalRenderWindow()
+    {
+    }
+    Ogre::RenderWindow* ExternalRenderWindow::CreateRenderWindow(const std::string &name,  int width, int height, int left, int top, bool fullscreen)
     {
         bool stealparent 
             ((parentWidget())? true : false);
@@ -43,12 +43,12 @@ namespace CAVEStereo
 #endif
 
 #ifdef Q_WS_MAC
-	// qt docs say it's a HIViewRef on carbon,
- 	// carbon docs say HIViewGetWindow gets a WindowRef out of it
+    // qt docs say it's a HIViewRef on carbon,
+    // carbon docs say HIViewGetWindow gets a WindowRef out of it
 
 #if 0
-	HIViewRef vref = (HIViewRef) nativewin-> winId ();
-	WindowRef wref = HIViewGetWindow(vref);
+    HIViewRef vref = (HIViewRef) nativewin-> winId ();
+    WindowRef wref = HIViewGetWindow(vref);
         winhandle = Ogre::StringConverter::toString(
            (unsigned long) (HIViewGetRoot(wref)));
 #else
@@ -90,13 +90,13 @@ namespace CAVEStereo
         if (top != -1)
             params["top"] = ToString(top);
 
-		render_window_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
+        render_window_ = Ogre::Root::getSingletonPtr()-> createRenderWindow(name, width, height, fullscreen, &params);
 
         return render_window_;
 
     }
 
-	void ExternalRenderWindow::ResizeWindow(int width, int height)
+    void ExternalRenderWindow::ResizeWindow(int width, int height)
     {
         if (render_window_)
         {
@@ -110,7 +110,7 @@ namespace CAVEStereo
         ResizeWindow(width(), height());
     }
 
-	void ExternalRenderWindow::keyPressEvent(QKeyEvent *e)
+    void ExternalRenderWindow::keyPressEvent(QKeyEvent *e)
     {
         if(e->modifiers() == Qt::ControlModifier && e->key() == Qt::Key_F)
         {
