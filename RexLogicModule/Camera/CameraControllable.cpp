@@ -219,119 +219,139 @@ namespace RexLogic
         Foundation::RenderServiceInterface *renderer = framework_->GetService<Foundation::RenderServiceInterface>();
         Scene::EntityPtr target = target_entity_.lock();
         Scene::EntityPtr camera = camera_entity_.lock();
-        
-        if (renderer && target && camera)
+
+        // Note: On Tundra we don't have the target. Hack the freelook cam to work in such case also.
+        if (renderer && /*target && */camera)
         {
             OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-
-            // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
-            EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
-            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-            if (netpos && placeable)
+            // hack begin
+            if (!target)
             {
-                Vector3df avatar_pos = placeable->GetPosition();
-                Quaternion avatar_orientation = netpos->orientation_; 
-
-                if (current_state_ == FirstPerson || current_state_ == ThirdPerson)
-                {
-                    // this is mostly for third person camera, but also needed by first person camera since it sets proper initial orientation for the camera
-                    Vector3df pos = avatar_pos;
-                    pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_X * camera_distance_);
-                    pos += (avatar_orientation * camera_offset_);
-                    camera_placeable->SetPosition(pos);
-                    Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
-                    camera_placeable->LookAt(lookat); 
-                    SetThirdPersonLookAt(lookat);
-                }
-                
-                if (current_state_ == FirstPerson)
-                {
-                    bool fallback = true;
-
-                    // Try to use head bone from target entity to get the first person camera position
-                    OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-                    EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
-                    if (mesh && appearance)
-                    {
-                        Ogre::Entity* ent = mesh->GetEntity();
-                        if (ent)
-                        {
-                            Ogre::SkeletonInstance* skel = ent->getSkeleton();
-                            
-                            std::string view_bone_name;
-                            float adjustheight = mesh->GetAdjustPosition().z;
-                            
-                            if (appearance->HasProperty("viewbone"))
-                            {
-                                // This bone property is exclusively for view tracking & assumed to be correct position, no offset
-                                view_bone_name = appearance->GetProperty("viewbone");
-                            }
-                            else if (appearance->HasProperty("headbone"))
-                            {
-                                view_bone_name = appearance->GetProperty("headbone");
-                                // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
-                                // which is not preferable, but necessary
-                                adjustheight += 0.15f;
-                            }
-                            
-                            if (!view_bone_name.empty())
-                            {
-                                if (skel && skel->hasBone(view_bone_name))
-                                {
-                                    // Hack: force Ogre to update skeleton with current animation state, even if avatar invisible
-                                    if (ent->getAllAnimationStates())
-                                        skel->setAnimationState(*ent->getAllAnimationStates());
-                                    
-                                    Ogre::Bone* bone = skel->getBone(view_bone_name);
-                                    Ogre::Vector3 headpos = bone->_getDerivedPosition();
-                                    Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
-                                    RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * ourheadpos);
-                                    camera_placeable->SetPosition(campos);
-                                    fallback = false;
-                                }
-                            }
-                        }
-                    }
-                    // Fallback using fixed position
-                    if (fallback)
-                    {
-                        RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * camera_offset_firstperson_);
-                        camera_placeable->SetPosition(campos);
-                    }
-
-                    // update camera pitch
-                    if (drag_pitch_ != 0)
-                    {
-                        firstperson_pitch_ += drag_pitch_ * firstperson_sensitivity_;
-                        firstperson_pitch_ = clamp(firstperson_pitch_, -HALF_PI, HALF_PI);
-                    }
-                    camera_placeable->SetPitch(firstperson_pitch_);
-                }
-
                 if (current_state_ == FreeLook)
                 {
                     const float trans_dt = (float)frametime * sensitivity_;
 
                     RexTypes::Vector3 pos = camera_placeable->GetPosition();
                     pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
-                    ClampPosition(pos);
+                    //ClampPosition(pos);
                     camera_placeable->SetPosition(pos);
 
                     camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
                     camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
                 }
-
-                if (current_state_ == Tripod)
+            }
+            // hack end
+            else
+            {
+                // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
+                EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
+                OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                if (netpos && placeable)
                 {
-                    const float trans_dt = (float)frametime * sensitivity_;
+                    Vector3df avatar_pos = placeable->GetPosition();
+                    Quaternion avatar_orientation = netpos->orientation_; 
 
-                    RexTypes::Vector3 pos = camera_placeable->GetPosition();
-                    pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
-                    ClampPosition(pos);
-                    camera_placeable->SetPosition(pos);
+                    if (current_state_ == FirstPerson || current_state_ == ThirdPerson)
+                    {
+                        // this is mostly for third person camera, but also needed by first person camera since it sets proper initial orientation for the camera
+                        Vector3df pos = avatar_pos;
+                        pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_X * camera_distance_);
+                        pos += (avatar_orientation * camera_offset_);
+                        camera_placeable->SetPosition(pos);
+                        Vector3df lookat = avatar_pos + avatar_orientation * camera_offset_;
+                        camera_placeable->LookAt(lookat); 
+                        SetThirdPersonLookAt(lookat);
+                    }
+                    
+                    if (current_state_ == FirstPerson)
+                    {
+                        bool fallback = true;
 
-                    camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
-                    camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
+                        // Try to use head bone from target entity to get the first person camera position
+                        OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                        EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
+                        if (mesh && appearance)
+                        {
+                            Ogre::Entity* ent = mesh->GetEntity();
+                            if (ent)
+                            {
+                                Ogre::SkeletonInstance* skel = ent->getSkeleton();
+                                
+                                std::string view_bone_name;
+                                float adjustheight = mesh->GetAdjustPosition().z;
+                                
+                                if (appearance->HasProperty("viewbone"))
+                                {
+                                    // This bone property is exclusively for view tracking & assumed to be correct position, no offset
+                                    view_bone_name = appearance->GetProperty("viewbone");
+                                }
+                                else if (appearance->HasProperty("headbone"))
+                                {
+                                    view_bone_name = appearance->GetProperty("headbone");
+                                    // The biped head bone is anchored at the neck usually. Therefore a guessed fixed offset is needed,
+                                    // which is not preferable, but necessary
+                                    adjustheight += 0.15f;
+                                }
+                                
+                                if (!view_bone_name.empty())
+                                {
+                                    if (skel && skel->hasBone(view_bone_name))
+                                    {
+                                        // Hack: force Ogre to update skeleton with current animation state, even if avatar invisible
+                                        if (ent->getAllAnimationStates())
+                                            skel->setAnimationState(*ent->getAllAnimationStates());
+                                        
+                                        Ogre::Bone* bone = skel->getBone(view_bone_name);
+                                        Ogre::Vector3 headpos = bone->_getDerivedPosition();
+                                        Vector3df ourheadpos(-headpos.z + 0.5f, -headpos.x, headpos.y + adjustheight);
+                                        RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * ourheadpos);
+                                        camera_placeable->SetPosition(campos);
+                                        fallback = false;
+                                    }
+                                }
+                            }
+                        }
+                        // Fallback using fixed position
+                        if (fallback)
+                        {
+                            RexTypes::Vector3 campos = avatar_pos + (avatar_orientation * camera_offset_firstperson_);
+                            camera_placeable->SetPosition(campos);
+                        }
+
+                        // update camera pitch
+                        if (drag_pitch_ != 0)
+                        {
+                            firstperson_pitch_ += drag_pitch_ * firstperson_sensitivity_;
+                            firstperson_pitch_ = clamp(firstperson_pitch_, -HALF_PI, HALF_PI);
+                        }
+                        camera_placeable->SetPitch(firstperson_pitch_);
+                    }
+
+                    if (current_state_ == FreeLook)
+                    {
+                        const float trans_dt = (float)frametime * sensitivity_;
+
+                        RexTypes::Vector3 pos = camera_placeable->GetPosition();
+                        pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
+                        ClampPosition(pos);
+                        camera_placeable->SetPosition(pos);
+
+                        camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
+                        camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
+                    }
+
+                    if (current_state_ == Tripod)
+                    {
+                        const float trans_dt = (float)frametime * sensitivity_;
+
+                        RexTypes::Vector3 pos = camera_placeable->GetPosition();
+                        pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
+                        ClampPosition(pos);
+                        camera_placeable->SetPosition(pos);
+
+                        camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
+                        camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
+                    }
                 }
             }
         }
