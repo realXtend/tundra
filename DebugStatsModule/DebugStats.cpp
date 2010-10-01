@@ -488,12 +488,20 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     Scene::EntityPtr entity = scene->GetEntity(id);
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
-
+/*
     QStringList execParameters;
     for(size_t i = 2; i < params.size(); ++i)
         execParameters << params[i].c_str();
+*/
 
-    entity->Exec(params[1].c_str(), execParameters);
+    if (params.size() == 3)
+    {
+        int type = ParseString<int>(params[2], 0);
+        if (id != 0)
+            entity->Exec(params[1].c_str(), (EntityAction::ExecutionType) type);
+    }
+    else
+        entity->Exec(params[1].c_str());
 
     return Console::ResultSuccess();
 }
