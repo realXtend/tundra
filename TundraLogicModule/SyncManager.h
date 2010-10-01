@@ -75,6 +75,9 @@ public:
     
 private slots:
     //! Trigger EC sync because of component attributes changing
+    void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
+    
+    //! Trigger EC sync because of component attributes changing
     void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
     
     //! Trigger EC sync because of component added to entity
@@ -115,7 +118,7 @@ private:
     void HandleEntityIDCollision(kNet::MessageConnection* source, const MsgEntityIDCollision& msg);
 
     //! Handle entity action message.
-    void HandleEntityAction(kNet::MessageConnection* source, const MsgEntityAction& msg);
+    void HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg);
 
     //! Process one sync state for changes in the scene
     /*! \todo For now, sends all changed enties/components. In the future, this shall be subject to interest management

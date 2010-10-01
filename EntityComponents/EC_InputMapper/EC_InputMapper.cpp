@@ -107,10 +107,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec(act, parameters);
+        entity->Exec(act, parameters, EntityAction::Peers);
     }
     else
-        entity->Exec(action);
+        entity->Exec(action, EntityAction::Peers);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)

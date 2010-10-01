@@ -10,6 +10,7 @@
 #include "SceneManager.h"
 #include "Entity.h"
 #include "TundraLogicModule.h"
+#include "Client.h"
 #include "TundraMessages.h"
 #include "MsgCreateEntity.h"
 #include "MsgCreateComponents.h"
@@ -71,6 +72,8 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     scene_ = scene;
     Scene::SceneManager* sceneptr = scene.get();
     
+    connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
+        SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
         SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
@@ -139,7 +142,6 @@ void SyncManager::HandleKristalliMessage(kNet::MessageConnection* source, kNet::
             MsgEntityAction msg(data, numBytes);
             HandleEntityAction(source, msg);
         }
-
     }
 }
 
@@ -167,6 +169,12 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
             break;
         state->OnEntityChanged(id);
     }
+}
+
+void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
+{
+    // The attribute doesn't interest us in the least. Just mark the whole component dirty for update
+    OnComponentChanged(comp, change);
 }
 
 void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
@@ -296,9 +304,45 @@ void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type c
 
 void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type)
 {
-//EntityAction::Local
-//EntityAction::Peers
-//EntityAction::Server
+    Scene::SceneManager* scene = scene_.lock().get();
+    assert(scene);
+
+    // If we are the server and the local script on this machine has requested a script to be executed on the server, it
+    // means we just execute the action locally here, without sending to network.
+    bool isServer = owner_->IsServer();
+    if (isServer && (type & EntityAction::Server) != 0)
+    {
+        TundraLogicModule::LogInfo("action server exec on server " + action.toStdString());
+        entity->Exec(action, params);
+    }
+
+    // Craft EntityAction message.
+    MsgEntityAction msg;
+    msg.entityId = entity->GetId();
+    // msg.executionType will be set below depending are we server or client.
+    msg.name = StringToBuffer(action.toStdString());
+    for(int i = 0; i < params.size(); ++i)
+    {
+        MsgEntityAction::S_parameters p = { StringToBuffer(params[i].toStdString()) };
+        msg.parameters.push_back(p);
+    }
+
+    if (!isServer && (((type & EntityAction::Server != 0) || (type & EntityAction::Peers != 0))))
+    {
+        // send without Local flag
+        msg.executionType = (u8)(type & ~EntityAction::Local);
+        owner_->GetClient()->GetConnection()->Send(msg);
+    }
+
+    if (isServer && (type & EntityAction::Peers) != 0)
+    {
+        msg.executionType = (u8)EntityAction::Local; // Propagate as local actions.
+        foreach(KristalliProtocol::UserConnection c, owner_->GetKristalliModule()->GetUserConnections())
+        {
+            TundraLogicModule::LogInfo("peer " + action.toStdString());
+            c.connection->Send(msg);
+        }
+    }
 }
 
 void SyncManager::Update(f64 frametime)
@@ -903,7 +947,7 @@ void SyncManager::HandleEntityIDCollision(kNet::MessageConnection* source, const
     }
 }
 
-void SyncManager::HandleEntityAction(kNet::MessageConnection* source, const MsgEntityAction& msg)
+void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityAction& msg)
 {
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
@@ -923,17 +967,22 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, const MsgE
     for (uint i = 0; i < msg.parameters.size(); ++i)
         params << BufferToString(msg.parameters[i].parameter).c_str();
 
+    TundraLogicModule::LogDebug(std::string("EntityAction ") + ToString<int>(entityId));
+
     EntityAction::ExecutionType type = (EntityAction::ExecutionType)(msg.executionType);
 
-    // If execution type is Server, execute entity action.
-    if (type & EntityAction::Server)
-        entity->Exec(action, params);
+    bool isServer = owner_->IsServer();
+    if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
+        entity->Exec(action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
 
     // If execution type is Peers, replicate to all peers but the sender.
-    if (type & EntityAction::Peers)
+    if (isServer && type & EntityAction::Peers)
+    {
+        msg.executionType = (u8)EntityAction::Local;
         foreach(KristalliProtocol::UserConnection userConn, owner_->GetKristalliModule()->GetUserConnections())
-            if (userConn.connection != source)
+            if (userConn.connection != source) // The EC action will not be sent to the machine that originated the request to send an action to all peers.
                 userConn.connection->Send(msg);
+    }
 }
 
 SceneSyncState* SyncManager::GetSceneSyncState(kNet::MessageConnection* connection)
