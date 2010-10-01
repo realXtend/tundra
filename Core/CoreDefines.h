@@ -18,7 +18,7 @@
 template<typename Dst, typename Src>
 inline Dst checked_static_cast(Src src)
 {
-    assert(dynamic_cast<Dst>(src) != 0);
+    assert(src == 0 || dynamic_cast<Dst>(src) != 0);
     return static_cast<Dst>(src);
 }
 
