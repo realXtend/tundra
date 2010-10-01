@@ -3,6 +3,8 @@
 #ifndef incl_QtInputModule_KeyBindingsConfigWindow_h
 #define incl_QtInputModule_KeyBindingsConfigWindow_h
 
+#include "BindingsKeyPressed.h"
+
 #include <QWidget>
 #include <QKeySequence>
 #include <map>
@@ -44,6 +46,8 @@ private:
     void PopulateBindingsList();
     void ExtractBindingsList();
 
+    bool SpecialKeyPressChecker(int pressed_key);
+
     Foundation::Framework *framework;
 
     QTreeWidget *configList;
@@ -51,6 +55,9 @@ private:
     /// In the UI, the user edits values in this structure. When apply or OK is pressed, we update the real values to the input service.
     /// Edits are done here to allow Cancel to return without modifications having been done.
     std::map<std::string, QKeySequence> editedActions;
+
+protected:
+    bool eventFilter(QObject *obj, QEvent *event);
 };
 
 #endif
