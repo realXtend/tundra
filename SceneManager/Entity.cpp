@@ -47,9 +47,18 @@ namespace Scene
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
         {
+            QString componentTypeName = component->TypeName();
+            componentTypeName.replace(0, 3, "");
+            componentTypeName = componentTypeName.toLower();
+            if(!property(componentTypeName.toStdString().c_str()).isValid())
+            {
+                QVariant var = QVariant::fromValue<QObject*>(component.get());
+                setProperty(componentTypeName.toStdString().c_str(), var);
+            }
+
             component->SetParentEntity(this);
             components_.push_back(component);
-        
+
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
@@ -62,6 +71,21 @@ namespace Scene
             ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
             if (iter != components_.end())
             {
+                QString componentTypeName = component->TypeName();
+                componentTypeName.replace(0, 3, "");
+                componentTypeName = componentTypeName.toLower();
+                if(property(componentTypeName.toStdString().c_str()).isValid())
+                {
+                    QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
+                    //Make sure that QObject is inherited by the IComponent.
+                    if (obj && dynamic_cast<IComponent*>(obj))
+                    {
+                        //Make sure that name is matching incase there are many of same type of components in entity.
+                        if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
+                            setProperty(componentTypeName.toStdString().c_str(), QVariant());
+                    }
+                }
+
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
