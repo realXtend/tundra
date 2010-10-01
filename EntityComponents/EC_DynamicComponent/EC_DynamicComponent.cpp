@@ -418,7 +418,7 @@ bool EC_DynamicComponent::ContainAttribute(const QString &name) const
     return false;
 }
 
-void EC_DynamicComponent::SerializeToBinary(DataSerializer& dest) const
+void EC_DynamicComponent::SerializeToBinary(kNet::DataSerializer& dest) const
 {
     dest.Add<u8>(attributes_.size());
     // For now, transmit all values as strings
@@ -432,7 +432,7 @@ void EC_DynamicComponent::SerializeToBinary(DataSerializer& dest) const
     }
 }
 
-void EC_DynamicComponent::DeserializeFromBinary(DataDeserializer& source, AttributeChange::Type change)
+void EC_DynamicComponent::DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     u8 num_attributes = source.Read<u8>();
     std::vector<DeserializeData> deserializedAttributes;
@@ -448,7 +448,7 @@ void EC_DynamicComponent::DeserializeFromBinary(DataDeserializer& source, Attrib
     DeserializeCommon(deserializedAttributes, change);
 }
 
-bool EC_DynamicComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeserializer& previousData) const
+bool EC_DynamicComponent::SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const
 {
     // Currently, since DynamicComponent is a bit scary, we either send all attributes, or none
     // Furthermore, the compare code is quite ugly & slow
@@ -486,7 +486,7 @@ bool EC_DynamicComponent::SerializeToDeltaBinary(DataSerializer& dest, DataDeser
     return changed;
 }
 
-bool EC_DynamicComponent::DeserializeFromDeltaBinary(DataDeserializer& source, AttributeChange::Type change)
+bool EC_DynamicComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
     // Assume there is data, otherwise we shouldn't be here
     DeserializeFromBinary(source, change);
