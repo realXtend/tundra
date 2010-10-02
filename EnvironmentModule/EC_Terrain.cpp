@@ -36,6 +36,8 @@ EC_Terrain::EC_Terrain(IModule* module) :
     texture3(this, "Texture 3"),
     texture4(this, "Texture 4"),
     heightMap(this, "Heightmap"),
+    uScale(this, "Tex. U scale"),
+    vScale(this, "Tex. V scale"),
     patchWidth(1),
     patchHeight(1),
     rootNode(0)
@@ -46,6 +48,8 @@ EC_Terrain::EC_Terrain(IModule* module) :
     yPatches.Set(1, AttributeChange::LocalOnly);
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
+    uScale.Set(0.13f, AttributeChange::LocalOnly);
+    vScale.Set(0.13f, AttributeChange::LocalOnly);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -199,6 +203,12 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
     else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
     else if (changedAttribute == heightMap.GetNameString()) LoadFromFile(heightMap.Get().toStdString().c_str());
+    else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
+    {
+        // Re-do all the geometry on the GPU.
+        DirtyAllTerrainPatches();
+        RegenerateDirtyTerrainPatches();
+    }
 
     ///\todo Delete the old unused textures.
 }
@@ -401,10 +411,21 @@ void EC_Terrain::LoadFromFile(QString filename)
     for(size_t i = 0; i < newPatches.size(); ++i)
     {
         newPatches[i].heightData.resize(cPatchSize*cPatchSize);
+        newPatches[i].patch_geometry_dirty = true;
         fread(&newPatches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
     }
 
     fclose(handle);
+
+    patches = newPatches;
+    patchWidth = xPatches;
+    patchHeight = yPatches;
+
+    // Re-do all the geometry on the GPU.
+    RegenerateDirtyTerrainPatches();
+
+    this->xPatches.Set(patchWidth, AttributeChange::Local);
+    this->yPatches.Set(patchHeight, AttributeChange::Local);
 }
 
 void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
@@ -495,8 +516,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     // This is the vertex stride for the terrain.
     const int stride = (patch.x + 1 >= patchWidth) ? cPatchVertexWidth : (cPatchVertexWidth+1);
 
-    const float uScale = 1e-2f*13;
-    const float vScale = 1e-2f*13;
+    const float uScale = this->uScale.Get();
+    const float vScale = this->vScale.Get();
 
     for(int y = 0; y <= cPatchVertexHeight; ++y)
         for(int x = 0; x <= cPatchVertexWidth; ++x)
@@ -662,6 +683,12 @@ void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight)
             minHeight = min(minHeight, patches[i].heightData[j]);
             maxHeight = max(maxHeight, patches[i].heightData[j]);
         }
+}
+
+void EC_Terrain::DirtyAllTerrainPatches()
+{
+    for(size_t i = 0; i < patches.size(); ++i)
+        patches[i].patch_geometry_dirty = true;
 }
 
 void EC_Terrain::RegenerateDirtyTerrainPatches()
