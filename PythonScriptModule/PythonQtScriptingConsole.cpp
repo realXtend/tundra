@@ -39,6 +39,7 @@
 */
 //----------------------------------------------------------------------------------
 
+#include "StableHeaders.h"
 #include "PythonQtScriptingConsole.h"
 
 #include <QMenu>

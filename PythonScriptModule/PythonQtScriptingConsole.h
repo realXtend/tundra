@@ -50,7 +50,7 @@ class QCompleter;
 
 //-------------------------------------------------------------------------------
 //! A simple console for python scripting
-class PYTHONQT_EXPORT PythonQtScriptingConsole : public QTextEdit
+class PythonQtScriptingConsole : public QTextEdit
 {
   Q_OBJECT
 

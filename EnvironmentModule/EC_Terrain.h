@@ -211,6 +211,12 @@ public:
     Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches NOTIFY TerrainSizeChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
 
+    Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
+
+    Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
+
     Q_PROPERTY(QString material READ getmaterial WRITE setmaterial NOTIFY MaterialChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, material);
 
@@ -231,6 +237,9 @@ public:
 
     Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap NOTIFY HeightMapChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
+
+    /// Marks all terrain patches dirty.
+    void DirtyAllTerrainPatches();
 
     void RegenerateDirtyTerrainPatches();
 
