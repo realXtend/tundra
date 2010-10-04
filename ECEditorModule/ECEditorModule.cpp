@@ -211,7 +211,7 @@ namespace ECEditor
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
                 dynComp->RemoveAttribute(QString::fromStdString(params[3]));
-                dynComp->ComponentChanged("Local");
+                dynComp->ComponentChanged(AttributeChange::Default);
             }
         }
         return Console::ResultSuccess();
