@@ -360,7 +360,7 @@ namespace ECEditor
                 if((*iter)->isDynamic_)
                 {
                     // Check if the selected tree widget name is same as some of the dynamic component's attribute name.
-                    if((*iter)->ContainAttribute(treeWidgetItem->text(0).toStdString()))
+                    if((*iter)->ContainsAttribute(treeWidgetItem->text(0)))
                     {
                         QObject::disconnect(deleteAction, SIGNAL(triggered()), this, SLOT(DeleteComponent()));
                         QObject::connect(deleteAction, SIGNAL(triggered()), this, SLOT(RemoveAttribute()));
@@ -414,7 +414,7 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if((*iterComp)->ContainComponent(comp))
+            if((*iterComp)->ContainsComponent(comp))
                 return;
         }
         ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
@@ -432,7 +432,7 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if(!(*iterComp)->ContainComponent(comp))
+            if(!(*iterComp)->ContainsComponent(comp))
                 continue;
             
             ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
@@ -628,7 +628,7 @@ namespace ECEditor
             if(component)
             {
                 if(component->CreateAttribute(typeName, name))
-                    component->ComponentChanged("Default");
+                    component->ComponentChanged(AttributeChange::Default);
             }
         }
     }
@@ -658,7 +658,7 @@ namespace ECEditor
             if(comp)
             {
                 comp->RemoveAttribute(item->text(0));
-                comp->ComponentChanged("Default");
+                comp->ComponentChanged(AttributeChange::Default);
             }
         }
         //RemoveComponentGroup(*iter);
@@ -696,7 +696,7 @@ namespace ECEditor
         if(iter != componentGroups_.end())
         {
             // No point to add same component multiple times.
-            if((*iter)->ContainComponent(comp.get()))
+            if((*iter)->ContainsComponent(comp.get()))
                 return;
 
             (*iter)->editor_->AddNewComponent(comp, false);
@@ -754,7 +754,7 @@ namespace ECEditor
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(!(*iter)->ContainComponent(comp))
+            if(!(*iter)->ContainsComponent(comp))
                 continue;
             if((*iter)->IsDynamic())
             {

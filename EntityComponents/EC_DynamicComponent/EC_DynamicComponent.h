@@ -38,8 +38,6 @@ Registered by PythonScript::PythonScriptModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"ComponentChanged": Will handle ComponentChanged event to IComponent.
-    @param changeType Accepts following strings {LocalOnly, Local and Network}.
 <li>"AddQVariantAttribute": Create new attribute that type is QVariant.
 <li>"GetAttribute":Get attribute value as QVariant. If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
         @param index Index to attribute list.
@@ -90,8 +88,8 @@ public:
     template<typename T>
     void AddAttribute(const QString &name)
     {
-        //Check if attribute has already created.
-        if(!ContainAttribute(name))
+        // Check if attribute has already created.
+        if (!ContainsAttribute(name))
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
             emit AttributeAdded(name);
@@ -100,14 +98,14 @@ public:
 
 public slots:
     /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
+    /** @param typeName Type name of the attribute.
+        @param name Name of the attribute.
+    */
     IAttribute *CreateAttribute(const QString &typeName, const QString &name);
 
-    /// Will handle ComponentChanged event to ComponentInterface.
-    /** @param changeType Accepts following strings {LocalOnly, Local and Network}.
-    */
-    void ComponentChanged(const QString &changeType);
-
     /// Create new attribute that type is QVariant.
+    /** @param name Name of the attribute.
+    */
     void AddQVariantAttribute(const QString &name);
 
     /// Get attribute value as QVariant.
@@ -123,31 +121,59 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
-    //! Insert new attribute value to attribute.
+    /// Inserts new attribute value to attribute.
+    /** @param index Index for the attribute.
+        @param value Value of the attribute.
+        @param change Change type.
+    */
     void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
+
+    /// This is an overloaded function.
+    /** @param name Name of the attribute.
+        @param value Value of the attribute.
+        @param change Change type.
+    */
     void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
 
-    int GetNumAttributes() const {return attributes_.size();}
+    /// Returns number of attributes in this component.
+    int GetNumAttributes() const { return attributes_.size(); }
+
+    /// Returns name of attribute with the spesific @c index
+    /** @param index Index of the attribute.
+    */
     QString GetAttributeName(int index) const;
 
-    /// Check if a given component is holding exactly same attributes as this component.
-    /** @return Return true if component is holding same attributes as this component else return false.
+    /// Checks if a given component @c comp is holding exactly same attributes as this component.
+    /** @param comp Component to be compared with.
+        @return Return true if component is holding same attributes as this component else return false.
     */
     bool ContainSameAttributes(const EC_DynamicComponent &comp) const;
 
     /// Remove attribute from the component.
+    /** @param name Name of the attirbute.
+    */
     void RemoveAttribute(const QString &name);
 
     /// Check if component is holding an attribute by the @c name.
     /** @param name Name of attribute that we are looking for.
     */
-    bool ContainAttribute(const QString &name) const;
+    bool ContainsAttribute(const QString &name) const;
 
 signals:
+    /// Emitted when a new attribute is added to this component.
+    /** @param name Name of the attribute.
+    */
     void AttributeAdded(const QString &name);
+
+    /// Emitted when attribute is removed from this component.
+    /** @param name Name of the attribute.
+    */
     void AttributeRemoved(const QString &name);
 
 private:
+    /// Constructor.
+    /** @param module Declaring module
+    */
     explicit EC_DynamicComponent(IModule *module);
 };
 

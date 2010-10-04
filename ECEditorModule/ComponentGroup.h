@@ -50,9 +50,9 @@ namespace ECEditor
         bool IsSameComponent(const IComponent &component) const;
 
         //! Fast check for testing if given component is inculded in this component group.
-        bool ContainComponent(const IComponent *component) const;
+        bool ContainsComponent(const IComponent *component) const;
 
-        bool ContainAttribute(const std::string &name) const;
+        bool ContainsAttribute(const QString &name) const;
 
         //! If component isn't already added to component group, add it.
         bool AddComponent(ComponentPtr comp);
