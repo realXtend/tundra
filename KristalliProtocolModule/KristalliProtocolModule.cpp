@@ -131,11 +131,11 @@ void KristalliProtocolModule::Update(f64 frametime)
     // for each of them.
     if (serverConnection)
         serverConnection->ProcessMessages();
-
+    
     // Process server incoming connections & messages if server up
     if (server)
         server->ProcessMessages();
-
+    
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed || serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
     {
         const int cReconnectTimeout = 5 * 1000.f;

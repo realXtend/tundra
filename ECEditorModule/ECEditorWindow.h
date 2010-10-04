@@ -71,7 +71,10 @@ namespace ECEditor
         /// Deletes entity.
         void DeleteEntity();
 
+        /// Copy serializable component values to clipboard.
         void CopyEntity();
+
+        /// Paste serializable component 
         void PasteEntity();
 
         /// Highlights all entities from the list that owns the component.

@@ -20,7 +20,7 @@ struct ComponentSyncState
     uint type_hash_;
     QString name_;
     //! Last sent component data (full binary state from IComponent::SerializeToBinary)
-    std::vector<bool> data_;
+    std::vector<unsigned char> data_;
 };
 
 //! State of entity replication for a specific user

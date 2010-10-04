@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "ComponentManager.h"
 #include "CoreStringUtils.h"
 #include "Framework.h"
@@ -11,6 +12,8 @@
 #include "Transform.h"
 
 #include <QVariant>
+
+#include "MemoryLeakCheck.h"
 
 namespace Foundation
 {
@@ -113,6 +116,7 @@ namespace Foundation
 
     IAttribute *ComponentManager::CreateAttribute(IComponent*owner, const std::string &typeName, const std::string &name)
     {
+        // The dynamically created attributes are deleted at the EC_DynamicComponent dtor.
         IAttribute *attribute = 0;
         if(typeName == "string")
             attribute = new Attribute<QString>(owner, name.c_str());
