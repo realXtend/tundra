@@ -25,6 +25,10 @@ JavascriptEngine::JavascriptEngine(const QString &scriptRef):
 
 JavascriptEngine::~JavascriptEngine()
 {
+    // As a convention, we call a function 'OnScriptDestroyed' for each JS script
+    // so that they can clean up their data before the script is removed from the object,
+    // or when the system is unloading.
+    ///\todo Fix typo OnScriptDestoyed to OnScriptDestroyed!
     QScriptValue destructor = engine_->globalObject().property("OnScriptDestoyed");
     if (!destructor.isUndefined())
         destructor.call();
@@ -69,8 +73,16 @@ void JavascriptEngine::RegisterService(QObject *serviceObject, const QString &na
 
 QString JavascriptEngine::LoadScript() const
 {
-    QFile scriptFile(scriptRef_);
-    scriptFile.open(QIODevice::ReadOnly);
+    QString filename = scriptRef_.trimmed();
+    ///\todo Now all strings are evaluated as being relative filenames to the current working directory.
+    ///Scripts are all loaded locally. Support here fetching from the asset store, i.e. file://, or knet://, or http://.
+    QFile scriptFile(filename);
+    bool success = scriptFile.open(QIODevice::ReadOnly);
+    if (!success)
+    {
+        JavascriptModule::LogError(("Failed to load script from file " + filename + "!").toStdString());
+        return "";
+    }
     QString result = scriptFile.readAll();
     scriptFile.close();
     return result;
