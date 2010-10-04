@@ -3,8 +3,6 @@
 #ifndef incl_QtInputModule_KeyBindingsConfigWindow_h
 #define incl_QtInputModule_KeyBindingsConfigWindow_h
 
-#include "BindingsKeyPressed.h"
-
 #include <QWidget>
 #include <QKeySequence>
 #include <map>

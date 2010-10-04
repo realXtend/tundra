@@ -11,6 +11,7 @@
 #include "UiServiceInterface.h"
 #include "UiSettingsServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "Foundation.h"
 
 #include <QGraphicsItem>
 #include <QGraphicsView>
@@ -39,7 +40,8 @@ void QtInputModule::Initialize()
 
 void QtInputModule::PostInitialize()
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
+    //Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
     configWindow = new KeyBindingsConfigWindow(framework_);
 
     if (!ui)
