@@ -124,8 +124,8 @@ public slots:
     QVariant GetAttribute(const QString &name) const;
 
     //! Insert new attribute value to attribute.
-    void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Local);
-    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Local);
+    void SetAttribute(int index, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
+    void SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change = AttributeChange::Default);
 
     int GetNumAttributes() const {return attributes_.size();}
     QString GetAttributeName(int index) const;

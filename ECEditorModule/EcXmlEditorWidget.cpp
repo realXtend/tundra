@@ -216,9 +216,8 @@ void EcXmlEditorWidget::Save()
                                                                                   comp_elem.attribute("name"));
                     if (comp)
                     {
-                        comp->DeserializeFrom(comp_elem, AttributeChange::Local);
-                        // Trigger sync to network
-                        comp->ComponentChanged(AttributeChange::Local);
+                        comp->DeserializeFrom(comp_elem, AttributeChange::Default);
+                        //comp->ComponentChanged(AttributeChange::Default);
                     }
                     comp_elem = comp_elem.nextSiblingElement("component");
                 }

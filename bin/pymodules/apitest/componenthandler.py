@@ -59,6 +59,7 @@ class ComponenthandlerRegistry(circuits.BaseComponent):
             #if jssrc is not None:
             #    self.apply_js(jssrc)
             jscheck = make_jssrc_handler(entity, comp, changetype)
+            #todo: OnChanged() is deprecated
             comp.connect("OnChanged()", jscheck)
 
 def make_jssrc_handler(entity, comp, changetype):

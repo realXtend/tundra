@@ -191,10 +191,10 @@ void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float
    if ( fog == 0)
        return;
     
-   fog->startDistanceAttr.Set(fogStart,AttributeChange::Local);
-   fog->endDistanceAttr.Set(fogEnd, AttributeChange::Local);
-   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Local);
-   fog->ComponentChanged(AttributeChange::Local);
+   fog->startDistanceAttr.Set(fogStart,AttributeChange::Default);
+   fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
+   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
    
    emit GroundFogAdjusted(fogStart, fogEnd, color);
 }
@@ -207,9 +207,9 @@ void Environment::SetFogColorOverride(bool enabled)
    if ( fog == 0)
        return;
 
-   fog->useAttr.Set(enabled, AttributeChange::Local);
-   fog->ComponentChanged(AttributeChange::Local);
- 
+   fog->useAttr.Set(enabled, AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
+   
     
 }
 
@@ -402,8 +402,8 @@ void Environment::SetGroundFogColor(const QVector<float>& color)
    if ( fog == 0)
     return;
 
-   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Local);
-   fog->ComponentChanged(AttributeChange::Local);
+   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
 }
 
 
@@ -415,9 +415,9 @@ void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
    if ( fog == 0)
     return;
 
-    fog->startDistanceAttr.Set(fogStart, AttributeChange::Local);
-    fog->endDistanceAttr.Set(fogEnd, AttributeChange::Local);
-    fog->ComponentChanged(AttributeChange::Local);
+    fog->startDistanceAttr.Set(fogStart, AttributeChange::Default);
+    fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
+    //fog->ComponentChanged(AttributeChange::Default);
 }
 
 float Environment::GetGroundFogStartDistance()

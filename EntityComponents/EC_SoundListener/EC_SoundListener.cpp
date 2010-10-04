@@ -23,6 +23,9 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),
     active(this, "active", false)
 {
+    // By default, this component is NOT network-serialized
+    SetNetworkSyncEnabled(false);
+
     soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
@@ -69,7 +72,7 @@ void EC_SoundListener::OnActiveChanged()
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Local);
+                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Default);
         }
     }
 }

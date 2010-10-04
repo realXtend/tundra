@@ -1395,7 +1395,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         WaterPtr water = environment_module_->GetWaterHandler();
         if (water.get() != 0 && water_height_box != 0)
-            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Local); 
+            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Default); 
     }
 
     void EnvironmentEditor::UpdateWaterGeometry(int state)
@@ -1409,9 +1409,9 @@ namespace Environment
             {
                 if ( water_height_box != 0 && water.get() != 0 )
                 {
-                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Local);
+                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Default);
                     // If water is re-created it will be always created to fixed height.
-                    water->SetWaterHeight(20.0, AttributeChange::Local);
+                    water->SetWaterHeight(20.0, AttributeChange::Default);
                 }
                 else if ( water.get() != 0)
                     water->CreateWaterGeometry();

@@ -32,7 +32,7 @@ class QDomElement;
     A Component consists of a list of Attributes, which are automatically replicatable instances of scene data.
     See IAttribute for more details.
 
-    Every Component has a state variable 'updateMode' that specifies a default setting for managing which objects
+    Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
 class IComponent: public QObject
@@ -42,7 +42,9 @@ class IComponent: public QObject
     Q_OBJECT
     Q_PROPERTY(QString Name READ Name WRITE SetName)
     Q_PROPERTY(QString TypeName READ TypeName)
-
+    Q_PROPERTY(bool NetworkSyncEnabled READ GetNetworkSyncEnabled WRITE SetNetworkSyncEnabled)
+    Q_PROPERTY(AttributeChange::Type UpdateMode READ GetUpdateMode WRITE SetUpdateMode)
+    
 public:
     /// Constuctor.
     explicit IComponent(Foundation::Framework* framework);
@@ -81,13 +83,17 @@ public slots:
     /// Enables or disables network synchronization of changes that occur in the attributes of this component.
     /// By default, this flag is set for all created components.
     /// When network synchronization is disabled, changes to the attributes of this component affect
-    /// only locally and will not be pushed to network. The locally maintained 'dirty' flag of each attribute 
-    /// will be still updated on each change, so the changes will be sent to the network when you re-enable
-    /// the synchronization.
+    /// only locally and will not be pushed to network.
     void SetNetworkSyncEnabled(bool enabled);
 
     /// Returns true if network synchronization of the attributes of this component is enabled.
     bool GetNetworkSyncEnabled() const { return network_sync_; }
+
+    /// Sets the default mode for attribute change operations
+    void SetUpdateMode(AttributeChange::Type defaultmode);
+    
+    /// Gets the default mode for attribute change operations
+    AttributeChange::Type GetUpdateMode() const { return updatemode_; }
 
     /// Returns true is this component supports XML serialization. \todo In the future, ALL Naali components
     /// must support serialization, so this function will be removed. Initially, this boolean was created
@@ -119,23 +125,24 @@ public slots:
     /// attribute is changed.
     void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
-    /// Reads the current change status of this component. This member tells in which state
-    /// the component data is currently with respect to the data residing on the server.
-    /// \note This member is deprecated and will be removed in the future.
-    AttributeChange::Type GetChange() const { return change_; }
+    /// Informs this component that the value of a member Attribute of this component has changed.
+    /// You may call this function manually to force Attribute change signal to
+    /// occur, but it is not necessary if you use the Attribute::Set function, since
+    /// it notifies this function automatically.
+    /// @param attributeName Name of the attribute that changed. Note: this is a no-op
+    ///        if the named attribute is not found.
+    /// @param change Informs to the component the type of change that occurred.
+    ///
+    /// This function calls Scene::EmitAttributeChanged and triggers the 
+    /// OnAttributeChanged signal of this component.
+    void AttributeChanged(const QString& attributeName, AttributeChange::Type change);
 
-    /// Resets the change status of this component and all its attributes.
-    /// Called by serialization managers when they have managed finished syncing the 
-    /// component to the network. You can call this field manually to force the local
-    /// system to forget pending network updates of this component.
-    /// \note This member is deprecated and will be removed in the future.
-    void ResetChange();
-
-    /// Informs this Component that its contents have been changed (that serialization of
-    /// this component will now differ from previous). Sends notifications and queues 
-    /// network replications as necessary.
-    /// \note You should call this manually when you have modified your component and want to send the new modified
-    ///       to the network.
+    /// Informs that every attribute in this Component has changed with the change
+    /// you specify. If change is Replicate, or it is Default and the UpdateMode is Replicate,
+    /// every attribute will be synced to the network.
+    ///
+    /// \todo Triggers also the deprecated OnChanged() signal. That will be removed in the future.
+    /// Do not rely on it.
     void ComponentChanged(AttributeChange::Type change);
 
     /// Returns the Entity this Component is part of.
@@ -237,11 +244,11 @@ protected:
     /// Attribute list for introspection/reflection.
     AttributeVector attributes_;
 
-    /// Change status for the component itself.
-    AttributeChange::Type change_; ///< \todo This will be removed. -jj.
-
     /// Network sync enable flag
-    bool network_sync_;  ///< \todo This will be changed to a AttributeChange::Type updateMode; enum. -jj.
+    bool network_sync_;
+    
+    /// Default update mode for attribute changes
+    AttributeChange::Type updatemode_;
 
     /// Framework pointer. Needed to be able to perform important uninitialization etc. even when not in an entity.
     Foundation::Framework* framework_;

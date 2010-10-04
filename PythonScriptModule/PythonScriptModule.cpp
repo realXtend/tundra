@@ -1223,8 +1223,8 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     }
     if (ec_touchable)
     {
-        ec_touchable->highlightOnHover.Set(false, AttributeChange::Local);
-        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Local);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::Default);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Default);
     }
 }
 
