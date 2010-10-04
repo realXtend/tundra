@@ -6,7 +6,7 @@
 #include "EC_3DCanvasSource.h"
 
 #include "EC_3DCanvas.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "IModule.h"
 #include "ModuleManager.h"
@@ -39,7 +39,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     source_edit_(0),
     manipulate_ec_3dcanvas(true)
 {
-    connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas()));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
@@ -69,8 +69,8 @@ void EC_3DCanvasSource::SourceEdited()
     {
         // Replicate changed source to network
         // std::cout << "Changed source to " << new_source << std::endl;
-        source_.Set(new_source, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(new_source, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -116,8 +116,8 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         last_source_ = url_str;
         
         // std::cout << "Changed source by click to " << url_str << std::endl;
-        source_.Set(url_str, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(url_str, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -215,7 +215,7 @@ void EC_3DCanvasSource::UpdateCanvas()
     }
     
     // If entity has no valid mesh or prim yet, start a retry timer and try to set the canvas later
-    if ((!entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic())) && 
+    if ((!entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic())) && 
         (!entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic())))
     {
         //LogInfo("Mesh or prim did not exist yet, retrying");

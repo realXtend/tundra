@@ -77,7 +77,7 @@ Does not emit any actions.
          */
         bool CommitChanges(Ogre::ManualObject* object);
 
-        //! Sets material on already committed geometry, similar to EC_OgreMesh
+        //! Sets material on already committed geometry, similar to EC_Mesh
         /*! \param index submesh index
             \param material_name material name
             \return true if successful

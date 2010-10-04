@@ -16,7 +16,7 @@
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
 #include "EC_OpenSimPrim.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
 #include <AssetEvents.h>
@@ -1687,7 +1687,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         entities++;
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
         OgreRenderer::EC_OgreCustomObject* custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;
         

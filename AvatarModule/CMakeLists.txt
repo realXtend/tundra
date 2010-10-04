@@ -11,6 +11,7 @@ file (GLOB UI_FILES ui/*.ui)
 
 # SubFolders to project with filtering
 AddSourceFolder (Avatar)
+AddSourceFolder (AvatarEditing)
 AddSourceFolder (EntityComponent)
 
 # Qt4 Moc files to "CMake Moc" subgroup

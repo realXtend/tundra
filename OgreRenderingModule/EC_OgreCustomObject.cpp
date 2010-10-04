@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreCustomObject.h"
 
@@ -52,6 +53,18 @@ namespace OgreRenderer
         RendererPtr renderer = renderer_.lock();
                 
         DestroyEntity();
+        
+        // If placeable is not set yet, set it manually by searching it from the parent entity
+        if (!placeable_)
+        {
+            Scene::Entity* entity = GetParentEntity();
+            if (entity)
+            {
+                ComponentPtr placeable = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+                if (placeable)
+                    placeable_ = placeable;
+            }
+        }
         
         if (!object->getNumSections())
             return true;

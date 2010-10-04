@@ -1311,6 +1311,7 @@ if 0: #the new DynamicComponent with individual attrs etc
     a = dc.GetAttribute("opened")
     print a, type(a)
     dc.SetAttribute("opened", True)
+    # Todo: OnChanged() is deprecated
     dc.OnChanged()
 
     jssrc = dc.GetAttribute("js_src")
@@ -1466,7 +1467,7 @@ if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's re
 
 if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEntity
     #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
-    ent = naali.createEntity(["EC_OgrePlaceable", "EC_OgreMesh"])
+    ent = naali.createEntity(["EC_OgrePlaceable", "EC_Mesh"])
 
     ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     ent.mesh.SetMesh("axes.mesh")
@@ -1506,3 +1507,11 @@ if 0: #estate management uses presence info. websocketserver too
     for ent in ents:
         displaystring = ent.opensimpresence.QGetFullName() + "|" + ent.opensimpresence.QGetUUIDString()
         print displaystring
+
+if 1: #start a pythonqt console
+    try:
+        r.qtconsole
+    except:
+        r.qtconsole = naali._pythonscriptmodule.CreateConsole()
+    else: #show if was hidden previously
+        r.qtconsole.show()

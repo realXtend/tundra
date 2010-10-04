@@ -389,7 +389,7 @@ macro (configure_celt)
 endmacro (configure_celt)
 
 macro(use_package_knet)
-    set(KNET_DIR ${ENV_NAALI_DEP_PATH}/kNet)
+    set(KNET_DIR D:/projects/libraries/knet)
     include_directories(${KNET_DIR}/include)
     link_directories(${KNET_DIR}/lib)
 endmacro()

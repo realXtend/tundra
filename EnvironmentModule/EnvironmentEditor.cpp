@@ -563,25 +563,28 @@ namespace Environment
                     QVector<float> color = environment->GetFogGroundColor();
 
                     fog_ground_red->setMinimum(0.0);
-                    fog_ground_red->setValue(color[0]);   
-
                     fog_ground_blue->setMinimum(0.0);
-                    fog_ground_blue->setValue(color[1]);
-
                     fog_ground_green->setMinimum(0.0);
-                    fog_ground_green->setValue(color[2]);
+                    fog_ground_start_distance->setMinimum(0.0);
+                    fog_ground_end_distance->setMinimum(0.0);
+                    
+                    QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
+                    fog_ground_start_distance->setMaximum(1000.0);
+                    fog_ground_end_distance->setMaximum(1000.0);
 
+                    if ( color.size() != 0 )
+                    {
+                        fog_ground_red->setValue(color[0]);   
+                        fog_ground_blue->setValue(color[1]);
+                        fog_ground_green->setValue(color[2]);
+                    }
+
+                    fog_ground_start_distance->setValue(environment->GetGroundFogStartDistance());
+                    fog_ground_end_distance->setValue(environment->GetGroundFogEndDistance());
+                    
                     QObject::connect(environment.get(), SIGNAL(GroundFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateGroundFog(float, float, const QVector<float>&)));
                     QObject::connect(fog_ground_color_button, SIGNAL(clicked()), this, SLOT(SetGroundFog()));
 
-                    fog_ground_start_distance->setMinimum(0.0);
-                    fog_ground_end_distance->setMinimum(0.0);
-
-                    QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
-                    fog_ground_start_distance->setMaximum(1000.0);
-                    fog_ground_start_distance->setValue(environment->GetGroundFogStartDistance());
-                    fog_ground_end_distance->setMaximum(1000.0);
-                    fog_ground_end_distance->setValue(environment->GetGroundFogEndDistance());
             }
 
             if ( fog_water_red != 0 
@@ -1392,7 +1395,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         WaterPtr water = environment_module_->GetWaterHandler();
         if (water.get() != 0 && water_height_box != 0)
-            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Local); 
+            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Default); 
     }
 
     void EnvironmentEditor::UpdateWaterGeometry(int state)
@@ -1406,9 +1409,9 @@ namespace Environment
             {
                 if ( water_height_box != 0 && water.get() != 0 )
                 {
-                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Local);
+                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Default);
                     // If water is re-created it will be always created to fixed height.
-                    water->SetWaterHeight(20.0, AttributeChange::Local);
+                    water->SetWaterHeight(20.0, AttributeChange::Default);
                 }
                 else if ( water.get() != 0)
                     water->CreateWaterGeometry();

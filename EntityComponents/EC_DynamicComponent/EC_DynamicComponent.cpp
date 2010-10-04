@@ -13,19 +13,38 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
 
 #include <QDomDocument>
 
-namespace
+struct DeserializeData
 {
-    //! Function that is used by std::sort algorithm to sort attributes by their name.
-    bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
+    DeserializeData(const std::string name = std::string(""),
+                    const std::string type = std::string(""),
+                    const std::string value = std::string("")):
+        name_(name),
+        type_(type),
+        value_(value)
     {
-        return a->GetNameString() < b->GetNameString();
     }
 
-    //! Function that is used by std::sort algorithm to sort DeserializeData by their name.
-    bool CmpAttributeDataByName(const EC_DynamicComponent::DeserializeData &a, const EC_DynamicComponent::DeserializeData &b)
+    //! Checks if any of data structure's values are null.
+    bool isNull() const
     {
-        return a.name_ < b.name_;
+        return name_ == "" || type_ == "" || value_ == "";
     }
+
+    std::string name_;
+    std::string type_;
+    std::string value_;
+};
+
+//! Function that is used by std::sort algorithm to sort attributes by their name.
+bool CmpAttributeByName(const IAttribute *a, const IAttribute *b)
+{
+    return a->GetNameString() < b->GetNameString();
+}
+
+//! Function that is used by std::sort algorithm to sort DeserializeData by their name.
+bool CmpAttributeDataByName(const DeserializeData &a, const DeserializeData &b)
+{
+    return a.name_ < b.name_;
 }
 
 EC_DynamicComponent::EC_DynamicComponent(IModule *module):
@@ -104,7 +123,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         // Attribute has already created and we only need to update it's value.
         if((*iter1)->GetNameString() == (*iter2).name_)
         {
-            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), AttributeChange::Local);
+            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             iter2++;
             iter1++;
         }
@@ -146,6 +165,10 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(attribute)
         emit AttributeAdded(name);
+
+    //! \todo changetype should be configurable. Now it's assumed to use Default
+    AttributeChanged(attribute, AttributeChange::Default);
+
     return attribute;
 }
 
@@ -156,6 +179,10 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
     {
         if((*iter)->GetName() == name)
         {
+            // Send change signal just before delete, so that network syncmanager catches it
+            //! \todo changetype should be configurable. Now it's assumed to use Default
+            AttributeChanged(*iter, AttributeChange::Default);
+            
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
@@ -167,12 +194,14 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
 
 void EC_DynamicComponent::ComponentChanged(const QString &changeType)
 {
-    if(changeType == "Local")
-        IComponent::ComponentChanged(AttributeChange::Local);
+    if(changeType == "Default")
+        IComponent::ComponentChanged(AttributeChange::Default);
+    else if(changeType == "Disconnected")
+        return;
     else if(changeType == "LocalOnly")
         IComponent::ComponentChanged(AttributeChange::LocalOnly);
-    else if(changeType == "Network")
-        IComponent::ComponentChanged(AttributeChange::Network);
+    else if(changeType == "Replicate")
+        IComponent::ComponentChanged(AttributeChange::Replicate);
     else
         LogWarning("Cannot emit ComponentChanged event cause \"" + changeType.toStdString() + "\" changeType is not supported.");
 }
@@ -348,11 +377,6 @@ QString EC_DynamicComponent::GetAttributeName(int index) const
     return QString();
 }
 
-uint EC_DynamicComponent::GetParentEntityId() const
-{
-    return GetParentEntity()->GetId();
-}
-
 bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp) const
 {
     AttributeVector myAttributeVector = GetAttributes();
@@ -486,10 +510,15 @@ bool EC_DynamicComponent::SerializeToDeltaBinary(kNet::DataSerializer& dest, kNe
     return changed;
 }
 
-bool EC_DynamicComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+bool EC_DynamicComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change, std::vector<bool>& changed_attributes)
 {
     // Assume there is data, otherwise we shouldn't be here
     DeserializeFromBinary(source, change);
+    // Return all attributes as changed
+    //! \todo Proper per-attribute change tracking of EC_DynamicComponent
+    changed_attributes.resize(attributes_.size());
+    for (uint i = 0; i < attributes_.size(); ++i)
+        changed_attributes[i] = true;
     return true;
 }
 

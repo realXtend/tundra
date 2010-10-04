@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>AvatarToolbar</class>
+ <widget class="QWidget" name="AvatarToolbar">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>165</width>
+    <height>32</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>165</width>
+    <height>32</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>165</width>
+    <height>32</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>AvatarToolbar</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QWidget#AvatarToolbar {
+	background-color: transparent;
+}
+
+QPushButton{
+	color: rgba(255,255,255,225);
+	font: Arial;
+	font-size: 10pt;
+	min-height: 22px;
+	padding-left: 10px;
+	padding-right: 10px;
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+	border: 1px solid rgba(0,0,0,100);
+	border-radius: 7px;
+}
+
+QPushButton::hover {
+	color: white;
+	background-color: qlineargradient(spread:pad, x1:0.0170455, y1:0, x2:0.597, y2:1, stop:0 rgba(91, 91, 91, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+}
+
+QPushButton::pressed {
+	background-color: qlineargradient(spread:pad, x1:0, y1:0, x2:0.164, y2:1, stop:0 rgba(66, 66, 66, 255), stop:0.352273 rgba(55, 55, 55, 255), stop:0.642045 rgba(41, 41, 41, 255), stop:1 rgba(55, 55, 55, 255));
+	border: 1px solid rgba(255,255,255,20);
+}</string>
+  </property>
+  <layout class="QHBoxLayout" name="horizontalLayout">
+   <property name="margin">
+    <number>0</number>
+   </property>
+   <item>
+    <spacer name="horizontalSpacer_left">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>17</width>
+       <height>20</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <widget class="QPushButton" name="button_exit">
+     <property name="text">
+      <string>Exit Avatar Editing</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <spacer name="horizontalSpacer_right">
+     <property name="orientation">
+      <enum>Qt::Horizontal</enum>
+     </property>
+     <property name="sizeType">
+      <enum>QSizePolicy::Fixed</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>15</width>
+       <height>1</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

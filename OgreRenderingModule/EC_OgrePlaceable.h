@@ -7,6 +7,7 @@
 #include "IComponent.h"
 #include "OgreModuleApi.h"
 #include "OgreModuleFwd.h"
+#include "Transform.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Transform.h"
@@ -27,7 +28,11 @@ Ogre (scene node) component.
 
 Registered by OgreRenderer::OgreRenderingModule.
 
-<b>No Attributes</b>:
+<b>Attributes</b>:
+<ul>
+<li>Transform: transform
+<div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
+</ul>
 
 <b>Exposes the following scriptable functions:</b>
 <ul>

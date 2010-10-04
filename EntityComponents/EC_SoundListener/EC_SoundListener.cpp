@@ -23,6 +23,9 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),
     active(this, "active", false)
 {
+    // By default, this component is NOT network-serialized
+    SetNetworkSyncEnabled(false);
+
     soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
@@ -56,7 +59,7 @@ void EC_SoundListener::OnActiveChanged()
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
     {
-        LogError("Failed on OnActiveChanged method cause default world scene isn't set.");
+        LogError("Failed on OnActiveChanged method cause default world scene wasn't setted.");
         return;
     }
 
@@ -69,7 +72,7 @@ void EC_SoundListener::OnActiveChanged()
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Local);
+                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Default);
         }
     }
 }
@@ -84,6 +87,6 @@ void EC_SoundListener::RegisterActions()
     }
     else
     {
-        LogError("Fail to register actions cause compoent's parent entity is null.");
+        LogError("Fail to register actions cause component's parent entity is null.");
     }
 }

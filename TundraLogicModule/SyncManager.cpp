@@ -74,8 +74,6 @@ void SyncManager::RegisterToScene(Scene::ScenePtr scene)
     
     connect(sceneptr, SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
         SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
-    connect(sceneptr, SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
-        SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         SLOT( OnComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(sceneptr, SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
@@ -173,7 +171,7 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
 {
-    // The attribute doesn't interest us in the least. Just mark the whole component dirty for update
+    // The attribute doesn't interest us currently. Just mark the whole component dirty for update
     OnComponentChanged(comp, change);
 }
 
@@ -181,7 +179,7 @@ void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type cha
 {
     if (!comp->IsSerializable())
         return;
-    if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     Scene::Entity* entity = comp->GetParentEntity();
     if ((!entity) || (entity->IsLocal()))
@@ -208,7 +206,7 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
 {
     if (!comp->IsSerializable())
         return;
-    if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
@@ -234,7 +232,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
 {
     if (!comp->IsSerializable())
         return;
-    if ((change != AttributeChange::Local) || (!comp->GetNetworkSyncEnabled()))
+    if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
         return;
     if (entity->IsLocal())
         return;
@@ -258,7 +256,7 @@ void SyncManager::OnComponentRemoved(Scene::Entity* entity, IComponent* comp, At
 
 void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
 {
-    if ((change != AttributeChange::Local) || (entity->IsLocal()))
+    if ((change != AttributeChange::Replicate) || (entity->IsLocal()))
         return;
     
     if (owner_->IsServer())
@@ -280,7 +278,7 @@ void SyncManager::OnEntityCreated(Scene::Entity* entity, AttributeChange::Type c
 
 void SyncManager::OnEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
 {
-    if (change != AttributeChange::Local)
+    if (change != AttributeChange::Replicate)
         return;
     if (entity->IsLocal())
         return;
@@ -595,8 +593,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     
     bool isServer = owner_->IsServer();
     
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // Check for ID collision
     if (isServer)
@@ -645,7 +643,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 try
                 {
-                    new_comp->DeserializeFromBinary(source, change);
+                    // Deserialize in disconnected mode, then send the notifications later
+                    new_comp->DeserializeFromBinary(source, AttributeChange::Disconnected);
                 }
                 catch (...)
                 {
@@ -663,16 +662,11 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
-    // Then emit the entity/componentchanges
+    // Emit the entity/componentchanges last, to signal only a coherent state of the whole entity
     scene->EmitEntityCreated(entity, change);
-    // Kind of a "hack", call OnChanged to the components only after all components have been loaded
-    // This allows to resolve component references to the same entity (for example to the Placeable) at this point
     const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
     for(uint i = 0; i < components.size(); ++i)
         components[i]->ComponentChanged(change);
-    // Finally, if changetype is Network, reset it so that it won't show "dirty" status which may be confusing
-    if (change == AttributeChange::Network)
-        entity->ResetChange();
 }
 
 void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgRemoveEntity& msg)
@@ -695,8 +689,8 @@ void SyncManager::HandleRemoveEntity(kNet::MessageConnection* source, const MsgR
     
     bool isServer = owner_->IsServer();
     
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     scene->RemoveEntity(entityID, change);
     
@@ -725,8 +719,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     
     bool isServer = owner_->IsServer();
     
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
     Scene::EntityPtr entity = scene->GetEntity(entityID);
@@ -759,7 +753,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 
                 try
                 {
-                    new_comp->DeserializeFromBinary(source, change);
+                    // Deserialize with no signals first
+                    new_comp->DeserializeFromBinary(source, AttributeChange::Disconnected);
                     actually_changed_components.push_back(new_comp);
                 }
                 catch (...)
@@ -778,15 +773,11 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
     }
     
-    // Then emit the componentchanges
-    // Kind of a "hack", call OnChanged to the components only after all components have been created, to prevent reacting to possibly incoherent state
+    // Signal the component changes last
     if (actually_changed_components.size())
     {
         for(uint i = 0; i < actually_changed_components.size(); ++i)
             actually_changed_components[i]->ComponentChanged(change);
-        // Finally, if changetype is Network, reset it so that it won't show "dirty" status which may be confusing
-        if (change == AttributeChange::Network)
-            entity->ResetChange();
     }
 }
 
@@ -810,8 +801,8 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     
     bool isServer = owner_->IsServer();
     
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     // See if we can find the entity. If not, create it, should not happen, but we handle it anyway (!!!)
     Scene::EntityPtr entity = scene->GetEntity(entityID);
@@ -830,7 +821,6 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     }
     
     // Read the components
-    std::vector<ComponentPtr> actually_changed_components;
     for (uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
@@ -840,11 +830,13 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         {
             if (msg.components[i].componentData.size())
             {
+                std::vector<bool> actually_changed_attributes;
+                
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
                 try
                 {
-                    if (new_comp->DeserializeFromDeltaBinary(source, change))
-                        actually_changed_components.push_back(new_comp);
+                    // Deserialize in a disconnected state
+                    new_comp->DeserializeFromDeltaBinary(source, AttributeChange::Disconnected, actually_changed_attributes);
                 }
                 catch (...)
                 {
@@ -859,21 +851,18 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
                 DataSerializer dest((char*)&componentstate->data_[0], componentstate->data_.size());
                 new_comp->SerializeToBinary(dest);
                 componentstate->data_.resize(dest.BytesFilled());
+                
+                const AttributeVector& attributes = new_comp->GetAttributes();
+                // Now, when whole component has been updated, signal the actually changed attributes
+                for (unsigned i = 0; i < actually_changed_attributes.size(); ++i)
+                {
+                    if ((i < attributes.size()) && (actually_changed_attributes[i]))
+                        new_comp->AttributeChanged(attributes[i], change);
+                }
             }
         }
         else
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
-    }
-    
-    // Then emit the componentchanges
-    // Kind of a "hack", call OnChanged to the components only after all components have been updated, to prevent reacting to possibly incoherent state
-    if (actually_changed_components.size())
-    {
-        for(uint i = 0; i < actually_changed_components.size(); ++i)
-            actually_changed_components[i]->ComponentChanged(change);
-        // Finally, if changetype is Network, reset it so that it won't show "dirty" status which may be confusing
-        if (change == AttributeChange::Network)
-            entity->ResetChange();
     }
 }
 
@@ -897,8 +886,8 @@ void SyncManager::HandleRemoveComponents(kNet::MessageConnection* source, const 
     
     bool isServer = owner_->IsServer();
     
-    // For clients, the change type is Network. For server, the change type is Local, so that it will get replicated to all clients in turn
-    AttributeChange::Type change = isServer ? AttributeChange::Local : AttributeChange::Network;
+    // For clients, the change type is LocalOnly. For server, the change type is Replicate, so that it will get replicated to all clients in turn
+    AttributeChange::Type change = isServer ? AttributeChange::Replicate : AttributeChange::LocalOnly;
     
     Scene::EntityPtr entity = scene->GetEntity(msg.entityID);
     if (!entity)

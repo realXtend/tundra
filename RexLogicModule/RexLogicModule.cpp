@@ -53,8 +53,9 @@
 
 #include "AvatarModule.h"
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+
 #ifdef EC_AvatarAppearance_ENABLED
 #include "EntityComponent/EC_AvatarAppearance.h"
 #endif
@@ -87,7 +88,7 @@
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
@@ -138,9 +139,6 @@
 #endif
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
-#endif
-#ifdef EC_Mesh_ENABLED
-#include "EC_Mesh.h"
 #endif
 #ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
@@ -240,9 +238,6 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
-#endif
-#ifdef EC_Mesh_ENABLED
-    DECLARE_MODULE_EC(EC_Mesh);
 #endif
 #ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
@@ -347,6 +342,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Avatar");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarEventHandler::HandleAvatarEvent, avatar_event_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleAvatarEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
@@ -354,7 +351,9 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
-    
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleNetworkStateEvent, obj_camera_controller_.get(), _1, _2));
+
     eventcategoryid = eventMgr->QueryEventCategory("Tundra");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkStateEventHandler::HandleTundraEvent, network_state_handler_, _1, _2));
@@ -391,8 +390,9 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
     if (framework_->HasScene(name))
     {
         LogWarning("Tried to create new active scene, but it already existed!");
-        Scene::ScenePtr oldScene = framework_->GetScene(name);
-        return oldScene;
+        Scene::ScenePtr scene = framework_->GetScene(name);
+        framework_->SetDefaultWorldScene(scene);
+        return scene;
     }
 
     Scene::ScenePtr scene = framework_->CreateScene(name);
@@ -408,7 +408,6 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
     primitive_->RegisterToComponentChangeSignals(scene);
 
     CreateOpenSimViewerCamera(scene, false);
-    
     return scene;
 }
 
@@ -422,7 +421,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
     }
 
     // Create camera entity into the scene
-    Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
+    Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
     ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
     ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
     assert(placeable && camera);
@@ -975,7 +974,7 @@ void RexLogicModule::UpdateSoundListener()
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     if (!scene)
         return;
-
+    
     // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
@@ -983,7 +982,7 @@ void RexLogicModule::UpdateSoundListener()
         if (!camera) return;
         EC_SoundListener *listener = camera->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
     else
     {
@@ -991,7 +990,7 @@ void RexLogicModule::UpdateSoundListener()
         if (!avatar) return;
         EC_SoundListener *listener = avatar->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
 #endif
 }
@@ -1235,7 +1234,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
         OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
         {

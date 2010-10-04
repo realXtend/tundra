@@ -154,7 +154,7 @@ namespace RexLogic
         //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
         void SetCurrentActiveScene(Scene::ScenePtr scene);
 
-        //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
+        //! Creates a new scene and sets that as active. Also creates the core entities to that scene that
         //! are always to be present in an reX world, like terrain.
         Scene::ScenePtr CreateNewActiveScene(const QString &name);
 

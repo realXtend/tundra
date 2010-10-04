@@ -5,6 +5,7 @@
 
 #include <QGraphicsProxyWidget>
 
+#include "UiTypes.h"
 #include "UiProxyWidget.h"
 #include "ui_PersonalWidget.h"
 
@@ -37,6 +38,9 @@ namespace CoreUi
 
         bool first_show_avatar_;
         bool first_show_inv_;
+
+signals:
+        void ControlButtonClicked(UiServices::ControlButtonType);
 
     };
 }
