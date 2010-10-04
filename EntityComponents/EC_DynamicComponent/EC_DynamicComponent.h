@@ -88,19 +88,20 @@ public:
 
     /// Constructs a new attribute of type Attribute<T>.
     template<typename T>
-    void AddAttribute(const QString &name)
+    void AddAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default)
     {
         //Check if attribute has already created.
         if(!ContainAttribute(name))
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
+            AttributeChanged(attribute, change);
             emit AttributeAdded(name);
         }
     }
 
 public slots:
     /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
-    IAttribute *CreateAttribute(const QString &typeName, const QString &name);
+    IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Will handle ComponentChanged event to ComponentInterface.
     /** @param changeType Accepts following strings {LocalOnly, Local and Network}.
@@ -108,7 +109,7 @@ public slots:
     void ComponentChanged(const QString &changeType);
 
     /// Create new attribute that type is QVariant.
-    void AddQVariantAttribute(const QString &name);
+    void AddQVariantAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Get attribute value as QVariant.
     /** If attribute type isn't QVariantAttribute then attribute value is returned as in string format.
