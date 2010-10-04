@@ -371,6 +371,7 @@ namespace CoreUi
 
     void CommunicationWidget::UninitializeInWorldVoice()
     {
+
         if (!voice_tool_)
             return;
 
