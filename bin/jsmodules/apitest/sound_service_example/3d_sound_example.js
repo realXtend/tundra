@@ -5,7 +5,7 @@ var audio_asset_ref = "b31a9a52-fb05-4648-87de-60c8697db3ca";
 var local_audio = "file://rapinaa.ogg";
 
 // Javascript engine will call this function before it destroy the script instance.
-function OnScriptDestoyed()
+function OnScriptDestroyed()
 {
 	if (sound_rotator != undefined)
 		sound_rotator.Stop();
