@@ -1,7 +1,7 @@
 print("Loading AudioPlayer example script.");
 
 // Javascript engine will call this function before it destroy the script instance.
-function OnScriptDestoyed()
+function OnScriptDestroyed()
 {
 	//No cleaning atm.
 }
