@@ -1512,4 +1512,5 @@ if 1: #start a pythonqt console
         r.qtconsole
     except:
         r.qtconsole = naali._pythonscriptmodule.CreateConsole()
+    else: #show if was hidden previously
         r.qtconsole.show()
