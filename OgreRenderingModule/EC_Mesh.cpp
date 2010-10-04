@@ -26,7 +26,7 @@ namespace OgreRenderer
 EC_Mesh::EC_Mesh(IModule* module) :
     IComponent(module->GetFramework()),
     // Note: we put the opensim haxor adjust right here in the defaults, instead of hardcoding it in code.
-    nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(180,0,90),Vector3df(1,1,1))),
+    nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(90,0,180),Vector3df(1,1,1))),
     meshResourceId(this, "Mesh ref", ""),
     skeletonId(this, "Skeleton ref", ""),
     meshMaterial(this, "Mesh materials"),
@@ -956,6 +956,9 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
     //! remember to track the cause of this when I some extra time.
     SetMesh(QString::fromStdString(meshResourceId.Get().toStdString()));
 
+    // Hack to request materials now
+    AttributeUpdated(&meshMaterial);
+
     return true;
 }
 
@@ -1011,8 +1014,7 @@ bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
         SetMaterial(index, material_name);
         materialRequestTags_[index] = 0;
     }
-    else
-        LogWarning("Failed to set a new material to mesh.");
+
     return true;
 }
 
