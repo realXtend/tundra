@@ -95,11 +95,11 @@ namespace ECEditor
         }
 
         // Update component editors ui.
-        ComponentGroupList::iterator compIter = componentGroups_.begin();
+        /*ComponentGroupList::iterator compIter = componentGroups_.begin();
         for(; compIter != componentGroups_.end(); compIter++)
         {
             (*compIter)->editor_->UpdateEditorUI();
-        }
+        }*/
         if(treeWidget_)
             treeWidget_->setSortingEnabled(true);
         /*if(treeWidget_)
