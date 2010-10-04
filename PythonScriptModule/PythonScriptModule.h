@@ -168,9 +168,6 @@ namespace PythonScript
 
         QList<InputContextPtr> created_inputs_;
 
-        //PythonQtScriptingConsole *pythonqtconsole;
-
-
     private slots:
         /** Called when new component is added to the active scene.
             Currently used for handling EC_Script.
