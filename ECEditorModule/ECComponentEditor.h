@@ -19,9 +19,8 @@ namespace ECEditor
     class ECAttributeEditorBase;
 
     //! ECComponentEditor is responsible to create the all attribute editors for each component (Note! each component must contain same attributes).
-    /*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttribute object
+    /*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttributeEditor object
      *  and insert it to ECBrower object.
-     *  ECAttributeEditor instance for that attribute type.
      *  \ingroup ECEditorModuleClient.
      */
     class ECComponentEditor : public QObject
@@ -47,17 +46,17 @@ namespace ECEditor
         //! Remove component from the editor.
         void RemoveComponent(IComponent *component);
 
-        void UpdateEditorUI();
+        //void UpdateEditorUI();
 
     public slots:
         //! W
         //! \bug When user reinitialize the attribute editor's properties the order will go invalid.
-        void AttributeEditorUpdated(const std::string &attributeName);
+        //void AttributeEditorUpdated(const std::string &attributeName);
 
     private slots:
         //! When component's attribute has been changed, this method is called.
         //! Method will ask the ECAttributeEditor to update it's fields to new attribute values (UpdateEditorUI).
-        void ComponentChanged(IAttribute* attribute, AttributeChange::Type change);
+        void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     private:
         //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 

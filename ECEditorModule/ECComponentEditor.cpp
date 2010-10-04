@@ -4,6 +4,7 @@
 #include "DebugOperatorNew.h"
 
 #include "ECComponentEditor.h"
+#include "ECEditorModule.h"
 
 #include "IAttribute.h"
 #include "ECAttributeEditor.h"
@@ -101,7 +102,7 @@ namespace ECEditor
             groupProperty_->setToolTip("Component type is " + component->TypeName());
             groupProperty_->addSubProperty(attributeEditor->GetProperty());
 
-            QObject::connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
+            //connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
         }
     }
 
@@ -147,7 +148,7 @@ namespace ECEditor
                 iter->second->AddNewAttribute(attribute);
             iter++;
         }
-        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(ComponentChanged(IAttribute*, AttributeChange::Type)));
+        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
         UpdateGroupPropertyText();
     }
 
@@ -173,6 +174,7 @@ namespace ECEditor
                         attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;
                 }
+                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
                 components_.erase(iter);
                 break;
             }
@@ -181,7 +183,7 @@ namespace ECEditor
         UpdateGroupPropertyText();
     }
 
-    void ECComponentEditor::UpdateEditorUI()
+    /*void ECComponentEditor::UpdateEditorUI()
     {
         AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
         while(attributeIter != attributeEditors_.end())
@@ -189,9 +191,9 @@ namespace ECEditor
             attributeIter->second->UpdateEditorUI();
             attributeIter++; 
         }
-    }
+    }*/
 
-    void ECComponentEditor::AttributeEditorUpdated(const std::string &attributeName)
+    /*void ECComponentEditor::AttributeEditorUpdated(const std::string &attributeName)
     {
         AttributeEditorMap::iterator iter = attributeEditors_.begin();
         int index = 0;
@@ -214,9 +216,9 @@ namespace ECEditor
             }
             index++;
         }
-    }
+    }*/
 
-    void ECComponentEditor::ComponentChanged(IAttribute* attribute, AttributeChange::Type change)
+    void ECComponentEditor::AttributeChanged(IAttribute* attribute, AttributeChange::Type change)
     {
         IComponent *component = dynamic_cast<IComponent *>(sender());
         if((!component) || (!attribute))
@@ -226,6 +228,6 @@ namespace ECEditor
 
         AttributeEditorMap::iterator iter = attributeEditors_.find(attribute->GetName());
         if(iter != attributeEditors_.end())
-            iter->second->UpdateEditorUI();//AttributeValueChanged(*attributes[i]);
+            iter->second->UpdateEditorUI();
     }
 }
