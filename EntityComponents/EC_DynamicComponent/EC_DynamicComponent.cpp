@@ -161,6 +161,10 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(attribute)
         emit AttributeAdded(name);
+
+    //! \todo changetype should be configurable. Now it's assumed to use Default
+    AttributeChanged(attribute, AttributeChange::Default);
+
     return attribute;
 }
 
@@ -171,6 +175,10 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
     {
         if((*iter)->GetName() == name)
         {
+            // Send change signal just before delete, so that network syncmanager catches it
+            //! \todo changetype should be configurable. Now it's assumed to use Default
+            AttributeChanged(*iter, AttributeChange::Default);
+            
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
