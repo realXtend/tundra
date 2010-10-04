@@ -99,9 +99,11 @@ void TundraLogicModule::Update(f64 frametime)
         //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
         ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
         if (!loginModule.lock().get())
+        {
+            LogInfo("Started server by default");
             server_->Start(cDefaultPort);
+        }
         check_default_server_start = false;
-        LogInfo("Started server by default");
     }
     
     // Update client & server

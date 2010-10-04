@@ -676,7 +676,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
 
     prim->MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
+    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();
     prim->ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
