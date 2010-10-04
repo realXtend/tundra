@@ -210,9 +210,9 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
     // Do the scene load as replicable only if we are a server
     bool success;
     if (!useBinary)
-        success = scene->LoadSceneXML(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+        success = scene->LoadSceneXML(params[0], AttributeChange::Default);
     else
-        success = scene->LoadSceneBinary(params[0], IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly);
+        success = scene->LoadSceneBinary(params[0], AttributeChange::Default);
     
     if (success)
     {
@@ -245,7 +245,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(framework_);
-    bool success = importer.Import(scene, filename, dirname, "./data/assets", IsServer() ? AttributeChange::Local : AttributeChange::LocalOnly, clearscene, true, replace);
+    bool success = importer.Import(scene, filename, dirname, "./data/assets", AttributeChange::Default, clearscene, true, replace);
     
     if (success)
     {

@@ -8,7 +8,8 @@ function OnComponentAdded(entity, component, type)
     print("EC_Mesh component has been added to scene renaming it to MeshEntity");
     component.Name = "MeshEntity";
     component.p_meshResourceId = "Mesh ref here";
-    component.ComponentChanged(1);
+    // ComponentChanged() is no longer necessary to trigger network sync
+    // component.ComponentChanged(1);
     print("Component has been added to entity. Id:" + entity.Id);
 }
 

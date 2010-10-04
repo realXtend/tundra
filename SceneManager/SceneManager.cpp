@@ -45,7 +45,7 @@ namespace Scene
         RemoveAllEntities(false);
     }
 
-    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components)
+    Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
     {
         // Figure out new entity id
         entity_id_t newentityid = 0;
@@ -64,8 +64,15 @@ namespace Scene
 
         Scene::EntityPtr entity = Scene::EntityPtr(new Scene::Entity(framework_, newentityid, this));
         for (size_t i=0 ; i<components.size() ; ++i)
-            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(components[i])); //change the param to a qstringlist or so \todo XXX
-
+        {
+            ComponentPtr newComp = framework_->GetComponentManager()->CreateComponent(components[i]);
+            if (newComp)
+            {
+                if (!defaultNetworkSync)
+                    newComp->SetNetworkSyncEnabled(false);
+                entity->AddComponent(newComp, change); //change the param to a qstringlist or so \todo XXX
+            }
+        }
         entities_[entity->GetId()] = entity;
 
         // Send event.
@@ -98,6 +105,11 @@ namespace Scene
         return Scene::EntityPtr();
     }
 
+    Scene::Entity *SceneManager::GetEntityByNameRaw(const QString &name) const
+    {
+        return GetEntityByName(name).get();
+    }
+
     Scene::EntityPtr SceneManager::GetEntityByName(const QString& name) const
     {
         EntityMap::const_iterator it = entities_.begin();
@@ -105,15 +117,12 @@ namespace Scene
         {
             EntityPtr entity = it->second;
             if (entity->HasComponent(EC_Name::TypeNameStatic()))
-            {
-                QString nam = entity->GetComponent<EC_Name >().get()->name.Get();
-                if ( nam == name )
-                    return entity;              
-                
-            }
+                if (entity->GetComponent<EC_Name>()->name.Get() == name)
+                    return entity;
             ++it;
-        }   
-        return Scene::EntityPtr();               
+        }
+
+        return Scene::EntityPtr();
     }
 
     entity_id_t SceneManager::GetNextFreeId()
@@ -213,23 +222,30 @@ namespace Scene
         return entities;
     }
     
-    void SceneManager::EmitComponentChanged(IComponent* comp, AttributeChange::Type change)
-    {
-        emit ComponentChanged(comp, change);
-    }
-    
     void SceneManager::EmitComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
+        if (change == AttributeChange::Default)
+            change = comp->GetUpdateMode();
         emit ComponentAdded(entity, comp, change);
     }
     
     void SceneManager::EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
+        if (change == AttributeChange::Default)
+            change = comp->GetUpdateMode();
         emit ComponentRemoved(entity, comp, change);
     }
 
     void SceneManager::EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
+        if (change == AttributeChange::Default)
+            change = comp->GetUpdateMode();
         emit AttributeChanged(comp, attribute, change);
     }
 
@@ -240,16 +256,22 @@ namespace Scene
  
     void SceneManager::EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
         emit EntityCreated(entity, change);
     }
 
     void SceneManager::EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
         emit EntityCreated(entity.get(), change);
     }
     
     void SceneManager::EmitEntityRemoved(Scene::Entity* entity, AttributeChange::Type change)
     {
+        if (change == AttributeChange::Disconnected)
+            return;
         emit EntityRemoved(entity, change);
     }
 
@@ -260,33 +282,24 @@ namespace Scene
 
     QVariantList SceneManager::GetEntityIdsWithComponent(const QString &type_name) const
     {
-        EntityList list = GetEntitiesWithComponent(type_name);
-        QVariantList ids;
-        EntityList::const_iterator iter;
+        QVariantList ret;
 
-        for(iter = list.begin(); iter != list.end(); iter++)
-        {
-            EntityPtr ent = *iter;
-            Entity* e = ent.get();
-            entity_id_t id = e->GetId();
-            QVariant qv(id);
-            ids.append(qv);
-        }
-        return ids;
+        EntityList entities = GetEntitiesWithComponent(type_name);
+        foreach(EntityPtr e, entities)
+            ret.append(QVariant(e->GetId()));
+
+        return ret;
     }
 
     QList<Scene::Entity*> SceneManager::GetEntitiesWithComponentRaw(const QString &type_name) const
     {
-        EntityList list = GetEntitiesWithComponent(type_name);
-        QList<Scene::Entity*> qlist;
-        EntityList::const_iterator iter;
-        for(iter = list.begin(); iter != list.end(); iter++)
-        {
-            EntityPtr ent = *iter;
-            Entity* e = ent.get();
-            qlist.append(e);
-        }
-        return qlist;
+        QList<Scene::Entity*> ret;
+
+        EntityList entities = GetEntitiesWithComponent(type_name);
+        foreach(EntityPtr e, entities)
+            ret.append(e.get());
+
+        return ret;
     }
     
     bool SceneManager::LoadSceneXML(const std::string& filename, AttributeChange::Type change)
@@ -328,14 +341,14 @@ namespace Scene
                         QString name = comp_elem.attribute("name");
                         ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
                         if (new_comp)
-                        {
-                            new_comp->DeserializeFrom(comp_elem, change);
-                        }
+                            // Trigger no signal yet when entity is in incoherent state
+                            new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
                     EmitEntityCreated(entity, change);
-                    // Kind of a "hack", call OnChanged to the components only after all components have been loaded
-                    // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+
+                    // All components have been loaded. Trigger change for them now.
                     const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
                     for(uint i = 0; i < components.size(); ++i)
                         components[i]->ComponentChanged(change);

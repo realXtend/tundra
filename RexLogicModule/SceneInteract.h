@@ -59,6 +59,9 @@ private:
     /// Last known mouse cursor's y position.
     int lastY_;
 
+    /// Was there widget under mouse in last known position.
+    bool itemUnderMouse_;
+
     /// Last entity raycast has hit.
     Scene::EntityWeakPtr lastHitEntity_;
 

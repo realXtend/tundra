@@ -189,7 +189,7 @@ namespace ECEditor
                 IAttribute *attr = 0;
                 for(uint i = 0; i < names.size(); i++)
                 {
-                    attr = compWeak.lock()->GetAttribute(names[i].toStdString());
+                    attr = compWeak.lock()->GetAttribute(names[i]);
                     if(attr)
                         break;
                 }
@@ -200,8 +200,8 @@ namespace ECEditor
                     Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                     if(attribute)
                     {
-                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                     }
                 }
                 else if(attr->TypenameToString() == "qvariant")
@@ -211,8 +211,8 @@ namespace ECEditor
                     {
                         if(attribute->Get().type() == QVariant::String)
                         {
-                            attribute->Set(asset_id, AttributeChange::Local);
-                            compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                            attribute->Set(asset_id, AttributeChange::Default);
+                            //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                         }
                     }
                 }
@@ -240,8 +240,8 @@ namespace ECEditor
                         else
                             return false;
 
-                        attribute->Set(variants, AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
                     }
                 }
                 else if(attr->TypenameToString() == "qvariantlist")
@@ -268,8 +268,8 @@ namespace ECEditor
                         else
                             return false;
 
-                        attribute->Set(variants, AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
                     }
                 }
             }
@@ -514,7 +514,7 @@ namespace ECEditor
                 if(!(*iter)->HasComponent(type, name))
                 {
                     component = framework_->GetComponentManager()->CreateComponent(type, name);
-                    (*iter)->AddComponent(component, AttributeChange::Local);
+                    (*iter)->AddComponent(component, AttributeChange::Default);
                 }
                 else
                     component = (*iter)->GetComponent(type, name);
@@ -523,8 +523,8 @@ namespace ECEditor
                     iter++;
                     continue;
                 }
-                component->DeserializeFrom(comp_elem, AttributeChange::Local);
-                component->ComponentChanged(AttributeChange::Local);
+                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+                //component->ComponentChanged(AttributeChange::Default);
                 iter++;
             }
         }
@@ -550,7 +550,7 @@ namespace ECEditor
                 {
                     ComponentPtr comp = pointer.lock();
                     Scene::Entity *entity = comp->GetParentEntity();
-                    entity->RemoveComponent(comp, AttributeChange::Local);
+                    entity->RemoveComponent(comp, AttributeChange::Default);
                 }
                 else
                 {
@@ -628,7 +628,7 @@ namespace ECEditor
             if(component)
             {
                 if(component->CreateAttribute(typeName, name))
-                    component->ComponentChanged("Local");
+                    component->ComponentChanged("Default");
             }
         }
     }
@@ -658,7 +658,7 @@ namespace ECEditor
             if(comp)
             {
                 comp->RemoveAttribute(item->text(0));
-                comp->ComponentChanged("Local");
+                comp->ComponentChanged("Default");
             }
         }
         //RemoveComponentGroup(*iter);

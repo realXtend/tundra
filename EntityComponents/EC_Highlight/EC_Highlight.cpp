@@ -3,7 +3,7 @@
  *
  *  @file   EC_Highlight.cpp
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -15,7 +15,7 @@
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
 
@@ -97,11 +97,11 @@ void EC_Highlight::Create()
     if (!placeable)
         return;
 
-    // Check out if this entity has EC_OgreMesh or EC_OgreCustomObject.
+    // Check out if this entity has EC_Mesh or EC_OgreCustomObject.
     Ogre::Entity *originalEntity  = 0;
-    if (entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic()))
+    if (entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic()))
     {
-        OgreRenderer::EC_OgreMesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh *ec_mesh= entity->GetComponent<OgreRenderer::EC_Mesh>().get();
         assert(ec_mesh);
 
         originalEntity = ec_mesh->GetEntity();
@@ -122,7 +122,7 @@ void EC_Highlight::Create()
     }
     else
     {
-        LogError("This entity doesn't have either EC_OgreMesh or EC_OgreCustomObject present. Cannot create EC_Highlight.");
+        LogError("This entity doesn't have either EC_Mesh or EC_OgreCustomObject present. Cannot create EC_Highlight.");
         return;
     }
 

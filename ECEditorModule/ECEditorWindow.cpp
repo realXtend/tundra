@@ -165,7 +165,7 @@ namespace ECEditor
             ComponentPtr component = entities[i]->GetComponent(componentType, name);
             if(component)
             {
-                entities[i]->RemoveComponent(component, AttributeChange::Local);
+                entities[i]->RemoveComponent(component, AttributeChange::Default);
                 BoldEntityListItem(entities[i]->GetId(), false);
             }
         }
@@ -196,7 +196,7 @@ namespace ECEditor
             else
                 comp = framework_->GetComponentManager()->CreateComponent(typeName); 
             if (comp)
-                entities[i]->AddComponent(comp, AttributeChange::Local);
+                entities[i]->AddComponent(comp, AttributeChange::Default);
         }
     }
 
@@ -208,7 +208,7 @@ namespace ECEditor
 
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); ++i)
-            scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Local);
+            scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Default);
     }
 
     void ECEditorWindow::CopyEntity()
@@ -282,20 +282,20 @@ namespace ECEditor
                 if(components[i]->TypeName() == "EC_OgrePlaceable")
                 {
                     hasPlaceable = true;
-                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
                 }
                 // Ignore all nonserializable components.
                 if(components[i]->IsSerializable())
                 {
-                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), components[i]->GetChange());
+                    ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
                     AttributeVector attributes = components[i]->GetAttributes();
                     for(uint j = 0; j < attributes.size(); j++)
                     {
-                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString());
+                        IAttribute *attribute = component->GetAttribute(attributes[j]->GetNameString().c_str());
                         if(attribute)
-                            attribute->FromString(attributes[j]->ToString(), AttributeChange::Local);
+                            attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
                     }
-                    component->ComponentChanged(AttributeChange::Local); 
+                    //component->ComponentChanged(AttributeChange::Default);
                 }
             }
             if(hasPlaceable)

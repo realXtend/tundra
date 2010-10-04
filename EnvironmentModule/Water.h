@@ -20,7 +20,7 @@ namespace Environment
      * Water class is used to control default water plane, this is depricated way to control environment water. 
      * This class handles all environment editor changes, and deals RexDrawWater-message information from server. 
      * Note! This class uses a idea of Environment - entity. IF there exist a entity in world which has component @p EC_NAME
-     * which name attribute is Environment, then it will be used as enviroment control entity (and all syncronization of ocean etc.) is done through
+     * which name attribute is WaterEnvironment, then it will be used as enviroment control entity (and all syncronization of ocean etc.) is done through
      * that entity. IF there does not exist a entity EnviromenModule will (and this class) create LocalEnviroment entity, which owns ocean etc. this will be not syncronizable.
      *
      */
@@ -52,7 +52,7 @@ namespace Environment
              *
              **/
             
-            void CreateWaterGeometry(float height = 20.f, AttributeChange::Type type = AttributeChange::Network);
+            void CreateWaterGeometry(float height = 20.f, AttributeChange::Type change = AttributeChange::LocalOnly);
 
             /** 
              * Removes water geometry totally. 

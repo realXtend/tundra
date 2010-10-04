@@ -22,22 +22,22 @@
 IComponent::IComponent(Foundation::Framework* framework) :
     parent_entity_(0),
     framework_(framework),
-    change_(AttributeChange::None),
-    network_sync_(true)
+    network_sync_(true),
+    updatemode_(AttributeChange::Replicate)
 {
 }
 
 IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
-    change_(AttributeChange::None),
-    network_sync_(rhs.network_sync_)
+    network_sync_(rhs.network_sync_),
+    updatemode_(rhs.updatemode_)
 {
 }
 
 IComponent::~IComponent()
 {
-    // Removes itself from EventManager 
+    // Removes itself from EventManager
     if (framework_)
         framework_->GetEventManager()->UnregisterEventSubscriber(this);
 }
@@ -51,6 +51,13 @@ void IComponent::SetName(const QString& name)
     QString oldName = name_;
     name_ = name;
     emit OnComponentNameChanged(name, oldName);
+}
+
+void IComponent::SetUpdateMode(AttributeChange::Type defaultmode)
+{
+    // Note: we can't allow default mode to be Default, because that would be meaningless
+    if (defaultmode != AttributeChange::Default)
+        updatemode_ = defaultmode;
 }
 
 void IComponent::SetParentEntity(Scene::Entity* entity)
@@ -77,10 +84,10 @@ uint IComponent::TypeNameHash() const
     return GetHash(TypeName());
 }
 
-IAttribute* IComponent::GetAttribute(const std::string &name) const
+IAttribute* IComponent::GetAttribute(QString name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)
-        if(attributes_[i]->GetNameString() == name)
+        if(attributes_[i]->GetNameString() == name.toStdString())
             return attributes_[i];
     return 0;
 }
@@ -161,6 +168,11 @@ QString IComponent::ReadAttributeType(QDomElement& comp_element, const QString &
 
 void IComponent::AttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
+    if (change == AttributeChange::Default)
+        change = updatemode_;
+    if (change == AttributeChange::Disconnected)
+        return; // No signals
+    
     // Trigger scenemanager signal
     if (parent_entity_)
     {
@@ -173,12 +185,20 @@ void IComponent::AttributeChanged(IAttribute* attribute, AttributeChange::Type c
     emit OnAttributeChanged(attribute, change);
 }
 
-void IComponent::ResetChange()
+void IComponent::AttributeChanged(const QString& attributeName, AttributeChange::Type change)
 {
-    for (uint i = 0; i < attributes_.size(); ++i)
-        attributes_[i]->ResetChange();
+    if (change == AttributeChange::Disconnected)
+        return; // No signals
     
-    change_ = AttributeChange::None;
+    // Roll through attributes and check name match
+    for (uint i = 0; i < attributes_.size(); ++i)
+    {
+        if (attributes_[i]->GetName() == attributeName)
+        {
+            AttributeChanged(attributes_[i], change);
+            break;
+        }
+    }
 }
 
 void IComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
@@ -271,9 +291,11 @@ bool IComponent::SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDe
     return false;
 }
 
-bool IComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+bool IComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change, std::vector<bool>& changed_attributes)
 {
     int num_changed = 0;
+    
+    changed_attributes.resize(attributes_.size());
     
     for (uint i = 0; i < attributes_.size(); ++i)
     {
@@ -281,8 +303,11 @@ bool IComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, Attr
         if (b)
         {
             attributes_[i]->FromBinary(source, change);
+            changed_attributes[i] = true;
             num_changed++;
         }
+        else
+            changed_attributes[i] = false;
     }
     
     return num_changed != 0;
@@ -290,15 +315,9 @@ bool IComponent::DeserializeFromDeltaBinary(kNet::DataDeserializer& source, Attr
 
 void IComponent::ComponentChanged(AttributeChange::Type change)
 {
-    change_ = change;
+    for (uint i = 0; i < attributes_.size(); ++i)
+        AttributeChanged(attributes_[i], change);
     
-    if (parent_entity_)
-    {
-        Scene::SceneManager* scene = parent_entity_->GetScene();
-        if (scene)
-            scene->EmitComponentChanged(this, change);
-    }
-    
-    // Trigger also internal change
-    emit OnChanged();
+    //! \todo: this is deprecated and will be removed in the future. Do not rely on OnChanged() signal.
+    OnChanged();
 }

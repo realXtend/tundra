@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreAnimationController.h"
 #include "OgreRenderingModule.h"
 
@@ -19,7 +19,7 @@ namespace OgreRenderer
     {
     }
     
-    void EC_OgreAnimationController::SetMeshEntity(EC_OgreMesh *new_mesh)
+    void EC_OgreAnimationController::SetMeshEntity(EC_Mesh *new_mesh)
     {
         mesh = new_mesh;
     }

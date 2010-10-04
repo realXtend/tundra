@@ -57,6 +57,8 @@ namespace Scene
         QVariantList GetEntityIdsWithComponent(const QString &type_name) const;
         QList<Scene::Entity*> GetEntitiesWithComponentRaw(const QString &type_name) const;
 
+        Scene::Entity* GetEntityByNameRaw(const QString& name) const;
+
     public:
         //! destructor
         ~SceneManager();
@@ -89,9 +91,10 @@ namespace Scene
 
             \param id Id of the new entity. Use GetNextFreeId() or GetNextFreeIdLocal()
             \param components Optional list of component names the entity will use. If omitted or the list is empty, creates an empty entity.
-            \param change Origin of change regards to network replication
+            \param change Notification/network replication mode
+            \param defaultNetworkSync Whether components will have network sync. Default true
         */
-        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList());
+        EntityPtr CreateEntity(entity_id_t id = 0, const QStringList &components = QStringList(), AttributeChange::Type change = AttributeChange::LocalOnly, bool defaultNetworkSync = true);
 
         //! Forcibly changes id of an existing entity. If there already is an entity with the new id, it will be purged
         /*! Note: this is meant as a response for a server-authoritative message to change the id of a client-created entity,
@@ -164,14 +167,8 @@ namespace Scene
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
         EntityList GetEntitiesWithComponent(const QString &type_name) const;
-
-        //! Emit a notification of a component's attributes changing. Called by the components themselves
-        /*! \param comp Component pointer
-            \param change Type of change (local, from network...)
-         */
-        void EmitComponentChanged(IComponent* comp, AttributeChange::Type change);
         
-        //! Emit notification of an attribute changing
+        //! Emit notification of an attribute changing. Called by IComponent.
         /*! \param comp Component pointer
             \param attribute Attribute pointer
             \param change Type of change (local, from network...)
@@ -250,12 +247,9 @@ namespace Scene
         bool SaveSceneBinary(const std::string& filename);
 
     signals:
-        //! Signal when a component is changed and should possibly be replicated (if the change originates from local)
+        //! Signal when an attribute of a component has changed
         /*! Network synchronization managers should connect to this
          */
-        void ComponentChanged(IComponent* comp, AttributeChange::Type change);
-
-        //! Signal when an attribute of a component has changed
         void AttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
 
         //! Signal when a component is added to an entity and should possibly be replicated (if the change originates from local)

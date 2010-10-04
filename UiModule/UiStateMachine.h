@@ -31,6 +31,7 @@ namespace CoreUi
         void SwitchToInworldScene();
         void SwitchToEtherScene();
         void SwitchToBuildScene();
+        void SwitchToAvatarScene();
         void ToggleEther();
 
         /** Registers new scene.
@@ -107,6 +108,7 @@ namespace CoreUi
     signals:
         void EtherTogglePressed();
         void SceneOutAnimationFinised();
+        void SceneAboutToChange(const QString &oldName, const QString &newName);
         void SceneChanged(const QString &oldName, const QString &newName);
         void SceneChangeComplete();
 

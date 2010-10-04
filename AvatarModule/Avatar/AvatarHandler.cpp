@@ -10,7 +10,7 @@
 #include "AvatarEvents.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
-#include "Avatar/AvatarEditor.h"
+#include "AvatarEditing/AvatarEditor.h"
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
@@ -22,7 +22,7 @@
 #include "RexNetworkUtils.h"
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreAnimationController.h"
@@ -56,6 +56,11 @@ namespace Avatar
         avatar_states_[RexUUID("4ae8016b-31b9-03bb-c401-b1ea941db41d")] = EC_OpenSimAvatar::Hover;
         avatar_states_[RexUUID("20f063ea-8306-2562-0b07-5c853b37b31e")] = EC_OpenSimAvatar::Hover;
         avatar_states_[RexUUID("62c5de58-cb33-5743-3d07-9e4cd4352864")] = EC_OpenSimAvatar::Hover;
+
+        connect(this, SIGNAL(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)),
+            &avatar_appearance_, SLOT(ExportAvatar(Scene::EntityPtr, const std::string&, const std::string&, const std::string&)));
+        connect(this, SIGNAL(WebDavExportAvatar(Scene::EntityPtr)),
+            &avatar_appearance_, SLOT(WebDavExportAvatar(Scene::EntityPtr)));
     }
 
     AvatarHandler::~AvatarHandler()
@@ -117,12 +122,12 @@ namespace Avatar
 #ifdef EC_HoveringWidget_ENABLED
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
 #endif
-        defaultcomponents.append(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
-        // Note: we assume the avatar is created because of a message from network
-        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
-        scene->EmitEntityCreated(entity, AttributeChange::Network);
+        // Create avatar entity with all default components non-networked
+        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::LocalOnly, false);
+        scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
 
         ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
@@ -135,6 +140,10 @@ namespace Avatar
             // Now switch networksync off from the placeable, before we do any damage
             placeable->SetNetworkSyncEnabled(false);
         }
+        // Switch also networksync off from the mesh
+        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        if (mesh)
+            mesh->SetNetworkSyncEnabled(false);
 
         return entity;
     }
@@ -599,12 +608,12 @@ namespace Avatar
             return;
 
         ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        ComponentPtr meshptr = entity->GetComponent(EC_OgreMesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
         ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {
-            EC_OgreMesh* mesh = checked_static_cast<EC_OgreMesh*>(meshptr.get());
+            EC_Mesh* mesh = checked_static_cast<EC_Mesh*>(meshptr.get());
             mesh->SetPlaceable(placeableptr);
             avatar_appearance_.SetupDefaultAppearance(entity);
         }
@@ -612,7 +621,7 @@ namespace Avatar
         if (animctrlptr && meshptr)
         {
             EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
-            animctrl->SetMeshEntity(dynamic_cast<EC_OgreMesh*>(meshptr.get()));
+            animctrl->SetMeshEntity(dynamic_cast<EC_Mesh*>(meshptr.get()));
         }
     }
     
@@ -780,10 +789,17 @@ namespace Avatar
         
         // Legacy avatar
         if (conn->GetAuthenticationType() == ProtocolUtilities::AT_RealXtend)
-            avatar_appearance_.ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        {
+            avatar_appearance_.EmitAppearanceStatus("Exporting avatar to avatar storage, please wait...", 120000);
+            emit ExportAvatar(entity, conn->GetUsername(), conn->GetAuthAddress(), conn->GetPassword());
+        }
         // Webdav avatar
         else if (conn->GetAuthenticationType() == ProtocolUtilities::AT_Taiga)
-            avatar_appearance_.WebDavExportAvatar(entity);
+        {
+            avatar_appearance_.EmitAppearanceStatus("Exporting avatar to webdav inventory, please wait...", 120000);
+            QApplication::processEvents();
+            emit WebDavExportAvatar(entity);
+        }
         // Inventory avatar
         else
             avatar_appearance_.InventoryExportAvatar(entity);

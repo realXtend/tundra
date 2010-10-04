@@ -38,6 +38,7 @@ class DoorHandler(circuits.BaseComponent):
         self.comp = comp
         circuits.BaseComponent.__init__(self)
 
+        # Todo: OnChanged() is deprecated
         comp.connect("OnChanged()", self.onChanged)
         self.inworld_inited = False #a cheap hackish substitute for some initing system
         self.initgui()

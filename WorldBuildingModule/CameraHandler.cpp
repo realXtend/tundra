@@ -8,7 +8,7 @@
 #include <SceneManager.h>
 #include <EC_OgrePlaceable.h>
 #include <EC_OgreCamera.h>
-#include <EC_OgreMesh.h>
+#include <EC_Mesh.h>
 #include <EC_OgreCustomObject.h>
 
 #include <Ogre.h>
@@ -98,7 +98,7 @@ namespace WorldBuilding
 				if (!entity_ec_placable || !cam_ec_placable || !cam_ec_camera)
 					return focus_completed;
 
-				OgreRenderer::EC_OgreMesh *entity_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+				OgreRenderer::EC_Mesh *entity_mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
 				OgreRenderer::EC_OgreCustomObject *entity_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
 
 				Vector3df position_vector = entity_ec_placable->GetPosition();

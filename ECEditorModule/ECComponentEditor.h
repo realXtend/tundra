@@ -4,6 +4,7 @@
 #define incl_ECEditorModule_ECComponentEditor_h
 
 #include "ForwardDefines.h"
+#include "AttributeChangeType.h"
 
 #include <QObject>
 #include <map>
@@ -23,7 +24,7 @@ namespace ECEditor
      *  ECAttributeEditor instance for that attribute type.
      *  \ingroup ECEditorModuleClient.
      */
-    class ECComponentEditor: public QObject
+    class ECComponentEditor : public QObject
     {
         Q_OBJECT
     public:
@@ -54,10 +55,9 @@ namespace ECEditor
         void AttributeEditorUpdated(const std::string &attributeName);
 
     private slots:
-        //! When component's state has been changed, this method is called.
-        //! Method will check what component's attribute value has been changed
-        //! and will ask the ECAttributeEditor to update it's fields to new attribute valeus (UpdateEditorUI).
-        void ComponentChanged();
+        //! When component's attribute has been changed, this method is called.
+        //! Method will ask the ECAttributeEditor to update it's fields to new attribute values (UpdateEditorUI).
+        void ComponentChanged(IAttribute* attribute, AttributeChange::Type change);
 
     private:
         //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 
@@ -73,7 +73,7 @@ namespace ECEditor
 
         //! Create new attribute editors for spesific component.
         //! @param component Compoent that we need to use, to get all attributes that we want to edit.
-        void CreateAttriubteEditors(ComponentPtr component);
+        void CreateAttributeEditors(ComponentPtr component);
 
         void UpdateGroupPropertyText();
 

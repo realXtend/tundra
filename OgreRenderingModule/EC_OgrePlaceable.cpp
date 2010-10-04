@@ -9,7 +9,7 @@
 
 namespace OgreRenderer
 {
-    
+
 EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
     IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
@@ -24,7 +24,7 @@ EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
     link_scene_node_ = scene_mgr->createSceneNode();
     scene_node_ = scene_mgr->createSceneNode();
     link_scene_node_->addChild(scene_node_);
-        
+    
     // In case the placeable is used for camera control, set fixed yaw axis
     link_scene_node_->setFixedYawAxis(true, Ogre::Vector3::UNIT_Z);
 

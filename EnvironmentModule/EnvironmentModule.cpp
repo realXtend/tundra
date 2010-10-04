@@ -341,7 +341,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height, AttributeChange::Network);
+                        water_->SetWaterHeight(height, AttributeChange::LocalOnly);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -456,12 +456,12 @@ namespace Environment
         return false;
     }
 
-    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& component_name) 
+    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
     {
         
         Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
         // Search first that does there exist environment entity
-        Scene::EntityPtr entity = active_scene->GetEntityByName("Environment");
+        Scene::EntityPtr entity = active_scene->GetEntityByName(entity_name);
         if (entity != 0)
         {
             // Does it have component? If not create. 
@@ -507,11 +507,15 @@ namespace Environment
             return;
         else
         {   
-            entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+            if ( entity->HasComponent(EC_WaterPlane::TypeNameStatic()) )
+                entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+            if  ( entity->HasComponent(EC_Fog::TypeNameStatic()))
+                 entity->RemoveComponent(entity->GetComponent(EC_Fog::TypeNameStatic()));
+        
         }
 
         active_scene->RemoveEntity(entity->GetId());
-
+        
 
     }
 
@@ -534,7 +538,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height, AttributeChange::Network);
+            water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID

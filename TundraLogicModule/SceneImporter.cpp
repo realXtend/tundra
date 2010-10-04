@@ -442,13 +442,13 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                 TundraLogicModule::LogInfo("Updating existing entity " + node_name);
             }
             
-            EC_Mesh* meshPtr = 0;
+            OgreRenderer::EC_Mesh* meshPtr = 0;
             EC_Name* namePtr = 0;
             OgreRenderer::EC_OgrePlaceable* placeablePtr = 0;
             
             if (entity)
             {
-                meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
+                meshPtr = checked_static_cast<OgreRenderer::EC_Mesh*>(entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), change).get());
                 namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
                 placeablePtr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetOrCreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic(), change).get());
                 
@@ -479,7 +479,6 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                     
                     if (!flipyz)
                     {
-                        //! \todo this probably breaks due to the hardcoded adjustment of meshes from Ogre to Opensim orientation
                         Vector3df rot_euler;
                         newrot.toEuler(rot_euler);
                         entity_transform.SetPos(newpos.x, newpos.y, newpos.z);
@@ -495,10 +494,10 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                         entity_transform.SetPos(-newpos.x, newpos.z, newpos.y);
                         entity_transform.SetRot(rot_euler.x * RADTODEG, rot_euler.y * RADTODEG, rot_euler.z * RADTODEG);
                         entity_transform.SetScale(newscale.x, newscale.y, newscale.z);
+                        meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), change);
                     }
 
                     placeablePtr->transform.Set(entity_transform, change);
-
                     meshPtr->meshResourceId.Set(mesh_name, change);
                     meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), change);
                     meshPtr->castShadows.Set(cast_shadows, change);

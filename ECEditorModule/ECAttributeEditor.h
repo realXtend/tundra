@@ -120,8 +120,8 @@ namespace ECEditor
             AttributeList::iterator iter = attributes_.begin();
             for(;iter != attributes_.end(); iter++)
             {
-                (*iter)->FromString(value.toStdString(), AttributeChange::Local);
-                (*iter)->GetOwner()->ComponentChanged(AttributeChange::Local);
+                (*iter)->FromString(value.toStdString(), AttributeChange::Default);
+                //(*iter)->GetOwner()->ComponentChanged(AttributeChange::Default);
             }
         }
 
@@ -167,7 +167,7 @@ namespace ECEditor
      *     PropertyManager and PropertyFactory that are reponssible for registering and creating all visual elements to the QtPropertyBrowser.
      *   - Set: Is a setter funtion for editor to AttributeInterface switch will send all user's
      *     made changes to actual object.
-     *   - Update: Getter function between AttriubteInterface and Editor. Editor will ask attribute's value and
+     *   - Update: Getter function between AttributeInterface and Editor. Editor will ask attribute's value and
      *     set it to editor's ui element.
      *   - FromString: This method is used for multiediting. When user has picked one of the multiedit options we need to 
      *     convert the string value to actual attribute value (usually this is done by using a boost's lexical_cast).
@@ -203,9 +203,9 @@ namespace ECEditor
                 Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(*iter);
                 if(attribute)
                 {
-                    attribute->Set(value, AttributeChange::Local);
+                    attribute->Set(value, AttributeChange::Default);
                     listenEditorChangedSignal_ = false;
-                    attribute->GetOwner()->ComponentChanged(AttributeChange::Local);
+                    //attribute->GetOwner()->ComponentChanged(AttributeChange::Default);
                     listenEditorChangedSignal_ = true;
                 }
                 iter++;

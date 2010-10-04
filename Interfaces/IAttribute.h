@@ -94,24 +94,11 @@ public:
      */
     void SetNull(bool enable) { null_ = enable; }
 
-    //! Resets previous/current change to none.
-    void ResetChange() { change_ = AttributeChange::None; }
-
-    //! Returns true if the attribute is dirty i.e. it has changed either locally or because of a network message.
-    /*! The dirty flag should be resetted by the replication manager after it has processed the change. However,
-        LOCALONLY changes most probably are not resetted by anything by default, so that state will stay until one
-        resets it manually.
-     */
-    bool IsDirty() const { return change_ != AttributeChange::None; }
-
     //! Returns true if the attribute is null i.e. its value should be fetched from a parent entity
     bool IsNull() const { return null_; }
 
     //! Returns attributes owner component.
     IComponent* GetOwner() const { return owner_; }
-
-    //! Returns current/most recent change type.
-    AttributeChange::Type GetChange() const { return change_; }
 
     //! Returns attributes name as const char *.
     const char* GetName() const { return name_.c_str(); }
@@ -160,9 +147,6 @@ protected:
     //! Name of attribute
     std::string name_;
 
-    //! Change type (dirty flag)
-    AttributeChange::Type change_;
-
     //! Null flag. If attribute is null, its value should be fetched from a parent entity
     bool null_;
 
@@ -206,10 +190,9 @@ public:
     void Set(const T &new_value, AttributeChange::Type change)
     {
         value_ = new_value;
-        change_ = change;
         Changed(change);
     }
-
+    
     //! IAttribute override.
     virtual std::string ToString() const;
 
@@ -256,7 +239,7 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeT
 template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);
-tempalte<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
+template<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
 
 template<> 
 */

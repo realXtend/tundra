@@ -44,6 +44,7 @@ namespace RexLogic
 
     public:
         ObjectCameraController(RexLogicModule* rex_logic, CameraControllable* camera_controllable, QObject *parent = 0);
+
         ~ObjectCameraController();
 
         //! Input event handler for handling controllable events
@@ -54,9 +55,15 @@ namespace RexLogic
 
         bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
 
+        bool HandleAvatarEvent(event_id_t event_id, IEventData* data);
+
+        bool HandleNetworkStateEvent(event_id_t event_id, IEventData* data);
+
         void RotateObject(qreal x, qreal y);
 
-        void RotateCamera(Vector3df pivot, CameraID id, qreal x, qreal y);
+        void ClampCamera(Vector3df obj_position, qreal distance);
+
+        void RotateCamera(Vector3df pivot, qreal x, qreal y);
 
         void CreateCustomCamera();
 
@@ -84,14 +91,7 @@ namespace RexLogic
 
         void Update(float);
 
-    private slots:
-        //! Populate service_category_identifiers_
-        void SubscribeToEventCategories();  
-
     private:
-        //! Current query categories
-        QStringList event_query_categories_;
-
         //! Current subscribed category events
         QMap<QString, event_category_id_t> service_category_identifiers_;
 
@@ -106,18 +106,16 @@ namespace RexLogic
         bool left_mousebutton_pressed_;
         bool object_selected_;
         bool zoom_close_;
+        bool avatar_edit_mode_;
+        bool returning_to_avatar_;
+        bool dont_accept_clicks_;
 
         QTime update_timer_;
         QPointF last_pos_;
 
         Scene::Entity *selected_entity_;
 
-        CameraID camera_count_;
-        QMap<CameraID, Scene::Entity*> id_to_cam_entity_;
-
         Vector3df last_dir_;
- 
-        CameraID selected_camera_id_;
 
         Scene::EntityPtr camera_entity_;
         OgreRenderer::EC_OgreCamera *ec_camera_;
