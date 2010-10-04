@@ -226,6 +226,7 @@ namespace OgreRenderer
 //        SAFE_DELETE(q_ogre_world_view_);
         SAFE_DELETE(stereo_controller_);
         SAFE_DELETE(cave_manager_);
+        SAFE_DELETE(renderWindow);
     }
 
     void Renderer::RemoveLogListener()
