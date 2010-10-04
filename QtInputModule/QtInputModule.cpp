@@ -9,7 +9,9 @@
 #include "ConsoleCommandServiceInterface.h"
 
 #include "UiServiceInterface.h"
+#include "UiSettingsServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "Foundation.h"
 
 #include <QGraphicsItem>
 #include <QGraphicsView>
@@ -38,9 +40,23 @@ void QtInputModule::Initialize()
 
 void QtInputModule::PostInitialize()
 {
-    RegisterConsoleCommand(Console::CreateCommand("bindings", 
-        "Shows the bindings configuration window.",
-        Console::Bind(this, &QtInputModule::ShowBindingsWindowConsole)));
+    UiServiceInterface *ui= framework_->GetService<UiServiceInterface>();
+    //Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    configWindow = new KeyBindingsConfigWindow(framework_);
+
+    if (!ui)
+        return;
+
+    ui->AddSettingsWidget(configWindow, "Controls");
+
+    Foundation::UiSettingsServiceInterface *sett_ui = framework_->GetService<Foundation::UiSettingsServiceInterface>();
+    if(!sett_ui)
+        return;
+
+    QObject *settings_widget_ = sett_ui->GetMainSettingsWidget();
+   
+    connect(settings_widget_, SIGNAL(SaveSettingsClicked()), configWindow, SLOT(ButtonOK()));
+    connect(settings_widget_, SIGNAL(CancelClicked()), configWindow, SLOT(ButtonCancel()));
 }
 
 void QtInputModule::Update(f64 frametime)
