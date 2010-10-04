@@ -156,7 +156,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
 {
     IAttribute *attribute = 0;
-    if(ContainAttribute(name))
+    if(ContainsAttribute(name))
         return attribute;
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
     if(attribute)
@@ -188,24 +188,10 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
     }
 }
 
-void EC_DynamicComponent::ComponentChanged(const QString &changeType)
-{
-    if(changeType == "Default")
-        IComponent::ComponentChanged(AttributeChange::Default);
-    else if(changeType == "Disconnected")
-        return;
-    else if(changeType == "LocalOnly")
-        IComponent::ComponentChanged(AttributeChange::LocalOnly);
-    else if(changeType == "Replicate")
-        IComponent::ComponentChanged(AttributeChange::Replicate);
-    else
-        LogWarning("Cannot emit ComponentChanged event cause \"" + changeType.toStdString() + "\" changeType is not supported.");
-}
-
 void EC_DynamicComponent::AddQVariantAttribute(const QString &name)
 {
     //Check if the attribute has already been created.
-    if(!ContainAttribute(name))
+    if(!ContainsAttribute(name))
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
         emit AttributeAdded(name);
@@ -424,7 +410,7 @@ bool EC_DynamicComponent::ContainSameAttributes(const EC_DynamicComponent &comp)
     return true;*/
 }
 
-bool EC_DynamicComponent::ContainAttribute(const QString &name) const
+bool EC_DynamicComponent::ContainsAttribute(const QString &name) const
 {
     AttributeVector::const_iterator iter = attributes_.begin();
     while(iter != attributes_.end())
