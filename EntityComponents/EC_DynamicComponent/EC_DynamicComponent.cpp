@@ -155,7 +155,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
     }
 }
 
-IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name)
+IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
     IAttribute *attribute = 0;
     if(ContainsAttribute(name))
@@ -164,8 +164,7 @@ IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const 
     if(attribute)
         emit AttributeAdded(name);
 
-    //! \todo changetype should be configurable. Now it's assumed to use Default
-    AttributeChanged(attribute, AttributeChange::Default);
+    AttributeChanged(attribute, change);
 
     return attribute;
 }
@@ -190,12 +189,13 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
     }
 }
 
-void EC_DynamicComponent::AddQVariantAttribute(const QString &name)
+void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeChange::Type change)
 {
     //Check if the attribute has already been created.
     if(!ContainsAttribute(name))
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
+        AttributeChanged(attribute, change);
         emit AttributeAdded(name);
     }
 }
