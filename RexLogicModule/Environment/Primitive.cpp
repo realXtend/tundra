@@ -200,24 +200,24 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         prim->UpdateFlags = msg->ReadU32();
 
         // Read prim shape
-        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::Default);
-        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::Default);
-        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Default);
-        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Default);
-        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::Default);
-        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::Default);
-        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Default);
-        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Default);
-        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::Default);
-        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::Default);
-        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Default);
-        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Default);
-        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::Default);
+        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::LocalOnly);
+        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
         prim->HasPrimShapeData = true;
 
         // Texture entry
@@ -667,16 +667,16 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
 
     // graphical values
     prim->DrawType = ReadUInt8FromBytes(primdata,idx);
-    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Default);
-    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Default);
+    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
     prim->LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
     prim->DescriptionTexture = ReadBoolFromBytes(primdata,idx);
     prim->ScaleToPrim = ReadBoolFromBytes(primdata,idx);
-    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Default);
-    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Default);
+    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
 
     prim->MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
+    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();
     prim->ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
@@ -836,8 +836,8 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     if (entity)
     {
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        prim->Name.Set(QString::fromStdString(name), AttributeChange::Default);
-        prim->Description.Set(QString::fromStdString(desc), AttributeChange::Default);
+        prim->Name.Set(QString::fromStdString(name), AttributeChange::LocalOnly);
+        prim->Description.Set(QString::fromStdString(desc), AttributeChange::LocalOnly);
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
         /// message. Should we maintain our own notion of what's selected and rename this event to PRIM_OBJECT_PROPERTIES or
