@@ -55,6 +55,8 @@ EC_DynamicComponent::EC_DynamicComponent(IModule *module):
 
 EC_DynamicComponent::~EC_DynamicComponent()
 {
+    foreach(IAttribute *a, attributes_)
+        SAFE_DELETE(a);
 }
 
 void EC_DynamicComponent::SerializeTo(QDomDocument& doc, QDomElement& base_element) const
