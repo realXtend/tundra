@@ -159,6 +159,7 @@ namespace Foundation
 
     Framework::~Framework()
     {
+        SAFE_DELETE(ui);
         naaliApplication.reset();
         thread_task_manager_.reset();
         event_manager_.reset();

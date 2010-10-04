@@ -220,6 +220,7 @@ namespace OgreRenderer
         root_.reset();
         SAFE_DELETE(c_handler_);
 //        SAFE_DELETE(q_ogre_world_view_);
+        SAFE_DELETE(renderWindow);
     }
 
     void Renderer::RemoveLogListener()

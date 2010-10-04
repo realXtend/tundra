@@ -310,7 +310,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     bool isServer = owner_->IsServer();
     if (isServer && (type & EntityAction::Server) != 0)
     {
-        TundraLogicModule::LogInfo("action server exec on server " + action.toStdString());
+        TundraLogicModule::LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
         entity->Exec(action, params);
     }
 
@@ -325,9 +325,10 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
         msg.parameters.push_back(p);
     }
 
-    if (!isServer && (((type & EntityAction::Server != 0) || (type & EntityAction::Peers != 0))))
+    if (!isServer && ((type & EntityAction::Server) != 0 || (type & EntityAction::Peers) != 0))
     {
         // send without Local flag
+        TundraLogicModule::LogInfo("Tundra client sending EntityAction " + action.toStdString() + " type " + ToString(type));
         msg.executionType = (u8)(type & ~EntityAction::Local);
         owner_->GetClient()->GetConnection()->Send(msg);
     }
