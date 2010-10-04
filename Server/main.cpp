@@ -6,7 +6,6 @@
 #include "HttpUtilities.h"
 
 #include "DebugOperatorNew.h"
-#include "MemoryLeakCheck.h"
 
 #if defined(_MSC_VER) && defined(MEMORY_LEAK_CHECK)
 // for reporting memory leaks upon debug exit
@@ -23,6 +22,8 @@
 #include <strsafe.h>
 #pragma warning(pop)
 #endif
+
+#include "MemoryLeakCheck.h"
 
 void setup(Foundation::Framework &fw);
 int run(int argc, char **argv);
