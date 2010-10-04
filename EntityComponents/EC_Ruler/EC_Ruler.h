@@ -126,14 +126,14 @@ public slots:
     /// @true If the rule component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
     
-    void SetVisible(bool visible) { visibleAttr_.Set(visible, AttributeChange::LocalOnly); }
+    void SetVisible(bool visible) { visibleAttr_.Set(visible, AttributeChange::Default); }
     
-    void SetRadius(float radius) { radiusAttr_.Set(radius, AttributeChange::LocalOnly); }
+    void SetRadius(float radius) { radiusAttr_.Set(radius, AttributeChange::Default); }
     
     //! set the ruler type to show: 0 = translate, 1 = rotate, 2 = scale
-    void SetType(EC_Ruler::Type type) { typeAttr_.Set(type, AttributeChange::LocalOnly); }
+    void SetType(EC_Ruler::Type type) { typeAttr_.Set(type, AttributeChange::Default); }
     
-    void SetAxis(int axis) { axisAttr_.Set(axis, AttributeChange::LocalOnly); }
+    void SetAxis(int axis) { axisAttr_.Set(axis, AttributeChange::Default); }
     
     //! Call StartDrag to initialise some values used to update the selected ruler
     void StartDrag(QVector3D pos, QQuaternion rot, QVector3D scale);

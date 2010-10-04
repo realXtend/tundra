@@ -168,12 +168,6 @@ namespace Scene
         return false;
     }
 
-    void Entity::ResetChange()
-    {
-        for (size_t i = 0; i < components_.size(); ++i)
-            components_[i]->ResetChange();
-    }
-
     IAttribute *Entity::GetAttributeInterface(const std::string &name) const
     {
         for(size_t i = 0; i < components_.size() ; ++i)

@@ -44,7 +44,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     rulerName = uuid.ToString() + "ruler";
     nodeName = uuid.ToString() + "node";
     
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateRuler()));
+    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }
 
 EC_Ruler::~EC_Ruler()

@@ -119,7 +119,7 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         // Attribute has already created and we only need to update it's value.
         if((*iter1)->GetNameString() == (*iter2).name_)
         {
-            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), AttributeChange::Local);
+            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
             iter2++;
             iter1++;
         }
@@ -182,12 +182,14 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name)
 
 void EC_DynamicComponent::ComponentChanged(const QString &changeType)
 {
-    if(changeType == "Local")
-        IComponent::ComponentChanged(AttributeChange::Local);
+    if(changeType == "Default")
+        IComponent::ComponentChanged(AttributeChange::Default);
+    else if(changeType == "Disconnected")
+        return;
     else if(changeType == "LocalOnly")
         IComponent::ComponentChanged(AttributeChange::LocalOnly);
-    else if(changeType == "Network")
-        IComponent::ComponentChanged(AttributeChange::Network);
+    else if(changeType == "Replicate")
+        IComponent::ComponentChanged(AttributeChange::Replicate);
     else
         LogWarning("Cannot emit ComponentChanged event cause \"" + changeType.toStdString() + "\" changeType is not supported.");
 }

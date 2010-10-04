@@ -38,6 +38,7 @@ class AnimationSync(circuits.BaseComponent):
         circuits.BaseComponent.__init__(self)
         self.inworld_inited = False #a cheap hackish substitute for some initin
         self.initgui()
+        #todo: OnChanged() is deprecated
         comp.connect("OnChanged()", self.onChanged)
 
     def initgui(self):
@@ -62,7 +63,8 @@ class AnimationSync(circuits.BaseComponent):
             now = time.time()
             if self.prev_sync + INTERVAL < now:
                 comp.SetAttribute("timepos", guival / 100)
-                comp.ComponentChanged("Local")
+                #ComponentChanged is no longer necessary to trigger network sync
+                #comp.ComponentChanged("Local")
                 self.prev_sync = now
 
     def onChanged(self):

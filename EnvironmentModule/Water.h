@@ -52,7 +52,7 @@ namespace Environment
              *
              **/
             
-            void CreateWaterGeometry(float height = 20.f, AttributeChange::Type type = AttributeChange::Network);
+            void CreateWaterGeometry(float height = 20.f, AttributeChange::Type change = AttributeChange::LocalOnly);
 
             /** 
              * Removes water geometry totally. 

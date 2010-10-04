@@ -74,7 +74,7 @@ namespace Scene
         //! Returns a component with type 'type_name' or creates & adds it if not found. If could not create, returns empty pointer
         /*! 
             \param type_name type of the component
-            \param change Change type for network replication, in case component has to be created
+            \param change Network replication mode, in case component has to be created
         */
         ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
         ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
@@ -103,7 +103,7 @@ namespace Scene
             although in most cases it is probably not sensible.
 
             \param component An entity component
-            \param change Origin of change for network replication
+            \param change Network replication mode
         */
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
@@ -181,11 +181,8 @@ namespace Scene
 
         //! Returns scene
         SceneManager* GetScene() const { return scene_; }
-
-        //! Reset change status of all components
-        void ResetChange();
-
-        /*! Returns pointer to the first attribute with spesific name.
+        
+       /*! Returns pointer to the first attribute with spesific name.
             \param T Typename/class of the attribute.
             \param name Name of the attribute.
             \return Pointer to the attribute.

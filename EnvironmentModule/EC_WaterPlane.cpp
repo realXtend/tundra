@@ -82,11 +82,11 @@ namespace Environment
         if ( placeable != 0)
         {
             Vector3df vec = placeable->GetPosition();
-            positionAttr.Set(vec,AttributeChange::Local);
+            positionAttr.Set(vec,AttributeChange::Default);
        
             Quaternion rot =placeable->GetOrientation();
-            rotationAttr.Set(rot, AttributeChange::Local);
-            ComponentChanged(AttributeChange::Local);
+            rotationAttr.Set(rot, AttributeChange::Default);
+            ComponentChanged(AttributeChange::Default);
         }
     }
     

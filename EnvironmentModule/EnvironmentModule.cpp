@@ -312,7 +312,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height, AttributeChange::Network);
+                        water_->SetWaterHeight(height, AttributeChange::LocalOnly);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -509,7 +509,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height, AttributeChange::Network);
+            water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID

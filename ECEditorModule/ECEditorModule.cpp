@@ -193,8 +193,8 @@ namespace ECEditor
                 IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
                 if(!attribute)
                     return Console::ResultFailure("invalid attribute type" + params[4]);
-                attribute->FromString(params[5], AttributeChange::Local);
-                dynComp->ComponentChanged("Local");//AttributeChange::Local); 
+                attribute->FromString(params[5], AttributeChange::Default);
+                //dynComp->ComponentChanged("Default");//AttributeChange::Local); 
             }
         }
         if(params.size() == 4)

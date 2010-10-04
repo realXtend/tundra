@@ -1311,6 +1311,7 @@ if 0: #the new DynamicComponent with individual attrs etc
     a = dc.GetAttribute("opened")
     print a, type(a)
     dc.SetAttribute("opened", True)
+    # Todo: OnChanged() is deprecated
     dc.OnChanged()
 
     jssrc = dc.GetAttribute("js_src")

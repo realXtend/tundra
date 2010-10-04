@@ -177,6 +177,7 @@ class TestDynamicProperties(TestRunner):
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent
         d.CreateAttribute("real", 42.0)
+        # Todo: OnChanged() is deprecated
         d.OnChanged()
         d.SetAttribute("real", 8.5)
         d.OnChanged()

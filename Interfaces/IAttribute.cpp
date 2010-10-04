@@ -22,7 +22,6 @@
 IAttribute::IAttribute(IComponent* owner, const char* name) :
     owner_(owner),
     name_(name),
-    change_(AttributeChange::None),
     null_(false),
     metadata_(0)
 {
