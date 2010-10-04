@@ -28,8 +28,7 @@ JavascriptEngine::~JavascriptEngine()
     // As a convention, we call a function 'OnScriptDestroyed' for each JS script
     // so that they can clean up their data before the script is removed from the object,
     // or when the system is unloading.
-    ///\todo Fix typo OnScriptDestoyed to OnScriptDestroyed!
-    QScriptValue destructor = engine_->globalObject().property("OnScriptDestoyed");
+    QScriptValue destructor = engine_->globalObject().property("OnScriptDestroyed");
     if (!destructor.isUndefined())
         destructor.call();
     SAFE_DELETE(engine_);
