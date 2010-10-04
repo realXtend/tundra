@@ -109,7 +109,7 @@ namespace ECEditor
 
     signals:
         //! Attribute value has been changed in the editor.
-        void AttributeChanged(const std::string &attributeName);
+        //void AttributeChanged(const std::string &attributeName);
 
     protected:
         //! Initialize attribute editor's components.
