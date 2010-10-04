@@ -101,6 +101,8 @@
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
+#include "PythonQtScriptingConsole.h"
+
 #include "QtInputKeyEvent.h"
 #include "QtInputMouseEvent.h"
 
@@ -653,6 +655,12 @@ namespace PythonScript
 
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
+    }
+
+    PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
+    {
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+        return pythonqtconsole;
     }
 }
 
@@ -1961,6 +1969,7 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
             PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);
 
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);

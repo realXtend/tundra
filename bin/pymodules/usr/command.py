@@ -1507,3 +1507,10 @@ if 0: #estate management uses presence info. websocketserver too
     for ent in ents:
         displaystring = ent.opensimpresence.QGetFullName() + "|" + ent.opensimpresence.QGetUUIDString()
         print displaystring
+
+if 1: #start a pythonqt console
+    try:
+        r.qtconsole
+    except:
+        r.qtconsole = naali._pythonscriptmodule.CreateConsole()
+        r.qtconsole.show()

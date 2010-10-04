@@ -85,6 +85,11 @@ namespace Scene
         return Scene::EntityPtr();
     }
 
+    Scene::Entity *SceneManager::GetEntityByNameRaw(const QString &name) const
+    {
+        return GetEntityByName(name).get();
+    }
+
     Scene::EntityPtr SceneManager::GetEntityByName(const QString& name) const
     {
         EntityMap::const_iterator it = entities_.begin();

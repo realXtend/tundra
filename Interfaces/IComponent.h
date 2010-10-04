@@ -104,12 +104,6 @@ public slots:
     /// Returns the number of Attributes in this component.
     int GetNumberOfAttributes() const { return attributes_.size(); }
 
-    /// Returns an Attribute of this component with the given Name. This function iterates through the 
-    /// attribute vector and tries to find a member attribute with the given name.
-    /// @param The name of the attribute to look for.
-    /// @return A pointer to the attribute, or null if no attribute with the given name exists.
-    IAttribute* GetAttribute(QString name) const;
-
     /// Informs this component that the value of a member Attribute of this component has changed.
     /// You may call this function manually to force Attribute change signal to
     /// occur, but it is not necessary if you use the Attribute::Set function, since
@@ -189,6 +183,14 @@ public:
         For more information, see @ref EventSystem.
     /// \note This member is deprecated and will be removed in the future. */
     virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
+
+    /// Returns an Attribute of this component with the given Name. This function iterates through the 
+    /// attribute vector and tries to find a member attribute with the given name.
+    /// @param The name of the attribute to look for.
+    /// @return A pointer to the attribute, or null if no attribute with the given name exists.
+    IAttribute* GetAttribute(QString name) const;
+    // NOTE: was made a slot, but interfered with a slot with the same name in EC_DynamicComponent, and this version
+    // doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure.
 
 signals:
     /// This signal is emitted when any Attribute of this component has changed.
