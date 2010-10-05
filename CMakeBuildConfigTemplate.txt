@@ -119,14 +119,15 @@ endif()
 # The following are optional.
 add_subdirectory (OpenALAudioModule)     # Enables audio playback.
 add_subdirectory (ECEditorModule)        # Tool for editing Naali scene data.
-add_subdirectory (InventoryModule)       # OpenSim and Taiga WebDAV inventory.
-add_subdirectory (OgreAssetEditorModule) # Enables Ogre-specific asset editors.
+#add_subdirectory (InventoryModule)       # OpenSim and Taiga WebDAV inventory.
+#add_subdirectory (OgreAssetEditorModule) # Enables Ogre-specific asset editors.
 add_subdirectory (DebugStatsModule)      # Enables a developer window for debugging.
 add_subdirectory (PythonScriptModule)    # Allows Python-created modules and scene script instances.
 add_subdirectory (JavascriptModule)      # Allows QtScript-created scene script instances.
 add_subdirectory (CommunicationsModule)  # Enables communication capabilities.
 add_subdirectory (InWorldChatModule)     # Implements in-world text communication.
-add_subdirectory (CAVEStereoModule)	     # Implements CAVE and Stereoscopy functionality
+#add_subdirectory (CAVEStereoModule)      # Implements CAVE and Stereoscopy functionality
+add_subdirectory (SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
@@ -134,10 +135,10 @@ AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by
 #add_subdirectory(LegacyAvatarModule)
 
 if (MSVC)
-   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
+#   add_subdirectory(MumbleVoipModule)   # VOIP communication using the Mumble library. Depends on OgreRenderingModule.
 endif()
 
-add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
+#add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (NOT UISERVICE_TEST)
     add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
     add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule. 
