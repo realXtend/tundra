@@ -66,7 +66,7 @@ namespace KristalliProtocol
         void SubscribeToNetworkEvents();
 
         /// Return message connection, for use by other modules (null if no connection made)
-        kNet::MessageConnection* GetMessageConnection() const { return serverConnection; }
+        kNet::MessageConnection *GetMessageConnection() { return serverConnection.ptr(); }
         
         /// Return server, for use by other modules (null if not running)
         kNet::NetworkServer* GetServer() const { return server; }
@@ -110,7 +110,7 @@ namespace KristalliProtocol
         kNet::SocketTransportLayer serverTransport;
 
         kNet::Network network;
-        kNet::MessageConnection *serverConnection;
+        Ptr(kNet::MessageConnection) serverConnection;
         kNet::NetworkServer *server;
         
         /// Users that are connected to server
