@@ -30,9 +30,9 @@ namespace Scene
         is accessable through Q_PROERTY and if you want to edit other same type of components
         you should use GetComponent mehtod instead.
 
-        When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        When component is removed from the entity a Q_PROPERTY connection is destroyed from
         the component. Incase there are several components that typename is same, there is 
-        a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+        a name check that ensures that both components names are same before Q_PROPERTY destroyed.
 
         \note   Entity can have multiple components with same component type name as long as
                 the component names are unique.
@@ -130,9 +130,9 @@ namespace Scene
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
-        /*! When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        /*! When component is removed from the entity a Q_PROPERTY connection is destroyed from
             the component. Incase there are several components that typename is same, there is 
-            a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+            a name check that ensures that both components names are same before Q_PROPERTY destroyed.
             
             \param component Pointer to the component to remove
         */
