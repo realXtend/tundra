@@ -4,6 +4,7 @@
 #define incl_TundraLogicModule_SyncState_h
 
 #include "Foundation.h"
+#include "IAttribute.h"
 #include "UserConnection.h"
 #include "Entity.h"
 
@@ -19,8 +20,8 @@ struct ComponentSyncState
 {
     uint type_hash_;
     QString name_;
-    //! Last sent component data (full binary state from IComponent::SerializeToBinary)
-    std::vector<unsigned char> data_;
+    // Note! These pointers are never dereferenced, and might be invalid. They are just for quick response to AttributeChanged signals.
+    std::set<IAttribute*> dirty_attributes_;
 };
 
 //! State of entity replication for a specific user
@@ -68,10 +69,23 @@ struct EntitySyncState
         }
     }
     
-    void OnComponentChanged(uint type_hash, const QString& name)
+    void OnComponentAdded(uint type_hash, const QString& name)
     {
         dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
         removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+    }
+    
+    void OnAttributeChanged(uint type_hash, const QString& name, IAttribute* attribute)
+    {
+        dirty_components_.insert(std::make_pair<uint, QString>(type_hash, name));
+        removed_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        // If client already has the component state, dirty the specific attribute
+        if (attribute)
+        {
+            ComponentSyncState* compState = GetComponent(type_hash, name);
+            if (compState)
+                compState->dirty_attributes_.insert(attribute);
+        }
     }
     
     void OnComponentRemoved(uint type_hash, const QString& name)
@@ -83,6 +97,9 @@ struct EntitySyncState
     void AckDirty(uint type_hash, const QString& name)
     {
         dirty_components_.erase(std::make_pair<uint, QString>(type_hash, name));
+        ComponentSyncState* compState = GetComponent(type_hash, name);
+        if (compState)
+            compState->dirty_attributes_.clear();
     }
     
     void AckRemove(uint type_hash, const QString& name)
@@ -140,7 +157,7 @@ struct SceneSyncState : public IUserData
         removed_entities_.insert(id);
     }
     
-    void OnComponentChanged(entity_id_t id, uint type_hash, const QString& name)
+    void OnAttributeChanged(entity_id_t id, uint type_hash, const QString& name, IAttribute* attribute)
     {
         OnEntityChanged(id);
         // If the entity does not exist in the user's syncstate yet, don't have to care
@@ -148,7 +165,18 @@ struct SceneSyncState : public IUserData
         EntitySyncState* entitystate = GetEntity(id);
         if (!entitystate)
             return;
-        entitystate->OnComponentChanged(type_hash, name);
+        entitystate->OnAttributeChanged(type_hash, name, attribute);
+    }
+    
+    void OnComponentAdded(entity_id_t id, uint type_hash, const QString& name)
+    {
+        OnEntityChanged(id);
+        // If the entity does not exist in the user's syncstate yet, don't have to care
+        // (full entitystate will be serialized once it's time)
+        EntitySyncState* entitystate = GetEntity(id);
+        if (!entitystate)
+            return;
+        entitystate->OnComponentAdded(type_hash, name);
     }
     
     void OnComponentRemoved(entity_id_t id, uint type_hash, const QString& name)

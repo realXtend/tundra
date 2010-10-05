@@ -44,7 +44,7 @@ class LocalScene(Component):
         PythonQt.QtCore.QObject.connect(self.timer,
                            PythonQt.QtCore.SIGNAL("timeout()"),
                            self.periodicCall)
-        self.timer.start(1000)        
+        # self.timer.start(1000)        
         self.window = LCwindow(self, self.queue, self.endApplication)
         
         self.isrunning = 1

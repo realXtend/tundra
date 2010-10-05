@@ -77,9 +77,6 @@ private slots:
     //! Trigger EC sync because of component attributes changing
     void OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change);
     
-    //! Trigger EC sync because of component attributes changing
-    void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
-    
     //! Trigger EC sync because of component added to entity
     void OnComponentAdded(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
     
