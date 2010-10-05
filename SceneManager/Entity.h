@@ -335,43 +335,20 @@ namespace Scene
 
         /// Executes an arbitrary action for all components of this entity.
         /** The components may or may not handle the action.
+            @param type Execution type, i.e. where the actions is executed. @note Currently int instead of the real enum for javascript compability!
             @param action Name of the action.
-            @param type Execution type, i.e. where the actions is executed.
+            @param p1 1st parameter for the action, if applicable.
+            @param p2 2nd parameter for the action, if applicable.
+            @param p3 3rd parameter for the action, if applicable.
         */
-        void Exec(const QString &action, EntityAction::ExecutionType type = EntityAction::Local);
+        void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QString &p1 = "", const QString &p2 = "", const QString &p3 = "");
 
         /// This is an overloaded function.
-        /** @param action Name of the action.
-            @param Parameter for the action.
-            @param type Execution type, i.e. where the actions is executed.
-        */
-        void Exec(const QString &action, const QString &param, EntityAction::ExecutionType type = EntityAction::Local);
-
-        /// This is an overloaded function.
-        /** @param action Name of the action.
-            @param param1 1st parameter for the action.
-            @param param2 2nd parameter for the action.
-            @param type Execution type, i.e. where the actions is executed.
-        */
-        void Exec(const QString &action, const QString &param1, const QString &param2,
-            EntityAction::ExecutionType type = EntityAction::Local);
-
-        /// This is an overloaded function.
-        /** @param action Name of the action.
-            @param param1 1st parameter for the action.
-            @param param2 2nd parameter for the action.
-            @param param3 3rd parameter for the action.
-            @param type Execution type, i.e. where the actions is executed.
-        */
-        void Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3,
-            EntityAction::ExecutionType type = EntityAction::Local);
-
-        /// This is an overloaded function.
-        /** @param action Name of the action.
+        /** @param type Execution type, i.e. where the actions is executed. @note Currently int instead of the real enum for javascript compability!
+            @param action Name of the action.
             @param params List of parameters for the action.
-            @param type Execution type, i.e. where the actions is executed.
         */
-        void Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type = EntityAction::Local);
+        void Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params);
 
     private:
         /// Validates that the action has receivers. If not, deletes the action and removes it from the registered actions.

@@ -511,10 +511,10 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     {
         int type = ParseString<int>(params[2], 0);
         if (id != 0)
-            entity->Exec(params[1].c_str(), (EntityAction::ExecutionType) type);
+            entity->Exec((EntityAction::ExecutionType)type, params[1].c_str());
     }
     else
-        entity->Exec(params[1].c_str());
+        entity->Exec(EntityAction::Local, params[1].c_str());
 
     return Console::ResultSuccess();
 }

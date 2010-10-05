@@ -38,7 +38,7 @@ void SceneInteract::Update()
     Raycast();
 
     if (lastHitEntity_.lock())
-        lastHitEntity_.lock()->Exec("MouseHover");
+        lastHitEntity_.lock()->Exec(EntityAction::Local, "MouseHover");
 }
 
 void SceneInteract::Raycast()
@@ -50,7 +50,7 @@ void SceneInteract::Raycast()
     if (!result.entity_ || itemUnderMouse_)
     {
         if (!lastHitEntity_.expired())
-            lastHitEntity_.lock()->Exec("MouseHoverOut");
+            lastHitEntity_.lock()->Exec(EntityAction::Local, "MouseHoverOut");
         lastHitEntity_.reset();
         return;
     }
@@ -60,10 +60,10 @@ void SceneInteract::Raycast()
     if (entity != lastEntity)
     {
         if (lastEntity)
-            lastEntity->Exec("MouseHoverOut");
+            lastEntity->Exec(EntityAction::Local, "MouseHoverOut");
 
         if (entity)
-            entity->Exec("MouseHoverIn");
+            entity->Exec(EntityAction::Local, "MouseHoverIn");
 
         lastHitEntity_ = entity;
     }
@@ -91,7 +91,7 @@ void SceneInteract::HandleMouseEvent(MouseEvent *e)
         case  MouseEvent::MouseScroll:
             break;
         case  MouseEvent::MousePressed:
-            lastHitEntity_.lock()->Exec("MousePress");
+            lastHitEntity_.lock()->Exec(EntityAction::Local, "MousePress");
             emit EntityClicked(lastHitEntity_.lock().get());
             break;
         case  MouseEvent::MouseReleased:
