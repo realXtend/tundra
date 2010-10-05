@@ -96,12 +96,21 @@ def handle_clients(ws):
             ws.send(json.dumps(['initGraffa', {}]))
 
             x, y, z = SPAWNPOS[0], SPAWNPOS[1], SPAWNPOS[2]
-            position = (x, y, z)
-            orientation = (1.57, 0, 0)
-            NaaliWebsocketServer.instance.newclient(myid, position, orientation)
+            start_position = (x, y, z)
+            start_orientation = (1.57, 0, 0)
+            NaaliWebsocketServer.instance.newclient(myid, start_position, start_orientation)
 
             ws.send(json.dumps(['setId', {'id': myid}]))
-            sendAll(['newAvatar', {'id': myid, 'position': position, 'orientation': orientation}])
+            sendAll(['newAvatar', {'id': myid, 'position': start_position, 'orientation': start_orientation}])
+
+            ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
+            for ent in ents:
+                id = ent.Id
+                position = ent.placeable.Position
+                oritentation = mathutils.quat_to_euler(ent.placeable.Orientation)
+                sendAll(['addObject', json.dumps([id, position, orientation, scene.GetEntityXml(ent).data()])
+                print "did addobject", id, position, orientataion, scene.GetEntityXml(ent).data()
+
 
         elif function == 'Naps':
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
@@ -139,13 +148,7 @@ def handle_clients(ws):
             x_max = params['width']
 
         elif function == 'addObject':
-            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPrim")
-            if ents:
-                sendAll(['addObject', scene.GetEntityXml(ents[0]).data()])
-                print "did addobject", scene.GetEntityXml(ents[0]).data()
-            else:
-                print "no ents -> no addobject"
-            break
+            pass
 
         elif function == 'reboot':
             break
