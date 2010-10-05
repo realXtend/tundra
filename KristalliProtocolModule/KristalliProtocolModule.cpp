@@ -130,11 +130,11 @@ void KristalliProtocolModule::Update(f64 frametime)
     // Pulls all new inbound network messages and calls the message handler we've registered
     // for each of them.
     if (serverConnection)
-        serverConnection->ProcessMessages();
+        serverConnection->Process();
     
     // Process server incoming connections & messages if server up
     if (server)
-        server->ProcessMessages();
+        server->Process();
     
     if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed || serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
     {
