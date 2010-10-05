@@ -56,6 +56,9 @@ namespace Scene
 
         Scene::Entity* GetEntityByNameRaw(const QString& name) const;
 
+        //! Return a scene document with just the desired entity
+        QByteArray GetEntityXml(Scene::Entity *entity);
+
     public:
         //! destructor
         ~SceneManager();

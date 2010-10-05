@@ -138,6 +138,15 @@ def handle_clients(ws):
             y_max = params['height']
             x_max = params['width']
 
+        elif function == 'addObject':
+            ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPrim")
+            if ents:
+                sendAll(['addObject', scene.GetEntityXml(ents[0]).data()])
+                print "did addobject", scene.GetEntityXml(ents[0]).data()
+            else:
+                print "no ents -> no addobject"
+            break
+
         elif function == 'reboot':
             break
     clients.remove(ws)
