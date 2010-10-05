@@ -2109,10 +2109,12 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
-            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str(), AttributeChange::Disconnected);
+            // Signal the add of component right away
+            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str(), AttributeChange::LocalOnly);
             // If it's an existing component, and has network sync disabled, skip
             if ((new_comp) && (new_comp->GetNetworkSyncEnabled()))
             {
+                // Deserialize in disconnected manner, signal the attribute changes later
                 new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
                 deserialized.push_back(new_comp);
             }
@@ -2139,7 +2141,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
                 }
             }
             if (!found)
-                entity->RemoveComponent(all_components[i], AttributeChange::Disconnected);
+                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
         }
     }
     
