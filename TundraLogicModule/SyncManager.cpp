@@ -636,7 +636,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -745,7 +745,7 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
@@ -826,7 +826,7 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
         if (new_comp)
         {
             if (msg.components[i].componentData.size())
