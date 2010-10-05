@@ -7,7 +7,6 @@
 #include "UiSettingsService.h"
 #include "UiDarkBlueStyle.h"
 #include "UiStateMachine.h"
-#include "ServiceGetter.h"
 #include "InputServiceInterface.h"
 
 #include "Ether/EtherLogic.h"
@@ -54,7 +53,6 @@ namespace UiServices
     UiModule::UiModule() :
         IModule(type_name_static_),
         ui_state_machine_(0),
-        service_getter_(0),
         inworld_scene_controller_(0),
         inworld_notification_manager_(0),
         ether_logic_(0),
@@ -65,7 +63,6 @@ namespace UiServices
     UiModule::~UiModule()
     {
         SAFE_DELETE(ui_state_machine_);
-        SAFE_DELETE(service_getter_);
         SAFE_DELETE(inworld_scene_controller_);
         SAFE_DELETE(inworld_notification_manager_);
         SAFE_DELETE(ether_logic_);
@@ -115,11 +112,6 @@ namespace UiServices
             connect(ui_state_machine_, SIGNAL(SceneAboutToChange(const QString&, const QString&)), 
                     inworld_notification_manager_, SLOT(SceneAboutToChange(const QString&, const QString&)));
             LogDebug("Notification Manager service READY");
-
-            service_getter_ = new CoreUi::ServiceGetter(GetFramework());
-            inworld_scene_controller_->GetControlPanelManager()->SetServiceGetter(service_getter_);
-            ui_state_machine_->SetServiceGetter(service_getter_);
-            LogDebug("Service getter READY");
 
             // Register settings service
             ui_settings_service_ = UiSettingsPtr(new UiSettingsService(inworld_scene_controller_->GetControlPanelManager()));
@@ -208,8 +200,11 @@ namespace UiServices
             {
                 case Events::EVENT_CONNECTION_FAILED:
                 {
-                    ConnectionFailedEvent *event = static_cast<ConnectionFailedEvent *>(data);
-                    PublishConnectionState(Failed, event->message);
+                    ConnectionFailedEvent *in_data = static_cast<ConnectionFailedEvent *>(data);
+                    if (in_data)
+                        PublishConnectionState(Failed, in_data->message);
+                    else
+                        PublishConnectionState(Failed, "Unknown connection error");
                     break;
                 }
                 case Events::EVENT_SERVER_DISCONNECTED:
