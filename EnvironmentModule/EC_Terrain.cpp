@@ -205,7 +205,11 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == texture2.GetNameString()) SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
     else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
     else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
-    else if (changedAttribute == heightMap.GetNameString()) LoadFromFile(heightMap.Get().toStdString().c_str());
+    else if (changedAttribute == heightMap.GetNameString())
+    {
+        if (currentHeightmapAssetSource.trimmed() != heightMap.Get().trimmed())
+        LoadFromFile(heightMap.Get().toStdString().c_str());
+    }
     else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
     {
         // Re-do all the geometry on the GPU.
@@ -385,6 +389,8 @@ void EC_Terrain::SaveToFile(QString filename)
 
 void EC_Terrain::LoadFromFile(QString filename)
 {
+    filename = filename.trimmed();
+
     FILE *handle = fopen(filename.toStdString().c_str(), "rb");
     if (!handle)
     {
@@ -420,8 +426,11 @@ void EC_Terrain::LoadFromFile(QString filename)
 
     fclose(handle);
 
+    // The terrain asset loaded ok. We are good to set that terrain as the active terrain.
+
     Destroy();
 
+    currentHeightmapAssetSource = filename;
     patches = newPatches;
     patchWidth = xPatches;
     patchHeight = yPatches;
@@ -429,8 +438,10 @@ void EC_Terrain::LoadFromFile(QString filename)
     // Re-do all the geometry on the GPU.
     RegenerateDirtyTerrainPatches();
 
-    this->xPatches.Set(patchWidth, AttributeChange::Default);
-    this->yPatches.Set(patchHeight, AttributeChange::Default);
+    // Set the new number of patches this terrain has. These changes only need to be done locally, since the other
+    // peers have loaded the terrain from the same file, and they will also locally do this change.
+    this->xPatches.Set(patchWidth, AttributeChange::LocalOnly);
+    this->yPatches.Set(patchHeight, AttributeChange::LocalOnly);
 }
 
 void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
