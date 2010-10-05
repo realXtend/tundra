@@ -56,7 +56,7 @@ class Manipulator:
     CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
     CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
-    MANIPULATORORIENTATION = QQuaternion(1, 0, 0, 0)
+    MANIPULATORORIENTATION = QQuaternion(1, 1, 0, 0)
     MANIPULATORSCALE = QVector3D(1, 1, 1)
 
     MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
