@@ -416,13 +416,12 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     component->SerializeToBinary(dest);
                     newComponent.componentData.resize(dest.BytesFilled());
                     msg.components.push_back(newComponent);
-                    
-                    destination->Send(msg);
-                    ++num_messages_sent;
                 }
                 
                 entitystate->AckDirty(component->TypeNameHash(), component->Name());
             }
+            destination->Send(msg);
+            ++num_messages_sent;
         }
         else
         {
@@ -551,7 +550,7 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
     }
     
     if (num_messages_sent)
-        TundraLogicModule::LogInfo("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
+        TundraLogicModule::LogDebug("Sent " + ToString<int>(num_messages_sent) + " scenesync messages");
 }
 
 bool SyncManager::ValidateAction(kNet::MessageConnection* source, unsigned messageID, entity_id_t entityID)
@@ -616,7 +615,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         // If a client gets a entity that already exists, destroy it forcibly
         if (scene->GetEntity(entityID))
         {
-            TundraLogicModule::LogInfo("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
+            TundraLogicModule::LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
             scene->RemoveEntity(entityID, change);
         }
     }
