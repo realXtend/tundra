@@ -9,8 +9,8 @@ from eventlet import websocket
 from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
-import naali
 import rexviewer as r
+import naali
 import mathutils
 
 import async_eventlet_wsgiserver
@@ -72,6 +72,8 @@ def handle_clients(ws):
     myid = random.randrange(1,10000)
     clients.add(ws)
     
+    scene = naali.getScene("World")
+    
     while True:
             
         try:
@@ -79,7 +81,7 @@ def handle_clients(ws):
         except socket.error:
             #if there is an error we simply quit by exiting the
             #handler. Eventlet should close the socket etc.
-            return
+            break
 
         print msg
 
@@ -106,10 +108,10 @@ def handle_clients(ws):
             ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
             for ent in ents:
                 id = ent.Id
-                position = ent.placeable.Position
-                oritentation = mathutils.quat_to_euler(ent.placeable.Orientation)
-                sendAll(['addObject', json.dumps([id, position, orientation, scene.GetEntityXml(ent).data()])
-                print "did addobject", id, position, orientataion, scene.GetEntityXml(ent).data()
+                position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
+                orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
+                sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml' :scene.GetEntityXml(ent).data()}])
+                print "did addobject", id, position, orientation, scene.GetEntityXml(ent).data()
 
 
         elif function == 'Naps':
@@ -123,7 +125,6 @@ def handle_clients(ws):
             print 'orioriori', orientation
             NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
-            scene = naali.getScene("World")
             ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
 
             for ent in ents:
@@ -152,17 +153,9 @@ def handle_clients(ws):
 
         elif function == 'reboot':
             break
+
     clients.remove(ws)
     print 'END', ws
 
 def handle_move():
     pass
-
-if __name__ == '__main__':
-    sock = eventlet.listen(('0.0.0.0', 9999))
-    server = async_eventlet_wsgiserver.server(sock, hello_world)
-    
-    while True:
-        server.next()
-        print 'TICK'
-     
