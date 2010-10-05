@@ -27,7 +27,7 @@ use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package_knet()
-use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
@@ -37,6 +37,8 @@ link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_package_knet()
+
+LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
 # Copy XML files from source directory to target directory
 foreach (XML_FILE ${XML_FILES})

@@ -114,12 +114,6 @@ public:
     /// IComponent override
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /// IComponent override
-    virtual bool SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const;
-    
-    /// IComponent override
-    virtual bool DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change, std::vector<bool>& changed_attributes);
-
 public slots:
     /// A factory method that constructs a new attribute given the typename. This factory is not extensible.
     IAttribute *CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change = AttributeChange::Default);
