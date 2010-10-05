@@ -252,11 +252,12 @@ class Manipulator:
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, changevec)
                 self.controller.soundRuler(ent)
-            if len(ents) > 0:
-                placeable = ents[0].placeable
-                self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+            if not self.manipulator is None:
+                if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
+                    placeable = ents[0].placeable
+                    self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
-            self.manipulator.ruler.UpdateRuler()
+                self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
