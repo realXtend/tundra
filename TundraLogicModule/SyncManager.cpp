@@ -311,7 +311,7 @@ void SyncManager::OnActionTriggered(Scene::Entity *entity, const QString &action
     if (isServer && (type & EntityAction::Server) != 0)
     {
         TundraLogicModule::LogInfo("EntityAction " + action.toStdString() + " type Server on server.");
-        entity->Exec(action, params);
+        entity->Exec(EntityAction::Local, action, params);
     }
 
     // Craft EntityAction message.
@@ -963,7 +963,7 @@ void SyncManager::HandleEntityAction(kNet::MessageConnection* source, MsgEntityA
 
     bool isServer = owner_->IsServer();
     if ((type & EntityAction::Local) != 0 || (isServer && (type & EntityAction::Server) != 0))
-        entity->Exec(action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
+        entity->Exec(EntityAction::Local, action, params); // Execute the action locally, so that it doesn't immediately propagate back to network for sending.
 
     // If execution type is Peers, replicate to all peers but the sender.
     if (isServer && type & EntityAction::Peers)

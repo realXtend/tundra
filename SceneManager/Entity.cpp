@@ -321,33 +321,19 @@ namespace Scene
         connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member);
     }
 
-    void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
+    void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QString &p1, const QString &p2, const QString &p3)
     {
-        Exec(action, QStringList(), type);
+        Exec(type, action, QStringList(QStringList() << p1 << p2 << p3));
     }
 
-    void Entity::Exec(const QString &action, const QString &param, EntityAction::ExecutionType type)
-    {
-        Exec(action, QStringList(QStringList() << param), type);
-    }
-
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, EntityAction::ExecutionType type)
-    {
-        Exec(action, QStringList(QStringList() << param1 << param2), type);
-    }
-
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
-    {
-        Exec(action, QStringList(QStringList() << param1 << param2 << param3), type);
-    }
-
-    void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+    void Entity::Exec(int /*EntityAction::ExecutionType*/ type, const QString &action, const QStringList &params)
     {
         EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
-        if ((type & EntityAction::Local) != 0)
+        EntityAction::ExecutionType t = (EntityAction::ExecutionType)type;
+        if ((t & EntityAction::Local) != 0)
         {
             if (params.size() == 0)
                 act->Trigger();
@@ -361,7 +347,7 @@ namespace Scene
                 act->Trigger(params[0], params[1], params[2], params.mid(3));
         }
 
-        GetScene()->EmitActionTriggered(this, action, params, type);
+        GetScene()->EmitActionTriggered(this, action, params, t);
     }
 
     bool Entity::HasReceivers(EntityAction *action)

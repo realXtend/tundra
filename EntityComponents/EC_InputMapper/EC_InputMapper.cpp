@@ -106,10 +106,10 @@ void EC_InputMapper::HandleKeyEvent(KeyEvent *e)
         parsedAction.remove('(');
         parsedAction.remove(')');
         QStringList parameters = parsedAction.split(',');
-        entity->Exec(act, parameters, EntityAction::Peers);
+        entity->Exec(EntityAction::Peers, act, parameters);
     }
     else
-        entity->Exec(action, EntityAction::Peers);
+        entity->Exec(EntityAction::Peers, action);
 }
 
 void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
@@ -121,19 +121,19 @@ void EC_InputMapper::HandleMouseEvent(MouseEvent *e)
     {
         if (e->relativeX > 0 && abs(e->relativeX) >= 1)
         {
-            GetParentEntity()->Exec("Move" ,"Right");
+            GetParentEntity()->Exec(EntityAction::Local, "Move" ,"Right");
         }
         if (e->relativeX < 0 && abs(e->relativeX) >= 1)
         {
-            GetParentEntity()->Exec("Move", "Left");
+            GetParentEntity()->Exec(EntityAction::Local, "Move", "Left");
         }
         if (e->relativeY > 0 && abs(e->relativeY) >= 1)
         {
-            GetParentEntity()->Exec("Move" ,"Backward");
+            GetParentEntity()->Exec(EntityAction::Local, "Move" ,"Backward");
         }
         if (e->relativeY < 0 && abs(e->relativeY) >= 1)
         {
-            GetParentEntity()->Exec("Move", "Forward");
+            GetParentEntity()->Exec(EntityAction::Local, "Move", "Forward");
         }
     }
 }
