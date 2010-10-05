@@ -278,7 +278,7 @@ namespace Foundation
         //! Maximum time spend in this profile during last frame
         double elapsed_max_;
 
-        // Profiling data is also accumulated here, and can be resetted on a custom interval.
+        // Profiling data is also accumulated here, and can be reset on a custom interval.
         // Mutable since the application can alter these at will, but the above "official"
         // values may not be touched.
         mutable unsigned long num_called_custom_;
