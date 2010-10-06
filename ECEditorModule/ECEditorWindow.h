@@ -8,6 +8,16 @@
 #ifndef incl_ECEditorModule_ECEditorWindow_h
 #define incl_ECEditorModule_ECEditorWindow_h
 
+#if defined (_WINDOWS)
+#if defined(ECEDITOR_MODULE_EXPORTS)
+#define ECEDITOR_MODULE_API __declspec(dllexport)
+#else
+#define ECEDITOR_MODULE_API __declspec(dllimport)
+#endif
+#else
+#define ECEDITOR_MODULE_API
+#endif
+
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
 #include <set>
@@ -37,7 +47,7 @@ namespace ECEditor
     /*! /todo add description.
      *  \ingroup ECEditorModuleClient.
      */
-    class ECEditorWindow : public QWidget
+    class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
     {
         Q_OBJECT
 

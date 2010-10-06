@@ -13,7 +13,6 @@
 
 #include "Console.h"
 #include "UiServiceInterface.h"
-
 #include "MemoryLeakCheck.h"
 
 std::string SceneStructureModule::typeNameStatic = "SceneStruct";

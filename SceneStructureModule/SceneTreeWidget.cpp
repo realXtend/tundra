@@ -66,7 +66,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 /*
     // Do mousePressEvent so that the right item gets selected before we show the menu
     // (right-click doesn't do this automatically).
-    QMouseEvent mouseEvent(QEvent::MouseButtonPress, event->pos(), event->globalPos(),
+    QMouseEvent mouseEvent(QEvent::MouseButtonPress, e->pos(), e->globalPos(),
         Qt::LeftButton, Qt::LeftButton, Qt::NoModifier);
 
     mousePressEvent(&mouseEvent);
@@ -76,6 +76,20 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         return;
 
     QMenu *menu = new QMenu(this);
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    QAction *editXml = new QAction(tr("Edit XML..."), menu);
+    QAction *deleteEntity= new QAction(tr("Delete"), menu);
+    QAction *addComponent = new QAction(tr("Add new component..."), menu);
+    QAction *copyEntity = new QAction(tr("Copy"), menu);
+    QAction *pasteEntity = new QAction(tr("Paste"), menu);
+
+    menu->addAction(editXml);
+    menu->addAction(deleteEntity);
+    menu->addAction(addComponent);
+    menu->addAction(copyEntity);
+    menu->addAction(pasteEntity);
+*/
+/*
     QListIterator<QAction *> it(actions());
     while(it.hasNext())
     {
@@ -90,10 +104,10 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
             menu->addAction(action);
         }
    }
-
     if (menu->actions().size() > 1) // separator "action" is always enabled, hence the 1
         menu->popup(event->globalPos());
 */
+//    menu->popup(e->globalPos());
 }
 
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
