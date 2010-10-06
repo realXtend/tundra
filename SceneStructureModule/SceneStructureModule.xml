@@ -1,5 +1,5 @@
 <config>
     <entry>SceneStructureModule</entry>
-    <dependency>ECEditorModule</entry>
-    <dependency>TundraLogicModule</entry>
+    <dependency>ECEditorModule</dependency>
+    <dependency>TundraLogicModule</dependency>
 </config>

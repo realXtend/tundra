@@ -11,11 +11,23 @@
 #include "CoreTypes.h"
 
 #include <QTreeWidget>
-#include <QAction>
+//#include <QAction>
+#include <QPointer>
+
+namespace Foundation
+{
+    class Framework;
+}
+
+namespace ECEditor
+{
+    class ECEditorWindow;
+}
 
 class QWidget;
 
 /// This is helper class to make translations work with QActions.
+/*
 class SceneEditAction : public QAction
 {
     Q_OBJECT
@@ -28,6 +40,7 @@ public:
 private:
     QString originalText;
 };
+*/
 
 /// Tree widget item with which has ID number
 class SceneTreeWidgetItem : public QTreeWidgetItem
@@ -49,9 +62,10 @@ class SceneTreeWidget : public QTreeWidget
 
 public:
     /// Constructor.
-    /** @param parent Parent widget.
+    /** @param fw Framework pointer.
+        @param parent Parent widget.
     */
-    SceneTreeWidget(QWidget *parent = 0);
+    SceneTreeWidget(Foundation::Framework *fw, QWidget *parent = 0);
 
     /// Destructor.
     virtual ~SceneTreeWidget();
@@ -68,6 +82,32 @@ protected:
 
     /// QAbstractItemView override.
     void dropEvent(QDropEvent *e);
+
+private:
+    /// Framework pointer.
+    Foundation::Framework *framework;
+
+    /// Framework pointer.
+    QPointer<ECEditor::ECEditorWindow> ecEditor;
+
+private slots:
+    ///
+    void Edit();
+
+    ///
+    void EditInNew();
+
+    ///
+    void Rename();
+
+    ///
+    void Delete();
+
+    ///
+    void Copy();
+
+    ///
+    void Paste();
 };
 
 #endif
