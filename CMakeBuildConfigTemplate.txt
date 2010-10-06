@@ -5,7 +5,7 @@
 # do not have any effect on the actual CMake execution.
 
 # For the actual configuration, the file CMakeBuildConfigTemplate.txt gets 
-# copied to CMakeBuildConfig.txt, in which you can customize your own settings. 
+# copied to CMakeBuildConfig.txt, in which you can customize your own settings.
 
 # The CMakeBuildConfig.txt is not part of the repository, and do not add it there!
 # The idea is that everyone can customize the set of modules to build using that 
@@ -129,7 +129,7 @@ add_subdirectory (InWorldChatModule)     # Implements in-world text communicatio
 #add_subdirectory (CAVEStereoModule)      # Implements CAVE and Stereoscopy functionality
 add_subdirectory (SceneStructureModule)      # Allows accessing, editing, importing and exporting of scene structure data
 
-AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
+AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
 
 #add_subdirectory(LegacyAvatarModule)
@@ -141,6 +141,6 @@ endif()
 #add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 if (NOT UISERVICE_TEST)
     add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
-    add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule. 
+    add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule.
     add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
 endif()

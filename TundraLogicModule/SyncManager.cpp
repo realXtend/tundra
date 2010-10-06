@@ -19,6 +19,7 @@
 #include "MsgRemoveEntity.h"
 #include "MsgEntityIDCollision.h"
 #include "MsgEntityAction.h"
+#include "EC_DynamicComponent.h"
 
 #include "kNet.h"
 
@@ -171,12 +172,6 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
 
 void SyncManager::OnAttributeChanged(IComponent* comp, IAttribute* attr, AttributeChange::Type change)
 {
-    // The attribute doesn't interest us currently. Just mark the whole component dirty for update
-    OnComponentChanged(comp, change);
-}
-
-void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
-{
     if (!comp->IsSerializable())
         return;
     if ((change != AttributeChange::Replicate) || (!comp->GetNetworkSyncEnabled()))
@@ -192,13 +187,13 @@ void SyncManager::OnComponentChanged(IComponent* comp, AttributeChange::Type cha
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
+                state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
+        state->OnAttributeChanged(entity->GetId(), comp->TypeNameHash(), comp->Name(), attr);
     }
 }
 
@@ -218,13 +213,13 @@ void SyncManager::OnComponentAdded(Scene::Entity* entity, IComponent* comp, Attr
         {
             SceneSyncState* state = checked_static_cast<SceneSyncState*>(i->userData.get());
             if (state)
-                state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
+                state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
         }
     }
     else
     {
         SceneSyncState* state = &server_syncstate_;
-        state->OnComponentChanged(entity->GetId(), comp->TypeNameHash(), comp->Name());
+        state->OnComponentAdded(entity->GetId(), comp->TypeNameHash(), comp->Name());
     }
 }
 
@@ -406,11 +401,11 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
             msg.entityID = entity->GetId();
             for(uint j = 0; j < components.size(); ++j)
             {
-                IComponent* component = components[j].get();
+                ComponentPtr component = components[j];
                 
                 if ((component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
                 {
-                    // Create componentstate, then fill the initial data both there and to network stream
+                    // Create componentstate so we can start tracking individual attributes
                     ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
                     
                     MsgCreateEntity::S_components newComponent;
@@ -420,20 +415,13 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
                     component->SerializeToBinary(dest);
                     newComponent.componentData.resize(dest.BytesFilled());
-                    // Copy to state if data size nonzero
-                    if (newComponent.componentData.size())
-                    {
-                        componentstate->data_.resize(newComponent.componentData.size());
-                        memcpy(&componentstate->data_[0], &newComponent.componentData[0], newComponent.componentData.size());
-                        msg.components.push_back(newComponent);
-                    }
-                    
-                    destination->Send(msg);
-                    ++num_messages_sent;
+                    msg.components.push_back(newComponent);
                 }
                 
                 entitystate->AckDirty(component->TypeNameHash(), component->Name());
             }
+            destination->Send(msg);
+            ++num_messages_sent;
         }
         else
         {
@@ -449,52 +437,63 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                 
                 for (std::set<std::pair<uint, QString> >::iterator j = dirtycomps.begin(); j != dirtycomps.end(); ++j)
                 {
-                    IComponent* component = entity->GetComponent(j->first, j->second).get();
+                    ComponentPtr component = entity->GetComponent(j->first, j->second);
                     if ((component) && (component->IsSerializable()) && (component->GetNetworkSyncEnabled()))
                     {
                         ComponentSyncState* componentstate = entitystate->GetComponent(component->TypeNameHash(), component->Name());
-                        // New component or zero-size previous data
-                        if ((!componentstate) || (componentstate->data_.size() == 0))
+                        // New component
+                        if (!componentstate)
                         {
+                            // Create componentstate so we can start tracking individual attributes
                             componentstate = entitystate->GetOrCreateComponent(component->TypeNameHash(), component->Name());
+                            
                             MsgCreateComponents::S_components newComponent;
                             newComponent.componentTypeHash = component->TypeNameHash();
                             newComponent.componentName = StringToBuffer(component->Name().toStdString());
                             newComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&newComponent.componentData[0], newComponent.componentData.size());
                             component->SerializeToBinary(dest);
-                            
-                            // Send if data size nonzero
-                            if (dest.BytesFilled())
-                            {
-                                newComponent.componentData.resize(dest.BytesFilled());
-                                createMsg.components.push_back(newComponent);
-                                
-                                componentstate->data_.resize(newComponent.componentData.size());
-                                memcpy(&componentstate->data_[0], &newComponent.componentData[0], newComponent.componentData.size());
-                            }
+                            newComponent.componentData.resize(dest.BytesFilled());
+                            createMsg.components.push_back(newComponent);
                         }
                         else
                         {
-                            // Existing data, compare and deltaserialize
+                            // Existing data, serialize changed attributes only
                             MsgUpdateComponents::S_components updComponent;
                             updComponent.componentTypeHash = component->TypeNameHash();
                             updComponent.componentName = StringToBuffer(component->Name().toStdString());
                             updComponent.componentData.resize(64 * 1024);
                             DataSerializer dest((char*)&updComponent.componentData[0], updComponent.componentData.size());
-                            DataDeserializer prev((char*)&componentstate->data_[0], componentstate->data_.size());
+                            bool has_changes = false;
                             
-                            // Send if something was changed
-                            if ((component->SerializeToDeltaBinary(dest, prev)) && (dest.BytesFilled()))
+                            //! \todo Hack! Here EC_DynamicComponent is handled as a special case, which basically fullserializes everything.
+                            //! Will be refactored when there is time
+                            if (dynamic_cast<EC_DynamicComponent*>(component.get()))
+                            {
+                                component->SerializeToBinary(dest);
+                                has_changes = true;
+                            }
+                            else
+                            {
+                                // Otherwise, we assume the attribute structure is static in the component, and we check which attributes are in the dirty list
+                                const AttributeVector& attributes = component->GetAttributes();
+                                for (uint k = 0; k < attributes.size(); k++)
+                                {
+                                    if (componentstate->dirty_attributes_.find(attributes[k]) != componentstate->dirty_attributes_.end())
+                                    {
+                                        dest.Add<bit>(1);
+                                        attributes[k]->ToBinary(dest);
+                                        has_changes = true;
+                                    }
+                                    else
+                                        dest.Add<bit>(0);
+                                }
+                            }
+                            
+                            if (has_changes)
                             {
                                 updComponent.componentData.resize(dest.BytesFilled());
                                 updateMsg.components.push_back(updComponent);
-                                
-                                // Write the full state (SerializeToBinary) for future comparision
-                                componentstate->data_.resize(64 * 1024);
-                                DataSerializer fulldata((char*)&componentstate->data_[0], componentstate->data_.size());
-                                component->SerializeToBinary(fulldata);
-                                componentstate->data_.resize(fulldata.BytesFilled());
                             }
                         }
                     }
@@ -616,7 +615,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
         // If a client gets a entity that already exists, destroy it forcibly
         if (scene->GetEntity(entityID))
         {
-            TundraLogicModule::LogDebug("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
+            TundraLogicModule::LogWarning("Received entity creation from server for entity ID " + ToString<int>(entityID) + " that already exists. Removing the old entity.");
             scene->RemoveEntity(entityID, change);
         }
     }
@@ -636,8 +635,8 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
-        if (new_comp)
+        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        if (component)
         {
             if (msg.components[i].componentData.size())
             {
@@ -645,7 +644,7 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 try
                 {
                     // Deserialize in disconnected mode, then send the notifications later
-                    new_comp->DeserializeFromBinary(source, AttributeChange::Disconnected);
+                    component->DeserializeFromBinary(source, AttributeChange::Disconnected);
                 }
                 catch (...)
                 {
@@ -655,8 +654,6 @@ void SyncManager::HandleCreateEntity(kNet::MessageConnection* source, const MsgC
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
                 ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
-                componentstate->data_.resize(msg.components[i].componentData.size());
-                memcpy(&componentstate->data_[0], &msg.components[i].componentData[0], msg.components[i].componentData.size());
             }
         }
         else
@@ -741,12 +738,13 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
     
     // Read the components. These are not deltaserialized.
     std::vector<ComponentPtr> actually_changed_components;
+    
     for (uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
-        if (new_comp)
+        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        if (component)
         {
             if (msg.components[i].componentData.size())
             {
@@ -755,8 +753,8 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 try
                 {
                     // Deserialize with no signals first
-                    new_comp->DeserializeFromBinary(source, AttributeChange::Disconnected);
-                    actually_changed_components.push_back(new_comp);
+                    component->DeserializeFromBinary(source, AttributeChange::Disconnected);
+                    actually_changed_components.push_back(component);
                 }
                 catch (...)
                 {
@@ -766,8 +764,6 @@ void SyncManager::HandleCreateComponents(kNet::MessageConnection* source, const 
                 // Reflect changes back to syncstate
                 EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
                 ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
-                componentstate->data_.resize(msg.components[i].componentData.size());
-                memcpy(&componentstate->data_[0], &msg.components[i].componentData[0], msg.components[i].componentData.size());
             }
         }
         else
@@ -821,49 +817,82 @@ void SyncManager::HandleUpdateComponents(kNet::MessageConnection* source, const 
         state->GetOrCreateEntity(entityID);
     }
     
+    std::vector<ComponentPtr> fully_changed_components;
+    std::map<IComponent*, std::vector<bool> > partially_changed_components;
+    
     // Read the components
     for (uint i = 0; i < msg.components.size(); ++i)
     {
         uint type_hash = msg.components[i].componentTypeHash;
         QString name = QString::fromStdString(BufferToString(msg.components[i].componentName));
-        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name, change);
-        if (new_comp)
+        ComponentPtr component = entity->GetOrCreateComponent(type_hash, name, change);
+        if (component)
         {
             if (msg.components[i].componentData.size())
             {
-                std::vector<bool> actually_changed_attributes;
-                
                 DataDeserializer source((const char*)&msg.components[i].componentData[0], msg.components[i].componentData.size());
-                try
-                {
-                    // Deserialize in a disconnected state
-                    new_comp->DeserializeFromDeltaBinary(source, AttributeChange::Disconnected, actually_changed_attributes);
-                }
-                catch (...)
-                {
-                    TundraLogicModule::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
-                }
                 
-                // Reflect changes back to syncstate
-                // For this, we need to do a kind of ugly thing: re-serialize the attributes to a fullstate buffer
-                EntitySyncState* entitystate = state->GetOrCreateEntity(entityID);
-                ComponentSyncState* componentstate = entitystate->GetOrCreateComponent(type_hash, name);
-                componentstate->data_.resize(64 * 1024);
-                DataSerializer dest((char*)&componentstate->data_[0], componentstate->data_.size());
-                new_comp->SerializeToBinary(dest);
-                componentstate->data_.resize(dest.BytesFilled());
-                
-                const AttributeVector& attributes = new_comp->GetAttributes();
-                // Now, when whole component has been updated, signal the actually changed attributes
-                for (unsigned i = 0; i < actually_changed_attributes.size(); ++i)
+                //! \todo Hack special case handling for EC_DynamicComponent: deserialize in full
+                if (dynamic_cast<EC_DynamicComponent*>(component.get()))
                 {
-                    if ((i < attributes.size()) && (actually_changed_attributes[i]))
-                        new_comp->AttributeChanged(attributes[i], change);
+                    try
+                    {
+                        // Deserialize with no signals first
+                        component->DeserializeFromBinary(source, AttributeChange::Disconnected);
+                        fully_changed_components.push_back(component);
+                    }
+                    catch (...)
+                    {
+                        TundraLogicModule::LogError("Error while deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    }
+                }
+                else
+                {
+                    std::vector<bool> actually_changed_attributes;
+                    const AttributeVector& attributes = component->GetAttributes();
+                    try
+                    {
+                        // Deserialize changed attributes (1 bit) with no signals first
+                        for (uint i = 0; i < attributes.size(); ++i)
+                        {
+                            if (source.Read<bit>())
+                            {
+                                attributes[i]->FromBinary(source, AttributeChange::Disconnected);
+                                actually_changed_attributes.push_back(true);
+                            }
+                            else
+                                actually_changed_attributes.push_back(false);
+                        }
+                        partially_changed_components[component.get()] = actually_changed_attributes;
+                    }
+                    catch (...)
+                    {
+                        TundraLogicModule::LogError("Error while delta-deserializing component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    }
                 }
             }
         }
         else
             TundraLogicModule::LogWarning("Could not create component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+    }
+    
+    // Signal the component changes last
+    for(uint i = 0; i < fully_changed_components.size(); ++i)
+        fully_changed_components[i]->ComponentChanged(change);
+    
+    std::map<IComponent*, std::vector<bool> >::iterator i = partially_changed_components.begin();
+    while (i != partially_changed_components.end())
+    {
+        // Crazy logic might have deleted the component, so we get the corresponding shared ptr from the entity to be seure
+        ComponentPtr compShared = entity->GetComponent(i->first);
+        if (compShared)
+        {
+            const AttributeVector& attributes = compShared->GetAttributes();
+            for (uint j = 0; (j < attributes.size()) && (j < i->second.size()); ++j)
+                if (i->second[j])
+                    compShared->AttributeChanged(attributes[j], change);
+        }
+        ++i;
     }
 }
 

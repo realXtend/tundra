@@ -484,7 +484,7 @@ namespace Environment
         }
         else
         {
-            int id = active_scene->GetNextFreeId();
+            int id = active_scene->GetNextFreeIdLocal();
             entity = active_scene->CreateEntity(id);
             entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Name::TypeNameStatic()));
             EC_Name* nameComp = entity->GetComponent<EC_Name >().get();
