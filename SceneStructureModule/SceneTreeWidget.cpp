@@ -9,6 +9,9 @@
 #include "DebugOperatorNew.h"
 #include "SceneTreeWidget.h"
 
+#include "ECEditorWindow.h"
+#include "UiServiceInterface.h"
+
 //#include <QWidget>
 //#include <QDragEnterEvent>
 //#include <QUrl>
@@ -16,7 +19,9 @@
 
 #include "MemoryLeakCheck.h"
 
-SceneTreeWidget::SceneTreeWidget(QWidget *parent) : QTreeWidget(parent)
+SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
+    QTreeWidget(parent),
+    framework(fw)
 {
     setEditTriggers(QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DragDrop);
@@ -55,6 +60,7 @@ SceneTreeWidget::SceneTreeWidget(QWidget *parent) : QTreeWidget(parent)
             "image: url(:/images/iconBranchOpen.png);"
         "}");
 */
+    connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
 }
 
 SceneTreeWidget::~SceneTreeWidget()
@@ -63,7 +69,6 @@ SceneTreeWidget::~SceneTreeWidget()
 
 void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 {
-/*
     // Do mousePressEvent so that the right item gets selected before we show the menu
     // (right-click doesn't do this automatically).
     QMouseEvent mouseEvent(QEvent::MouseButtonPress, e->pos(), e->globalPos(),
@@ -75,39 +80,38 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     if (!index.isValid())
         return;
 
+    // Create context menu
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
-    QAction *editXml = new QAction(tr("Edit XML..."), menu);
-    QAction *deleteEntity= new QAction(tr("Delete"), menu);
-    QAction *addComponent = new QAction(tr("Add new component..."), menu);
-    QAction *copyEntity = new QAction(tr("Copy"), menu);
-    QAction *pasteEntity = new QAction(tr("Paste"), menu);
 
-    menu->addAction(editXml);
-    menu->addAction(deleteEntity);
-    menu->addAction(addComponent);
-    menu->addAction(copyEntity);
-    menu->addAction(pasteEntity);
-*/
+    // Create context menu actions, connect them to slots and add to menu
+    menu->setAttribute(Qt::WA_DeleteOnClose);
+    QAction *editAction = new QAction(tr("Edit"), menu);
+    QAction *editInNewAction = new QAction(tr("Edit in new window"), menu);
 /*
-    QListIterator<QAction *> it(actions());
-    while(it.hasNext())
-    {
-        QAction *action = it.next();
-        if (action->isEnabled())
-        {
-            // This is kind of hack, but we might have case that base language is not english.
-            InventoryAction* act = qobject_cast<InventoryAction* >(action);
-            QString text = QApplication::translate("Inventory::InventoryWindow", act->GetText().toStdString().c_str());
-            action->setText(text);
-
-            menu->addAction(action);
-        }
-   }
-    if (menu->actions().size() > 1) // separator "action" is always enabled, hence the 1
-        menu->popup(event->globalPos());
+    QAction *renameAction = new QAction(tr("Rename"), menu);
+    QAction *deleteAction = new QAction(tr("Delete"), menu);
+    QAction *copyAction = new QAction(tr("Copy"), menu);
+    QAction *pasteAction = new QAction(tr("Paste"), menu);
 */
-//    menu->popup(e->globalPos());
+    connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
+    connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
+/*
+    connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
+    connect(deleteAction, SIGNAL(triggered()), SLOT(Delete));
+    connect(copyAction, SIGNAL(triggered()), SLOT(Copy));
+    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste));
+*/
+    menu->addAction(editAction);
+    menu->addAction(editInNewAction);
+/*
+    menu->addAction(renameAction);
+    menu->addAction(deleteAction);
+    menu->addAction(copyAction);
+    menu->addAction(pasteAction);
+*/
+    // Show menu.
+    menu->popup(e->globalPos());
 }
 
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
@@ -217,3 +221,91 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 */
 }
 
+void SceneTreeWidget::Edit()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+    assert(ui);
+
+    SceneTreeWidgetItem *item = static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()));
+
+    // If we have existing editor instance, use it.
+    if (ecEditor)
+    {
+        ecEditor->AddEntity(item->id);
+        ecEditor->RefreshPropertyBrowser();
+        ui->BringWidgetToFront(ecEditor);
+        return;
+    }
+
+    // Create new instance
+    ecEditor = new ECEditor::ECEditorWindow(framework);
+    ecEditor->setAttribute(Qt::WA_DeleteOnClose);
+    ecEditor->move(this->pos().x() + 100, this->pos().y() + 100);
+    ecEditor->hide();
+    ecEditor->AddEntity(item->id);
+    ecEditor->RefreshPropertyBrowser();
+
+    ui->AddWidgetToScene(ecEditor);
+    ui->ShowWidget(ecEditor);
+    ui->BringWidgetToFront(ecEditor);
+}
+
+void SceneTreeWidget::EditInNew()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+    // Create new instance every time.
+    UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
+    assert(ui);
+
+    SceneTreeWidgetItem *item = static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()));
+
+    ECEditor::ECEditorWindow *editor = new ECEditor::ECEditorWindow(framework);
+    editor->setAttribute(Qt::WA_DeleteOnClose);
+    editor->move(this->pos().x() + 100, this->pos().y() + 100);
+    editor->hide();
+    editor->AddEntity(item->id);
+    editor->RefreshPropertyBrowser();
+
+    ui->AddWidgetToScene(editor);
+    ui->ShowWidget(editor);
+    ui->BringWidgetToFront(editor);
+}
+
+void SceneTreeWidget::Rename()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+}
+
+void SceneTreeWidget::Delete()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+}
+
+void SceneTreeWidget::Copy()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+}
+
+void SceneTreeWidget::Paste()
+{
+    QModelIndex index = selectionModel()->currentIndex();
+    if (!index.isValid())
+        return;
+
+}

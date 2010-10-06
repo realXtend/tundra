@@ -60,17 +60,15 @@ private:
     SceneTreeWidget *treeWidget;
 
 private slots:
-    ///
-    /** @param entity
+    /// Adds the entity to the tree widget.
+    /** @param entity Entity to be added.
     */
     void AddEntity(Scene::Entity* entity);
 
-    ///
-    /** @param entity
+    /// Removes entity from the tree widget.
+    /** @param entity Entity to be removed.
     */
     void RemoveEntity(Scene::Entity* entity);
-
-    void EditEntity(const QModelIndex &index);
 };
 
 #endif
