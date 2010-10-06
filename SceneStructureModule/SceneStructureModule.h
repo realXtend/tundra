@@ -11,13 +11,15 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
-class UiService;
+class SceneStructureWindow;
 
 ///
 /**
 */
-class SceneStructureModule : public IModule
+class SceneStructureModule : public QObject, public IModule
 {
+    Q_OBJECT
+
 public:
     /// Default constructor.
     SceneStructureModule();
@@ -25,17 +27,24 @@ public:
     /// Destructor.
     ~SceneStructureModule();
 
+    /// IModule override.
+    void PostInitialize();
+
     MODULE_LOGGING_FUNCTIONS
 
     /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return type_name_static_; }
+    static const std::string &NameStatic() { return typeNameStatic; }
 
 private:
     //! Type name of the module.
-    static std::string type_name_static_;
+    static std::string typeNameStatic;
 
-    //! UI service.
-    boost::shared_ptr<UiService> service_;
+    /// Scene structure window.
+    SceneStructureWindow *sceneWindow;
+
+private slots:
+    /// Shows scene structure window.
+    void ShowSceneStructureWindow();
 };
 
 #endif
