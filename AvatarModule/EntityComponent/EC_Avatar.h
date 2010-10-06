@@ -75,7 +75,7 @@ private:
     EC_Avatar(IModule* module);
     
     //! Handle asset ready event
-    bool EC_Avatar::HandleAssetReady(IEventData* data);
+    bool HandleAssetReady(IEventData* data);
     
     //! Category for Asset events
     event_category_id_t asset_event_category_;
