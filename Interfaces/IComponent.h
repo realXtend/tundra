@@ -190,18 +190,6 @@ public:
      */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    //! Serialize attributes to deltaencoded binary
-    /*! Before an attribute, there is 1 bit that tells whether the attribute changed or not.
-        Requires a previous full state (from SerializeToBinary) to compare with
-        \return true if at least 1 attribute changed, false if no data produced
-     */
-    virtual bool SerializeToDeltaBinary(kNet::DataSerializer& dest, kNet::DataDeserializer& previousData) const;
-    
-    //! Deserialize attributes from deltaencoded binary
-    /* \return true if at least 1 attribute changed
-     */
-    virtual bool DeserializeFromDeltaBinary(kNet::DataDeserializer& source, AttributeChange::Type change, std::vector<bool>& changed_attributes);
-
     /** Handles an event. Override in your own module if you want to receive events. Do not call.
         @param category_id Category id of the event
         @param event_id Id of the event
