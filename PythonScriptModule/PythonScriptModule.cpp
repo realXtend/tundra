@@ -1228,11 +1228,12 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     {
         entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_Touchable::TypeNameStatic()));
         ec_touchable = entity->GetComponent<EC_Touchable>().get();
+        ec_touchable->SetNetworkSyncEnabled(false);
     }
     if (ec_touchable)
     {
-        ec_touchable->highlightOnHover.Set(false, AttributeChange::Default);
-        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Default);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::LocalOnly);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::LocalOnly);
     }
 }
 
