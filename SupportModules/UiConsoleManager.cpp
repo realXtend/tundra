@@ -62,6 +62,7 @@ namespace Console
     UiConsoleManager::~UiConsoleManager()
     {
         // console_widget_ gets deleted by the scene it is in currently
+        SAFE_DELETE(console_ui_);
     }
 
     void UiConsoleManager::HandleInput()
