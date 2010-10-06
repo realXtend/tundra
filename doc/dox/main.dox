@@ -77,7 +77,7 @@ The \ref ModuleArchitecture "Module" API gives access to all the modules registe
 Classes:
 <ul>
 <li>Foundation::ModuleManager
-<li>Foundation::ModuleInterface
+<li>IModule
 </ul>  
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
@@ -92,7 +92,7 @@ Information:
 
 Classes:
 <ul>
-<li>Foundation::EventDataInterface
+<li>IEventData
 <li>Foundation::EventManager
 </ul>
    
@@ -170,10 +170,10 @@ Topics:
 </ul>
 Classes:
 <ul>
-<li>Foundation::AttributeInterface
-<li>Foundation::AttributeMetadata
+<li>IAttribute
+<li>AttributeMetadata
 <li>Foundation::ComponentManager
-<li>Foundation::ComponentInterface
+<li>IComponent
 <li>Scene::SceneManager
 <li>Scene::Entity
 <li>Scene::EntityAction
@@ -240,9 +240,9 @@ Provides functions for playing back audio on the client. \ref OpenALAudioModule 
 Topics:
  - \ref OpenALAudioModule "Using the sound system".
  - todo: add here the concepts related to audio.
-	
+
 Classes:
- - Foundation::SoundServiceInterface.
+ - ISoundService.
  - OpenALAudio::Sound.
  - OpenALAudio::SoundChannel.
  - OpenALAudio::SoundSettings.

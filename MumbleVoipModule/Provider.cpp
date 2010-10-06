@@ -28,6 +28,18 @@ namespace MumbleVoip
     {
         server_info_provider_ = new ServerInfoProvider(framework);
         connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), this, SLOT(OnMumbleServerInfoReceived(ServerInfo)) );
+
+        networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
+
+        if (framework_ &&  framework_->GetServiceManager())
+        {
+            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
+            if (comm.get())
+            {
+                comm->Register(*this);
+            }
+            return;
+        }
     }
 
     Provider::~Provider()
@@ -64,15 +76,6 @@ namespace MumbleVoip
 
     Communications::InWorldVoice::SessionInterface* Provider::Session()
     {
-        if (session_ && session_->GetState() == Session::STATE_CLOSED)
-            SAFE_DELETE(session_) //! \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
-
-        if (!session_)
-        {
-            if (!server_info_)
-                return 0;
-            session_ = new MumbleVoip::Session(framework_, *server_info_, settings_);
-        }
         return session_;
     }
 
@@ -86,16 +89,14 @@ namespace MumbleVoip
         SAFE_DELETE(server_info_);
         server_info_ = new ServerInfo(info);
 
-        networkstate_event_category_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
-        if (framework_ &&  framework_->GetServiceManager())
+        if (session_ && session_->GetState() == Session::STATE_CLOSED)
+            SAFE_DELETE(session_) //! \todo USE SHARED PTR, SOMEONE MIGHT HAVE POINTER TO SESSION OBJECT !!!!
+
+        if (!session_ && server_info_)
         {
-            boost::shared_ptr<Communications::ServiceInterface> comm = framework_->GetServiceManager()->GetService<Communications::ServiceInterface>(Foundation::Service::ST_Communications).lock();
-            if (comm.get())
-            {
-                comm->Register(*this);
-            }
-            return;
+            session_ = new MumbleVoip::Session(framework_, *server_info_, settings_);
+            emit SessionAvailable();
         }
     }
 

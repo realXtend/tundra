@@ -65,31 +65,20 @@ namespace CommunicationsService
     void Service::Register(Communications::InWorldVoice::ProviderInterface& provider)
     {
         in_world_voice_provider_ = &provider;
-//        connect(in_world_voice_provider_, SIGNAL(SessionAvailable()), SLOT(
-//        connect(in_world_voice_provider_, SIGNAL(SessionUnavailable()), SLOT(
+        connect(in_world_voice_provider_, SIGNAL(SessionAvailable()), SIGNAL(InWorldVoiceAvailable()));
+        connect(in_world_voice_provider_, SIGNAL(SessionUnavailable()), SIGNAL(InWorldVoiceUnavailable()));
 
         QString message = QString("In-world voice provider [%1] registered.").arg(provider.Description());
         CommunicationsModule::LogInfo(message.toStdString());
-        emit Communications::ServiceInterface::InWorldVoiceAvailable();
     }
 
     void Service::Register(Communications::InWorldChat::ProviderInterface& provider)
     {
         in_world_chat_provider_ = &provider;
-        connect(in_world_chat_provider_, SIGNAL(SessionAvailable()), SLOT(InWorldChatSessionAvailable()) );
-        connect(in_world_chat_provider_, SIGNAL(SessionUnavailable()), SLOT(InWorldChatSessionUnavailable()) );
+        connect(in_world_chat_provider_, SIGNAL(SessionAvailable()), SIGNAL(InWorldChatAvailable()) );
+        connect(in_world_chat_provider_, SIGNAL(SessionUnavailable()), SIGNAL(InWorldChatUnavailable()) );
         QString message = QString("In-world chat provider [%1] registered.").arg(provider.Description());
-//        emit InWorldChatAvailable();
-    }
-
-    void Service::InWorldChatSessionAvailable()
-    {
-         emit InWorldChatAvailable();
-    }
-
-    void Service::InWorldChatSessionUnavailable()
-    {
-        emit InWorldChatUnavailable();
+        CommunicationsModule::LogInfo(message.toStdString());
     }
 
 } // CommunicationsService
