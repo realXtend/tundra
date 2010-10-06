@@ -4,7 +4,7 @@
 #define incl_UiModule_ToolManagerWidget_h
 
 #include "ui_ToolContainerWidget.h"
-#include "ui_ToolmanagerWidget.h"
+#include "ui_ToolManagerWidget.h"
 #include <QList>
 #include <QString>
 
