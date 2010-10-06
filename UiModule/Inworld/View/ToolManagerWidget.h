@@ -5,6 +5,7 @@
 
 #include "ui_ToolContainerWidget.h"
 #include "ui_ToolManagerWidget.h"
+#include <QObject>
 #include <QList>
 #include <QString>
 
@@ -27,26 +28,10 @@ namespace CoreUi
         IToolWidget* tool_widget_;
     };
 
-    /// @todo Move to separate file
-    class IToolManager : public QObject
-    {
-        Q_OBJECT
-    public slots:
-        virtual void AddToolWidget(QString name, IToolWidget* widget) = 0;
-        virtual void RemoveToolWidget(IToolWidget* widget) = 0;
-        virtual void RemoveAllToolWidgets() = 0;
-        //virtual void SetBackgroundWidget(QWidget*) = 0;
-        //virtual void GetBackgroundWidget(QWidget*) = 0;
-    signals:
-        void ToolWidgetAdded(IToolWidget* widget);
-        void ToolRemoved(IToolWidget* widget);
-    };
-
-
     /**
      * Show all tool widgets at the bottom of main screen using ToolContainerWidget objects
      */
-    class ToolManagerWidget : public IToolManager, public QWidget, private Ui::toolManagerWidget
+    class ToolManagerWidget : public QWidget, private Ui::toolManagerWidget
     {
         Q_OBJECT
     public:
@@ -66,6 +51,10 @@ namespace CoreUi
 
     private:
         QList<ToolContainerWidget*> tool_widgets_;
+
+    signals:
+        void ToolWidgetAdded(IToolWidget* widget);
+        void ToolRemoved(IToolWidget* widget);
     };
 
 } // namespace CoreUi
