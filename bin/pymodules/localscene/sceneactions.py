@@ -125,7 +125,7 @@ class SceneActions:
 
             request = urllib2.Request(self.cap_url, datagen, headers) # post
             responce = urllib2.urlopen(request).read()
-            r.logInfo(responce)
+            #r.logInfo(responce)
             if(action=="GetUploadSceneList"):
                 parser = sceneactionsxml.XmlSceneRegionResponceParser(responce)
                 d = parser.parse()
