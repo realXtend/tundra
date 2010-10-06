@@ -87,7 +87,7 @@ def handle_clients(ws):
 
         if msg is None:
             # if there is no message the client has quit. 
-            return
+            break
 
         try:
             function, params = json.loads(msg)
@@ -122,7 +122,7 @@ def handle_clients(ws):
             id = params.get('id')
             position = params.get('position')
             orientation = params.get('orientation')
-            print 'orioriori', orientation
+
             NaaliWebsocketServer.instance.updateclient(myid, position, orientation)
             
             ents = scene.GetEntitiesWithComponentRaw("EC_OpenSimPresence")
