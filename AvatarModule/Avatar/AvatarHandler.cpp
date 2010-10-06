@@ -831,4 +831,9 @@ namespace Avatar
         avatar_appearance_.InventoryExportReset();
         pending_appearances_.clear();
     }
+    
+    void AvatarHandler::SetupECAvatar(entity_id_t entityID, const u8* data, uint size)
+    {
+        avatar_appearance_.ProcessECAvatarAppearance(entityID, data, size);
+    }
 }
