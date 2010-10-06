@@ -88,9 +88,10 @@ namespace Scene
         /*! 
             \param type_name type of the component
             \param change Network replication mode, in case component has to be created
+            \param syncEnabled Whether new component will have networksync enabled
         */
-        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
 
         //! component container
         typedef std::vector<ComponentPtr> ComponentVector;

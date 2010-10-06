@@ -10,7 +10,8 @@
 namespace OgreRenderer
 {
     EC_OgreAnimationController::EC_OgreAnimationController(IModule* module) :
-        IComponent(module->GetFramework())
+        IComponent(module->GetFramework()),
+        mesh(0)
     {
         ResetState();
     }

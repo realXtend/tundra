@@ -109,6 +109,14 @@ namespace Avatar
         //! Returns the avatar appearance handler
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
 
+        //! Sets up appearance for an EC_Avatar based avatar.
+        /*! Queues needed resources, and rebuilds the avatar when done
+            \param entityID Entity ID
+            \param data Appearance xml data
+            \param size Appearance xml size
+         */
+        void SetupECAvatar(entity_id_t entityID, const u8* data, uint size);
+        
     signals:
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         void WebDavExportAvatar(Scene::EntityPtr entity);
