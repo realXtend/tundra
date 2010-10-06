@@ -136,7 +136,7 @@ namespace CoreUi
             if (comm)
             {
                 connect(comm, SIGNAL(InWorldVoiceAvailable()), SLOT(InitializeInWorldVoice()) );
-                connect(comm, SIGNAL(InWorldVoiceUnavailable()), SLOT(UnitializeInWorldVoice()) );
+                connect(comm, SIGNAL(InWorldVoiceUnavailable()), SLOT(UninitializeInWorldVoice()) );
                 connect(comm, SIGNAL(InWorldChatAvailable()), SLOT(InitializeInWorldChat()) );
                 connect(comm, SIGNAL(InWorldChatUnavailable()), SLOT(InitializeInWorldChat()) );
             }
@@ -371,7 +371,6 @@ namespace CoreUi
 
     void CommunicationWidget::UninitializeInWorldVoice()
     {
-
         if (!voice_tool_)
             return;
 
