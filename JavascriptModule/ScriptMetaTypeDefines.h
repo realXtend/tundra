@@ -35,6 +35,18 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
                                        qScriptValueToQObject, prototype);
 }
 
+template<typename T> QScriptValue toScriptValueEnum(QScriptEngine *engine, const T &s)
+{
+    QScriptValue obj = engine->newObject();
+    obj.setProperty("value", QScriptValue(engine, static_cast<T>(s)));
+    return obj;
+}
+
+template<typename T> void fromScriptValueEnum(const QScriptValue &obj, T &s)
+{
+    s = static_cast<T>(obj.property("value").toInt32());
+}
+
 //! Register Qt related stuff to QScriptEngine.
 //! @todo repalce this with qscriptgenerator.
 void ExposeQtMetaTypes(QScriptEngine *engine);
