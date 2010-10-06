@@ -65,12 +65,6 @@ namespace ECEditor
 
         //! Check if spesific QtProperty is owned by this component.
         bool HasRootProperty(QtProperty *property) const;
-
-        //! Note! Operator wont take a dynamic component's attributes in account.
-        //bool operator< (const ComponentGroup &comp);
-
-        //! Note! Operator wont take a dynamic component's attributes in account.
-        //bool operator== (const ComponentGroup &comp);
     };
 }
 
