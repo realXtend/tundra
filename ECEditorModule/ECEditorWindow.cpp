@@ -499,10 +499,7 @@ namespace ECEditor
     void ECEditorWindow::changeEvent(QEvent *e)
     {
         if (e->type() == QEvent::LanguageChange)
-        {
-            QString title = QApplication::translate("ECEditor", "Entity-component Editor");
-            setWindowTitle(title);
-        }
+            setWindowTitle(QApplication::translate("ECEditor", "Entity-component Editor"));
         else
            QWidget::changeEvent(e);
     }
@@ -560,10 +557,9 @@ namespace ECEditor
         if(browser_)
         {
             // signals from attribute browser to editor window.
-            QObject::connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), this, SLOT(ShowXmlEditorForComponent(const std::string &)));
-            QObject::connect(browser_, SIGNAL(CreateNewComponent()), this, SLOT(CreateComponent()));
-            QObject::connect(browser_, SIGNAL(ComponentSelected(IComponent *)), 
-                             this, SLOT(HighlightEntities(IComponent *)));
+            connect(browser_, SIGNAL(ShowXmlEditorForComponent(const std::string &)), SLOT(ShowXmlEditorForComponent(const std::string &)));
+            connect(browser_, SIGNAL(CreateNewComponent()), SLOT(CreateComponent()));
+            connect(browser_, SIGNAL(ComponentSelected(IComponent *)), SLOT(HighlightEntities(IComponent *)));
         }
 /*
         if (component_list_ && browser_)

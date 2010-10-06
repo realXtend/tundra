@@ -14,6 +14,8 @@
 #include <QWidget>
 #include <QMap>
 
+class QModelIndex;
+
 class SceneTreeWidget;
 
 ///
@@ -67,6 +69,8 @@ private slots:
     /** @param entity
     */
     void RemoveEntity(Scene::Entity* entity);
+
+    void EditEntity(const QModelIndex &index);
 };
 
 #endif
