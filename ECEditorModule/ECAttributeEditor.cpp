@@ -288,7 +288,7 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            //Check if int need to have min and max value setted and also enum types are presented as a int value.
+            //Check if int need to have min and max value set and also enum types are presented as a int value.
             AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
             if(metaData)
             {

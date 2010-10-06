@@ -246,6 +246,8 @@ QVector<float> Environment::GetFogGroundColor()
 
 void Environment::Update(f64 frametime)
 {
+    PROFILE(Environment_Update);
+
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
 

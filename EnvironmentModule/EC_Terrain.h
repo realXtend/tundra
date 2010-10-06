@@ -280,8 +280,10 @@ private:
     Ogre::SceneNode *rootNode;
 
     int patchWidth;
-
     int patchHeight;
+    /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
+    /// the same value is received from the network, reloading the terrain can be avoided.
+    QString currentHeightmapAssetSource;
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;

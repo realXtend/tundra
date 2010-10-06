@@ -546,7 +546,10 @@ namespace Ether
             if (request_type == "connect")
                 TryStartLogin();
             else if (request_type == "hide")
-                status_widget_->hide();
+            {
+                if (status_widget_)
+                    status_widget_->hide();
+            }
             else if (request_type == "help")
             {
                 ShowStatusInformation(tr("Naali's help system is still under development, sorry."));
@@ -762,7 +765,8 @@ namespace Ether
         {
             if (info_hide_timer_->isActive())
                 info_hide_timer_->stop();
-            status_widget_->hide();
+            if (status_widget_)
+                status_widget_->hide();
         }
 
         void EtherSceneController::TryExitApplication()
