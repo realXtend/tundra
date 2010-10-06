@@ -22,8 +22,9 @@
 
 		// by default try to get screenshots from a local Naali
 		//var screenshot_server = "http://127.0.0.1:28008";
-		var screenshot_server = "http://www.playsign.fi:28008";
+		//var screenshot_server = "http://www.playsign.fi:28008";
 		//var screenshot_server = "http://192.168.0.177:28008"; // playsign's test machine
+                var screenshot_server = "http://localhost:9000"; //local opensim
 
 		var canvas;			// screenshot drawing canvas
 		var ctx;				// screenshot drawing context
@@ -112,7 +113,7 @@
         
         function get_screenshot_direct() {
             var quat = euler_to_quat(yaw, pitch, roll);
-            var request_uri = screenshot_server + "/renderimg?camposx=" + x + "&camposy=" + y + "&camposz=" + z + "&camortx=" + quat.x + "&camorty=" + quat.y + "&camortz=" + quat.z + "&camortw=" + quat.w;
+            var request_uri = screenshot_server + "/renderimg/?camposx=" + x + "&camposy=" + y + "&camposz=" + z + "&camortx=" + quat.x + "&camorty=" + quat.y + "&camortz=" + quat.z + "&camortw=" + quat.w + "&camyaw=" + yaw + "&campitch=" + pitch + "&camroll=" + roll;
             starttime = now_ms();
             get_screenshot(request_uri, starttime);
         }
@@ -143,7 +144,7 @@
 
 		var map_img = new Image();
 		function get_map() {
-			var map_uri = screenshot_server + "/renderimg?camposx=128&camposy=128&camposz=260&camortx=0&camorty=0&camortz=0&camortw=1";
+			var map_uri = screenshot_server + "/renderimg/?camposx=128&camposy=128&camposz=260&camortx=0&camorty=0&camortz=0&camortw=1";
 			log("loading <a href=\"" + map_uri + "\">map</a>");
 			map_img.src = map_uri;
 			map_img.onerror = function() {

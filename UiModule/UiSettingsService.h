@@ -26,7 +26,6 @@ namespace UiServices
         virtual QObject *GetPersonalWidget() const;
         virtual QObject *GetTeleportWidget() const;
         virtual QObject *GetLanguageWidget() const;
-        virtual QObject *GeBindingsWidget() const;
         virtual QObject *GetCacheSettingsWidget() const;
 
     private:

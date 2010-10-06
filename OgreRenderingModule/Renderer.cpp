@@ -1187,12 +1187,6 @@ namespace OgreRenderer
             resized_dirty_  = 1;
     }
 
-    void Renderer::UpdateKeyBindings(Foundation::KeyBindings *bindings) 
-    {
-        if (q_ogre_ui_view_) 
-            q_ogre_ui_view_->UpdateKeyBindings(bindings); 
-    }
-
     void Renderer::HideCurrentWorldView()
     {
         q_ogre_world_view_->HideUiOverlay();
