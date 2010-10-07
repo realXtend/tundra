@@ -1318,15 +1318,14 @@ if 0: #the new DynamicComponent with individual attrs etc
     print jssrc
 
 if 0: #create DynamicComponent
-    ent = naali.getEntity(2088826547)
-    #ent.GetOrCreateComponentRaw("EC_DynamicComponent")
+    ent = naali.getEntity(1734318933)
+    comp = ent.GetOrCreateComponentRaw("EC_DynamicComponent", "hep")
     #d = ent.EC_DynamicComponent
-    oldent = r.getEntity(ent.id)
-    d = oldent.dynamic
-    print d
+    #d = ent.dynamiccomponent
+    print "new DC:", comp
     #d.CreateAttribute("real", "y")
     #print d.SetAttribute('y', 0.5)
-    print d.GetAttribute('y')
+    #print d.GetAttribute('y')
 
 if 0: #animation control
     ent = naali.getUserAvatar()
