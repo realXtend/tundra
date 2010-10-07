@@ -11,6 +11,7 @@ using namespace OgreRenderer;
 
 EC_AnimationController::EC_AnimationController(IModule* module) :
     IComponent(module->GetFramework()),
+    animationState(this, "Animation state", ""),
     mesh(0)
 {
     ResetState();
@@ -43,13 +44,25 @@ QStringList EC_AnimationController::GetAvailableAnimations()
     return availableList;
 }
 
+QStringList EC_AnimationController::GetActiveAnimations() const
+{
+    QStringList activeList;
+    for (AnimationMap::const_iterator i = animations_.begin(); i != animations_.end(); ++i)
+    {
+        if (i->second.phase_ != PHASE_STOP)
+            activeList << i->first;
+    }
+    
+    return activeList;
+}
+
 void EC_AnimationController::Update(f64 frametime)
 {
     Ogre::Entity* entity = GetEntity();
     if (!entity) 
         return;
     
-    std::vector<std::string> erase_list;
+    std::vector<QString> erase_list;
     
     // Loop through all animations & update them as necessary
     for (AnimationMap::iterator i = animations_.begin(); i != animations_.end(); ++i)
@@ -233,7 +246,7 @@ void EC_AnimationController::ResetState()
     animations_.clear();
 }
 
-Ogre::AnimationState* EC_AnimationController::GetAnimationState(Ogre::Entity* entity, const std::string& name)
+Ogre::AnimationState* EC_AnimationController::GetAnimationState(Ogre::Entity* entity, const QString& name)
 {
     if (!entity)
         return 0;
@@ -241,20 +254,22 @@ Ogre::AnimationState* EC_AnimationController::GetAnimationState(Ogre::Entity* en
     Ogre::AnimationStateSet* anims = entity->getAllAnimationStates();
     if (!anims)
         return 0;
-        
-    if (anims->hasAnimationState(name))
-        return anims->getAnimationState(name);
+    
+    std::string namestd = name.toStdString();
+    
+    if (anims->hasAnimationState(namestd))
+        return anims->getAnimationState(namestd);
     else
         return 0;
 }
 
-bool EC_AnimationController::EnableExclusiveAnimation(const std::string& name, bool looped, float fadein, float fadeout, bool high_priority)
+bool EC_AnimationController::EnableExclusiveAnimation(const QString& name, bool looped, float fadein, float fadeout, bool high_priority)
 {
     // Disable all other active animations
     AnimationMap::iterator i = animations_.begin();
     while (i != animations_.end())
     {
-        const std::string& other_name = i->first;
+        const QString& other_name = i->first;
         if (other_name != name)
         {
             i->second.phase_ = PHASE_FADEOUT;
@@ -267,7 +282,7 @@ bool EC_AnimationController::EnableExclusiveAnimation(const std::string& name, b
     return EnableAnimation(name, looped, fadein, high_priority);
 }
 
-bool EC_AnimationController::EnableAnimation(const std::string& name, bool looped, float fadein, bool high_priority)
+bool EC_AnimationController::EnableAnimation(const QString& name, bool looped, float fadein, bool high_priority)
 {
     Ogre::Entity* entity = GetEntity();
     Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -301,7 +316,7 @@ bool EC_AnimationController::EnableAnimation(const std::string& name, bool loope
     return true;
 }
 
-bool EC_AnimationController::HasAnimationFinished(const std::string& name)
+bool EC_AnimationController::HasAnimationFinished(const QString& name)
 {
     Ogre::Entity* entity = GetEntity();
     Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -322,7 +337,7 @@ bool EC_AnimationController::HasAnimationFinished(const std::string& name)
     return true;
 }
 
-bool EC_AnimationController::IsAnimationActive(const std::string& name, bool check_fadeout)
+bool EC_AnimationController::IsAnimationActive(const QString& name, bool check_fadeout)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -341,7 +356,7 @@ bool EC_AnimationController::IsAnimationActive(const std::string& name, bool che
     return false;
 }
 
-bool EC_AnimationController::SetAnimationAutoStop(const std::string& name, bool enable)
+bool EC_AnimationController::SetAnimationAutoStop(const QString& name, bool enable)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -354,7 +369,7 @@ bool EC_AnimationController::SetAnimationAutoStop(const std::string& name, bool 
     return false;
 }
 
-bool EC_AnimationController::SetAnimationNumLoops(const std::string& name, uint repeats)
+bool EC_AnimationController::SetAnimationNumLoops(const QString& name, uint repeats)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -366,7 +381,7 @@ bool EC_AnimationController::SetAnimationNumLoops(const std::string& name, uint 
     return false;
 }
 
-bool EC_AnimationController::DisableAnimation(const std::string& name, float fadeout)
+bool EC_AnimationController::DisableAnimation(const QString& name, float fadeout)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -390,7 +405,7 @@ void EC_AnimationController::DisableAllAnimations(float fadeout)
     }
 }
 
-void EC_AnimationController::SetAnimationToEnd(const std::string& name)
+void EC_AnimationController::SetAnimationToEnd(const QString& name)
 {
     Ogre::Entity* entity = GetEntity();
     Ogre::AnimationState* animstate = GetAnimationState(entity, name);
@@ -403,7 +418,7 @@ void EC_AnimationController::SetAnimationToEnd(const std::string& name)
     }
 }
 
-bool EC_AnimationController::SetAnimationSpeed(const std::string& name, float speedfactor)
+bool EC_AnimationController::SetAnimationSpeed(const QString& name, float speedfactor)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -415,7 +430,7 @@ bool EC_AnimationController::SetAnimationSpeed(const std::string& name, float sp
     return false;
 }
 
-bool EC_AnimationController::SetAnimationWeight(const std::string& name, float weight)
+bool EC_AnimationController::SetAnimationWeight(const QString& name, float weight)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -427,7 +442,7 @@ bool EC_AnimationController::SetAnimationWeight(const std::string& name, float w
     return false;
 }
 
-bool EC_AnimationController::SetAnimationPriority(const std::string& name, bool high_priority)
+bool EC_AnimationController::SetAnimationPriority(const QString& name, bool high_priority)
 {
     AnimationMap::iterator i = animations_.find(name);
     if (i != animations_.end())
@@ -439,7 +454,7 @@ bool EC_AnimationController::SetAnimationPriority(const std::string& name, bool 
     return false;
 }    
 
-bool EC_AnimationController::SetAnimationTimePosition(const std::string& name, float newPosition)
+bool EC_AnimationController::SetAnimationTimePosition(const QString& name, float newPosition)
 {
     Ogre::Entity* entity = GetEntity();
     Ogre::AnimationState* animstate = GetAnimationState(entity, name);

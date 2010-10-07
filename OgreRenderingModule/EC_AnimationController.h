@@ -26,10 +26,63 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
-<li>"EnableAnimation": Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
-<li>"SetAnimationTimePosition": 
-<li>"GetAvailableAnimations": 
-<li>"OgreRenderer": Gets mesh entity component
+<li>"EnableAnimation": Enables animation with optional fade-in time
+        \param name Animation name
+        \param looped Is animation looped
+        \param fadein Animation fadein time, 0 = instant
+        \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+        \return true if animation exists and could be enabled
+<li>"EnableExclusiveAnimation": Enables an exclusive animation. 
+        This means that other animations will start fading out with the fade-out time specified
+        \param name Animation name
+        \param looped Is animation looped
+        \param fadein Animation fadein time, 0 = instant
+        \param fadeout Other animations' fadeout time, 0 = instant
+        \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+        \return true if animation exists and could be enabled
+<li>"HasAnimationFinished": Checks whether non-looping animation has finished. If looping, returns always false
+        \return true if animation finished
+<li>"IsAnimationActive": Checks whether animation is active
+        \param name Animation name
+        \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
+        \return true if animation active
+<li>"DisableAnimation": Disables animation with optional fade-out time
+        \param name Animation name
+        \param fadeout Animation fadeout time, 0 = instant
+        \return true if animation exists and could be disabled
+<li>"DisableAllAnimations": Disables all animations with the same fadeout time
+        \param fadeout Animation fadeout time
+<li>"SetAnimationToEnd": Forwards animation to end, useful if animation is played in reverse
+        \param name Animation name
+<li>"SetAnimationSpeed": Sets relative speed of an active animation.
+    Note that this speed will be forgotten if the animation is disabled
+        \param name Animation name
+        \param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
+        \return true if successful (animation was currently playing)
+<li>"SetAnimationWeight": Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
+        \param name Animation name
+        \param weight Animation weight (from 0 to 1)
+        \return true if successful (animation was currently playing)
+<li>"SetAnimationPriority": Changes animation priority.
+        Can lead to fun visual effects, but provided for completeness
+        \param name Animation name
+        \param high_priority High priority bit
+        \return true if successful (animation was currently playing)
+<li>"SetAnimationTimePosition": Sets time position of an active animation.
+        \param name Animation name
+        \param new_position New time position
+        \return true if successful (animation was currently playing)
+<li>"SetAnimationAutoStop": Sets autostop on animation
+        \param name Animation name
+        \param enable Autostop flag
+        \return true if successful
+<li>"SetAnimationNumLoops": Sets number of times the animation is repeated
+        \param name Animation name
+        \param repeats Number of repeats (0 = repeat indefinitely)
+        \return true if successful
+<li>"GetAvailableAnimations": Get stringlist of available animations
+<li>"GetActiveAnimations": Get active animations as a simple stringlist
+<li>"GetMeshEntity": Gets mesh entity component
 <li>"SetMeshEntity": Gets mesh entity component
 </ul>
 
@@ -42,7 +95,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgreMesh</b>.
+<b>Depends on the component Mesh</b>.
 </table>
 
 */
@@ -53,10 +106,6 @@ class OGRE_MODULE_API EC_AnimationController : public IComponent
     DECLARE_EC(EC_AnimationController);
 
 public slots:
-//! Qt wrappers for py&js access. unnencessary if we switch to qstring etc.
-    bool EnableAnimation(const QString &name) { return EnableAnimation(name.toStdString(), false); }
-    bool SetAnimationTimePosition(const QString name, float new_position) { return SetAnimationTimePosition(name.toStdString(), (float)new_position); }
-    QStringList GetAvailableAnimations();
 
     //! Gets mesh entity component
     EC_Mesh *GetMeshEntity() const { return mesh; }
@@ -65,11 +114,19 @@ public slots:
     void SetMeshEntity(EC_Mesh *new_mesh);
 
 public:
+    //! Animation state attribute. Is a "freedata" field to store the current animation state.
+    /*! It is up to a logic script to change & interpret this, AnimationController does not change or read it by itself.
+     */
+    Q_PROPERTY(QString animationState READ getanimationState WRITE setanimationState);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, animationState);
+    
+    //! Set component as serializable.
+    virtual bool IsSerializable() const { return true; }
     
     //! Enumeration of animation phase
     enum AnimationPhase
     {
-        PHASE_FADEIN,
+        PHASE_FADEIN = 0,
         PHASE_PLAY,
         PHASE_FADEOUT,
         PHASE_STOP,
@@ -100,7 +157,7 @@ public:
         //! priority. high priority will reduce the weight of low priority animations, if exists on the same bone tracks
         bool high_priority_;
         
-        //! current phase            
+        //! current phase
         AnimationPhase phase_;
 
         Animation() :
@@ -116,55 +173,112 @@ public:
         }
     };
     
-    typedef std::map<std::string, Animation> AnimationMap;
+    typedef std::map<QString, Animation> AnimationMap;
 
     virtual ~EC_AnimationController();
     
     //! Updates animation(s) by elapsed time
     void Update(f64 frametime);
     
-    //! Enables animation, with optional fade-in period. Returns true if success (animation exists)
-    bool EnableAnimation(const std::string& name, bool looped = true, float fadein = 0.0f, bool high_priority = false);
+public slots:
+    //! Enables animation with optional fade-in time
+    /* \param name Animation name
+       \param looped Is animation looped
+       \param fadein Animation fadein time, 0 = instant
+       \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+       \return true if animation exists and could be enabled
+     */
+    bool EnableAnimation(const QString& name, bool looped = true, float fadein = 0.0f, bool high_priority = false);
 
-    //! Enables an exclusive animation (fades out all other animations with fadeOut parameter)
-    bool EnableExclusiveAnimation(const std::string& name, bool looped, float fadein = 0.0f, float fadeout = 0.0f, bool high_priority = false);
+    //! Enables an exclusive animation. This means that other animations will start fading out with the fade-out time specified
+    /* \param name Animation name
+       \param looped Is animation looped
+       \param fadein Animation fadein time, 0 = instant
+       \param fadeout Other animations' fadeout time, 0 = instant
+       \param high_priority Whether animation uses high-priority blending (overrides and reduces weight of low-priority animations)
+       \return true if animation exists and could be enabled
+     */
+    bool EnableExclusiveAnimation(const QString& name, bool looped, float fadein = 0.0f, float fadeout = 0.0f, bool high_priority = false);
 
-    //! Checks whether non-looping animation has finished
-    /*! If looping, returns always false
-    */
-    bool HasAnimationFinished(const std::string& name);
+    //! Checks whether non-looping animation has finished. If looping, returns always false
+    /* \return true if animation finished
+     */
+    bool HasAnimationFinished(const QString& name);
 
     //! Checks whether animation is active
-    //! \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
-    bool IsAnimationActive(const std::string& name, bool check_fadeout = true);
+    /*! \param name Animation name
+        \param check_fade_out if true, also fade-out (until totally faded) phase is interpreted as "active"
+        \return true if animation active
+     */
+    bool IsAnimationActive(const QString& name, bool check_fadeout = true);
 
-    //! Disables animation, with optional fade-out period. Returns true if success (animation exists)
-    bool DisableAnimation(const std::string& name, float fadeout = 0.0f);
+    //! Disables animation with optional fade-out time
+    /*! \param name Animation name
+        \param fadeout Animation fadeout time, 0 = instant
+        \return true if animation exists and could be disabled
+     */
+    bool DisableAnimation(const QString& name, float fadeout = 0.0f);
 
-    //! Disables all animations with the same fadeout period
+    //! Disables all animations with the same fadeout time
+    /*! \param fadeout Animation fadeout time
+     */
     void DisableAllAnimations(float fadeout = 0.0f);
 
     //! Forwards animation to end, useful if animation is played in reverse
-    void SetAnimationToEnd(const std::string& name);
+    /*! \param name Animation name
+     */
+    void SetAnimationToEnd(const QString& name);
 
-    //! Sets relative speed of active animation. Once disabled, the speed is forgotten! Returns true if success (animation exists)
-    bool SetAnimationSpeed(const std::string& name, float speedfactor);
+    //! Sets relative speed of an active animation. Note that this speed will be forgotten if the animation is disabled
+    /*! \param name Animation name
+        \param speedfactor Relative speed. 1 is default. Use negative speed to play in reverse
+        \return true if successful (animation was currently playing)
+     */
+    bool SetAnimationSpeed(const QString& name, float speedfactor);
 
-    //! Changes weight of an active animation (default 1.0). Return false if the animation doesn't exist or isn't active
-    bool SetAnimationWeight(const std::string& name, float weight);
+    //! Changes weight of an active animation.
+    /*! \param name Animation name
+        \param weight Animation weight (from 0 to 1)
+        \return true if successful (animation was currently playing)
+     */
+    bool SetAnimationWeight(const QString& name, float weight);
     
     //! Changes animation priority. Can lead to fun visual effects, but provided for completeness
-    bool SetAnimationPriority(const std::string& name, bool high_priority);
+    /*! \param name Animation name
+        \param high_priority High priority bit
+        \return true if successful (animation was currently playing)
+     */
+    bool SetAnimationPriority(const QString& name, bool high_priority);
 
     //! Sets time position of an active animation.
-    bool SetAnimationTimePosition(const std::string& name, float new_position);
+    /*! \param name Animation name
+        \param new_position New time position
+        \return true if successful (animation was currently playing)
+     */
+    bool SetAnimationTimePosition(const QString& name, float new_position);
 
     //! Sets autostop on animation
-    bool SetAnimationAutoStop(const std::string& name, bool enable);
+    /*! \param name Animation name
+        \param enable Autostop flag
+        \return true if successful
+     */
+    bool SetAnimationAutoStop(const QString& name, bool enable);
 
-    //! Sets number of times the animation is repeated (0 = repeat indefinitely)
-    bool SetAnimationNumLoops(const std::string& name, uint repeats);
+    //! Sets number of times the animation is repeated
+    /*! \param name Animation name
+        \param repeats Number of repeats (0 = repeat indefinitely)
+        \return true if successful
+     */
+    bool SetAnimationNumLoops(const QString& name, unsigned repeats);
+
+    //! Get available animations
+    QStringList GetAvailableAnimations();
     
+    //! Get active animations as a simple stringlist
+    QStringList GetActiveAnimations() const;
+    
+public:
+
     //! Returns all running animations
     const AnimationMap& GetRunningAnimations() const { return animations_; }
     
@@ -182,7 +296,7 @@ private:
         \param name Animation name
         \return animationstate, or null if not found
      */
-    Ogre::AnimationState* GetAnimationState(Ogre::Entity* entity, const std::string& name);
+    Ogre::AnimationState* GetAnimationState(Ogre::Entity* entity, const QString& name);
     
     //! Resets internal state
     void ResetState();
@@ -196,11 +310,11 @@ private:
     //! Current animations
     AnimationMap animations_;
     
-	//! Bone blend mask of high-priority animations
-	Ogre::AnimationState::BoneBlendMask highpriority_mask_;
+    //! Bone blend mask of high-priority animations
+    Ogre::AnimationState::BoneBlendMask highpriority_mask_;
 
-	//! Bone blend mask of low-priority animations
-	Ogre::AnimationState::BoneBlendMask lowpriority_mask_;        
+    //! Bone blend mask of low-priority animations
+    Ogre::AnimationState::BoneBlendMask lowpriority_mask_;        
 };
 
 #endif

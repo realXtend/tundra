@@ -398,6 +398,8 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
     if (!anim)
         return false;
+    // Networksync off from animcontroller!
+    anim->SetNetworkSyncEnabled(false);
     // Attach the mesh entity to animationcontroller, if not yet attached
     //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
     ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
@@ -413,24 +415,24 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         bool looped = ParseBool(params[3]);
         bool stop = ParseBool(params[4]);
         
+        QString animname = QString::fromStdString(params[1]);
         if (stop)
         {
-            anim->DisableAnimation(params[1], 0.25f);
+            anim->DisableAnimation(animname, 0.25f);
         }
         else
         {
-            anim->EnableAnimation(params[1], looped, 0.025f);
-            anim->SetAnimationSpeed(params[1], rate);
+            anim->EnableAnimation(animname, looped, 0.025f);
+            anim->SetAnimationSpeed(animname, rate);
             if (rate < 0.0f)
-                anim->SetAnimationToEnd(params[1]);
-            anim->SetAnimationAutoStop(params[1], looped == false);
+                anim->SetAnimationToEnd(animname);
+            anim->SetAnimationAutoStop(animname, looped == false);
         }
     }
-    catch (...) {}  
-        
+    catch (...) {}
+    
     return false;
-        
-}    
+}
 
 bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data)
 {
@@ -1169,6 +1171,8 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
             entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
         if (anim)
         {
+            // Networksync off from animcontroller!
+            anim->SetNetworkSyncEnabled(false);
             // Attach the mesh entity to animationcontroller, if not yet attached
             //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
             ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
@@ -1178,18 +1182,20 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
             if (anim->GetMeshEntity() != ogre_mesh)
                 anim->SetMeshEntity(ogre_mesh);
             
+            QString animname = QString::fromStdString(prim->AnimationName);
+            
             // Check if any other animations than the supposed one is running, and stop them
             const EC_AnimationController::AnimationMap& anims = anim->GetRunningAnimations();
             EC_AnimationController::AnimationMap::const_iterator i = anims.begin();
             while (i != anims.end())
             {
-                if (i->first != prim->AnimationName)
-                    anim->DisableAnimation(i->first); 
+                if (i->first != animname)
+                    anim->DisableAnimation(i->first);
                 ++i;
             }
-                        
-            anim->EnableAnimation(prim->AnimationName, true, 1.0f);
-            anim->SetAnimationSpeed(prim->AnimationName, prim->AnimationRate);
+            
+            anim->EnableAnimation(animname, true, 1.0f);
+            anim->SetAnimationSpeed(animname, prim->AnimationRate);
         }
     }
 }
