@@ -140,11 +140,14 @@ namespace Avatar
             // Now switch networksync off from the placeable, before we do any damage
             placeable->SetNetworkSyncEnabled(false);
         }
-        // Switch also networksync off from the mesh
+        // Switch also networksync off from the mesh and animationcontroller
         ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
         if (mesh)
             mesh->SetNetworkSyncEnabled(false);
-
+        ComponentPtr animctrl = entity->GetComponent(EC_AnimationController::TypeNameStatic());
+        if (animctrl)
+            animctrl->SetNetworkSyncEnabled(false);
+            
         return entity;
     }
 
@@ -424,16 +427,18 @@ namespace Avatar
         if (!anim)
             return false;
 
+        QString animname = QString::fromStdString(params[1]);
+        
         if (!stopflag)
         {
-            anim->EnableAnimation(params[1], false, fadein, true);
-            anim->SetAnimationSpeed(params[1], rate);
-            anim->SetAnimationAutoStop(params[1], true);
-            anim->SetAnimationNumLoops(params[1], repeats);
+            anim->EnableAnimation(animname, false, fadein, true);
+            anim->SetAnimationSpeed(animname, rate);
+            anim->SetAnimationAutoStop(animname, true);
+            anim->SetAnimationNumLoops(animname, repeats);
         }
         else
         {
-            anim->DisableAnimation(params[1], fadeout);
+            anim->DisableAnimation(animname, fadeout);
         }
 
         return false;
@@ -637,16 +642,16 @@ namespace Avatar
         const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
         // Convert uuid's to actual animation names
-        std::vector<std::string> anims_to_start;
+        std::vector<QString> anims_to_start;
         for (unsigned i = 0; i < anim_ids.size(); ++i)
         {
             AnimationDefinitionMap::const_iterator def = anim_defs.find(anim_ids[i]);
             if (def != anim_defs.end())
-                anims_to_start.push_back(def->second.animation_name_);
+                anims_to_start.push_back(QString::fromStdString(def->second.animation_name_));
         }
         
         // Other animations that are going on have to be stopped
-        std::vector<std::string> anims_to_stop;
+        std::vector<QString> anims_to_stop;
         const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
         EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
@@ -659,19 +664,21 @@ namespace Avatar
         for (unsigned i = 0; i < anims_to_start.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_start[i]);
-
-            animctrl->EnableAnimation(def.animation_name_, def.looped_, def.fadein_);
-            animctrl->SetAnimationSpeed(def.animation_name_, def.speedfactor_);
-            animctrl->SetAnimationWeight(def.animation_name_, def.weightfactor_);
+            QString animname = QString::fromStdString(def.animation_name_);
+            
+            animctrl->EnableAnimation(animname, def.looped_, def.fadein_);
+            animctrl->SetAnimationSpeed(animname, def.speedfactor_);
+            animctrl->SetAnimationWeight(animname, def.weightfactor_);
 
             if (def.always_restart_)
-                animctrl->SetAnimationTimePosition(def.animation_name_, 0.0);
+                animctrl->SetAnimationTimePosition(animname, 0.0);
         }
 
         for (unsigned i = 0; i < anims_to_stop.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_stop[i]);
-            animctrl->DisableAnimation(def.animation_name_, def.fadeout_);
+            QString animname = QString::fromStdString(def.animation_name_);
+            animctrl->DisableAnimation(animname, def.fadeout_);
         }
     }
 
