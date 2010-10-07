@@ -550,15 +550,17 @@ namespace Scene
             if (!id_str.isEmpty())
             {
                 entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                if (HasEntity(id))
+                if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
                 {
-                    if (replaceOnConflict)
+                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
                         RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
-
-                    if ((LocalEntity & id) != 0) // Check if the ID is local
-                        id = GetNextFreeIdLocal();
-                    else
-                        id = GetNextFreeId();
+                    else // Create a new ID for the new entity.
+                    {
+                        if ((id & LocalEntity) != 0) // Check if the ID is local
+                            id = GetNextFreeIdLocal();
+                        else
+                            id = GetNextFreeId();
+                    }
                 }
 
                 EntityPtr entity = CreateEntity(id);
