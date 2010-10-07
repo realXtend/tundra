@@ -28,10 +28,10 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     IComponent(module->GetFramework()),
-    source_(this, "source"),
-    position_(this, "position", 0),
-    submesh_(this, "submesh", 0),
-    show2d_(this, "show 2D", true),
+    source(this, "source"),
+    position(this, "position", 0),
+    submesh(this, "submesh", 0),
+    show2d(this, "show 2D", true),
     widget_(0),
     content_widget_(0),
     placeholder_widget_(0),
@@ -53,7 +53,7 @@ EC_3DCanvasSource::~EC_3DCanvasSource()
 
 void EC_3DCanvasSource::OnClick()
 {
-    if ((show2d_.Get() == true) && (widget_) && (proxy_))
+    if ((getshow2d() == true) && (widget_) && (proxy_))
     {
         if (proxy_->isVisible())
             proxy_->AnimatedHide();
@@ -65,11 +65,11 @@ void EC_3DCanvasSource::OnClick()
 void EC_3DCanvasSource::SourceEdited()
 {
     QString new_source = source_edit_->text();
-    if (new_source != source_.Get())
+    if (new_source != getsource())
     {
         // Replicate changed source to network
         // std::cout << "Changed source to " << new_source << std::endl;
-        source_.Set(new_source, AttributeChange::Default);
+        setsource(new_source);
         ComponentChanged(AttributeChange::Default);
     }
 }
@@ -102,7 +102,7 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
     
     // If url is different than the source, update the lineedit & browser & replicate to network
     QString url_str = url.toString();
-    if (url_str != source_.Get())
+    if (url_str != getsource())
     {
         QWebView* webwidget = dynamic_cast<QWebView*>(content_widget_);
         if (!webwidget)
@@ -116,7 +116,7 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         last_source_ = url_str;
         
         // std::cout << "Changed source by click to " << url_str << std::endl;
-        source_.Set(url_str, AttributeChange::Default);
+        setsource(url_str);
         ComponentChanged(AttributeChange::Default);
     }
 }
@@ -140,7 +140,7 @@ void EC_3DCanvasSource::RepaintCanvas()
 
 void EC_3DCanvasSource::UpdateWidget()
 {
-    QString source = source_.Get();
+    QString source = getsource();
     if (source.isEmpty())
     {
         QTimer::singleShot(1000, this, SLOT(FetchWebViewUrl()));
@@ -225,7 +225,7 @@ void EC_3DCanvasSource::UpdateCanvas()
     
     EC_3DCanvas* canvas = checked_static_cast<EC_3DCanvas*>(comp.get());
     canvas->SetWidget(content_widget_);
-    int submesh = submesh_.Get();
+    int submesh = getsubmesh();
     if (submesh < 0)
         submesh = 0;
     canvas->SetSubmesh(submesh);
@@ -261,7 +261,7 @@ void EC_3DCanvasSource::FetchWebViewUrl()
     QString url = canvas_webview->url().toString();
     if (!url.isEmpty())
     {
-        source_.Set(url, AttributeChange::LocalOnly);
+        setsource(url);
         ComponentChanged(AttributeChange::LocalOnly);
     }
     else
