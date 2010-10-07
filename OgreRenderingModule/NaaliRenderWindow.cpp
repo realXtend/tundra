@@ -59,7 +59,7 @@ WindowRef wref = HIViewGetWindow(vref);
     // poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*)
     QX11Info info = targetWindow->x11Info();
 
-    winhandle = Ogre::StringConverter::toString((unsigned long)(info.display()));
+    Ogre::String winhandle = Ogre::StringConverter::toString((unsigned long)(info.display()));
     winhandle += ":" + Ogre::StringConverter::toString((unsigned int)(info.screen()));
     winhandle += ":" + Ogre::StringConverter::toString((unsigned long)parent->winId());
 
