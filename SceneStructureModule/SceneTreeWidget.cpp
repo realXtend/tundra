@@ -11,6 +11,7 @@
 
 #include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
+#include "SceneManager.h"
 
 //#include <QWidget>
 //#include <QDragEnterEvent>
@@ -88,25 +89,28 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->setAttribute(Qt::WA_DeleteOnClose);
     QAction *editAction = new QAction(tr("Edit"), menu);
     QAction *editInNewAction = new QAction(tr("Edit in new window"), menu);
+    QAction *newAction = new QAction(tr("New entity"), menu);
+    QAction *deleteAction = new QAction(tr("Delete"), menu);
 /*
     QAction *renameAction = new QAction(tr("Rename"), menu);
-    QAction *deleteAction = new QAction(tr("Delete"), menu);
     QAction *copyAction = new QAction(tr("Copy"), menu);
     QAction *pasteAction = new QAction(tr("Paste"), menu);
 */
     connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
     connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
+    connect(newAction, SIGNAL(triggered()), SLOT(New()));
+    connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
 /*
     connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
-    connect(deleteAction, SIGNAL(triggered()), SLOT(Delete));
     connect(copyAction, SIGNAL(triggered()), SLOT(Copy));
     connect(pasteAction, SIGNAL(triggered()), SLOT(Paste));
 */
     menu->addAction(editAction);
     menu->addAction(editInNewAction);
+    menu->addAction(newAction);
+    menu->addAction(deleteAction);
 /*
     menu->addAction(renameAction);
-    menu->addAction(deleteAction);
     menu->addAction(copyAction);
     menu->addAction(pasteAction);
 */
@@ -311,12 +315,71 @@ void SceneTreeWidget::Rename()
 
 }
 
-void SceneTreeWidget::Delete()
+void SceneTreeWidget::New()
 {
-    QModelIndex index = selectionModel()->currentIndex();
-    if (!index.isValid())
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    if (!scene)
         return;
 
+    entity_id_t id;
+    AttributeChange::Type changeType;
+
+    // Show a dialog so that user can choose if he wants to create local or synchronized entity.
+    QStringList types(QStringList() << "Local" << "Synchronized");
+    bool ok;
+    QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
+    if (!ok || type.isEmpty())
+        return;
+
+    if (type == tr("Local"))
+    {
+        id =scene->GetNextFreeIdLocal();
+        changeType = AttributeChange::LocalOnly;
+    }
+    else if(type == tr("Synchronized"))
+    {
+        id = scene->GetNextFreeId();
+        changeType = AttributeChange::Replicate;
+    }
+    else
+    {
+        std::cout << "SceneTreeWidget::New(): invalid entity type:" << type.toStdString() << std::endl;
+        return;
+    }
+
+    // Create entity.
+    Scene::EntityPtr entity = scene->CreateEntity(id, QStringList(), changeType);
+    assert(entity.get());
+    scene->EmitEntityCreated(entity, changeType);
+}
+
+void SceneTreeWidget::Delete()
+{
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    if (!scene)
+        return;
+
+    const QItemSelection &selection = selectionModel()->selection();
+    if (selection.isEmpty())
+        return;
+
+    // Gather entity ID's.
+    QList<entity_id_t> ids;
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (!index.isValid())
+            continue;
+        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
+    }
+
+    if (ids.size() == 0)
+        return;
+
+    // Remove entities.
+    foreach(entity_id_t id, ids)
+        scene->RemoveEntity(id, AttributeChange::Replicate);
 }
 
 void SceneTreeWidget::Copy()
