@@ -579,8 +579,8 @@ namespace ECEditor
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), entity_list_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), entity_list_);
+            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), entity_list_);
+            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), entity_list_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyEntity()));
             connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));
