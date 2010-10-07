@@ -490,6 +490,9 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                                 }
                             }
                             
+                            //! \todo Temp fix for deserializer buffer underrun when an uneven number of attributes (for example EC_HoveringText)
+                            dest.Add<u8>(0);
+                            
                             if (has_changes)
                             {
                                 updComponent.componentData.resize(dest.BytesFilled());
