@@ -290,7 +290,10 @@ void EC_HoveringText::Redraw()
 
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+                img.width(), img.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+    ///\todo Disabled mip map generation for now, since the line 'texPtr->getBuffer()->blitFromMemory(pixel_box);' below
+    /// will not regenerate them. 
+//                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
 
             assert(!texPtr.isNull());
             if (texPtr.isNull())
@@ -317,7 +320,9 @@ void EC_HoveringText::Redraw()
         Ogre::Box dimensions(0,0, img.width(), img.height());
         Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
         if (!texPtr->getBuffer().isNull())
+        {
             texPtr->getBuffer()->blitFromMemory(pixel_box);
+        }
     }
     catch (Ogre::Exception &e)
     {
