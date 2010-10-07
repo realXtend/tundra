@@ -336,27 +336,9 @@ namespace Scene
         QDomDocument scene_doc("Scene");
         QDomElement scene_elem = scene_doc.createElement("scene");
 
-        EntityMap::iterator it = entities_.begin();
-        while(it != entities_.end())
-        {
-            Scene::Entity *entity = it->second.get();
-            if (entity)
-            {
-                QDomElement entity_elem = scene_doc.createElement("entity");
-                
-                QString id_str;
-                id_str.setNum((int)entity->GetId());
-                entity_elem.setAttribute("id", id_str);
-
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                for(uint i = 0; i < components.size(); ++i)
-                    if (components[i]->IsSerializable())
-                        components[i]->SerializeTo(scene_doc, entity_elem);
-
-                scene_elem.appendChild(entity_elem);
-            }
-            ++it;
-        }
+        for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+            if (iter->second.get())
+                iter->second->SerializeToXML(scene_doc, scene_elem);
         
         scene_doc.appendChild(scene_elem);
         
@@ -472,42 +454,9 @@ namespace Scene
         
         dest.Add<u32>(entities_.size());
         
-        EntityMap::iterator it = entities_.begin();
-        while(it != entities_.end())
-        {
-            Scene::Entity *entity = it->second.get();
-            if (entity)
-            {
-                dest.Add<u32>(entity->GetId());
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                uint num_serializable = 0;
-                for(uint i = 0; i < components.size(); ++i)
-                    if (components[i]->IsSerializable())
-                        num_serializable++;
-                dest.Add<u32>(num_serializable);
-                for(uint i = 0; i < components.size(); ++i)
-                {
-                    if (components[i]->IsSerializable())
-                    {
-                        dest.Add<u32>(components[i]->TypeNameHash());
-                        dest.AddString(components[i]->Name().toStdString());
-                        dest.Add<u8>(components[i]->GetNetworkSyncEnabled() ? 1 : 0);
-                        
-                        // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
-                        QByteArray comp_bytes;
-                        // Assume 64KB max per component for now
-                        comp_bytes.resize(64 * 1024);
-                        DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
-                        components[i]->SerializeToBinary(comp_dest);
-                        comp_bytes.resize(comp_dest.BytesFilled());
-                        
-                        dest.Add<u32>(comp_bytes.size());
-                        dest.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
-                    }
-                }
-            }
-            ++it;
-        }
+        for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+            if (iter->second.get())
+                iter->second->SerializeToBinary(dest);
         
         bytes.resize(dest.BytesFilled());
         QFile scenefile(filename.c_str());

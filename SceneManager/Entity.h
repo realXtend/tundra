@@ -9,8 +9,13 @@
 #include "IAttribute.h"
 #include "EntityAction.h"
 
+#include "kNetFwd.h"
+
 #include <QObject>
 #include <QMap>
+
+class QDomDocument;
+class QDomElement;
 
 namespace Scene
 {
@@ -266,7 +271,21 @@ namespace Scene
         */
         AttributeVector GetAttributes(const std::string &name) const;
 
+        /// In the following, deserialization functions are now disabled since deserialization can't safely
+        /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
+        /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use SceneManager
+        /// functions for achieving the same.
+
+        void SerializeToBinary(kNet::DataSerializer &dst) const;
+//        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
+
     public slots:
+        void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
+//        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
+
+        QString SerializeToXMLString() const;
+//        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
+
         IComponent* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
         IComponent* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
         
