@@ -6,6 +6,10 @@
 
 #include <utility>
 
+#ifdef Q_WS_X11
+#include <QX11Info>
+#endif
+
 using namespace std;
 
 namespace
@@ -47,23 +51,17 @@ WindowRef wref = HIViewGetWindow(vref);
 #endif
 
 #ifdef Q_WS_X11
+    QWidget *parent = targetWindow;
+    while(parent->parentWidget())
+        parent = parent->parentWidget();
+
     // GLX - According to Ogre Docs:
     // poslong:posint:poslong:poslong (display*:screen:windowHandle:XVisualInfo*)
-    QX11Info info =  x11Info ();
+    QX11Info info = targetWindow->x11Info();
 
-    Ogre::String winhandle  = Ogre::StringConverter::toString 
-        ((unsigned long)
-         (info.display ()));
-    winhandle += ":";
-
-    winhandle += Ogre::StringConverter::toString 
-        ((unsigned int)
-         (info.screen ()));
-    winhandle += ":";
-    
-    winhandle += Ogre::StringConverter::toString 
-        ((unsigned long)
-         nativewin-> winId());
+    winhandle = Ogre::StringConverter::toString((unsigned long)(info.display()));
+    winhandle += ":" + Ogre::StringConverter::toString((unsigned int)(info.screen()));
+    winhandle += ":" + Ogre::StringConverter::toString((unsigned long)parent->winId());
 
     //Add the external window handle parameters to the existing params set.
     params["parentWindowHandle"] = winhandle;

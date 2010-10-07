@@ -13,7 +13,7 @@ class UI_API NaaliUi : public QObject
 
 public:
     explicit NaaliUi(Foundation::Framework *owner);
-    NaaliUi::~NaaliUi();
+    ~NaaliUi();
 
 public slots:
     NaaliMainWindow *MainWindow() const;
