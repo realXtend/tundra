@@ -13,6 +13,11 @@
 #include "ComponentManager.h"
 #include "LoggingFunctions.h"
 
+#include <QDomDocument>
+
+#include "kNet/DataSerializer.h"
+#include "kNet/DataDeserializer.h"
+
 DEFINE_POCO_LOGGING_FUNCTIONS("Entity")
 
 #include "MemoryLeakCheck.h"
@@ -274,6 +279,82 @@ namespace Scene
         return 0;
     }
 
+    void Entity::SerializeToBinary(kNet::DataSerializer &dst) const
+    {
+        dst.Add<u32>(GetId());
+        const Scene::Entity::ComponentVector &components = GetComponentVector();
+        uint num_serializable = 0;
+        for(uint i = 0; i < components.size(); ++i)
+            if (components[i]->IsSerializable())
+                num_serializable++;
+        dst.Add<u32>(num_serializable);
+        for(uint i = 0; i < components.size(); ++i)
+        {
+            if (components[i]->IsSerializable())
+            {
+                dst.Add<u32>(components[i]->TypeNameHash());
+                dst.AddString(components[i]->Name().toStdString());
+                dst.Add<u8>(components[i]->GetNetworkSyncEnabled() ? 1 : 0);
+                
+                // Write each component to a separate buffer, then write out its size first, so we can skip unknown components
+                QByteArray comp_bytes;
+                // Assume 64KB max per component for now
+                comp_bytes.resize(64 * 1024);
+                kNet::DataSerializer comp_dest(comp_bytes.data(), comp_bytes.size());
+                components[i]->SerializeToBinary(comp_dest);
+                comp_bytes.resize(comp_dest.BytesFilled());
+                
+                dst.Add<u32>(comp_bytes.size());
+                dst.AddArray<u8>((const u8*)comp_bytes.data(), comp_bytes.size());
+            }
+        }
+    }
+/* Disabled for now, since have to decide how entityID conflicts are handled.
+    void Entity::DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change)
+    {
+    }
+*/
+    void Entity::SerializeToXML(QDomDocument &doc, QDomElement &base_element) const
+    {
+        QDomElement entity_elem = doc.createElement("entity");
+        
+        QString id_str;
+        id_str.setNum((int)GetId());
+        entity_elem.setAttribute("id", id_str);
+
+        const Scene::Entity::ComponentVector &components = GetComponentVector();
+        for(uint i = 0; i < components.size(); ++i)
+            if (components[i]->IsSerializable())
+                components[i]->SerializeTo(doc, entity_elem);
+
+        base_element.appendChild(entity_elem);
+    }
+/* Disabled for now, since have to decide how entityID conflicts are handled.
+    void Entity::DeserializeFromXML(QDomElement& element, AttributeChange::Type change)
+    {
+    }
+*/
+    QString Entity::SerializeToXMLString() const
+    {
+        QDomDocument scene_doc("Scene");
+        QDomElement scene_elem = scene_doc.createElement("scene");
+
+        SerializeToXML(scene_doc, scene_elem);
+        return scene_doc.toString();
+    }
+/* Disabled for now, since have to decide how entityID conflicts are handled.
+    bool Entity::DeserializeFromXMLString(const QString &src, AttributeChange::Type change)
+    {
+        QDomDocument entityDocument("Entity");
+        if (!entityDocument.setContent(src))
+        {
+            LogError("Parsing entity XML from text failed.");
+            return false;
+        }
+
+        return CreateContentFromXml(entityDocument, replaceOnConflict, change);
+    }
+*/
     AttributeVector Entity::GetAttributes(const std::string &name) const
     {
         std::vector<IAttribute *> ret;

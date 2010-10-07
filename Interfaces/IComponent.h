@@ -35,7 +35,7 @@ class QDomElement;
     Every Component has a state variable 'UpdateMode' that specifies a default setting for managing which objects
     get notified whenever an Attribute change event occurs. This is used to create "Local Only"-objects as well
     as when doing batch updates of Attributes (for performance or correctness). */
-class IComponent: public QObject
+class IComponent : public QObject
 {
     friend class ::IAttribute;
 
