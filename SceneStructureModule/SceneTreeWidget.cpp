@@ -62,6 +62,9 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
         "}");
 */
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
+
+    QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
+    connect(deleteShortcut, SIGNAL(activated()), this, SLOT(Delete()));
 }
 
 SceneTreeWidget::~SceneTreeWidget()
