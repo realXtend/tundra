@@ -93,7 +93,6 @@ namespace ECEditor
     }
 
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
-        QWidget(),
         framework_(framework),
         toggle_entities_button_(0),
         entity_list_(0),
@@ -110,10 +109,8 @@ namespace ECEditor
     {
         if (entity_list_)
         {
-            QString entity_id_str;
-            entity_id_str.setNum((int)entity_id);
             entity_list_->clearSelection();
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, QString::number((int)entity_id)));
         }
     }
 
@@ -123,13 +120,30 @@ namespace ECEditor
             return;
 
         for(int i = 0; i < entity_list_->count(); ++i)
-        {
             if (entity_list_->item(i)->text() == QString::number(entity_id))
             {
                 QListWidgetItem* item = entity_list_->takeItem(i);
                 SAFE_DELETE(item);
             }
-        }
+    }
+
+    void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> ids)
+    {
+        if (!entity_list_)
+            return;
+
+        foreach(entity_id_t id, ids)
+            for (uint i = 0; i < entity_list_->count(); ++i)
+            {
+                QListWidgetItem *item = entity_list_->item(i);
+                if (id == (entity_id_t)item->text().toInt())
+                {
+                    item->setSelected(true);
+                    break;
+                }
+            }
+
+        RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::ClearEntities()
@@ -142,16 +156,12 @@ namespace ECEditor
     void ECEditorWindow::DeleteEntitiesFromList()
     {
         if ((entity_list_) && (entity_list_->hasFocus()))
-        {
-            for (int i = entity_list_->count() - 1; i >= 0; --i)
-            {
+            for(int i = entity_list_->count() - 1; i >= 0; --i)
                 if (entity_list_->item(i)->isSelected())
                 {
                     QListWidgetItem* item = entity_list_->takeItem(i);
                     delete item;
                 }
-            }
-        }
     }
 
     void ECEditorWindow::DeleteComponent(const QString &componentType, const QString &name)
