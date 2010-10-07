@@ -118,14 +118,14 @@ class TestCreateDestroy(TestRunner):
         # this often cleans up >1 test objects (in case any
         # are left over from failed tests)
 
-        ent_id = ent.Id
-        ent = naali.getEntity(ent.Id)
         try:
-            netp = ent.netpos.Position
+            ec_netp = ent.network
         except AttributeError:
-            if 0: print "skip unplaceable entity"
+            if 0: print "skip entity without EC_NetworkPosition", dir(ent)
         else:
+            netp = ec_netp.Position
             # for some reason z coord ends up as 22.25
+            r.logInfo("found entity with netpos %s %s %s" % (netp.x(), netp.y(), netp.z()))
             if netp.x() == 42.0 and netp.y() == 42.0 and int(netp.z()) == 22:
                 r.logInfo("found created test prim - naming, moving and deleting (finished=%s)" % self.finished)
                 ent.prim.Name = "Seppo"
@@ -136,7 +136,7 @@ class TestCreateDestroy(TestRunner):
                 r.logInfo("Moving to move to pos: %s" % pos)
                 
                 r.getServerConnection().SendObjectDeRezPacket(
-                    ent_id, r.getTrashFolderId())
+                    ent.Id, r.getTrashFolderId())
                 self.finished = True
 
 class TestDynamicProperties(TestRunner):
@@ -172,16 +172,24 @@ class TestDynamicProperties(TestRunner):
         if not ent:
             yield "failure, avatar didn't appear"
             return
-        print 'dynamic propety stuff:'
+
+        print 'dynamic property stuff:'
         ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent
-        d.CreateAttribute("real", 42.0)
+        val = 42.0
+        d.CreateAttribute("real", val)
+        # Todo: OnChanged() is deprecated
         d.OnChanged()
-        d.SetAttribute("real", 8.5)
+        assert val == d.GetAttribute("real")
+
+        val = 8.5
+        d.SetAttribute("real", val)
         d.OnChanged()
+        assert val == d.GetAttribute("real")
         d.RemoveAttribute("real")
         d.OnChanged()
+
         yield "created, changed and removed attribute"
         r.exit()
         yield "success"
