@@ -293,30 +293,58 @@ void EC_Ruler::SetupRotationRuler()
     rulerObject->end();
 }
 
+static void getp(float in, float *out, float *pivot)
+{
+	float c = ceil(in);
+	float f = floor(in);
+	float cd = c - in;
+	float fd = in - f;
+	float i;
+	if(cd < fd) {
+		i = (float)((int)c);
+		*pivot = c;
+	}
+	else {
+		i = (float)((int)f);
+		*pivot = f;
+	}
+	
+	
+	if(in > 0)
+		*out = in - i;
+	else
+		*out = i + in;
+		
+	//std::cout << in << " ... " << i << " .. " << *out << std::endl;
+	
+}
+
 void EC_Ruler::SetupTranslateRuler() {
     if(!rulerObject)
         return;
 
     float size = radiusAttr_.Get();
-    float x, y, z, p, delta;
+    float x, y, z, pivot, p, delta;
     
-    x = y = z = p = 0;
+    x = y = z = p = pivot = 0;
     
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
             x = size;
-            p = fmodf(abs(pos_.x()), 1.0f);
+            getp(pos_.x(), &p, &pivot);// p = fmodf(abs(pos_.x()), 1.0f);
             delta = pos_.x()-newpos_.x();
             break;
         case EC_Ruler::Y:
-            p = fmodf(abs(pos_.y()), 1.0f);
-            delta = pos_.y()-newpos_.y();
             y = size;
+            //p = fmodf(abs(pos_.y()), 1.0f);
+            getp(pos_.y(), &p, &pivot);
+            delta = pos_.y()-newpos_.y();
             break;
         case EC_Ruler::Z:
-            p = fmodf(abs(pos_.z()), 1.0f);
-            delta = pos_.z()-newpos_.z();
             z = size;
+            //p = fmodf(abs(pos_.z()), 1.0f);
+            getp(pos_.z(), &p, &pivot);
+            delta = pos_.z()-newpos_.z();
             break;
         default:
             x = size;
@@ -333,7 +361,7 @@ void EC_Ruler::SetupTranslateRuler() {
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     float crossp;
     for(int step=-5; step <= 5; step += 1) {
-        crossp = (float)step + p + delta;
+        crossp = (float)step + pivot; ////p + delta;
         switch(axisAttr_.Get()) {
             case EC_Ruler::X:
                 // side one
