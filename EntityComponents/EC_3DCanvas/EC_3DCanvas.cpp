@@ -191,8 +191,8 @@ void EC_3DCanvas::UpdateSubmeshes()
 
     int draw_type = -1;
     uint submesh_count = 0;
-    OgreRenderer::EC_Mesh* ec_mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
-    OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+    EC_Mesh* ec_mesh = entity->GetComponent<EC_Mesh>().get();
+    EC_OgreCustomObject* ec_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
 
     if (ec_mesh)
     {

@@ -23,10 +23,7 @@ namespace ProtocolUtilities
     class NetworkEventInboundData;
 }
 
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
+class EC_Placeable;
 
 namespace Avatar
 {
@@ -141,12 +138,12 @@ namespace Avatar
 
         // /\todo Deprecated. use ShowAvatarNameOverlay. Remove completely when sure that this is not needed anymore.
         //! Creates the name overlay above the avatar.
-        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param placeable EC_Placeable entity component.
         //! @param entity_id Entity id of the avatar.
 //        void CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id);
 
         //! Creates an info icon to avatar
-        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param placeable EC_Placeable entity component.
         //! @param entity_id Entity id of the avatar.
         void CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id);
         

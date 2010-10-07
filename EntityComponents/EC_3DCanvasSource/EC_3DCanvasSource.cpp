@@ -215,8 +215,8 @@ void EC_3DCanvasSource::UpdateCanvas()
     }
     
     // If entity has no valid mesh or prim yet, start a retry timer and try to set the canvas later
-    if ((!entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic())) && 
-        (!entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic())))
+    if ((!entity->GetComponent(EC_Mesh::TypeNameStatic())) && 
+        (!entity->GetComponent(EC_OgreCustomObject::TypeNameStatic())))
     {
         //LogInfo("Mesh or prim did not exist yet, retrying");
         QTimer::singleShot(1000, this, SLOT(UpdateCanvas()));

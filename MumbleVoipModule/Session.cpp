@@ -7,7 +7,7 @@
 #include "ServerInfo.h"
 #include "PCMAudioFrame.h"
 #include "Vector3D.h"
-#include "EC_OgrePlaceable.h" // for avatar position
+#include "EC_Placeable.h" // for avatar position
 #include "EC_OpenSimPresence.h" // for avatar position
 #include "ModuleManager.h"    // for avatar info
 #include "WorldLogicInterface.h" // for avatar position
@@ -379,7 +379,7 @@ namespace MumbleVoip
         if (!user_avatar)
             return false;
 
-        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = user_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> ogre_placeable = user_avatar->GetComponent<EC_Placeable>();
         if (!ogre_placeable)
             return false;
 

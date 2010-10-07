@@ -21,7 +21,7 @@ namespace RexLogic
 Component which holds references to attached spatial sounds.
 Their positions will be updated automatically to match the position of the entity
 To use, first setup the sound usually using the sound service, then use AddSound()
-To be useful, the entity also needs the EC_OgrePlaceable component.
+To be useful, the entity also needs the EC_Placeable component.
 
 Registered by RexLogic::RexLogicModule.
 

@@ -20,7 +20,7 @@ namespace Avatar
 <tr>
 <td>
 <h2>Avatar</h2>
-This component generates the required Mesh, OgrePlaceable, OgreAnimationController and AvatarAppearance
+This component generates the required Mesh, Placeable, AnimationController and AvatarAppearance
 components to an entity to display an avatar. Not to be used in OpenSim worlds, where avatar generation
 is handled in a hardcoded manner instead.
 
@@ -42,7 +42,7 @@ Registered by Avatar::AvatarModule.
 
 Does not emit any actions.
 
-<b>Depends on the components Mesh, OgrePlaceable, OgreAnimationController and AvatarAppearance</b>.
+<b>Depends on the components Mesh, Placeable, AnimationController and AvatarAppearance</b>.
 </table>
 */
 class AV_MODULE_API EC_Avatar : public IComponent

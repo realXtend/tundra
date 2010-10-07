@@ -8,9 +8,6 @@
 #include "OgreModuleFwd.h"
 #include "Declare_EC.h"
 
-namespace OgreRenderer
-{
-
 /// Ogre camera entity component
 /**
 <table class="header">
@@ -54,85 +51,84 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 */
-    class OGRE_MODULE_API EC_OgreCamera : public IComponent
-    {
-        Q_OBJECT
-        
-        DECLARE_EC(EC_OgreCamera);
-    public:
-        virtual ~EC_OgreCamera();
-        
-        //! sets placeable component
-        /*! set a null placeable to detach the camera, otherwise will attach
-            \param placeable placeable component
-         */
-        void SetPlaceable(ComponentPtr placeable);
-    public slots:
- 
-        //! sets as active camera in the viewport
-        void SetActive();
-        
-        //! sets near clip distance
-        /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-            \param nearclip new near clip distance
-         */ 
-        void SetNearClip(float nearclip);
-        
-        //! sets far clip distance
-        /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
-            \param farclip new far clip distance
-         */         
-        void SetFarClip(float farclip);
-        
-        //! sets vertical fov 
-        /*! \param fov new vertical fov in radians 
-         */
-        void SetVerticalFov(float fov);
-        
-        //! returns near clip distance
-        float GetNearClip() const;
-        
-        //! returns far clip distance
-        float GetFarClip() const;
-        
-        //! returns vertical fov as radians
-        float GetVerticalFov() const;
-        
-        //! returns whether camera is active in the viewport
-        bool IsActive() const;
-        
-        //! returns the actual Ogre camera.
-        /*! use with caution. never set the position of the camera directly, use the placeable component for that.
-         */
-        Ogre::Camera* GetCamera() { return camera_; }
-                
-    private:
-        //! constructor
-        /*! \param module renderer module
-         */
-        explicit EC_OgreCamera(IModule* module);
-        
-        //! attaches camera to placeable
-        void AttachCamera();
-        
-        //! detaches camera from placeable
-        void DetachCamera();
-        
-        //! placeable component 
-        ComponentPtr placeable_;
- 
-        //! attached to placeable -flag
-        bool attached_;
-        
-        //! renderer ptr
-        RendererWeakPtr renderer_;
-        
-        //! Ogre camera
-        Ogre::Camera* camera_;
-    };
-}
+class OGRE_MODULE_API EC_OgreCamera : public IComponent
+{
+    Q_OBJECT
+    
+    DECLARE_EC(EC_OgreCamera);
+public:
+    virtual ~EC_OgreCamera();
+    
+    //! sets placeable component
+    /*! set a null placeable to detach the camera, otherwise will attach
+        \param placeable placeable component
+     */
+    void SetPlaceable(ComponentPtr placeable);
+public slots:
+
+    //! sets as active camera in the viewport
+    void SetActive();
+    
+    //! sets near clip distance
+    /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        \param nearclip new near clip distance
+     */ 
+    void SetNearClip(float nearclip);
+    
+    //! sets far clip distance
+    /*! note that EC_OgreEnviroment will override what you set here, based on whether camera is under/over water!
+        \param farclip new far clip distance
+     */         
+    void SetFarClip(float farclip);
+    
+    //! sets vertical fov 
+    /*! \param fov new vertical fov in radians 
+     */
+    void SetVerticalFov(float fov);
+    
+    //! returns near clip distance
+    float GetNearClip() const;
+    
+    //! returns far clip distance
+    float GetFarClip() const;
+    
+    //! returns vertical fov as radians
+    float GetVerticalFov() const;
+    
+    //! returns whether camera is active in the viewport
+    bool IsActive() const;
+    
+    //! returns the actual Ogre camera.
+    /*! use with caution. never set the position of the camera directly, use the placeable component for that.
+     */
+    Ogre::Camera* GetCamera() { return camera_; }
+            
+private:
+    //! constructor
+    /*! \param module renderer module
+     */
+    explicit EC_OgreCamera(IModule* module);
+    
+    //! attaches camera to placeable
+    void AttachCamera();
+    
+    //! detaches camera from placeable
+    void DetachCamera();
+    
+    //! placeable component 
+    ComponentPtr placeable_;
+
+    //! attached to placeable -flag
+    bool attached_;
+    
+    //! renderer ptr
+    OgreRenderer::RendererWeakPtr renderer_;
+    
+    //! Ogre camera
+    Ogre::Camera* camera_;
+};
 
 #endif

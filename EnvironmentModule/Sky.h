@@ -48,7 +48,7 @@ namespace Environment
          * @param curvature If sky type is dome, curvature of the dome.
          * @param tiling If sky type is dome, tiling of the dome.
          */
-        void UpdateSky(const OgreRenderer::SkyType &type, std::vector<std::string> images,
+        void UpdateSky(const SkyType &type, std::vector<std::string> images,
             const float &curvature, const float &tiling);
 
         /// Creates the default sky.
@@ -78,7 +78,7 @@ namespace Environment
         Scene::EntityWeakPtr GetSkyEntity();
 
         /// @return The sky type that is in use.
-        OgreRenderer::SkyType GetSkyType() const;
+        SkyType GetSkyType() const;
 
         /// Disable currently active sky.
         void DisableSky();
@@ -90,36 +90,36 @@ namespace Environment
         void EnableSky(bool enabled);
 
         /// Request sky type chaged. If requested sky type is same as currently used sky do nothing.
-        void ChangeSkyType(OgreRenderer::SkyType type, bool update_sky = true);
+        void ChangeSkyType(SkyType type, bool update_sky = true);
 
         /// GetSkyTexture asset id.
         /// @param What sky type we are requesting texture from.
         /// @param Used only when sky type is set to SKYBOX. Index should be between 0 - 5.
-        RexTypes::RexAssetID GetSkyTextureID(OgreRenderer::SkyType sky_type, int index = 0) const;
+        RexTypes::RexAssetID GetSkyTextureID(SkyType sky_type, int index = 0) const;
 
         /// Return all sky dome parameters from EC_Ogresky entity.
-        OgreRenderer::SkyDomeParameters GetSkyDomeParameters();
+        SkyDomeParameters GetSkyDomeParameters();
 
         /// Return all sky plane parameters from EC_Ogresky entity.
-        OgreRenderer::SkyPlaneParameters GetSkyPlaneParameters();
+        SkyPlaneParameters GetSkyPlaneParameters();
 
         /// Return all generic sky parameters from EC_Ogresky entity.
-        OgreRenderer::SkyBoxParameters GetSkyBoxParameters();
+        SkyBoxParameters GetSkyBoxParameters();
 
         /// Update sky dome parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyDomeParameters(const OgreRenderer::SkyDomeParameters &params, bool update_sky = true);
+        void SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky = true);
 
         /// Update sky plane parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyPlaneParameters(const OgreRenderer::SkyPlaneParameters &params, bool update_sky = true);
+        void SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky = true);
 
         /// Update sky box parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyBoxParameters(const OgreRenderer::SkyBoxParameters &params, bool update_sky = true);
+        void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
 
     signals:
         /// Signal is emited when sky is enabled/disabled.
@@ -136,7 +136,7 @@ namespace Environment
         EnvironmentModule *owner_;
 
         /// The type of the sky (none, box, dome or plane).
-        OgreRenderer::SkyType type_;
+        SkyType type_;
 
         /// Whether sky is enabled by this component.
         bool skyEnabled_;

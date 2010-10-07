@@ -225,11 +225,11 @@ namespace RexLogic
         Q_DISABLE_COPY(RexLogicModule);
 
         //! Handle real-time update of scene objects
-        /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
-            component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
+        /*! Performs dead-reckoning and damped motion for all scene entities which have an Placeable and a NetworkPosition
+            component. If the Placeable position/rotation is set anywhere else, it will be overridden by the next
             call to this, so it should be avoided.
 
-            Performs animation update to all objects that have an OgreAnimationController component.
+            Performs animation update to all objects that have an AnimationController component.
          */
         void UpdateObjects(f64 frametime);
 

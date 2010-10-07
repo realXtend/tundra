@@ -1769,8 +1769,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         entities++;
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
-        OgreRenderer::EC_Mesh* mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
-        OgreRenderer::EC_OgreCustomObject* custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        EC_Mesh* mesh = entity.GetComponent<EC_Mesh>().get();
+        EC_OgreCustomObject* custom = entity.GetComponent<EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;
         
         // Get Ogre mesh from mesh EC
@@ -1848,7 +1848,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
             if (ogre_entity)
                 meshentities++;
         }
-        if (entity.GetComponent("EC_OgreAnimationController").get())
+        if (entity.GetComponent("EC_AnimationController").get())
             animated++;
     }
     

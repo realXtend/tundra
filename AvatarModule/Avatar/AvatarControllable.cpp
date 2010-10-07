@@ -10,7 +10,7 @@
 #include "SceneEvents.h"
 #include "Entity.h"
 #include "SceneManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "InputServiceInterface.h"
 #include "EventManager.h"
 #include "ConfigurationManager.h"

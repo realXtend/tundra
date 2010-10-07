@@ -22,10 +22,7 @@ namespace ProtocolUtilities
     class NetworkEventInboundData;
 }
 
-namespace OgreRenderer
-{
-    class EC_OgreEnvironment;
-}
+class EC_OgreEnvironment;
 
 namespace Environment
 {
@@ -54,7 +51,7 @@ namespace Environment
         /**
          * @return Enviroment entity component, or 0 if does not exist
          **/
-        OgreRenderer::EC_OgreEnvironment* GetEnvironmentComponent();
+        EC_OgreEnvironment* GetEnvironmentComponent();
 
         /**
          * Creates the environment EC to current active scene and adjust it using default parameters.
