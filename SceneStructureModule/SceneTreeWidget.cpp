@@ -13,11 +13,6 @@
 #include "UiServiceInterface.h"
 #include "SceneManager.h"
 
-//#include <QWidget>
-//#include <QDragEnterEvent>
-//#include <QUrl>
-//#include <QMenu>
-
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -68,8 +63,8 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
 
     // Create keyboard shortcuts.
     QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
-    QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), this);
-    QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), this);
+    QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
+    QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
     connect(deleteShortcut, SIGNAL(activated()), this, SLOT(Delete()));
     connect(copyShortcut, SIGNAL(activated()), this, SLOT(Copy()));
@@ -462,11 +457,11 @@ void SceneTreeWidget::Paste()
     assert(scene.get());
     if (!scene)
         return;
-
+/*
     QModelIndex index = selectionModel()->currentIndex();
     if (!index.isValid())
         return;
-
+*/
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(QApplication::clipboard()->text()))
     {
