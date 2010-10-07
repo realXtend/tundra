@@ -63,10 +63,7 @@ void SceneStructureWindow::Populate()
     SceneManager::iterator it = s->begin();
     while(it != s->end())
     {
-        const EntityPtr &e = *it;
-        SceneTreeWidgetItem *item = new SceneTreeWidgetItem(e->GetId());
-        item->setText(0, QString("%1 %2").arg(e->GetId()).arg(e->GetName()));
-        treeWidget->addTopLevelItem(item);
+        AddEntity((*it).get());
         ++it;
     }
 }
@@ -84,6 +81,9 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
     SceneTreeWidgetItem *item = new SceneTreeWidgetItem(entity->GetId());
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+    // Set local entity's font color blue
+    if (entity->GetId() & Scene::LocalEntity)
+        item->setTextColor(0, QColor(Qt::blue));
     treeWidget->addTopLevelItem(item);
 }
 
