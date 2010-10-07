@@ -12,12 +12,16 @@
 #include "IComponent.h"
 #include "ForwardDefines.h"
 #include "EC_Name.h"
+#include "LoggingFunctions.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("SceneManager")
 
 #include <QString>
 #include <QDomDocument>
 #include <QFile>
 
-#include "kNet.h"
+#include <kNet/DataDeserializer.h>
+#include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -55,7 +59,7 @@ namespace Scene
         {
             if(entities_.find(id) != entities_.end())
             {
-                Foundation::RootLogError("Can't create entity with given id because it's already used: " + ToString(id));
+                LogError("Can't create entity with given id because it's already used: " + ToString(id));
                 return Scene::EntityPtr();
             }
             else
@@ -156,7 +160,7 @@ namespace Scene
         
         if (GetEntity(new_id))
         {
-            Foundation::RootLogWarning("Warning: purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request");
+            LogWarning("Warning: purged entity " + ToString(new_id) + " to make room for a ChangeEntityId request");
             RemoveEntity(new_id, AttributeChange::LocalOnly);
         }
         
@@ -301,71 +305,38 @@ namespace Scene
 
         return ret;
     }
-    
-    bool SceneManager::LoadSceneXML(const std::string& filename, AttributeChange::Type change)
+
+    bool SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change)
     {
         QDomDocument scene_doc("Scene");
         
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename + "when loading scene xml.");
             return false;
-        
+        }
+
         if (!scene_doc.setContent(&file))
         {
+            LogError("Parsing scene XML from "+ filename + "failed when loading scene xml.");
             file.close();
             return false;
         }
-        
-        // Check for existence of the scene element before we begin
-        QDomElement scene_elem = scene_doc.firstChildElement("scene");
-        if (scene_elem.isNull())
-            return false;
-        
+
         // Purge all old entities. Send events for the removal
-        RemoveAllEntities(true, change);
-        
-        QDomElement ent_elem = scene_elem.firstChildElement("entity");
-        while (!ent_elem.isNull())
-        {
-            QString id_str = ent_elem.attribute("id");
-            if (!id_str.isEmpty())
-            {
-                entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
-                EntityPtr entity = CreateEntity(id);
-                if (entity)
-                {
-                    QDomElement comp_elem = ent_elem.firstChildElement("component");
-                    while (!comp_elem.isNull())
-                    {
-                        QString type_name = comp_elem.attribute("type");
-                        QString name = comp_elem.attribute("name");
-                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
-                        if (new_comp)
-                            // Trigger no signal yet when entity is in incoherent state
-                            new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+        if (clearScene)
+            RemoveAllEntities(true, change);
 
-                        comp_elem = comp_elem.nextSiblingElement("component");
-                    }
-                    EmitEntityCreated(entity, change);
-
-                    // All components have been loaded. Trigger change for them now.
-                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                    for(uint i = 0; i < components.size(); ++i)
-                        components[i]->ComponentChanged(change);
-                }
-            }
-            ent_elem = ent_elem.nextSiblingElement("entity");
-        }
-        
-        return true;
+        return CreateContentFromXml(scene_doc, true, change);
     }
     
     bool SceneManager::SaveSceneXML(const std::string& filename)
     {
         QDomDocument scene_doc("Scene");
         QDomElement scene_elem = scene_doc.createElement("scene");
+
         EntityMap::iterator it = entities_.begin();
-        
         while(it != entities_.end())
         {
             Scene::Entity *entity = it->second.get();
@@ -397,7 +368,11 @@ namespace Scene
             scenefile.close();
             return true;
         }
-        else return false;
+        else
+        {
+            LogError("Failed to open file " + filename + "for writing when saving scene xml.");
+            return false;
+        }
     }
     
     bool SceneManager::LoadSceneBinary(const std::string& filename, AttributeChange::Type change)
@@ -406,14 +381,20 @@ namespace Scene
         
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename + "when loading scene binary.");
             return false;
-        
+        }
+
         QByteArray bytes = file.readAll();
         file.close();
         
         if (!bytes.size())
+        {
+            LogError("File " + filename + "contained 0 bytes when loading scene binary.");
             return false;
-        
+        }
+
         try
         {
             // Purge all old entities. Send events for the removal
@@ -459,11 +440,11 @@ namespace Scene
                             }
                         }
                         else
-                            std::cout << "Failed to load component " << framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString() << std::endl;
+                            LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                     }
                     catch (...)
                     {
-                        std::cout << "Failed to load component " << framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString() << std::endl;
+                        LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
                     }
                 }
                 EmitEntityCreated(entity, change);
@@ -536,8 +517,77 @@ namespace Scene
             scenefile.close();
             return true;
         }
-        else return false;
+        else
+        {
+            LogError("Could not open file " + filename + " for writing when saving scene binary");
+            return false;
+        }
     }
-    
+
+    bool SceneManager::CreateContentFromXml(const QString &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    {
+        QDomDocument scene_doc("Scene");
+        if (!scene_doc.setContent(xml))
+        {
+            LogError("Parsing scene XML from text failed.");
+            return false;
+        }
+
+        return CreateContentFromXml(scene_doc, replaceOnConflict, change);
+    }
+
+    bool SceneManager::CreateContentFromXml(const QDomDocument &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    {
+        // Check for existence of the scene element before we begin
+        QDomElement scene_elem = xml.firstChildElement("scene");
+        if (scene_elem.isNull())
+            return false;
+
+        QDomElement ent_elem = scene_elem.firstChildElement("entity");
+        while (!ent_elem.isNull())
+        {
+            QString id_str = ent_elem.attribute("id");
+            if (!id_str.isEmpty())
+            {
+                entity_id_t id = ParseString<entity_id_t>(id_str.toStdString());
+                if (HasEntity(id))
+                {
+                    if (replaceOnConflict)
+                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+
+                    if ((LocalEntity & id) != 0) // Check if the ID is local
+                        id = GetNextFreeIdLocal();
+                    else
+                        id = GetNextFreeId();
+                }
+
+                EntityPtr entity = CreateEntity(id);
+                if (entity)
+                {
+                    QDomElement comp_elem = ent_elem.firstChildElement("component");
+                    while (!comp_elem.isNull())
+                    {
+                        QString type_name = comp_elem.attribute("type");
+                        QString name = comp_elem.attribute("name");
+                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
+                        if (new_comp)
+                            // Trigger no signal yet when entity is in incoherent state
+                            new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+
+                        comp_elem = comp_elem.nextSiblingElement("component");
+                    }
+                    EmitEntityCreated(entity, change);
+
+                    // All components have been loaded. Trigger change for them now.
+                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+                    for(uint i = 0; i < components.size(); ++i)
+                        components[i]->ComponentChanged(change);
+                }
+            }
+            ent_elem = ent_elem.nextSiblingElement("entity");
+        }
+
+        return true;
+    }
 }
 
