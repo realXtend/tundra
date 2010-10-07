@@ -975,8 +975,6 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                     continue;
                 if (!custom_object_ptr->GetEntity())
                     continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1086,8 +1084,6 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
                     continue;
                 if (!custom_object_ptr->GetEntity())
                     continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1283,8 +1279,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
                 Py_RETURN_NONE;
             if (!custom_object_ptr->GetEntity())
                 Py_RETURN_NONE;
-            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-            custom_object_ptr->CommitChanges(manual);
         }
         else
             Py_RETURN_NONE;
@@ -1306,6 +1300,11 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         // Iterate custom object texture map
         else if (custom_object_ptr)
         {
+            //! todo: fix this shit, find a smarter way than regenerating the prims multiple times without optimisation
+            //! so that we get the correct submesh indexes from it.
+            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+            custom_object_ptr->CommitChanges(manual);
+
             TextureMap texture_map = prim.PrimTextures;
             TextureMap::const_iterator i = texture_map.begin();
             if (i == texture_map.end())
