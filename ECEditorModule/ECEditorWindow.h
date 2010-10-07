@@ -42,28 +42,38 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class ECBrowser;
-    
-    //! ECEditorWindow
-    /*! /todo add description.
-     *  \ingroup ECEditorModuleClient.
-     */
+
+    /// Entity-component editor window.
+    /** @todo add description.
+        \ingroup ECEditorModuleClient.
+    */
     class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
     {
         Q_OBJECT
 
     public:
         /// Constructor
-        /// @param framework Framework.
+        /** @param framework Framework.
+        */
         explicit ECEditorWindow(Foundation::Framework* framework);
 
         /// Destructor.
         ~ECEditorWindow();
 
         /// Adds new entity to the entity list.
-        void AddEntity(entity_id_t entity_id);
+        /** @param id Entity ID.
+        */
+        void AddEntity(entity_id_t id);
 
         /// Removes entity from the entity list.
-        void RemoveEntity(entity_id_t entity_id);
+        /** @param id Entity ID.
+        */
+        void RemoveEntity(entity_id_t id);
+
+        /// Sets which entities are selected in the editor window.
+        /** @param ids List of entity ID's.
+        */
+        void SetSelectedEntities(const QList<entity_id_t> ids);
 
         /// Clears entity list.
         void ClearEntities();

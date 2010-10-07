@@ -223,20 +223,32 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 
 void SceneTreeWidget::Edit()
 {
-    QModelIndex index = selectionModel()->currentIndex();
-    if (!index.isValid())
+    const QItemSelection &selection = selectionModel()->selection();
+    if (selection.isEmpty())
+        return;
+
+    QList<entity_id_t> ids;
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (!index.isValid())
+            continue;
+        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
+    }
+
+    if (ids.size() == 0)
         return;
 
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
-    SceneTreeWidgetItem *item = static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()));
-
     // If we have existing editor instance, use it.
     if (ecEditor)
     {
-        ecEditor->AddEntity(item->id);
-        ecEditor->RefreshPropertyBrowser();
+        foreach(entity_id_t id, ids)
+            ecEditor->AddEntity(id);
+        ecEditor->SetSelectedEntities(ids);
         ui->BringWidgetToFront(ecEditor);
         return;
     }
@@ -244,10 +256,11 @@ void SceneTreeWidget::Edit()
     // Create new instance
     ecEditor = new ECEditor::ECEditorWindow(framework);
     ecEditor->setAttribute(Qt::WA_DeleteOnClose);
-    ecEditor->move(this->pos().x() + 100, this->pos().y() + 100);
+    ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
     ecEditor->hide();
-    ecEditor->AddEntity(item->id);
-    ecEditor->RefreshPropertyBrowser();
+    foreach(entity_id_t id, ids)
+        ecEditor->AddEntity(id);
+    ecEditor->SetSelectedEntities(ids);
 
     ui->AddWidgetToScene(ecEditor);
     ui->ShowWidget(ecEditor);
@@ -256,22 +269,34 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    QModelIndex index = selectionModel()->currentIndex();
-    if (!index.isValid())
+    const QItemSelection &selection = selectionModel()->selection();
+    if (selection.isEmpty())
+        return;
+
+    QList<entity_id_t> ids;
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (!index.isValid())
+            continue;
+        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
+    }
+
+    if (ids.size() == 0)
         return;
 
     // Create new instance every time.
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
-    SceneTreeWidgetItem *item = static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()));
-
     ECEditor::ECEditorWindow *editor = new ECEditor::ECEditorWindow(framework);
     editor->setAttribute(Qt::WA_DeleteOnClose);
-    editor->move(this->pos().x() + 100, this->pos().y() + 100);
+    editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
-    editor->AddEntity(item->id);
-    editor->RefreshPropertyBrowser();
+    foreach(entity_id_t id, ids)
+        editor->AddEntity(id);
+    editor->SetSelectedEntities(ids);
 
     ui->AddWidgetToScene(editor);
     ui->ShowWidget(editor);
