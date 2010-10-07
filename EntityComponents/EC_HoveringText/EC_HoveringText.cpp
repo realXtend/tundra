@@ -42,14 +42,14 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     visibility_animation_timeline_(new QTimeLine(1000, this)),
     visibility_timer_(new QTimer(this)),
     usingGradAttr(this, "Use Gradiant", false),
-	textAttr(this, "Text"),
-	fontAttr(this, "Font", "Arial"),
-	fontColorAttr(this, "Font Color"),
-	fontSizeAttr(this, "Font Size", 100),	
-	backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
-	positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
-	gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
-	gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f))
+    textAttr(this, "Text"),
+    fontAttr(this, "Font", "Arial"),
+    fontColorAttr(this, "Font Color"),
+    fontSizeAttr(this, "Font Size", 100),	
+    backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
+    positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
+    gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
+    gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f))
 
 
 {
@@ -62,7 +62,7 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-	QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
