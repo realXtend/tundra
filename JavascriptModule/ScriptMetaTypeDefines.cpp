@@ -41,6 +41,7 @@ Q_DECLARE_METATYPE(Scene::Entity*);
 Q_DECLARE_METATYPE(EntityAction*);
 Q_DECLARE_METATYPE(AttributeChange*);
 Q_DECLARE_METATYPE(IComponent*);
+Q_DECLARE_METATYPE(AttributeChange::Type);
 
 //! Naali core API object defines.
 Q_DECLARE_METATYPE(Frame*);
@@ -70,7 +71,8 @@ void ExposeCoreApiMetaTypes(QScriptEngine *engine)
     qScriptRegisterQObjectMetaType<EntityAction*>(engine);
     qScriptRegisterQObjectMetaType<AttributeChange*>(engine);
     qScriptRegisterQObjectMetaType<IComponent*>(engine);
-    qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
+    //qRegisterMetaType<AttributeChange::Type>("AttributeChange::Type");
+    qScriptRegisterMetaType(engine, toScriptValueEnum<AttributeChange::Type>, fromScriptValueEnum<AttributeChange::Type>);
     qRegisterMetaType<EntityAction::ExecutionType>("EntityAction::ExecutionType");
 
     // Console metatypes.
