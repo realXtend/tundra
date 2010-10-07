@@ -9,9 +9,10 @@
 #include "Vector3D.h"
 #include "Quaternion.h"
 
+class EC_Placeable;
+
 namespace OgreRenderer
 {
-    class EC_OgrePlaceable;
     class Renderer;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 }
@@ -51,7 +52,7 @@ namespace ECEditor
         Vector3df location_;
         Quaternion orientation_;
         InputContextPtr input_;
-        OgreRenderer::EC_OgrePlaceable *placeable_;
+        EC_Placeable *placeable_;
         Foundation::Framework *framework_;
         
         Scene::EntityWeakPtr entity_;

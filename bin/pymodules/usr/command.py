@@ -749,7 +749,7 @@ if 0: #using entity directly to get components, without PyEntity
     if qent is not None:
         print qent.Id
         print dir(qent)
-        p = qent.GetComponentRaw("EC_OgrePlaceable")
+        p = qent.GetComponentRaw("EC_Placeable")
         print p, p.Position
         
         #ent = naali.Entity(qent)
@@ -1463,11 +1463,11 @@ if 0: #using Scene::Entity directly. does it crash when i keep a ref and it's re
         print "Deleted newent"
 
     print newent.Id
-    print newent.GetComponentRaw("EC_OgrePlaceable")
+    print newent.GetComponentRaw("EC_Placeable")
 
 if 0: #Scene::Entity CreateEntity with components .. to reimplement createMeshEntity
     #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
-    ent = naali.createEntity(["EC_OgrePlaceable", "EC_Mesh"])
+    ent = naali.createEntity(["EC_Placeable", "EC_Mesh"])
 
     ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     ent.mesh.SetMesh("axes.mesh")
@@ -1481,7 +1481,7 @@ if 0: #adding components as dynamic properties of Scene::Entity
         qent.setProperty("myplace", ent.placeable)
         print qent.myplace
 
-    #print dir(qent), type(qent.EC_OgrePlaceable), qent.EC_OgrePlaceable
+    #print dir(qent), type(qent.EC_Placeable), qent.EC_Placeable
     print dir(ent.placeable)
     print "Name:", ent.placeable.Name
     print "objectName:", ent.placeable.objectName
@@ -1497,7 +1497,7 @@ if 0: #using the dynamic property component getters implemented in core/componen
 
 if 0: #getting all entities with a certain component, now directly as the entity objects. works :)
     s = naali.getDefaultScene()
-    ents = s.GetEntitiesWithComponentRaw("EC_OgrePlaceable")
+    ents = s.GetEntitiesWithComponentRaw("EC_Placeable")
     for ent in ents:
         print ent.placeable.Position
         

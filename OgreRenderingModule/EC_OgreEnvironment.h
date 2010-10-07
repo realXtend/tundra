@@ -45,6 +45,7 @@ namespace Hydrax
 namespace OgreRenderer
 {
     class GaussianListener;
+}
 
 /// Ogre environment component.
 /**
@@ -72,187 +73,186 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 */
-    class OGRE_MODULE_API EC_OgreEnvironment : public IComponent
+class OGRE_MODULE_API EC_OgreEnvironment : public IComponent
+{
+    Q_OBJECT
+    
+    DECLARE_EC(EC_OgreEnvironment);
+public:
+    virtual ~EC_OgreEnvironment();
+
+    enum VisualEffectOverride
     {
-        Q_OBJECT
-        
-        DECLARE_EC(EC_OgreEnvironment);
-    public:
-        virtual ~EC_OgreEnvironment();
+        None = 1 << 1,
+        AmbientLight = 1 << 3,
+        SunColor = 1 << 4,
+        SunDirection = 1 << 5
+    };
 
-        enum VisualEffectOverride
-        {
-            None = 1 << 1,
-            AmbientLight = 1 << 3,
-            SunColor = 1 << 4,
-            SunDirection = 1 << 5
-        };
+    void SetOverride(VisualEffectOverride effect);
+    void DisableOverride(VisualEffectOverride effect);
 
-        void SetOverride(VisualEffectOverride effect);
-        void DisableOverride(VisualEffectOverride effect);
+    /// Sets the viewport's background color.
+    /// @param color Color.
+    void SetBackgoundColor(const Color &color);
 
-        /// Sets the viewport's background color.
-        /// @param color Color.
-        void SetBackgoundColor(const Color &color);
+    /// @return Color of the viewport's background.
+    Color GetBackgoundColor() const;
 
-        /// @return Color of the viewport's background.
-        Color GetBackgoundColor() const;
+    /// Set ambient light color.
+    /// @param color Color.
+    void SetAmbientLightColor(const Color &color);
 
-        /// Set ambient light color.
-        /// @param color Color.
-        void SetAmbientLightColor(const Color &color);
+    /// @return The ambient light color.
+    Color GetAmbientLightColor() const;
 
-        /// @return The ambient light color.
-        Color GetAmbientLightColor() const;
+    /// Sets the sun color.
+    /// @param color Color of the sun.
+    void SetSunColor(const Color &color);
 
-        /// Sets the sun color.
-        /// @param color Color of the sun.
-        void SetSunColor(const Color &color);
+    /// @return Color of the sun.
+    Color GetSunColor() const;
 
-        /// @return Color of the sun.
-        Color GetSunColor() const;
+    /// Sets the sun direction.
+    void SetSunDirection(const Vector3df &direction);
 
-        /// Sets the sun direction.
-        void SetSunDirection(const Vector3df &direction);
+    Vector3df GetSunDirection() const;
 
-        Vector3df GetSunDirection() const;
+    /// Whether the sunlight casts shadows or not.
+    /// @param enabled Whether the light casts shadows or not.
+    void SetSunCastShadows(const bool &enabled);
 
-        /// Whether the sunlight casts shadows or not.
-        /// @param enabled Whether the light casts shadows or not.
-        void SetSunCastShadows(const bool &enabled);
+    /// Set the time of day
+    /// @param time as float between 0-1 where 0.0 = midnight and 0.5 = midday
+    void SetTime(float time);
 
-        /// Set the time of day
-        /// @param time as float between 0-1 where 0.0 = midnight and 0.5 = midday
-        void SetTime(float time);
+    /// @return Ogre light pointer
+    Ogre::Light* GetSunlight() const { return sunlight_; }
 
-        /// @return Ogre light pointer
-        Ogre::Light* GetSunlight() const { return sunlight_; }
+    /// Updates the visual effects, e.g. the fog.
+    /// @param frametime Time since last frame.
+    void UpdateVisualEffects(f64 frametime);
 
-        /// Updates the visual effects, e.g. the fog.
-        /// @param frametime Time since last frame.
-        void UpdateVisualEffects(f64 frametime);
-
-        /// Disables the fog.
-        void DisableFog();
+    /// Disables the fog.
+    void DisableFog();
 #ifdef CAELUM
 
-        Caelum::CaelumSystem* GetCaelum();
+    Caelum::CaelumSystem* GetCaelum();
 
-        /// Speeds up the times
-        /// @param value 2 doubles etc.
-        void SetTimeScale(const float &value);
+    /// Speeds up the times
+    /// @param value 2 doubles etc.
+    void SetTimeScale(const float &value);
 #endif
-        /// @return Is the Caelum system used or not.
-        bool IsCaelumUsed() const { return useCaelum_; }
+    /// @return Is the Caelum system used or not.
+    bool IsCaelumUsed() const { return useCaelum_; }
 
-        /// @return Is the Hydrax system used or not.
-        bool IsHydraxUsed() const { return useHydrax_; }
+    /// @return Is the Hydrax system used or not.
+    bool IsHydraxUsed() const { return useHydrax_; }
 
-        void SetGroundFogStart(float fogStart) { fogStart_ = fogStart; }
-        float GetGroundFogStart() const { return fogStart_; }
+    void SetGroundFogStart(float fogStart) { fogStart_ = fogStart; }
+    float GetGroundFogStart() const { return fogStart_; }
 
-        void SetGroundFogEnd(float fogEnd) { fogEnd_ = fogEnd; }
-        float GetGroundFogEnd() const { return fogEnd_; }
+    void SetGroundFogEnd(float fogEnd) { fogEnd_ = fogEnd; }
+    float GetGroundFogEnd() const { return fogEnd_; }
 
-        void SetGroundFogColor(const Ogre::ColourValue& color) { fogColor_ = color; }
-        Ogre::ColourValue GetGroundFogColor() const { return fogColor_; }
+    void SetGroundFogColor(const Ogre::ColourValue& color) { fogColor_ = color; }
+    Ogre::ColourValue GetGroundFogColor() const { return fogColor_; }
 
-        void SetWaterFogStart(float fogStart) { waterFogStart_ = fogStart; }
-        float GetWaterFogStart() const { return waterFogStart_; }
-        
-        void SetWaterFogEnd(float fogEnd) { waterFogEnd_ = fogEnd; }
-        float GetWaterFogEnd() const { return waterFogEnd_; }
-        
-        void SetWaterFogColor(const Ogre::ColourValue& color) { waterFogColor_ = color; }
-        Ogre::ColourValue GetWaterFogColor() const { return waterFogColor_; }
+    void SetWaterFogStart(float fogStart) { waterFogStart_ = fogStart; }
+    float GetWaterFogStart() const { return waterFogStart_; }
+    
+    void SetWaterFogEnd(float fogEnd) { waterFogEnd_ = fogEnd; }
+    float GetWaterFogEnd() const { return waterFogEnd_; }
+    
+    void SetWaterFogColor(const Ogre::ColourValue& color) { waterFogColor_ = color; }
+    Ogre::ColourValue GetWaterFogColor() const { return waterFogColor_; }
 
-        void SetFogColorOverride(bool on) { fog_color_override_ = on; }
-        bool GetFogColorOverride() const { return fog_color_override_; }
+    void SetFogColorOverride(bool on) { fog_color_override_ = on; }
+    bool GetFogColorOverride() const { return fog_color_override_; }
 
-    private:
-        /// Constructor.
-        /// \param module Renderer module.
-        EC_OgreEnvironment(IModule *module);
+private:
+    /// Constructor.
+    /// \param module Renderer module.
+    EC_OgreEnvironment(IModule *module);
 
-        /// Creates the sunlight.
-        void CreateSunlight();
+    /// Creates the sunlight.
+    void CreateSunlight();
 
 #ifdef CAELUM
-        /// Initializes the Caelum system.
-        void InitCaelum();
+    /// Initializes the Caelum system.
+    void InitCaelum();
 
-        /// Shuts down the Caelum system.
-        void ShutdownCaelum();
+    /// Shuts down the Caelum system.
+    void ShutdownCaelum();
 #endif
 
 #ifdef HYDRAX
-        /// Initializes the Hydrax system. 
-        void InitHydrax();
+    /// Initializes the Hydrax system. 
+    void InitHydrax();
 
-        /// Shuts down the Hydrax system.
-        void ShutdownHydrax();
+    /// Shuts down the Hydrax system.
+    void ShutdownHydrax();
 #endif
-        /// renderer
-        RendererWeakPtr renderer_;
+    /// renderer
+    OgreRenderer::RendererWeakPtr renderer_;
 
-        /// Ogre sunlight
-        Ogre::Light *sunlight_;
+    /// Ogre sunlight
+    Ogre::Light *sunlight_;
 
-        /// Is the camera under the water.
-        bool cameraUnderWater_;
+    /// Is the camera under the water.
+    bool cameraUnderWater_;
 
-        /// Caelum system.
-        Caelum::CaelumSystem *caelumSystem_;
+    /// Caelum system.
+    Caelum::CaelumSystem *caelumSystem_;
 
-        /// Is the Caelum system used or not.
-        bool useCaelum_;
+    /// Is the Caelum system used or not.
+    bool useCaelum_;
 
-        /// Is the Hydrax system used or not.
-        bool useHydrax_;
+    /// Is the Hydrax system used or not.
+    bool useHydrax_;
 
-        /// Caelum Sunlight ambient color multiplier factor.
-        float sunColorMultiplier_;
+    /// Caelum Sunlight ambient color multiplier factor.
+    float sunColorMultiplier_;
 
-        /// Fog start distance.
-        float fogStart_;
+    /// Fog start distance.
+    float fogStart_;
 
-        /// Fog end distance.
-        float fogEnd_;
+    /// Fog end distance.
+    float fogEnd_;
 
-        /// Water fog start distance.
-        float waterFogStart_;
+    /// Water fog start distance.
+    float waterFogStart_;
 
-        /// Water fog end distance.
-        float waterFogEnd_;
+    /// Water fog end distance.
+    float waterFogEnd_;
 
-        /// Fog color.
-        Ogre::ColourValue fogColor_;
+    /// Fog color.
+    Ogre::ColourValue fogColor_;
 
-        /// Water fog color.
-        Ogre::ColourValue waterFogColor_;
+    /// Water fog color.
+    Ogre::ColourValue waterFogColor_;
 
-        /// Camera far clip distance.
-        float cameraFarClip_;
+    /// Camera far clip distance.
+    float cameraFarClip_;
 
-        /// Bit mask of Caelum components we use.
-        int caelumComponents_;
-        /// Is fog color defined by caelum or user.
-        bool fog_color_override_;
+    /// Bit mask of Caelum components we use.
+    int caelumComponents_;
+    /// Is fog color defined by caelum or user.
+    bool fog_color_override_;
 
-        QFlags<VisualEffectOverride> override_flags_;
+    QFlags<VisualEffectOverride> override_flags_;
 
-        Ogre::ColourValue userAmbientLight_;
-        Ogre::ColourValue userSunColor_;
-        Ogre::Vector3 userSunDirection_;
+    Ogre::ColourValue userAmbientLight_;
+    Ogre::ColourValue userSunColor_;
+    Ogre::Vector3 userSunDirection_;
 
-        Hydrax::Hydrax *hydraxSystem_;
-        Hydrax::Noise::Perlin *noiseModule_;
-        Hydrax::Module::ProjectedGrid *module_;
+    Hydrax::Hydrax *hydraxSystem_;
+    Hydrax::Noise::Perlin *noiseModule_;
+    Hydrax::Module::ProjectedGrid *module_;
 
-    };
-}
+};
 
 #endif

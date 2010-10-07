@@ -11,8 +11,8 @@
 #include "EventManager.h"
 #include "RexTypes.h"
 #include "EC_Mesh.h"
-#include "EC_OgreAnimationController.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_AnimationController.h"
+#include "EC_Placeable.h"
 #include "EC_AvatarAppearance.h"
 
 #include "LoggingFunctions.h"
@@ -77,12 +77,12 @@ bool EC_Avatar::HandleAssetReady(IEventData* data)
         
         // Create components the avatar needs, with network sync disabled, if they don't exist yet
         //! \todo we want the animationcontroller to be synced, once it has attributes
-        ComponentPtr mesh = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
-        ComponentPtr anim = entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic(), AttributeChange::LocalOnly, false);
+        ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
+        ComponentPtr anim = entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic(), AttributeChange::LocalOnly, false);
         entity->GetOrCreateComponent(EC_AvatarAppearance::TypeNameStatic(), AttributeChange::LocalOnly, false);
         // Associate the animationcontroller with the mesh
-        OgreRenderer::EC_OgreAnimationController* anim_ptr = checked_static_cast<OgreRenderer::EC_OgreAnimationController*>(anim.get());
-        OgreRenderer::EC_Mesh* mesh_ptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
+        EC_AnimationController* anim_ptr = checked_static_cast<EC_AnimationController*>(anim.get());
+        EC_Mesh* mesh_ptr = checked_static_cast<EC_Mesh*>(mesh.get());
         if ((anim_ptr) && (mesh_ptr))
         {
             if (anim_ptr->GetMeshEntity() != mesh_ptr)
@@ -90,7 +90,7 @@ bool EC_Avatar::HandleAssetReady(IEventData* data)
             
             // Attach to placeable if not yet attached
             if (!mesh_ptr->GetPlaceable())
-                mesh_ptr->SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+                mesh_ptr->SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
         }
         
         avatar_handler_->SetupECAvatar(entity->GetId(), asset->GetData(), asset->GetSize());

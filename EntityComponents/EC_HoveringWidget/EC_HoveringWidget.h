@@ -3,7 +3,7 @@
  *
  *  @file   EC_HoveringWidget.h
  *  @brief  EC_HoveringWidget shows a hovering widget attached to an entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
  */
 
 #ifndef incl_EC_HoveringWidget_h

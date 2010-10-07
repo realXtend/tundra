@@ -23,9 +23,9 @@
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
 #include "EC_Mesh.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
@@ -109,7 +109,7 @@ namespace Avatar
     Scene::EntityPtr AvatarHandler::CreateNewAvatarEntity(entity_id_t entityid)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-        if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
+        if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
             return Scene::EntityPtr();
 
         QStringList defaultcomponents;
@@ -117,19 +117,19 @@ namespace Avatar
         defaultcomponents.append(EC_OpenSimAvatar::TypeNameStatic());
         defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
         defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
-        defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        defaultcomponents.append(EC_Placeable::TypeNameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
 #ifdef EC_HoveringWidget_ENABLED
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
 #endif
-        defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
-        defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+        defaultcomponents.append(EC_Mesh::TypeNameStatic());
+        defaultcomponents.append(EC_AnimationController::TypeNameStatic());
 
         // Create avatar entity with all default components non-networked
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::LocalOnly, false);
         scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
 
-        ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
         if (placeable)
         {
             //CreateNameOverlay(placeable, entityid);
@@ -141,7 +141,7 @@ namespace Avatar
             placeable->SetNetworkSyncEnabled(false);
         }
         // Switch also networksync off from the mesh
-        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
         if (mesh)
             mesh->SetNetworkSyncEnabled(false);
 
@@ -420,7 +420,7 @@ namespace Avatar
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
         if (!entity)
             return false;
-        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get(); 
+        EC_AnimationController* anim = entity->GetComponent<EC_AnimationController>().get(); 
         if (!anim)
             return false;
 
@@ -545,7 +545,7 @@ namespace Avatar
 
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
         EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
-        //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        //EC_OgreMovableTextOverlay* overlay = entity->GetComponent<EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
@@ -573,7 +573,7 @@ namespace Avatar
 
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
 /*
-        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        EC_OgreMovableTextOverlay* overlay = entity->GetComponent<EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
@@ -603,9 +603,9 @@ namespace Avatar
         if (!entity)
             return;
 
-        ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeableptr = entity->GetComponent(EC_Placeable::TypeNameStatic());
         ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
-        ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
+        ComponentPtr animctrlptr = entity->GetComponent(EC_AnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {
@@ -616,7 +616,7 @@ namespace Avatar
         
         if (animctrlptr && meshptr)
         {
-            EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
+            EC_AnimationController* animctrl = checked_static_cast<EC_AnimationController*>(animctrlptr.get());
             animctrl->SetMeshEntity(dynamic_cast<EC_Mesh*>(meshptr.get()));
         }
     }
@@ -629,7 +629,7 @@ namespace Avatar
         if (!entity)
             return;
 
-        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
+        EC_AnimationController* animctrl = entity->GetComponent<EC_AnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!animctrl || !appearance)
             return;
@@ -647,8 +647,8 @@ namespace Avatar
         
         // Other animations that are going on have to be stopped
         std::vector<std::string> anims_to_stop;
-        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             if (std::find(anims_to_start.begin(), anims_to_start.end(), anim->first) == anims_to_start.end())
@@ -682,7 +682,7 @@ namespace Avatar
         if (!entity)
             return;
 
-        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
+        EC_AnimationController* animctrl = entity->GetComponent<EC_AnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
         if (!animctrl || !netpos || !appearance)
@@ -690,8 +690,8 @@ namespace Avatar
         
         const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
-        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anim->first);
