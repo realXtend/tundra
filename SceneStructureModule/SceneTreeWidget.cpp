@@ -12,6 +12,7 @@
 #include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
 #include "SceneManager.h"
+#include "QtUtils.h"
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -97,7 +98,8 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
 
     // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
-    QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0, *copyAction = 0;
+    QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
+        *copyAction = 0, *saveAsXmlAction = 0, *saveAsBinaryAction = 0;
     QModelIndex index = selectionModel()->currentIndex();
     if (index.isValid())
     {
@@ -106,12 +108,16 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         deleteAction = new QAction(tr("Delete"), menu);
         //renameAction = new QAction(tr("Rename"), menu);
         copyAction = new QAction(tr("Copy"), menu);
+        saveAsXmlAction = new QAction(tr("Save as XML..."), menu);
+        saveAsBinaryAction = new QAction(tr("Save as binary..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
         connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
     //    connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
+        connect(saveAsXmlAction, SIGNAL(triggered()), SLOT(SaveAsXml()));
+        connect(saveAsBinaryAction, SIGNAL(triggered()), SLOT(SaveAsBinary()));
     }
 
 //    menu->addAction(renameAction);
@@ -129,6 +135,9 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     }
 
     menu->addAction(pasteAction);
+
+    if (index.isValid())
+        menu->addAction(saveAsXmlAction);
 
     // Show menu.
     menu->popup(e->globalPos());
@@ -241,6 +250,57 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 */
 }
 
+QString SceneTreeWidget::GetSelectionAsXml() const
+{
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return QString();
+
+    const QItemSelection &selection = selectionModel()->selection();
+    if (selection.isEmpty())
+        return QString();
+
+    // Gather entity ID's.
+    QList<entity_id_t> ids;
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (!index.isValid())
+            continue;
+        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
+    }
+
+    if (ids.size() == 0)
+        return QString();
+
+    // Create root Scene element always for consistency, even if we only have one entity
+    QDomDocument scene_doc("Scene");
+    QDomElement scene_elem = scene_doc.createElement("scene");
+
+    foreach(entity_id_t id, ids)
+    {
+        Scene::EntityPtr entity = scene->GetEntity(id);
+        assert(entity.get());
+        if (entity)
+        {
+            QDomElement entity_elem = scene_doc.createElement("entity");
+            entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
+
+            foreach(ComponentPtr component, entity->GetComponentVector())
+                if (component->IsSerializable())
+                    component->SerializeTo(scene_doc, entity_elem);
+
+            scene_elem.appendChild(entity_elem);
+        }
+    }
+
+    scene_doc.appendChild(scene_elem);
+
+    return scene_doc.toString();
+}
+
 void SceneTreeWidget::Edit()
 {
     const QItemSelection &selection = selectionModel()->selection();
@@ -328,7 +388,6 @@ void SceneTreeWidget::Rename()
     QModelIndex index = selectionModel()->currentIndex();
     if (!index.isValid())
         return;
-
 }
 
 void SceneTreeWidget::New()
@@ -402,53 +461,9 @@ void SceneTreeWidget::Delete()
 
 void SceneTreeWidget::Copy()
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return;
-
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return;
-
-    // Gather entity ID's.
-    QList<entity_id_t> ids;
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
-    }
-
-    if (ids.size() == 0)
-        return;
-
-    // Create root Scene element always for consistency, even if we only have one entity
-    QDomDocument scene_doc("Scene");
-    QDomElement scene_elem = scene_doc.createElement("scene");
-
-    foreach(entity_id_t id, ids)
-    {
-        Scene::EntityPtr entity = scene->GetEntity(id);
-        assert(entity.get());
-        if (entity)
-        {
-            QDomElement entity_elem = scene_doc.createElement("entity");
-            entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
-
-            foreach(ComponentPtr component, entity->GetComponentVector())
-                if (component->IsSerializable())
-                    component->SerializeTo(scene_doc, entity_elem);
-
-            scene_elem.appendChild(entity_elem);
-        }
-    }
-
-    scene_doc.appendChild(scene_elem);
-
-    QApplication::clipboard()->setText(scene_doc.toString());
+    QString sceneXml = GetSelectionAsXml();
+    if (!sceneXml.isEmpty())
+        QApplication::clipboard()->setText(sceneXml);
 }
 
 void SceneTreeWidget::Paste()
@@ -470,4 +485,53 @@ void SceneTreeWidget::Paste()
     }
 
     scene->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
+}
+
+void SceneTreeWidget::SaveAsXml()
+{
+    QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
+        "XML (*.xml)"/*;;Naali Binary Format (*.nbf)"*/, tr("Save"), "", this, this, SLOT(SaveFileDialogClosed(int)));
+    dialog->setDefaultSuffix("xml");
+}
+
+void SceneTreeWidget::SaveAsBinary()
+{
+    QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
+        "Naali Binary Format (*.nbf);;XML (*.xml)", tr("Save"), "", this, this, SLOT(SaveFileDialogClosed(int)));
+    dialog->setDefaultSuffix("nbf");
+}
+
+void SceneTreeWidget::SaveFileDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != 1)
+        return;
+
+    QStringList files = dialog->selectedFiles();
+    if (files.size() != 1)
+        return;
+
+    if (files[0].toLower().indexOf(".xml") != -1)
+    {
+        QString sceneXml = GetSelectionAsXml();
+        if (sceneXml.isEmpty())
+            return;
+
+        QFile file(files[0]);
+        if (!file.open(QIODevice::WriteOnly))
+            return;
+
+        file.write(sceneXml.toStdString().c_str());
+        file.close();
+    }
+
+/*
+    else if (files[0].toLower().indexOf(".nbf") != -1)
+    {
+    }
+*/
 }

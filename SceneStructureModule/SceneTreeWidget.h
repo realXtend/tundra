@@ -90,6 +90,9 @@ private:
     /// Framework pointer.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
+    /// Returns currently selected entities as XML string.
+    QString GetSelectionAsXml() const;
+
 private slots:
     /// Opens selected entities in EC editor window. An exisiting editor window is used if it exists.
     void Edit();
@@ -97,7 +100,7 @@ private slots:
     /// Opens selected entities in EC editor window. New editor window is created each time.
     void EditInNew();
 
-    ///
+    /// Renames selected entity.
     void Rename();
 
     /// Creates new entity.
@@ -106,11 +109,22 @@ private slots:
     /// Deletes an existing entity.
     void Delete();
 
-    ///
+    /// Copies selected entities as XML to clipboard.
     void Copy();
 
-    ///
+    /// Adds clipboard contents to scene as XML.
     void Paste();
+
+    /// Saves selected entities as XML to file.
+    void SaveAsXml();
+
+    /// Saves selected entities as XML to file.
+    void SaveAsBinary();
+
+    /// Called by save file dialog when it's closed.
+    /** @param result Result of dialog close. Save is 1, Cancel is 0.
+    */
+    void SaveFileDialogClosed(int result);
 };
 
 #endif
