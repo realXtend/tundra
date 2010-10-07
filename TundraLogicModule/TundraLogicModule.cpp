@@ -212,7 +212,7 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
     // Do the scene load as replicable only if we are a server
     bool success;
     if (!useBinary)
-        success = scene->LoadSceneXML(params[0], AttributeChange::Default);
+        success = scene->LoadSceneXML(params[0], true, AttributeChange::Default);
     else
         success = scene->LoadSceneBinary(params[0], AttributeChange::Default);
     
