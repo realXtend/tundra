@@ -31,6 +31,7 @@
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
 #include "Console.h"
+#include "Input.h"
 
 #include <utility>
 #include <QDebug>
@@ -113,6 +114,9 @@ void DebugStatsModule::PostInitialize()
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
+    inputContext = framework_->GetInput()->RegisterInputContext("DebugStatsInput", 90);
+    connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
+
 
 //#ifdef Q_WS_WIN
 // 
@@ -121,6 +125,18 @@ void DebugStatsModule::PostInitialize()
 //#endif 
 
     AddProfilerWidgetToUi();
+}
+
+void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
+{
+    if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
+        return;
+
+    Input &input = *framework_->GetInput();
+
+    const QKeySequence showProfiler = input.KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
+    if (QKeySequence(e->keyCode | e->modifiers) == showProfiler)
+        ShowProfilingWindow();
 }
 
 void DebugStatsModule::AddProfilerWidgetToUi()
