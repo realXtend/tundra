@@ -7,9 +7,15 @@
 #include <QWidget>
 #include <QPoint>
 #include "ui_VoiceControl.h"
+#include "ToolManagerWidget.h"
 
 class QMouseEvent;
 class QGraphicsProxyWidget;
+
+namespace Foundation
+{
+    class Framework;
+}
 
 namespace Communications
 {
@@ -23,6 +29,7 @@ namespace Communications
 namespace CommUI
 {
     class VoiceUserWidget;
+    class VoiceUsersInfoWidget;
 
     class VoiceController : public QObject
     {
@@ -60,32 +67,7 @@ namespace CommUI
         int voice_activity_timeout_ms_;
         Communications::InWorldVoice::SessionInterface* in_world_voice_session_;
     };
-
-    class VoiceControllerWidget : public QWidget, private Ui::VoiceControl
-    {
-        Q_OBJECT
-    public:
-        VoiceControllerWidget(Communications::InWorldVoice::SessionInterface* voice_session);
-        virtual ~VoiceControllerWidget();
-
-    public slots:
-        virtual void SetPushToTalkOn();
-        virtual void SetPushToTalkOff();
-        virtual void Toggle();
-
-    private slots:
-        void ApplyTransmissionModeSelection(int selection);
-        void OpenParticipantListWidget();
-        void ApplyMuteAllSelection();
-        void UpdateUI();
-        void UpdateParticipantList();
-
-    private:
-        QGraphicsProxyWidget* voice_users_proxy_widget_;
-        VoiceController voice_controller_;
-        QList<VoiceUserWidget *> user_widgets_;
-    };
-
+ 
 } // CommUI
 
 #endif // incl_UiModule_VoiceControler_h

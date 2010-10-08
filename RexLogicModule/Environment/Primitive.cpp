@@ -13,9 +13,9 @@
 #include "EntityComponent/EC_AttachedSound.h"
 #include "Environment/Primitive.h"
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
@@ -121,7 +121,7 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     QStringList components;
     components.append(EC_OpenSimPrim::TypeNameStatic());
     components.append(EC_NetworkPosition::TypeNameStatic());
-    components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    components.append(EC_Placeable::TypeNameStatic());
 
     // Create entity with all default components non-networksynced
     Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::LocalOnly, false);
@@ -394,16 +394,18 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         return false;
     
     // Entity should have animationcontroller
-    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-        entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+    EC_AnimationController* anim = dynamic_cast<EC_AnimationController*>(
+        entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
     if (!anim)
         return false;
+    // Networksync off from animcontroller!
+    anim->SetNetworkSyncEnabled(false);
     // Attach the mesh entity to animationcontroller, if not yet attached
-    //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-    ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
+    //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
+    ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
     if (!mesh)
         return false;
-    OgreRenderer::EC_Mesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
+    EC_Mesh *ogre_mesh = dynamic_cast<EC_Mesh*>(mesh.get());
     if (anim->GetMeshEntity() != ogre_mesh)
         anim->SetMeshEntity(ogre_mesh);
     
@@ -413,24 +415,24 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         bool looped = ParseBool(params[3]);
         bool stop = ParseBool(params[4]);
         
+        QString animname = QString::fromStdString(params[1]);
         if (stop)
         {
-            anim->DisableAnimation(params[1], 0.25f);
+            anim->DisableAnimation(animname, 0.25f);
         }
         else
         {
-            anim->EnableAnimation(params[1], looped, 0.025f);
-            anim->SetAnimationSpeed(params[1], rate);
+            anim->EnableAnimation(animname, looped, 0.025f);
+            anim->SetAnimationSpeed(animname, rate);
             if (rate < 0.0f)
-                anim->SetAnimationToEnd(params[1]);
-            anim->SetAnimationAutoStop(params[1], looped == false);
+                anim->SetAnimationToEnd(animname);
+            anim->SetAnimationAutoStop(animname, looped == false);
         }
     }
-    catch (...) {}  
-        
+    catch (...) {}
+    
     return false;
-        
-}    
+}
 
 bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data)
 {
@@ -710,7 +712,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     prim->SelectPriority = ReadUInt32FromBytes(primdata,idx);
 
     // Copy selectpriority to the placeable for the renderer raycast
-    OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
     if (placeable)
     {
         placeable->SetSelectPriority(prim->SelectPriority);
@@ -873,22 +875,22 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!RexTypes::IsNull(prim.MeshID)))
     {
         // Remove custom object component if exists
-        ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr customptr = entity->GetComponent(EC_OgreCustomObject::TypeNameStatic());
         if (customptr)
             entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        //ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), "rex");
+        //ComponentPtr meshptr = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), "rex");
         if (!meshptr)
             return;
-        OgreRenderer::EC_Mesh& mesh = *(dynamic_cast<OgreRenderer::EC_Mesh*>(meshptr.get()));
+        EC_Mesh& mesh = *(dynamic_cast<EC_Mesh*>(meshptr.get()));
         // Make sure network sync is off
         mesh.SetNetworkSyncEnabled(false);
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
-            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            mesh.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
         
         // Change mesh if yet nonexistent/changed
         // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
@@ -937,25 +939,25 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         // Remove mesh component if exists
-        //ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-        ComponentPtr meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
+        //ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent<EC_Mesh>("rex");
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim =
-            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        EC_AnimationController* anim =
+            entity->GetComponent<EC_AnimationController>().get();
         if (anim)
             anim->SetMeshEntity(0);
 
         // Get/create custom (manual) object component 
-        ComponentPtr customptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr customptr = entity->GetOrCreateComponent(EC_OgreCustomObject::TypeNameStatic());
         if (!customptr)
             return;
-        OgreRenderer::EC_OgreCustomObject& custom = *(checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
+        EC_OgreCustomObject& custom = *(checked_static_cast<EC_OgreCustomObject*>(customptr.get()));
 
         // Attach to placeable if not yet attached
         if (!custom.GetPlaceable())
-            custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            custom.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
 
         // Set rendering distance/cast shadows setting
         custom.SetDrawDistance(prim.DrawDistance.Get());
@@ -980,14 +982,14 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if (!RexTypes::IsNull(prim.ParticleScriptID))
     {
         // Create particle system component & attach, if does not yet exist
-        ComponentPtr particleptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreParticleSystem::TypeNameStatic());
+        ComponentPtr particleptr = entity->GetOrCreateComponent(EC_OgreParticleSystem::TypeNameStatic());
          if (!particleptr)
             return;
-        OgreRenderer::EC_OgreParticleSystem& particle = *(checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
+        EC_OgreParticleSystem& particle = *(checked_static_cast<EC_OgreParticleSystem*>(particleptr.get()));
         
         // Attach to placeable if not yet attached
         if (!particle.GetPlaceable())
-            particle.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            particle.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
             
         // Change particle system if yet nonexistent/changed
         const std::string& script_name = prim.ParticleScriptID;
@@ -1009,7 +1011,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else
     {
         // If should be no particle system, remove it if exists
-        ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::TypeNameStatic());
+        ComponentPtr particleptr = entity->GetComponent(EC_OgreParticleSystem::TypeNameStatic());
         if (particleptr)
         {
             entity->RemoveComponent(particleptr);
@@ -1086,7 +1088,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
     if (!entity) 
         return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();                    
-    OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+    EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
     if (!meshptr)
         return;
         
@@ -1165,31 +1167,35 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
     if ((!RexTypes::IsNull(prim->AnimationPackageID)) && (!prim->AnimationName.empty()))
     {
         // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+        EC_AnimationController* anim = dynamic_cast<EC_AnimationController*>(
+            entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
         if (anim)
         {
+            // Networksync off from animcontroller!
+            anim->SetNetworkSyncEnabled(false);
             // Attach the mesh entity to animationcontroller, if not yet attached
-            //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-            ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
+            //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
+            ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
             if (!mesh)
                 return;
-            OgreRenderer::EC_Mesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
+            EC_Mesh* ogre_mesh = dynamic_cast<EC_Mesh*>(mesh.get());
             if (anim->GetMeshEntity() != ogre_mesh)
                 anim->SetMeshEntity(ogre_mesh);
             
+            QString animname = QString::fromStdString(prim->AnimationName);
+            
             // Check if any other animations than the supposed one is running, and stop them
-            const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();
-            OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
+            const EC_AnimationController::AnimationMap& anims = anim->GetRunningAnimations();
+            EC_AnimationController::AnimationMap::const_iterator i = anims.begin();
             while (i != anims.end())
             {
-                if (i->first != prim->AnimationName)
-                    anim->DisableAnimation(i->first); 
+                if (i->first != animname)
+                    anim->DisableAnimation(i->first);
                 ++i;
             }
-                        
-            anim->EnableAnimation(prim->AnimationName, true, 1.0f);
-            anim->SetAnimationSpeed(prim->AnimationName, prim->AnimationRate);
+            
+            anim->EnableAnimation(animname, true, 1.0f);
+            anim->SetAnimationSpeed(animname, prim->AnimationRate);
         }
     }
 }
@@ -1211,7 +1217,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
         case 32: // light
         {
             // If light component doesn't exist, create it.
-            entity->GetOrCreateComponent(OgreRenderer::EC_OgreLight::TypeNameStatic());
+            entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
                 
             // Read the data.
             Color color = ReadColorFromBytes(extra_params_data, idx);
@@ -1253,13 +1259,13 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
             max_radius = radius;
     }
 
-    OgreRenderer::EC_OgreLight* light = entity->GetComponent<OgreRenderer::EC_OgreLight>().get();
+    EC_OgreLight* light = entity->GetComponent<EC_OgreLight>().get();
     if (!light)
         return;
 
     ///\note Only point lights are supported at the moment.
-    light->SetType(OgreRenderer::EC_OgreLight::LT_Point);
-    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    light->SetType(EC_OgreLight::LT_Point);
+    ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
     if (placeable)
         light->SetPlaceable(placeable);
 
@@ -1357,7 +1363,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     if (!entity) return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
-    OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh) return;
 
     // Use optionally skeleton if it's used and we already have the resource
@@ -1435,7 +1441,7 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
 
-    OgreRenderer::EC_OgreParticleSystem* particle = entity->GetComponent<OgreRenderer::EC_OgreParticleSystem>().get();
+    EC_OgreParticleSystem* particle = entity->GetComponent<EC_OgreParticleSystem>().get();
     if (!particle) return;
 
     particle->RemoveParticleSystems();
@@ -1463,7 +1469,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+        EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
         if (!meshptr) return;
         // If don't have the actual mesh entity yet, no use trying to set texture
         if (!meshptr->GetEntity()) return;
@@ -1504,7 +1510,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     // Handle material ready for prim
     if (prim->DrawType == RexTypes::DRAWTYPE_PRIM)
     {
-        OgreRenderer::EC_OgreCustomObject* custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        EC_OgreCustomObject* custom = entity->GetComponent<EC_OgreCustomObject>().get();
         if (custom && prim->Materials.size() && res->GetId() == prim->Materials[0].asset_id && prim->Materials[0].Type == RexTypes::RexAT_MaterialScript)
         {
             // Update geometry now that the material exists
@@ -1524,7 +1530,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     // Handle material ready for mesh
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_Mesh* meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+        EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
         if (meshptr) 
         {
             // If don't have the actual mesh entity yet, no use trying to set the material
@@ -1588,12 +1594,12 @@ void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
         return;
         
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
-    OgreRenderer::EC_OgrePlaceable *ogrepos = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *ogrepos = entity->GetComponent<EC_Placeable>().get();
     if (!ogrepos)
         return;
             
     // Handle scale mesh to prim-setting
-    OgreRenderer::EC_Mesh* mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (mesh)
     {
         Vector3df adjust_scale(1.0, 1.0, 1.0);
@@ -1825,7 +1831,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         {
             // Get initial position of sound from the placeable (will be updated later if the entity moves)
             Vector3df position(0.0f, 0.0f, 0.0f);
-            OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
             {
                 position = placeable->GetPosition();
@@ -1882,7 +1888,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
 
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Vector3df position(0.0f, 0.0f, 0.0f);
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
     if (placeable)
         position = placeable->GetPosition();
 

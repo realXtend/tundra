@@ -38,7 +38,7 @@ int qScriptRegisterQObjectMetaType(QScriptEngine *engine, const QScriptValue &pr
 template<typename T> QScriptValue toScriptValueEnum(QScriptEngine *engine, const T &s)
 {
     QScriptValue obj = engine->newObject();
-    obj.setProperty("value", QScriptValue(engine, s));
+    obj.setProperty("value", QScriptValue(engine, static_cast<T>(s)));
     return obj;
 }
 

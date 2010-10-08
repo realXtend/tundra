@@ -19,7 +19,7 @@
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -289,7 +289,7 @@ namespace ECEditor
             for(uint i = 0; i < components.size(); i++)
             {
                 // If the entity is holding placeable component we can place it into the scene.
-                if(components[i]->TypeName() == "EC_OgrePlaceable")
+                if(components[i]->TypeName() == "EC_Placeable")
                 {
                     hasPlaceable = true;
                     ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);

@@ -18,19 +18,17 @@ namespace CommunicationsService
         // Default deconstructor
         virtual ~Service();
 
+    public slots:
 //        static ServiceInterface* Instance();
         static boost::shared_ptr<Service> IntancePtr();
 
+    
         virtual Communications::InWorldVoice::SessionInterface* InWorldVoiceSession() const;
         virtual Communications::InWorldChat::SessionInterface* InWorldChatSession() const;
 
         //! Registration methods for communication providers
         virtual void Register(Communications::InWorldVoice::ProviderInterface& provider);
         virtual void Register(Communications::InWorldChat::ProviderInterface& provider);
-
-    private slots:
-        void InWorldChatSessionAvailable();
-        void InWorldChatSessionUnavailable();
 
     private:
         static boost::shared_ptr<Service> instance_;

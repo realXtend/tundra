@@ -21,6 +21,7 @@ class QLabel;
 class QTreeWidget;
 class QTreeWidgetItem;
 class QTextEdit;
+class QMenu;
 class QPushButton;
 class QTextStream;
 
@@ -91,7 +92,14 @@ namespace DebugStats
     protected:
         void resizeEvent(QResizeEvent *event);
 
+    private slots:
+        void CopyTextureAssetName();
+        void CopyMeshAssetName();
+        void CopyMaterialAssetName();
+
     private:
+        bool eventFilter(QObject *obj, QEvent *event);
+
         void FillThresholdLogger(QTextStream& out, const Foundation::ProfilerNodeTree *profilerNode);
         void FillProfileTimingWindow(QTreeWidgetItem *qtNode, const Foundation::ProfilerNodeTree *profilerNode);
         int ReadProfilingRefreshInterval();
@@ -150,8 +158,11 @@ namespace DebugStats
         QTreeWidget *tree_asset_transfers_;
         QTreeWidget *tree_rendertargets_;
         QTreeWidget* tree_texture_assets_;
+        QMenu *menu_texture_assets_;
         QTreeWidget* tree_mesh_assets_; 
+        QMenu *menu_mesh_assets_;
         QTreeWidget* tree_material_assets_;
+        QMenu *menu_material_assets_;
         QTreeWidget* tree_skeleton_assets_;
         QTreeWidget* tree_compositor_assets_;
         QTreeWidget* tree_gpu_assets_;

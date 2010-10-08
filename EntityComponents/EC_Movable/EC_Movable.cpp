@@ -12,7 +12,7 @@
 #include "WorldStream.h"
 #include "Entity.h"
 #include "EC_OpenSimPrim.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "LoggingFunctions.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Movable")
@@ -81,7 +81,7 @@ void EC_Movable::SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const
     {
         std::vector<ProtocolUtilities::MultiObjectUpdateInfo> updates;
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        OgreRenderer::EC_OgrePlaceable *ogre_pos = entity->GetComponent<OgreRenderer::EC_OgrePlaceable >().get();
+        EC_Placeable *ogre_pos = entity->GetComponent<EC_Placeable >().get();
         if (!prim && !ogre_pos)
             return;
 

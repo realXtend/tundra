@@ -3,7 +3,7 @@
  *
  *  @file   EC_HoveringText.cpp
  *  @brief  EC_HoveringText shows a hovering text attached to an entity.
- *  @note   The entity must EC_OgrePlaceable available in advance.
+ *  @note   The entity must EC_Placeable available in advance.
  */
 
 #include "StableHeaders.h"
@@ -12,7 +12,7 @@
 #include "EC_HoveringText.h"
 #include "IModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
@@ -235,7 +235,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *node = entity->GetComponent<EC_Placeable>().get();
     if (!node)
         return;
 

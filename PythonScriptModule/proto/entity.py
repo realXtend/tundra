@@ -12,7 +12,7 @@ in a list in the current c++ impl) and another where the dict
 of the pymodule is used directly, i.e. they are normal members of the entity.
 
 Placeable is a mockup of the the current C++ implementation in
-EC_OgrePlaceable.cpp.  So far the class is just a position-type 
+EC_Placeable.cpp.  So far the class is just a position-type 
 object that has the get and set methods for each of the x, y and z 
 -coordinates. Those three are set as properties so place.x returns 
 the x value and place.x = 1 sets it.
@@ -44,7 +44,7 @@ class Vector3:
 
 
 class Placeable:
-    """py mockup of EC_OgrePlaceable.cpp in OgreRender"""
+    """py mockup of EC_Placeable.cpp in OgreRender"""
     
     PYNAME = 'place'
     
@@ -135,7 +135,7 @@ class CurrentCppEntity(object):
 
         
 def test_move(entity):
-    #oldpos = entity.place #or: entity.components["EC_OgrePlaceable"]
+    #oldpos = entity.place #or: entity.components["EC_Placeable"]
     #oops! .. is a ref to the *same* placeable instance
     p = entity.place.pos #first we get the entities place, which is an instance of the Placeable class
     oldx = p.x #then we ask for the x-coordinate from the Placeable
@@ -144,8 +144,8 @@ def test_move(entity):
     print "TEST MOVE SUCCEEDED", entity.place.pos.x, oldx #if we get this far, the move actually worked! Yay.
     
     """on the c++ side this is:
-    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_OgrePlaceable");
-    OgreRenderer::EC_OgrePlaceable *ogre_pos = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(ogre_component.get());        
+    const Foundation::ComponentInterfacePtr &ogre_component = entity->GetComponent("EC_Placeable");
+    EC_Placeable *ogre_pos = dynamic_cast<EC_Placeable *>(ogre_component.get());
     RexTypes::Vector3 pos((float)sb_pos_x->get_value(), (float)sb_pos_y->get_value(), (float)sb_pos_z->get_value());
     ogre_pos->SetPosition(pos);
     """

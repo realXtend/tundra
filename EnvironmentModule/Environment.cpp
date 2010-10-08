@@ -72,13 +72,13 @@ Environment::~Environment()
     
 }
 
-OgreRenderer::EC_OgreEnvironment* Environment::GetEnvironmentComponent()
+EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 {
 
     if (activeEnvEntity_.expired())
         return 0;
     
-    OgreRenderer::EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<OgreRenderer::EC_OgreEnvironment>().get();  
+    EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<EC_OgreEnvironment>().get();  
     
     return ec;
     
@@ -166,13 +166,13 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
         dayphase = -0.5 + (sunPhase_ / PI);
 
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return false; 
 
     // Update the sunlight direction and angle velocity.
     ///\note Not needed anymore as we use Caelum now.
-    //OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
+    //EC_OgreEnvironment &env = *checked_static_cast<EC_OgreEnvironment*>
     //    (component.get());
     //env.SetSunDirection(-sunDirection_);
 
@@ -246,10 +246,12 @@ QVector<float> Environment::GetFogGroundColor()
 
 void Environment::Update(f64 frametime)
 {
+    PROFILE(Environment_Update);
+
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
 
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
@@ -387,7 +389,7 @@ EC_Fog* Environment::GetEnvironmentFog()
 bool Environment::IsCaelum()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return false;
         
@@ -445,7 +447,7 @@ float Environment::GetGroundFogEndDistance()
 void Environment::SetSunDirection(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
     // Assure that we do not given too near of zero vector values, a la HACK. 
@@ -462,7 +464,7 @@ void Environment::SetSunDirection(const QVector<float>& vector)
 QVector<float> Environment::GetSunDirection() 
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(3);
 
@@ -476,7 +478,7 @@ QVector<float> Environment::GetSunDirection()
 void Environment::SetSunColor(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
@@ -496,7 +498,7 @@ void Environment::SetSunColor(const QVector<float>& vector)
 QVector<float> Environment::GetSunColor()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(4);
 
@@ -510,7 +512,7 @@ QVector<float> Environment::GetSunColor()
 QVector<float> Environment::GetAmbientLight()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(3);
 
@@ -525,7 +527,7 @@ QVector<float> Environment::GetAmbientLight()
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 

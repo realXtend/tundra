@@ -17,7 +17,7 @@ Represents in-world sound source. To apply a new sound sound, user should change
 and ISoundService should handle resource request for you. To play the sound there are two options:
 1. trigger sound by setting trigger sound attribute to true or 2. directly call PlaySound slot method.
 
-@note If component cant find EC_OgrePlaceable compoent in entity, sound is treated as AbmientSound.
+@note If component cant find EC_Placeable compoent in entity, sound is treated as AbmientSound.
 
 @note If sound attributes has been changed while the audio clip is on playing state, user need to call
 UpdateSoundSettings method to apply those changes into the SoundService.
@@ -57,7 +57,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 */
 class EC_Sound : public IComponent

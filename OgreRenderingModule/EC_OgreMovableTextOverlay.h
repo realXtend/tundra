@@ -21,8 +21,6 @@ namespace Ogre
     class Font;
 }
 
-namespace OgreRenderer
-{
 /// Movable Ogre text overlay. 
 /**
 <table class="header">
@@ -49,137 +47,136 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 */
-    class OGRE_MODULE_API EC_OgreMovableTextOverlay : public IComponent
-    {
-        Q_OBJECT
-        
-        DECLARE_EC(EC_OgreMovableTextOverlay);
-    private:
-        //! constructor
-        /*! \param module renderer module
-         */
-        EC_OgreMovableTextOverlay(IModule* module);
+class OGRE_MODULE_API EC_OgreMovableTextOverlay : public IComponent
+{
+    Q_OBJECT
+    
+    DECLARE_EC(EC_OgreMovableTextOverlay);
+private:
+    //! constructor
+    /*! \param module renderer module
+     */
+    EC_OgreMovableTextOverlay(IModule* module);
 
-        //! copy constructor. 
+    //! copy constructor. 
 //        EC_OgreMovableTextOverlay(const EC_OgreMovableTextOverlay &other);
 
-    public:
-        //! destructor
-        virtual ~EC_OgreMovableTextOverlay();
+public:
+    //! destructor
+    virtual ~EC_OgreMovableTextOverlay();
 
-        //! assignment operator. See copy constructor
+    //! assignment operator. See copy constructor
 //        EC_OgreMovableTextOverlay &operator =(const EC_OgreTextOverlay &other) { assert (false); return *this; }
 
-        //! Creates the Ogre overlay with a specified offset. Call first.
-        void CreateOverlay(const Vector3df& offset);
+    //! Creates the Ogre overlay with a specified offset. Call first.
+    void CreateOverlay(const Vector3df& offset);
 
-        //! Adjust offset of overlay
-        void SetOffset(const Vector3df& offset);
+    //! Adjust offset of overlay
+    void SetOffset(const Vector3df& offset);
 
-        //! Sets the placeable (scene node) which the overlay is meant to follow.
-        void SetPlaceable(ComponentPtr placeable);
+    //! Sets the placeable (scene node) which the overlay is meant to follow.
+    void SetPlaceable(ComponentPtr placeable);
 
-        //! displays the text as is in the overlay
-        void SetText(const std::string &text);
+    //! displays the text as is in the overlay
+    void SetText(const std::string &text);
 
-        //! returns the text of the overlay
-        std::string GetText() const { return text_; }
+    //! returns the text of the overlay
+    std::string GetText() const { return text_; }
 
-        //! Set the overlay text font color.
-        //! @param color New color.
-        void SetFontColor(const Color &color) { fontColor_ = color; }
+    //! Set the overlay text font color.
+    //! @param color New color.
+    void SetFontColor(const Color &color) { fontColor_ = color; }
 
-        //! hide / show the overlay
-        void SetVisible(bool visible);
+    //! hide / show the overlay
+    void SetVisible(bool visible);
 
-        //! Updates the text overlay and container position and dimension.
-        void Update();
+    //! Updates the text overlay and container position and dimension.
+    void Update();
 
-    private:
-        //! Attach scene node to parent placeable node
-        void AttachNode();
+private:
+    //! Attach scene node to parent placeable node
+    void AttachNode();
 
-        //! Detach scene node to parent placeable node
-        void DetachNode();
+    //! Detach scene node to parent placeable node
+    void DetachNode();
 
-        //! return the dimensions of the text.
-        Ogre::Vector2 GetTextDimensions(const std::string &text);
+    //! return the dimensions of the text.
+    Ogre::Vector2 GetTextDimensions(const std::string &text);
 
-        //! Set alpha channel intensity for text and container material.
-        //! @param distance The distance of the camera from the overlay node.
-        void SetAlphaChannelIntensity(const float &distance);
+    //! Set alpha channel intensity for text and container material.
+    //! @param distance The distance of the camera from the overlay node.
+    void SetAlphaChannelIntensity(const float &distance);
 
-        //! Set new material for the overlay container.
-        //! @param material_name Name of the Ogre material.
-        //! \todo Make this public when it works ok.
-        void SetMaterial(const std::string& material_name);
+    //! Set new material for the overlay container.
+    //! @param material_name Name of the Ogre material.
+    //! \todo Make this public when it works ok.
+    void SetMaterial(const std::string& material_name);
 
-        //! Overlay element for the text.
-        Ogre::TextAreaOverlayElement *text_element_;
+    //! Overlay element for the text.
+    Ogre::TextAreaOverlayElement *text_element_;
 
-        //! container for overlay text.
-        Ogre::OverlayContainer *container_;
+    //! container for overlay text.
+    Ogre::OverlayContainer *container_;
 
-        //! Overlay for the text.
-        Ogre::Overlay *overlay_;
+    //! Overlay for the text.
+    Ogre::Overlay *overlay_;
 
-        //! SceneNode for the overlay text position.
-        Ogre::SceneNode *node_;
+    //! SceneNode for the overlay text position.
+    Ogre::SceneNode *node_;
 
-        //! Parent placeable which will be followed
-        ComponentPtr placeable_;
+    //! Parent placeable which will be followed
+    ComponentPtr placeable_;
 
-        //! Attached to parent-flag
-        bool attached_;
+    //! Attached to parent-flag
+    bool attached_;
 
-        //! Unique object name for the overlay.
-        std::string overlayName_;
+    //! Unique object name for the overlay.
+    std::string overlayName_;
 
-        //! Unique object name for the overlay container.
-        std::string containerName_;
+    //! Unique object name for the overlay container.
+    std::string containerName_;
 
-        //! Name of the base material used by the overlay container.
-        std::string baseMaterialName_;
+    //! Name of the base material used by the overlay container.
+    std::string baseMaterialName_;
 
-        //! Name of the actual material used by the overlay container.
-        std::string materialName_;
+    //! Name of the actual material used by the overlay container.
+    std::string materialName_;
 
-        //! Max alpha value of the overlay container material.
-        float materialMaxAlpha_;
+    //! Max alpha value of the overlay container material.
+    float materialMaxAlpha_;
 
-        //! Whether or not the container material has alpha channel.
-        bool materialHasAlpha_;
+    //! Whether or not the container material has alpha channel.
+    bool materialHasAlpha_;
 
-        //! The overlay text.
-        std::string text_;
+    //! The overlay text.
+    std::string text_;
 
-        //! Font which the overlay text uses.
-        Ogre::Font *font_;
+    //! Font which the overlay text uses.
+    Ogre::Font *font_;
 
-        //! Overlay text dimensions.
-        Ogre::Vector2 textDim_;
+    //! Overlay text dimensions.
+    Ogre::Vector2 textDim_;
 
-        //! Color of the font.
-        Color fontColor_;
+    //! Color of the font.
+    Color fontColor_;
 
-        //! Font height
+    //! Font height
 //        const float char_height_;
 
-        //! Is the text visible
-        bool visible_;
+    //! Is the text visible
+    bool visible_;
 
-        //! The renderer, need reference to check if renderer is still alive.
-        RendererWeakPtr renderer_;
+    //! The renderer, need reference to check if renderer is still alive.
+    OgreRenderer::RendererWeakPtr renderer_;
 
-        //! The window width during the overlay construction.
-        int windowWidth_;
+    //! The window width during the overlay construction.
+    int windowWidth_;
 
-        //! The window height during the overlay construction.
-        int windowHeight_;
-    };
-}
+    //! The window height during the overlay construction.
+    int windowHeight_;
+};
 
 #endif

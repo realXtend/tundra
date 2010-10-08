@@ -20,7 +20,6 @@ AddSourceFolder (Inworld)
 AddSourceFolder (Inworld/View)
 AddSourceFolder (Inworld/Menus)
 AddSourceFolder (Inworld/ControlPanel)
-#AddSourceFolder (Inworld/Console)
 AddSourceFolder (Inworld/Notifications)
 
 # Qt4 Moc files to "CMake Moc" subgroup

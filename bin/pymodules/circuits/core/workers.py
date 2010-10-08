@@ -16,7 +16,6 @@ except:
     except:
         HAS_MULTIPROCESSING = 0
 
-from bridge import Bridge
 from utils import findroot
 from manager import Manager
 from components import BaseComponent as _BaseComponent
@@ -64,6 +63,7 @@ class Process(_BaseComponent):
     def __main__(self, running, socket=None):
         if socket is not None:
             manager = Manager()
+            from bridge import Bridge
             bridge = Bridge(manager, socket=socket)
             self.register(manager)
             manager.start()
@@ -82,6 +82,7 @@ class Process(_BaseComponent):
         if self._manager is not None:
             root = findroot(self._manager)
             parent, child = Pipe()
+            from bridge import Bridge
             self._bridge = Bridge(root, socket=parent)
             self._bridge.start()
 
