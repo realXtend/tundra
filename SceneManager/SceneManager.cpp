@@ -313,13 +313,13 @@ namespace Scene
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
-            LogError("Failed to open file " + filename + "when loading scene xml.");
+            LogError("Failed to open file " + filename + " when loading scene xml.");
             return false;
         }
 
         if (!scene_doc.setContent(&file))
         {
-            LogError("Parsing scene XML from "+ filename + "failed when loading scene xml.");
+            LogError("Parsing scene XML from "+ filename + " failed when loading scene xml.");
             file.close();
             return false;
         }
@@ -357,14 +357,12 @@ namespace Scene
         }
     }
     
-    bool SceneManager::LoadSceneBinary(const std::string& filename, AttributeChange::Type change)
+    bool SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change)
     {
-        QDomDocument scene_doc("Scene");
-        
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
-            LogError("Failed to open file " + filename + "when loading scene binary.");
+            LogError("Failed to open file " + filename + " when loading scene binary.");
             return false;
         }
 
@@ -373,78 +371,16 @@ namespace Scene
         
         if (!bytes.size())
         {
-            LogError("File " + filename + "contained 0 bytes when loading scene binary.");
+            LogError("File " + filename + " contained 0 bytes when loading scene binary.");
             return false;
         }
 
-        try
-        {
-            // Purge all old entities. Send events for the removal
+        if (clearScene)
             RemoveAllEntities(true, change);
-            
-            DataDeserializer source(bytes.data(), bytes.size());
-            
-            uint num_entities = source.Read<u32>();
-            for (uint i = 0; i < num_entities; ++i)
-            {
-                EntityPtr entity = CreateEntity(source.Read<u32>());
-                if (!entity)
-                {
-                    std::cout << "Failed to create entity, stopping scene load" << std::endl;
-                    return false; // If entity creation fails, stream desync is more than likely so stop right here
-                }
-                
-                uint num_components = source.Read<u32>();
-                for (uint i = 0; i < num_components; ++i)
-                {
-                    uint type_hash = source.Read<u32>();
-                    QString name = QString::fromStdString(source.ReadString());
-                    bool sync = source.Read<u8>() ? true : false;
-                    uint data_size = source.Read<u32>();
-                    
-                    // Read the component data into a separate byte array, then deserialize from there.
-                    // This way the whole stream should not desync even if something goes wrong
-                    QByteArray comp_bytes;
-                    comp_bytes.resize(data_size);
-                    if (data_size)
-                        source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
-                    
-                    try
-                    {
-                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
-                        if (new_comp)
-                        {
-                            new_comp->SetNetworkSyncEnabled(sync);
-                            if (data_size)
-                            {
-                                DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
-                                new_comp->DeserializeFromBinary(comp_source, change);
-                            }
-                        }
-                        else
-                            LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
-                    }
-                    catch (...)
-                    {
-                        LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
-                    }
-                }
-                EmitEntityCreated(entity, change);
-                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
-                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                for(uint i = 0; i < components.size(); ++i)
-                    components[i]->ComponentChanged(change);
-            }
-        }
-        catch (...)
-        {
-            return false;
-        }
-        
-        return true;
+
+        return CreateContentFromBinary(bytes.data(), bytes.size(), false/*replaceOnConflict*/, change);
     }
-    
+
     bool SceneManager::SaveSceneBinary(const std::string& filename)
     {
         QByteArray bytes;
@@ -541,6 +477,109 @@ namespace Scene
         return true;
     }
 
+    bool SceneManager::CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change)
+    {
+        QFile file(filename);
+        if (!file.open(QIODevice::ReadOnly))
+        {
+            LogError("Failed to open file " + filename.toStdString() + " when loading scene binary.");
+            return false;
+        }
+
+        QByteArray bytes = file.readAll();
+        file.close();
+        
+        if (!bytes.size())
+        {
+            LogError("File " + filename.toStdString() + "contained 0 bytes when loading scene binary.");
+            return false;
+        }
+
+        return CreateContentFromBinary(bytes.data(), bytes.size(), replaceOnConflict, change);
+    }
+
+    bool SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change)
+    {
+        assert(data);
+        assert(numBytes > 0);
+        try
+        {
+            DataDeserializer source(data, numBytes);
+            
+            uint num_entities = source.Read<u32>();
+            for (uint i = 0; i < num_entities; ++i)
+            {
+                entity_id_t id = source.Read<u32>();
+                if (HasEntity(id)) // If the entity we are about to add conflicts in ID with an existing entity in the scene.
+                {
+                    if (replaceOnConflict) // Delete the old entity and replace it with the one in the source.
+                        RemoveEntity(id, AttributeChange::Replicate); ///<@todo Consider do we want to always use Replicate
+                    else // Create a new ID for the new entity.
+                    {
+                        if ((id & LocalEntity) != 0) // Check if the ID is local
+                            id = GetNextFreeIdLocal();
+                        else
+                            id = GetNextFreeId();
+                    }
+                }
+
+                EntityPtr entity = CreateEntity(id);
+                if (!entity)
+                {
+                    std::cout << "Failed to create entity, stopping scene load" << std::endl;
+                    return false; // If entity creation fails, stream desync is more than likely so stop right here
+                }
+                
+                uint num_components = source.Read<u32>();
+                for (uint i = 0; i < num_components; ++i)
+                {
+                    uint type_hash = source.Read<u32>();
+                    QString name = QString::fromStdString(source.ReadString());
+                    bool sync = source.Read<u8>() ? true : false;
+                    uint data_size = source.Read<u32>();
+                    
+                    // Read the component data into a separate byte array, then deserialize from there.
+                    // This way the whole stream should not desync even if something goes wrong
+                    QByteArray comp_bytes;
+                    comp_bytes.resize(data_size);
+                    if (data_size)
+                        source.ReadArray<u8>((u8*)comp_bytes.data(), comp_bytes.size());
+                    
+                    try
+                    {
+                        ComponentPtr new_comp = entity->GetOrCreateComponent(type_hash, name);
+                        if (new_comp)
+                        {
+                            new_comp->SetNetworkSyncEnabled(sync);
+                            if (data_size)
+                            {
+                                DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
+                                new_comp->DeserializeFromBinary(comp_source, change);
+                            }
+                        }
+                        else
+                            LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    }
+                    catch (...)
+                    {
+                        LogError("Failed to load component " + framework_->GetComponentManager()->GetComponentTypeName(type_hash).toStdString());
+                    }
+                }
+
+                EmitEntityCreated(entity, change);
+                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
+                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
+                foreach(ComponentPtr component, entity->GetComponentVector())
+                    component->ComponentChanged(change);
+            }
+        }
+        catch (...)
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     QByteArray SceneManager::GetEntityXml(Scene::Entity *entity)
     {

@@ -224,6 +224,8 @@ namespace Scene
             \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
             \return true if successful
+
+            \todo Add replaceOnConflict parameter
          */
         bool LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change);
 
@@ -236,11 +238,13 @@ namespace Scene
         //! Load the scene from binary
         /*! Note: will remove all existing entities
             \param filename File name
+            \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-           
             \return true if successful
+
+            \todo Add replaceOnConflict parameter
          */
-        bool LoadSceneBinary(const std::string& filename, AttributeChange::Type change);
+        bool LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change);
 
         //! Save the scene to binary
         /*! \param filename File name
@@ -248,7 +252,7 @@ namespace Scene
          */
         bool SaveSceneBinary(const std::string& filename);
 
-        //! Creates scene from XML.
+        //! Creates scene content from XML.
         /*! \param xml XML document as string.
             \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
@@ -263,6 +267,23 @@ namespace Scene
             \return true if successful
          */
         bool CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
+
+        //! Creates scene content from binary file.
+        /*! \param filename File name.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return true if successful
+         */
+        bool CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+
+        //! This is an overloaded function.
+        /*! \param data Data buffer.
+            \param numBytes Data size.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return true if successful
+         */
+        bool CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
     signals:
         //! Signal when an attribute of a component has changed
