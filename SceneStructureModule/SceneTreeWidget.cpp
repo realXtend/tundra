@@ -177,11 +177,11 @@ void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
         else
             event->acceptProposedAction();
     }
-    else if(event->mimeData()->hasUrls())
-        event->accept();
-    else
-        event->ignore();
 */
+    if (e->mimeData()->hasUrls())
+        e->accept();
+    else
+        e->ignore();
 }
 
 void SceneTreeWidget::dragMoveEvent(QDragMoveEvent *e)
@@ -227,19 +227,19 @@ void SceneTreeWidget::dragMoveEvent(QDragMoveEvent *e)
         else
             event->acceptProposedAction();
     }
-    else if(event->mimeData()->hasUrls())
-        event->accept();
-    else
-        event->ignore();
 */
+    if (e->mimeData()->hasUrls())
+        e->accept();
+    else
+        e->ignore();
 }
 
 void SceneTreeWidget::dropEvent(QDropEvent *e)
 {
-/*
-    const QMimeData *data = event->mimeData();
+    const QMimeData *data = e->mimeData();
     if (data->hasUrls())
     {
+/*
         InventoryItemModel *itemModel = dynamic_cast<InventoryItemModel *>(model());
         if (!itemModel)
         {
@@ -253,22 +253,51 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             event->ignore();
             return;
         }
+*/
+        const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+        if (!scene)
+        {
+            e->ignore();
+            return;
+        }
 
-        QStringList filenames, itemnames;
-        QListIterator<QUrl> it(data->urls());
-        while(it.hasNext())
-            filenames << it.next().path();
+        ///\todo Is this is just initial quick'n'dirty implementation.
+        foreach(QUrl url, data->urls())
+        {
+            QString filename = url.path();
+#ifdef _WINDOWS
+            // This is very annoying: we have '/' as the first char and on windows the filename is not indentifed properly.
+            // But on other platforms the '/' is valid/required.
+            filename = filename.mid(1);
+#endif
+            if (filename.toLower().indexOf(".scene") != -1)
+            {
+                boost::filesystem::path path(filename.toStdString());
+                std::string dirname = path.branch_path().string();
 
-        if (!filenames.isEmpty())
-            m->UploadFiles(filenames, itemnames, 0);
+                TundraLogic::SceneImporter importer(framework);
+                ///\todo Take into account asset sources.
+                importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, false, true, true);
+            }
+            else if (filename.toLower().indexOf(".xml") != -1)
+            {
+                scene->LoadSceneXML(filename.toStdString(), false, AttributeChange::Replicate);
+            }
+            else if (filename.toLower().indexOf(".nbf") != -1)
+            {
+                scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+            }
+            else
+            {
+                LogError("Unsupported file extension: " + filename.toStdString());
+            }
+        }
 
-        event->acceptProposedAction();
+        e->acceptProposedAction();
 
-        itemModel->CheckTreeForDirtys();
     }
     else
-        QTreeView::dropEvent(event);
-*/
+        QTreeWidget::dropEvent(e);
 }
 
 QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
