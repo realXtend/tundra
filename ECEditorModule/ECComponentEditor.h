@@ -49,9 +49,8 @@ namespace ECEditor
         //void UpdateEditorUI();
 
     public slots:
-        //! W
-        //! \bug When user reinitialize the attribute editor's properties the order will go invalid.
-        //void AttributeEditorUpdated(const std::string &attributeName);
+        //! slot listenes if attribute editor has been reinitialized and need to added a new QProperty to brower.
+        void OnEditorChanged(const QString &name);
 
     private slots:
         //! When component's attribute has been changed, this method is called.
