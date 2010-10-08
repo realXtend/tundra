@@ -459,7 +459,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundr
     if (tundra_mode)
     {
         framework_->GetEventManager()->SendEvent("Input", InputEvents::INPUTSTATE_FREECAMERA, 0);
-        OgreRenderer::EC_OgrePlaceable* placeableptr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
+        EC_Placeable* placeableptr = checked_static_cast<EC_Placeable*>(placeable.get());
         // Initialize viewing dir so that camera isn't upside down
         placeableptr->LookAt(Vector3df(1,0,0));
     }

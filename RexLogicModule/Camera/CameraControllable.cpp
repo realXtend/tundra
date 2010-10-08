@@ -260,7 +260,7 @@ namespace RexLogic
             {
                 // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
                 EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
-                OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                EC_Placeable *placeable = target->GetComponent<EC_Placeable>().get();
                 if (netpos && placeable)
                 {
                     Vector3df avatar_pos = placeable->GetPosition();
@@ -281,7 +281,7 @@ namespace RexLogic
                     if (current_state_ == FirstPerson)
                     {
                         // Try to use head bone from target entity to get the first person camera position
-                        OgreRenderer::EC_Mesh *mesh = target->GetComponent<OgreRenderer::EC_Mesh>().get();
+                        EC_Mesh *mesh = target->GetComponent<EC_Mesh>().get();
                         EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
                         bool fallback = true;
                         if (mesh && appearance)

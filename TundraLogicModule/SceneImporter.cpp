@@ -8,7 +8,7 @@
 #include "TundraLogicModule.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_Name.h"
 
@@ -442,15 +442,15 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                 TundraLogicModule::LogInfo("Updating existing entity " + node_name);
             }
             
-            OgreRenderer::EC_Mesh* meshPtr = 0;
+            EC_Mesh* meshPtr = 0;
             EC_Name* namePtr = 0;
-            OgreRenderer::EC_OgrePlaceable* placeablePtr = 0;
+            EC_Placeable* placeablePtr = 0;
             
             if (entity)
             {
-                meshPtr = checked_static_cast<OgreRenderer::EC_Mesh*>(entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), change).get());
+                meshPtr = checked_static_cast<EC_Mesh*>(entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
                 namePtr = checked_static_cast<EC_Name*>(entity->GetOrCreateComponent(EC_Name::TypeNameStatic(), change).get());
-                placeablePtr = checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(entity->GetOrCreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic(), change).get());
+                placeablePtr = checked_static_cast<EC_Placeable*>(entity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
                 
                 if ((meshPtr) && (namePtr) && (placeablePtr))
                 {

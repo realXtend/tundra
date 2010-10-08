@@ -18,11 +18,11 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces Ui SceneManager ECEditorModule TundraLogicModule)
+use_modules (Core Foundation Interfaces Ui SceneManager ECEditorModule TundraLogicModule Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces Ui SceneManager ECEditorModule TundraLogicModule)
+link_modules (Core Foundation Interfaces Ui SceneManager ECEditorModule TundraLogicModule Input)
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
