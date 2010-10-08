@@ -746,7 +746,11 @@ namespace ECEditor
             componentGroups_.push_back(compGroup);
 
         if(treeWidget_)
-            treeWidget_->collapseItem(newItem);
+        {
+            treeWidget_->expandItem(newItem);
+            for(uint i = 0; i < newItem->childCount(); i++)
+                treeWidget_->collapseItem(newItem->child(i));
+        }
     }
 
     void ECBrowser::RemoveComponentFromGroup(IComponent *comp)

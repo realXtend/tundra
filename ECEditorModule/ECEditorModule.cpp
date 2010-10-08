@@ -5,7 +5,6 @@
 
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
-#include "EC_SerializationTest.h"
 #include "EcXmlEditorWidget.h"
 
 #include "EventManager.h"
@@ -40,7 +39,6 @@ namespace ECEditor
     
     void ECEditorModule::Load()
     {
-        DECLARE_MODULE_EC(EC_SerializationTest);
     }
 
     void ECEditorModule::Initialize()

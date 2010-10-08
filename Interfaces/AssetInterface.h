@@ -7,6 +7,8 @@
 #include "CoreModuleApi.h"
 #include "CoreTypes.h"
 
+#include <QMetaType>
+
 namespace Foundation
 {
     class AssetInterface;
@@ -67,5 +69,7 @@ namespace Foundation
         virtual AssetMetadataInterface* GetMetadata() const = 0;
     };
 }
+
+Q_DECLARE_METATYPE(Foundation::AssetReference)
 
 #endif

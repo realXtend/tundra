@@ -16,6 +16,7 @@
 
 #include <QVariant>
 #include <QStringList>
+#include <QScriptEngine>
 
 #include "kNet.h"
 
@@ -375,6 +376,191 @@ template<> void Attribute<Transform>::FromString(const std::string& str, Attribu
     Set(result, change);
 }
 
+    // FROMQVARIANT TEMPLATE IMPLEMENTATIONS.
+
+template<> void Attribute<QString>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant.toString(), change);
+}
+
+template<> void Attribute<bool>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant.toBool(), change);
+}
+
+template<> void Attribute<int>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant.toInt(), change);
+}
+
+template<> void Attribute<uint>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant.toUInt(), change);
+}
+
+template<> void Attribute<float>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant.toFloat(), change);
+}
+
+template<> void Attribute<Vector3df>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<Vector3df>(variant), change);
+}
+
+template<> void Attribute<Color>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<Color>(variant), change);
+}
+
+template<> void Attribute<Quaternion>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<Quaternion>(variant), change);
+}
+
+template<> void Attribute<Foundation::AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<Foundation::AssetReference>(variant), change);
+}
+
+template<> void Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(variant, change);
+}
+
+template<> void Attribute<QVariantList >::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<QVariantList>(variant), change);
+}
+
+template<> void Attribute<Transform>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+{
+    Set(qvariant_cast<Transform>(variant), change); 
+}
+
+    // TOQVARIANT TEMPLATE IMPLEMENTATIONS.
+
+template<> QVariant Attribute<QString>::ToQVariant() const
+{
+    return QVariant(Get());
+}
+
+template<> QVariant Attribute<bool>::ToQVariant() const
+{
+    return QVariant(Get());
+}
+
+template<> QVariant Attribute<int>::ToQVariant() const
+{
+    return QVariant(Get());
+}
+
+template<> QVariant Attribute<uint>::ToQVariant() const
+{
+    return QVariant(Get());
+}
+
+template<> QVariant Attribute<float>::ToQVariant() const
+{
+    return QVariant(Get());
+}
+
+template<> QVariant Attribute<Vector3df>::ToQVariant() const
+{
+    return QVariant::fromValue<Vector3df>(Get());
+}
+    
+template<> QVariant Attribute<Quaternion>::ToQVariant() const
+{
+    return QVariant::fromValue<Quaternion>(Get());
+}
+
+template<> QVariant Attribute<Color>::ToQVariant() const
+{
+    return QVariant::fromValue<Color>(Get());
+}
+
+template<> QVariant Attribute<Foundation::AssetReference>::ToQVariant() const
+{
+    return QVariant::fromValue<Foundation::AssetReference>(Get());
+}
+
+template<> QVariant Attribute<QVariant>::ToQVariant() const
+{
+    return Get();
+}
+
+template<> QVariant Attribute<QVariantList >::ToQVariant() const
+{
+    return QVariant::fromValue<QVariantList>(Get());
+}
+
+template<> QVariant Attribute<Transform>::ToQVariant() const
+{
+    return QVariant::fromValue<Transform>(Get());
+}
+
+    // FROMSCRIPTVALUE TEMPLATE IMPLEMENTATIONS.
+
+template<> void Attribute<QString>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QString>(value), change);
+}
+
+template<> void Attribute<bool>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<bool>(value), change);
+}
+
+template<> void Attribute<int>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<int>(value), change);
+}
+
+template<> void Attribute<uint>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<uint>(value), change);
+}
+
+template<> void Attribute<float>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<float>(value), change);
+}
+
+template<> void Attribute<Vector3df>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<Vector3df>(value), change);
+}
+    
+template<> void Attribute<Quaternion>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<Quaternion>(value), change);
+}
+
+template<> void Attribute<Color>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<Color>(value), change);
+}
+
+template<> void Attribute<Foundation::AssetReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<Foundation::AssetReference>(value), change);
+}
+
+template<> void Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QVariant>(value), change);
+}
+
+template<> void Attribute<QVariantList>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<QVariantList>(value), change);
+}
+
+template<> void Attribute<Transform>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+{
+    Set(qScriptValueToValue<Transform>(value), change);
+}
 // TOBINARY TEMPLATE IMPLEMENTATIONS.
 
 template<> void Attribute<QString>::ToBinary(kNet::DataSerializer& dest) const

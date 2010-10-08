@@ -7,7 +7,7 @@ GetEntityComponents()
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h
+file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h
     ECBrowser.h EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h
     ECComponentEditor.h LineEditPropertyFactory.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
