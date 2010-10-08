@@ -42,9 +42,17 @@ private:
     /// Scene structure window.
     SceneStructureWindow *sceneWindow;
 
+    /// Input context.
+    boost::shared_ptr<InputContext> inputContext;
+
 private slots:
     /// Shows scene structure window.
     void ShowSceneStructureWindow();
+
+    /// Handles KeyPressed() signal from input context.
+    /** @param e Key event.
+    */
+    void HandleKeyPressed(KeyEvent *e);
 };
 
 #endif

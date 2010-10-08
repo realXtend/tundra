@@ -17,6 +17,7 @@
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "Input.h"
 
 #include "MemoryLeakCheck.h"
 
@@ -27,8 +28,6 @@ namespace ECEditor
     ECEditorModule::ECEditorModule() :
         IModule(name_static_),
         scene_event_category_(0),
-        framework_event_category_(0),
-        input_event_category_(0),
         network_state_event_category_(0),
         editor_window_(0),
         xmlEditor_(0)
@@ -67,11 +66,13 @@ namespace ECEditor
             Console::Bind(this, &ECEditorModule::EditDynamicComponent)));
 
         scene_event_category_ = event_manager_->QueryEventCategory("Scene");
-        framework_event_category_ = event_manager_->QueryEventCategory("Framework");
-        input_event_category_ = event_manager_->QueryEventCategory("Input");
         network_state_event_category_ = event_manager_->QueryEventCategory("NetworkState");
 
         AddEditorWindowToUI();
+
+        inputContext = framework_->GetInput()->RegisterInputContext("ECEditorInput", 90);
+        //input->SetTakeKeyboardEventsOverQt(true);
+        connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
     }
 
     void ECEditorModule::Uninitialize()
@@ -262,6 +263,19 @@ namespace ECEditor
         xmlEditor_->SetComponent(components);
         ui->BringWidgetToFront(xmlEditor_);
     }
+
+    void ECEditorModule::HandleKeyPressed(KeyEvent *e)
+    {
+        if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
+            return;
+
+        Input &input = *framework_->GetInput();
+
+        const QKeySequence showEcEditor = input.KeyBinding("ShowECEditor", QKeySequence(Qt::ShiftModifier + Qt::Key_E));
+        if (QKeySequence(e->keyCode | e->modifiers) == showEcEditor)
+            ShowWindow(StringVector());
+    }
+
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
