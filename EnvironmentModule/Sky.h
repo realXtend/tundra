@@ -5,6 +5,11 @@
 
 #include "EC_OgreSky.h"
 #include "EnvironmentModuleApi.h"
+#include "EnvironmentModule.h"
+#include "EC_SkyPlane.h"
+#include "EC_SkyBox.h"
+#include "SceneManager.h"
+#include "Entity.h"
 
 #include <QObject>
 
@@ -37,6 +42,8 @@ namespace Environment
     public:
         Sky(EnvironmentModule *owner);
         virtual ~Sky();
+
+        void Update();
 
         /// Handler for the "RexSky" generic message.
         /// @param data Event data pointer.
@@ -84,7 +91,7 @@ namespace Environment
         void DisableSky();
 
         /// Return that if sky is enabled.
-        bool IsSkyEnabled() const;
+        bool IsSkyEnabled();
 
         /// Enable/Disable sky.
         void EnableSky(bool enabled);
@@ -121,6 +128,29 @@ namespace Environment
         /// @param update_sky do we need to recreate a new sky.
         void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
 
+        template <typename T> T* GetEnviromentSky()
+        {
+            Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+            Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
+    
+            if (entity != 0 )
+                owner_->RemoveLocalEnvironment();
+            else
+            {
+                entity =  active_scene->GetEntityByName("LocalEnvironment").get();
+                if ( entity == 0)
+                    return 0;
+        
+            }
+            
+            T* sky = entity->GetComponent<T >().get();
+    
+            return sky;
+
+        }
+
+       
+
     signals:
         /// Signal is emited when sky is enabled/disabled.
         void SkyEnabled(bool enabled);
@@ -134,6 +164,73 @@ namespace Environment
 
         /// RexLogicModule pointer.
         EnvironmentModule *owner_;
+
+        
+       
+        template <typename T> bool ExistSky() 
+        {
+            if ( GetEnviromentSky<T >() != 0 )
+                return true;
+
+            return false;
+        }
+
+        template <typename T> void CreateSky()
+        {
+
+           Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+           Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
+           
+           // First check that does there exist diffrent skies allready?
+           if ( entity != 0  )
+           {
+               // Remove all other skies!
+               if ( entity->HasComponent(EC_SkyPlane::TypeNameStatic()))
+                   entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()), AttributeChange::Replicate);
+               if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()))
+                   entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()), AttributeChange::Replicate);
+               
+
+           }
+           
+           QString name = "SkyEnvironment";
+           owner_->CreateEnvironmentEntity(name, T::TypeNameStatic());  
+           
+        }
+        
+        template <typename T> void RemoveSky()
+        {
+            T* sky = GetEnviromentSky<T>();
+            
+            if ( sky != 0)
+            {
+                sky->DisableSky();
+            }
+            else 
+                return;
+
+           Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+           Scene::Entity* entity = active_scene->GetEntityByName("SkyEnvironment").get();
+           if (entity == 0)
+           {
+               entity = active_scene->GetEntityByName("LocalEnvironment").get();
+               if ( entity == 0)
+                   return;
+
+               // Local environent! !
+               if ( entity->HasComponent(T::TypeNameStatic()) )
+               {
+                    entity->RemoveComponent(entity->GetComponent(T::TypeNameStatic()));
+               }
+               return;
+           }
+         
+           if ( entity->HasComponent(T::TypeNameStatic()) )
+           {
+                entity->RemoveComponent(entity->GetComponent(T::TypeNameStatic()), AttributeChange::Replicate);
+           }
+        }
+
 
         /// The type of the sky (none, box, dome or plane).
         SkyType type_;
@@ -167,6 +264,9 @@ namespace Environment
 
         /// The scene entity that represents the sky in the currently active world.
         Scene::EntityWeakPtr cachedSkyEntity_;
+
+        QList<request_tag_t > lstRequestTags_;
+        QMap<int, int >  requestMap_;
     };
 }
 
