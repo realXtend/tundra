@@ -88,7 +88,14 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 <b>Reacts on the following actions:</b>
 <ul>
-<li>...
+<li>"PlayAnim": Plays an animation. Usage: PlayAnim <name> [fadein] [exclusive]
+<li>"PlayLoopedAnim": Plays an animation in looped mode. Usage: PlayLoopedAnim <name> [fadein] [exclusive]
+<li>"PlayReverseAnim": Plays an animation reversed. Usage: PlayLoopedAnim <name> [fadein] [exclusive]
+<li>"PlayAnimAutoStop": Plays an animation and autostops (fades out) when finished. Usage: PlayAnimAutoStop <name> [fadein] [exclusive]
+<li>"StopAnim": Stops an animation. Usage: StopAnim <name> [fadeout]
+<li>"StopAllAnims": Stops all animations. Usage: StopAllAnims [fadeout]
+<li>"SetAnimSpeed": Sets speed of a running animation. Use negative speed to play in reverse. Usage: SetAnimSpeed <name> <speed>
+<li>"SetAnimWeight": Sets blending weight of a running animation. May not be effective when animation is already fading in or out. Usage: SetAnimWeight <name> <weight>
 </ul>
 </td>
 </tr>
@@ -277,10 +284,34 @@ public slots:
     //! Get active animations as a simple stringlist
     QStringList GetActiveAnimations() const;
     
+    //! Implements the PlayAnim action
+    void PlayAnim(const QString &name, const QString &fadein, const QString &exclusive);
+    //! Implements the PlayLoopedAnim action
+    void PlayLoopedAnim(const QString &name, const QString &fadein, const QString &exclusive);
+    //! Implements the PlayReverseAnim action
+    void PlayReverseAnim(const QString &name, const QString &fadein, const QString &exclusive);
+    //! Implements the PlayAnimAutoStop action
+    void PlayAnimAutoStop(const QString &name, const QString &fadein, const QString &exclusive);
+    //! Implements the StopAnim action
+    void StopAnim(const QString &name, const QString &fadeout);
+    //! Implements the StopAllAnims action
+    void StopAllAnims(const QString &fadeout);
+    //! Implements the SetAnimSpeed action
+    void SetAnimSpeed(const QString &name, const QString &animspeed);
+    //! Implements the SetAnimWeight action
+    void SetAnimWeight(const QString &name, const QString &animweight);
+    
 public:
 
     //! Returns all running animations
     const AnimationMap& GetRunningAnimations() const { return animations_; }
+
+private slots:
+    //! Called when the parent entity has been set.
+    void UpdateSignals();
+
+    //! Called when some of the attributes has been changed.
+    void AttributeUpdated(IAttribute *attribute);
     
 private:
     //! Constructor
@@ -314,7 +345,7 @@ private:
     Ogre::AnimationState::BoneBlendMask highpriority_mask_;
 
     //! Bone blend mask of low-priority animations
-    Ogre::AnimationState::BoneBlendMask lowpriority_mask_;        
+    Ogre::AnimationState::BoneBlendMask lowpriority_mask_;
 };
 
 #endif

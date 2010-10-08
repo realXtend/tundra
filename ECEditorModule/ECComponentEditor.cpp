@@ -101,8 +101,7 @@ namespace ECEditor
             attributeEditor->UpdateEditorUI();
             groupProperty_->setToolTip("Component type is " + component->TypeName());
             groupProperty_->addSubProperty(attributeEditor->GetProperty());
-
-            //connect(attributeEditor, SIGNAL(AttributeChanged(const std::string &)), this, SLOT(AttributeEditorUpdated(const std::string &)));
+            connect(attributeEditor, SIGNAL(EditorChanged(const QString &)), this, SLOT(OnEditorChanged(const QString &)));
         }
     }
 
@@ -192,6 +191,17 @@ namespace ECEditor
             attributeIter++; 
         }
     }*/
+
+    void ECComponentEditor::OnEditorChanged(const QString &name)
+    {
+        ECAttributeEditorBase *editor = qobject_cast<ECAttributeEditorBase*>(sender());
+        if(!editor)
+        {
+            ECEditorModule::LogWarning("Fail to convert signal sender to ECAttributeEditorBase.");
+            return;
+        }
+        groupProperty_->addSubProperty(editor->GetProperty());
+    }
 
     /*void ECComponentEditor::AttributeEditorUpdated(const std::string &attributeName)
     {
