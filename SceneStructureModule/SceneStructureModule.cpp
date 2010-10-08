@@ -32,12 +32,10 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
-/*
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
-    input = framework_->Input()->RegisterInputContext("SceneStructureInput", 90);
+    inputContext = framework_->GetInput()->RegisterInputContext("SceneStructureInput", 90);
     //input->SetTakeKeyboardEventsOverQt(true);
-    connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
-*/
+    connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()
@@ -58,6 +56,18 @@ void SceneStructureModule::ShowSceneStructureWindow()
 
     ui->AddWidgetToScene(sceneWindow);
     ui->ShowWidget(sceneWindow);
+}
+
+void SceneStructureModule::HandleKeyPressed(KeyEvent *e)
+{
+    if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
+        return;
+
+    Input &input = *framework_->GetInput();
+
+    const QKeySequence showSceneStruct = input.KeyBinding("ShowSceneStructureWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_S));
+    if (QKeySequence(e->keyCode | e->modifiers) == showSceneStruct)
+        ShowSceneStructureWindow();
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
