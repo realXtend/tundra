@@ -1,11 +1,12 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Sky.h"
+
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
 #include "EnvironmentModule.h"
-#include "Sky.h"
-#include "SceneManager.h"
+
 #include "CoreTypes.h"
 #include "OgreTextureResource.h"
 #include "NetworkEvents.h"

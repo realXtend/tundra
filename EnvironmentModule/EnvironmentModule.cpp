@@ -223,7 +223,7 @@ namespace Environment
                 if (sky_.get())
                     sky_->OnTextureReadyEvent(res);
             }
-            Foundation::TextureInterface *decoded_tex = decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
+            Foundation::TextureInterface *decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
             if (decoded_tex)
                 // Pass the texture asset to environment editor.
                 if (environment_editor_)
