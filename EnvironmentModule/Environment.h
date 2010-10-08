@@ -22,7 +22,9 @@ namespace ProtocolUtilities
     class NetworkEventInboundData;
 }
 
+
 class EC_OgreEnvironment;
+
 
 namespace Environment
 {
@@ -214,6 +216,9 @@ namespace Environment
 
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
+
+        /// Bit mask of Caelum components we use.
+        int caelumComponents_;
 
         
 

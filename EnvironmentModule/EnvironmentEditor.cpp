@@ -12,6 +12,7 @@
 #include "Sky.h"
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
+#include "SceneManager.h"
 
 #include "ModuleManager.h"
 #include "ServiceManager.h"
@@ -459,7 +460,8 @@ namespace Environment
             if(sky_type_combo)
             {
                 QObject::connect(sky_type_combo, SIGNAL(activated(int)), this, SLOT(SkyTypeChanged(int)));
-
+                // Clear
+                sky_type_combo->clear();
                 QString sky_type_name;
                 sky_type_name = "Sky box";
                 sky_type_combo->addItem(sky_type_name);
@@ -766,6 +768,7 @@ namespace Environment
 
         QScrollArea *scroll_area = editor_widget_->findChild<QScrollArea *>("scroll_sky_options");
         scroll_area->setWidgetResizable(true);
+        
         if(sky_type == SKYTYPE_BOX)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
@@ -795,7 +798,10 @@ namespace Environment
                 if(!properties_frame)
                     return;
                 // Get sky parameters so we can fill our widgets with the spesific sky information.
-                SkyBoxParameters param = sky->GetSkyBoxParameters();
+                //OgreRenderer::SkyBoxParameters param = sky->GetSkyBoxParameters();
+                
+                EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+          
 
                 QLabel *text_label = new QLabel(properties_frame);
                 text_label->setText("Distance");
@@ -807,7 +813,9 @@ namespace Environment
                 d_spin_box->move(150, 25);
                 d_spin_box->setRange(0, 9999);
                 d_spin_box->show();
-                d_spin_box->setValue(param.distance);
+                //d_spin_box->setValue(param.distance);
+                if ( skyBox != 0)
+                    d_spin_box->setValue(skyBox->distanceAttr.Get());
 
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
@@ -825,6 +833,9 @@ namespace Environment
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
             {
+         
+                EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+               
                 QLineEdit *edit_line = 0;
                 QPushButton *apply_button = 0;
                 for(uint i = 0; i < 1; i++)
@@ -855,7 +866,7 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                SkyPlaneParameters param = sky->GetSkyPlaneParameters();
+                //OgreRenderer::SkyPlaneParameters param = sky->GetSkyPlaneParameters();
 
                 // Create properties for sky plane.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
@@ -873,7 +884,8 @@ namespace Environment
                     spin_box->move(10, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    spin_box->setValue(param.xSegments);
+                    if ( skyPlane != 0 )
+                        spin_box->setValue(skyPlane->xSegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -891,7 +903,8 @@ namespace Environment
                     spin_box->move(50, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    spin_box->setValue(param.ySegments);
+                    if ( skyPlane != 0 )
+                        spin_box->setValue(skyPlane->ySegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -909,7 +922,8 @@ namespace Environment
                     d_spin_box->move(90, 25);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.scale);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->scaleAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -927,7 +941,8 @@ namespace Environment
                     d_spin_box->move(150, 25);
                     d_spin_box->setRange(0, 9999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.distance);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->distanceAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -945,7 +960,8 @@ namespace Environment
                     d_spin_box->move(10, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.tiling);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->tilingAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -963,7 +979,8 @@ namespace Environment
                     d_spin_box->move(70, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.bow);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->bowAttr.Get());
                 }
 
                 apply_button = new QPushButton(properties_frame);
@@ -1436,12 +1453,47 @@ namespace Environment
         if(!sky.get())
             return;
 
+        
         switch(state)
         {
         case Qt::Checked:
-            if(!sky->IsSkyEnabled())
-                sky->ChangeSkyType(sky_type_, true);
-            break;
+            {
+         //   if(!sky->IsSkyEnabled())
+            // Read current sky-type from combobox? 
+                QComboBox *sky_type_combo = editor_widget_->findChild<QComboBox *>("sky_type_combo");
+                if(!sky_type_combo)
+                    return;
+                
+                bool showSky = true;
+                QString text = sky_type_combo->currentText();
+                if(text == "Sky box")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                    
+                    CreateSkyProperties(SKYTYPE_BOX);
+                    UpdateSkyTextureNames();
+                }
+                else if(text == "Sky dome")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                    
+                    CreateSkyProperties(SKYTYPE_DOME);
+                    UpdateSkyTextureNames();
+                }
+                else if(text == "Sky plane")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                    
+                
+                    CreateSkyProperties(SKYTYPE_PLANE);
+                    UpdateSkyTextureNames();
+                }
+                 sky->ChangeSkyType(sky_type_, true);
+                break;
+            }
         case Qt::Unchecked:
             sky->DisableSky();
             break;
@@ -1500,14 +1552,34 @@ namespace Environment
                 {
                     if(sky_type_ == SKYTYPE_BOX)
                     {
+                        EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+                        if ( skyBox != 0)
+                        {
+                           QVariantList lst = skyBox->textureAttr.Get();
+                           lst[index-1] = text_field->text();
+                           skyBox->textureAttr.Set(lst, AttributeChange::Default);
+                          // skyBox->ComponentChanged(AttributeChange::Local);
+                        }
+                        /*
                         RexTypes::RexAssetID sky_textures[6];
                         for(uint i = 0; i < 6; i++)
                             sky_textures[i] = sky->GetSkyTextureID(SKYTYPE_BOX, i);
                         sky_textures[index - 1] = text_field->text().toStdString();
                         sky->SetSkyBoxTextures(sky_textures);
                         sky->RequestSkyTextures();
+                        */
                     }
-                    else if(sky_type_ == SKYTYPE_DOME || sky_type_ == SKYTYPE_PLANE)
+                    else if ( sky_type_ == SKYTYPE_PLANE)
+                    {
+                        EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+                        if ( skyPlane != 0 )
+                        {       
+                            skyPlane->textureAttr.Set(text_field->text(), AttributeChange::Default);
+                       //     skyPlane->ComponentChanged(AttributeChange::Local);
+
+                        }
+                    }
+                    else if(sky_type_ == SKYTYPE_DOME )
                     {
                         sky->SetSkyTexture(text_field->text().toStdString());
                         sky->RequestSkyTextures();
@@ -1526,6 +1598,20 @@ namespace Environment
 
         if(sky_type_ == SKYTYPE_BOX)
         {
+            EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+            if ( skyBox != 0)
+            {
+                QVariantList lst = skyBox->textureAttr.Get();
+                for ( int i =0; i < lst.size() && i < 6; ++i)
+                {
+                    QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
+                    QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
+                    if ( texture_line_edit != 0)
+                        texture_line_edit->setText(lst[i].toString());
+
+                }
+            }
+            /*
             for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
             {
                 QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
@@ -1533,6 +1619,7 @@ namespace Environment
                 if(texture_line_edit)
                     texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_BOX, i)));
             }
+            */
         }
         else if(sky_type_ == SKYTYPE_DOME)
         {
@@ -1545,8 +1632,13 @@ namespace Environment
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-            if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_PLANE, 0)));
+            EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane >();
+            if ( skyPlane != 0 && texture_line_edit != 0)
+            {
+                texture_line_edit->setText(skyPlane->textureAttr.Get());
+            }
+            //if(texture_line_edit)
+            //    texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_PLANE, 0)));
         }
     }
 
@@ -1568,13 +1660,21 @@ namespace Environment
                 {
                 case SKYTYPE_BOX:
                     {
-                        SkyBoxParameters sky_param;
+                        //OgreRenderer::SkyBoxParameters sky_param;
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
+                        
+                        //if(dspin_box)
+                        //    sky_param.distance = dspin_box->value();
 
-                        sky->SetSkyBoxParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        //sky->SetSkyBoxParameters(sky_param, sky->IsSkyEnabled());
+                        EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox>();
+                        if ( skyBox != 0 && dspin_box != 0)
+                        {
+                            skyBox->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
+                       //     skyBox->ComponentChanged(AttributeChange::Local);
+                        }
+                            
+                        break;
                     }
                 case SKYTYPE_DOME:
                     {
@@ -1603,39 +1703,57 @@ namespace Environment
                     }
                 case SKYTYPE_PLANE:
                     {
-                        SkyPlaneParameters sky_param;
-                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
-                        if(spin_box)
-                            sky_param.xSegments = spin_box->value();
-                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
-                        if(spin_box)
-                            sky_param.ySegments = spin_box->value();
-                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("scale_double_spin");
-                        if(dspin_box)
-                            sky_param.scale = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
-                        if(dspin_box)
-                            sky_param.tiling = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("bow_double_spin");
-                        if(dspin_box)
-                            sky_param.bow = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
+                        //OgreRenderer::SkyPlaneParameters sky_param;
+                        EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+                        if ( skyPlane == 0 )
+                            break;
 
-                        sky->SetSkyPlaneParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
+                        if(spin_box != 0)
+                            skyPlane->xSegmentsAttr.Set(spin_box->value(), AttributeChange::Default);
+                             
+                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
+                        if(spin_box != 0)
+                            skyPlane->ySegmentsAttr.Set(spin_box->value(), AttributeChange::Default);
+                            //sky_param.ySegments = spin_box->value();
+                         
+                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("scale_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->scaleAttr.Set(dspin_box->value(), AttributeChange::Default);
+
+                        //    sky_param.scale = dspin_box->value();
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->tilingAttr.Set(dspin_box->value(), AttributeChange::Default);
+
+                            //sky_param.tiling = dspin_box->value();
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("bow_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->bowAttr.Set(dspin_box->value(), AttributeChange::Default);
+                            //sky_param.bow = dspin_box->value();
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
+                            
+                            //sky_param.distance = dspin_box->value();
+
+                        //skyPlane->ComponentChanged(AttributeChange::Local);
+                        //sky->SetSkyPlaneParameters(sky_param, sky->IsSkyEnabled());
+                        break;
                     }
                 }
             }
         }
-
+        
+ /*
         QString start_height("Texture_height_doubleSpinBox_" + QString("%1").arg(button_number + 1));
         QString height_range("Texture_height_range_doubleSpinBox_" + QString("%1").arg(button_number + 1));
         QDoubleSpinBox *start_height_spin = editor_widget_->findChild<QDoubleSpinBox*>(start_height);
         QDoubleSpinBox *height_range_spin = editor_widget_->findChild<QDoubleSpinBox*>(height_range);
         if(start_height_spin && height_range_spin)
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
+  */      
+    
     }
 
    
@@ -2461,25 +2579,39 @@ namespace Environment
         if(!sky.get())
             return;
 
+        QCheckBox *enable_sky_checkbox = editor_widget_->findChild<QCheckBox *>("sky_toggle_box");
+        
+
+        bool showSky = false;
+        if ( enable_sky_checkbox != 0)
+            showSky = enable_sky_checkbox->isChecked();
+        
         const QComboBox *sender = qobject_cast<QComboBox *>(QObject::sender());
         if(sender)
         {
             QString text = sender->itemText(index);
             if(text == "Sky box")
             {
-                sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                
                 CreateSkyProperties(SKYTYPE_BOX);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky dome")
             {
-                sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                
                 CreateSkyProperties(SKYTYPE_DOME);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky plane")
             {
-                sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                
+            
                 CreateSkyProperties(SKYTYPE_PLANE);
                 UpdateSkyTextureNames();
             }
