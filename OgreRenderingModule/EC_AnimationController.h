@@ -310,9 +310,6 @@ private slots:
     //! Called when the parent entity has been set.
     void UpdateSignals();
 
-    //! Called when some of the attributes has been changed.
-    void AttributeUpdated(IAttribute *attribute);
-    
 private:
     //! Constructor
     /*! \param module renderer module
@@ -328,6 +325,9 @@ private:
         \return animationstate, or null if not found
      */
     Ogre::AnimationState* GetAnimationState(Ogre::Entity* entity, const QString& name);
+    
+    //! Auto-associate mesh component if not yet set
+    void AutoAssociateMesh();
     
     //! Resets internal state
     void ResetState();

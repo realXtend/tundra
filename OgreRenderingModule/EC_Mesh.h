@@ -387,7 +387,6 @@ private:
     bool HandleMaterialResourceEvent(event_id_t event_id, IEventData* data);
     request_tag_t RequestResource(const std::string& id, const std::string& type);
     bool HasMaterialsChanged() const;
-    void AttachSkeleton(const QString &skeletonName);
     
     //! placeable component 
     ComponentPtr placeable_;
@@ -397,9 +396,6 @@ private:
     
     //! Ogre mesh entity
     Ogre::Entity* entity_;
-    
-    //! Ogre skeleton
-    Ogre::Skeleton* skeleton_;
     
     //! Attachment entities
     std::vector<Ogre::Entity*> attachment_entities_;
