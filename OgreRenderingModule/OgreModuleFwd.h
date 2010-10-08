@@ -31,8 +31,6 @@ namespace OgreRenderer
     typedef boost::shared_ptr<Renderer> RendererPtr;
     typedef boost::weak_ptr<Renderer> RendererWeakPtr;
 
-    class EC_OgrePlaceable;
-    class EC_Mesh;
     class OgreRenderingModule;
     class LogListener;
     class ResourceHandler;
@@ -49,5 +47,8 @@ namespace OgreRenderer
     typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
     typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 }
+
+class EC_Placeable;
+class EC_Mesh;
 
 #endif

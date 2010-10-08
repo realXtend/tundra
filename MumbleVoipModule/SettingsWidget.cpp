@@ -97,9 +97,13 @@ namespace MumbleVoip
 
         if (provider_ && provider_->Session() && provider_->Session()->GetState() == Communications::InWorldVoice::SessionInterface::STATE_OPEN)
         {
-            averageBandwidthInLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithIn())/1024,'f',1)));
-            averageBandwidthOutLabel->setText( QString("%1 kB/s").arg(QString::number(static_cast<double>(provider_->Session()->GetAverageBandwithOut())/1024,'f',1)));
-            serverInfoLabel->setText(dynamic_cast<Session*>(provider_->Session())->GetServerInfo());
+            Session* session = dynamic_cast<Session*>(provider_->Session());
+            if (session)
+            {
+                averageBandwidthInLabel->setText( QString("%1 kB/s").arg(QString::number(session->GetAverageBandwithIn()/1024,'f',1)));
+                averageBandwidthOutLabel->setText( QString("%1 kB/s").arg(QString::number(session->GetAverageBandwithOut()/1024,'f',1)));
+                serverInfoLabel->setText(session->GetServerInfo());
+            }
         }
         else
         {

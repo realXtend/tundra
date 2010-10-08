@@ -67,7 +67,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this light is placed at. 
+<b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this light is placed at. 
 </table>
 
 */

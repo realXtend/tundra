@@ -47,7 +47,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable and OpenSimPrim</b>.
+<b>Depends on the component Placeable and OpenSimPrim</b>.
 </table>
 */
 class EC_Movable : public IComponent

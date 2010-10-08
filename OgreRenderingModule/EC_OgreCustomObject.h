@@ -10,8 +10,6 @@
 
 #include "Vector3D.h"
 
-namespace OgreRenderer
-{
 //! Ogre custom object component
 /**
 <table class="header">
@@ -43,97 +41,96 @@ Registered by OgreRenderer::OgreRenderingModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 */
-    class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
-    {
-        Q_OBJECT
+class OGRE_MODULE_API EC_OgreCustomObject : public IComponent
+{
+    Q_OBJECT
 
-        DECLARE_EC(EC_OgreCustomObject);
-    public:
-        virtual ~EC_OgreCustomObject();
+    DECLARE_EC(EC_OgreCustomObject);
+public:
+    virtual ~EC_OgreCustomObject();
 
-        //! gets placeable component
-        ComponentPtr GetPlaceable() const { return placeable_; }
+    //! gets placeable component
+    ComponentPtr GetPlaceable() const { return placeable_; }
 
-        //! sets placeable component
-        /*! set a null placeable to detach the object, otherwise will attach
-            \param placeable placeable component
-         */
-        void SetPlaceable(ComponentPtr placeable);
+    //! sets placeable component
+    /*! set a null placeable to detach the object, otherwise will attach
+        \param placeable placeable component
+     */
+    void SetPlaceable(ComponentPtr placeable);
 
-        //! sets draw distance
-        /*! \param draw_distance New draw distance, 0.0 = draw always (default)
-         */
-        void SetDrawDistance(float draw_distance);
+    //! sets draw distance
+    /*! \param draw_distance New draw distance, 0.0 = draw always (default)
+     */
+    void SetDrawDistance(float draw_distance);
 
-        //! Sets if the object casts shadows or not.
-        void SetCastShadows(bool enabled);
+    //! Sets if the object casts shadows or not.
+    void SetCastShadows(bool enabled);
 
-        //! Commit changes from a manual object
-        /*! converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
-            \return true if successful
-         */
-        bool CommitChanges(Ogre::ManualObject* object);
+    //! Commit changes from a manual object
+    /*! converts ManualObject to mesh, makes an entity out of it & clears the manualobject.
+        \return true if successful
+     */
+    bool CommitChanges(Ogre::ManualObject* object);
 
-        //! Sets material on already committed geometry, similar to EC_Mesh
-        /*! \param index submesh index
-            \param material_name material name
-            \return true if successful
-         */
-        bool SetMaterial(uint index, const std::string& material_name);
+    //! Sets material on already committed geometry, similar to EC_Mesh
+    /*! \param index submesh index
+        \param material_name material name
+        \return true if successful
+     */
+    bool SetMaterial(uint index, const std::string& material_name);
 
-        //! gets number of materials (submeshes) in committed geometry
-        uint GetNumMaterials() const;
+    //! gets number of materials (submeshes) in committed geometry
+    uint GetNumMaterials() const;
 
-        //! gets material name from committed geometry
-        /*! \param index submesh index
-            \return name if successful, empty if not committed / illegal index
-         */
-        const std::string& GetMaterialName(uint index) const;
+    //! gets material name from committed geometry
+    /*! \param index submesh index
+        \return name if successful, empty if not committed / illegal index
+     */
+    const std::string& GetMaterialName(uint index) const;
 
-        //! Returns true if geometry has been committed and mesh entity created
-        bool IsCommitted() const { return entity_ != 0; }
+    //! Returns true if geometry has been committed and mesh entity created
+    bool IsCommitted() const { return entity_ != 0; }
 
-        void GetBoundingBox(Vector3df& min, Vector3df& max) const;
+    void GetBoundingBox(Vector3df& min, Vector3df& max) const;
 
-        //! Returns the Ogre entity.
-        Ogre::Entity *GetEntity() const { return entity_; }
+    //! Returns the Ogre entity.
+    Ogre::Entity *GetEntity() const { return entity_; }
 
-    private:
-        //! constructor
-        /*! \param module renderer module
-         */
-        EC_OgreCustomObject(IModule* module);
-        
-        //! attaches entity to placeable
-        void AttachEntity();
-        
-        //! detaches entity from placeable
-        void DetachEntity();
-        
-        //! removes old entity and mesh
-        void DestroyEntity();
-        
-        //! placeable component 
-        ComponentPtr placeable_;
-        
-        //! renderer
-        RendererWeakPtr renderer_;
-        
-        //! Ogre mesh entity (converted from the manual object on commit)
-        Ogre::Entity* entity_;
-        
-        //! object attached to placeable -flag
-        bool attached_;
-        
-        //! whether should cast shadows
-        bool cast_shadows_;
-        
-        //! draw distance
-        float draw_distance_;
-    };
-}
+private:
+    //! constructor
+    /*! \param module renderer module
+     */
+    EC_OgreCustomObject(IModule* module);
+    
+    //! attaches entity to placeable
+    void AttachEntity();
+    
+    //! detaches entity from placeable
+    void DetachEntity();
+    
+    //! removes old entity and mesh
+    void DestroyEntity();
+    
+    //! placeable component 
+    ComponentPtr placeable_;
+    
+    //! renderer
+    OgreRenderer::RendererWeakPtr renderer_;
+    
+    //! Ogre mesh entity (converted from the manual object on commit)
+    Ogre::Entity* entity_;
+    
+    //! object attached to placeable -flag
+    bool attached_;
+    
+    //! whether should cast shadows
+    bool cast_shadows_;
+    
+    //! draw distance
+    float draw_distance_;
+};
 
 #endif

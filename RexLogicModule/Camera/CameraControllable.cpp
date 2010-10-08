@@ -13,8 +13,8 @@
 
 #include "Renderer.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
@@ -186,7 +186,7 @@ namespace RexLogic
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
-            OgreRenderer::EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<EC_OgreCamera>().get();
             if (!cam_comp)     
                 return false;
             if (cam_comp->IsActive())
@@ -237,11 +237,11 @@ namespace RexLogic
         
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *camera_placeable = camera->GetComponent<EC_Placeable>().get();
 
             // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
             EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
-            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = target->GetComponent<EC_Placeable>().get();
             if (netpos && placeable)
             {
                 Vector3df avatar_pos = placeable->GetPosition();
@@ -264,7 +264,7 @@ namespace RexLogic
                     bool fallback = true;
 
                     // Try to use head bone from target entity to get the first person camera position
-                    OgreRenderer::EC_Mesh *mesh = target->GetComponent<OgreRenderer::EC_Mesh>().get();
+                    EC_Mesh *mesh = target->GetComponent<EC_Mesh>().get();
                     EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
                     if (mesh && appearance)
                     {

@@ -194,7 +194,7 @@ def applyanimation(ent, animationuuid, animationname, animationrate):
     try:
         ac = ent.animationcontroller
     except:
-        ent.createComponent('EC_OgreAnimationController')
+        ent.createComponent('EC_AnimationController')
         ac = ent.animationcontroller
         ac.SetMeshEntity(ent.mesh)
     r.sendRexPrimData(ent.Id)

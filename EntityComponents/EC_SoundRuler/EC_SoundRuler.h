@@ -3,7 +3,7 @@
  *
  *  @file   EC_SoundRuler.h
  *  @brief  EC_SoundRuler enables visual sound properties effect for scene entity.
- *  @note   The entity must have EC_OgrePlaceable and EC_OpenSimPrim 
+ *  @note   The entity must have EC_Placeable and EC_OpenSimPrim 
  *  @author Nathan Letwory | http://www.letworyinteractive.com
  */
 
@@ -69,7 +69,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on OgrePlaceable, OgreMesh, OgreCustomObject and OpenSimPrim</b>. @author Nathan Letwory | http://www.letworyinteractive.com
+<b>Depends on Placeable, OgreMesh, OgreCustomObject and OpenSimPrim</b>. @author Nathan Letwory | http://www.letworyinteractive.com
 </table>
 
 */

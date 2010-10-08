@@ -85,9 +85,9 @@
 #include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
@@ -419,12 +419,12 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
 
     // Create camera entity into the scene
     Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
-    ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
+    ComponentPtr placeable = compMgr->CreateComponent(EC_Placeable::TypeNameStatic());
+    ComponentPtr camera = compMgr->CreateComponent(EC_OgreCamera::TypeNameStatic());
     assert(placeable && camera);
     if (!placeable || !camera)
     {
-        LogWarning("Could not create EC_OgrePlaceable of EC_OgreCamera!");
+        LogWarning("Could not create EC_Placeable of EC_OgreCamera!");
         return;
     }
 
@@ -444,7 +444,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
 
     scene->EmitEntityCreated(entity);
     
-    OgreRenderer::EC_OgreCamera *camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+    EC_OgreCamera *camera_ptr = checked_static_cast<EC_OgreCamera*>(camera.get());
     camera_ptr->SetPlaceable(placeable);
     camera_ptr->SetActive();
     camera_entity_ = entity;
@@ -776,7 +776,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
     if (!entity)
         return;
 
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    boost::shared_ptr<EC_Placeable> child_placeable = entity->GetComponent<EC_Placeable>();
     if (!child_placeable)
         return;
 
@@ -805,7 +805,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }
 
-    ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr parent_placeable = parent_entity->GetComponent(EC_Placeable::TypeNameStatic());
     child_placeable->SetParent(parent_placeable);
 }
 
@@ -889,7 +889,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     {
         Scene::Entity &entity = **iter;
 
-        boost::shared_ptr<EC_OgrePlaceable> ogrepos = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> ogrepos = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_NetworkPosition> netpos = entity.GetComponent<EC_NetworkPosition>();
         if (ogrepos && netpos)
         {
@@ -938,12 +938,12 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         }
 
         // General animation controller update
-        boost::shared_ptr<EC_OgreAnimationController> animctrl = entity.GetComponent<EC_OgreAnimationController>();
+        boost::shared_ptr<EC_AnimationController> animctrl = entity.GetComponent<EC_AnimationController>();
         if (animctrl)
             animctrl->Update(frametime);
 
         // Attached sound update
-        boost::shared_ptr<EC_OgrePlaceable> placeable = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> placeable = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_AttachedSound> sound = entity.GetComponent<EC_AttachedSound>();
         if (placeable && sound)
         {
@@ -992,14 +992,14 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
 
     // Get users position
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    boost::shared_ptr<EC_Placeable> placeable = users_avatar->GetComponent<EC_Placeable>();
     if (!placeable)
         return;
 
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
         // Update avatar name tag/hovering widget
-        placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        placeable = avatar->GetComponent<EC_Placeable>();
         if (!placeable)
             continue;
 
@@ -1009,10 +1009,10 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
             continue;
 
         // We need to update the positions so that the distance is right, otherwise were always one frame behind.
-        GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
+        GetCameraEntity()->GetComponent<EC_Placeable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+        Vector3df camera_position = GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 #endif
@@ -1059,7 +1059,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     //divert y because after view/projection transforms, y increses upwards
     scr_y = -scr_y;
 
-    OgreRenderer::EC_OgreCamera * camera = 0;
+    EC_OgreCamera * camera = 0;
 
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
     if (!current_scene.get())
@@ -1071,7 +1071,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     {
         Scene::EntityPtr entity = (*iter);
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        OgreRenderer::EC_OgreCamera* c = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        EC_OgreCamera* c = entity->GetComponent<EC_OgreCamera>().get();
         if (c)
             camera = c;
 
@@ -1215,8 +1215,8 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        OgreRenderer::EC_Mesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
-        OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        EC_Mesh *ec_mesh = entity.GetComponent<EC_Mesh>().get();
+        EC_OgreCustomObject *ec_custom = entity.GetComponent<EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
         {
             if (params[0] == "add")

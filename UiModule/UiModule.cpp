@@ -33,7 +33,7 @@
 #include "InputEvents.h"
 #include "UiServiceInterface.h"
 #include "WorldLogicInterface.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "Renderer.h"
 #include "Entity.h"
@@ -329,8 +329,8 @@ namespace UiServices
         if (!avatar_entity)
             return;
 
-        OgreRenderer::EC_OgrePlaceable *ec_placeable = avatar_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-        OgreRenderer::EC_Mesh *ec_mesh = avatar_entity->GetComponent<OgreRenderer::EC_Mesh>().get();
+        EC_Placeable *ec_placeable = avatar_entity->GetComponent<EC_Placeable>().get();
+        EC_Mesh *ec_mesh = avatar_entity->GetComponent<EC_Mesh>().get();
 
         if (!ec_placeable || !ec_mesh || !avatar_entity->HasComponent("EC_AvatarAppearance"))
             return;
