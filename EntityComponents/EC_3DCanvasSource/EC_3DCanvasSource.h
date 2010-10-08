@@ -72,16 +72,20 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     //! Source
-    Attribute<QString> source_;
+    Q_PROPERTY(QString source READ getsource WRITE setsource);
+	DEFINE_QPROPERTY_ATTRIBUTE(QString, source);
 
     //! Position within source (for example scrollbar value, page number)
-    Attribute<int> position_;
+    Q_PROPERTY(int position READ getposition WRITE setposition);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, position);
 
     //! Submesh number into which to apply the 3DCanvas
-    Attribute<int> submesh_;
-    
+    Q_PROPERTY(int submesh READ getsubmesh WRITE setsubmesh);
+	DEFINE_QPROPERTY_ATTRIBUTE(int, submesh);
+
     //! Show as 2D when clicked
-    Attribute<bool> show2d_;
+    Q_PROPERTY(bool show2d READ getshow2d WRITE setshow2d);
+	DEFINE_QPROPERTY_ATTRIBUTE(bool, show2d);
 
     bool manipulate_ec_3dcanvas;
 

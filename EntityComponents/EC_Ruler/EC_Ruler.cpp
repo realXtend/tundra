@@ -3,7 +3,7 @@
  *
  *  @file   EC_Ruler.cpp
  *  @brief  EC_Ruler enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
+ *  @note   The entity must have EC_Placeable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
@@ -14,7 +14,7 @@
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "LoggingFunctions.h"
@@ -116,7 +116,7 @@ void EC_Ruler::Create()
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
     assert(placeable);
     if (!placeable)
         return;

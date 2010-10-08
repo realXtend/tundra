@@ -1,7 +1,9 @@
-// For conditions of distribution and use, see copyright notice in license.txt
-
-/// @file QtUtils.cpp
-/// @brief Cross-platform utility functions using Qt.
+/**
+ *  For conditions of distribution and use, see copyright notice in license.txt
+ *
+ *  @file   QtUtils.cpp
+ *  @brief  Cross-platform utility functions using Qt.
+ */
 
 #include "StableHeaders.h"
 #include "QtUtils.h"
@@ -42,23 +44,44 @@ class CustomFileDialog : public QFileDialog
 };
 
 QFileDialog* QtUtils::OpenFileDialogNonModal(
-    const std::string& filter,
-    const std::string& caption,
-    const std::string& dir,
+    const QString& filter,
+    const QString& caption,
+    const QString& dir,
     QWidget* parent,
     QObject* initiator,
     const char* slot)
 {
-    QFileDialog* dialog = new CustomFileDialog(parent, QString::fromStdString(caption), QString::fromStdString(dir), 
-        QString::fromStdString(filter));
+    QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, filter);
     dialog->setAttribute(Qt::WA_DeleteOnClose);
     QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
     dialog->show();
     dialog->resize(500, 300);
+
     if (dialog->graphicsProxyWidget())
-    {
-        dialog->graphicsProxyWidget()->setWindowTitle(QString::fromStdString(caption));
-    }
+        dialog->graphicsProxyWidget()->setWindowTitle(caption);
+
+    return dialog;
+}
+
+QFileDialog *QtUtils::SaveFileDialogNonModal(
+    const QString& filter,
+    const QString& caption,
+    const QString& dir,
+    QWidget* parent,
+    QObject* initiator,
+    const char* slot)
+{
+    QFileDialog* dialog = new CustomFileDialog(parent, caption, dir, filter);
+    dialog->setFileMode(QFileDialog::AnyFile);
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setAttribute(Qt::WA_DeleteOnClose);
+    QObject::connect(dialog, SIGNAL(finished(int)), initiator, slot);
+    dialog->show();
+    dialog->resize(500, 300);
+
+    if (dialog->graphicsProxyWidget())
+        dialog->graphicsProxyWidget()->setWindowTitle(caption);
+
     return dialog;
 }
 

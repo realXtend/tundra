@@ -105,7 +105,7 @@ namespace Scene
         RemoveComponent(ptr);
     }
 
-    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
@@ -115,6 +115,8 @@ namespace Scene
         ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }
@@ -123,7 +125,7 @@ namespace Scene
         return ComponentPtr();
     }
 
-    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
@@ -133,6 +135,8 @@ namespace Scene
         ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }

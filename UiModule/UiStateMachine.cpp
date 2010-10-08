@@ -238,8 +238,11 @@ namespace CoreUi
                 SwitchToEtherScene();
                 break;
             case UiServices::Connected:
-                // Ether notifies when its animations are done after we are connected
-                // and switch will happen then
+                // Dynamic ether notifies when its animations are done after we are connected
+                // and switch will happen then. If static ether is enabled we do the switch here.
+#ifndef DYNAMIC_LOGIN_SCENE
+                SwitchToInworldScene();
+#endif
                 break;
             case UiServices::Failed:
                 connection_state_ = UiServices::Disconnected;

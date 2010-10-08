@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Renderer.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
@@ -16,8 +16,7 @@
 
 static const float MAX_VISIBILITY_DISTANCE = 50.f;
 
-namespace OgreRenderer
-{
+using namespace OgreRenderer;
 
 EC_OgreMovableTextOverlay::EC_OgreMovableTextOverlay(IModule* module) :
     IComponent(module->GetFramework()),
@@ -161,10 +160,10 @@ void EC_OgreMovableTextOverlay::SetPlaceable(ComponentPtr placeable)
         return;
     }
 
-    EC_OgrePlaceable* placeableptr = dynamic_cast<EC_OgrePlaceable*>(placeable.get());
+    EC_Placeable* placeableptr = dynamic_cast<EC_Placeable*>(placeable.get());
     if (!placeableptr)
     {
-        OgreRenderingModule::LogError("Placeable is not" + EC_OgrePlaceable::TypeNameStatic().toStdString());
+        OgreRenderingModule::LogError("Placeable is not" + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
 
@@ -179,7 +178,7 @@ void EC_OgreMovableTextOverlay::AttachNode()
     if ((node_) && (!attached_) && (placeable_))
     {
         Ogre::SceneNode* parent =
-            checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetLinkSceneNode();
+            checked_static_cast<EC_Placeable*>(placeable_.get())->GetLinkSceneNode();
         parent->addChild(node_);
         attached_ = true;
     }
@@ -189,7 +188,7 @@ void EC_OgreMovableTextOverlay::DetachNode()
 {
     if ((node_) && (attached_) && (placeable_))
     {
-        Ogre::SceneNode* parent = checked_static_cast<EC_OgrePlaceable*>(placeable_.get())->GetLinkSceneNode();
+        Ogre::SceneNode* parent = checked_static_cast<EC_Placeable*>(placeable_.get())->GetLinkSceneNode();
         parent->removeChild(node_);
         attached_ = false;
     }
@@ -365,4 +364,3 @@ void EC_OgreMovableTextOverlay::SetAlphaChannelIntensity(const float &distance)
     text_element_->setColour(Ogre::ColourValue(fontColor_.r, fontColor_.g, fontColor_.b, textAlpha));
 }
 
-}

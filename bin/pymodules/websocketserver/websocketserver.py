@@ -38,7 +38,7 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         self.previd += 1
 
         ent.placeable.Position = Vec3(position[0], position[1], position[2])
-        print Quat(mathutils.euler_to_quat(orientation))
+
         ent.placeable.Orientation = Quat(mathutils.euler_to_quat(orientation))
 
         print "New entity for web socket presence at", ent.placeable.Position
@@ -75,7 +75,11 @@ def handle_clients(ws):
     scene = naali.getScene("World")
     
     while True:
-            
+        # "main loop" for the server. When your done with the
+        # connection break from the loop. It is important to remove
+        # the socket from clients set
+
+
         try:
             msg = ws.wait()
         except socket.error:
@@ -106,13 +110,12 @@ def handle_clients(ws):
             sendAll(['newAvatar', {'id': myid, 'position': start_position, 'orientation': start_orientation}])
 
             ents = scene.GetEntitiesWithComponentRaw("EC_DynamicComponent")
+
             for ent in ents:
                 id = ent.Id
                 position = ent.placeable.Position.x(), ent.placeable.Position.y(), ent.placeable.Position.z()
                 orientation = mathutils.quat_to_euler(ent.placeable.Orientation)
-                sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml' :scene.GetEntityXml(ent).data()}])
-                print "did addobject", id, position, orientation, scene.GetEntityXml(ent).data()
-
+                sendAll(['addObject', {'id': id, 'position': position, 'orientation': orientation, 'xml': scene.GetEntityXml(ent).data()}])
 
         elif function == 'Naps':
             ws.send(json.dumps(['logMessage', {'message': 'Naps itelles!'}]))
@@ -148,11 +151,9 @@ def handle_clients(ws):
             y_max = params['height']
             x_max = params['width']
 
-        elif function == 'addObject':
-            pass
-
         elif function == 'reboot':
             break
+
 
     clients.remove(ws)
     print 'END', ws

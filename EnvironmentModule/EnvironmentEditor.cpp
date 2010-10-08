@@ -61,7 +61,7 @@ namespace Environment
         action_(Flatten),
         brush_size_(Small),
         terrainPaintMode_(INACTIVE),
-        sky_type_(OgreRenderer::SKYTYPE_NONE),
+        sky_type_(SKYTYPE_NONE),
         ambient_(false),
         edit_terrain_active_(false),
         sun_color_picker_(0),
@@ -472,13 +472,13 @@ namespace Environment
                 int index = -1;
                 switch(sky->GetSkyType())
                 {
-                case OgreRenderer::SKYTYPE_BOX:
+                case SKYTYPE_BOX:
                     index = 0;
                     break;
-                case OgreRenderer::SKYTYPE_DOME:
+                case SKYTYPE_DOME:
                     index = 1;
                     break;
-                case OgreRenderer::SKYTYPE_PLANE:
+                case SKYTYPE_PLANE:
                     index = 2;
                     break;
                 }
@@ -750,7 +750,7 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::CreateSkyProperties(OgreRenderer::SkyType sky_type)
+    void EnvironmentEditor::CreateSkyProperties(SkyType sky_type)
     {
         if(!environment_module_)
             return;
@@ -766,7 +766,7 @@ namespace Environment
 
         QScrollArea *scroll_area = editor_widget_->findChild<QScrollArea *>("scroll_sky_options");
         scroll_area->setWidgetResizable(true);
-        if(sky_type == OgreRenderer::SKYTYPE_BOX)
+        if(sky_type == SKYTYPE_BOX)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
@@ -795,7 +795,7 @@ namespace Environment
                 if(!properties_frame)
                     return;
                 // Get sky parameters so we can fill our widgets with the spesific sky information.
-                OgreRenderer::SkyBoxParameters param = sky->GetSkyBoxParameters();
+                SkyBoxParameters param = sky->GetSkyBoxParameters();
 
                 QLabel *text_label = new QLabel(properties_frame);
                 text_label->setText("Distance");
@@ -820,7 +820,7 @@ namespace Environment
                 //widget->resize(scroll_area->width(), 15 + edit_line->pos().y() + edit_line->height());
             }
         }
-        else if(sky_type == OgreRenderer::SKYTYPE_PLANE)
+        else if(sky_type == SKYTYPE_PLANE)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
@@ -855,7 +855,7 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                OgreRenderer::SkyPlaneParameters param = sky->GetSkyPlaneParameters();
+                SkyPlaneParameters param = sky->GetSkyPlaneParameters();
 
                 // Create properties for sky plane.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
@@ -979,7 +979,7 @@ namespace Environment
                 //widget->resize(scroll_area->width(), 15 + edit_line->pos().y() + edit_line->height());
             }
         }
-        else if(sky_type == OgreRenderer::SKYTYPE_DOME)
+        else if(sky_type == SKYTYPE_DOME)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
@@ -1014,7 +1014,7 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                OgreRenderer::SkyDomeParameters param = sky->GetSkyDomeParameters();
+                SkyDomeParameters param = sky->GetSkyDomeParameters();
 
                 // Create properties for sky dome.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
@@ -1458,13 +1458,13 @@ namespace Environment
         int index = -1;
         switch(sky->GetSkyType())
         {
-        case OgreRenderer::SKYTYPE_BOX:
+        case SKYTYPE_BOX:
             index = 0;
             break;
-        case OgreRenderer::SKYTYPE_DOME:
+        case SKYTYPE_DOME:
             index = 1;
             break;
-        case OgreRenderer::SKYTYPE_PLANE:
+        case SKYTYPE_PLANE:
             index = 2;
             break;
         }
@@ -1498,16 +1498,16 @@ namespace Environment
             {
                 if(text_field->text() != "")
                 {
-                    if(sky_type_ == OgreRenderer::SKYTYPE_BOX)
+                    if(sky_type_ == SKYTYPE_BOX)
                     {
                         RexTypes::RexAssetID sky_textures[6];
                         for(uint i = 0; i < 6; i++)
-                            sky_textures[i] = sky->GetSkyTextureID(OgreRenderer::SKYTYPE_BOX, i);
+                            sky_textures[i] = sky->GetSkyTextureID(SKYTYPE_BOX, i);
                         sky_textures[index - 1] = text_field->text().toStdString();
                         sky->SetSkyBoxTextures(sky_textures);
                         sky->RequestSkyTextures();
                     }
-                    else if(sky_type_ == OgreRenderer::SKYTYPE_DOME || sky_type_ == OgreRenderer::SKYTYPE_PLANE)
+                    else if(sky_type_ == SKYTYPE_DOME || sky_type_ == SKYTYPE_PLANE)
                     {
                         sky->SetSkyTexture(text_field->text().toStdString());
                         sky->RequestSkyTextures();
@@ -1524,29 +1524,29 @@ namespace Environment
         if(!sky.get())
             return;
 
-        if(sky_type_ == OgreRenderer::SKYTYPE_BOX)
+        if(sky_type_ == SKYTYPE_BOX)
         {
             for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
             {
                 QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
                 QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
                 if(texture_line_edit)
-                    texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_BOX, i)));
+                    texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_BOX, i)));
             }
         }
-        else if(sky_type_ == OgreRenderer::SKYTYPE_DOME)
+        else if(sky_type_ == SKYTYPE_DOME)
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
             if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_DOME, 0)));
+                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_DOME, 0)));
         }
-        else if(sky_type_ == OgreRenderer::SKYTYPE_PLANE)
+        else if(sky_type_ == SKYTYPE_PLANE)
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
             if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_PLANE, 0)));
+                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_PLANE, 0)));
         }
     }
 
@@ -1563,12 +1563,12 @@ namespace Environment
             // Make sure that the signal sender was some of those apply buttons.
             if(sender->objectName() == "apply_properties_button")
             {
-                OgreRenderer::SkyType sky_type = sky->GetSkyType();
+                SkyType sky_type = sky->GetSkyType();
                 switch(sky_type)
                 {
-                case OgreRenderer::SKYTYPE_BOX:
+                case SKYTYPE_BOX:
                     {
-                        OgreRenderer::SkyBoxParameters sky_param;
+                        SkyBoxParameters sky_param;
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
                         if(dspin_box)
                             sky_param.distance = dspin_box->value();
@@ -1576,9 +1576,9 @@ namespace Environment
                         sky->SetSkyBoxParameters(sky_param, sky->IsSkyEnabled());
                     break;
                     }
-                case OgreRenderer::SKYTYPE_DOME:
+                case SKYTYPE_DOME:
                     {
-                        OgreRenderer::SkyDomeParameters sky_param;
+                        SkyDomeParameters sky_param;
                         QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
                         if(spin_box)
                             sky_param.xSegments = spin_box->value();
@@ -1601,9 +1601,9 @@ namespace Environment
                         sky->SetSkyDomeParameters(sky_param, sky->IsSkyEnabled());
                     break;
                     }
-                case OgreRenderer::SKYTYPE_PLANE:
+                case SKYTYPE_PLANE:
                     {
-                        OgreRenderer::SkyPlaneParameters sky_param;
+                        SkyPlaneParameters sky_param;
                         QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
                         if(spin_box)
                             sky_param.xSegments = spin_box->value();
@@ -2467,20 +2467,20 @@ namespace Environment
             QString text = sender->itemText(index);
             if(text == "Sky box")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_BOX, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_BOX);
+                sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                CreateSkyProperties(SKYTYPE_BOX);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky dome")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_DOME, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_DOME);
+                sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                CreateSkyProperties(SKYTYPE_DOME);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky plane")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_PLANE, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_PLANE);
+                sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                CreateSkyProperties(SKYTYPE_PLANE);
                 UpdateSkyTextureNames();
             }
         }
@@ -2525,7 +2525,7 @@ namespace Environment
         if (!environment->GetTimeOverride())
             return;
 
-        OgreRenderer::EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
+        EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
         if (ec_ogre_env)
         {
             qreal float_time = new_value;

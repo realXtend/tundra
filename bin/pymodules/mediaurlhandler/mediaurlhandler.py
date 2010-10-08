@@ -54,9 +54,8 @@ class MediaurlView:
         return self.__url
 
     def mouse_clicked(self):
-        #if not self.__media_player_service_used:
-        print "clicked:", self.__url
-        loadurlhandler.loadurl(self.__url)
+        if not self.__media_player_service_used:
+            loadurlhandler.loadurl(self.__url)
         
     def mouse_hover_in(self):
         pass
@@ -177,7 +176,7 @@ class MediaURLHandler(Component):
         try:
             touchable = entity.touchable
             if touchable != None:
-                touchable.connect("Clicked()", mediaurlview.mouse_clicked)
+                touchable.connect("MousePressed()", mediaurlview.mouse_clicked)
             else:
                 r.logWarning("MediaUrlHandler - Could not find touchable from entity")
         except:

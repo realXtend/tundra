@@ -7,11 +7,11 @@ import PythonQt
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
     'EC_OpenSimPrim': 'prim',
-    'EC_OgrePlaceable': 'placeable',
+    'EC_Placeable': 'placeable',
     'EC_NetworkPosition': 'network',
     'EC_Mesh':'mesh',
     'EC_OgreCamera': 'camera',
-    'EC_OgreAnimationController': 'animationcontroller',
+    'EC_AnimationController': 'animationcontroller',
     'EC_Highlight': 'highlight',
     'EC_Touchable': 'touchable',
     'EC_AttachedSound': 'sound',

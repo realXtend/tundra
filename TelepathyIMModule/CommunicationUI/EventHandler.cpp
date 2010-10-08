@@ -9,7 +9,7 @@
 #include "SceneManager.h"
 
 #include "EC_OpenSimPresence.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 
 #include <QDebug>
 
@@ -78,7 +78,7 @@ namespace CommunicationUI
 
             if (avatar_id_ == presence_component->agentId.ToQString())
             {
-                OgreRenderer::EC_OgrePlaceable *placeable_component = entity.GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                EC_Placeable *placeable_component = entity.GetComponent<EC_Placeable>().get();
                 if (placeable_component)
                 {
                     current_position_ = placeable_component->GetPosition();

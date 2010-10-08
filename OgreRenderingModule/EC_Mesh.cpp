@@ -6,7 +6,7 @@
 #include "Renderer.h"
 #include "Entity.h"
 #include "EventManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "RexTypes.h"
 #include "OgreMeshResource.h"
@@ -20,8 +20,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Mesh")
 
 #include "MemoryLeakCheck.h"
 
-namespace OgreRenderer
-{
+using namespace OgreRenderer;
 
 EC_Mesh::EC_Mesh(IModule* module) :
     IComponent(module->GetFramework()),
@@ -78,9 +77,9 @@ EC_Mesh::~EC_Mesh()
 
 void EC_Mesh::SetPlaceable(ComponentPtr placeable)
 {
-    if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
+    if (!dynamic_cast<EC_Placeable*>(placeable.get()))
     {
-        OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_OgrePlaceable::TypeNameStatic().toStdString());
+        OgreRenderingModule::LogError("Attempted to set placeable which is not " + EC_Placeable::TypeNameStatic().toStdString());
         return;
     }
     
@@ -203,7 +202,7 @@ bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
         Scene::Entity* entity = GetParentEntity();
         if (entity)
         {
-            ComponentPtr placeable = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
             if (placeable)
                 placeable_ = placeable;
         }
@@ -715,7 +714,7 @@ void EC_Mesh::DetachEntity()
     if ((!attached_) || (!entity_) || (!placeable_))
         return;
         
-    EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     adjustment_node_->detachObject(entity_);
     node->removeChild(adjustment_node_);
@@ -728,7 +727,7 @@ void EC_Mesh::AttachEntity()
     if ((attached_) || (!entity_) || (!placeable_))
         return;
         
-    EC_OgrePlaceable* placeable = checked_static_cast<EC_OgrePlaceable*>(placeable_.get());
+    EC_Placeable* placeable = checked_static_cast<EC_Placeable*>(placeable_.get());
     Ogre::SceneNode* node = placeable->GetSceneNode();
     node->addChild(adjustment_node_);
     adjustment_node_->attachObject(entity_);
@@ -1059,4 +1058,3 @@ void EC_Mesh::AttachSkeleton(const QString &skeletonName)
     }
 }
 
-}

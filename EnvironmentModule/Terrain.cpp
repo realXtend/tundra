@@ -11,7 +11,7 @@
 #include "TerrainDecoder.h"
 #include "EnvironmentModule.h"
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Renderer.h"
 #include "OgreTextureResource.h"
 #include "OgreMaterialUtils.h"
