@@ -46,7 +46,21 @@ Environment::Environment(EnvironmentModule *owner) :
     sunPhase_(0.0),
     sunAngVelocity_(RexTypes::Vector3())
   
-{}
+{
+
+#ifdef CAELUM
+    caelumComponents_ = Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE;
+    caelumComponents_ = caelumComponents_ |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_MOON |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SUN |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_GROUND_FOG;
+
+#endif
+    
+}
 
 Environment::~Environment()
 {
@@ -348,9 +362,9 @@ void Environment::Update(f64 frametime)
             }
           
             ClampFog(fogStart, fogEnd, cameraFarClip);
-//#ifdef CAELUM
-//            caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
-//#endif
+#ifdef CAELUM
+            caelumSystem->forceSubcomponentVisibilityFlags(caelumComponents_);
+#endif
             sceneManager->setFog(mode, fogColor, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor);
             camera->setFarClipDistance(cameraFarClip);

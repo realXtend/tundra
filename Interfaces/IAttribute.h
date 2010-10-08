@@ -150,10 +150,14 @@ public:
     //! Returns true if this attribute has metadata set.
     bool HasMetadata() const { return metadata_ != 0; }
 
-protected:
-    //! Notifies owner component that the attribute has changed
+    //! Notifies owner component that the attribute has changed. This function is called automatically
+    //! when the Attribute value is Set(). You may call this manually to force a change signal to 
+    //! be emitted for this attribute.
+    //! Calling this is equivalent to calling the IComponent::AttributeChanged(this->GetName()) for the owner
+    //! of this attribute.
     void Changed(AttributeChange::Type change);
 
+protected:
     //! Owning component
     IComponent* owner_;
 

@@ -439,9 +439,13 @@ void EC_Terrain::LoadFromFile(QString filename)
     RegenerateDirtyTerrainPatches();
 
     // Set the new number of patches this terrain has. These changes only need to be done locally, since the other
-    // peers have loaded the terrain from the same file, and they will also locally do this change.
-    this->xPatches.Set(patchWidth, AttributeChange::LocalOnly);
-    this->yPatches.Set(patchHeight, AttributeChange::LocalOnly);
+    // peers have loaded the terrain from the same file, and they will also locally do this change. This change is also
+    // performed in "batched" mode, i.e. first the values are set, and only after that the signals are emitted manually.
+    this->xPatches.Set(patchWidth, AttributeChange::Disconnected);
+    this->yPatches.Set(patchHeight, AttributeChange::Disconnected);
+
+    this->xPatches.Changed(AttributeChange::LocalOnly);
+    this->yPatches.Changed(AttributeChange::LocalOnly);
 }
 
 void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
