@@ -5,6 +5,7 @@
 
 #include "EC_OgreSky.h"
 #include "EnvironmentModuleApi.h"
+#include "EnvironmentModule.h"
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
 #include "SceneManager.h"
