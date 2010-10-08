@@ -884,7 +884,7 @@ void EC_Mesh::AttributeUpdated(IAttribute *attribute)
         if(!skeletonId.Get().isEmpty())
         {
             // If same name skeleton already set no point to do it again.
-            if(skeleton_ && skeleton_->getName() == skeletonId.Get().toStdString())
+            if(entity_ && entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeletonId.Get().toStdString())
                 return;
 
             std::string resouceType = OgreRenderer::OgreSkeletonResource::GetTypeStatic();
@@ -953,34 +953,50 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
     OgreRenderer::OgreMeshResource* meshResource = checked_static_cast<OgreRenderer::OgreMeshResource*>(res.get());
     //! @todo for some reason compiler will have linking error if we try to call ResourceInterface's GetId inline method
     //! remember to track the cause of this when I some extra time.
-    SetMesh(QString::fromStdString(meshResourceId.Get().toStdString()));
+    SetMesh(meshResourceId.Get());
 
-    // Hack to request materials now
+    // Hack to request materials & skeleton now
     AttributeUpdated(&meshMaterial);
-
+    AttributeUpdated(&skeletonId);
     return true;
 }
 
 bool EC_Mesh::HandleSkeletonResourceEvent(event_id_t event_id, IEventData* data)
 {
-    if(!entity_)
-        return false;
-
     Resource::Events::ResourceReady* event_data = checked_static_cast<Resource::Events::ResourceReady*>(data);
     Foundation::ResourcePtr res = event_data->resource_;
 
     OgreRenderer::OgreSkeletonResource *skeletonRes = dynamic_cast<OgreRenderer::OgreSkeletonResource*>(res.get());
     if(skeletonRes)
     {
-        skeleton_ = skeletonRes->GetSkeleton().get();
-        if(!skeleton_)
+        Ogre::SkeletonPtr skeleton = skeletonRes->GetSkeleton();
+        if(skeleton.isNull())
             return false;
-
-        // If old skeleton is same as a new one no need to replace it.
-        if(entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton_->getName())
+        
+        if(!entity_)
+        {
+            LogDebug("Could not set skeleton yet because entity is not yet created");
             return false;
-
-        AttachSkeleton(QString::fromStdString(skeleton_->getName()));
+        }
+        
+        try
+        {
+            // If old skeleton is same as a new one no need to replace it.
+            if(entity_->getSkeleton() && entity_->getSkeleton()->getName() == skeleton->getName())
+                return true;
+            
+            entity_->getMesh()->_notifySkeleton(skeleton);
+            
+            LogDebug("Set skeleton " + skeleton->getName() + " to mesh " + entity_->getName());
+            emit OnSkeletonChanged(QString::fromStdString(skeleton->getName()));
+        }
+        catch (...)
+        {
+            LogError("Exception while setting skeleton to mesh" + entity_->getName());
+        }
+        
+        // Now we have to recreate the entity to get proper animations etc.
+        SetMesh(entity_->getMesh()->getName(), false);
     }
     else
         LogWarning("Fail to handle skeleton resource ready event cause skeletonRes was null.");
@@ -1033,28 +1049,3 @@ bool EC_Mesh::HasMaterialsChanged() const
     }
     return false;
 }
-
-void EC_Mesh::AttachSkeleton(const QString &skeletonName)
-{
-    if(!entity_)
-    {
-        LogWarning("Couldn't attach a skeleton to entity cause entity is null.");
-        return;
-    }
-
-    try
-    {
-        Ogre::SkeletonPtr skel = Ogre::SkeletonManager::getSingleton().getByName(skeletonName.toStdString());
-        if(skel.get())
-        {
-            entity_->getMesh()->_notifySkeleton(skel);
-            LogDebug("Set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName());
-            emit OnSkeletonChanged(QString::fromStdString(skeleton_->getName()));
-        }
-    }
-    catch (Ogre::Exception& e)
-    {
-        LogError("Could not set skeleton " + skeleton_->getName() + " to mesh " + entity_->getName() + ": " + std::string(e.what()));
-    }
-}
-
