@@ -13,6 +13,10 @@
 #include "UiServiceInterface.h"
 #include "SceneManager.h"
 #include "QtUtils.h"
+#include "LoggingFunctions.h"
+#include "SceneImporter.h"
+
+DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include <QDomDocument>
 #include <QDomElement>
@@ -21,6 +25,10 @@
 #include <kNet/DataSerializer.h>
 
 #include "MemoryLeakCheck.h"
+
+const QString cOgreSceneFileFilter("OGRE scene (*.scene)");
+const QString cNaaliXmlFileFilter("Naali scene XML(*.xml)");
+const QString cNaaliBinaryFileFilter("Naali Binary Format (*.nbf)");
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
@@ -92,46 +100,51 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     QMenu *menu = new QMenu(this);
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
-    // Create context menu actions, connect them to slots and add to menu
-    // paste and new actions are available always
+    // Create context menu actions
+    // paste, new entity, import OGRE scene, open new scene and import content from scene
+    // actions are available always
     QAction *pasteAction = new QAction(tr("Paste"), menu);
-    QAction *newAction = new QAction(tr("New entity"), menu);
+    QAction *newAction = new QAction(tr("New entity..."), menu);
+    QAction *importAction = new QAction(tr("Import..."), menu);
+    QAction *openNewSceneAction = new QAction(tr("Load new scene..."), menu);
 
     connect(newAction, SIGNAL(triggered()), SLOT(New()));
     connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
+    connect(importAction, SIGNAL(triggered()), SLOT(Import()));
+    connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
 
     // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
     QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
-        *copyAction = 0, *saveAsXmlAction = 0, *saveAsBinaryAction = 0;
-    QModelIndex index = selectionModel()->currentIndex();
-    if (index.isValid())
+        *copyAction = 0, *saveAsAction = 0;
+
+    bool hasSelection = !selectionModel()->selection().isEmpty();
+    if (hasSelection)
     {
         editAction = new QAction(tr("Edit"), menu);
         editInNewAction = new QAction(tr("Edit in new window"), menu);
         deleteAction = new QAction(tr("Delete"), menu);
         //renameAction = new QAction(tr("Rename"), menu);
         copyAction = new QAction(tr("Copy"), menu);
-        saveAsXmlAction = new QAction(tr("Save as XML..."), menu);
-        saveAsBinaryAction = new QAction(tr("Save as binary..."), menu);
+        saveAsAction = new QAction(tr("Save as..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
         connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
     //    connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
-        connect(saveAsXmlAction, SIGNAL(triggered()), SLOT(SaveAsXml()));
-        connect(saveAsBinaryAction, SIGNAL(triggered()), SLOT(SaveAsBinary()));
+        connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
     }
 
 //    menu->addAction(renameAction);
-    if (index.isValid())
+    if (hasSelection)
     {
         menu->addAction(editAction);
         menu->addAction(editInNewAction);
     }
 
     menu->addAction(newAction);
-    if (index.isValid())
+
+    if (hasSelection)
     {
         menu->addAction(deleteAction);
         menu->addAction(copyAction);
@@ -139,11 +152,13 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     menu->addAction(pasteAction);
 
-    if (index.isValid())
-    {
-        menu->addAction(saveAsXmlAction);
-        menu->addAction(saveAsBinaryAction);
-    }
+    menu->addSeparator();
+
+    if (hasSelection)
+        menu->addAction(saveAsAction);
+
+    menu->addAction(importAction);
+    menu->addAction(openNewSceneAction);
 
     // Show menu.
     menu->popup(e->globalPos());
@@ -404,7 +419,7 @@ void SceneTreeWidget::New()
     }
     else
     {
-        std::cout << "SceneTreeWidget::New(): invalid entity type:" << type.toStdString() << std::endl;
+        LogError("Invalid entity type:" + type.toStdString());
         return;
     }
 
@@ -421,12 +436,8 @@ void SceneTreeWidget::Delete()
     if (!scene)
         return;
 
-    QList<entity_id_t> ids = GetSelectedEntities();
-    if (ids.empty())
-        return;
-
     // Remove entities.
-    foreach(entity_id_t id, ids)
+    foreach(entity_id_t id, GetSelectedEntities())
         scene->RemoveEntity(id, AttributeChange::Replicate);
 }
 
@@ -451,25 +462,31 @@ void SceneTreeWidget::Paste()
     QDomDocument scene_doc("Scene");
     if (!scene_doc.setContent(QApplication::clipboard()->text()))
     {
-        std::cout << "Parsing scene XML from clipboard failed!" << std::endl;
+        LogError("Parsing scene XML from clipboard failed!");
         return;
     }
 
     scene->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
 }
 
-void SceneTreeWidget::SaveAsXml()
+void SceneTreeWidget::SaveAs()
 {
     QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
-        "XML (*.xml);;Naali Binary Format (*.nbf)", tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
-    dialog->setDefaultSuffix("xml");
+        cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
 }
 
-void SceneTreeWidget::SaveAsBinary()
+void SceneTreeWidget::Import()
 {
-    QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
-        "Naali Binary Format (*.nbf);;XML (*.xml)", tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
-    dialog->setDefaultSuffix("nbf");
+    QFileDialog * dialog = Foundation::QtUtils::OpenFileDialogNonModal(
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, // + Mesh
+        tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+}
+
+void SceneTreeWidget::OpenNewScene()
+{
+    QFileDialog * dialog = Foundation::QtUtils::OpenFileDialogNonModal(
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::SaveFileDialogClosed(int result)
@@ -491,20 +508,39 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
     if (!scene)
         return;
 
+    // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
+    QString fileExtension;
+    if (files[0].lastIndexOf('.') != -1)
+    {
+        fileExtension = files[0].mid(files[0].lastIndexOf('.'));
+    }
+    else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
+    {
+        fileExtension = ".xml";
+        files[0].append(fileExtension);
+    }
+    else if (dialog->selectedNameFilter() == cNaaliBinaryFileFilter)
+    {
+        fileExtension = ".nbf";
+        files[0].append(fileExtension);
+    }
+
     QFile file(files[0]);
     if (!file.open(QIODevice::WriteOnly))
     {
-        std::cout << "Could not open file " << files[0].toStdString() << " for writing." << std::endl;
+        LogError("Could not open file " + files[0].toStdString() + " for writing.");
         return;
     }
 
     QByteArray bytes;
-    if (files[0].toLower().indexOf(".xml") != -1)
+
+    if (fileExtension == ".xml")
     {
         bytes = GetSelectionAsXml().toAscii();
     }
-    else if (files[0].toLower().indexOf(".nbf") != -1)
+    else
     {
+        // Handle all other as binary.
         QList<entity_id_t> ids = GetSelectedEntities();
         if (!ids.empty())
         {
@@ -528,5 +564,52 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
 
     file.write(bytes);
     file.close();
+}
 
+void SceneTreeWidget::OpenFileDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != 1)
+        return;
+
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    foreach(QString filename, dialog->selectedFiles())
+        if (filename.toLower().indexOf(".scene") != -1)
+        {
+            boost::filesystem::path path(filename.toStdString());
+            std::string dirname = path.branch_path().string();
+
+            TundraLogic::SceneImporter importer(framework);
+            bool clearScene = false;
+            ///\todo This is awful hack, find better way
+            if (dialog->windowTitle() == tr("Open New Scene"))
+                clearScene = true;
+
+            ///\todo Take into account asset sources.
+            importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, clearScene, true, true);
+        }
+        else if (filename.toLower().indexOf(".xml") != -1)
+        {
+            ///\todo This is awful hack, find better way
+            bool clearScene = false;
+            if (dialog->windowTitle() == tr("Open New Scene"))
+                clearScene = true;
+            scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
+        }
+        else if (filename.toLower().indexOf(".nbf") != -1)
+        {
+            scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+        }
+        else
+        {
+            LogError("Unsupported file extension: " + filename.toStdString());
+        }
 }

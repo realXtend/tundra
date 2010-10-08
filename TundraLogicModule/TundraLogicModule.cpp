@@ -199,6 +199,7 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
 
 Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
 {
+    ///\todo Add loadScene parameter
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
@@ -212,9 +213,9 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
     // Do the scene load as replicable only if we are a server
     bool success;
     if (!useBinary)
-        success = scene->LoadSceneXML(params[0], true, AttributeChange::Default);
+        success = scene->LoadSceneXML(params[0], true/*clearScene*/, AttributeChange::Default);
     else
-        success = scene->LoadSceneBinary(params[0], AttributeChange::Default);
+        success = scene->LoadSceneBinary(params[0], true/*clearScene*/, AttributeChange::Default);
     
     if (success)
     {
