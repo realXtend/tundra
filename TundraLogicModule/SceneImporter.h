@@ -3,6 +3,16 @@
 #ifndef incl_TundraLogicModule_SceneImporter_h
 #define incl_TundraLogicModule_SceneImporter_h
 
+#if defined (_WINDOWS)
+#if defined(TUNDRALOGIC_MODULE_EXPORTS)
+#define TUNDRALOGIC_MODULE_API __declspec(dllexport)
+#else
+#define TUNDRALOGIC_MODULE_API __declspec(dllimport)
+#endif
+#else
+#define TUNDRALOGIC_MODULE_API
+#endif
+
 #include "SceneManager.h"
 #include "IAttribute.h"
 
@@ -18,7 +28,7 @@ namespace Foundation
 namespace TundraLogic
 {
 
-class SceneImporter
+class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
     SceneImporter(Foundation::Framework* framework);
