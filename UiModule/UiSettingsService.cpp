@@ -15,12 +15,10 @@ namespace UiServices
     UiSettingsService::UiSettingsService(CoreUi::ControlPanelManager *control_panel_manager) :
         control_panel_manager_(control_panel_manager)
     {
-
     }
 
     UiSettingsService::~UiSettingsService()
     {
-
     }
 
     QObject *UiSettingsService::GetMainSettingsWidget() const

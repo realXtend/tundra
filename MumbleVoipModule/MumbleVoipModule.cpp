@@ -7,7 +7,7 @@
 #include "LinkPlugin.h"
 #include "ServerInfoProvider.h"
 #include "ModuleManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "WorldLogicInterface.h"
 #include "Entity.h"
 #include "ConsoleCommandServiceInterface.h"
@@ -58,10 +58,6 @@ namespace MumbleVoip
             server_info_provider_ = new ServerInfoProvider(framework_);
             connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
         }
-        else
-        {
-            in_world_voice_provider_ = new Provider(framework_, &settings_);
-        }
 
         link_plugin_ = new LinkPlugin();
     }
@@ -76,6 +72,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::PostInitialize()
     {
+        if (!use_native_mumble_client_)
+            in_world_voice_provider_ = new Provider(framework_, &settings_);
+
         InitializeConsoleCommands();
         
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -159,7 +158,7 @@ namespace MumbleVoip
         if (!avatar)
             return false;
 
-        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> ogre_placeable = avatar->GetComponent<EC_Placeable>();
         if (!ogre_placeable)
             return false;
 
@@ -180,7 +179,7 @@ namespace MumbleVoip
         if (!camera)
             return false;
 
-        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> ogre_placeable = camera->GetComponent<EC_Placeable>();
         if (!ogre_placeable)
             return false;
 

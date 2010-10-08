@@ -13,7 +13,7 @@
 #include "EC_OgreEnvironment.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "OgreConversionUtils.h"
 #include "SceneManager.h"
 
@@ -35,8 +35,8 @@
 
 const float MAX_SUNLIGHT_MULTIPLIER = 1.5f;
 
-namespace OgreRenderer
-{
+using namespace OgreRenderer;
+
 /// Utility tool for clamping fog distance
 void ClampFog(float& start, float& end, float farclip)
 {
@@ -610,5 +610,3 @@ void EC_OgreEnvironment::ShutdownHydrax()
     hydraxSystem_->remove();
 }
 #endif
-
-} // namespace OgreRenderer

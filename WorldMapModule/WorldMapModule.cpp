@@ -22,7 +22,7 @@
 #include "ConsoleCommandServiceInterface.h"
 #include "UiSettingsServiceInterface.h"
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OpenSimPresence.h"
 #include "SceneManager.h"
 
@@ -279,7 +279,7 @@ namespace WorldMap
             if (!presence_component)
                 continue;
 
-            OgreRenderer::EC_OgrePlaceable *ogre_placeable = entity.GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *ogre_placeable = entity.GetComponent<EC_Placeable>().get();
             if (ogre_placeable)
             {                
                 Quaternion q = ogre_placeable->GetOrientation();

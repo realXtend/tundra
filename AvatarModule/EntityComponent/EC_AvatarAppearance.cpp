@@ -195,7 +195,7 @@ bool EC_AvatarAppearance::HasProperty(const std::string& name) const
     else
         return false;
 }
-    
+
 const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name)
 {
     static AnimationDefinition default_def;
@@ -208,6 +208,11 @@ const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& anim
         ++def;
     }
     return default_def;
+}
+
+const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const QString& name)
+{
+    return GetAnimationByName(animations, name.toStdString());
 }
 
 void AppearanceModifier::ResetAccumulation()

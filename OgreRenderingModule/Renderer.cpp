@@ -8,7 +8,7 @@
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "NaaliRenderWindow.h"
@@ -988,7 +988,7 @@ namespace OgreRenderer
                 continue;
             }
 
-            EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
             if (!placeable)
                 continue;
 
@@ -1038,7 +1038,7 @@ namespace OgreRenderer
 
             int current_priority = minimum_priority;
             {
-                EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+                EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
                 if (placeable)
                 {
                     current_priority = placeable->GetSelectPriority();
@@ -1201,11 +1201,11 @@ namespace OgreRenderer
             if (!cam_entity)
                 return;
 
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
             
-            ComponentPtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
@@ -1298,7 +1298,7 @@ namespace OgreRenderer
         pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
         Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
 
-        EC_OgrePlaceable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_OgrePlaceable>().get();
+        EC_Placeable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_Placeable>().get();
         if (!cam_ec_placable)
             return QPixmap();
 

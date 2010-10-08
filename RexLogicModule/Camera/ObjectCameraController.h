@@ -14,7 +14,7 @@
 #include "Renderer.h"
 #include "RexLogicModule.h"
 
-#include <EC_OgrePlaceable.h>
+#include <EC_Placeable.h>
 #include <EC_OgreCamera.h>
 
 
@@ -118,8 +118,8 @@ namespace RexLogic
         Vector3df last_dir_;
 
         Scene::EntityPtr camera_entity_;
-        OgreRenderer::EC_OgreCamera *ec_camera_;
-        OgreRenderer::EC_OgrePlaceable *cam_ec_placable_;
+        EC_OgreCamera *ec_camera_;
+        EC_Placeable *cam_ec_placable_;
 
         QTimeLine* timeline_;
         QTimeLine* timeline_zoom_;
