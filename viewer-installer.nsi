@@ -1,4 +1,4 @@
-!define VERSION "0.3.2 RC1"
+!define VERSION "0.3.2"
 
 Name "Naali ${VERSION}"
 
