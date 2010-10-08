@@ -106,7 +106,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     QAction *pasteAction = new QAction(tr("Paste"), menu);
     QAction *newAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
-    QAction *openNewSceneAction = new QAction(tr("Load new scene..."), menu);
+    QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
 
     connect(newAction, SIGNAL(triggered()), SLOT(New()));
     connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
