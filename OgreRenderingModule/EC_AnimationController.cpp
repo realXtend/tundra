@@ -1,13 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "DebugOperatorNew.h"
 #include "EC_Mesh.h"
 #include "EC_AnimationController.h"
+#include "Entity.h"
 #include "OgreRenderingModule.h"
+#include "RexNetworkUtils.h"
 
 #include <Ogre.h>
 
+#include "LoggingFunctions.h"
+DEFINE_POCO_LOGGING_FUNCTIONS("EC_AnimationController")
+
+#include "MemoryLeakCheck.h"
+
 using namespace OgreRenderer;
+using namespace RexTypes;
 
 EC_AnimationController::EC_AnimationController(IModule* module) :
     IComponent(module->GetFramework()),
@@ -15,6 +24,10 @@ EC_AnimationController::EC_AnimationController(IModule* module) :
     mesh(0)
 {
     ResetState();
+    
+    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+        this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_AnimationController::~EC_AnimationController()
@@ -409,7 +422,7 @@ void EC_AnimationController::SetAnimationToEnd(const QString& name)
 {
     Ogre::Entity* entity = GetEntity();
     Ogre::AnimationState* animstate = GetAnimationState(entity, name);
-    if (!animstate) 
+    if (!animstate)
         return;
         
     if (animstate)
@@ -470,5 +483,213 @@ bool EC_AnimationController::SetAnimationTimePosition(const QString& name, float
     }
     // Animation not active
     return false;
+}
+
+void EC_AnimationController::UpdateSignals()
+{
+    Scene::Entity* parent = GetParentEntity();
+    if (parent)
+    {
+        parent->ConnectAction("PlayAnim", this, SLOT(PlayAnim(const QString &, const QString &, const QString &)));
+        parent->ConnectAction("PlayLoopedAnim", this, SLOT(PlayLoopedAnim(const QString &, const QString &, const QString &)));
+        parent->ConnectAction("PlayReverseAnim", this, SLOT(PlayReverseAnim(const QString &, const QString &, const QString &)));
+        parent->ConnectAction("PlayAnimAutoStop", this, SLOT(PlayAnimAutoStop(const QString &, const QString &, const QString &)));
+        parent->ConnectAction("StopAnim", this, SLOT(StopAnim(const QString &, const QString &)));
+        parent->ConnectAction("StopAllAnims", this, SLOT(StopAllAnims(const QString &)));
+        parent->ConnectAction("SetAnimSpeed", this, SLOT(SetAnimSpeed(const QString &, const QString &)));
+        parent->ConnectAction("SetAnimWeight", this, SLOT(SetAnimWeight(const QString &, const QString &)));
+    }
+}
+
+void EC_AnimationController::AttributeUpdated(IAttribute *attribute)
+{
+    // We actually do not care about attribute updates, but this is a good place to auto-associate
+    // a mesh, if it is not yet set
+    if (!mesh)
+    {
+        Scene::Entity* parent = GetParentEntity();
+        if (parent)
+        {
+            EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
+            if (mesh)
+                SetMeshEntity(mesh);
+        }
+    }
+}
+
+void EC_AnimationController::PlayAnim(const QString &name, const QString &fadein, const QString &exclusive)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for PlayAnim");
+        return;
+    }
+    
+    float fadein_ = 0.0f;
+    if (fadein.length())
+        fadein_ = fadein.toFloat();
+    bool exclusive_ = false;
+    if (exclusive.length())
+        exclusive_ = ParseBool(exclusive);
+    if (!exclusive_)
+    {
+        if (!EnableAnimation(name, false, fadein_, false))
+            LogWarning("Failed to play animation " + name.toStdString());
+    }
+    else
+    {
+        if (!EnableExclusiveAnimation(name, false, fadein_, false))
+            LogWarning("Failed to play animation " + name.toStdString());
+    }
+}
+
+void EC_AnimationController::PlayLoopedAnim(const QString &name, const QString &fadein, const QString &exclusive)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for PlayLoopedAnim");
+        return;
+    }
+    
+    float fadein_ = 0.0f;
+    if (fadein.length())
+        fadein_ = fadein.toFloat();
+    bool exclusive_ = false;
+    if (exclusive.length())
+        exclusive_ = ParseBool(exclusive);
+    if (!exclusive_)
+    {
+        if (!EnableAnimation(name, true, fadein_, false))
+            LogWarning("Failed to play looped animation " + name.toStdString());
+    }
+    else
+    {
+        if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
+            LogWarning("Failed to play looped animation " + name.toStdString());
+    }
+}
+
+void EC_AnimationController::PlayReverseAnim(const QString &name, const QString &fadein, const QString &exclusive)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for PlayReverseAnim");
+        return;
+    }
+    
+    float fadein_ = 0.0f;
+    if (fadein.length())
+        fadein_ = fadein.toFloat();
+    bool exclusive_ = false;
+    if (exclusive.length())
+        exclusive_ = ParseBool(exclusive);
+    if (!exclusive_)
+    {
+        if (!EnableAnimation(name, true, fadein_, false))
+        {
+            LogWarning("Failed to play reverse animation " + name.toStdString());
+            return;
+        }
+        SetAnimationToEnd(name);
+        SetAnimationSpeed(name, -1.0f);
+    }
+    else
+    {
+        if (!EnableExclusiveAnimation(name, true, fadein_, fadein_, false))
+        {
+            LogWarning("Failed to play reverse animation " + name.toStdString());
+            return;
+        }
+        SetAnimationToEnd(name);
+        SetAnimationSpeed(name, -1.0f);
+    }
+}
+
+void EC_AnimationController::PlayAnimAutoStop(const QString &name, const QString &fadein, const QString &exclusive)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for PlayAnimAutoStop");
+        return;
+    }
+    
+    float fadein_ = 0.0f;
+    if (fadein.length())
+        fadein_ = fadein.toFloat();
+    bool exclusive_ = false;
+    if (exclusive.length())
+        exclusive_ = ParseBool(exclusive);
+    if (!exclusive_)
+    {
+        if (!EnableAnimation(name, false, fadein_, false))
+            LogWarning("Failed to play animation " + name.toStdString());
+        // Enable autostop, and start always from the beginning
+        SetAnimationAutoStop(name, true);
+        SetAnimationTimePosition(name, 0.0f);
+    }
+    else
+    {
+        if (!EnableExclusiveAnimation(name, false, fadein_, false))
+            LogWarning("Failed to play animation " + name.toStdString());
+        // Enable autostop, and start always from the beginning
+        SetAnimationAutoStop(name, true);
+        SetAnimationTimePosition(name, 0.0f);
+    }
+}
+
+void EC_AnimationController::StopAnim(const QString &name, const QString &fadeout)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for StopAnim");
+        return;
+    }
+    
+    float fadeout_ = 0.0f;
+    if (fadeout.length())
+        fadeout_ = fadeout.toFloat();
+    DisableAnimation(name, fadeout_);
+}
+
+void EC_AnimationController::StopAllAnims(const QString &fadeout)
+{
+    float fadeout_ = 0.0f;
+    if (fadeout.length())
+        fadeout_ = fadeout.toFloat();
+    DisableAllAnimations(fadeout_);
+}
+
+void EC_AnimationController::SetAnimSpeed(const QString &name, const QString &animspeed)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for SetAnimSpeed");
+        return;
+    }
+    if (!animspeed.length())
+    {
+        LogWarning("No animation speed specified for SetAnimSpeed");
+        return;
+    }
+    
+    float speed = animspeed.toFloat();
+    SetAnimationSpeed(name, speed);
+}
+
+void EC_AnimationController::SetAnimWeight(const QString &name, const QString &animweight)
+{
+    if (!name.length())
+    {
+        LogWarning("Empty animation name for SetAnimWeight");
+        return;
+    }
+    if (!animweight.length())
+    {
+        LogWarning("No animation weight specified for SetAnimWeight");
+        return;
+    }
+    
+    float weight = animweight.toFloat();
+    SetAnimationWeight(name, weight);
 }
 

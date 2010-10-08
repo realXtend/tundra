@@ -75,6 +75,9 @@ Does not emit any actions.
 
 struct DeserializeData;
 
+
+class QScriptValue;
+
 class EC_DynamicComponent : public IComponent
 {
     DECLARE_EC(EC_DynamicComponent);
@@ -136,6 +139,7 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
+    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change);
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
@@ -167,7 +171,7 @@ public slots:
     /// Remove attribute from the component.
     /** @param name Name of the attirbute.
     */
-    void RemoveAttribute(const QString &name);
+    void RemoveAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Check if component is holding an attribute by the @c name.
     /** @param name Name of attribute that we are looking for.
