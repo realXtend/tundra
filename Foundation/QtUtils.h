@@ -28,7 +28,8 @@ namespace Foundation
         /** @param filter The files to be shown.
             @param caption Dialog's caption
             @param dir Working directory.
-            @param parent Parent widget for dialog
+            @param parent Parent widget. If you give parent widget, the file dialog will be part of the Naali UI scene.
+                Give 0 if you want the dialog to be external.
             @param initiator QObject that initiated the dialog and wants the results
             @param slot Slot on initiator object, to which dialog's finished() signal will be 
                    connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 
@@ -47,7 +48,8 @@ namespace Foundation
         /** @param filter The files to be shown.
             @param caption Dialog's caption
             @param dir Working directory.
-            @param parent Parent widget for dialog
+            @param parent Parent widget. If you give parent widget, the file dialog will be part of the Naali UI scene.
+                Give 0 if you want the dialog to be external.
             @param initiator QObject that initiated the dialog and wants the results
             @param slot Slot on initiator object, to which dialog's finished() signal will be 
                    connected. Result value will be 1 if OK was pressed. Use sender() and dynamic 

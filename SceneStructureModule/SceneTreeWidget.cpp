@@ -17,6 +17,9 @@
 #include <QDomDocument>
 #include <QDomElement>
 
+#include <kNet/DataDeserializer.h>
+#include <kNet/DataSerializer.h>
+
 #include "MemoryLeakCheck.h"
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
@@ -137,7 +140,10 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->addAction(pasteAction);
 
     if (index.isValid())
+    {
         menu->addAction(saveAsXmlAction);
+        menu->addAction(saveAsBinaryAction);
+    }
 
     // Show menu.
     menu->popup(e->globalPos());
@@ -250,19 +256,13 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 */
 }
 
-QString SceneTreeWidget::GetSelectionAsXml() const
+QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
-    assert(scene.get());
-    if (!scene)
-        return QString();
-
+    QList<entity_id_t> ids;
     const QItemSelection &selection = selectionModel()->selection();
     if (selection.isEmpty())
-        return QString();
+        return ids;
 
-    // Gather entity ID's.
-    QList<entity_id_t> ids;
     QListIterator<QModelIndex> it(selection.indexes());
     while(it.hasNext())
     {
@@ -272,7 +272,18 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
     }
 
-    if (ids.size() == 0)
+    return ids;
+}
+
+QString SceneTreeWidget::GetSelectionAsXml() const
+{
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return QString();
+
+    QList<entity_id_t> ids = GetSelectedEntities();
+    if (ids.empty())
         return QString();
 
     // Create root Scene element always for consistency, even if we only have one entity
@@ -303,21 +314,8 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 
 void SceneTreeWidget::Edit()
 {
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return;
-
-    QList<entity_id_t> ids;
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
-    }
-
-    if (ids.size() == 0)
+    QList<entity_id_t> ids = GetSelectedEntities();
+    if (ids.empty())
         return;
 
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
@@ -349,21 +347,8 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return;
-
-    QList<entity_id_t> ids;
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
-    }
-
-    if (ids.size() == 0)
+    QList<entity_id_t> ids = GetSelectedEntities();
+    if (ids.empty())
         return;
 
     // Create new instance every time.
@@ -436,22 +421,8 @@ void SceneTreeWidget::Delete()
     if (!scene)
         return;
 
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return;
-
-    // Gather entity ID's.
-    QList<entity_id_t> ids;
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
-    }
-
-    if (ids.size() == 0)
+    QList<entity_id_t> ids = GetSelectedEntities();
+    if (ids.empty())
         return;
 
     // Remove entities.
@@ -490,14 +461,14 @@ void SceneTreeWidget::Paste()
 void SceneTreeWidget::SaveAsXml()
 {
     QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
-        "XML (*.xml)"/*;;Naali Binary Format (*.nbf)"*/, tr("Save"), "", this, this, SLOT(SaveFileDialogClosed(int)));
+        "XML (*.xml);;Naali Binary Format (*.nbf)", tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
     dialog->setDefaultSuffix("xml");
 }
 
 void SceneTreeWidget::SaveAsBinary()
 {
     QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
-        "Naali Binary Format (*.nbf);;XML (*.xml)", tr("Save"), "", this, this, SLOT(SaveFileDialogClosed(int)));
+        "Naali Binary Format (*.nbf);;XML (*.xml)", tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
     dialog->setDefaultSuffix("nbf");
 }
 
@@ -515,23 +486,47 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
     if (files.size() != 1)
         return;
 
+    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    QFile file(files[0]);
+    if (!file.open(QIODevice::WriteOnly))
+    {
+        std::cout << "Could not open file " << files[0].toStdString() << " for writing." << std::endl;
+        return;
+    }
+
+    QByteArray bytes;
     if (files[0].toLower().indexOf(".xml") != -1)
     {
-        QString sceneXml = GetSelectionAsXml();
-        if (sceneXml.isEmpty())
-            return;
-
-        QFile file(files[0]);
-        if (!file.open(QIODevice::WriteOnly))
-            return;
-
-        file.write(sceneXml.toStdString().c_str());
-        file.close();
+        bytes = GetSelectionAsXml().toAscii();
     }
-
-/*
     else if (files[0].toLower().indexOf(".nbf") != -1)
     {
+        QList<entity_id_t> ids = GetSelectedEntities();
+        if (!ids.empty())
+        {
+            // Assume 4MB max for now
+            bytes.resize(4 * 1024 * 1024);
+            kNet::DataSerializer dest(bytes.data(), bytes.size());
+
+            dest.Add<u32>(ids.size());
+
+            foreach(entity_id_t id, ids)
+            {
+                Scene::EntityPtr entity = scene->GetEntity(id);
+                assert(entity.get());
+                if (entity)
+                    entity->SerializeToBinary(dest);
+            }
+
+            bytes.resize(dest.BytesFilled());
+        }
     }
-*/
+
+    file.write(bytes);
+    file.close();
+
 }

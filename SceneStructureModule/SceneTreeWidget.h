@@ -91,10 +91,13 @@ private:
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
     /// Returns currently selected entities as XML string.
+    QList<entity_id_t> GetSelectedEntities() const;
+
+    /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
 
 private slots:
-    /// Opens selected entities in EC editor window. An exisiting editor window is used if it exists.
+    /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
     void Edit();
 
     /// Opens selected entities in EC editor window. New editor window is created each time.
