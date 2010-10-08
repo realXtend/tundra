@@ -14,7 +14,10 @@
 
 #include <map>
 
+#include <QVariant>
+
 class IComponent;
+class QScriptValue;
 
 //! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
 /*! possible min and max values mapping of enumeration signatures and values.
@@ -109,6 +112,16 @@ public:
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
 
+    //! Returns the value as QVariant (For scripts).
+    virtual QVariant ToQVariant() const = 0;
+
+    //! Convert QVariant to attribute value.
+    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change) = 0;
+
+    //! Convert QScriptValue to attribute value (QtScript Spesific).
+    //! /todo Remove when if possible.
+    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
+
     //! Sets attribute's metadata.
     /*! \param metadata Metadata.
      */
@@ -184,6 +197,16 @@ public:
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;
+
+    //! Returns the value as QVariant (For scripts).
+    virtual QVariant ToQVariant() const;
+
+    //! Convert QVariant to attribute value.
+    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change);
+
+    //! Convert QScriptValue to attribute value (QtScript Spesific).
+    //! /todo Remove this when possible.
+    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change);
 
 private:
     //! Attribute value
