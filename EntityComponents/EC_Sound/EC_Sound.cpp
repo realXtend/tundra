@@ -6,7 +6,7 @@
 #include "IModule.h"
 #include "Framework.h"
 #include "Entity.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "SceneManager.h"
 #include "ISoundService.h"
 
@@ -82,7 +82,7 @@ void EC_Sound::PlaySound()
     if(sound_id_)
         StopSound();
 
-    OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
+    EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     if(placeable)
     {
         sound_id_ = soundService->PlaySound3D(soundId.Get(), ISoundService::Triggered, false, placeable->GetPosition());
@@ -146,6 +146,6 @@ ComponentPtr EC_Sound::FindPlaceable() const
         LogError("Fail to find a placeable component cause parent entity is null.");
         return comp;
     }
-    comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    comp = GetParentEntity()->GetComponent<EC_Placeable>();
     return comp;
 }

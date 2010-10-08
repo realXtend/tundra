@@ -23,10 +23,7 @@ namespace ProtocolUtilities
     class NetworkEventInboundData;
 }
 
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
+class EC_Placeable;
 
 namespace Avatar
 {
@@ -109,6 +106,14 @@ namespace Avatar
         //! Returns the avatar appearance handler
         AvatarAppearance& GetAppearanceHandler() { return avatar_appearance_; }
 
+        //! Sets up appearance for an EC_Avatar based avatar.
+        /*! Queues needed resources, and rebuilds the avatar when done
+            \param entityID Entity ID
+            \param data Appearance xml data
+            \param size Appearance xml size
+         */
+        void SetupECAvatar(entity_id_t entityID, const u8* data, uint size);
+        
     signals:
         void ExportAvatar(Scene::EntityPtr entity, const std::string& account, const std::string& authserver, const std::string& password);
         void WebDavExportAvatar(Scene::EntityPtr entity);
@@ -133,12 +138,12 @@ namespace Avatar
 
         // /\todo Deprecated. use ShowAvatarNameOverlay. Remove completely when sure that this is not needed anymore.
         //! Creates the name overlay above the avatar.
-        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param placeable EC_Placeable entity component.
         //! @param entity_id Entity id of the avatar.
 //        void CreateNameOverlay(ComponentPtr placeable, entity_id_t entity_id);
 
         //! Creates an info icon to avatar
-        //! @param placeable EC_OgrePlaceable entity component.
+        //! @param placeable EC_Placeable entity component.
         //! @param entity_id Entity id of the avatar.
         void CreateWidgetOverlay(ComponentPtr placeable, entity_id_t entity_id);
         

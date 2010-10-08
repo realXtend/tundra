@@ -29,7 +29,6 @@ namespace CoreUi
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
-        binding_widget_(0),
         language_widget_(0),
         teleport_widget_(0),
         changetheme_widget_(0)

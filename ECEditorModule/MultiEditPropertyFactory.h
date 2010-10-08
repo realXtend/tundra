@@ -37,7 +37,7 @@ namespace ECEditor
         //! Called when user has picked one of the values.
         void DialogValueSelected(const QString &value);
 
-        //! Remove dialog from the map when it's destoyed.
+        //! Remove dialog from the map when it's destroyed.
         void EditorDestroyed(QObject *object);
     signals:
         //! Value has been selected from a dialog window.

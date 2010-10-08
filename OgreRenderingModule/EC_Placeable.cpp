@@ -3,14 +3,13 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include <Ogre.h>
 #include <QDebug>
 
-namespace OgreRenderer
-{
+using namespace OgreRenderer;
 
-EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
+EC_Placeable::EC_Placeable(IModule* module) :
     IComponent(module->GetFramework()),
     renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
     scene_node_(0),
@@ -33,7 +32,7 @@ EC_OgrePlaceable::EC_OgrePlaceable(IModule* module) :
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
 }
 
-EC_OgrePlaceable::~EC_OgrePlaceable()
+EC_Placeable::~EC_Placeable()
 {
     if (renderer_.expired())
         return;
@@ -60,9 +59,9 @@ EC_OgrePlaceable::~EC_OgrePlaceable()
     }
 }
 
-void EC_OgrePlaceable::SetParent(ComponentPtr placeable)
+void EC_Placeable::SetParent(ComponentPtr placeable)
 {
-    if ((placeable.get() != 0) && (!dynamic_cast<EC_OgrePlaceable*>(placeable.get())))
+    if ((placeable.get() != 0) && (!dynamic_cast<EC_Placeable*>(placeable.get())))
     {
         OgreRenderingModule::LogError("Attempted to set parent placeable which is not " + TypeNameStatic().toStdString());
         return;
@@ -72,72 +71,72 @@ void EC_OgrePlaceable::SetParent(ComponentPtr placeable)
     AttachNode();
 }
 
-Vector3df EC_OgrePlaceable::GetPosition() const
+Vector3df EC_Placeable::GetPosition() const
 {
     const Ogre::Vector3& pos = link_scene_node_->getPosition();
     return Vector3df(pos.x, pos.y, pos.z);
 }
 
-Quaternion EC_OgrePlaceable::GetOrientation() const
+Quaternion EC_Placeable::GetOrientation() const
 {
     const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
     return Quaternion(orientation.x, orientation.y, orientation.z, orientation.w);
 }
 
-Vector3df EC_OgrePlaceable::GetScale() const
+Vector3df EC_Placeable::GetScale() const
 {
     const Ogre::Vector3& scale = scene_node_->getScale();
     return Vector3df(scale.x, scale.y, scale.z);
 }
 
-Vector3df EC_OgrePlaceable::GetLocalXAxis() const
+Vector3df EC_Placeable::GetLocalXAxis() const
 {
     const Ogre::Vector3& xaxis = link_scene_node_->getOrientation().xAxis();
     return Vector3df(xaxis.x, xaxis.y, xaxis.z);
 }
 
-QVector3D EC_OgrePlaceable::GetQLocalXAxis() const
+QVector3D EC_Placeable::GetQLocalXAxis() const
 {
     Vector3df xaxis= GetLocalXAxis();
     return QVector3D(xaxis.x, xaxis.y, xaxis.z);
 }
 
-Vector3df EC_OgrePlaceable::GetLocalYAxis() const
+Vector3df EC_Placeable::GetLocalYAxis() const
 {
     const Ogre::Vector3& yaxis = link_scene_node_->getOrientation().yAxis();
     return Vector3df(yaxis.x, yaxis.y, yaxis.z);
 }
 
-QVector3D EC_OgrePlaceable::GetQLocalYAxis() const
+QVector3D EC_Placeable::GetQLocalYAxis() const
 {
     Vector3df yaxis= GetLocalYAxis();
     return QVector3D(yaxis.x, yaxis.y, yaxis.z);
 }
 
-Vector3df EC_OgrePlaceable::GetLocalZAxis() const
+Vector3df EC_Placeable::GetLocalZAxis() const
 {
     const Ogre::Vector3& zaxis = link_scene_node_->getOrientation().zAxis();
     return Vector3df(zaxis.x, zaxis.y, zaxis.z);
 }
 
-QVector3D EC_OgrePlaceable::GetQLocalZAxis() const
+QVector3D EC_Placeable::GetQLocalZAxis() const
 {
     Vector3df zaxis= GetLocalZAxis();
     return QVector3D(zaxis.x, zaxis.y, zaxis.z);
 }
 
-void EC_OgrePlaceable::SetPosition(const Vector3df& position)
+void EC_Placeable::SetPosition(const Vector3df& position)
 {
     link_scene_node_->setPosition(Ogre::Vector3(position.x, position.y, position.z));
     AttachNode(); // Nodes become visible only after having their position set at least once
 }
 
-void EC_OgrePlaceable::SetOrientation(const Quaternion& orientation)
+void EC_Placeable::SetOrientation(const Quaternion& orientation)
 {
     link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
 }
 
-void EC_OgrePlaceable::LookAt(const Vector3df& look_at)
+void EC_Placeable::LookAt(const Vector3df& look_at)
 {
     // Don't rely on the stability of the lookat (since it uses previous orientation), 
     // so start in identity transform
@@ -145,43 +144,43 @@ void EC_OgrePlaceable::LookAt(const Vector3df& look_at)
     link_scene_node_->lookAt(Ogre::Vector3(look_at.x, look_at.y, look_at.z), Ogre::Node::TS_WORLD);
 }
 
-void EC_OgrePlaceable::SetYaw(float radians)
+void EC_Placeable::SetYaw(float radians)
 {
     link_scene_node_->yaw(Ogre::Radian(radians), Ogre::Node::TS_WORLD);
 }
 
-void EC_OgrePlaceable::SetPitch(float radians)
+void EC_Placeable::SetPitch(float radians)
 {
     link_scene_node_->pitch(Ogre::Radian(radians));
 }
 
-void EC_OgrePlaceable::SetRoll(float radians)
+void EC_Placeable::SetRoll(float radians)
 {
     link_scene_node_->roll(Ogre::Radian(radians));
 } 
 
-float EC_OgrePlaceable::GetYaw() const
+float EC_Placeable::GetYaw() const
 {
     const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
     return orientation.getYaw().valueRadians();
 }
-float EC_OgrePlaceable::GetPitch() const
+float EC_Placeable::GetPitch() const
 {
     const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
     return orientation.getPitch().valueRadians();
 }
-float EC_OgrePlaceable::GetRoll() const
+float EC_Placeable::GetRoll() const
 {
     const Ogre::Quaternion& orientation = link_scene_node_->getOrientation();
     return orientation.getRoll().valueRadians();
 }
 
-void EC_OgrePlaceable::SetScale(const Vector3df& scale)
+void EC_Placeable::SetScale(const Vector3df& scale)
 {
     scene_node_->setScale(Ogre::Vector3(scale.x, scale.y, scale.z));
 }
 
-void EC_OgrePlaceable::AttachNode()
+void EC_Placeable::AttachNode()
 {
     if (renderer_.expired())
         return;
@@ -199,7 +198,7 @@ void EC_OgrePlaceable::AttachNode()
     }
     else
     {
-        EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
+        EC_Placeable* parent = checked_static_cast<EC_Placeable*>(parent_.get());
         parent_node = parent->GetLinkSceneNode();
     }
     
@@ -207,7 +206,7 @@ void EC_OgrePlaceable::AttachNode()
     attached_ = true;
 }
 
-void EC_OgrePlaceable::DetachNode()
+void EC_Placeable::DetachNode()
 {
     if (renderer_.expired())
         return;
@@ -225,7 +224,7 @@ void EC_OgrePlaceable::DetachNode()
     }
     else
     {
-        EC_OgrePlaceable* parent = checked_static_cast<EC_OgrePlaceable*>(parent_.get());
+        EC_Placeable* parent = checked_static_cast<EC_Placeable*>(parent_.get());
         parent_node = parent->GetLinkSceneNode();
     }
     
@@ -234,7 +233,7 @@ void EC_OgrePlaceable::DetachNode()
 }
 
 //experimental QVector3D acessors
-QVector3D EC_OgrePlaceable::GetQPosition() const
+QVector3D EC_Placeable::GetQPosition() const
 {
     //conversions, conversions, all around
     //.. if this works, and QVector3D is good, we should consider porting Vector3df for that
@@ -242,36 +241,36 @@ QVector3D EC_OgrePlaceable::GetQPosition() const
     return QVector3D(rexpos.x, rexpos.y, rexpos.z);
 }
 
-void EC_OgrePlaceable::SetQPosition(const QVector3D newpos)
+void EC_Placeable::SetQPosition(const QVector3D newpos)
 {
     SetPosition(Vector3df(newpos.x(), newpos.y(), newpos.z()));
 }
 
 
-QQuaternion EC_OgrePlaceable::GetQOrientation() const 
+QQuaternion EC_Placeable::GetQOrientation() const 
 {
     Quaternion rexort = GetOrientation();
     return QQuaternion(rexort.w, rexort.x, rexort.y, rexort.z);
 }
 
-void EC_OgrePlaceable::SetQOrientation(const QQuaternion newort)
+void EC_Placeable::SetQOrientation(const QQuaternion newort)
 {
     SetOrientation(Quaternion(newort.x(), newort.y(), newort.z(), newort.scalar()));
 }
 
 
-QVector3D EC_OgrePlaceable::GetQScale() const
+QVector3D EC_Placeable::GetQScale() const
 {
     Vector3df rexscale = GetScale();
     return QVector3D(rexscale.x, rexscale.y, rexscale.z);
 }
 
-void EC_OgrePlaceable::SetQScale(const QVector3D newscale)
+void EC_Placeable::SetQScale(const QVector3D newscale)
 {
     SetScale(Vector3df(newscale.x(), newscale.y(), newscale.z()));
 }
 
-QVector3D EC_OgrePlaceable::translate(int axis, float amount)
+QVector3D EC_Placeable::translate(int axis, float amount)
 {
     Ogre::Matrix3 m;
     Ogre::Vector3 v;
@@ -300,7 +299,7 @@ QVector3D EC_OgrePlaceable::translate(int axis, float amount)
     return QVector3D(newpos.x, newpos.y, newpos.z);
 }
 
-void EC_OgrePlaceable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
+void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change)
 {
     if (attribute == &transform)
     {
@@ -331,4 +330,3 @@ void EC_OgrePlaceable::HandleAttributeChanged(IAttribute* attribute, AttributeCh
     }
 }
 
-}

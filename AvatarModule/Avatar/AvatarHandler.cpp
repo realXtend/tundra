@@ -23,9 +23,9 @@
 #include "GenericMessageUtils.h"
 #include "NetworkEvents.h"
 #include "EC_Mesh.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #ifdef EC_HoveringText_ENABLED
 #include "EC_HoveringText.h"
 #endif
@@ -109,7 +109,7 @@ namespace Avatar
     Scene::EntityPtr AvatarHandler::CreateNewAvatarEntity(entity_id_t entityid)
     {
         Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
-        if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
+        if (!scene || !avatar_module_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
             return Scene::EntityPtr();
 
         QStringList defaultcomponents;
@@ -117,19 +117,19 @@ namespace Avatar
         defaultcomponents.append(EC_OpenSimAvatar::TypeNameStatic());
         defaultcomponents.append(EC_NetworkPosition::TypeNameStatic());
         defaultcomponents.append(EC_AvatarAppearance::TypeNameStatic());
-        defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        defaultcomponents.append(EC_Placeable::TypeNameStatic());
         //defaultcomponents.push_back(EC_HoveringText::TypeNameStatic());
 #ifdef EC_HoveringWidget_ENABLED
         defaultcomponents.append(EC_HoveringWidget::TypeNameStatic());
 #endif
-        defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
-        defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
+        defaultcomponents.append(EC_Mesh::TypeNameStatic());
+        defaultcomponents.append(EC_AnimationController::TypeNameStatic());
 
         // Create avatar entity with all default components non-networked
         Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::LocalOnly, false);
         scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
 
-        ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
         if (placeable)
         {
             //CreateNameOverlay(placeable, entityid);
@@ -140,11 +140,14 @@ namespace Avatar
             // Now switch networksync off from the placeable, before we do any damage
             placeable->SetNetworkSyncEnabled(false);
         }
-        // Switch also networksync off from the mesh
-        ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        // Switch also networksync off from the mesh and animationcontroller
+        ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
         if (mesh)
             mesh->SetNetworkSyncEnabled(false);
-
+        ComponentPtr animctrl = entity->GetComponent(EC_AnimationController::TypeNameStatic());
+        if (animctrl)
+            animctrl->SetNetworkSyncEnabled(false);
+            
         return entity;
     }
 
@@ -420,20 +423,22 @@ namespace Avatar
         Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(avatarid);
         if (!entity)
             return false;
-        OgreRenderer::EC_OgreAnimationController* anim = entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get(); 
+        EC_AnimationController* anim = entity->GetComponent<EC_AnimationController>().get(); 
         if (!anim)
             return false;
 
+        QString animname = QString::fromStdString(params[1]);
+        
         if (!stopflag)
         {
-            anim->EnableAnimation(params[1], false, fadein, true);
-            anim->SetAnimationSpeed(params[1], rate);
-            anim->SetAnimationAutoStop(params[1], true);
-            anim->SetAnimationNumLoops(params[1], repeats);
+            anim->EnableAnimation(animname, false, fadein, true);
+            anim->SetAnimationSpeed(animname, rate);
+            anim->SetAnimationAutoStop(animname, true);
+            anim->SetAnimationNumLoops(animname, repeats);
         }
         else
         {
-            anim->DisableAnimation(params[1], fadeout);
+            anim->DisableAnimation(animname, fadeout);
         }
 
         return false;
@@ -549,7 +554,7 @@ namespace Avatar
 
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
         EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
-        //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        //EC_OgreMovableTextOverlay* overlay = entity->GetComponent<EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
@@ -577,7 +582,7 @@ namespace Avatar
 
         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
 /*
-        OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+        EC_OgreMovableTextOverlay* overlay = entity->GetComponent<EC_OgreMovableTextOverlay>().get();
         EC_OpenSimPresence* presence = entity->GetComponent<EC_OpenSimPresence>().get();
         if (overlay && presence)
         {
@@ -607,9 +612,9 @@ namespace Avatar
         if (!entity)
             return;
 
-        ComponentPtr placeableptr = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+        ComponentPtr placeableptr = entity->GetComponent(EC_Placeable::TypeNameStatic());
         ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
-        ComponentPtr animctrlptr = entity->GetComponent(EC_OgreAnimationController::TypeNameStatic());
+        ComponentPtr animctrlptr = entity->GetComponent(EC_AnimationController::TypeNameStatic());
         
         if (placeableptr && meshptr)
         {
@@ -620,7 +625,7 @@ namespace Avatar
         
         if (animctrlptr && meshptr)
         {
-            EC_OgreAnimationController* animctrl = checked_static_cast<EC_OgreAnimationController*>(animctrlptr.get());
+            EC_AnimationController* animctrl = checked_static_cast<EC_AnimationController*>(animctrlptr.get());
             animctrl->SetMeshEntity(dynamic_cast<EC_Mesh*>(meshptr.get()));
         }
     }
@@ -633,7 +638,7 @@ namespace Avatar
         if (!entity)
             return;
 
-        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
+        EC_AnimationController* animctrl = entity->GetComponent<EC_AnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!animctrl || !appearance)
             return;
@@ -641,18 +646,18 @@ namespace Avatar
         const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
         // Convert uuid's to actual animation names
-        std::vector<std::string> anims_to_start;
+        std::vector<QString> anims_to_start;
         for (unsigned i = 0; i < anim_ids.size(); ++i)
         {
             AnimationDefinitionMap::const_iterator def = anim_defs.find(anim_ids[i]);
             if (def != anim_defs.end())
-                anims_to_start.push_back(def->second.animation_name_);
+                anims_to_start.push_back(QString::fromStdString(def->second.animation_name_));
         }
         
         // Other animations that are going on have to be stopped
-        std::vector<std::string> anims_to_stop;
-        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        std::vector<QString> anims_to_stop;
+        const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             if (std::find(anims_to_start.begin(), anims_to_start.end(), anim->first) == anims_to_start.end())
@@ -663,19 +668,21 @@ namespace Avatar
         for (unsigned i = 0; i < anims_to_start.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_start[i]);
-
-            animctrl->EnableAnimation(def.animation_name_, def.looped_, def.fadein_);
-            animctrl->SetAnimationSpeed(def.animation_name_, def.speedfactor_);
-            animctrl->SetAnimationWeight(def.animation_name_, def.weightfactor_);
+            QString animname = QString::fromStdString(def.animation_name_);
+            
+            animctrl->EnableAnimation(animname, def.looped_, def.fadein_);
+            animctrl->SetAnimationSpeed(animname, def.speedfactor_);
+            animctrl->SetAnimationWeight(animname, def.weightfactor_);
 
             if (def.always_restart_)
-                animctrl->SetAnimationTimePosition(def.animation_name_, 0.0);
+                animctrl->SetAnimationTimePosition(animname, 0.0);
         }
 
         for (unsigned i = 0; i < anims_to_stop.size(); ++i)
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anims_to_stop[i]);
-            animctrl->DisableAnimation(def.animation_name_, def.fadeout_);
+            QString animname = QString::fromStdString(def.animation_name_);
+            animctrl->DisableAnimation(animname, def.fadeout_);
         }
     }
 
@@ -686,7 +693,7 @@ namespace Avatar
         if (!entity)
             return;
 
-        EC_OgreAnimationController* animctrl = entity->GetComponent<EC_OgreAnimationController>().get();
+        EC_AnimationController* animctrl = entity->GetComponent<EC_AnimationController>().get();
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         EC_NetworkPosition* netpos = entity->GetComponent<EC_NetworkPosition>().get();
         if (!animctrl || !netpos || !appearance)
@@ -694,8 +701,8 @@ namespace Avatar
         
         const AnimationDefinitionMap& anim_defs = appearance->GetAnimations();
         
-        const EC_OgreAnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
-        EC_OgreAnimationController::AnimationMap::const_iterator anim = running_anims.begin();
+        const EC_AnimationController::AnimationMap& running_anims = animctrl->GetRunningAnimations();
+        EC_AnimationController::AnimationMap::const_iterator anim = running_anims.begin();
         while (anim != running_anims.end())
         {
             const AnimationDefinition& def = GetAnimationByName(anim_defs, anim->first);
@@ -834,5 +841,10 @@ namespace Avatar
     {
         avatar_appearance_.InventoryExportReset();
         pending_appearances_.clear();
+    }
+    
+    void AvatarHandler::SetupECAvatar(entity_id_t entityID, const u8* data, uint size)
+    {
+        avatar_appearance_.ProcessECAvatarAppearance(entityID, data, size);
     }
 }

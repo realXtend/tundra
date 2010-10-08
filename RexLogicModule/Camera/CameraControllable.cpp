@@ -13,8 +13,8 @@
 
 #include "Renderer.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
@@ -186,7 +186,7 @@ namespace RexLogic
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
-            OgreRenderer::EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<EC_OgreCamera>().get();
             if (!cam_comp)     
                 return false;
             if (cam_comp->IsActive())
@@ -238,7 +238,7 @@ namespace RexLogic
         // Note: On Tundra we don't have the target. Hack the freelook cam to work in such case also.
         if (renderer && /*target && */camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *camera_placeable = camera->GetComponent<EC_Placeable>().get();
             // hack begin
             if (!target)
             {

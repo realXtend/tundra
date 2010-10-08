@@ -17,10 +17,7 @@
 #include <QObject>
 #include <QPointer>
 
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
+class EC_Placeable;
 
 namespace ProtocolUtilities
 {

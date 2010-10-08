@@ -11,7 +11,7 @@
 #include "EC_SoundListener.h"
 #include "IModule.h"
 #include "Entity.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "SceneManager.h"
 #include "ISoundService.h"
 #include "LoggingFunctions.h"
@@ -43,9 +43,9 @@ void EC_SoundListener::RetrievePlaceable()
     if (!GetParentEntity())
         LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
 
-    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    placeable_ = GetParentEntity()->GetComponent<EC_Placeable>();
     if (!placeable_.lock())
-        LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");
+        LogError("Couldn't find an EC_Placeable component from the parent entity.");
 }
 
 void EC_SoundListener::Update()

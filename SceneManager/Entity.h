@@ -38,9 +38,9 @@ namespace Scene
         is accessable through Q_PROERTY and if you want to edit other same type of components
         you should use GetComponent mehtod instead.
 
-        When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        When component is removed from the entity a Q_PROPERTY connection is destroyed from
         the component. Incase there are several components that typename is same, there is 
-        a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+        a name check that ensures that both components names are same before Q_PROPERTY destroyed.
 
         \note   Entity can have multiple components with same component type name as long as
                 the component names are unique.
@@ -98,9 +98,10 @@ namespace Scene
         /*! 
             \param type_name type of the component
             \param change Network replication mode, in case component has to be created
+            \param syncEnabled Whether new component will have networksync enabled
         */
-        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
         ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::LocalOnly);
         ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
         
@@ -142,9 +143,9 @@ namespace Scene
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
-        /*! When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        /*! When component is removed from the entity a Q_PROPERTY connection is destroyed from
             the component. Incase there are several components that typename is same, there is 
-            a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+            a name check that ensures that both components names are same before Q_PROPERTY destroyed.
             
             \param component Pointer to the component to remove
         */
