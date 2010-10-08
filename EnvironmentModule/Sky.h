@@ -7,6 +7,8 @@
 #include "EnvironmentModuleApi.h"
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
+#include "SceneManager.h"
+#include "Entity.h"
 
 #include <QObject>
 
