@@ -9,6 +9,8 @@
 #include "Quaternion.h"
 #include "Vector3D.h"
 
+#include <QString>
+
 namespace RexTypes
 {       
     //! Helper functions for getting values from terseupdate packets
@@ -21,6 +23,7 @@ namespace RexTypes
     bool IsValidVelocityVector(const Vector3df &pos);
 
     bool ParseBool(const std::string &value);
+    bool ParseBool(const QString &value);
     
     // Helper functions for reading values from byteblob:
 
