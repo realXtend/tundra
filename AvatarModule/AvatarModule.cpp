@@ -149,7 +149,6 @@ namespace Avatar
             switch (event_id)
             {
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
                     world_stream_.reset();
                     uuid_to_local_id_.clear();
