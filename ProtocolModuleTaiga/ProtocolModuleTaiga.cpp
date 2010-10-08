@@ -39,6 +39,7 @@ namespace TaigaProtocol
     {
         loginWorker_.SetFramework(GetFramework());
         eventManager_.reset();
+        networkManager_.reset();
 
         // Register event categories.
         eventManager_ = framework_->GetEventManager();
@@ -98,6 +99,10 @@ namespace TaigaProtocol
     {
         {
             PROFILE(ProtocolModuleTaiga_Update);
+            // Dont handle update if this protocol module is not the current active one.
+            // We can check this from the network manager ptr.
+            if (!networkManager_)
+                return;
             if (loginWorker_.IsReady() && loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_XMLRPC_REPLY_RECEIVED)
             {
                 // XML-RPC reply received; get the login parameters and signal that we're ready to
