@@ -105,9 +105,12 @@ namespace TaigaProtocol
                 clientParameters_ = loginWorker_.GetClientParameters();
                 loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_INIT_UDP);
             }
-            else if (loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
+            else if (!connected_ && loginWorker_.GetState() == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
             {
-                ProtocolUtilities::ConnectionFailedEvent data(loginWorker_.GetErrorMessage().c_str());
+                std::string error_msg = loginWorker_.GetErrorMessage();
+                if (error_msg.empty())
+                    error_msg = "Unknown connection error";
+                ProtocolUtilities::ConnectionFailedEvent data(error_msg.c_str());
                 eventManager_->SendEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CONNECTION_FAILED, &data);
                 loginWorker_.SetConnectionState(ProtocolUtilities::Connection::STATE_DISCONNECTED);
             }
