@@ -13,9 +13,11 @@
 
 #include "Console.h"
 #include "UiServiceInterface.h"
+#include "Input.h"
+
 #include "MemoryLeakCheck.h"
 
-std::string SceneStructureModule::typeNameStatic = "SceneStruct";
+std::string SceneStructureModule::typeNameStatic = "SceneStructure";
 
 SceneStructureModule::SceneStructureModule() :
     IModule(typeNameStatic),
@@ -30,7 +32,12 @@ SceneStructureModule::~SceneStructureModule()
 
 void SceneStructureModule::PostInitialize()
 {
+/*
     framework_->Console()->RegisterCommand("scenestruct", "Shows the Scene Structure window.", this, SLOT(ShowSceneStructureWindow()));
+    input = framework_->Input()->RegisterInputContext("SceneStructureInput", 90);
+    //input->SetTakeKeyboardEventsOverQt(true);
+    connect(input.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(OnKeyPressed(KeyEvent *)));
+*/
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()
