@@ -5,7 +5,6 @@
 
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
-#include "EnvironmentModule.h"
 
 #include "CoreTypes.h"
 #include "OgreTextureResource.h"
