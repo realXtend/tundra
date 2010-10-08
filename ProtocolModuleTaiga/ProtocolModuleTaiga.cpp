@@ -278,6 +278,8 @@ namespace TaigaProtocol
             "<string>ViewerStartAuction</string>"
             "<string>UntrustedSimulatorMessage</string>"
             "<string>ViewerStats</string>"
+            "<string>GetTexture</string>"
+            "<string>mumble_server_info</string>"
             "</array></llsd>";
 
         HttpUtilities::HttpRequest request;
@@ -303,6 +305,8 @@ namespace TaigaProtocol
         std::string response_str = (char *)&response[0];
 
         ExtractCapabilitiesFromXml(response_str);
+
+        eventManager_->SendDelayedEvent(networkStateEventCategory_, ProtocolUtilities::Events::EVENT_CAPS_FETCHED, EventDataPtr(), 0);
     }
 
     void ProtocolModuleTaiga::ExtractCapabilitiesFromXml(std::string xml)
