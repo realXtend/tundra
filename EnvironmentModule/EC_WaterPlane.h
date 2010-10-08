@@ -88,7 +88,7 @@ water plane underwater fog properties. Water plane cannot visualize outside as a
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
+<b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this water plane is by default is placed at. 
 </table>
 
 */
@@ -202,8 +202,8 @@ class EC_WaterPlane : public IComponent
         explicit EC_WaterPlane(IModule *module);
         
         /**
-         * Finds out that is EC_OgrePlaceable component connected to same entity where waterplane compontent is placed. 
-         * @returns component pointer to EC_OgrePlaceable component.
+         * Finds out that is EC_Placeable component connected to same entity where waterplane compontent is placed. 
+         * @returns component pointer to EC_Placeable component.
          */
         ComponentPtr FindPlaceable() const;
         
@@ -214,14 +214,14 @@ class EC_WaterPlane : public IComponent
         
         /**
          * Changes water plane position, this function should be called only if 
-         * entity where water plane is connected has not a EC_OgrePlaceable component. 
+         * entity where water plane is connected has not a EC_Placeable component. 
          * @note uses attribute @p positionAttr_ to for waterplane defining water plane posititon 
          */
         void SetPosition();
         
          /**
          * Changes water plane rotation, this function should be called only if 
-         * entity where water plane is connected has not a EC_OgrePlaceable component. 
+         * entity where water plane is connected has not a EC_Placeable component. 
          * @note uses attribute @p rotationAttr_ to for waterplane defining water plane rotation
          */
         void SetOrientation();

@@ -243,15 +243,13 @@ class LocalScene(Component):
         uploadcap_url = self.worldstream.GetCapability('UploadScene')
         print uploadcap_url
 
-    def onUploadSceneFile(url, vect):
-        print "onUploadSceneFile"
-        print url
-        print vect
-        print dir(url)
-        print dir(vect)
+    def onUploadSceneFile(self, url, x, y, z):
+        # print "onUploadSceneFile"
+        offset = str(x) + "," + str(y) + "," + str(z);
+        print offset
+        param = (url, offset)
+        self.startSceneAction("UploadSceneUrl", param)
         pass
-        
-        
             
 class SceneSaver:
     def __init__(self):

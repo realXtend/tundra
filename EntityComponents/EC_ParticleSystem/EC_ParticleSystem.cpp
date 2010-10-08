@@ -6,7 +6,7 @@
 #include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "OgreParticleResource.h"
 #include "SceneManager.h"
 #include "RexUUID.h"
@@ -77,7 +77,7 @@ void EC_ParticleSystem::CreateParticleSystem(const QString &systemName)
         particleSystem_ = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), systemName.toStdString());
         if(particleSystem_)
         {
-            OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
+            EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
             if(!placeable)
                 return;
             placeable->GetSceneNode()->attachObject(particleSystem_);
@@ -100,7 +100,7 @@ void EC_ParticleSystem::DeleteParticleSystem()
         return;
     OgreRenderer::RendererPtr renderer = renderer_.lock();
 
-    OgreRenderer::EC_OgrePlaceable *placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable *>(FindPlaceable().get());
+    EC_Placeable *placeable = dynamic_cast<EC_Placeable *>(FindPlaceable().get());
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     if(!placeable || !scene_mgr)
         return;
@@ -165,7 +165,7 @@ ComponentPtr EC_ParticleSystem::FindPlaceable() const
     ComponentPtr comp;
     if(!GetParentEntity())
         return comp;
-    comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    comp = GetParentEntity()->GetComponent<EC_Placeable>();
     return comp;
 }
 

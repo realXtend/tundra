@@ -15,7 +15,7 @@
 #include <OgreIteratorWrappers.h>
 #include <OgreTechnique.h>
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_WaterPlane.h"
 #include "Renderer.h"
 #include "OgreTextureResource.h"
