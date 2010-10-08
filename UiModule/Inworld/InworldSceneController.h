@@ -186,7 +186,11 @@ namespace UiServices
 
     private slots:
         //! Slot for applying new ui settings to all proxy widgets
-        void ApplyNewProxySettings(int new_opacity, int new_animation_speed) const;
+        void ApplyNewProxySettings(int new_opacity, int new_animation_speed);
+
+        //! Slot for updating our all_proxy_widgets_in_scene_ list when proxies are destroyed
+        //! So we dont keep freed pointers in the list and crash later when looping it
+        void ProxyDestroyed(QObject *obj);
 
         //! Aligning widgets in the docking area
         void DockLineup();
