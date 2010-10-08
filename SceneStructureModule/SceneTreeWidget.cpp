@@ -44,33 +44,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     //setDefaultDropAction(Qt::MoveAction);
     setDropIndicatorShown(true);
     setHeaderHidden(true);
-/*
-    setStyleSheet(
-        "QTreeView::branch:has-siblings:!adjoins-item"
-        "{"
-            "border-image: url(:/images/iconBranchVLine.png) 0;"
-        "}"
-        "QTreeView::branch:has-siblings:adjoins-item"
-        "{"
-            "border-image: url(:/images/iconBranchMore.png) 0;"
-        "}"
-        "QTreeView::branch:!has-children:!has-siblings:adjoins-item"
-        "{"
-            "border-image: url(:/images/iconBranchEnd.png) 0;"
-        "}"
-        "QTreeView::branch:has-children:!has-siblings:closed,"
-        "QTreeView::branch:closed:has-children:has-siblings"
-        "{"
-            "border-image: none;"
-            "image: url(:/images/iconBranchClosed.png);"
-        "}"
-        "QTreeView::branch:open:has-children:!has-siblings,"
-        "QTreeView::branch:open:has-children:has-siblings"
-        "{"
-            "border-image: none;"
-            "image: url(:/images/iconBranchOpen.png);"
-        "}");
-*/
+
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
 
     // Create keyboard shortcuts.
@@ -166,18 +140,6 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
 void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
 {
-/*
-    if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
-    {
-        if (event->source() == this)
-        {
-            event->setDropAction(Qt::MoveAction);
-            event->accept();
-        }
-        else
-            event->acceptProposedAction();
-    }
-*/
     if (e->mimeData()->hasUrls())
         e->accept();
     else
@@ -186,48 +148,6 @@ void SceneTreeWidget::dragEnterEvent(QDragEnterEvent *e)
 
 void SceneTreeWidget::dragMoveEvent(QDragMoveEvent *e)
 {
-/*
-    if (event->mimeData()->hasFormat("application/vnd.inventory.item"))
-    {
-        if (event->source() == this)
-        {
-            InventoryItemModel *itemModel = checked_static_cast<InventoryItemModel *>(model());
-            assert(itemModel);
-
-            AbstractInventoryItem *draggedItem = itemModel->GetItem(selectionModel()->currentIndex());
-            assert(draggedItem);
-            QModelIndex destIndex = indexAt(event->pos());
-
-            if (!destIndex.isValid())
-            {
-                event->ignore();
-                return;
-            }
-
-            AbstractInventoryItem *destItem = 0;
-
-            if (itemModel->GetItem(destIndex)->GetItemType() == AbstractInventoryItem::Type_Asset)
-                destItem = itemModel->GetItem(destIndex)->GetParent();
-            else
-                destItem = itemModel->GetItem(destIndex);
-
-            if (!destItem || destItem->IsLibraryItem() || (draggedItem->GetParent() == destItem))
-            {
-                event->ignore();
-                return;
-            }
-
-            if (draggedItem ->IsLibraryItem())
-                event->setDropAction(Qt::CopyAction);
-            else
-                event->setDropAction(Qt::MoveAction);
-
-            event->accept();
-        }
-        else
-            event->acceptProposedAction();
-    }
-*/
     if (e->mimeData()->hasUrls())
         e->accept();
     else
@@ -239,29 +159,6 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
     const QMimeData *data = e->mimeData();
     if (data->hasUrls())
     {
-/*
-        InventoryItemModel *itemModel = dynamic_cast<InventoryItemModel *>(model());
-        if (!itemModel)
-        {
-            event->ignore();
-            return;
-        }
-
-        AbstractInventoryDataModel *m = itemModel->GetInventory();
-        if (!m)
-        {
-            event->ignore();
-            return;
-        }
-*/
-        const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
-        if (!scene)
-        {
-            e->ignore();
-            return;
-        }
-
-        ///\todo Is this is just initial quick'n'dirty implementation.
         foreach(QUrl url, data->urls())
         {
             QString filename = url.path();
@@ -270,31 +167,10 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             // But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            if (filename.toLower().indexOf(".scene") != -1)
-            {
-                boost::filesystem::path path(filename.toStdString());
-                std::string dirname = path.branch_path().string();
-
-                TundraLogic::SceneImporter importer(framework);
-                ///\todo Take into account asset sources.
-                importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, false, true, true);
-            }
-            else if (filename.toLower().indexOf(".xml") != -1)
-            {
-                scene->LoadSceneXML(filename.toStdString(), false, AttributeChange::Replicate);
-            }
-            else if (filename.toLower().indexOf(".nbf") != -1)
-            {
-                scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-            }
-            else
-            {
-                LogError("Unsupported file extension: " + filename.toStdString());
-            }
+            InstantiateContent(filename, false);
         }
 
         e->acceptProposedAction();
-
     }
     else
         QTreeWidget::dropEvent(e);
@@ -321,7 +197,7 @@ QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
 
 QString SceneTreeWidget::GetSelectionAsXml() const
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return QString();
@@ -354,6 +230,35 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     scene_doc.appendChild(scene_elem);
 
     return scene_doc.toString();
+}
+
+void SceneTreeWidget::InstantiateContent(const QString &filename, bool clearScene)
+{
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    if (!scene)
+        return;
+
+    if (filename.toLower().indexOf(".scene") != -1)
+    {
+        boost::filesystem::path path(filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(framework);
+        ///\todo Take into account asset sources.
+        importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, clearScene, true, true);
+    }
+    else if (filename.toLower().indexOf(".xml") != -1)
+    {
+        scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
+    }
+    else if (filename.toLower().indexOf(".nbf") != -1)
+    {
+        scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+    }
+    else
+    {
+        LogError("Unsupported file extension: " + filename.toStdString());
+    }
 }
 
 void SceneTreeWidget::Edit()
@@ -421,7 +326,7 @@ void SceneTreeWidget::Rename()
 
 void SceneTreeWidget::New()
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
@@ -460,7 +365,7 @@ void SceneTreeWidget::New()
 
 void SceneTreeWidget::Delete()
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
@@ -479,7 +384,7 @@ void SceneTreeWidget::Copy()
 
 void SceneTreeWidget::Paste()
 {
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
@@ -532,7 +437,7 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
     if (files.size() != 1)
         return;
 
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
@@ -605,40 +510,18 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
     if (result != 1)
         return;
 
-    const Scene::ScenePtr scene = framework->GetDefaultWorldScene();
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
     assert(scene.get());
     if (!scene)
         return;
 
     foreach(QString filename, dialog->selectedFiles())
-        if (filename.toLower().indexOf(".scene") != -1)
-        {
-            boost::filesystem::path path(filename.toStdString());
-            std::string dirname = path.branch_path().string();
+    {
+        bool clearScene = false;
+        ///\todo This is awful hack, find better way
+        if (dialog->windowTitle() == tr("Open New Scene"))
+            clearScene = true;
 
-            TundraLogic::SceneImporter importer(framework);
-            bool clearScene = false;
-            ///\todo This is awful hack, find better way
-            if (dialog->windowTitle() == tr("Open New Scene"))
-                clearScene = true;
-
-            ///\todo Take into account asset sources.
-            importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, clearScene, true, true);
-        }
-        else if (filename.toLower().indexOf(".xml") != -1)
-        {
-            ///\todo This is awful hack, find better way
-            bool clearScene = false;
-            if (dialog->windowTitle() == tr("Open New Scene"))
-                clearScene = true;
-            scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
-        }
-        else if (filename.toLower().indexOf(".nbf") != -1)
-        {
-            scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-        }
-        else
-        {
-            LogError("Unsupported file extension: " + filename.toStdString());
-        }
+        InstantiateContent(filename, clearScene);
+    }
 }

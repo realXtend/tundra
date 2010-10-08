@@ -96,6 +96,12 @@ private:
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
 
+    /// Instantiates new content from file to the scene.
+    /** @param filename Filename.
+        @param clearScene Do we want to clear the scene before adding new content.
+    */
+    void InstantiateContent(const QString &filename, bool clearScene);
+
 private slots:
     /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
     void Edit();
