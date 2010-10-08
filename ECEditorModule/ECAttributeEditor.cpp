@@ -67,7 +67,6 @@ namespace ECEditor
                 useMultiEditor_ = false;
                 Initialize();
             }
-            //emit AttributeChanged(attributeName_.toStdString());
         }
         else if(attributes_.size() > 1)
         {
@@ -96,7 +95,6 @@ namespace ECEditor
                 Update(); 
                 listenEditorChangedSignal_ = true;
             }
-            //emit AttributeChanged(attributeName_.toStdString()); 
         }
     }
 
@@ -223,6 +221,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
 
@@ -345,6 +344,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<int>::Set(QtProperty *property)
@@ -390,6 +390,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<bool>::Set(QtProperty *property)
@@ -483,6 +484,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
@@ -581,6 +583,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
@@ -633,6 +636,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QString>::Set(QtProperty *property)
@@ -689,6 +693,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property)
@@ -761,6 +766,7 @@ namespace ECEditor
         }
         else
             InitializeMultiEditor();
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
@@ -866,6 +872,7 @@ namespace ECEditor
         }
         else
             InitializeMultiEditor();
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Foundation::AssetReference>::Set(QtProperty *property)
@@ -981,6 +988,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)

@@ -88,6 +88,12 @@ namespace ECEditor
          */
         void RemoveAttribute(IAttribute *attribute);
 
+    signals:
+        //! Signal is emmitted when editor has been reinitialized.
+        /*! @param name Attribute name.
+         */
+        void EditorChanged(const QString &name);
+
     private slots:
         //! Called when user has picked one of the multiselect values.
         //! @param value new value that has been picked.
