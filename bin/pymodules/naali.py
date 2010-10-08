@@ -50,7 +50,7 @@ frame = _naali.GetFrame()
 console = _naali.Console()
 input = _naali.GetInput()
 audio = _naali.Audio()
-ui = _naali.Ui()
+ui = _naali.UiService() #the UI core object does not implement the old uiservice stuff yet
 framework = _naali
 
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether

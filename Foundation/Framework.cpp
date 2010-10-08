@@ -678,6 +678,11 @@ namespace Foundation
         return ui;
     }
 
+    UiServiceInterface *Framework::UiService() 
+    { 
+        return GetService<UiServiceInterface>(); 
+    }
+
     ScriptConsole *Framework::Console() const
     { 
         return console_;
