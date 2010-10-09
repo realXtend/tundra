@@ -11,7 +11,6 @@
 #include "CoreTypes.h"
 
 #include <QTreeWidget>
-//#include <QAction>
 #include <QPointer>
 
 namespace Foundation
@@ -26,32 +25,18 @@ namespace ECEditor
 
 class QWidget;
 
-/// This is helper class to make translations work with QActions.
-/*
-class SceneEditAction : public QAction
-{
-    Q_OBJECT
-
-public:
-    SceneEditAction(QWidget *parent = 0) : QAction(parent) {}
-    SceneEditAction(const QString& text, QWidget *parent = 0) : QAction(text, parent), originalText(text) {}
-    QString GetText() const { return originalText; }
-
-private:
-    QString originalText;
-};
-*/
-
 /// Tree widget item with which has ID number
 class SceneTreeWidgetItem : public QTreeWidgetItem
 {
 public:
-    ///
-    /** @param
+    /// Constructor.
+    /** @param entityID Entity ID.
+        @param pareant Parent item.
     */
-    explicit SceneTreeWidgetItem(entity_id_t entityId) : id(entityId) {}
+    explicit SceneTreeWidgetItem(entity_id_t entityId, SceneTreeWidgetItem *parent = 0) :
+        QTreeWidgetItem(parent), id(entityId) {}
 
-    /// Entity ID.
+    /// Entity ID associated with this tree widget item.
     entity_id_t id;
 };
 
