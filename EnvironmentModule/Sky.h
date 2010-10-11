@@ -8,6 +8,7 @@
 #include "EnvironmentModule.h"
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
+#include "EC_SkyDome.h"
 #include "SceneManager.h"
 #include "Entity.h"
 

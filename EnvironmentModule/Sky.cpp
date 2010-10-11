@@ -199,6 +199,8 @@ void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
         case SKYTYPE_DOME:
         {
             //Assure that there exist skydome
+            if ( !ExistSky<EC_SkyDome>())
+                CreateSky<EC_SkyDome>();
             
             // Request textures
             lstRequestTags_.append(renderer->RequestResource(images[0], OgreRenderer::OgreTextureResource::GetTypeStatic()));
@@ -385,6 +387,14 @@ void Sky::Update()
            }
        case SKYTYPE_DOME:
            {
+                EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                if (sky == 0)
+                {
+                    CreateSky<EC_SkyDome>();
+                    EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                  //  sky->ComponentChanged(AttributeChange::Local);
+                }
+               
                 break;
            }
        default:
@@ -412,6 +422,7 @@ bool Sky::IsSkyEnabled()
             }
          case SKYTYPE_DOME:
              {
+                 exist = ExistSky<EC_SkyDome >();
                  break;
              }
 
@@ -501,6 +512,18 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
                      }
                  case SKYTYPE_DOME:
                      {
+                         EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                         if ( sky != 0)
+                         {
+                             QString texture = sky->textureAttr.Get();
+                             QString strDownloaded(tex->id_.c_str());
+                             if ( texture != strDownloaded )
+                             {
+                                 sky->textureAttr.Set(strDownloaded, AttributeChange::Default);
+                                // sky->ComponentChanged(AttributeChange::Local);
+                             }
+
+                         }
 
                          break;
                      }
@@ -665,6 +688,8 @@ void Sky::ChangeSkyType(SkyType type, bool update_sky)
             }          
         case SKYTYPE_DOME:
             {
+                CreateSky<EC_SkyDome>();
+                EC_SkyDome* plane = GetEnviromentSky<EC_SkyDome >();
                 //skyDomeTexture_ = sky_component->GetSkyDomeTextureID();
                 break;
             }
