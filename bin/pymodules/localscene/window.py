@@ -79,6 +79,8 @@ class ToolBarWindow():
                 self.displayMessage(title, msg)
             except Queue.Empty:
                 pass
+            except:
+                r.logInfo("Exception in processIncoming, LocalScene window")
 
     def displayMessage(self, title, msg):
         QMessageBox.information(None, title, msg)
@@ -90,6 +92,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def __init__(self, controller, queue, endApplication):
 
+        self.controller = controller
         ToolBarWindow.__init__(self, "pymodules/localscene/localscene.ui", queue, endApplication, controller)
 
         self.widget = self.gui
@@ -196,18 +199,22 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         return button
 
     def btnLoadClicked(self, args):
-        self.filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
-        if(self.filename!=""):
-            self.controller.loadScene(self.filename)
+        if(self.controller.bLocalSceneLoaded==False):
+            self.filename=QFileDialog.getOpenFileName(self.widget, "FileDialog")
+            if(self.filename!=""):
+                self.controller.loadScene(self.filename)
+            else:
+                pass
         else:
-            pass
+            self.displayMessage('LocalScene allready loaded', 'Unload current LocalScene, no support for multiple localscenes yet')
+        
 
     def btnUnloadClicked(self, args):
         self.controller.unloadScene()
 
     def btnPublishClicked(self, args):
         #self.controller.publishScene(self.filename)
-        if(controller.bLocalSceneLoaded==False):
+        if(self.controller.bLocalSceneLoaded==False):
             self.displayMessage('no local scene loaded', 'Load LocalScene first')
             return
         if( self.lineEditRegionName.text==""): 
