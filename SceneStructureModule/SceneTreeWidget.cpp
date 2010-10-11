@@ -28,6 +28,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 #include "MemoryLeakCheck.h"
 
 const QString cOgreSceneFileFilter("OGRE scene (*.scene)");
+const QString cOgreMeshFileFilter("OGRE mesh (*.mesh)");
 const QString cNaaliXmlFileFilter("Naali scene XML(*.xml)");
 const QString cNaaliBinaryFileFilter("Naali Binary Format (*.nbf)");
 
@@ -310,6 +311,17 @@ void SceneTreeWidget::InstantiateContent(const QString &filename, bool clearScen
         ///\todo Take into account asset sources.
         importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, clearScene, true, true);
     }
+    else if (filename.toLower().indexOf(".mesh") != -1)
+    {
+        boost::filesystem::path path(filename.toStdString());
+        std::string dirname = path.branch_path().string();
+
+        TundraLogic::SceneImporter importer(framework);
+        Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
+            Transform(Vector3df(50,50,50), Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+        if (entity)
+            scene->EmitEntityCreated(entity, AttributeChange::Default);
+    }
     else if (filename.toLower().indexOf(".xml") != -1)
     {
         scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
@@ -468,7 +480,7 @@ void SceneTreeWidget::Paste()
     QDomElement entityElem = sceneElem.firstChildElement("entity");
     if (entityElem.isNull())
     {
-        // No entity element, we probably we just components then. Search for component element.
+        // No entity element, we probably have just components then. Search for component element.
         QDomElement componentElem = sceneElem.firstChildElement("component");
         if (componentElem.isNull())
         {
@@ -520,8 +532,8 @@ void SceneTreeWidget::SaveAs()
 
 void SceneTreeWidget::Import()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, // + Mesh
-        tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;"
+        + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenNewScene()
