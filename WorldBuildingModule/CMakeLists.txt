@@ -1,24 +1,3 @@
-macro (AddSourceFolder folder_name)
-    file (GLOB H_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.h)
-    file (GLOB CPP_FILES_IN_FOLDER_${folder_name} ${folder_name}/*.cpp)
-    source_group ("Header Files\\${folder_name}" FILES ${H_FILES_IN_FOLDER_${folder_name}})
-    source_group ("Source Files\\${folder_name}" FILES ${CPP_FILES_IN_FOLDER_${folder_name}})
-    set (H_FILES ${H_FILES} ${H_FILES_IN_FOLDER_${folder_name}})
-    set (CPP_FILES ${CPP_FILES} ${CPP_FILES_IN_FOLDER_${folder_name}})
-endmacro (AddSourceFolder)
-
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx */*/*.cxx */*/*/*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-macro (UiFolder)
-    file (GLOB GENERATED_UI_H ui_*.h)
-    source_group ("Generated UI" FILES ${GENERATED_UI_H})
-endmacro (UiFolder)
-
-#############################################################################################
-
 # Define target name and output directory
 init_target (WorldBuildingModule OUTPUT modules/core)
 
