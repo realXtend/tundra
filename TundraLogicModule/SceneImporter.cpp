@@ -11,6 +11,8 @@
 #include "EC_Placeable.h"
 #include "EC_Mesh.h"
 #include "EC_Name.h"
+#include "ServiceManager.h"
+#include "Renderer.h"
 
 #include <Ogre.h>
 
@@ -18,6 +20,8 @@
 #include <QFile>
 
 using namespace RexTypes;
+
+namespace fs = boost::filesystem;
 
 namespace TundraLogic
 {
@@ -52,9 +56,201 @@ SceneImporter::~SceneImporter()
 {
 }
 
+Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+    Transform worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets)
+{
+    if (!scene)
+    {
+        TundraLogicModule::LogError("Null scene for mesh import");
+        return Scene::EntityPtr();
+    }
+    
+    std::string prefix;
+    if (localassets)
+        prefix = "file://";
+    
+    if (!in_asset_dir.empty())
+    {
+        char lastchar = in_asset_dir[in_asset_dir.length() - 1];
+        if ((lastchar != '/') && (lastchar != '\\'))
+            in_asset_dir += '/';
+    }
+    if (!out_asset_dir.empty())
+    {
+        char lastchar = out_asset_dir[out_asset_dir.length() - 1];
+        if ((lastchar != '/') && (lastchar != '\\'))
+            out_asset_dir += '/';
+    }
+    
+    boost::filesystem::path path(meshname);
+    std::string meshleafname = path.leaf();
+    
+    std::vector<std::string> material_names;
+    std::set<std::string> material_names_set;
+    std::string skeleton_name;
+    
+    QFile mesh_in((meshname).c_str());
+    if (!mesh_in.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open input mesh file " + meshname);
+        return Scene::EntityPtr();
+    }
+    else
+    {
+        QByteArray mesh_bytes = mesh_in.readAll();
+        mesh_in.close();
+        // Need to actually parse the mesh to get skeleton link and materials used
+        boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->
+            GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+        if (!renderer)
+        {
+            TundraLogicModule::LogError("Renderer does not exist");
+            return Scene::EntityPtr();
+        }
+        
+        std::string uniquename = renderer->GetUniqueObjectName();
+        try
+        {
+            Ogre::MeshPtr tempmesh = Ogre::MeshManager::getSingleton().createManual(uniquename, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME);
+            if (tempmesh.isNull())
+            {
+                TundraLogicModule::LogError("Failed to create temp mesh");
+                return Scene::EntityPtr();
+            }
+            
+            Ogre::DataStreamPtr stream(new Ogre::MemoryDataStream((void*)mesh_bytes.data(), mesh_bytes.size(), false));
+            Ogre::MeshSerializer serializer;
+            serializer.importMesh(stream, tempmesh.getPointer());
+            
+            for (uint i = 0; i < tempmesh->getNumSubMeshes(); ++i)
+            {
+                Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
+                if (submesh)
+                {
+                    material_names.push_back(submesh->getMaterialName());
+                    material_names_set.insert(submesh->getMaterialName());
+                }
+            }
+            skeleton_name = tempmesh->getSkeletonName();
+            
+            // Now delete the mesh as we're done with inspecting it
+            tempmesh.setNull();
+            Ogre::MeshManager::getSingleton().remove(uniquename);
+        }
+        catch (...)
+        {
+            TundraLogicModule::LogError("Exception while inspecting the mesh " + meshname);
+            return Scene::EntityPtr();
+        }
+    }
+    
+    for (uint i = 0; i < material_names.size(); ++i)
+        TundraLogicModule::LogInfo("Material ref: " + material_names[i]);
+    TundraLogicModule::LogInfo("Skeleton ref: " + skeleton_name);
+    
+    // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
+    std::vector<std::string> material_files;
+    fs::directory_iterator iter(in_asset_dir);
+    fs::directory_iterator end_iter;
+    for(; iter != end_iter; ++iter )
+    {
+        if (fs::is_regular_file(iter->status()))
+        {
+            std::string ext = iter->path().extension();
+            boost::algorithm::to_lower(ext);
+            if (ext == ".material")
+            {
+                TundraLogicModule::LogInfo("Material file: " + iter->path().string());
+                material_files.push_back(iter->path().string());
+            }
+        }
+    }
+    
+    // Process materials
+    std::set<std::string> all_textures;
+    for (uint i = 0; i < material_files.size(); ++i)
+    {
+        std::set<std::string> textures;
+        textures = ProcessMaterialFile(material_files[i], material_names_set, out_asset_dir, localassets);
+        all_textures.insert(textures.begin(), textures.end());
+    }
+    
+    // Process textures
+    ProcessTextures(all_textures, in_asset_dir, out_asset_dir);
+    
+    // Copy mesh and skeleton
+    CopyAsset(meshleafname, in_asset_dir, out_asset_dir);
+    if (!skeleton_name.empty())
+        CopyAsset(skeleton_name, in_asset_dir, out_asset_dir);
+    
+    // Create a new entity in any case, with a new ID
+    Scene::EntityPtr newentity = scene->CreateEntity(0, QStringList(), change, true);
+    if (!newentity)
+    {
+        TundraLogicModule::LogError("Could not create entity for mesh");
+        return newentity;
+    }
+    
+    // If the prefab contains valid data, instantiate the components from there
+    QDomDocument prefab;
+    prefab.setContent(QString::fromStdString(entity_prefab_xml));
+    QDomElement ent_elem = prefab.firstChildElement("entity");
+    if (!ent_elem.isNull())
+    {
+        //! \todo this should possibly be a function in SceneManager
+        QDomElement comp_elem = ent_elem.firstChildElement("component");
+        while (!comp_elem.isNull())
+        {
+            QString type_name = comp_elem.attribute("type");
+            QString name = comp_elem.attribute("name");
+            ComponentPtr newcomp = newentity->GetOrCreateComponent(type_name, name);
+            if (newcomp)
+                // Trigger no signal yet when entity is in incoherent state
+                newcomp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+            comp_elem = comp_elem.nextSiblingElement("component");
+        }
+        scene->EmitEntityCreated(newentity, change);
+    }
+    
+    // Fill the placeable attributes
+    EC_Placeable* placeablePtr = checked_static_cast<EC_Placeable*>(newentity->GetOrCreateComponent(EC_Placeable::TypeNameStatic(), change).get());
+    if (placeablePtr)
+        placeablePtr->transform.Set(worldtransform, AttributeChange::Disconnected);
+    else
+        TundraLogicModule::LogError("No EC_Placeable was created!");
+    // Fill the mesh attributes
+    QVector<QVariant> materials;
+    for (uint i = 0; i < material_names.size(); ++i)
+        materials.push_back(QString::fromStdString(prefix + material_names[i] + ".material"));
+    EC_Mesh* meshPtr = checked_static_cast<EC_Mesh*>(newentity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), change).get());
+    if (meshPtr)
+    {
+        meshPtr->meshResourceId.Set(QString::fromStdString(prefix + meshleafname), AttributeChange::Disconnected);
+        if (!skeleton_name.empty())
+            meshPtr->skeletonId.Set(QString::fromStdString(prefix + skeleton_name), AttributeChange::Disconnected);
+        meshPtr->meshMaterial.Set(QList<QVariant>::fromVector(materials), AttributeChange::Disconnected);
+        meshPtr->nodeTransformation.Set(Transform(Vector3df(0,0,0), Vector3df(90,0,180), Vector3df(1,1,1)), AttributeChange::Disconnected);
+    }
+    else
+        TundraLogicModule::LogError("No EC_Mesh was created!");
+    
+    // All components have been loaded/modified. Trigger change for them now.
+    const Scene::Entity::ComponentVector &components = newentity->GetComponentVector();
+    for(uint i = 0; i < components.size(); ++i)
+        components[i]->ComponentChanged(change);
+    
+    return newentity;
+}
+
 bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
     AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
 {
+    if (!scene)
+    {
+        TundraLogicModule::LogError("Null scene for import");
+        return false;
+    }
+    
     try
     {
         if (clearscene)
@@ -181,112 +377,8 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
 {
     std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
     
-    // Read the material file
-    QFile matfile(matfilename.c_str());
-    if (!matfile.open(QFile::ReadOnly))
-        TundraLogicModule::LogError("Could not open material file. Skipping material & texture assets.");
-    else
-    {
-        QByteArray bytes = matfile.readAll();
-        matfile.close();
-        
-        QFile matoutfile;
-        
-        if (bytes.size())
-        {
-            int num_materials = 0;
-            int brace_level = 0;
-            bool skip_until_next = false;
-            int skip_brace_level = 0;
-            Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
-            
-            while (!data->eof())
-            {
-                std::string line = data->getLine();
-                
-                // Skip empty lines & comments
-                if ((line.length()) && (line.substr(0, 2) != "//"))
-                {
-                    // Process opening/closing braces
-                    if (!ProcessBraces(line, brace_level))
-                    {
-                        // If not a brace and on level 0, it should be a new material
-                        if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
-                        {
-                            // Close the previous material file
-                            if (matoutfile.isOpen())
-                                matoutfile.close();
-                            
-                            std::string matname = line.substr(9);
-                            if (material_names_.find(matname) == material_names_.end())
-                                TundraLogicModule::LogWarning("Encountered unused material " + matname + " in the material file");
-                            else
-                            {
-                                ++num_materials;
-                                matoutfile.setFileName(QString::fromStdString(out_asset_dir + matname + ".material"));
-                                if (!matoutfile.open(QFile::WriteOnly))
-                                    TundraLogicModule::LogError("Could not open material file " + matname + ".material for writing");
-                            }
-                        }
-                        else
-                        {
-                            // Check for textures
-                            if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
-                            {
-                                std::string texname = line.substr(8);
-                                texture_names_.insert(texname);
-                                if (localassets)
-                                    line = "texture file://" + texname;
-                            }
-                        }
-                        // Write line to the modified copy
-                        if ((!skip_until_next) && (matoutfile.isOpen()))
-                        {
-                            matoutfile.write(line.c_str());
-                            matoutfile.write("\n");
-                        }
-                    }
-                    else
-                    {
-                        // Write line to the modified copy
-                        if ((!skip_until_next) && (matoutfile.isOpen()))
-                        {
-                            matoutfile.write(line.c_str());
-                            matoutfile.write("\n");
-                        }
-                        if (brace_level <= skip_brace_level)
-                            skip_until_next = false;
-                    }
-                }
-            }
-            
-            matoutfile.close();
-        }
-    }
-    
-    // Copy textures
-    std::set<std::string>::iterator i = texture_names_.begin();
-    while (i != texture_names_.end())
-    {
-        std::string texname = *i;
-        QFile texture_in((in_asset_dir + texname).c_str());
-        if (!texture_in.open(QFile::ReadOnly))
-            TundraLogicModule::LogError("Could not open input texture file " + texname);
-        else
-        {
-            QByteArray bytes = texture_in.readAll();
-            texture_in.close();
-            QFile texture_out((out_asset_dir + texname).c_str());
-            if (!texture_out.open(QFile::WriteOnly))
-                TundraLogicModule::LogError("Could not open output texture file " + texname);
-            else
-            {
-                texture_out.write(bytes);
-                texture_out.close();
-            }
-        }
-        ++i;
-    }
+    std::set<std::string> used_textures = ProcessMaterialFile(matfilename, material_names_, out_asset_dir, localassets);
+    ProcessTextures(used_textures, in_asset_dir, out_asset_dir);
     
     // Copy meshes
     std::vector<MeshInfo> created_meshes;
@@ -302,7 +394,7 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
             QByteArray bytes = mesh_in.readAll();
             mesh_in.close();
             
-            // Here, loop through all already created meshes and check for duplicate
+            // Loop through all already created meshes and check for duplicate
             bool duplicate_found = false;
             for (unsigned j = 0; j < created_meshes.size(); ++j)
             {
@@ -521,6 +613,140 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
+}
+
+std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets)
+{
+    std::set<std::string> used_textures;
+    
+    // Read the material file
+    QFile matfile(matfilename.c_str());
+    if (!matfile.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open material file " + matfilename);
+        return used_textures;
+    }
+    else
+    {
+        QByteArray bytes = matfile.readAll();
+        matfile.close();
+        
+        QFile matoutfile;
+        
+        if (bytes.size())
+        {
+            int num_materials = 0;
+            int brace_level = 0;
+            bool skip_until_next = false;
+            int skip_brace_level = 0;
+            Ogre::DataStreamPtr data = Ogre::DataStreamPtr(new Ogre::MemoryDataStream(bytes.data(), bytes.size()));
+            
+            while (!data->eof())
+            {
+                std::string line = data->getLine();
+                
+                // Skip empty lines & comments
+                if ((line.length()) && (line.substr(0, 2) != "//"))
+                {
+                    // Process opening/closing braces
+                    if (!ProcessBraces(line, brace_level))
+                    {
+                        // If not a brace and on level 0, it should be a new material
+                        if ((brace_level == 0) && (line.substr(0, 8) == "material") && (line.length() > 8))
+                        {
+                            // Close the previous material file
+                            if (matoutfile.isOpen())
+                                matoutfile.close();
+                            
+                            std::string matname = line.substr(9);
+                            if (used_materials.find(matname) == used_materials.end())
+                                TundraLogicModule::LogDebug("Encountered unused material " + matname + " in the material file");
+                            else
+                            {
+                                ++num_materials;
+                                matoutfile.setFileName(QString::fromStdString(out_asset_dir + matname + ".material"));
+                                if (!matoutfile.open(QFile::WriteOnly))
+                                    TundraLogicModule::LogError("Could not open material file " + matname + ".material for writing");
+                            }
+                        }
+                        else
+                        {
+                            // Check for textures
+                            if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
+                            {
+                                std::string texname = line.substr(8);
+                                used_textures.insert(texname);
+                                if (localassets)
+                                    line = "texture file://" + texname;
+                            }
+                        }
+                        // Write line to the modified copy
+                        if ((!skip_until_next) && (matoutfile.isOpen()))
+                        {
+                            matoutfile.write(line.c_str());
+                            matoutfile.write("\n");
+                        }
+                    }
+                    else
+                    {
+                        // Write line to the modified copy
+                        if ((!skip_until_next) && (matoutfile.isOpen()))
+                        {
+                            matoutfile.write(line.c_str());
+                            matoutfile.write("\n");
+                        }
+                        if (brace_level <= skip_brace_level)
+                            skip_until_next = false;
+                    }
+                }
+            }
+            
+            matoutfile.close();
+        }
+    }
+    
+    return used_textures;
+}
+
+void SceneImporter::ProcessTextures(const std::set<std::string>& used_textures, const std::string& in_asset_dir, const std::string& out_asset_dir)
+{
+    // Copy textures
+    std::set<std::string>::const_iterator i = used_textures.begin();
+    while (i != used_textures.end())
+    {
+        std::string texname = *i;
+        CopyAsset(texname, in_asset_dir, out_asset_dir);
+        ++i;
+    }
+}
+
+bool SceneImporter::CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir)
+{
+    QFile asset_in((in_asset_dir + name).c_str());
+    if (!asset_in.open(QFile::ReadOnly))
+    {
+        TundraLogicModule::LogError("Could not open input asset file " + name);
+        return false;
+    }
+    else
+    {
+        QByteArray bytes = asset_in.readAll();
+        asset_in.close();
+        
+        QFile asset_out((out_asset_dir + name).c_str());
+        if (!asset_out.open(QFile::WriteOnly))
+        {
+            TundraLogicModule::LogError("Could not open output asset file " + name);
+            return false;
+        }
+        else
+        {
+            asset_out.write(bytes);
+            asset_out.close();
+        }
+    }
+    
+    return true;
 }
 
 }

@@ -77,6 +77,9 @@ public:
     /// Imports a dotscene
     Console::CommandResult ConsoleImportScene(const StringVector& params);
     
+    /// Imports one mesh as a new entity
+    Console::CommandResult ConsoleImportMesh(const StringVector& params);
+    
     /// Check whether we are a server
     bool IsServer() const;
     
