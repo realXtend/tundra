@@ -20,41 +20,35 @@
 <table class="header">
 <tr>
 <td>
-<h2>SkyDome plane</h2>
+<h2>SkyDome Dome</h2>
 
 Registered by Enviroment::EnvironmentModule. 
 
 <b>Attributes</b>:
 <ul>
 <li> QString : materialAttr.
-<div>  </div>
+<div> Defines sky material   </div>
 <li> QString : textureAttr.
-<div>  </div>
-<li> Quaternion : orientationAttr
-<div> </div>
+<div>  Sky texture which is used in given material  </div>
 <li> float : distanceAttr.
-<div>  </div>
+<div> Distance in world coordinates from the camera to each plane of the box the dome is rendered on. </div>
+<li> float : curvatureAttr.
+<div>
+     The curvature of the dome. Good values are between 2 and 65. Higher values are more curved leading to a smoother effect, lower values are less curved meaning 
+     more distortion at the horizons but a better distance effect.  </div>
+<li> float : tilingAttr.
+<div> How many times to tile the texture(s) across the dome.  </div>
+<li> int : xSegmentsAttr.
+<div> The number of segments to the dome in the x direction.  </div>
+<li> int : ySegmentsAttr.
+<div> The number of segments to the dome in the y direction.  </div>
+<li> int : ySegmentsKeepAttr.
+<div> </div>
 <li> bool : drawFirstAttr.
-<div>  </div>
-
+<div> If true, the dome is drawn before all other geometry in the scene, without updating the depth buffer  </div>
+<li> Quaternion : orientationAttr
+<div>  Optional parameter to specify the orientation of the dome </div>
 </ul>
-
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
-Does not emit any actions.
-
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
-</table>
 
 */
 
@@ -87,12 +81,16 @@ namespace Environment
             DEFINE_QPROPERTY_ATTRIBUTE(QString, textureAttr);
             Q_PROPERTY(QString textureAttr READ gettextureAttr WRITE settextureAttr); 
             
+            /// Defines distance in world coordinates from the camera to each plane of the box the dome is rendered on.
             DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
             Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
 
+            /// The curvature of the dome. Good values are between 2 and 65. Higher values are more curved leading to a smoother effect, lower values are less curved meaning 
+            /// more distortion at the horizons but a better distance effect. 
 			DEFINE_QPROPERTY_ATTRIBUTE(float, curvatureAttr);
             Q_PROPERTY(float curvatureAttr READ getcurvatureAttr WRITE setcurvatureAttr); 
 
+            /// Defines how many times to tile the texture(s) across the dome. 
 		    DEFINE_QPROPERTY_ATTRIBUTE(float, tilingAttr);
             Q_PROPERTY(float tilingAttr READ gettilingAttr WRITE settilingAttr); 
 
@@ -102,13 +100,14 @@ namespace Environment
 			DEFINE_QPROPERTY_ATTRIBUTE(int, ySegmentsAttr);
             Q_PROPERTY(int ySegmentsAttr READ getySegmentsAttr WRITE setySegmentsAttr); 
             
+            /// Optional parameter to specify the orientation of the dome
             DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
             Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
            	
             DEFINE_QPROPERTY_ATTRIBUTE(int, ySegmentsKeepAttr);
             Q_PROPERTY(int ySegmentsKeepAttr READ getySegmentsKeepAttr WRITE setySegmentsKeepAttr); 
             
-             /// Defines that is sky drawn first
+            /// If true, the dome is drawn before all other geometry in the scene, without updating the depth buffer
             DEFINE_QPROPERTY_ATTRIBUTE(bool, drawFirstAttr);
             Q_PROPERTY(bool drawFirstAttr READ getdrawFirstAttr WRITE setdrawFirstAttr); 
            
@@ -117,6 +116,7 @@ namespace Environment
              /// Called If some of the attributes has been changed.
             void AttributeUpdated(IAttribute* attribute, AttributeChange::Type change);
             void DisableSky();
+        
         private:
             
 

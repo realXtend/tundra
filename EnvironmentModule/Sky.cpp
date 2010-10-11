@@ -16,7 +16,7 @@
 namespace Environment
 {
         
-Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SKYTYPE_BOX), skyBoxImageCount_(0)
+Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SKYTYPE_BOX) //, skyBoxImageCount_(0)
 {
 }
 
@@ -284,20 +284,7 @@ void Sky::CreateDefaultSky(const bool &show)
         CreateSky<EC_SkyBox>();
 
     EnableSky(true);
-    /*
-    type_ = OgreRenderer::SKYTYPE_BOX;
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if (sky)
-    {
-        EC_OgreSky *sky_component = sky->GetComponent<EC_OgreSky>().get();
-        assert(sky_component);
-        sky_component->CreateSky();
-        EnableSky(sky_component->IsSkyEnabled());
-        std::vector<std::string> items = sky_component->GetMaterialTextureNames();
-        for(uint i = 0; i < 6; i++)
-            skyBoxTextures_[i] = items[i];
-    }
-    */
+ 
 }
 
 void Sky::DisableSky()
@@ -307,57 +294,7 @@ void Sky::DisableSky()
     RemoveSky<EC_SkyDome >();
     
     
-   //switch (type_)
-   //{    
-   //    case OgreRenderer::SKYTYPE_BOX:
-   //        {
-   //            RemoveSky<EC_SkyBox>();
-   //            
-   //             /*
-   //             EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
-   //             if ( sky != 0)
-   //             {
-   //                 sky->DisableSky();
-   //                 EnableSky(false);
-   //             }
-   //             */
-   //             break;
-   //        }
-   //    case OgreRenderer::SKYTYPE_PLANE:
-   //        {
-   //             RemoveSky<EC_SkyPlane>();
-   //             /*
-   //             EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
-   //             if ( sky != 0)
-   //             {
-   //                 sky->DisableSky();
-   //                 EnableSky(false);
-   //             }
-   //             */
-   //             break;       
-   //        }
-   //    case OgreRenderer::SKYTYPE_DOME:
-   //        {
-   //             break;
-   //        }
-   //    default:
-   //        break;
-
-   //}
-
-
-
-
-    /*
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        EC_OgreSky *sky_component = checked_static_cast<EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_component->DisableSky();
-        EnableSky(sky_component->IsSkyEnabled());
-    }
-    */
+   
 }
 
 void Sky::Update()
@@ -430,33 +367,6 @@ bool Sky::IsSkyEnabled()
     }
     return exist;
    // return skyEnabled_;
-}
-
-void Sky::RequestSkyTextures()
-{
-    boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
-
-    switch(type_)
-    {
-    case SKYTYPE_BOX:
-        for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
-            skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i],
-                OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case SKYTYPE_DOME:
-        skyDomeTextureRequest_ = renderer->RequestResource(skyDomeTexture_,
-            OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case SKYTYPE_PLANE:
-        skyPlaneTextureRequest_ = renderer->RequestResource(skyPlaneTexture_,
-            OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case SKYTYPE_NONE:
-    default:
-        break;
-    }
 }
 
 void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
@@ -573,7 +483,7 @@ void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
     EnableSky(sky_component->IsSkyEnabled());
     */
 }
-
+/*
 void Sky::SetSkyTexture(const RexAssetID &texture_id)
 {
     switch(type_)
@@ -589,7 +499,9 @@ void Sky::SetSkyTexture(const RexAssetID &texture_id)
         break;
     }
 }
+*/
     
+/*
 void Sky::SetSkyBoxTextures(const RexAssetID textures[SKYBOX_TEXTURE_COUNT])
 {
     if (type_ != SKYTYPE_BOX)
@@ -609,7 +521,8 @@ void Sky::SetSkyBoxTextures(const RexAssetID textures[SKYBOX_TEXTURE_COUNT])
         }
     }
 }
-
+*/
+/*
 void Sky::FindCurrentlyActiveSky()
 {
     Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
@@ -622,12 +535,13 @@ void Sky::FindCurrentlyActiveSky()
             cachedSkyEntity_ = scene->GetEntity(entity.GetId());
     }
 }
-
+*/
+/*
 Scene::EntityWeakPtr Sky::GetSkyEntity()
 {
     return cachedSkyEntity_;
 }
-
+*/
 SkyType Sky::GetSkyType() const
 {
     return type_;
@@ -729,7 +643,7 @@ void Sky::ChangeSkyType(SkyType type, bool update_sky)
     }
     */
 }
-
+/*
 RexTypes::RexAssetID Sky::GetSkyTextureID(SkyType sky_type, int index) const
 {
     if(index < 0) index = 0;
@@ -749,7 +663,8 @@ RexTypes::RexAssetID Sky::GetSkyTextureID(SkyType sky_type, int index) const
     }
     return 0;
 }
-
+*/
+/*
 SkyDomeParameters Sky::GetSkyDomeParameters()
 {
     SkyDomeParameters sky_dome_param;
@@ -763,7 +678,8 @@ SkyDomeParameters Sky::GetSkyDomeParameters()
     }
     return sky_dome_param;
 }
-
+*/
+/*
 SkyPlaneParameters Sky::GetSkyPlaneParameters()
 {
     SkyPlaneParameters sky_plane_param;
@@ -777,7 +693,8 @@ SkyPlaneParameters Sky::GetSkyPlaneParameters()
     }
     return sky_plane_param;
 }
-
+*/
+/*
 SkyBoxParameters Sky::GetSkyBoxParameters()
 {
     SkyBoxParameters sky_param;
@@ -791,7 +708,8 @@ SkyBoxParameters Sky::GetSkyBoxParameters()
     }
     return sky_param;
 }
-
+*/
+/*
 void Sky::SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky)
 {
     Scene::EntityPtr sky = GetSkyEntity().lock();
@@ -807,7 +725,8 @@ void Sky::SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky)
         }
     }
 }
-
+*/
+/*
 void Sky::SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky)
 {
     Scene::EntityPtr sky = GetSkyEntity().lock();
@@ -823,7 +742,8 @@ void Sky::SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sk
         }
     }
 }
-
+*/
+/*
 void Sky::SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky)
 {
     Scene::EntityPtr sky = GetSkyEntity().lock();
@@ -839,5 +759,5 @@ void Sky::SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky)
         }
     }
 }
-
+*/
 } // namespace RexLogic
