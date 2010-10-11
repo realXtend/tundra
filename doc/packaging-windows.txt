@@ -24,6 +24,12 @@ Steps:
 
 When you make builds repeatedly, only steps 3) & 4) have to be repeated, unless dependencies change.
 
-
-
-
+- If you want to change the version number of Naali viewer you must change it in three files:
+    1) Application/main.cpp:      
+    2) Foundation/Framework.cpp:  
+    3) viewer-installer.nsi
+	
+- If you want to set an icon for naali-viewer.exe file:
+    1) Add icon resource to viewer project: right-click the viewer project, Add->Resource, Import bin\data\ui\images\naali_icon.ico file
+    2) Rebuild viewer project
+	!) Make sure that you do not commit any changes of these files: Application/resource.h, Application/viewer.aps, Application/viewer.rc

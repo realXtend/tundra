@@ -52,7 +52,7 @@ namespace Foundation
             "language", std::string("data/translations/naali_en"));
         ChangeLanguage(QString::fromStdString(default_language));
 
-        setWindowIcon(QIcon("./data/ui/images/naali_icon.png"));
+        setWindowIcon(QIcon("./data/ui/images/naali_icon.ico"));
     }
 
     FrameworkQtApplication::~FrameworkQtApplication()
