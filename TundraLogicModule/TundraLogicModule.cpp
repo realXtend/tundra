@@ -77,6 +77,10 @@ void TundraLogicModule::PostInitialize()
         "Loads scene from a dotscene file. Optionally clears the existing scene. Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
+    RegisterConsoleCommand(Console::CreateCommand("importmesh",
+        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z)",
+        Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));
+        
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
@@ -263,6 +267,31 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     }
     else
         return Console::ResultFailure("Failed to import the scene.");
+}
+
+Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    float x,y,z;
+    if (params.size() >= 4)
+    {
+        x = ParseString<float>(params[1], 0.0f);
+        y = ParseString<float>(params[2], 0.0f);
+        z = ParseString<float>(params[3], 0.0f);
+    }
+    
+    std::string filename = params[0];
+    boost::filesystem::path path(filename);
+    std::string dirname = path.branch_path().string();
+    
+    SceneImporter importer(framework_);
+    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+    
+    return Console::ResultSuccess();
 }
 
 bool TundraLogicModule::IsServer() const
