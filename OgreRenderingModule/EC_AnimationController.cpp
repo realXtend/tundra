@@ -26,8 +26,6 @@ EC_AnimationController::EC_AnimationController(IModule* module) :
     ResetState();
     
     QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
-    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
-        this, SLOT(AttributeUpdated(IAttribute*)));
 }
 
 EC_AnimationController::~EC_AnimationController()
@@ -238,6 +236,9 @@ void EC_AnimationController::Update(f64 frametime)
 
 Ogre::Entity* EC_AnimationController::GetEntity()
 {
+    if (!mesh)
+        AutoAssociateMesh();
+
     if (!mesh)
         return 0;
     
@@ -501,10 +502,8 @@ void EC_AnimationController::UpdateSignals()
     }
 }
 
-void EC_AnimationController::AttributeUpdated(IAttribute *attribute)
+void EC_AnimationController::AutoAssociateMesh()
 {
-    // We actually do not care about attribute updates, but this is a good place to auto-associate
-    // a mesh, if it is not yet set
     if (!mesh)
     {
         Scene::Entity* parent = GetParentEntity();

@@ -304,6 +304,7 @@ void Sky::DisableSky()
 {
     RemoveSky<EC_SkyBox>();
     RemoveSky<EC_SkyPlane>();
+    RemoveSky<EC_SkyDome >();
     
     
    //switch (type_)

@@ -1,9 +1,3 @@
-# Qt4 Moc files to subgroup "CMake Moc"
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
 # Define target name
 init_target (Interfaces)
 
