@@ -80,8 +80,10 @@ class LocalScene(Component):
 
     def loadScene(self, filename):
         # if material file exists copy needed files to needed locations
+        print "--"
+        print self.bLocalSceneLoaded
         if(self.bLocalSceneLoaded==False):
-
+            self.bLocalSceneLoaded=True
             self.scenedata = SceneDataManager(filename)
             if(self.scenedata.hasCopyFiles):
                 #self.scenedata.copyFilesToDirs()
@@ -94,7 +96,6 @@ class LocalScene(Component):
                     self.dotScene, self.dsManager = loader.load_dotscene(filename)
                     self.dsManager.setHighlight(self.highlight)
                     self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
-            self.bLocalSceneLoaded==True
         else:
             self.queue.put(('local scene', 'you already have scene loaded'))
             pass
