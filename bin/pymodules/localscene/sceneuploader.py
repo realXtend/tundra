@@ -31,6 +31,7 @@ from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_U
 class SceneUploader:
 
     def __init__(self, cap_url, controller):
+        self.controller = controller
         self.host = None
         self.port = None
         self.path = None
