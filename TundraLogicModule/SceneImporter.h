@@ -15,6 +15,7 @@
 
 #include "SceneManager.h"
 #include "IAttribute.h"
+#include "Transform.h"
 
 class QDomElement;
 
@@ -33,6 +34,20 @@ class TUNDRALOGIC_MODULE_API SceneImporter
 public:
     SceneImporter(Foundation::Framework* framework);
     ~SceneImporter();
+    
+    //! Import a single mesh. Scans the mesh for needed skeleton & materials
+    /*! \param scene Destination scene
+        \param meshname Filename of mesh
+        \param in_asset_dir Where to read input assets. Typically same as the input file path
+        \param out_asset_dir Where to put resulting assets
+        \param worldtransform Transform to use for the entity's placeable
+        \param entity_prefab_xml Prefab data (entity & components in xml serialized format) to use for the entity
+        \param change What changetype to use in scene operations
+        \param localassets Whether to put file:// prefix into all asset references
+        \return Entity pointer if successful (null if failed)
+     */
+    Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
+        Transform worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
     
     //! Import a dotscene
     /*! \param scene Destination scene
@@ -78,15 +93,37 @@ private:
     void ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, bool localassets, bool flipyz, bool replace);
     
+    //! Process a material file, searching for used materials and writing them to separate files if found, and also recording used textures
+    /*! \param matfilename Material file name, including full path
+        \param used_materials Set of materials that are needed. Any materials in the file that are not listed will be skipped
+        \param out_asset_dir Directory to write output materials to
+        \param localassets Whether to put file:// prefix into all asset references
+        \return Set of used textures
+     */
+    std::set<std::string> ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets);
+    
+    //! Copy textures to destination asset directory
+    /*! \param used_textures Set of texture names
+        \param in_asset_dir Directory to copy from
+        \param out_asset_dir Directory to copy to
+     */
+    void ProcessTextures(const std::set<std::string>& used_textures, const std::string& in_asset_dir, const std::string& out_asset_dir);
+    
+    //! Copy an asset file from source to destination asset directory.
+    /*! \param name Filename
+        \param in_asset_dir Directory to copy from
+        \param out_asset_dir Directory to copy to
+        \return true if successful
+     */
+    bool CopyAsset(const std::string& name, const std::string& in_asset_dir, const std::string& out_asset_dir);
+    
     //! Materials encountered in scene
     std::set<std::string> material_names_;
-    //! Textures encountered in scene
-    std::set<std::string> texture_names_;
     //! Meshes encountered in scene
     /*! For supporting binary duplicate detection, this is a map which maps the original names to actual assets that will be stored.
      */
     std::map<std::string, std::string> mesh_names_;
-    //! Nodes already created into the scene. Used for enforcing uniqueness (otherwise the name-based "update import" logic will fail)
+    //! Nodes already created into the scene. Used for name-based "update import" logic
     std::set<std::string> node_names_;
     
     //! Framework
