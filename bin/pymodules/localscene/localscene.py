@@ -31,7 +31,7 @@ from xml.dom.minidom import getDOMImplementation
 
 import Queue
 
-        
+
 class LocalScene(Component):
     def __init__(self):
         Component.__init__(self)
@@ -44,14 +44,14 @@ class LocalScene(Component):
         PythonQt.QtCore.QObject.connect(self.timer,
                            PythonQt.QtCore.SIGNAL("timeout()"),
                            self.periodicCall)
-        self.timer.start(1000)        
+        self.timer.start(1000)
         self.window = LCwindow(self, self.queue, self.endApplication)
-        
+
         self.isrunning = 1
-        
+
         self.uploadThread = None
         self.sceneActionThread = None
-        
+
         self.xsift = 127
         self.ysift = 127
         self.zsift = 25
@@ -64,34 +64,41 @@ class LocalScene(Component):
         self.flipZY = False
         self.highlight = False
         self.uploader = None
-        self.filename = ""        
+        self.filename = ""
         self.scenedata = None
 
         self.regionName = None
         self.publishName = None
-        
+
         self.sceneActions = None # sceneactions.SceneActions()
-        
-        
+        self.bLocalSceneLoaded = False
+
         #self.libMod = r.getLibraryModule()
-        
+
         #self.libMod.connect("UploadSceneFile(QString, QVect)", self.onUploadSceneFile)
         pass
 
     def loadScene(self, filename):
         # if material file exists copy needed files to needed locations
-        self.scenedata = SceneDataManager(filename)
-        if(self.scenedata.hasCopyFiles):
-            #self.scenedata.copyFilesToDirs()
-            self.scenedata.addResourceDirToRenderer()
+        if(self.bLocalSceneLoaded==False):
+
+            self.scenedata = SceneDataManager(filename)
+            if(self.scenedata.hasCopyFiles):
+                #self.scenedata.copyFilesToDirs()
+                self.scenedata.addResourceDirToRenderer()
+                pass
+
+            time.sleep(1)
+            if(filename!=None):
+                if(filename!=""):
+                    self.dotScene, self.dsManager = loader.load_dotscene(filename)
+                    self.dsManager.setHighlight(self.highlight)
+                    self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
+            self.bLocalSceneLoaded==True
+        else:
+            self.queue.put(('local scene', 'you already have scene loaded'))
             pass
 
-        time.sleep(1)
-        if(filename!=None):
-            if(filename!=""):
-                self.dotScene, self.dsManager = loader.load_dotscene(filename)
-                self.dsManager.setHighlight(self.highlight)
-                self.dsManager.setFlipZY(self.flipZY, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
 
     def saveScene(self, filename):
         # set new mesh positions & scales to file, positions, scales are stored in DotSceneManager.nodes[].naali_ent.placeable.Position & Scale
@@ -107,8 +114,9 @@ class LocalScene(Component):
             except:
                 #ignore
                 pass
+        self.bLocalSceneLoaded = False
         pass
-        
+
     def publishScene(self, filename=""):
         print "publishScene"
         if(filename==""):
@@ -127,12 +135,12 @@ class LocalScene(Component):
         print "unloading dot scene"
         self.queue.put(('__unload__', '__unload__scene__'))
         self.queue.put(('scene upload', 'upload done'))
-                
+
     def setxpos(self, x):
         self.xsift = x
         if(self.dsManager!=None):
             self.dsManager.setPosition(self.xsift, self.ysift, self.zsift)
-        
+
     def setypos(self, y):
         self.ysift = y
         if(self.dsManager!=None):
@@ -156,31 +164,31 @@ class LocalScene(Component):
     def setzscale(self, z):
         self.zscale = z
         if(self.dsManager!=None):
-            self.dsManager.setScale(self.xscale, self.yscale, self.zscale)        
+            self.dsManager.setScale(self.xscale, self.yscale, self.zscale)
 
     def checkBoxZYToggled(self, enabled):
         self.flipZY = enabled
         if(self.dsManager!=None):
             self.dsManager.setFlipZY(enabled, self.xsift, self.ysift, self.zsift, self.xscale, self.yscale, self.zscale)
         pass
-        
+
     def on_exit(self):
         r.logInfo("Local Scene exiting...")
-        self.window.on_exit()  
+        self.window.on_exit()
         r.logInfo("Local Done exiting...")
 
-        
+
     def on_hide(self, shown):
         #print "on hide"
         pass
-        
+
     def update(self, time):
         # print "here", time
         pass
 
     def on_logout(self, id):
         r.logInfo("Local scene Logout.")
-        
+
     def checkBoxHighlightToggled(self, enabled):
         self.highlight = enabled
         if(self.dsManager!=None):
@@ -194,7 +202,7 @@ class LocalScene(Component):
         self.uploadThread = threading.Thread(target=self.publishScene)
         self.uploadThread.start()
         pass
-    
+
     def periodicCall(self):
         #Check every 1000 ms if there is something new in the queue.
         self.window.processIncoming()
@@ -232,11 +240,11 @@ class LocalScene(Component):
             self.sceneActionThread = threading.Thread(target=self.sceneActions.runSceneAction)
             self.sceneActionThread.start()
         pass
-                    
+
     def getUploadSceneList(self):
         if(self.checkSceneActions()==True):
             self.sceneActions.GetUploadSceneList()
-        
+
     def printOutCurrentCap(self):
         if(self.worldstream==None):
             self.worldstream = r.getServerConnection()
@@ -250,11 +258,11 @@ class LocalScene(Component):
         param = (url, offset)
         self.startSceneAction("UploadSceneUrl", param)
         pass
-            
+
 class SceneSaver:
     def __init__(self):
         self.impl = getDOMImplementation()
-        
+
     def save(self, filename, nodes):
         from PythonQt.QtGui import QQuaternion
         #newdoc = self.impl.createDocument(None, "some_tag", None)
@@ -262,20 +270,20 @@ class SceneSaver:
         top_element = newdoc.documentElement
         nodesNode = newdoc.createElement('nodes')
         top_element.appendChild(nodesNode)
-        
+
         if(nodes != None):
             for k, oNode  in nodes.iteritems():
                 nodeNode = newdoc.createElement('node')
                 nodeNode.setAttribute("name", k)
                 nodeNode.setAttribute("id", oNode.id)
-                
-                position = newdoc.createElement('position')                
+
+                position = newdoc.createElement('position')
                 position.setAttribute("x", str(oNode.naali_ent.placeable.Position.x()-127))
                 position.setAttribute("y", str(oNode.naali_ent.placeable.Position.y()-127))
                 position.setAttribute("z", str(oNode.naali_ent.placeable.Position.z()-25))
-                                
+
                 nodeNode.appendChild(position)
-                
+
                 rotation = newdoc.createElement('rotation')
                 # XXX counter the 'fix' done in loading the scene
                 # loader.py in def create_naali_meshentity()
@@ -285,23 +293,23 @@ class SceneSaver:
                 rotation.setAttribute("qz", str(oNode.naali_ent.placeable.Orientation.z()))
                 rotation.setAttribute("qw", str(oNode.naali_ent.placeable.Orientation.scalar()))
                 nodeNode.appendChild(rotation)
-                
+
                 scale = newdoc.createElement('scale')
                 scale.setAttribute("x", str(oNode.naali_ent.placeable.Scale.x()))
                 scale.setAttribute("y", str(oNode.naali_ent.placeable.Scale.y()))
                 scale.setAttribute("z", str(oNode.naali_ent.placeable.Scale.z()))
                 nodeNode.appendChild(scale)
-                
+
                 entity = newdoc.createElement('entity')
                 entity.setAttribute("name", oNode.entityNode.getAttribute("name"))
                 entity.setAttribute("meshFile", oNode.entityNode.getAttribute("meshFile"))
                 entity.setAttribute("static", oNode.entityNode.getAttribute("static"))
                 nodeNode.appendChild(entity)
                 nodesNode.appendChild(nodeNode)
-        
+
         #f = open(filename + "test", 'w')
         f = open(filename, 'w')
-        
+
         # remove first line + change ending tag from </scene formatVersion=""> to </scene>
         contents = newdoc.toprettyxml()
         lines = contents.split('\n')
