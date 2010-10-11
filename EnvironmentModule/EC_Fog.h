@@ -43,20 +43,6 @@ must be se as "FogEnvironment" after that Naali's enviroment module will add EC_
 
 </ul>
 
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
-Does not emit any actions.
-
 </table>
 
 */
