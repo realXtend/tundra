@@ -316,9 +316,25 @@ void SceneTreeWidget::InstantiateContent(const QString &filename, bool clearScen
         boost::filesystem::path path(filename.toStdString());
         std::string dirname = path.branch_path().string();
 
+        // Query position from the user.
+        bool ok;
+        QString posString = QInputDialog::getText(this, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "20.00;20.00;20.00", &ok);
+        if (!ok || posString.isEmpty())
+            return;
+
+        posString.replace(',', '.');
+        QStringList pos = posString.split(';');
+        Transform transform(Vector3df(20.0,20.0,20.0), Vector3df(0,0,0), Vector3df(1,1,1));
+        if (pos.size() > 0)
+            transform.position.x = pos[0].toFloat();
+        if (pos.size() > 1)
+            transform.position.y = pos[1].toFloat();
+        if (pos.size() > 2)
+            transform.position.z = pos[2].toFloat();
+
         TundraLogic::SceneImporter importer(framework);
         Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
-            Transform(Vector3df(50,50,50), Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+            transform, std::string(), AttributeChange::Default, true);
         if (entity)
             scene->EmitEntityCreated(entity, AttributeChange::Default);
     }
