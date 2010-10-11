@@ -55,7 +55,6 @@ void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
 
     scene = s;
     SceneManager *scenePtr = scene.lock().get();
-    assert(scenePtr);
     connect(scenePtr, SIGNAL(EntityCreated(Scene::Entity *, AttributeChange::Type)), SLOT(AddEntity(Scene::Entity *)));
     connect(scenePtr, SIGNAL(EntityRemoved(Scene::Entity *, AttributeChange::Type)), SLOT(RemoveEntity(Scene::Entity *)));
     connect(scenePtr, SIGNAL(ComponentAdded(Scene::Entity *, IComponent *, AttributeChange::Type)),
@@ -69,6 +68,7 @@ void SceneStructureWindow::SetScene(const Scene::ScenePtr &s)
 void SceneStructureWindow::ShowComponents(bool show)
 {
     showComponents = show;
+    treeWidget->showComponents =show;
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
@@ -113,7 +113,7 @@ void SceneStructureWindow::Clear()
 
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
-    SceneTreeWidgetItem *item = new SceneTreeWidgetItem(entity->GetId());
+    EntityTreeWidgetItem *item = new EntityTreeWidgetItem(entity->GetId());
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     // Set local entity's font color blue
     if (entity->GetId() & Scene::LocalEntity)
@@ -128,7 +128,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        SceneTreeWidgetItem *item = static_cast<SceneTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityTreeWidgetItem *item = static_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
         if (item && (item->id == entity->GetId()))
         {
             SAFE_DELETE(item);
@@ -141,13 +141,16 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        SceneTreeWidgetItem *eItem = static_cast<SceneTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->id == entity->GetId()))
         {
-            SceneTreeWidgetItem *cItem = new SceneTreeWidgetItem(entity->GetId(), eItem);
+            ComponentTreeWidgetItem *cItem = new ComponentTreeWidgetItem(comp->TypeName(), comp->Name(), eItem);
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
             eItem->addChild(cItem);
+
+            if (comp->TypeName() == "EC_Name")
+                eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
         }
     }
 }
@@ -156,19 +159,22 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        SceneTreeWidgetItem *eItem = static_cast<SceneTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->id == entity->GetId()))
         {
             for (int j = 0; j < eItem->childCount(); ++j)
             {
-                SceneTreeWidgetItem *cItem = static_cast<SceneTreeWidgetItem *>(eItem->child(j));
-                if (cItem->text(0) == QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()))
+                ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(j));
+                if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == comp->Name()))
                 {
                     eItem->removeChild(cItem);
                     SAFE_DELETE(cItem);
                     break;
                 }
             }
+
+            if (comp->TypeName() == "EC_Name")
+                eItem->setText(0, QString("%1").arg(entity->GetId()));
         }
     }
 }
