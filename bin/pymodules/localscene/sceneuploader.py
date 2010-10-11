@@ -95,7 +95,9 @@ class SceneUploader:
         #self.progressBar.clear()
         
     def handleErrors(self, d):
-        #print d
+        if d==None:
+            self.controller.queue.put(('scene upload', 'server sent malformed responce'))
+            return
         if not d.has_key('error'):
             self.controller.queue.put(('scene upload', 'server sent malformed responce'))
         if(d['error']!='None'):
