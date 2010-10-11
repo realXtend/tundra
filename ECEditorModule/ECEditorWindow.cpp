@@ -15,6 +15,7 @@
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
+#include "EC_Name.h"
 #include "ComponentManager.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
@@ -110,10 +111,24 @@ namespace ECEditor
     {
         if (entity_list_)
         {
+            //If entity don't have EC_Name then entity_name is same as it's id.
+            QString entity_name = QString::number(entity_id);
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
+            if(entity && entity->HasComponent("EC_Name"))
+                entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
+            entity_id_to_name_.insert(QString::number(entity_id), entity_name);
+
             QString entity_id_str;
-            entity_id_str.setNum((int)entity_id);
             entity_list_->clearSelection();
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
+            if(entity_name.isEmpty())
+            {
+                entity_id_str = QString::number(entity_id);
+                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
+            }
+            else
+            {
+                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
+            }
         }
     }
 
@@ -122,20 +137,27 @@ namespace ECEditor
         if (!entity_list_)
             return;
 
-        for(int i = 0; i < entity_list_->count(); ++i)
+        QString entity_id_str = QString::number(entity_id);
+        EntityIdToNameMap::iterator iter = entity_id_to_name_.find(entity_id_str);
+        if(iter != entity_id_to_name_.end())
         {
-            if (entity_list_->item(i)->text() == QString::number(entity_id))
-            {
-                QListWidgetItem* item = entity_list_->takeItem(i);
-                SAFE_DELETE(item);
-            }
+            entity_id_str = iter.value();
+            entity_id_to_name_.erase(iter);
         }
+
+        QList<QListWidgetItem *> items = entity_list_->findItems(entity_id_str, Qt::MatchExactly);
+        for(uint i = 0; i < items.size(); i++)
+        {
+            SAFE_DELETE(items[i]);
+        }
+        items.clear();
     }
 
     void ECEditorWindow::ClearEntities()
     {
         if (entity_list_)
             entity_list_->clear();
+        entity_id_to_name_.clear();
         RefreshPropertyBrowser();
     }
 
@@ -143,11 +165,20 @@ namespace ECEditor
     {
         if ((entity_list_) && (entity_list_->hasFocus()))
         {
-            for (int i = entity_list_->count() - 1; i >= 0; --i)
+            for (uint i = entity_list_->count(); i--;)
             {
                 if (entity_list_->item(i)->isSelected())
                 {
                     QListWidgetItem* item = entity_list_->takeItem(i);
+                    EntityIdToNameMap::iterator iter = entity_id_to_name_.find(item->text());
+                    if(iter != entity_id_to_name_.end())
+                        entity_id_to_name_.erase(iter);
+                    else
+                    {
+                        QString key = entity_id_to_name_.key(item->text(), QString());
+                        if(!key.isNull())
+                            entity_id_to_name_.erase(entity_id_to_name_.find(key));
+                    }
                     delete item;
                 }
             }
@@ -340,7 +371,7 @@ namespace ECEditor
             browser_->clear();
             // Unbold all list elements from the enity list.
             for(uint i = 0; i < entity_list_->count(); i++)
-                BoldEntityListItem(entity_list_->item(i)->text().toInt(), false);
+                BoldEntityListItem(entity_list_->item(i)->text().toUInt(), false);
             return;
         }
 
@@ -348,6 +379,7 @@ namespace ECEditor
         //! so that unnecessary widget paints are avoided. This need be fixed in a way that browser's load is minimal.
         //! To ensure that the editor can handle thousands of induvicual elements in the same time.
         browser_->hide();
+        //EntityIdSet noneSelectedEntities = selectedEntities_;
         EntityIdSet noneSelectedEntities = selectedEntities_;
         selectedEntities_.clear();
         // Check what new entities has been added and what old need to be removed from the browser.
@@ -355,10 +387,13 @@ namespace ECEditor
         {
             browser_->AddNewEntity(entities[i].get());
             selectedEntities_.insert(entities[i]->GetId());
-            noneSelectedEntities.erase(entities[i]->GetId());
+            
+            EntityIdSet::iterator iter = noneSelectedEntities.find(entities[i]->GetId());
+            if(iter != noneSelectedEntities.end())
+                noneSelectedEntities.erase(iter);
         }
-        // After we have the list of entities that need to be removed we do so and after we are done, we will update browser's ui
-        // to fit those changes that we just made.
+        // After we have the list of entities that need to be removed, we do so and after we are done, we will update browser's ui
+        // to fit those changes that were just made.
         while(!noneSelectedEntities.empty())
         {
             Scene::EntityPtr entity = scene->GetEntity(*(noneSelectedEntities.begin()));
@@ -509,14 +544,16 @@ namespace ECEditor
 
     void ECEditorWindow::BoldEntityListItem(entity_id_t entity_id, bool bold)
     {
-        QString entity_id_str;
-        entity_id_str.setNum((int)entity_id);
-        QList<QListWidgetItem*> items = entity_list_->findItems(QString::fromStdString(entity_id_str.toStdString()), Qt::MatchExactly);
-        for(uint i = 0; i < items.size(); i++)
+        EntityIdToNameMap::iterator iter = entity_id_to_name_.find(QString::number(entity_id));
+        if(iter != entity_id_to_name_.end())
         {
-            QFont font = items[i]->font();
-            font.setBold(bold);
-            items[i]->setFont(font);
+            QList<QListWidgetItem*> items = entity_list_->findItems(iter.value(), Qt::MatchExactly);
+            for(uint i = 0; i < items.size(); i++)
+            {
+                QFont font = items[i]->font();
+                font.setBold(bold);
+                items[i]->setFont(font);
+            }
         }
     }
 
@@ -634,10 +671,21 @@ namespace ECEditor
             QListWidgetItem* item = entity_list_->item(i);
             if (item->isSelected())
             {
-                entity_id_t id = (entity_id_t)item->text().toInt();
-                Scene::EntityPtr entity = scene->GetEntity(id);
-                if (entity)
-                    ret.push_back(entity);
+                QString key = entity_id_to_name_.key(item->text(), QString());
+                if(!key.isNull())
+                {
+                    Scene::EntityPtr entity = scene->GetEntity(key.toUInt());
+                    if(entity)
+                        ret.push_back(entity);
+                }
+                else
+                {
+                    entity_id_t id = (entity_id_t)item->text().toUInt();
+
+                    Scene::EntityPtr entity = scene->GetEntity(id);
+                    if (entity)
+                        ret.push_back(entity);
+                }
             }
         }
         return ret;
