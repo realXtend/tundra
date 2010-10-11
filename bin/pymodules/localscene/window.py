@@ -23,16 +23,16 @@ class ToolBarWindow():
         self.gui = ui
         width = ui.size.width()
         height = ui.size.height()
-        
+
         uism = naali.ui
-        
+
         # uiprops = r.createUiWidgetProperty(1) #1 is ModuleWidget, shown at toolbar
         # uiprops.SetMenuGroup(2) #2 is server tools group
         # uiprops.widget_name_ = "Local Scene"
-        
+
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         #self.proxywidget = r.createUiProxyWidget(ui, uiprops)
-        
+
         self.proxywidget = r.createUiProxyWidget(ui)
 
         #if not uism.AddProxyWidget(self.proxywidget):
@@ -40,20 +40,20 @@ class ToolBarWindow():
             r.logInfo("Adding the ProxyWidget to the bar failed.")
 
         uism.AddWidgetToMenu(self.proxywidget, "Local Scene", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png")
-            
+
         self.inputQueue = queue
         self.endApplication = endApplication
-        
+
         self.tableitems = []
-        
+
         pass
-        
+
     def on_exit(self):
         try:
             # end incoming loop
             self.controller.isrunning = 0
             self.inputQueue.put('__end__', '')
-            
+
             self.proxywidget.hide()
             uism = naali.ui
             uism.RemoveWidgetFromMenu(self.proxywidget)
@@ -64,7 +64,7 @@ class ToolBarWindow():
             traceback.print_exc()
             return False
 
-    
+
     def processIncoming(self):
         """ for receiving input message events from other threads """
         while(self.inputQueue.qsize()):
@@ -82,59 +82,59 @@ class ToolBarWindow():
 
     def displayMessage(self, title, msg):
         QMessageBox.information(None, title, msg)
-                
+
 
 
 class LocalSceneWindow(ToolBarWindow, QWidget):
     UIFILE = "pymodules/localscene/localscene.ui"
-    
+
     def __init__(self, controller, queue, endApplication):
-    
+
         ToolBarWindow.__init__(self, "pymodules/localscene/localscene.ui", queue, endApplication, controller)
-        
-        self.widget = self.gui        
+
+        self.widget = self.gui
         self.xpos = self.gui.findChild("QDoubleSpinBox", "xpos")
         self.ypos = self.gui.findChild("QDoubleSpinBox", "ypos")
         self.zpos = self.gui.findChild("QDoubleSpinBox", "zpos")
-        
+
         self.xscale = self.gui.findChild("QDoubleSpinBox", "xscale")
         self.yscale = self.gui.findChild("QDoubleSpinBox", "yscale")
         self.zscale = self.gui.findChild("QDoubleSpinBox", "zscale")
-        
+
         self.btnLoad = self.gui.findChild("QPushButton", "pushButtonLoad")
         self.btnUnload = self.gui.findChild("QPushButton", "pushButtonUnload")
         self.btnPublish = self.gui.findChild("QPushButton", "pushButtonPublish")
         self.btnSave = self.gui.findChild("QPushButton", "pushButtonSave")
-        
+
         self.chkBoxFlipZY = self.gui.findChild("QCheckBox", "checkBoxFlipZY")
         self.checkBoxHighlight = self.gui.findChild("QCheckBox", "checkBoxHighlight")
         self.checkBoxLockScale = self.gui.findChild("QCheckBox", "checkBoxLockScale")
-        
+
         # server end scene editing
         self.btnLoadServerSceneList = self.gui.findChild("QPushButton", "pushButtonLoadServerSceneList")
         self.btnLoadServerScene = self.gui.findChild("QPushButton", "pushButtonLoadServerScene")
         self.btnUnloadServerScene = self.gui.findChild("QPushButton", "pushButtonUnloadServerScene")
         self.btnDeleteServerScene = self.gui.findChild("QPushButton", "pushButtonDeleteServerScene")
         self.btnDeleteActiveScene = self.gui.findChild("QPushButton", "pushButtonDeleteActiveScene")
-        
+
         self.tableWidgetServerScenes = self.gui.findChild("QTableWidget","tableWidgetServerScenes")
-        
-        self.listViewScenesRegions = self.gui.findChild("QListWidget","listViewScenesRegions")        
-        
+
+        self.listViewScenesRegions = self.gui.findChild("QListWidget","listViewScenesRegions")
+
         self.lineEditRegionName = self.gui.findChild("QLineEdit", "lineEditRegionName")
         self.lineEditPublishName = self.gui.findChild("QLineEdit", "lineEditPublishName")
         self.lineEditLoadRegion = self.gui.findChild("QLineEdit", "lineEditLoadRegion")
 
 
         self.progressBar = self.gui.findChild("QProgressBar", "progressBar")
-        
-        
+
+
         self.btnLoad.connect("clicked(bool)", self.btnLoadClicked)
         self.btnUnload.connect("clicked(bool)", self.btnUnloadClicked)
         self.btnPublish.connect("clicked(bool)", self.btnPublishClicked)
         self.btnSave.connect("clicked(bool)", self.btnSaveClicked)
         #self.btnSave.connect("clicked(bool)", self.threadTest)
-        
+
         self.xpos.connect("valueChanged(double)", self.spinBoxXPosValueChanged)
         self.ypos.connect("valueChanged(double)", self.spinBoxYPosValueChanged)
         self.zpos.connect("valueChanged(double)", self.spinBoxZPosValueChanged)
@@ -142,7 +142,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.xscale.connect("valueChanged(double)", self.spinBoxXScaleValueChanged)
         self.yscale.connect("valueChanged(double)", self.spinBoxYScaleValueChanged)
         self.zscale.connect("valueChanged(double)", self.spinBoxZScaleValueChanged)
-        
+
         self.chkBoxFlipZY.connect("toggled(bool)", self.checkBoxZYToggled)
         self.checkBoxHighlight.connect("toggled(bool)", self.checkBoxHighlightToggled)
         self.checkBoxLockScale.connect("toggled(bool)", self.checkBoxLockScaleToggled)
@@ -152,32 +152,32 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         self.btnUnloadServerScene.connect("clicked(bool)", self.btnUnloadServerSceneClicked)
         self.btnDeleteServerScene.connect("clicked(bool)", self.btnDeleteServerSceneClicked)
         self.btnDeleteActiveScene.connect("clicked(bool)", self.btnDeleteActiveSceneClicked)
-        
+
         self.tableWidgetServerScenes.connect("itemSelectionChanged()", self.tableWidgetServerScenesItemSelectionChanged)
-        
-        
+
+
         #self.progressBar.setTotalSteps(7)
         self.progressBar.setMinimum(0)
         self.progressBar.setMaximum(7)
         self.progressBar.reset()
         self.progressBar.setValue(0)
-        
+
         self.progressBar.setFormat("Upload progress: inactive %p%")
-        
+
         self.sizeLock = False
         self.filename = ""
         self.serverScenes = {} # key container
         self.serverSceneNames = {}
-        
+
         self.serverSceneRegionLists = {} # key = sceneid, value = list of regions
         self.serverSceneRegionCount = {} # key = sceneid, value = count of regions
-        
+
         self.currentSceneSelectionRegions = []
         pass
 
     def threadTest(self):
         self.controller.closeThread()
-                        
+
     def getButton(self, name, iconname, line, action):
         size = QSize(16, 16)
         button = buttons.PyPushButton()
@@ -204,18 +204,27 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def btnUnloadClicked(self, args):
         self.controller.unloadScene()
-        
+
     def btnPublishClicked(self, args):
         #self.controller.publishScene(self.filename)
+        if(controller.bLocalSceneLoaded==False):
+            self.displayMessage('no local scene loaded', 'Load LocalScene first')
+            return
+        if( self.lineEditRegionName.text==""): 
+            self.displayMessage('no region name', 'Give region name where scene is to be loaded firstd')
+            return
+        if(self.lineEditPublishName.text==""):
+            self.displayMessage('no scene name', 'Give upload scene a name before uploading.')
+            return
         regName = self.lineEditRegionName.text
         publishName = self.lineEditPublishName.text
         self.controller.startUpload(self.filename, regName, publishName)
-        
-        
+
+
     def btnSaveClicked(self, args):
         self.controller.saveScene(self.filename)
-        
-        
+
+
     def spinBoxXPosValueChanged(self, double):
         self.controller.setxpos(double)
     def spinBoxYPosValueChanged(self, double):
@@ -232,7 +241,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             self.zscale.setValue(double)
         else:
             self.controller.setxscale(double)
-            
+
     def spinBoxYScaleValueChanged(self, double):
         if(self.sizeLock):
             self.controller.setxscale(double)
@@ -242,7 +251,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             self.zscale.setValue(double)
         else:
             self.controller.setyscale(double)
-    
+
     def spinBoxZScaleValueChanged(self, double):
         if(self.sizeLock):
             self.controller.setxscale(double)
@@ -255,35 +264,34 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
 
     def checkBoxZYToggled(self, enabled):
         self.controller.checkBoxZYToggled(enabled)
-        
+
     def checkBoxHighlightToggled(self, enabled):
         self.controller.checkBoxHighlightToggled(enabled)
-        
+
     def checkBoxLockScaleToggled(self, enabled):
         self.sizeLock = enabled
 
-        
 # Server side scene handlers
-        
+
     def btnLoadServerSceneListClicked(self, args):
         self.controller.startSceneAction("GetUploadSceneList")
         pass
-        
+
     def btnLoadServerSceneClicked(self, args):
-        
+
         #if self.isThereItemSelected(self.listViewRegionScenes):
         if self.isThereItemSelected(self.tableWidgetServerScenes):
             #self.controller.
             region = self.lineEditLoadRegion.text
             sceneid = self.serverScenes[self.tableWidgetServerScenes.currentRow()]
             data = self.constructLoadSceneData(region, sceneid)
-            
+
             #self.controller.startSceneAction("LoadServerScene", self.serverPassiveScenes[self.listViewRegionScenes.currentRow])
             self.controller.startSceneAction("LoadServerScene", data)
             pass
 
         pass
-        
+
     def btnUnloadServerSceneClicked(self, args):
         if self.isThereItemSelected(self.tableWidgetServerScenes):
             tablerow = self.tableWidgetServerScenes.currentRow()
@@ -292,7 +300,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             self.controller.startSceneAction("UnloadServerScene", param)
             pass
         pass
-        
+
     def btnDeleteServerSceneClicked(self, args):
         #self.controller.printOutCurrentCap()
         # if self.isThereItemSelected(self.listViewRegionScenes):
@@ -306,7 +314,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
             self.controller.startSceneAction("DeleteServerScene", self.serverScenes[self.tableWidgetServerScenes.currentRow()])
             pass
         pass
-        
+
     def isThereItemSelected(self, list):
         if list.currentItem() != None:
             return True
@@ -320,21 +328,21 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         else:
             self.displayMessage('no scene selected', 'Select scene from table for loading/unloading/deleting it.')
             return False
-           
-            
-    def setServerScenes(self, d):        
+
+
+    def setServerScenes(self, d):
         self.tableWidgetServerScenes.clearContents()
         self.serverSceneRegionLists = {}
-        self.serverSceneRegionCount = {}		
+        self.serverSceneRegionCount = {}
         #self.tableitems = []
         #self.listViewRegionScenes.clear()
         # need to figure out how to free tableitems
         #del self.tableitems[:]
         while(self.tableWidgetServerScenes.rowCount!=0):
             self.tableWidgetServerScenes.removeRow(0)
-        
+
         uuids = []
-        
+
         if d!=None:
             i = 0
             j = 0
@@ -344,19 +352,19 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                     uuids.append(uuid)
                     self.tableWidgetServerScenes.insertRow (self.tableWidgetServerScenes.rowCount)
                     self.serverScenes[i] = uuid
-                    
+
                     self.serverSceneNames[i] = sceneName
                     sceneNameItem = QTableWidgetItem(sceneName)
                     self.tableitems.append(sceneNameItem)
                     self.tableWidgetServerScenes.setItem(self.tableWidgetServerScenes.rowCount-1, 0, sceneNameItem)
                     i+=1
-                
+
                 # store regions
                 if(self.serverSceneRegionLists.has_key(uuid)==False):
                     self.serverSceneRegionLists[uuid] = []
                 self.serverSceneRegionLists[uuid].append(regionName)
 
-                
+
                 if(self.serverSceneRegionCount.has_key(uuid)==False):
                     if regionName != "":
                         self.serverSceneRegionCount[uuid] = 1
@@ -366,10 +374,10 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                     self.serverSceneRegionCount[uuid]+= 1
                 else:
                     self.serverSceneRegionCount[uuid] = 0
-                    
+
                 regionCountItem = QTableWidgetItem(str(self.serverSceneRegionCount[uuid]))
                 self.tableitems.append(regionCountItem)
-                
+
                 row = 0
                 for r in self.serverScenes.keys():
                     if self.serverScenes[r]==uuid:
@@ -377,8 +385,8 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                         break
                 self.tableWidgetServerScenes.setItem(row, 1, regionCountItem)
         pass
-        
-        
+
+
     def constructLoadSceneData(self, regionTxt, sceneuuidTxt):
         impl = getDOMImplementation()
         doc = impl.createDocument(None, "loadscenedata", None)
@@ -394,7 +402,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
         region.appendChild(regionName)
         sceneuuid.appendChild(sceneUuid)
         return doc.toxml()
-        
+
 
     def tableWidgetServerScenesItemSelectionChanged(self):
         self.currentSceneSelectionRegions = []
@@ -408,7 +416,7 @@ class LocalSceneWindow(ToolBarWindow, QWidget):
                     self.listViewScenesRegions.addItem(region)
                     self.currentSceneSelectionRegions.append(region)
         pass
-        
 
-        
-        
+
+
+
