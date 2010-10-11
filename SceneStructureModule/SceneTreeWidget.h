@@ -25,19 +25,36 @@ namespace ECEditor
 
 class QWidget;
 
-/// Tree widget item with which has ID number
-class SceneTreeWidgetItem : public QTreeWidgetItem
+/// Tree widget item representing entity.
+class EntityTreeWidgetItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
     /** @param entityID Entity ID.
-        @param pareant Parent item.
     */
-    explicit SceneTreeWidgetItem(entity_id_t entityId, SceneTreeWidgetItem *parent = 0) :
-        QTreeWidgetItem(parent), id(entityId) {}
+    EntityTreeWidgetItem(entity_id_t entityId) : id(entityId) {}
 
     /// Entity ID associated with this tree widget item.
     entity_id_t id;
+};
+
+/// Tree widget item representing component.
+class ComponentTreeWidgetItem : public QTreeWidgetItem
+{
+public:
+    /// Constructor.
+    /** @param tn Type name.
+        @param n Name, if applicable.
+        @param parent Parent item.
+    */
+    explicit ComponentTreeWidgetItem(const QString &tn, const QString &n, QTreeWidgetItem *parent = 0) :
+        QTreeWidgetItem(parent), typeName(tn), name(n) {}
+
+    /// Type name.
+    QString typeName;
+
+    ///  Name, if applicable.
+    QString name;
 };
 
 /// Tree widget showing the scene structure.
@@ -54,6 +71,8 @@ public:
 
     /// Destructor.
     virtual ~SceneTreeWidget();
+
+    bool showComponents;
 
 protected:
     /// QAbstractItemView override.
@@ -75,8 +94,11 @@ private:
     /// Framework pointer.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
-    /// Returns currently selected entities as XML string.
+    /// Returns list currently selected entity ID's.
     QList<entity_id_t> GetSelectedEntities() const;
+
+    /// Returns list of currently selected components.
+    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > GetSelectedComponents() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;

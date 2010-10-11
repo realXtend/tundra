@@ -15,6 +15,7 @@
 #include "QtUtils.h"
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
+#include "ComponentManager.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -32,11 +33,12 @@ const QString cNaaliBinaryFileFilter("Naali Binary Format (*.nbf)");
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
-    framework(fw)
+    framework(fw),
+    showComponents(false)
 {
     setEditTriggers(QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
-    setDragDropMode(QAbstractItemView::DragDrop);
-    setDragEnabled(true);
+    setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
+//    setDragEnabled(true);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
     setSelectionBehavior(QAbstractItemView::SelectItems);
     setAnimated(true);
@@ -163,8 +165,8 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         {
             QString filename = url.path();
 #ifdef _WINDOWS
-            // This is very annoying: we have '/' as the first char and on windows the filename is not indentifed properly.
-            // But on other platforms the '/' is valid/required.
+            // This is very annoying: we have '/' as the first char on windows and the filename
+            // is not indentifed as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
             InstantiateContent(filename, false);
@@ -189,10 +191,46 @@ QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
         QModelIndex index = it.next();
         if (!index.isValid())
             continue;
-        ids << static_cast<SceneTreeWidgetItem *>(topLevelItem(index.row()))->id;
+
+        // If showComponents is false or parent index == QModelIndex(), it's guaranteed 
+        // that we have top-level item i.e. entity always selected. Else we have component selected 
+        // and we don't want to select it as entity.
+        EntityTreeWidgetItem  *eItem = 0;
+        if (!showComponents || (index.parent() == QModelIndex()))
+            eItem = dynamic_cast<EntityTreeWidgetItem *>(topLevelItem(index.row()));
+
+        if (eItem)
+            ids << eItem->id;
     }
 
     return ids;
+}
+
+QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > SceneTreeWidget::GetSelectedComponents() const
+{
+    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > components;
+    const QItemSelection &selection = selectionModel()->selection();
+    if (selection.isEmpty())
+        return components;
+
+    QListIterator<QModelIndex> it(selection.indexes());
+    while(it.hasNext())
+    {
+        QModelIndex index = it.next();
+        if (!index.isValid() || index.parent() == QModelIndex())
+            continue;
+
+        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(topLevelItem(index.parent().row()));
+        assert(eItem);
+        if (!eItem)
+            continue;
+
+        ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(index.row()));
+        if (cItem)
+            components << qMakePair(eItem->id, cItem);
+    }
+
+    return components;
 }
 
 QString SceneTreeWidget::GetSelectionAsXml() const
@@ -203,31 +241,56 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         return QString();
 
     QList<entity_id_t> ids = GetSelectedEntities();
+    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > comps;
     if (ids.empty())
-        return QString();
+    {
+        comps = GetSelectedComponents();
+        if (comps.empty())
+            return QString();
+    }
 
     // Create root Scene element always for consistency, even if we only have one entity
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    foreach(entity_id_t id, ids)
+    if (!ids.empty())
     {
-        Scene::EntityPtr entity = scene->GetEntity(id);
-        assert(entity.get());
-        if (entity)
+        foreach(entity_id_t id, ids)
         {
-            QDomElement entity_elem = scene_doc.createElement("entity");
-            entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
+            Scene::EntityPtr entity = scene->GetEntity(id);
+            assert(entity.get());
+            if (entity)
+            {
+                QDomElement entity_elem = scene_doc.createElement("entity");
+                entity_elem.setAttribute("id", QString::number((int)entity->GetId()));
 
-            foreach(ComponentPtr component, entity->GetComponentVector())
-                if (component->IsSerializable())
-                    component->SerializeTo(scene_doc, entity_elem);
+                foreach(ComponentPtr component, entity->GetComponentVector())
+                    if (component->IsSerializable())
+                        component->SerializeTo(scene_doc, entity_elem);
 
-            scene_elem.appendChild(entity_elem);
+                scene_elem.appendChild(entity_elem);
+            }
         }
-    }
 
-    scene_doc.appendChild(scene_elem);
+        scene_doc.appendChild(scene_elem);
+    }
+    else if (!comps.empty())
+    {
+        QListIterator<QPair<entity_id_t, ComponentTreeWidgetItem *> > it(comps);
+        while(it.hasNext())
+        {
+            QPair<entity_id_t, ComponentTreeWidgetItem *> pair = it.next();
+            Scene::EntityPtr entity = scene->GetEntity(pair.first);
+            if (entity)
+            {
+                ComponentPtr component = entity->GetComponent(pair.second->typeName, pair.second->name);
+                if (component->IsSerializable())
+                    component->SerializeTo(scene_doc, scene_elem);
+            }
+        }
+
+        scene_doc.appendChild(scene_elem);
+    }
 
     return scene_doc.toString();
 }
@@ -280,7 +343,7 @@ void SceneTreeWidget::Edit()
         return;
     }
 
-    // Create new instance
+    // Create new editor.
     ecEditor = new ECEditor::ECEditorWindow(framework);
     ecEditor->setAttribute(Qt::WA_DeleteOnClose);
     ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
@@ -300,7 +363,7 @@ void SceneTreeWidget::EditInNew()
     if (ids.empty())
         return;
 
-    // Create new instance every time.
+    // Create new editor instance every time.
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
@@ -388,16 +451,62 @@ void SceneTreeWidget::Paste()
     assert(scene.get());
     if (!scene)
         return;
-/*
-    QModelIndex index = selectionModel()->currentIndex();
-    if (!index.isValid())
-        return;
-*/
+
+    QString errorMsg;
     QDomDocument scene_doc("Scene");
-    if (!scene_doc.setContent(QApplication::clipboard()->text()))
+    if (!scene_doc.setContent(QApplication::clipboard()->text(), false, &errorMsg))
     {
-        LogError("Parsing scene XML from clipboard failed!");
+        LogError("Parsing scene XML from clipboard failed: " + errorMsg.toStdString());
         return;
+    }
+
+    ///\todo Move all code below, except scene->CreateContentFromXml(), to SceneManager.
+    QDomElement sceneElem = scene_doc.firstChildElement("scene");
+    if (sceneElem.isNull())
+        return;
+
+    QDomElement entityElem = sceneElem.firstChildElement("entity");
+    if (entityElem.isNull())
+    {
+        // No entity element, we probably we just components then. Search for component element.
+        QDomElement componentElem = sceneElem.firstChildElement("component");
+        if (componentElem.isNull())
+        {
+            LogError("");
+            return;
+        }
+
+        // Get currently selected entities and paste components to them.
+        foreach(entity_id_t id, GetSelectedEntities())
+        {
+            Scene::EntityPtr entity = scene->GetEntity(id);
+            if (entity)
+            {
+                while(!componentElem.isNull())
+                {
+                    QString type = componentElem.attribute("type");
+                    QString name = componentElem.attribute("name");
+                    if (!type.isNull())
+                    {
+                        // If we already have component with the same type name and name, add suffix to the new component's name.
+                        if (entity->HasComponent(type, name))
+                            name.append("_copy");
+
+                        ComponentPtr component = framework->GetComponentManager()->CreateComponent(type, name);
+                        if (component)
+                        {
+                            component->DeserializeFrom(componentElem, AttributeChange::Default);
+                            entity->AddComponent(component);
+                        }
+                    }
+
+                    componentElem = componentElem.nextSiblingElement("component");
+                }
+
+                // Rewind back to start if we are pasting components to multiple entities.
+                componentElem = sceneElem.firstChildElement("component");
+            }
+        }
     }
 
     scene->CreateContentFromXml(scene_doc, false, AttributeChange::Replicate);
@@ -405,21 +514,19 @@ void SceneTreeWidget::Paste()
 
 void SceneTreeWidget::SaveAs()
 {
-    QFileDialog * dialog = Foundation::QtUtils::SaveFileDialogNonModal(
-        cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
+    Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::Import()
 {
-    QFileDialog * dialog = Foundation::QtUtils::OpenFileDialogNonModal(
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, // + Mesh
+    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter, // + Mesh
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenNewScene()
 {
-    QFileDialog * dialog = Foundation::QtUtils::OpenFileDialogNonModal(
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 

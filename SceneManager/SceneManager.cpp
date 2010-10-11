@@ -411,10 +411,11 @@ namespace Scene
 
     bool SceneManager::CreateContentFromXml(const QString &xml,  bool replaceOnConflict, AttributeChange::Type change)
     {
+        QString errorMsg;
         QDomDocument scene_doc("Scene");
-        if (!scene_doc.setContent(xml))
+        if (!scene_doc.setContent(xml, false, &errorMsg))
         {
-            LogError("Parsing scene XML from text failed.");
+            LogError("Parsing scene XML from text failed: " + errorMsg.toStdString());
             return false;
         }
 
@@ -426,7 +427,10 @@ namespace Scene
         // Check for existence of the scene element before we begin
         QDomElement scene_elem = xml.firstChildElement("scene");
         if (scene_elem.isNull())
+        {
+            LogError("Could not find 'scene' element from XML.");
             return false;
+        }
 
         QDomElement ent_elem = scene_elem.firstChildElement("entity");
         while (!ent_elem.isNull())
