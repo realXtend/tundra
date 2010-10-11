@@ -19,6 +19,7 @@
 #include "EC_Fog.h"
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
+#include "EC_SkyDome.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -68,6 +69,7 @@ namespace Environment
         DECLARE_MODULE_EC(EC_Fog);
         DECLARE_MODULE_EC(EC_SkyPlane);
         DECLARE_MODULE_EC(EC_SkyBox);
+        DECLARE_MODULE_EC(EC_SkyDome);
     }
 
     void EnvironmentModule::Initialize()

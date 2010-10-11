@@ -23,41 +23,27 @@ Registered by Enviroment::EnvironmentModule.
 <b>Attributes</b>:
 <ul>
 <li> QString : materialAttr.
-<div>  </div>
+<div> Defines sky material </div>
 <li> QString : textureAttr.
-<div>  </div>
+<div> Sky texture which is used in given material </div>
 <li> float : tilingAttr.
-<div>  </div>
+<div> How many times to tile the texture(s) across the plane. </div>
 <li> float : scaleAttr.
-<div>  </div>
+<div> The scaling applied to the sky plane - higher values mean a bigger sky plane  </div>
 <li> float : bowAttr.
-<div>  </div>
+<div> If zero, the plane will be completely flat (like previous versions. If above zero, the plane will be curved, allowing the sky to appear below camera level. 
+      Curved sky planes are simular to skydomes, but are more compatable with fog.  </div>
 <li> float : distanceAttr.
-<div>  </div>
+<div> Plane distance in world coordinates from the camera </div>
 <li> int : xSegmentsAttr.
-<div>  </div>
+<div> Defines how many vertices is used in drawing in x - axis.  </div>
 <li> int : ySegmentsAttr.
-<div>  </div>
+<div> Defines how many vertices is used in drawing in y - axis.  </div>
 <li> bool : drawFirstAttr.
-<div>  </div>
+<div> If true, the plane is drawn before all other geometry in the scene. </div>
 
 </ul>
 
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
-Does not emit any actions.
-
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
 </table>
 
 */

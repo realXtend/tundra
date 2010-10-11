@@ -74,18 +74,6 @@ water plane underwater fog properties. Water plane cannot visualize outside as a
 <div> UnderWater fog mode, defines how Fog density increases. </div>
 </ul>
 
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
 Does not emit any actions.
 
 <b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this water plane is by default is placed at. 

@@ -1001,6 +1001,8 @@ namespace Environment
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
             {
+                EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome>();
+
                 QLineEdit *edit_line = 0;
                 QPushButton *apply_button = 0;
                 for(uint i = 0; i < 1; i++)
@@ -1031,8 +1033,8 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                SkyDomeParameters param = sky->GetSkyDomeParameters();
-
+                //SkyDomeParameters param = sky->GetSkyDomeParameters();
+                
                 // Create properties for sky dome.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
                 QLabel *text_label = new QLabel(properties_frame);
@@ -1049,7 +1051,7 @@ namespace Environment
                     spin_box->move(10, 25);
                     spin_box->setRange(-99, 99);
                     spin_box->show();
-                    spin_box->setValue(param.ySegmentsKeep);
+                    spin_box->setValue(skyDome->ySegmentsKeepAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1067,7 +1069,7 @@ namespace Environment
                     spin_box->move(50, 25);
                     spin_box->setRange(0, 99);
                     spin_box->show();
-                    spin_box->setValue(param.xSegments);
+                    spin_box->setValue(skyDome->xSegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1085,7 +1087,7 @@ namespace Environment
                     spin_box->move(90, 25);
                     spin_box->setRange(0, 99);
                     spin_box->show();
-                    spin_box->setValue(param.ySegments);
+                    spin_box->setValue(skyDome->ySegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1103,7 +1105,7 @@ namespace Environment
                     d_spin_box->move(150, 25);
                     d_spin_box->setRange(0, 9999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.distance);
+                    d_spin_box->setValue(skyDome->distanceAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1121,7 +1123,7 @@ namespace Environment
                     d_spin_box->move(10, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.curvature);
+                    d_spin_box->setValue(skyDome->curvatureAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1139,7 +1141,7 @@ namespace Environment
                     d_spin_box->move(70, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.tiling);
+                    d_spin_box->setValue(skyDome->tilingAttr.Get());
                 }
 
                 apply_button = new QPushButton(properties_frame);
@@ -1581,8 +1583,15 @@ namespace Environment
                     }
                     else if(sky_type_ == SKYTYPE_DOME )
                     {
-                        sky->SetSkyTexture(text_field->text().toStdString());
-                        sky->RequestSkyTextures();
+                        EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
+                        if ( skyDome != 0 )
+                        {       
+                            skyDome->textureAttr.Set(text_field->text(), AttributeChange::Default);
+                       //     skyPlane->ComponentChanged(AttributeChange::Local);
+
+                        }
+                        //sky->SetSkyTexture(text_field->text().toStdString());
+                        //sky->RequestSkyTextures();
                     }
                 }
             }
@@ -1625,8 +1634,11 @@ namespace Environment
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-            if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(SKYTYPE_DOME, 0)));
+             
+            EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
+           
+            if(texture_line_edit != 0 && skyDome != 0)
+                texture_line_edit->setText(skyDome->textureAttr.Get());
         }
         else if(sky_type_ == SKYTYPE_PLANE)
         {
@@ -1678,28 +1690,44 @@ namespace Environment
                     }
                 case SKYTYPE_DOME:
                     {
-                        SkyDomeParameters sky_param;
-                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
-                        if(spin_box)
-                            sky_param.xSegments = spin_box->value();
-                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
-                        if(spin_box)
-                            sky_param.ySegments = spin_box->value();
-                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_keep_spin");
-                        if(spin_box)
-                            sky_param.ySegmentsKeep = spin_box->value();
-                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("curvature_double_spin");
-                        if(dspin_box)
-                            sky_param.curvature = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
-                        if(dspin_box)
-                            sky_param.tiling = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
+                        //SkyDomeParameters sky_param;
+                        EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome>();
+                        if ( skyDome == 0)
+                            return;
 
-                        sky->SetSkyDomeParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
+                        
+                        if(spin_box != 0)
+                            skyDome->xSegmentsAttr.Set(spin_box->value(), AttributeChange::Disconnected);
+                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
+                        
+                        if(spin_box != 0)
+                            skyDome->ySegmentsAttr.Set(spin_box->value(), AttributeChange::Disconnected);
+                        
+                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_keep_spin");
+                        
+                        if(spin_box != 0)
+                            skyDome->ySegmentsKeepAttr.Set(spin_box->value(), AttributeChange::Disconnected);
+                        
+                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("curvature_double_spin");
+                        
+                        if(dspin_box != 0)
+                            skyDome->curvatureAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+                        
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
+
+                        if(dspin_box != 0)
+                            skyDome->tilingAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+                        
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
+                        
+                        if(dspin_box != 0)
+                            skyDome->distanceAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+
+                        skyDome->ComponentChanged(AttributeChange::Replicate);
+
+                        //sky->SetSkyDomeParameters(sky_param, sky->IsSkyEnabled());
+                        break;
                     }
                 case SKYTYPE_PLANE:
                     {

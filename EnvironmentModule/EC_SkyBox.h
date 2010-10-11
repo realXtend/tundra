@@ -27,33 +27,18 @@ Registered by Enviroment::EnvironmentModule.
 <b>Attributes</b>:
 <ul>
 <li> QString : materialAttr.
-<div>  </div>
-<li> QString : textureAttr.
-<div>  </div>
+<div> The name of the material the box will use </div>
+<li> QVariantList : textureAttr.
+<div>  List of </div>
 <li> Quaternion : orientationAttr
-<div> </div>
+<div> Optional parameter to specify the orientation of the box. </div>
 <li> float : distanceAttr.
-<div>  </div>
+<div> Distance in world coordinates from the camera to each plane of the box. </div>
 <li> bool : drawFirstAttr.
-<div>  </div>
+<div> If true, the box is drawn before all other geometry in the scene. </div>
 
 </ul>
-
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
-Does not emit any actions.
-
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
+ 
 </table>
 
 */
@@ -89,7 +74,7 @@ namespace Environment
             DEFINE_QPROPERTY_ATTRIBUTE(float, distanceAttr);
             Q_PROPERTY(float distanceAttr READ getdistanceAttr WRITE setdistanceAttr); 
             
-             DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
+            DEFINE_QPROPERTY_ATTRIBUTE(Quaternion, orientationAttr);
             Q_PROPERTY(Quaternion orientationAttr READ getorientationAttr WRITE setorientationAttr); 
             
              /// Defines that is sky drawn first
