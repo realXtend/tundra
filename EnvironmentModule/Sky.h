@@ -32,7 +32,7 @@ namespace Environment
     class EnvironmentModule;
 
     /// The OGRE SkyBox has 6 textures: front, back, left, right, top and bottom.
-    const int SKYBOX_TEXTURE_COUNT = 6;
+    //const int SKYBOX_TEXTURE_COUNT = 6;
 
     /// Sky component
     /// \ingroup EnvironmentModuleClient.
@@ -64,7 +64,7 @@ namespace Environment
         void CreateDefaultSky(const bool &show = true);
 
         /// Request the texture assets used for the sky.
-        void RequestSkyTextures();
+        //void RequestSkyTextures();
 
         /// Called whenever a texture is loaded so it can be attached to the sky.
         /// @param Resource pointer to the texture.
@@ -72,18 +72,18 @@ namespace Environment
 
         /// Set the sky texture for Skydome or Skyplane.
         /// @param texture_id
-        void SetSkyTexture(const RexTypes::RexAssetID &texture_id);
+        //void SetSkyTexture(const RexTypes::RexAssetID &texture_id);
 
         /// Sets the SkyBox textures.
         /// @param textures array of texture UUID's.
-        void SetSkyBoxTextures(const RexTypes::RexAssetID textures[SKYBOX_TEXTURE_COUNT]);
+        //void SetSkyBoxTextures(const RexTypes::RexAssetID textures[SKYBOX_TEXTURE_COUNT]);
 
         /// Looks through all the entities in RexLogic's currently active scene to find the Sky
         /// entity. Caches it internally. Use GetSkyEntity to obtain it afterwards.    
-        void FindCurrentlyActiveSky();
+        //void FindCurrentlyActiveSky();
 
         /// @return The scene entity that represents the sky in the currently active world.
-        Scene::EntityWeakPtr GetSkyEntity();
+        //Scene::EntityWeakPtr GetSkyEntity();
 
         /// @return The sky type that is in use.
         SkyType GetSkyType() const;
@@ -103,31 +103,31 @@ namespace Environment
         /// GetSkyTexture asset id.
         /// @param What sky type we are requesting texture from.
         /// @param Used only when sky type is set to SKYBOX. Index should be between 0 - 5.
-        RexTypes::RexAssetID GetSkyTextureID(SkyType sky_type, int index = 0) const;
+        //RexTypes::RexAssetID GetSkyTextureID(SkyType sky_type, int index = 0) const;
 
         /// Return all sky dome parameters from EC_Ogresky entity.
-        SkyDomeParameters GetSkyDomeParameters();
+        //SkyDomeParameters GetSkyDomeParameters();
 
         /// Return all sky plane parameters from EC_Ogresky entity.
-        SkyPlaneParameters GetSkyPlaneParameters();
+        //SkyPlaneParameters GetSkyPlaneParameters();
 
         /// Return all generic sky parameters from EC_Ogresky entity.
-        SkyBoxParameters GetSkyBoxParameters();
+        //SkyBoxParameters GetSkyBoxParameters();
 
         /// Update sky dome parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky = true);
+        //void SetSkyDomeParameters(const SkyDomeParameters &params, bool update_sky = true);
 
         /// Update sky plane parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky = true);
+        //void SetSkyPlaneParameters(const SkyPlaneParameters &params, bool update_sky = true);
 
         /// Update sky box parameters.
         /// @param params contain all information that is need to create a new ogre sky geometry.
         /// @param update_sky do we need to recreate a new sky.
-        void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
+        //void SetSkyBoxParameters(const SkyBoxParameters &params, bool update_sky = true);
 
         template <typename T> T* GetEnviromentSky()
         {
@@ -240,31 +240,31 @@ namespace Environment
         bool skyEnabled_;
 
         /// Texture resource request tags for skybox.
-        request_tag_t skyBoxTextureRequests_[SKYBOX_TEXTURE_COUNT];
+        //request_tag_t skyBoxTextureRequests_[SKYBOX_TEXTURE_COUNT];
 
         /// Texture resource request tag for skydome.
-        request_tag_t skyDomeTextureRequest_;
+        //request_tag_t skyDomeTextureRequest_;
 
         /// Texture resource request tag for skyplane.
-        request_tag_t skyPlaneTextureRequest_;
+        //request_tag_t skyPlaneTextureRequest_;
 
         /// UUID's of the texture assets the skybox uses for rendering. Should be stored per-scene.
-        RexTypes::RexAssetID skyBoxTextures_[SKYBOX_TEXTURE_COUNT];
+        //RexTypes::RexAssetID skyBoxTextures_[SKYBOX_TEXTURE_COUNT];
 
         /// UUID of the texture asset the skydome uses for rendering. Should be stored per-scene.
-        RexTypes::RexAssetID skyDomeTexture_;
+        //RexTypes::RexAssetID skyDomeTexture_;
 
         /// UUID of the texture asset the skyplane uses for rendering. Should be stored per-scene.
-        RexTypes::RexAssetID skyPlaneTexture_;
+        //RexTypes::RexAssetID skyPlaneTexture_;
 
         /// Keeps count of the skybox images.
-        size_t skyBoxImageCount_;
+        //size_t skyBoxImageCount_;
 
         /// Keeps count of the currently to-be-added skybox images.
-        size_t currentSkyBoxImageCount_;
+        //size_t currentSkyBoxImageCount_;
 
         /// The scene entity that represents the sky in the currently active world.
-        Scene::EntityWeakPtr cachedSkyEntity_;
+        //Scene::EntityWeakPtr cachedSkyEntity_;
 
         QList<request_tag_t > lstRequestTags_;
         QMap<int, int >  requestMap_;
