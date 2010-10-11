@@ -182,16 +182,6 @@ namespace ECEditor
         UpdateGroupPropertyText();
     }
 
-    /*void ECComponentEditor::UpdateEditorUI()
-    {
-        AttributeEditorMap::iterator attributeIter = attributeEditors_.begin();
-        while(attributeIter != attributeEditors_.end())
-        {
-            attributeIter->second->UpdateEditorUI();
-            attributeIter++; 
-        }
-    }*/
-
     void ECComponentEditor::OnEditorChanged(const QString &name)
     {
         ECAttributeEditorBase *editor = qobject_cast<ECAttributeEditorBase*>(sender());
@@ -202,31 +192,6 @@ namespace ECEditor
         }
         groupProperty_->addSubProperty(editor->GetProperty());
     }
-
-    /*void ECComponentEditor::AttributeEditorUpdated(const std::string &attributeName)
-    {
-        AttributeEditorMap::iterator iter = attributeEditors_.begin();
-        int index = 0;
-        for(; iter != attributeEditors_.end(); iter++)
-        {
-            if(iter->first == attributeName)
-            {
-                QtProperty *newProperty = iter->second->GetProperty();
-                QtProperty *afterProperty = 0;
-                QList<QtProperty *> properties = groupProperty_->subProperties();
-                if(properties.size() > 0 && properties.size() >= index)
-                {
-                    if(index > 0)
-                        afterProperty = properties[index - 1];
-                    else
-                        afterProperty = properties[index];
-                    groupProperty_->insertSubProperty(newProperty, afterProperty);
-                    break;
-                }
-            }
-            index++;
-        }
-    }*/
 
     void ECComponentEditor::AttributeChanged(IAttribute* attribute, AttributeChange::Type change)
     {
