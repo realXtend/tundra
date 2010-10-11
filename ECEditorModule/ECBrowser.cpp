@@ -296,8 +296,8 @@ namespace ECEditor
             treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
             connect(treeWidget_, SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged()));
             QShortcut* delete_shortcut = new QShortcut(Qt::Key_Delete, treeWidget_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), treeWidget_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), treeWidget_);
+            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), treeWidget_);
+            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), treeWidget_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteComponent()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyComponent()));
             connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteComponent()));
