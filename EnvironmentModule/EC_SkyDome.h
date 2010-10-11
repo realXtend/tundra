@@ -49,7 +49,7 @@ Registered by Enviroment::EnvironmentModule.
 <li> Quaternion : orientationAttr
 <div>  Optional parameter to specify the orientation of the dome </div>
 </ul>
-
+</table>
 */
 
 namespace OgreRenderer
