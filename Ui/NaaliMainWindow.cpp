@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "NaaliMainWindow.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
@@ -14,6 +16,7 @@ using namespace std;
 NaaliMainWindow::NaaliMainWindow(Foundation::Framework *owner_)
 :owner(owner_)
 {
+    setAcceptDrops(true);
 }
 
 int NaaliMainWindow::DesktopWidth()
@@ -90,3 +93,4 @@ void NaaliMainWindow::resizeEvent(QResizeEvent *e)
 {
     emit WindowResizeEvent(width(), height());
 }
+
