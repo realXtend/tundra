@@ -25,6 +25,8 @@
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
+//#include <OgreCamera.h>
+
 #include "MemoryLeakCheck.h"
 
 std::string SceneStructureModule::typeNameStatic = "SceneStructure";
@@ -182,10 +184,11 @@ void SceneStructureModule::HandleDropEvent(QDropEvent *e)
                     EC_Placeable *placeable = cam->GetComponent<EC_Placeable>().get();
                     if (placeable)
                     {
-                        Vector3df offset = placeable->transform.Get().rotation;
-                        offset.normalize();
-                        offset *= 20;
-                        worldPos = placeable->transform.Get().position + offset;
+                        //Ogre::Ray ray = cam->GetComponent<EC_OgreCamera>()->GetCamera()->getCameraToViewportRay(e->pos().x(), e->pos().y());
+                        Quaternion q = placeable->GetOrientation();
+                        Vector3df v = q * -Vector3df::UNIT_Z;
+                        //Ogre::Vector3 oV = ray.getPoint(20);
+                        worldPos = /*Vector3df(oV.x, oV.y, oV.z);*/ placeable->GetPosition() + v * 20;
                         break;
                     }
                 }
