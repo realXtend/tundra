@@ -26,7 +26,7 @@ def createMeshEntity(meshname, raycastprio=1):
     #ent = r .createEntity(meshname, raycastprio) #XXX: this returns a PyEntity still, get rid of this somehow
     #return getEntity(ent.id)
     ent = createEntity(["EC_Placeable", "EC_Mesh"])
-    ent.placeable.SetSelectPriority(raycastprio)
+    ent.placeable.SelectPriority = raycastprio
     ent.mesh.SetPlaceable(ent.placeable)
     ent.mesh.SetMesh(meshname)
     return ent
