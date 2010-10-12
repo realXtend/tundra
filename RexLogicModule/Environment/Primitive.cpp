@@ -13,9 +13,9 @@
 #include "EntityComponent/EC_AttachedSound.h"
 #include "Environment/Primitive.h"
 
-#include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_Placeable.h"
+#include "EC_Mesh.h"
+#include "EC_AnimationController.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreParticleSystem.h"
@@ -73,7 +73,7 @@ void Primitive::Update(f64 frametime)
 Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const RexUUID &fullid, bool *created)
 {
     // Make sure scene exists
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
@@ -114,17 +114,18 @@ Scene::EntityPtr Primitive::GetOrCreatePrimEntity(entity_id_t entityid, const Re
 
 Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Scene::EntityPtr();
 
     QStringList components;
     components.append(EC_OpenSimPrim::TypeNameStatic());
     components.append(EC_NetworkPosition::TypeNameStatic());
-    components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    components.append(EC_Placeable::TypeNameStatic());
 
-    // Note: we assume prim entity is created because of a message from network
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components); 
+    // Create entity with all default components non-networksynced
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::LocalOnly, false);
+
     return entity;
 }
 
@@ -199,24 +200,24 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         prim->UpdateFlags = msg->ReadU32();
 
         // Read prim shape
-        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::Local);
-        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::Local);
-        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::Local);
-        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::Local);
-        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Local);
-        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Local);
-        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::Local);
-        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
+        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::LocalOnly);
+        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
         prim->HasPrimShapeData = true;
 
         // Texture entry
@@ -274,8 +275,9 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         rexlogicmodule_->HandleObjectParent(localid);
         if (was_created)
         {
-            Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
-            scene->EmitEntityCreated(entity, AttributeChange::Network);
+            Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
+            if (scene)
+                scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
         }
     }
 
@@ -392,15 +394,18 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         return false;
     
     // Entity should have animationcontroller
-    OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-        entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+    EC_AnimationController* anim = dynamic_cast<EC_AnimationController*>(
+        entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
     if (!anim)
         return false;
+    // Networksync off from animcontroller!
+    anim->SetNetworkSyncEnabled(false);
     // Attach the mesh entity to animationcontroller, if not yet attached
-    ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+    //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
+    ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
     if (!mesh)
         return false;
-    OgreRenderer::EC_OgreMesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+    EC_Mesh *ogre_mesh = dynamic_cast<EC_Mesh*>(mesh.get());
     if (anim->GetMeshEntity() != ogre_mesh)
         anim->SetMeshEntity(ogre_mesh);
     
@@ -410,24 +415,24 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
         bool looped = ParseBool(params[3]);
         bool stop = ParseBool(params[4]);
         
+        QString animname = QString::fromStdString(params[1]);
         if (stop)
         {
-            anim->DisableAnimation(params[1], 0.25f);
+            anim->DisableAnimation(animname, 0.25f);
         }
         else
         {
-            anim->EnableAnimation(params[1], looped, 0.025f);
-            anim->SetAnimationSpeed(params[1], rate);
+            anim->EnableAnimation(animname, looped, 0.025f);
+            anim->SetAnimationSpeed(animname, rate);
             if (rate < 0.0f)
-                anim->SetAnimationToEnd(params[1]);
-            anim->SetAnimationAutoStop(params[1], looped == false);
+                anim->SetAnimationToEnd(animname);
+            anim->SetAnimationAutoStop(animname, looped == false);
         }
     }
-    catch (...) {}  
-        
+    catch (...) {}
+    
     return false;
-        
-}    
+}
 
 bool Primitive::HandleRexGM_RexPrimData(ProtocolUtilities::NetworkEventInboundData* data)
 {
@@ -664,16 +669,16 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
 
     // graphical values
     prim->DrawType = ReadUInt8FromBytes(primdata,idx);
-    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Local);
-    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Local);
+    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
     prim->LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
     prim->DescriptionTexture = ReadBoolFromBytes(primdata,idx);
     prim->ScaleToPrim = ReadBoolFromBytes(primdata,idx);
-    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Local);
-    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Local);
+    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
 
     prim->MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
+    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();
     prim->ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
@@ -707,7 +712,7 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
     prim->SelectPriority = ReadUInt32FromBytes(primdata,idx);
 
     // Copy selectpriority to the placeable for the renderer raycast
-    OgreRenderer::EC_OgrePlaceable* placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable* placeable = entity->GetComponent<EC_Placeable>().get();
     if (placeable)
     {
         placeable->SetSelectPriority(prim->SelectPriority);
@@ -784,7 +789,7 @@ void Primitive::HandleRexFreeData(entity_id_t entityid, const std::string& freed
 
 bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
 {
-    Scene::ScenePtr scene = rexlogicmodule_->GetCurrentActiveScene();
+    Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return false;
 
@@ -833,8 +838,8 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     if (entity)
     {
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        prim->Name.Set(QString::fromStdString(name), AttributeChange::Local);
-        prim->Description.Set(QString::fromStdString(desc), AttributeChange::Local);
+        prim->Name.Set(QString::fromStdString(name), AttributeChange::LocalOnly);
+        prim->Description.Set(QString::fromStdString(desc), AttributeChange::LocalOnly);
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
         /// message. Should we maintain our own notion of what's selected and rename this event to PRIM_OBJECT_PROPERTIES or
@@ -854,8 +859,8 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     return false;
 }
 
-///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_OgreMesh component.
-/// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_OgreMesh in question.
+///\todo We now pass the entityid in the function. It is assumed that the entity contains exactly one EC_OpenSimPrim and one EC_Mesh component.
+/// Possibly in the future an entity can have several meshes attached to it, so we should pass in the EC_Mesh in question.
 void Primitive::HandleDrawType(entity_id_t entityid)
 {
     ///\todo Make this only discard mesh resource request tags.
@@ -870,19 +875,22 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if ((prim.DrawType == RexTypes::DRAWTYPE_MESH) && (!RexTypes::IsNull(prim.MeshID)))
     {
         // Remove custom object component if exists
-        ComponentPtr customptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr customptr = entity->GetComponent(EC_OgreCustomObject::TypeNameStatic());
         if (customptr)
             entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), "rex");
         if (!meshptr)
             return;
-        OgreRenderer::EC_OgreMesh& mesh = *(dynamic_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get()));
+        EC_Mesh& mesh = *(dynamic_cast<EC_Mesh*>(meshptr.get()));
+        // Make sure network sync is off
+        mesh.SetNetworkSyncEnabled(false);
         
         // Attach to placeable if not yet attached
         if (!mesh.GetPlaceable())
-            mesh.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            mesh.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
         
         // Change mesh if yet nonexistent/changed
         // assume name to be UUID of mesh asset, which should be true of OgreRenderer resources
@@ -931,24 +939,25 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         // Remove mesh component if exists
-        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent<EC_Mesh>("rex");
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim =
-            entity->GetComponent<OgreRenderer::EC_OgreAnimationController>().get();
+        EC_AnimationController* anim =
+            entity->GetComponent<EC_AnimationController>().get();
         if (anim)
             anim->SetMeshEntity(0);
 
         // Get/create custom (manual) object component 
-        ComponentPtr customptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr customptr = entity->GetOrCreateComponent(EC_OgreCustomObject::TypeNameStatic());
         if (!customptr)
             return;
-        OgreRenderer::EC_OgreCustomObject& custom = *(checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(customptr.get()));
+        EC_OgreCustomObject& custom = *(checked_static_cast<EC_OgreCustomObject*>(customptr.get()));
 
         // Attach to placeable if not yet attached
         if (!custom.GetPlaceable())
-            custom.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            custom.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
 
         // Set rendering distance/cast shadows setting
         custom.SetDrawDistance(prim.DrawDistance.Get());
@@ -973,14 +982,14 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     if (!RexTypes::IsNull(prim.ParticleScriptID))
     {
         // Create particle system component & attach, if does not yet exist
-        ComponentPtr particleptr = entity->GetOrCreateComponent(OgreRenderer::EC_OgreParticleSystem::TypeNameStatic());
+        ComponentPtr particleptr = entity->GetOrCreateComponent(EC_OgreParticleSystem::TypeNameStatic());
          if (!particleptr)
             return;
-        OgreRenderer::EC_OgreParticleSystem& particle = *(checked_static_cast<OgreRenderer::EC_OgreParticleSystem*>(particleptr.get()));
+        EC_OgreParticleSystem& particle = *(checked_static_cast<EC_OgreParticleSystem*>(particleptr.get()));
         
         // Attach to placeable if not yet attached
         if (!particle.GetPlaceable())
-            particle.SetPlaceable(entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
+            particle.SetPlaceable(entity->GetComponent(EC_Placeable::TypeNameStatic()));
             
         // Change particle system if yet nonexistent/changed
         const std::string& script_name = prim.ParticleScriptID;
@@ -1002,7 +1011,7 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else
     {
         // If should be no particle system, remove it if exists
-        ComponentPtr particleptr = entity->GetComponent(OgreRenderer::EC_OgreParticleSystem::TypeNameStatic());
+        ComponentPtr particleptr = entity->GetComponent(EC_OgreParticleSystem::TypeNameStatic());
         if (particleptr)
         {
             entity->RemoveComponent(particleptr);
@@ -1079,7 +1088,7 @@ void Primitive::HandleMeshMaterials(entity_id_t entityid)
     if (!entity) 
         return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();                    
-    OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
     if (!meshptr)
         return;
         
@@ -1158,30 +1167,35 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
     if ((!RexTypes::IsNull(prim->AnimationPackageID)) && (!prim->AnimationName.empty()))
     {
         // Entity should have animationcontroller
-        OgreRenderer::EC_OgreAnimationController* anim = dynamic_cast<OgreRenderer::EC_OgreAnimationController*>(
-            entity->GetOrCreateComponent(OgreRenderer::EC_OgreAnimationController::TypeNameStatic()).get());
+        EC_AnimationController* anim = dynamic_cast<EC_AnimationController*>(
+            entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic()).get());
         if (anim)
         {
+            // Networksync off from animcontroller!
+            anim->SetNetworkSyncEnabled(false);
             // Attach the mesh entity to animationcontroller, if not yet attached
-            ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            //ComponentPtr mesh = entity->GetComponent(EC_Mesh::TypeNameStatic());
+            ComponentPtr mesh = entity->GetComponent<EC_Mesh>("rex");
             if (!mesh)
                 return;
-            OgreRenderer::EC_OgreMesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_OgreMesh*>(mesh.get());
+            EC_Mesh* ogre_mesh = dynamic_cast<EC_Mesh*>(mesh.get());
             if (anim->GetMeshEntity() != ogre_mesh)
                 anim->SetMeshEntity(ogre_mesh);
             
+            QString animname = QString::fromStdString(prim->AnimationName);
+            
             // Check if any other animations than the supposed one is running, and stop them
-            const OgreRenderer::EC_OgreAnimationController::AnimationMap& anims = anim->GetRunningAnimations();
-            OgreRenderer::EC_OgreAnimationController::AnimationMap::const_iterator i = anims.begin();
+            const EC_AnimationController::AnimationMap& anims = anim->GetRunningAnimations();
+            EC_AnimationController::AnimationMap::const_iterator i = anims.begin();
             while (i != anims.end())
             {
-                if (i->first != prim->AnimationName)
-                    anim->DisableAnimation(i->first); 
+                if (i->first != animname)
+                    anim->DisableAnimation(i->first);
                 ++i;
             }
-                        
-            anim->EnableAnimation(prim->AnimationName, true, 1.0f);
-            anim->SetAnimationSpeed(prim->AnimationName, prim->AnimationRate);
+            
+            anim->EnableAnimation(animname, true, 1.0f);
+            anim->SetAnimationSpeed(animname, prim->AnimationRate);
         }
     }
 }
@@ -1203,7 +1217,7 @@ void Primitive::HandleExtraParams(const entity_id_t &entity_id, const uint8_t *e
         case 32: // light
         {
             // If light component doesn't exist, create it.
-            entity->GetOrCreateComponent(OgreRenderer::EC_OgreLight::TypeNameStatic());
+            entity->GetOrCreateComponent(EC_OgreLight::TypeNameStatic());
                 
             // Read the data.
             Color color = ReadColorFromBytes(extra_params_data, idx);
@@ -1245,13 +1259,13 @@ void Primitive::AttachLightComponent(Scene::EntityPtr entity, Color &color, floa
             max_radius = radius;
     }
 
-    OgreRenderer::EC_OgreLight* light = entity->GetComponent<OgreRenderer::EC_OgreLight>().get();
+    EC_OgreLight* light = entity->GetComponent<EC_OgreLight>().get();
     if (!light)
         return;
 
     ///\note Only point lights are supported at the moment.
-    light->SetType(OgreRenderer::EC_OgreLight::LT_Point);
-    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    light->SetType(EC_OgreLight::LT_Point);
+    ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
     if (placeable)
         light->SetPlaceable(placeable);
 
@@ -1349,7 +1363,7 @@ void Primitive::HandleMeshReady(entity_id_t entityid, Foundation::ResourcePtr re
     if (!entity) return;
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
 
-    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (!mesh) return;
 
     // Use optionally skeleton if it's used and we already have the resource
@@ -1427,7 +1441,7 @@ void Primitive::HandleParticleScriptReady(entity_id_t entityid, Foundation::Reso
     Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(entityid);
     if (!entity) return;
 
-    OgreRenderer::EC_OgreParticleSystem* particle = entity->GetComponent<OgreRenderer::EC_OgreParticleSystem>().get();
+    EC_OgreParticleSystem* particle = entity->GetComponent<EC_OgreParticleSystem>().get();
     if (!particle) return;
 
     particle->RemoveParticleSystems();
@@ -1455,7 +1469,7 @@ void Primitive::HandleTextureReady(entity_id_t entityid, Foundation::ResourcePtr
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
         if (!meshptr) return;
         // If don't have the actual mesh entity yet, no use trying to set texture
         if (!meshptr->GetEntity()) return;
@@ -1496,7 +1510,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     // Handle material ready for prim
     if (prim->DrawType == RexTypes::DRAWTYPE_PRIM)
     {
-        OgreRenderer::EC_OgreCustomObject* custom = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        EC_OgreCustomObject* custom = entity->GetComponent<EC_OgreCustomObject>().get();
         if (custom && prim->Materials.size() && res->GetId() == prim->Materials[0].asset_id && prim->Materials[0].Type == RexTypes::RexAT_MaterialScript)
         {
             // Update geometry now that the material exists
@@ -1516,7 +1530,7 @@ void Primitive::HandleMaterialResourceReady(entity_id_t entityid, Foundation::Re
     // Handle material ready for mesh
     if (prim->DrawType == RexTypes::DRAWTYPE_MESH)
     {
-        OgreRenderer::EC_OgreMesh* meshptr = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* meshptr = entity->GetComponent<EC_Mesh>().get();
         if (meshptr) 
         {
             // If don't have the actual mesh entity yet, no use trying to set the material
@@ -1580,12 +1594,12 @@ void Primitive::HandlePrimScaleAndVisibility(entity_id_t entityid)
         return;
         
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();            
-    OgreRenderer::EC_OgrePlaceable *ogrepos = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *ogrepos = entity->GetComponent<EC_Placeable>().get();
     if (!ogrepos)
         return;
             
     // Handle scale mesh to prim-setting
-    OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
     if (mesh)
     {
         Vector3df adjust_scale(1.0, 1.0, 1.0);
@@ -1817,7 +1831,7 @@ void Primitive::HandleAmbientSound(entity_id_t entityid)
         {
             // Get initial position of sound from the placeable (will be updated later if the entity moves)
             Vector3df position(0.0f, 0.0f, 0.0f);
-            OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
             if (placeable)
             {
                 position = placeable->GetPosition();
@@ -1874,7 +1888,7 @@ bool Primitive::HandleOSNE_AttachedSound(ProtocolUtilities::NetworkEventInboundD
 
     // Get initial position of sound from the placeable (will be updated later if the entity moves)
     Vector3df position(0.0f, 0.0f, 0.0f);
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
     if (placeable)
         position = placeable->GetPosition();
 
@@ -1926,7 +1940,6 @@ void Primitive::HandleLogout()
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
     local_dirty_entities_.clear();
-    network_dirty_entities_.clear();
 }
 
 
@@ -1959,29 +1972,34 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
-        this, SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
+        this, SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnEntityChanged(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnEntityChanged(Scene::Entity*, IComponent*, AttributeChange::Type) ));
 }
 
-void Primitive::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
+void Primitive::OnAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == AttributeChange::Local)
+    if (change == AttributeChange::Replicate)
+    {
+        //std::cout << "Added component " + comp->TypeName().toStdString() + " to replication list" << std::endl;
         local_dirty_entities_.insert(entityid);
-    if (change == AttributeChange::Network)
-        network_dirty_entities_.insert(entityid);
+    }
 }
 
 void Primitive::OnEntityChanged(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
     if (!entity)
         return;
     
@@ -1989,10 +2007,11 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, IComponent* comp, Attribu
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == AttributeChange::Local)
+    if (change == AttributeChange::Replicate)
+    {
+        //std::cout << "Added to replication list due to component add/remove" << std::endl;
         local_dirty_entities_.insert(entityid);
-    if (change == AttributeChange::Network)
-        network_dirty_entities_.insert(entityid);
+    }
 }
 
 void Primitive::OnRexPrimDataChanged(Scene::Entity* entity)
@@ -2035,29 +2054,14 @@ void Primitive::OnPrimDescriptionChanged(const EC_OpenSimPrim& prim)
 
 void Primitive::SerializeECsToNetwork()
 {
-    // Process first the Network change list. This actually needs no further actions, except that we reset 
-    // the attribute dirty flags resulting from deserializing the EC data that came from server
-    for (EntityIdSet::iterator i = network_dirty_entities_.begin(); i != network_dirty_entities_.end(); ++i)
-    {
-        // If we have a pending local update while a network update occurred, we just override it. Sorry!
-        if (local_dirty_entities_.find(*i) != local_dirty_entities_.end())
-            local_dirty_entities_.erase(*i);
-        // Network based change needs no work except resetting the change flag on all components
-        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
-        if (!entity)
-            continue;
-        const Scene::Entity::ComponentVector& comps = entity->GetComponentVector();
-        for (uint j = 0; j < comps.size(); ++j)
-            comps[j]->ResetChange();
-    }
-    network_dirty_entities_.clear();
-    
     // Process the local change list for entities we have modified ourselves and have to send the EC data for
     for (EntityIdSet::iterator i = local_dirty_entities_.begin(); i != local_dirty_entities_.end(); ++i)
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
         if (!entity)
             continue;
+        
+        //std::cout << "Processing locally dirty entity" << std::endl;
         
         const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
         
@@ -2078,8 +2082,6 @@ void Primitive::SerializeECsToNetwork()
         {
             if ((components[j]->IsSerializable()) && (components[j]->GetNetworkSyncEnabled()))
                 components[j]->SerializeTo(temp_doc, entity_elem);
-            // Clear the change flag now that component has been processed
-            components[j]->ResetChange();
         }
         
         temp_doc.appendChild(entity_elem);
@@ -2091,6 +2093,7 @@ void Primitive::SerializeECsToNetwork()
             continue;
         }
         
+        //std::cout << "Sending freedata" << std::endl;
         free.FreeData = std::string(bytes.data(), bytes.size());
         SendRexFreeData(*i);
     }
@@ -2102,6 +2105,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     StringVector type_names;
     StringVector names;
     QDomElement entity_elem = doc.firstChildElement("entity");
+    std::vector<ComponentPtr> deserialized;
     if (!entity_elem.isNull())
     {
         QDomElement comp_elem = entity_elem.firstChildElement("component");
@@ -2111,12 +2115,14 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
-            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str());
+            // Signal the add of component right away
+            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str(), AttributeChange::LocalOnly);
             // If it's an existing component, and has network sync disabled, skip
             if ((new_comp) && (new_comp->GetNetworkSyncEnabled()))
             {
-                new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
-                new_comp->ComponentChanged(AttributeChange::Network);
+                // Deserialize in disconnected manner, signal the attribute changes later
+                new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                deserialized.push_back(new_comp);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
@@ -2141,9 +2147,15 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
                 }
             }
             if (!found)
-                entity->RemoveComponent(all_components[i]);
+                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
         }
     }
+    
+    // Finally trigger localonly change for the components we deserialized.
+    //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
+    //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
+    for (uint i = 0; i < deserialized.size(); ++i)
+        deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
 }
 
 } // namespace RexLogic

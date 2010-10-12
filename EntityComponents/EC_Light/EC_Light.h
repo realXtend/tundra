@@ -67,7 +67,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this light is placed at. 
+<b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this light is placed at. 
 </table>
 
 */
@@ -104,37 +104,49 @@ public:
     Ogre::Light* GetLight() const { return light_; }
     
     //! Light direction
-    Attribute<Vector3df> directionAttr_;
+    Q_PROPERTY(Vector3df direction READ getdirection WRITE setdirection)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, direction);
     
     //! Light type
-    Attribute<int> typeAttr_;
+    Q_PROPERTY(int type READ gettype WRITE settype)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, type);
     
     //! Light diffuse color
-    Attribute<Color> diffColorAttr_;
+    Q_PROPERTY(Color diffColor READ getdiffColor WRITE setdiffColor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, diffColor);
     
     //! Light specular color
-    Attribute<Color> specColorAttr_;
+    Q_PROPERTY(Color specColor READ getspecColor WRITE setspecColor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, specColor);
     
     //! Cast shadows flag
-    Attribute<bool> castShadowsAttr_;
+    //! /todo check if this attribute can be removed cause atm it's not in use.
+    Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
     
     //! Light range
-    Attribute<float> rangeAttr_;
+    Q_PROPERTY(float range READ getrange WRITE setrange)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, range);
     
     //! Light constant attenuation
-    Attribute<float> constAttenAttr_;
+    Q_PROPERTY(float constAtten READ getconstAtten WRITE setconstAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, constAtten);
     
     //! Light linear attenuation
-    Attribute<float> linearAttenAttr_;
+    Q_PROPERTY(float linearAtten READ getlinearAtten WRITE setlinearAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, linearAtten);
     
     //! Light quadratic attenuation
-    Attribute<float> quadraAttenAttr_;
+    Q_PROPERTY(float quadraAtten READ getquadraAtten WRITE setquadraAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, quadraAtten);
     
     //! Spotlight inner angle (degrees)
-    Attribute<float> innerAngleAttr_;
+    Q_PROPERTY(float innerAngle READ getinnerAngle WRITE setinnerAngle)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, innerAngle);
     
     //! Spotlight outer angle (degrees)
-    Attribute<float> outerAngleAttr_;
+    Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
     
 
 private slots:

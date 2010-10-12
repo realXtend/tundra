@@ -5,7 +5,6 @@
 
 #include "ECEditorModule.h"
 #include "ECEditorWindow.h"
-#include "EC_SerializationTest.h"
 #include "EcXmlEditorWidget.h"
 
 #include "EventManager.h"
@@ -41,7 +40,6 @@ namespace ECEditor
     
     void ECEditorModule::Load()
     {
-        DECLARE_MODULE_EC(EC_SerializationTest);
     }
 
     void ECEditorModule::Initialize()
@@ -193,8 +191,8 @@ namespace ECEditor
                 IAttribute *attribute = dynComp->CreateAttribute(QString::fromStdString(params[4]), params[3].c_str());
                 if(!attribute)
                     return Console::ResultFailure("invalid attribute type" + params[4]);
-                attribute->FromString(params[5], AttributeChange::Local);
-                dynComp->ComponentChanged("Local");//AttributeChange::Local); 
+                attribute->FromString(params[5], AttributeChange::Default);
+                //dynComp->ComponentChanged("Default");//AttributeChange::Local); 
             }
         }
         if(params.size() == 4)
@@ -211,7 +209,7 @@ namespace ECEditor
                 if(!dynComp)
                     return Console::ResultFailure("Wrong component type name" + params[2]);
                 dynComp->RemoveAttribute(QString::fromStdString(params[3]));
-                dynComp->ComponentChanged("Local");
+                dynComp->ComponentChanged(AttributeChange::Default);
             }
         }
         return Console::ResultSuccess();

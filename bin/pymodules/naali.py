@@ -28,10 +28,10 @@ def createMeshEntity(meshname, raycastprio=1):
     return getEntity(ent.id)
     #XXX ugly workaround
     #oldpyent = r.getEntity(ent.id)
-    #oldpyent.createComponent("EC_OgreMesh") #sets placeable too
+    #oldpyent.createComponent("EC_Mesh") #sets placeable too
 
     #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
-    #ent = naali.createEntity(["EC_OgrePlaceable", "EC_OgreMesh"])
+    #ent = naali.createEntity(["EC_Placeable", "EC_Mesh"])
     #ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
     #ent.mesh.SetMesh(meshname)
 
@@ -56,10 +56,10 @@ framework = _naali
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether
 # class Entity:
 #     compnames = {
-#         'placeable': 'EC_OgrePlaceable',
-#         'mesh': 'EC_OgreMesh',
+#         'placeable': 'EC_Placeable',
+#         'mesh': 'EC_Mesh',
 #         'camera': 'EC_OgreCamera',
-#         'animationcontroller': 'EC_OgreAnimationController',
+#         'animationcontroller': 'EC_AnimationController',
 #         'highlight': 'EC_Highlight',
 #         'touchable': 'EC_Touchable',
 #         'soundruler': 'EC_SoundRuler',

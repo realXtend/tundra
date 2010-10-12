@@ -35,6 +35,9 @@ EC_Terrain::EC_Terrain(IModule* module) :
     texture2(this, "Texture 2"),
     texture3(this, "Texture 3"),
     texture4(this, "Texture 4"),
+    heightMap(this, "Heightmap"),
+    uScale(this, "Tex. U scale"),
+    vScale(this, "Tex. V scale"),
     patchWidth(1),
     patchHeight(1),
     rootNode(0)
@@ -45,6 +48,8 @@ EC_Terrain::EC_Terrain(IModule* module) :
     yPatches.Set(1, AttributeChange::LocalOnly);
     patches.resize(1);
     MakePatchFlat(0, 0, 0.f);
+    uScale.Set(0.13f, AttributeChange::LocalOnly);
+    vScale.Set(0.13f, AttributeChange::LocalOnly);
 }
 
 EC_Terrain::~EC_Terrain()
@@ -78,6 +83,7 @@ void EC_Terrain::OnMaterialChanged()
 
 void EC_Terrain::OnTextureChanged()
 {
+    PROFILE(EC_Terrain_OnTextureChanged);
     SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
     SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
     SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
@@ -95,9 +101,12 @@ void EC_Terrain::MakePatchFlat(int x, int y, float heightValue)
 
 void EC_Terrain::ResizeTerrain(int newPatchWidth, int newPatchHeight)
 {
-    // Do an artificial limit to 256 patches per side. (This limit is way too large already for the current terrain vertex LOD management.)
-    newPatchWidth = max(1, min(256, newPatchWidth));
-    newPatchHeight = max(1, min(256, newPatchHeight));
+    PROFILE(EC_Terrain_ResizeTerrain);
+
+    const int maxPatchSize = 32;
+    // Do an artificial limit to a preset N patches per side. (This limit is way too large already for the current terrain vertex LOD management.)
+    newPatchWidth = max(1, min(maxPatchSize, newPatchWidth));
+    newPatchHeight = max(1, min(maxPatchSize, newPatchHeight));
 
     if (newPatchWidth == patchWidth && newPatchHeight == patchHeight)
         return;
@@ -195,7 +204,18 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     else if (changedAttribute == texture1.GetNameString()) SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
     else if (changedAttribute == texture2.GetNameString()) SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
     else if (changedAttribute == texture3.GetNameString()) SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
-    else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());    
+    else if (changedAttribute == texture4.GetNameString()) SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+    else if (changedAttribute == heightMap.GetNameString())
+    {
+        if (currentHeightmapAssetSource.trimmed() != heightMap.Get().trimmed())
+        LoadFromFile(heightMap.Get().toStdString().c_str());
+    }
+    else if (changedAttribute == uScale.GetNameString() || changedAttribute == vScale.GetNameString())
+    {
+        // Re-do all the geometry on the GPU.
+        DirtyAllTerrainPatches();
+        RegenerateDirtyTerrainPatches();
+    }
 
     ///\todo Delete the old unused textures.
 }
@@ -337,6 +357,97 @@ Vector3df EC_Terrain::CalculateNormal(int x, int y, int xinside, int yinside)
     return normal;
 }
 
+void EC_Terrain::SaveToFile(QString filename)
+{
+    if (patchWidth * patchHeight != patches.size())
+        return; ///\todo Log out error. The EC_Terrain is in inconsistent state. Cannot save.
+
+    FILE *handle = fopen(filename.toStdString().c_str(), "wb");
+    if (!handle)
+    {
+        ///\todo Log out error!
+        return;
+    }
+
+    const u32 xPatches = patchWidth;
+    const u32 yPatches = patchHeight;
+    fwrite(&xPatches, sizeof(u32), 1, handle);
+    fwrite(&yPatches, sizeof(u32), 1, handle);
+
+    assert(sizeof(float) == 4);
+
+    for(int i = 0; i < xPatches*yPatches; ++i)
+    {
+        if (patches[i].heightData.size() < cPatchSize*cPatchSize)
+            patches[i].heightData.resize(cPatchSize*cPatchSize);
+
+        fwrite(&patches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
+    }
+    fclose(handle);
+
+}
+
+void EC_Terrain::LoadFromFile(QString filename)
+{
+    filename = filename.trimmed();
+
+    FILE *handle = fopen(filename.toStdString().c_str(), "rb");
+    if (!handle)
+    {
+        ///\todo Log out error!
+        return;
+    }
+    u32 xPatches = 0;
+    u32 yPatches = 0;
+    fread(&xPatches, sizeof(u32), 1, handle); ///< \todo Check read error.
+    fread(&yPatches, sizeof(u32), 1, handle); ///< \todo Check read error.
+
+    // Load all the data from the file to an intermediate buffer first, so that we can first see
+    // if the file is not broken, and reject it without losing the old terrain.
+    std::vector<Patch> newPatches(xPatches*yPatches);
+
+    // Initialize the new height data structure.
+    for(int y = 0; y < yPatches; ++y)
+        for(int x = 0; x < xPatches; ++x)
+        {
+            newPatches[y*xPatches+x].x = x;
+            newPatches[y*xPatches+x].y = y;
+        }
+
+    assert(sizeof(float) == 4);
+
+    // Load the new data.
+    for(size_t i = 0; i < newPatches.size(); ++i)
+    {
+        newPatches[i].heightData.resize(cPatchSize*cPatchSize);
+        newPatches[i].patch_geometry_dirty = true;
+        fread(&newPatches[i].heightData[0], sizeof(float), cPatchSize*cPatchSize, handle); ///< \todo Check read error.
+    }
+
+    fclose(handle);
+
+    // The terrain asset loaded ok. We are good to set that terrain as the active terrain.
+
+    Destroy();
+
+    currentHeightmapAssetSource = filename;
+    patches = newPatches;
+    patchWidth = xPatches;
+    patchHeight = yPatches;
+
+    // Re-do all the geometry on the GPU.
+    RegenerateDirtyTerrainPatches();
+
+    // Set the new number of patches this terrain has. These changes only need to be done locally, since the other
+    // peers have loaded the terrain from the same file, and they will also locally do this change. This change is also
+    // performed in "batched" mode, i.e. first the values are set, and only after that the signals are emitted manually.
+    this->xPatches.Set(patchWidth, AttributeChange::Disconnected);
+    this->yPatches.Set(patchHeight, AttributeChange::Disconnected);
+
+    this->xPatches.Changed(AttributeChange::LocalOnly);
+    this->yPatches.Changed(AttributeChange::LocalOnly);
+}
+
 void EC_Terrain::SetTerrainMaterialTexture(int index, const char *textureName)
 {
     if (index < 0 || index > 4)
@@ -381,6 +492,8 @@ void EC_Terrain::UpdateTerrainPatchMaterial(int patchX, int patchY)
 /// patch if the associated Ogre resources already exist.
 void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
 {
+    PROFILE(EC_Terrain_GenerateTerrainGeometryForOnePatch);
+
     EC_Terrain::Patch &patch = GetPatch(patchX, patchY);
 
     boost::shared_ptr<Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -425,8 +538,8 @@ void EC_Terrain::GenerateTerrainGeometryForOnePatch(int patchX, int patchY)
     // This is the vertex stride for the terrain.
     const int stride = (patch.x + 1 >= patchWidth) ? cPatchVertexWidth : (cPatchVertexWidth+1);
 
-    const float uScale = 1e-2f*13;
-    const float vScale = 1e-2f*13;
+    const float uScale = this->uScale.Get();
+    const float vScale = this->vScale.Get();
 
     for(int y = 0; y <= cPatchVertexHeight; ++y)
         for(int x = 0; x <= cPatchVertexWidth; ++x)
@@ -594,9 +707,15 @@ void EC_Terrain::GetTerrainHeightRange(float &minHeight, float &maxHeight)
         }
 }
 
+void EC_Terrain::DirtyAllTerrainPatches()
+{
+    for(size_t i = 0; i < patches.size(); ++i)
+        patches[i].patch_geometry_dirty = true;
+}
+
 void EC_Terrain::RegenerateDirtyTerrainPatches()
 {
-    PROFILE(RegenerateOgreTerrainGeom);
+    PROFILE(EC_Terrain_RegenerateDirtyTerrainPatches);
 
     for(int y = 0; y < patchHeight; ++y)
         for(int x = 0; x < patchWidth; ++x)

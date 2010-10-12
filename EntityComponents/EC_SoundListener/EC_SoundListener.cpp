@@ -11,7 +11,7 @@
 #include "EC_SoundListener.h"
 #include "IModule.h"
 #include "Entity.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "SceneManager.h"
 #include "ISoundService.h"
 #include "LoggingFunctions.h"
@@ -23,6 +23,9 @@ EC_SoundListener::EC_SoundListener(IModule *module):
     IComponent(module->GetFramework()),
     active(this, "active", false)
 {
+    // By default, this component is NOT network-serialized
+    SetNetworkSyncEnabled(false);
+
     soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
@@ -40,9 +43,9 @@ void EC_SoundListener::RetrievePlaceable()
     if (!GetParentEntity())
         LogError("Couldn't find an parent entity for EC_SoundListener. Cannot retrieve placeable component.");
 
-    placeable_ = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    placeable_ = GetParentEntity()->GetComponent<EC_Placeable>();
     if (!placeable_.lock())
-        LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");
+        LogError("Couldn't find an EC_Placeable component from the parent entity.");
 }
 
 void EC_SoundListener::Update()
@@ -56,7 +59,7 @@ void EC_SoundListener::OnActiveChanged()
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
     {
-        LogError("Failed on OnActiveChanged method cause default world scene isn't set.");
+        LogError("Failed on OnActiveChanged method cause default world scene wasn't setted.");
         return;
     }
 
@@ -69,7 +72,7 @@ void EC_SoundListener::OnActiveChanged()
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Local);
+                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Default);
         }
     }
 }
@@ -84,6 +87,6 @@ void EC_SoundListener::RegisterActions()
     }
     else
     {
-        LogError("Fail to register actions cause compoent's parent entity is null.");
+        LogError("Fail to register actions cause component's parent entity is null.");
     }
 }

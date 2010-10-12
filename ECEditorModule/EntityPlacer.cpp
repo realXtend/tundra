@@ -2,10 +2,10 @@
 #include "EntityPlacer.h"
 #include "SceneManager.h"
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Renderer.h"
 #include "../Input/Input.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "OgreRenderingModule.h"
 #include <Ogre.h>
 
@@ -26,7 +26,7 @@ EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityI
     if(!entity_.expired())
     {
         Scene::Entity *entity = entity_.lock().get();
-        placeable_ = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        placeable_ = entity->GetComponent<EC_Placeable>().get();
         if(!placeable_)
             return;
 

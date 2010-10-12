@@ -6,9 +6,9 @@
 #include "Quaternion.h"
 
 #include <SceneManager.h>
-#include <EC_OgrePlaceable.h>
+#include <EC_Placeable.h>
 #include <EC_OgreCamera.h>
-#include <EC_OgreMesh.h>
+#include <EC_Mesh.h>
 #include <EC_OgreCustomObject.h>
 
 #include <Ogre.h>
@@ -51,11 +51,11 @@ namespace WorldBuilding
             if (!cam_entity.get())
                 return -1;
 
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
-            ComponentPtr component_placable = cam_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-            OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
+            EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             
             if (!component_placable.get() || !ec_camera)
                 return -1;
@@ -89,17 +89,17 @@ namespace WorldBuilding
 			Scene::Entity *cam_entity = id_to_cam_entity_[cam_id];
 
 			// Get placable from both focus entity and our camera id entity
-			OgreRenderer::EC_OgrePlaceable *entity_ec_placable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-			OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
-			OgreRenderer::EC_OgreCamera *cam_ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+			EC_Placeable *entity_ec_placable = entity->GetComponent<EC_Placeable>().get();
+			EC_Placeable *cam_ec_placable = cam_entity->GetComponent<EC_Placeable>().get();
+			EC_OgreCamera *cam_ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
 	        
             if (last_dir_ == Vector3df::ZERO)
 			{
 				if (!entity_ec_placable || !cam_ec_placable || !cam_ec_camera)
 					return focus_completed;
 
-				OgreRenderer::EC_OgreMesh *entity_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
-				OgreRenderer::EC_OgreCustomObject *entity_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+				EC_Mesh *entity_mesh = entity->GetComponent<EC_Mesh>().get();
+				EC_OgreCustomObject *entity_custom_object = entity->GetComponent<EC_OgreCustomObject>().get();
 
 				Vector3df position_vector = entity_ec_placable->GetPosition();
 				Vector3df position_offset;
@@ -163,8 +163,8 @@ namespace WorldBuilding
             if (id_to_cam_entity_.contains(id))
             {
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
-                OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-                OgreRenderer::EC_OgrePlaceable *cam_ec_placable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
+                EC_Placeable *cam_ec_placable = cam_entity->GetComponent<EC_Placeable>().get();
                 if (!ec_camera || !cam_ec_placable)
                     return;
 
@@ -190,7 +190,7 @@ namespace WorldBuilding
             if (id_to_cam_entity_.contains(id))
             {
                 Scene::Entity *cam_entity = id_to_cam_entity_[id];
-                OgreRenderer::EC_OgrePlaceable *placeable = cam_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                EC_Placeable *placeable = cam_entity->GetComponent<EC_Placeable>().get();
                 if (!placeable)
                     return false;
 
@@ -231,7 +231,7 @@ namespace WorldBuilding
             Scene::Entity *cam_entity = id_to_cam_entity_[cam_id];
 
             // Get the camera ec
-            OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!ec_camera)
                 return QPixmap::fromImage(captured_pixmap);
 

@@ -70,7 +70,6 @@ AddEntityComponent(EntityComponents/EC_NetworkPosition EC_NetworkPosition) # Req
 AddEntityComponent(EntityComponents/EC_Highlight EC_Highlight)
 AddEntityComponent(EntityComponents/EC_InputMapper EC_InputMapper)
 AddEntityComponent(EntityComponents/EC_Movable EC_Movable)
-AddEntityComponent(EntityComponents/EC_Mesh EC_Mesh)
 AddEntityComponent(EntityComponents/EC_Sound EC_Sound)
 AddEntityComponent(EntityComponents/EC_ParticleSystem EC_ParticleSystem)
 AddEntityComponent(EntityComponents/EC_3DCanvas EC_3DCanvas)
@@ -124,6 +123,7 @@ add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script i
 add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
 add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
+add_subdirectory (CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule

@@ -6,6 +6,7 @@
 #include "Foundation.h"
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "PythonQtScriptingConsole.h"
 
 #include <QObject>
 #include <QList>
@@ -74,6 +75,8 @@ namespace PythonScript
             @param filename Filename of the script.
         */
         void LoadScript(const QString &filename);
+
+        PythonQtScriptingConsole* CreateConsole();
 
     public:
         PythonScriptModule();

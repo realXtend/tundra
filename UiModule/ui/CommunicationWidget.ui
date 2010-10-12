@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>447</width>
+    <width>584</width>
     <height>205</height>
    </rect>
   </property>
@@ -285,51 +285,6 @@ QScrollBar {
            <property name="margin">
             <number>0</number>
            </property>
-           <item>
-            <widget class="QWidget" name="voiceLeftBorder" native="true">
-             <property name="enabled">
-              <bool>false</bool>
-             </property>
-             <property name="minimumSize">
-              <size>
-               <width>45</width>
-               <height>0</height>
-              </size>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QWidget#voiceLeftBorder { border: 0px; background-color:transparent; background-image: url('./data/ui/images/comm/border.png'); background-position: top left; background-repeat: no-repeat; }</string>
-             </property>
-             <zorder>verticalSpacer_voice</zorder>
-            </widget>
-           </item>
-           <item>
-            <widget class="QLabel" name="voiceLabel">
-             <property name="minimumSize">
-              <size>
-               <width>55</width>
-               <height>32</height>
-              </size>
-             </property>
-             <property name="font">
-              <font>
-               <family>Arial</family>
-               <pointsize>12</pointsize>
-               <weight>50</weight>
-               <bold>false</bold>
-              </font>
-             </property>
-             <property name="autoFillBackground">
-              <bool>false</bool>
-             </property>
-             <property name="styleSheet">
-              <string notr="true">QLabel#voiceLabel { border: 0px; background-color:  rgba(34,34,34,191); background-position: top left; background-repeat: no-repeat; color: rgb(255,255,255); }
-</string>
-             </property>
-             <property name="text">
-              <string>Voice</string>
-             </property>
-            </widget>
-           </item>
           </layout>
          </item>
         </layout>
@@ -371,6 +326,9 @@ QScrollBar {
            <height>32</height>
           </size>
          </property>
+         <property name="styleSheet">
+          <string notr="true"/>
+         </property>
          <layout class="QHBoxLayout" name="horizontalLayout_3">
           <property name="spacing">
            <number>0</number>
@@ -403,6 +361,9 @@ QScrollBar {
               <family>Calibri</family>
               <pointsize>10</pointsize>
              </font>
+            </property>
+            <property name="autoFillBackground">
+             <bool>false</bool>
             </property>
             <property name="text">
              <string/>

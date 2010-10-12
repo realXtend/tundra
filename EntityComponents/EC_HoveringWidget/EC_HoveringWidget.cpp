@@ -3,7 +3,7 @@
  *
  *  @file   EC_HoveringWidget.cpp
  *  @brief  EC_HoveringWidget shows a hovering widget attached to an entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
  */
 
 #include "StableHeaders.h"
@@ -16,7 +16,7 @@
 
 #include "IModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "UiServiceInterface.h"
@@ -363,7 +363,7 @@ void EC_HoveringWidget::InitializeBillboards()
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *node = entity->GetComponent<EC_Placeable>().get();
     if (!node)
         return;
 

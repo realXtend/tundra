@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "CameraControllable.h"
+#include "CameraControl.h"
 
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EC_NetworkPosition.h"
@@ -12,9 +13,9 @@
 
 #include "Renderer.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Placeable.h"
+#include "EC_Placeable.h"
+#include "EC_Mesh.h"
 
 #include "InputEvents.h"
 #include "Input.h"
@@ -25,6 +26,8 @@
 #include "ConfigurationManager.h"
 #include "ServiceManager.h"
 #include "ModuleManager.h"
+
+#include "UiServiceInterface.h"
 
 #include <Ogre.h>
 
@@ -86,6 +89,16 @@ namespace RexLogic
 
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
+
+		camera_control_widget_ = new CameraControl();
+        /*
+		Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
+        if (ui_service)
+		{
+			ui_service->AddWidgetToScene(camera_control_widget_);
+			ui_service->AddWidgetToMenu(camera_control_widget_);
+		}
+        */
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -105,7 +118,9 @@ namespace RexLogic
 
     bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
-        if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+        camera_control_widget_->HandleInputEvent(event_id, data);
+
+        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
             firstperson_pitch_ = 0.0f;
@@ -171,7 +186,7 @@ namespace RexLogic
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
-            OgreRenderer::EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<EC_OgreCamera>().get();
             if (!cam_comp)     
                 return false;
             if (cam_comp->IsActive())
@@ -222,11 +237,11 @@ namespace RexLogic
         
         if (renderer && target && camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *camera_placeable = camera->GetComponent<EC_Placeable>().get();
 
             // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
             EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
-            OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = target->GetComponent<EC_Placeable>().get();
             if (netpos && placeable)
             {
                 Vector3df avatar_pos = placeable->GetPosition();
@@ -249,7 +264,7 @@ namespace RexLogic
                     bool fallback = true;
 
                     // Try to use head bone from target entity to get the first person camera position
-                    OgreRenderer::EC_OgreMesh *mesh = target->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+                    EC_Mesh *mesh = target->GetComponent<EC_Mesh>().get();
                     EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
                     if (mesh && appearance)
                     {

@@ -8,8 +8,7 @@
 
 #include <Ogre.h>
 
-namespace OgreRenderer
-{
+using namespace OgreRenderer;
 
 EC_OgreSky::EC_OgreSky(IModule* module) :
     IComponent(module->GetFramework()),
@@ -152,13 +151,13 @@ StringVector EC_OgreSky::GetMaterialTextureNames()
     Ogre::MaterialPtr skyMaterial;
     switch(type_)
     {
-    case OgreRenderer::SKYTYPE_BOX:
+    case SKYTYPE_BOX:
         skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyBoxParameters.material);
         break;
-    case OgreRenderer::SKYTYPE_DOME:
+    case SKYTYPE_DOME:
         skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyDomeParameters.material);
         break;
-    case OgreRenderer::SKYTYPE_PLANE:
+    case SKYTYPE_PLANE:
         skyMaterial = Ogre::MaterialManager::getSingleton().getByName(skyPlaneParameters.material);
         break;
     }
@@ -431,4 +430,3 @@ void EC_OgreSky::SetSkyType(SkyType type, bool update_sky)
         CreateSky();
 }
 
-} //namespace OgreRenderer

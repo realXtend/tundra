@@ -278,6 +278,7 @@ struct AV_MODULE_API AvatarAttachment
 typedef std::vector<AvatarAttachment> AvatarAttachmentVector;
 
 const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const std::string& name);
+const AnimationDefinition& GetAnimationByName(const AnimationDefinitionMap& animations, const QString& name);
 
 //! Entity component that stores an avatar's appearance parameters
 class AV_MODULE_API EC_AvatarAppearance : public IComponent
