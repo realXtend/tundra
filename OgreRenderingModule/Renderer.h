@@ -239,7 +239,7 @@ namespace OgreRenderer
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-
+        NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
 
     public slots:
         //! Toggles fullscreen
@@ -303,8 +303,6 @@ namespace OgreRenderer
         Ogre::Viewport* viewport_;
 
         NaaliRenderWindow *renderWindow;
-        //! Rendering window
-//        Ogre::RenderWindow* renderwindow_;
 
         //! Framework we belong to
         Foundation::Framework* framework_;
@@ -342,22 +340,8 @@ namespace OgreRenderer
         //! added resource directories
         StringVector added_resource_directories_;
 
-        //! Qt main window widget
-//        Foundation::MainWindow *main_window_;
-
-        //! Ogre UI View Widget, inherits QGraphicsView
-//        QOgreUIView *q_ogre_ui_view_;
-
-        //! Ogre World View
-//        QOgreWorldView *q_ogre_world_view_;
-
-//        QWidget *viewportWidget;
-
         //! handler for post-processing effects
         CompositionHandler *c_handler_;
-
-        // Compositing back buffer
-//        QImage backBuffer;
 
         //! last width/height
         int last_height_;
@@ -365,8 +349,6 @@ namespace OgreRenderer
 
         //! resized dirty count
         int resized_dirty_;
-
-    
 
         //! For render function
         QImage ui_buffer_;
