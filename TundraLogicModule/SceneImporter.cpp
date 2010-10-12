@@ -69,6 +69,17 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     if (localassets)
         prefix = "file://";
     
+    // Create output asset path if does not exist
+    if (boost::filesystem::exists(out_asset_dir) == false)
+        boost::filesystem::create_directory(out_asset_dir);
+    
+    // If in asset dir not specified, use the branch path of the mesh
+    if (in_asset_dir.empty())
+    {
+        boost::filesystem::path path(meshname);
+        in_asset_dir = path.branch_path().string();
+    }
+    
     if (!in_asset_dir.empty())
     {
         char lastchar = in_asset_dir[in_asset_dir.length() - 1];
@@ -127,8 +138,12 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
                 Ogre::SubMesh* submesh = tempmesh->getSubMesh(i);
                 if (submesh)
                 {
-                    material_names.push_back(submesh->getMaterialName());
-                    material_names_set.insert(submesh->getMaterialName());
+                    // Replace / with _ from material name
+                    std::string submeshmat = submesh->getMaterialName();
+                    ReplaceSubstringInplace(submeshmat, "/", "_");
+                    
+                    material_names.push_back(submeshmat);
+                    material_names_set.insert(submeshmat);
                 }
             }
             skeleton_name = tempmesh->getSkeletonName();
@@ -145,8 +160,8 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     }
     
     for (uint i = 0; i < material_names.size(); ++i)
-        TundraLogicModule::LogInfo("Material ref: " + material_names[i]);
-    TundraLogicModule::LogInfo("Skeleton ref: " + skeleton_name);
+        TundraLogicModule::LogDebug("Material ref: " + material_names[i]);
+    TundraLogicModule::LogDebug("Skeleton ref: " + skeleton_name);
     
     // Scan the asset dir for material files, because we don't actually know what material file the mesh refers to.
     std::vector<std::string> material_files;
@@ -160,7 +175,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
             boost::algorithm::to_lower(ext);
             if (ext == ".material")
             {
-                TundraLogicModule::LogInfo("Material file: " + iter->path().string());
+                TundraLogicModule::LogDebug("Material file: " + iter->path().string());
                 material_files.push_back(iter->path().string());
             }
         }
@@ -261,6 +276,13 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         // Create output asset path if does not exist
         if (boost::filesystem::exists(out_asset_dir) == false)
             boost::filesystem::create_directory(out_asset_dir);
+        
+        // If in asset dir not specified, use the branch path of the scene
+        if (in_asset_dir.empty())
+        {
+            boost::filesystem::path path(filename);
+            in_asset_dir = path.branch_path().string();
+        }
         
         if (!in_asset_dir.empty())
         {
@@ -556,6 +578,8 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                         while (!subentity_elem.isNull())
                         {
                             QString material_name = subentity_elem.attribute("materialName") + ".material";
+                            material_name.replace('/', '_');
+                            
                             int index = ParseString<int>(subentity_elem.attribute("index").toStdString());
                             if (localassets)
                                 material_name = "file://" + material_name;
@@ -619,6 +643,8 @@ std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matf
 {
     std::set<std::string> used_textures;
     
+    bool known_material = false;
+    
     // Read the material file
     QFile matfile(matfilename.c_str());
     if (!matfile.open(QFile::ReadOnly))
@@ -659,10 +685,16 @@ std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matf
                                 matoutfile.close();
                             
                             std::string matname = line.substr(9);
+                            ReplaceSubstringInplace(matname, "/", "_");
+                            line = "material " + matname;
                             if (used_materials.find(matname) == used_materials.end())
+                            {
                                 TundraLogicModule::LogDebug("Encountered unused material " + matname + " in the material file");
+                                known_material = false;
+                            }
                             else
                             {
+                                known_material = true;
                                 ++num_materials;
                                 matoutfile.setFileName(QString::fromStdString(out_asset_dir + matname + ".material"));
                                 if (!matoutfile.open(QFile::WriteOnly))
@@ -672,12 +704,15 @@ std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matf
                         else
                         {
                             // Check for textures
-                            if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
+                            if (known_material)
                             {
-                                std::string texname = line.substr(8);
-                                used_textures.insert(texname);
-                                if (localassets)
-                                    line = "texture file://" + texname;
+                                if ((line.substr(0, 8) == "texture ") && (line.length() > 8))
+                                {
+                                    std::string texname = line.substr(8);
+                                    used_textures.insert(texname);
+                                    if (localassets)
+                                        line = "texture file://" + texname;
+                                }
                             }
                         }
                         // Write line to the modified copy

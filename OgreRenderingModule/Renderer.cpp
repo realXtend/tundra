@@ -972,12 +972,14 @@ namespace OgreRenderer
             if (!entry.movable)
                 continue;
 
+            //! \todo Do we want results for invisible entities?
+            if (!entry.movable->isVisible())
+                continue;
+            
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;
-
-
-
+            
             Scene::Entity *entity = 0;
             try
             {
@@ -1022,6 +1024,10 @@ namespace OgreRenderer
             if (!entry.movable)
                 continue;
 
+            //! \todo Do we want results for invisible entities?
+            if (!entry.movable->isVisible())
+                continue;
+            
             Ogre::Any any = entry.movable->getUserAny();
             if (any.isEmpty())
                 continue;

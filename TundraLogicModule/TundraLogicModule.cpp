@@ -78,7 +78,7 @@ void TundraLogicModule::PostInitialize()
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
     RegisterConsoleCommand(Console::CreateCommand("importmesh",
-        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z)",
+        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));
         
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
@@ -276,12 +276,27 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
         return Console::ResultFailure("No active scene found.");
     if (params.size() < 1)
         return Console::ResultFailure("No filename given.");
-    float x,y,z;
+    
+    float x = 0.0f, y = 0.0f, z = 0.0f;
+    float xr = 0.0f, yr = 0.0f, zr = 0.0f;
+    float xs = 1.0f, ys = 1.0f,zs = 1.0f;
     if (params.size() >= 4)
     {
         x = ParseString<float>(params[1], 0.0f);
         y = ParseString<float>(params[2], 0.0f);
         z = ParseString<float>(params[3], 0.0f);
+    }
+    if (params.size() >= 7)
+    {
+        xr = ParseString<float>(params[4], 0.0f);
+        yr = ParseString<float>(params[5], 0.0f);
+        zr = ParseString<float>(params[6], 0.0f);
+    }
+    if (params.size() >= 10)
+    {
+        xs = ParseString<float>(params[7], 1.0f);
+        ys = ParseString<float>(params[8], 1.0f);
+        zs = ParseString<float>(params[9], 1.0f);
     }
     
     std::string filename = params[0];
@@ -289,7 +304,7 @@ Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(framework_);
-    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(0,0,0), Vector3df(1,1,1)), std::string(), AttributeChange::Default, true);
+    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
     
     return Console::ResultSuccess();
 }
