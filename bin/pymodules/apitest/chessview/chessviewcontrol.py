@@ -74,8 +74,6 @@ class ChessViewControl(circuits.BaseComponent):
         self.board = None
         self.pos2piece = {}
 
-        self.entidcount = 120000
-
         self.cmdhandlers = {
             'BEGIN': self.begin,
             'MOVE': self.move,
@@ -107,8 +105,7 @@ class ChessViewControl(circuits.BaseComponent):
                 self.addpiece(x, y, piece, mesh, scale, rot)
 
     def addpiece(self, x, y, piece, mesh, scale, rot):
-        ent = r.createEntity(mesh, self.entidcount)
-        self.entidcount += 1 #make the api func use next available id XXX
+        ent = naali.createMeshEntity(mesh)
         p = ent.placeable
         p.Position = worldpos(x, y)
         p.Scale = scale
