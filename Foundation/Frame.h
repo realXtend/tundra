@@ -6,7 +6,7 @@
  * 
  *  Frame object can be used to:
  *  -retrieve signal every time frame has been processed
- *  -etrieve the wall clock time of Framework
+ *  -retrieve the wall clock time of Framework
  *  -to trigger delayed signals when spesified amount of time has elapsed.
  */
 
@@ -34,14 +34,14 @@ class DelayedSignal : public QObject
     friend class Frame;
 
 signals:
-    /** @brief Emitted when delayed signal is triggered.
-        @param time Elapsed framework wall clock time.
+    /// Emitted when delayed signal is triggered.
+    /** @param time Elapsed framework wall clock time.
     */
     void Triggered(float time);
 
 private:
-    /** Construct new signal delayed signal object.
-        @param startTime Application tick.
+    /// Construct new signal delayed signal object.
+    /** @param startTime Application tick.
     */
     explicit DelayedSignal(boost::uint64_t startTime);
 
@@ -49,8 +49,8 @@ private:
     boost::uint64_t startTime_;
 
 private slots:
-    /** @brief Emit Triggered() signal
-        Called by Frame object when the spesified amount of time has passed.
+    /// Emit Triggered() signal
+    /** Called by Frame object when the spesified amount of time has passed.
     */
     void Expire();
 };
@@ -59,7 +59,7 @@ private slots:
 /** This class cannot be created directly, it's created by Framework.
     Frame object can be used to:
     -retrieve signal every time frame has been processed
-    -etrieve the wall clock time of Framework
+    -retrieve the wall clock time of Framework
     -to trigger delayed signals when spesified amount of time has elapsed.
 */
 class Frame : public QObject
@@ -93,23 +93,23 @@ public slots:
     void DelayedExecute(float time, const QObject *receiver, const char *member);
 
 signals:
-    /** Emitted after one frame is processed.
-        @param frametime Elapsed time in seconds since the last frame.
+    /// Emitted after one frame is processed.
+    /** @param frametime Elapsed time in seconds since the last frame.
     */
     void Updated(float frametime);
 
 private:
-    /** Constuctor.
-        @param framework Framework
+    /// Constuctor. Framework takes ownership of this object.
+    /** @param framework Framework
     */
     explicit Frame(Foundation::Framework *framework);
 
-    /** @brief Increases the wall clock time and emits Updated() signal.
-        Called by Framework each frame.
+    /// Increases the wall clock time and emits Updated() signal. Called by Framework each frame.
+    /** @param frametime Time elapsed since last frame.
     */
     void Update(float frametime);
 
-    /// Wall clock time of Framework;
+    /// Start time time of Framework/this object;
     boost::uint64_t startTime_;
 
     /// Delayed signals.

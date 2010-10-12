@@ -4,15 +4,14 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "ResourceHandler.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Placeable.h"
+#include "EC_Mesh.h"
 #include "EC_OgreLight.h"
 #include "EC_OgreSky.h"
 #include "EC_OgreCustomObject.h"
-#include "EC_OgreConsoleOverlay.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreParticleSystem.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #include "EC_OgreEnvironment.h"
 #include "EC_OgreCamera.h"
 
@@ -46,15 +45,14 @@ namespace OgreRenderer
     // virtual
     void OgreRenderingModule::Load()
     {
-        DECLARE_MODULE_EC(EC_OgrePlaceable);
-        DECLARE_MODULE_EC(EC_OgreMesh);
+        DECLARE_MODULE_EC(EC_Placeable);
+        DECLARE_MODULE_EC(EC_Mesh);
         DECLARE_MODULE_EC(EC_OgreLight);
         DECLARE_MODULE_EC(EC_OgreSky);
         DECLARE_MODULE_EC(EC_OgreCustomObject);
-        DECLARE_MODULE_EC(EC_OgreConsoleOverlay);
         DECLARE_MODULE_EC(EC_OgreMovableTextOverlay);
         DECLARE_MODULE_EC(EC_OgreParticleSystem);
-        DECLARE_MODULE_EC(EC_OgreAnimationController);
+        DECLARE_MODULE_EC(EC_AnimationController);
         DECLARE_MODULE_EC(EC_OgreEnvironment);
         DECLARE_MODULE_EC(EC_OgreCamera);
     }

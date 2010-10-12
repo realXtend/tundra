@@ -305,7 +305,7 @@ namespace Environment
 
         //! Clear old sky properties and create a new one for spesific sky type.
         //! @Param sky_type is used to tell what type of sky is in use, so right properties will be created.
-        void CreateSkyProperties(OgreRenderer::SkyType sky_type);
+        void CreateSkyProperties(SkyType sky_type);
 
         //! Clean all option widgets on the option scroll area.
         void CleanSkyProperties();
@@ -351,7 +351,7 @@ namespace Environment
         bool ambient_;
 
         //! sky type in use.
-        OgreRenderer::SkyType sky_type_;
+        SkyType sky_type_;
 
         InputContextPtr terrainPaintInputContext;
         //! Timer for terrain painting so that terrain is painted certain time.

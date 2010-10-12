@@ -3,15 +3,15 @@
 #include "StableHeaders.h"
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarExporter.h"
-#include "LegacyAvatarSerializer.h"
+#include "Avatar/LegacyAvatarSerializer.h"
+#include "AvatarEditing/AvatarEditor.h"
 
 #include "EntityComponent/EC_OpenSimAvatar.h"
 
 #include "SceneManager.h"
 #include "SceneEvents.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "OgreMaterialResource.h"
 #include "OgreMaterialUtils.h"
@@ -187,7 +187,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -268,7 +268,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -284,7 +284,7 @@ namespace Avatar
             return;
         
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
 
         if (!mesh || !appearance)
             return;
@@ -325,7 +325,7 @@ namespace Avatar
 #ifdef EC_HoveringText_ENABLED
                         // Ali: testing EC_HoveringText instead of EC_OgreMovableTextOverlay
                         // Set name overlay height according to base + root distance.
-                        //OgreRenderer::EC_OgreMovableTextOverlay* overlay = entity->GetComponent<OgreRenderer::EC_OgreMovableTextOverlay>().get();
+                        //EC_OgreMovableTextOverlay* overlay = entity->GetComponent<EC_OgreMovableTextOverlay>().get();
                         EC_HoveringText* overlay = entity->GetComponent<EC_HoveringText>().get();
                         if (overlay)
                         {
@@ -344,7 +344,7 @@ namespace Avatar
     void AvatarAppearance::SetupMeshAndMaterials(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
         // Mesh needs to be cloned if there are attachments which need to hide vertices
         bool need_mesh_clone = false;
@@ -395,7 +395,7 @@ namespace Avatar
     void AvatarAppearance::SetupAttachments(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
         mesh->RemoveAllAttachments();
         
@@ -419,7 +419,7 @@ namespace Avatar
     void AvatarAppearance::SetupMorphs(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -482,7 +482,7 @@ namespace Avatar
     void AvatarAppearance::ResetBones(Scene::EntityPtr entity)
     {
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
                 
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -510,7 +510,7 @@ namespace Avatar
     
     void AvatarAppearance::ApplyBoneModifier(Scene::EntityPtr entity, const BoneModifier& modifier, float value)
     {
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
         
         Ogre::Entity* ogre_entity = mesh->GetEntity();
         if (!ogre_entity)
@@ -664,7 +664,7 @@ namespace Avatar
     {
         if (!entity)
             return 0;            
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
         if (!mesh)
             return 0;
         
@@ -1084,6 +1084,7 @@ namespace Avatar
                 strings.push_back(connection->GetInfo().agentID.ToString());
                 strings.push_back(avatar->GetAppearanceAddress());
                 connection->SendGenericMessage("RexSetAppearance", strings);
+                emit AppearanceStatus("Exporting avatar to webdav inventory completed");
             }
             inv_export_state_ = Idle;
             inv_export_entity_.reset();
@@ -1338,6 +1339,7 @@ namespace Avatar
         if (inv_export_state_ != Idle)
         {
             AvatarModule::LogInfo("Avatar export already running");
+            emit AppearanceError("Avatar export already running, please wait...", 120000);
             return;
         }
 
@@ -1392,6 +1394,8 @@ namespace Avatar
         EC_OpenSimAvatar* avatar = entity->GetComponent<EC_OpenSimAvatar>().get();
         if (!avatar)
             return;
+
+        emit AppearanceStatus("Exporting avatar description...");
 
         QString app_address = QString::fromStdString(avatar->GetAppearanceAddress());
         if (app_address.endsWith("Avatar.xml"))
@@ -1536,9 +1540,9 @@ namespace Avatar
         if (avatar_exporter_)
         {
             AvatarModule::LogInfo("Avatar export already running");
+            emit AppearanceError("Avatar export already running, please wait...", 120000);
             return;
         }
-        
         AvatarModule::LogInfo("Avatar export for user " + account + " @ " + authserver);
         
         // Instantiate new avatar exporter & give it the work request
@@ -1568,7 +1572,7 @@ namespace Avatar
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
         if (!appearance)
             return;
-        
+
         boost::filesystem::path path(outname);
         std::string dirname = path.branch_path().string();
         
@@ -1583,8 +1587,10 @@ namespace Avatar
             avatarxmlfile.close();
         }
         else
+        {
             AvatarModule::LogError("Could not save avatar description file " + outname);
-        
+            emit AppearanceError("Could not open local file for avatar export");
+        }
         // Get assets & dump them all
         AvatarExporterRequestPtr request(new AvatarExporterRequest());
         GetAvatarAssetsForExport(request, *appearance, false);
@@ -1608,6 +1614,7 @@ namespace Avatar
                 AvatarModule::LogError("Could not save avatar asset " + filename);
             ++i;
         }
+        emit AppearanceStatus("Exporting avatar to local file completed");
     }
     
     void AvatarAppearance::GetAvatarAssetsForExport(AvatarExporterRequestPtr request, EC_AvatarAppearance& appearance, bool inventorymode)
@@ -1905,6 +1912,7 @@ namespace Avatar
                 if (result->success_)
                 {
                     AvatarModule::LogInfo("Avatar exported successfully");
+                    emit AppearanceStatus("Exporting avatar to avatar storage completed");
                     // Send information of appearance change
                     ProtocolUtilities::WorldStreamPtr conn = avatar_module_->GetServerConnection();
                     if (conn)
@@ -1915,8 +1923,10 @@ namespace Avatar
                     }
                 }
                 else
+                {
                     AvatarModule::LogInfo("Avatar export failed: " + result->message_);
-                
+                    emit AppearanceError("Exporting avatar to avatar storage failed");
+                }
                 avatar_exporter_.reset();
             }
         }
@@ -1953,6 +1963,7 @@ namespace Avatar
         catch (Ogre::Exception& e)
         {
             AvatarModule::LogError("Error while loading avatar " + filename + ": " + e.what());
+            emit AppearanceError("Error while loading appearance from avatar file");
             return false;
         }
         
@@ -1976,6 +1987,7 @@ namespace Avatar
         if (!file.open(QIODevice::ReadOnly))
         {
             AvatarModule::LogError("Could not open avatar appearance file " + filename);
+            emit AppearanceError("Could not open avatar file");
             return false;
         }
         
@@ -1983,19 +1995,22 @@ namespace Avatar
         {
             file.close();
             AvatarModule::LogError("Could not parse avatar appearance file " + filename);
+            emit AppearanceError("Could not parse avatar file");
             return false;
         }
         file.close();
         
         if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
+        {
+            emit AppearanceError("No avatar element in avatar file");
             return false;
-            
-        AvatarAsset mesh = appearance->GetMesh();
+        }
+
         // If mesh name is empty, deduce mesh name from filename
+        AvatarAsset mesh = appearance->GetMesh();
         if (mesh.name_.empty())
         {
             AvatarModule::LogInfo("Empty mesh name in avatar xml. Deducing from filename...");
-
             mesh.name_ = ReplaceSubstring(leafname, ".xml", ".mesh");
             appearance->SetMesh(mesh);
         }      
@@ -2065,7 +2080,7 @@ namespace Avatar
             return false; 
                    
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
         
         if (!mesh || !appearance)
             return false;       
@@ -2150,7 +2165,7 @@ namespace Avatar
             return false; 
                    
         EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        EC_Mesh* mesh = entity->GetComponent<EC_Mesh>().get();
         
         if (!mesh || !appearance)
             return false;    
@@ -2161,6 +2176,7 @@ namespace Avatar
         if (!file.open(QIODevice::ReadOnly))
         {
             AvatarModule::LogError("Could not open attachment description file " + filename);
+            emit AppearanceError("Could not open attachment description file");
             return false;
         }
         
@@ -2168,14 +2184,19 @@ namespace Avatar
         {
             file.close();
             AvatarModule::LogError("Could not parse attachment description file " + filename);
+            emit AppearanceError("Could not parse attachment description file");
             return false;
         }
         file.close();  
         
         AvatarAttachment new_attachment;
-        if (!LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, *appearance, leafname))
+        LegacyAvatarSerializer::SerializeResult result = LegacyAvatarSerializer::ReadAttachment(new_attachment, attachment_doc, *appearance, leafname);
+        if (!result.first)
+        {
+            emit AppearanceError(result.second);
             return false;
-        
+        }
+
         AvatarAttachmentVector attachments = appearance->GetAttachments();
         attachments.push_back(new_attachment);
         appearance->SetAttachments(attachments);
@@ -2185,5 +2206,36 @@ namespace Avatar
         
         SetupAppearance(entity);
         return true;
-    }         
+    }
+    
+    
+    void AvatarAppearance::ProcessECAvatarAppearance(entity_id_t entityID, const u8* data, uint size)
+    {
+        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(entityID);
+        if (!entity)
+            return;
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;
+        
+        std::string data_str((const char*)data, size);
+
+        QDomDocument avatar_doc("Avatar");
+        avatar_doc.setContent(QString::fromStdString(data_str));
+
+        // Deserialize appearance from the document into the EC
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
+        {
+            AvatarModule::LogError("Failed to parse avatar description");
+            return;
+        }
+        
+        const AvatarAssetMap& assets = appearance->GetAssetMap();
+        
+        uint pending_requests = RequestAvatarResources(entity, assets, true);
+        
+        // In the unlikely case of no requests at all, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
+    }
 }

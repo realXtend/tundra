@@ -14,8 +14,12 @@
 #include "Sky.h"
 #include "EnvironmentEditor.h"
 #include "PostProcessWidget.h"
+
 #include "EC_WaterPlane.h"
 #include "EC_Fog.h"
+#include "EC_SkyPlane.h"
+#include "EC_SkyBox.h"
+#include "EC_SkyDome.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -63,6 +67,9 @@ namespace Environment
         DECLARE_MODULE_EC(EC_Terrain);
         DECLARE_MODULE_EC(EC_WaterPlane);
         DECLARE_MODULE_EC(EC_Fog);
+        DECLARE_MODULE_EC(EC_SkyPlane);
+        DECLARE_MODULE_EC(EC_SkyBox);
+        DECLARE_MODULE_EC(EC_SkyDome);
     }
 
     void EnvironmentModule::Initialize()
@@ -124,6 +131,8 @@ namespace Environment
     {
         RESETPROFILER;
      
+        PROFILE(EnvironmentModule_Update);
+
         // Idea of next lines:  Because of initialisation chain, enviroment editor stays in wrong state after logout/login-process. 
         // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
@@ -144,6 +153,8 @@ namespace Environment
                 environment_->Update(frametime);
             if (water_.get() !=0 )
                 water_->Update();
+            //if  (sky_.get() != 0)
+            //    sky_->Update();
         }
     }
 
@@ -214,7 +225,7 @@ namespace Environment
                 if (sky_.get())
                     sky_->OnTextureReadyEvent(res);
             }
-            Foundation::TextureInterface *decoded_tex = decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
+            Foundation::TextureInterface *decoded_tex = dynamic_cast<Foundation::TextureInterface *>(res->resource_.get());
             if (decoded_tex)
                 // Pass the texture asset to environment editor.
                 if (environment_editor_)
@@ -312,7 +323,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height, AttributeChange::Network);
+                        water_->SetWaterHeight(height, AttributeChange::LocalOnly);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -427,17 +438,17 @@ namespace Environment
         return false;
     }
 
-    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& component_name) 
+    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
     {
         
         Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
         // Search first that does there exist environment entity
-        Scene::EntityPtr entity = active_scene->GetEntityByName("Environment");
+        Scene::EntityPtr entity = active_scene->GetEntityByName(entity_name);
         if (entity != 0)
         {
             // Does it have component? If not create. 
             if ( !entity->HasComponent(component_name) )
-                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::Replicate);
         
         
             return entity;
@@ -450,7 +461,7 @@ namespace Environment
         {
              // Does it have component? If not create. 
             if ( !entity->HasComponent(component_name) )
-                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::LocalOnly);
 
         }
         else
@@ -462,7 +473,7 @@ namespace Environment
             nameComp->name.Set("LocalEnvironment", AttributeChange::LocalOnly);
             
             // Create param component.
-            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name), AttributeChange::LocalOnly);
         }
         
         return entity;
@@ -478,11 +489,21 @@ namespace Environment
             return;
         else
         {   
-            entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+            if ( entity->HasComponent(EC_WaterPlane::TypeNameStatic()) && active_scene->GetEntityByName("WaterEnvironment").get() != 0 )
+                entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+           
+            if  ( entity->HasComponent(EC_Fog::TypeNameStatic()) && active_scene->GetEntityByName("FogEnvironment").get() != 0)
+                 entity->RemoveComponent(entity->GetComponent(EC_Fog::TypeNameStatic()));
+            if ( entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+                entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()));
+            if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+                entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()));
+            
+        
         }
 
         active_scene->RemoveEntity(entity->GetId());
-
+        
 
     }
 
@@ -505,7 +526,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height, AttributeChange::Network);
+            water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID
@@ -619,6 +640,13 @@ namespace Environment
     void EnvironmentModule::CreateSky()
     {
         sky_ = SkyPtr(new Sky(this));
+
+        if ( environment_editor_ != 0 )
+             environment_editor_->InitSkyTabWindow();
+        
+        if (!GetEnvironmentHandler()->IsCaelum())
+            sky_->CreateDefaultSky(true);
+ /*       
         Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
         Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());
         sky_entity->AddComponent(GetFramework()->GetComponentManager()->CreateComponent("EC_OgreSky"));
@@ -627,9 +655,8 @@ namespace Environment
 
         if (!GetEnvironmentHandler()->IsCaelum())
             sky_->CreateDefaultSky();
-
-        if ( environment_editor_ != 0 )
-             environment_editor_->InitSkyTabWindow();
+*/
+       
     }
 
     void EnvironmentModule::ReleaseTerrain()

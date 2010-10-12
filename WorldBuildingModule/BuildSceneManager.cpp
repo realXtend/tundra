@@ -12,7 +12,7 @@
 
 #include "IModule.h"
 #include "EC_OpenSimPrim.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "UiServiceInterface.h"
 #include "NaaliApplication.h"
 
@@ -610,7 +610,7 @@ namespace WorldBuilding
         if (!prim)
         {
             // Manipulators wont have prim, but will have mesh
-            if (entity->HasComponent("EC_OgreMesh"))
+            if (entity->HasComponent("EC_Mesh"))
                 return;
             ObjectSelected(false);
             python_handler_->EmitRemoveHightlight();
@@ -643,7 +643,7 @@ namespace WorldBuilding
     {
         if (selected_entity_)
         {
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *entity_ec_placable = selected_entity_->GetComponent<EC_Placeable>().get();
             if (entity_ec_placable)
             {
                 qreal acceleration = 0.01;
@@ -656,7 +656,7 @@ namespace WorldBuilding
     {
         if (selected_entity_)
         {
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *entity_ec_placable = selected_entity_->GetComponent<EC_Placeable>().get();
             if (entity_ec_placable)
             {
                 qreal acceleration_x = 1;

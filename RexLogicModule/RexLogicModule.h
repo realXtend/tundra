@@ -150,13 +150,6 @@ namespace RexLogic
         //! Returns the camera controllable
         CameraControllablePtr GetCameraControllable() const { return camera_controllable_; }
 
-        //! The scene system can store multiple scenes. Only one scene is active at a time, that is the one
-        //! that is currently being rendered. You may pass a null pointer to erase the currently active scene.
-        void SetCurrentActiveScene(Scene::ScenePtr scene);
-
-        //! @return The currently viewed scene, or 0 if not connected. (Don't use as an indicator of connection state!)
-        Scene::ScenePtr GetCurrentActiveScene() const;
-
         //! Creates a new scene and sets that as active. Also creates the core entities to that scene that 
         //! are always to be present in an reX world, like terrain.
         Scene::ScenePtr CreateNewActiveScene(const QString &name);
@@ -232,11 +225,11 @@ namespace RexLogic
         Q_DISABLE_COPY(RexLogicModule);
 
         //! Handle real-time update of scene objects
-        /*! Performs dead-reckoning and damped motion for all scene entities which have an OgrePlaceable and a NetworkPosition
-            component. If the OgrePlaceable position/rotation is set anywhere else, it will be overridden by the next
+        /*! Performs dead-reckoning and damped motion for all scene entities which have an Placeable and a NetworkPosition
+            component. If the Placeable position/rotation is set anywhere else, it will be overridden by the next
             call to this, so it should be avoided.
 
-            Performs animation update to all objects that have an OgreAnimationController component.
+            Performs animation update to all objects that have an AnimationController component.
          */
         void UpdateObjects(f64 frametime);
 
@@ -307,9 +300,6 @@ namespace RexLogic
 
         //! Primitive handler pointer.
         PrimitivePtr primitive_;
-
-        //! Active scene pointer.
-        Scene::ScenePtr activeScene_;
 
         //! Current camera entity
         Scene::EntityWeakPtr camera_entity_;

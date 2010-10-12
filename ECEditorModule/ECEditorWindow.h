@@ -10,7 +10,9 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-#include <set>
+//#include <set>
+#include <QMap>
+#include <QSet>
 
 #include <QWidget>
 
@@ -71,7 +73,10 @@ namespace ECEditor
         /// Deletes entity.
         void DeleteEntity();
 
+        /// Copy serializable component values to clipboard.
         void CopyEntity();
+
+        /// Paste create a new entity and add serializable components.
         void PasteEntity();
 
         /// Highlights all entities from the list that owns the component.
@@ -126,7 +131,7 @@ namespace ECEditor
         void SceneAdded(const QString &name);
 
     private:
-        void BoldEntityListItem(entity_id_t entity_id, bool bold = true);
+        void BoldEntityListItem(entity_id_t, bool bold = true);
         /// Initializes the widget.
         void Initialize();
 
@@ -142,7 +147,9 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         ECBrowser *browser_;
-        typedef std::set<entity_id_t> EntityIdSet;
+        typedef QMap<QString, QString> EntityIdToNameMap;
+        EntityIdToNameMap entity_id_to_name_;
+        typedef QSet<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
     };
 }

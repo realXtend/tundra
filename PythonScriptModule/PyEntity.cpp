@@ -9,11 +9,11 @@
 //#include "RexLogicModule.h" //for getting prim component data
 #include "SceneManager.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreCustomObject.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgreAnimationController.h"
+#include "EC_AnimationController.h"
 #include "EC_NetworkPosition.h"
 #include "EntityComponent/EC_AttachedSound.h"
 #include "EC_SoundRuler.h"
@@ -298,19 +298,19 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("mesh") == 0)
     {
-        ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+        ComponentPtr component_meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
         if (!component_meshptr)
         {
              PyErr_SetString(PyExc_AttributeError, "Entity doesn't have a mesh component.");
              return NULL;
         }
-        OgreRenderer::EC_OgreMesh* ogremesh = checked_static_cast<OgreRenderer::EC_OgreMesh*>(component_meshptr.get());
+        EC_Mesh* ogremesh = checked_static_cast<EC_Mesh*>(component_meshptr.get());
         return PythonScriptModule::GetInstance()->WrapQObject(ogremesh);
     }
     
     else if (s_name.compare("placeable") == 0)
     {    
-        OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "This entity does not have a placeable component.");
@@ -357,14 +357,14 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("text") == 0)
     {
-        const ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+        const ComponentPtr &overlay = entity->GetComponent(EC_OgreMovableTextOverlay::TypeNameStatic());
 
         if (!overlay)
         {
             PyErr_SetString(PyExc_AttributeError, "overlay not found.");
             return NULL;   
         }  
-        OgreRenderer::EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay *>(overlay.get());
+        EC_OgreMovableTextOverlay *name_overlay = checked_static_cast<EC_OgreMovableTextOverlay *>(overlay.get());
         std::string text = name_overlay->GetText();
         return PyString_FromString(text.c_str());
     }
@@ -372,17 +372,17 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     //XXX make the getter in EC_Mesh a qt slot and switch to using that
     else if (s_name.compare("boundingbox") == 0)
     {
-        OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
         if (!placeable)
         {
             PyErr_SetString(PyExc_AttributeError, "This entity does not have a placeable component.");
             return NULL;   
         }  
 
-        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent(EC_OgreCustomObject::TypeNameStatic());
         if (meshptr)
         {
-            OgreRenderer::EC_OgreCustomObject& cobj = *checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(meshptr.get());
+            EC_OgreCustomObject& cobj = *checked_static_cast<EC_OgreCustomObject*>(meshptr.get());
             Vector3df min, max;
             
             cobj.GetBoundingBox(min, max);
@@ -391,10 +391,10 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
         }
         else
         {
-            meshptr = entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic());
+            meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
             if (meshptr) 
             {
-                OgreRenderer::EC_OgreMesh& mesh = *checked_static_cast<OgreRenderer::EC_OgreMesh*>(meshptr.get());
+                EC_Mesh& mesh = *checked_static_cast<EC_Mesh*>(meshptr.get());
                 Vector3df min, max;
 
                 mesh.GetBoundingBox(min, max);
@@ -461,11 +461,11 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
 
     else if (s_name.compare("animationcontroller") == 0)
     {
-        const ComponentPtr animationcontrol_ptr = entity->GetComponent("EC_OgreAnimationController");
-        OgreRenderer::EC_OgreAnimationController* animationcontrol = 0;
+        const ComponentPtr animationcontrol_ptr = entity->GetComponent("EC_AnimationController");
+        EC_AnimationController* animationcontrol = 0;
         if (animationcontrol_ptr)
         {
-            animationcontrol = checked_static_cast<OgreRenderer::EC_OgreAnimationController *>(animationcontrol_ptr.get());
+            animationcontrol = checked_static_cast<EC_AnimationController *>(animationcontrol_ptr.get());
             return PythonScriptModule::GetInstance()->WrapQObject(animationcontrol);
         }
         else
@@ -478,10 +478,10 @@ static PyObject* entity_getattro(PyObject *self, PyObject *name)
     else if (s_name.compare("camera") == 0)
     {
         const ComponentPtr camera_ptr = entity->GetComponent("EC_OgreCamera");
-        OgreRenderer::EC_OgreCamera* camera = 0;
+        EC_OgreCamera* camera = 0;
         if (camera_ptr)
         {
-            camera = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera_ptr.get());
+            camera = checked_static_cast<EC_OgreCamera*>(camera_ptr.get());
             return PythonScriptModule::GetInstance()->WrapQObject(camera);
         }
         else
@@ -535,19 +535,19 @@ static int entity_setattro(PyObject *self, PyObject *name, PyObject *value)
     Scene::EntityPtr entity = scene->GetEntity(eob->ent_id);
 
     EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
     EC_NetworkPosition* networkpos = entity->GetComponent<EC_NetworkPosition>().get();
 
     if (s_name.compare("text") == 0)
     {
         if (PyString_Check(value) || PyUnicode_Check(value)) 
         {
-            const ComponentPtr &overlay = entity->GetComponent(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
+            const ComponentPtr &overlay = entity->GetComponent(EC_OgreMovableTextOverlay::TypeNameStatic());
             const char* c_text = PyString_AsString(value);
             std::string text = std::string(c_text);
             if (overlay)
             {
-                OgreRenderer::EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<OgreRenderer::EC_OgreMovableTextOverlay*>(overlay.get());
+                EC_OgreMovableTextOverlay &name_overlay = *checked_static_cast<EC_OgreMovableTextOverlay*>(overlay.get());
                 name_overlay.SetText(text);
                 //name_overlay.SetPlaceable(placeable); //is this actually needed for something?
             }

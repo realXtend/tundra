@@ -3,13 +3,14 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_WaterPlane.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "IAttribute.h"
 
 #include "Renderer.h"
 #include "SceneManager.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
+#include <OgreMaterialUtils.h>
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 
@@ -32,12 +33,13 @@ namespace Environment
         rotationAttr(this, "Rotation", Quaternion()),
         scaleUfactorAttr(this, "U factor", 0.0002f),
         scaleVfactorAttr(this, "V factor", 0.0002f),
-        xSegmentsAttr(this, "Segments x direction", 10),
-        ySegmentsAttr(this, "Segments y direction", 10),
+        xSegmentsAttr(this, "Segments in x", 10),
+        ySegmentsAttr(this, "Segments in y", 10),
         materialNameAttr(this, "Material", QString("Ocean")),
+       //textureNameAttr(this, "Texture", QString("DefaultOceanSkyCube.dds")),
         fogColorAttr(this, "Fog color", Color(0.2f,0.4f,0.35f,1.0f)),
-        fogStartAttr(this, "Fog start distance", 100.f),
-        fogEndAttr(this, "Fog end distance", 2000.f),
+        fogStartAttr(this, "Fog start dist.", 100.f),
+        fogEndAttr(this, "Fog end dist.", 2000.f),
         fogModeAttr(this, "Fog mode", 3),
         entity_(0),
         node_(0),
@@ -49,9 +51,9 @@ namespace Environment
         if(!metadataInitialized)
         {
             metadata.enums[Ogre::FOG_NONE] = "NoFog";
-            metadata.enums[Ogre::FOG_EXP] = "Exponentially";
+            metadata.enums[Ogre::FOG_EXP] = "Exponential";
             metadata.enums[Ogre::FOG_EXP2] = "ExponentiallySquare";
-            metadata.enums[Ogre::FOG_LINEAR] = "Linearly";
+            metadata.enums[Ogre::FOG_LINEAR] = "Linear";
          
             metadataInitialized = true;
         }
@@ -76,15 +78,15 @@ namespace Environment
         
         // If there exist placeable copy its position for default position and rotation.
        
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ( placeable != 0)
         {
             Vector3df vec = placeable->GetPosition();
-            positionAttr.Set(vec,AttributeChange::Local);
+            positionAttr.Set(vec,AttributeChange::Default);
        
             Quaternion rot =placeable->GetOrientation();
-            rotationAttr.Set(rot, AttributeChange::Local);
-            ComponentChanged(AttributeChange::Local);
+            rotationAttr.Set(rot, AttributeChange::Default);
+            ComponentChanged(AttributeChange::Default);
         }
     }
     
@@ -171,14 +173,14 @@ namespace Environment
                 int ySize = ySizeAttr.Get();
                 float uTile =  scaleUfactorAttr.Get() * xSize; /// Default x-size 5000 --> uTile 1.0
                 float vTile =  scaleVfactorAttr.Get() * ySize;
-
+                
                 Ogre::MeshPtr mesh = Ogre::MeshManager::getSingleton().createPlane(name_.toStdString().c_str(), Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, 
                     Ogre::Plane(Ogre::Vector3::UNIT_Z, 0),xSize, ySize, xSegmentsAttr.Get(), ySegmentsAttr.Get(), true, 1, uTile, vTile, Ogre::Vector3::UNIT_X);
-
+                
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName(), name_.toStdString().c_str());
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
-                // Tries to attach entity, if there is not EC_OgrePlaceable availible, it will not attach object
+                // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
                 AttachEntity();
                
             }
@@ -287,6 +289,11 @@ namespace Environment
             lastYsize_ = ySizeAttr.Get();
 
         }
+        else if ( name == xSegmentsAttr.GetNameString() || name == ySegmentsAttr.GetNameString() )
+        {
+            RemoveWaterPlane();
+            CreateWaterPlane();
+        }
         else if ( name == positionAttr.GetNameString() )
         {
             // Change position
@@ -298,7 +305,7 @@ namespace Environment
             // Change rotation
 
             // Is there placeable component? If not use given rotation 
-            //if ( dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get()) == 0 )
+            //if ( dynamic_cast<EC_Placeable*>(FindPlaceable().get()) == 0 )
             //{
                SetOrientation();
             //}
@@ -318,6 +325,37 @@ namespace Environment
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
             }
         }
+        /*
+        // Currently commented out, working feature but not enabled yet.
+        else if (name == textureNameAttr.GetNameString() )
+        {
+
+            QString currentMaterial = materialNameAttr.Get();
+            
+            // Check that has texture really changed. 
+            
+            StringVector names;
+            Ogre::MaterialPtr materialPtr = Ogre::MaterialManager::getSingleton().getByName(currentMaterial.toStdString().c_str());
+            
+            if ( materialPtr.get() == 0)
+                return;
+
+            OgreRenderer::GetTextureNamesFromMaterial(materialPtr, names);
+            
+            QString textureName = textureNameAttr.Get();
+            
+            for (StringVector::iterator iter = names.begin(); iter != names.end(); ++iter)
+            {
+                QString currentTextureName(iter->c_str());
+                if ( currentTextureName == textureName)
+                    return;
+            }
+
+            // So texture has really changed, let's change it. 
+            OgreRenderer::SetTextureUnitOnMaterial(materialPtr, textureName.toStdString(), 0);
+
+        }
+        */
         
         
     }
@@ -329,7 +367,7 @@ namespace Environment
         ComponentPtr comp;
         if(!GetParentEntity())
             return comp;
-        comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        comp = GetParentEntity()->GetComponent<EC_Placeable>();
         return comp;
 
     }
@@ -337,7 +375,7 @@ namespace Environment
    
     void EC_WaterPlane::AttachEntity()
     {
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ((!entity_) || (!placeable) || attached_)
             return;
 
@@ -352,7 +390,7 @@ namespace Environment
       
     void EC_WaterPlane::DetachEntity()
     {
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ((!attached_) || (!entity_) || (!placeable))
             return;
 

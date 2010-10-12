@@ -8,13 +8,11 @@
 #include "ResourceHandler.h"
 #include "OgreRenderingModule.h"
 #include "OgreConversionUtils.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "NaaliRenderWindow.h"
 #include "NaaliGraphicsView.h"
-#include "CAVEManager.h" ///\todo Refactor-remove this. -jj.
-#include "StereoController.h" ///\todo Refactor-remove this. -jj.
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 
@@ -151,8 +149,6 @@ namespace OgreRenderer
         last_width_(0),
         last_height_(0),
         capture_screen_pixel_data_(0),
-        cave_manager_(new CAVEManager(this)),
-        stereo_controller_(new StereoController(this)),
         resized_dirty_(0),
         view_distance_(500.0),
         shadowquality_(Shadows_High),
@@ -224,8 +220,7 @@ namespace OgreRenderer
         root_.reset();
         SAFE_DELETE(c_handler_);
 //        SAFE_DELETE(q_ogre_world_view_);
-        SAFE_DELETE(stereo_controller_);
-        SAFE_DELETE(cave_manager_);
+
     }
 
     void Renderer::RemoveLogListener()
@@ -381,8 +376,6 @@ namespace OgreRenderer
     void Renderer::PostInitialize()
     {
         resource_handler_->PostInitialize();
-        cave_manager_->InitializeUi();
-        stereo_controller_->InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -391,11 +384,6 @@ namespace OgreRenderer
             framework_->Ui()->MainWindow()->showFullScreen();
         else
             framework_->Ui()->MainWindow()->showNormal();
-    }
-
-    QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
-    {
-        return cave_manager_->getExternalWindows();
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
@@ -1000,7 +988,7 @@ namespace OgreRenderer
                 continue;
             }
 
-            EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
             if (!placeable)
                 continue;
 
@@ -1050,7 +1038,7 @@ namespace OgreRenderer
 
             int current_priority = minimum_priority;
             {
-                EC_OgrePlaceable *placeable = entity->GetComponent<EC_OgrePlaceable>().get();
+                EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
                 if (placeable)
                 {
                     current_priority = placeable->GetSelectPriority();
@@ -1213,11 +1201,11 @@ namespace OgreRenderer
             if (!cam_entity)
                 return;
 
-            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgrePlaceable::TypeNameStatic()));
+            cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
             
-            ComponentPtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
@@ -1310,7 +1298,7 @@ namespace OgreRenderer
         pos += (avatar_orientation * Vector3df::NEGATIVE_UNIT_Z * 0.5f);
         Vector3df lookat = avatar_position + avatar_orientation * Vector3df(0,0,-0.4f);
 
-        EC_OgrePlaceable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_OgrePlaceable>().get();
+        EC_Placeable *cam_ec_placable = texture_rendering_cam_entity_->GetComponent<EC_Placeable>().get();
         if (!cam_ec_placable)
             return QPixmap();
 
@@ -1384,6 +1372,16 @@ namespace OgreRenderer
     {
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
+    }
+
+    void Renderer::HideCurrentWorldView()
+    {
+        q_ogre_world_view_->HideUiOverlay();
+    }
+
+    void Renderer::ShowCurrentWorldView()
+    {
+          q_ogre_world_view_->ShowUiOverlay();
     }
 
     void Renderer::InitShadows()

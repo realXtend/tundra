@@ -14,7 +14,10 @@
 
 #include <map>
 
+#include <QVariant>
+
 class IComponent;
+class QScriptValue;
 
 //! Attribute metadata contains information about the attribute: description (e.g. "color" or "direction",
 /*! possible min and max values mapping of enumeration signatures and values.
@@ -88,31 +91,18 @@ public:
      */
     void SetNull(bool enable) { null_ = enable; }
 
-    //! Resets previous/current change to none.
-    void ResetChange() { change_ = AttributeChange::None; }
-
-    //! Returns true if the attribute is dirty i.e. it has changed either locally or because of a network message.
-    /*! The dirty flag should be resetted by the replication manager after it has processed the change. However,
-        LOCALONLY changes most probably are not resetted by anything by default, so that state will stay until one
-        resets it manually.
-     */
-    bool IsDirty() const { return change_ != AttributeChange::None; }
-
     //! Returns true if the attribute is null i.e. its value should be fetched from a parent entity
     bool IsNull() const { return null_; }
 
     //! Returns attributes owner component.
     IComponent* GetOwner() const { return owner_; }
 
-    //! Returns current/most recent change type.
-    AttributeChange::Type GetChange() const { return change_; }
-
     //! Returns attributes name as const char *.
     const char* GetName() const { return name_.c_str(); }
 
     //! Returns attributes name as string.
     std::string GetNameString() const { return std::string(name_); }
-
+    
     //! Convert attribute to string for XML serialization
     virtual std::string ToString() const = 0;
 
@@ -121,6 +111,16 @@ public:
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const = 0;
+
+    //! Returns the value as QVariant (For scripts).
+    virtual QVariant ToQVariant() const = 0;
+
+    //! Convert QVariant to attribute value.
+    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change) = 0;
+
+    //! Convert QScriptValue to attribute value (QtScript Spesific).
+    //! /todo Remove when if possible.
+    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change) = 0;
 
     //! Sets attribute's metadata.
     /*! \param metadata Metadata.
@@ -133,18 +133,19 @@ public:
     //! Returns true if this attribute has metadata set.
     bool HasMetadata() const { return metadata_ != 0; }
 
-protected:
-    //! Notifies owner component that the attribute has changed
+    //! Notifies owner component that the attribute has changed. This function is called automatically
+    //! when the Attribute value is Set(). You may call this manually to force a change signal to 
+    //! be emitted for this attribute.
+    //! Calling this is equivalent to calling the IComponent::AttributeChanged(this->GetName()) for the owner
+    //! of this attribute.
     void Changed(AttributeChange::Type change);
 
+protected:
     //! Owning component
     IComponent* owner_;
 
     //! Name of attribute
     std::string name_;
-
-    //! Change type (dirty flag)
-    AttributeChange::Type change_;
 
     //! Null flag. If attribute is null, its value should be fetched from a parent entity
     bool null_;
@@ -189,10 +190,9 @@ public:
     void Set(const T &new_value, AttributeChange::Type change)
     {
         value_ = new_value;
-        change_ = change;
         Changed(change);
     }
-
+    
     //! IAttribute override.
     virtual std::string ToString() const;
 
@@ -201,6 +201,16 @@ public:
 
     //! Returns the type of the data stored in this attribute.
     virtual std::string TypenameToString() const;
+
+    //! Returns the value as QVariant (For scripts).
+    virtual QVariant ToQVariant() const;
+
+    //! Convert QVariant to attribute value.
+    virtual void FromQVariant(const QVariant &variant, AttributeChange::Type change);
+
+    //! Convert QScriptValue to attribute value (QtScript Spesific).
+    //! /todo Remove this when possible.
+    virtual void FromScriptValue(const QScriptValue &value, AttributeChange::Type change);
 
 private:
     //! Attribute value
@@ -230,7 +240,7 @@ template<> void Attribute<Vector3df>::FromString(const std::string& str, ChangeT
 template<> void Attribute<Color>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<Quaternion>::FromString(const std::string& str, ChangeType change);
 template<> void Attribute<AssetReference>::FromString(const std::string& str, ChangeType change);
-tempalte<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
+template<> void Attribute<QVariant>::FromString(const std::string& str, ChangeType change);
 
 template<> 
 */

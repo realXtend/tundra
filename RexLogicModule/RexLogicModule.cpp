@@ -53,8 +53,9 @@
 
 #include "AvatarModule.h"
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+
 #ifdef EC_AvatarAppearance_ENABLED
 #include "EntityComponent/EC_AvatarAppearance.h"
 #endif
@@ -84,10 +85,10 @@
 #include "RenderServiceInterface.h"
 #include "OgreTextureResource.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "EC_OgreAnimationController.h"
-#include "EC_OgreMesh.h"
+#include "EC_AnimationController.h"
+#include "EC_Mesh.h"
 #include "EC_OgreMovableTextOverlay.h"
 #include "EC_OgreCustomObject.h"
 
@@ -138,9 +139,6 @@
 #endif
 #ifdef EC_Sound_ENABLED
 #include "EC_Sound.h"
-#endif
-#ifdef EC_Mesh_ENABLED
-#include "EC_Mesh.h"
 #endif
 #ifdef EC_InputMapper_ENABLED
 #include "EC_InputMapper.h"
@@ -240,9 +238,6 @@ void RexLogicModule::Load()
 #endif
 #ifdef EC_Sound_ENABLED
     DECLARE_MODULE_EC(EC_Sound);
-#endif
-#ifdef EC_Mesh_ENABLED
-    DECLARE_MODULE_EC(EC_Mesh);
 #endif
 #ifdef EC_InputMapper_ENABLED    
     DECLARE_MODULE_EC(EC_InputMapper);
@@ -347,6 +342,8 @@ void RexLogicModule::PostInitialize()
     eventcategoryid = eventMgr->QueryEventCategory("Avatar");
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &AvatarEventHandler::HandleAvatarEvent, avatar_event_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleAvatarEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkState events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkState");
@@ -354,6 +351,8 @@ void RexLogicModule::PostInitialize()
         &InWorldChat::Provider::HandleNetworkStateEvent, in_world_chat_provider_.get(), _1, _2));
     event_handlers_[eventcategoryid].push_back(boost::bind(
         &NetworkStateEventHandler::HandleNetworkStateEvent, network_state_handler_, _1, _2));
+    event_handlers_[eventcategoryid].push_back(boost::bind(
+        &ObjectCameraController::HandleNetworkStateEvent, obj_camera_controller_.get(), _1, _2));
 
     // NetworkIn events
     eventcategoryid = eventMgr->QueryEventCategory("NetworkIn");
@@ -387,26 +386,26 @@ Scene::ScenePtr RexLogicModule::CreateNewActiveScene(const QString &name)
     if (framework_->HasScene(name))
     {
         LogWarning("Tried to create new active scene, but it already existed!");
-        Scene::ScenePtr newActiveScene = framework_->GetScene(name);
-        SetCurrentActiveScene(newActiveScene);
-        return newActiveScene;
+        Scene::ScenePtr scene = framework_->GetScene(name);
+        framework_->SetDefaultWorldScene(scene);
+        return scene;
     }
 
-    activeScene_ = framework_->CreateScene(name);
-    framework_->SetDefaultWorldScene(activeScene_);
+    Scene::ScenePtr scene = framework_->CreateScene(name);
+    framework_->SetDefaultWorldScene(scene);
 
     // Connect ComponentAdded&Removed signals.
-    connect(activeScene_.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+    connect(scene.get(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
-    connect(activeScene_.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+    connect(scene.get(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
             SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
 
     // Listen to component changes to serialize them via RexFreeData
-    primitive_->RegisterToComponentChangeSignals(activeScene_);
+    primitive_->RegisterToComponentChangeSignals(scene);
 
-    CreateOpenSimViewerCamera(activeScene_);
+    CreateOpenSimViewerCamera(scene);
 
-    return GetCurrentActiveScene();
+    return scene;
 }
 
 void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
@@ -419,13 +418,13 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
     }
 
     // Create camera entity into the scene
-    Foundation::ComponentManagerPtr compMgr = GetFramework()->GetComponentManager();
-    ComponentPtr placeable = compMgr->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    ComponentPtr camera = compMgr->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic());
+    Foundation::ComponentManagerPtr compMgr = framework_->GetComponentManager();
+    ComponentPtr placeable = compMgr->CreateComponent(EC_Placeable::TypeNameStatic());
+    ComponentPtr camera = compMgr->CreateComponent(EC_OgreCamera::TypeNameStatic());
     assert(placeable && camera);
     if (!placeable || !camera)
     {
-        LogWarning("Could not create EC_OgrePlaceable of EC_OgreCamera!");
+        LogWarning("Could not create EC_Placeable of EC_OgreCamera!");
         return;
     }
 
@@ -445,7 +444,7 @@ void RexLogicModule::CreateOpenSimViewerCamera(Scene::ScenePtr scene)
 
     scene->EmitEntityCreated(entity);
     
-    OgreRenderer::EC_OgreCamera *camera_ptr = checked_static_cast<OgreRenderer::EC_OgreCamera*>(camera.get());
+    EC_OgreCamera *camera_ptr = checked_static_cast<EC_OgreCamera*>(camera.get());
     camera_ptr->SetPlaceable(placeable);
     camera_ptr->SetActive();
     camera_entity_ = entity;
@@ -461,9 +460,6 @@ void RexLogicModule::DeleteScene(const QString &name)
         LogWarning("Tried to delete scene, but it didn't exist!");
         return;
     }
-
-    if (activeScene_ && activeScene_->Name() == name)
-        activeScene_.reset(); ///\todo Check in SceneManager that scene names surely are unique. -jj.
 
     framework_->RemoveScene(name);
     assert(!framework_->HasScene(name));
@@ -551,7 +547,7 @@ void RexLogicModule::Update(f64 frametime)
         if (send_input_state)
         {
             send_input_state = false;
-            event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+            event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
                 GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
             else
@@ -598,10 +594,11 @@ Scene::EntityPtr RexLogicModule::GetCameraEntity() const
 
 Scene::EntityPtr RexLogicModule::GetEntityWithComponent(uint entity_id, const QString &component) const
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return Scene::EntityPtr();
 
-    Scene::EntityPtr entity = activeScene_->GetEntity(entity_id);
+    Scene::EntityPtr entity = scene->GetEntity(entity_id);
     if (entity && entity->GetComponent(component))
         return entity;
     else
@@ -690,16 +687,6 @@ PrimitivePtr RexLogicModule::GetPrimitiveHandler() const
     return primitive_;
 }
 
-void RexLogicModule::SetCurrentActiveScene(Scene::ScenePtr scene)
-{
-    activeScene_ = scene;
-}
-
-Scene::ScenePtr RexLogicModule::GetCurrentActiveScene() const
-{
-    return activeScene_;
-}
-
 //XXX \todo add dll exports or fix by some other way (e.g. qobjects)
 //wrappers for calling stuff elsewhere in logic module from outside (python api module)
 void RexLogicModule::SetAvatarYaw(float newyaw)
@@ -733,7 +720,6 @@ void RexLogicModule::LogoutAndDeleteWorld()
         DeleteScene("World");
 
     pending_parents_.clear();
-    activeScene_.reset();
     UUIDs_.clear();
 }
 
@@ -782,14 +768,15 @@ void RexLogicModule::UnregisterFullId(const RexUUID &fullid)
 
 void RexLogicModule::HandleObjectParent(entity_id_t entityid)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
-
-    Scene::EntityPtr entity = activeScene_->GetEntity(entityid);
+        
+    Scene::EntityPtr entity = scene->GetEntity(entityid);
     if (!entity)
         return;
 
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> child_placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    boost::shared_ptr<EC_Placeable> child_placeable = entity->GetComponent<EC_Placeable>();
     if (!child_placeable)
         return;
 
@@ -810,7 +797,7 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }
 
-    Scene::EntityPtr parent_entity = activeScene_->GetEntity(parentid);
+    Scene::EntityPtr parent_entity = scene->GetEntity(parentid);
     if (!parent_entity)
     {
         // If can't get the parent entity yet, add to pending parent list
@@ -818,17 +805,18 @@ void RexLogicModule::HandleObjectParent(entity_id_t entityid)
         return;
     }
 
-    ComponentPtr parent_placeable = parent_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
+    ComponentPtr parent_placeable = parent_entity->GetComponent(EC_Placeable::TypeNameStatic());
     child_placeable->SetParent(parent_placeable);
 }
 
 void RexLogicModule::HandleMissingParent(entity_id_t entityid)
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // Make sure we actually can get this now
-    Scene::EntityPtr parent_entity = activeScene_->GetEntity(entityid);
+    Scene::EntityPtr parent_entity = scene->GetEntity(entityid);
     if (!parent_entity)
         return;
 
@@ -862,10 +850,11 @@ void RexLogicModule::SetAllTextOverlaysVisible(bool visible)
 {
 #ifdef EC_HoveringText_ENABLED
 
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
-    Scene::EntityList entities = activeScene_->GetEntitiesWithComponent(EC_HoveringText::TypeNameStatic());
+    Scene::EntityList entities = scene->GetEntitiesWithComponent(EC_HoveringText::TypeNameStatic());
     foreach(Scene::EntityPtr entity, entities)
     {
         boost::shared_ptr<EC_HoveringText> overlay = entity->GetComponent<EC_HoveringText>();
@@ -885,7 +874,8 @@ void RexLogicModule::UpdateObjects(f64 frametime)
     using namespace OgreRenderer;
 
     //! \todo probably should not be directly in RexLogicModule
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // Damping interpolation factor, dependent on frame time
@@ -895,11 +885,11 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
     found_avatars_.clear();
 
-    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
 
-        boost::shared_ptr<EC_OgrePlaceable> ogrepos = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> ogrepos = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_NetworkPosition> netpos = entity.GetComponent<EC_NetworkPosition>();
         if (ogrepos && netpos)
         {
@@ -948,12 +938,12 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         }
 
         // General animation controller update
-        boost::shared_ptr<EC_OgreAnimationController> animctrl = entity.GetComponent<EC_OgreAnimationController>();
+        boost::shared_ptr<EC_AnimationController> animctrl = entity.GetComponent<EC_AnimationController>();
         if (animctrl)
             animctrl->Update(frametime);
 
         // Attached sound update
-        boost::shared_ptr<EC_OgrePlaceable> placeable = entity.GetComponent<EC_OgrePlaceable>();
+        boost::shared_ptr<EC_Placeable> placeable = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_AttachedSound> sound = entity.GetComponent<EC_AttachedSound>();
         if (placeable && sound)
         {
@@ -966,21 +956,22 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 void RexLogicModule::UpdateSoundListener()
 {
 #ifdef EC_SoundListener_ENABLED
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
-
+    
     // In freelook, use camera position. Otherwise use avatar position
     if (camera_controllable_->GetState() == CameraControllable::FreeLook)
     {
         EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
     else if (GetUserAvatarEntity())
     {
         EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
 #endif
 }
@@ -1001,14 +992,14 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
     Scene::EntityList all_avatars = current_scene->GetEntitiesWithComponent("EC_OpenSimPresence");
 
     // Get users position
-    boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> placeable = users_avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+    boost::shared_ptr<EC_Placeable> placeable = users_avatar->GetComponent<EC_Placeable>();
     if (!placeable)
         return;
 
     foreach (Scene::EntityPtr avatar, all_avatars)
     {
         // Update avatar name tag/hovering widget
-        placeable = avatar->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        placeable = avatar->GetComponent<EC_Placeable>();
         if (!placeable)
             continue;
 
@@ -1018,10 +1009,10 @@ void RexLogicModule::UpdateAvatarNameTags(Scene::EntityPtr users_avatar)
             continue;
 
         // We need to update the positions so that the distance is right, otherwise were always one frame behind.
-        GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>()->GetSceneNode()->_update(false, true);
+        GetCameraEntity()->GetComponent<EC_Placeable>()->GetSceneNode()->_update(false, true);
         placeable->GetSceneNode()->_update(false, true);
 
-        Vector3df camera_position = GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+        Vector3df camera_position = GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
         f32 distance = camera_position.getDistanceFrom(placeable->GetPosition());
         widget->SetCameraDistance(distance);
 #endif
@@ -1068,7 +1059,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     //divert y because after view/projection transforms, y increses upwards
     scr_y = -scr_y;
 
-    OgreRenderer::EC_OgreCamera * camera = 0;
+    EC_OgreCamera * camera = 0;
 
     Scene::ScenePtr current_scene = framework_->GetDefaultWorldScene();
     if (!current_scene.get())
@@ -1080,7 +1071,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     {
         Scene::EntityPtr entity = (*iter);
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
-        OgreRenderer::EC_OgreCamera* c = entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        EC_OgreCamera* c = entity->GetComponent<EC_OgreCamera>().get();
         if (c)
             camera = c;
 
@@ -1214,17 +1205,18 @@ Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &
 Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &params)
 {
 #ifdef EC_Highlight_ENABLED
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return Console::ResultFailure("No active scene found.");
 
     if (params.size() != 1 || (params[0] != "add" && params[0] != "remove"))
         return Console::ResultFailure("Invalid syntax. Usage: highlight(add|remove).");
 
-    for(Scene::SceneManager::iterator iter = activeScene_->begin(); iter != activeScene_->end(); ++iter)
+    for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
         Scene::Entity &entity = **iter;
-        OgreRenderer::EC_OgreMesh *ec_mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
-        OgreRenderer::EC_OgreCustomObject *ec_custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
+        EC_Mesh *ec_mesh = entity.GetComponent<EC_Mesh>().get();
+        EC_OgreCustomObject *ec_custom = entity.GetComponent<EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
         {
             if (params[0] == "add")
@@ -1294,7 +1286,8 @@ void RexLogicModule::ComponentRemoved(Scene::Entity *entity, IComponent *compone
 
 void RexLogicModule::FindActiveListener()
 {
-    if (!activeScene_)
+    Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+    if (!scene)
         return;
 
     // Iterate throught possible listeners and find the active one.
@@ -1302,7 +1295,7 @@ void RexLogicModule::FindActiveListener()
     foreach(Scene::Entity *listener, soundListeners_)
         if (listener->GetComponent<EC_SoundListener>()->IsActive())
         {
-            activeSoundListener_ = activeScene_->GetEntity(listener->GetId());
+            activeSoundListener_ = scene->GetEntity(listener->GetId());
             break;
         }
 */

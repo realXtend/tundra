@@ -15,6 +15,8 @@ import PythonQt.QtGui
 from PythonQt.QtGui import QQuaternion
 from PythonQt.QtGui import QVector3D
 
+from PythonQt.private import EC_Ruler
+
 try:
     qapp = PythonQt.Qt.QApplication.instance()
 except:
@@ -54,8 +56,10 @@ class Manipulator:
     CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
     CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
-    MANIPULATORORIENTATION = QQuaternion(1, 0, 0, 0)
+    MANIPULATORORIENTATION = QQuaternion(1, 1, 0, 0)
     MANIPULATORSCALE = QVector3D(1, 1, 1)
+
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
     
     MATERIALNAMES = None
     
@@ -93,12 +97,20 @@ class Manipulator:
     def createManipulator(self):
         if self.manipulator is None and self.usesManipulator:
             ent = naali.createMeshEntity(self.MANIPULATOR_MESH_NAME, 606847240) 
+            ruler = ent.GetOrCreateComponentRaw("EC_Ruler")
+            ruler.SetType(self.MANIPULATOR_RULER_TYPE)
+            ruler.SetVisible(True)
             return ent 
 
     def stopManipulating(self):
         self.grabbed_axis = None
         self.grabbed = False
         remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
+        try:
+            self.manipulator.ruler.EndDrag()
+        except:
+            # TODO fix stopManipulating usage so it isn't called when manipulators aren't initialised properly yet
+            pass
     
     def initVisuals(self):
         #r.logInfo("initVisuals in manipulator " + str(self.NAME))
@@ -111,6 +123,14 @@ class Manipulator:
         if self.usesManipulator and len(ents)>0:
             self.moveTo(ents)
             self.manipulator.placeable.Scale = self.MANIPULATORSCALE
+            try:
+                r = self.manipulator.ruler
+            except:
+                print "no ruler yet O.o"
+            else:
+                r.SetType(self.MANIPULATOR_RULER_TYPE)
+                r.SetVisible(True)
+                r.UpdateRuler()
             if self.controller.useLocalTransform:
                 # first according object, then manipulator orientation - otherwise they go wrong order
                 self.manipulator.placeable.Orientation = ents[0].placeable.Orientation * self.MANIPULATORORIENTATION
@@ -139,6 +159,8 @@ class Manipulator:
                 if self.manipulator is not None:
                     self.manipulator.placeable.Scale = QVector3D(0.0, 0.0, 0.0) #ugly hack
                     self.manipulator.placeable.Position = QVector3D(0.0, 0.0, 0.0)#another ugly hack
+                    self.manipulator.ruler.SetVisible(False)
+                    self.manipulator.ruler.UpdateRuler()
                 
                 self.grabbed_axis = None
                 self.grabbed = False
@@ -147,7 +169,7 @@ class Manipulator:
             except RuntimeError, e:
                 r.logDebug("hideManipulator failed")
     
-    def initManipulation(self, ent, results):
+    def initManipulation(self, ent, results, ents):
         if self.usesManipulator:
             if ent is None:
                 return
@@ -173,9 +195,15 @@ class Manipulator:
                     self.grabbed = False
                     
                 if self.grabbed_axis != None:
+                    self.manipulator.ruler.SetAxis(self.grabbed_axis)
+                    self.manipulator.ruler.SetVisible(True)
+                    if ents[0]:
+                        placeable = ents[0].placeable
+                        self.manipulator.ruler.StartDrag(placeable.Position, placeable.Orientation, placeable.Scale)
                     set_custom_cursor(self.CURSOR_HOLD_SHAPE)
                 else:
                     remove_custom_cursor(self.CURSOR_HOLD_SHAPE)
+                    self.manipulator.ruler.SetVisible(False)
 
     def setManipulatorScale(self, ents):
         if ents is None or len(ents) == 0: 
@@ -224,6 +252,12 @@ class Manipulator:
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, changevec)
                 self.controller.soundRuler(ent)
+            if not self.manipulator is None:
+                if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
+                    placeable = ents[0].placeable
+                    self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+
+                self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)
@@ -260,6 +294,7 @@ class Manipulator:
 class MoveManipulator(Manipulator):
     NAME = "MoveManipulator"
     MANIPULATOR_MESH_NAME = "axis1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Translation
     
     GREENARROW = [0]
     REDARROW = [1]
@@ -300,6 +335,7 @@ class MoveManipulator(Manipulator):
 class ScaleManipulator(Manipulator):
     NAME = "ScaleManipulator"
     MANIPULATOR_MESH_NAME = "scale1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Scale
 
     MATERIALNAMES = {
         0: "axis_green",
@@ -341,6 +377,7 @@ class FreeMoveManipulator(Manipulator):
 class RotationManipulator(Manipulator):
     NAME = "RotationManipulator"
     MANIPULATOR_MESH_NAME = "rotate1.mesh"
+    MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
     
     MATERIALNAMES = {
         0: "axis_green",

@@ -3,7 +3,7 @@
  *
  *  @file   EC_Billboard.h
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
  */
 
 #ifndef incl_EC_Billboard_EC_BillBoard_h
@@ -49,7 +49,7 @@ Registered by Naali::InWorldChatModule.
 
 Does not emit any actions.
 
-<b>Depends on components OgrePlaceable</b>.  
+<b>Depends on components Placeable</b>.  
 </table>
 
 */

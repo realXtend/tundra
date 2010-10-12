@@ -105,7 +105,10 @@ namespace UiServices
 
         // Add to internal control list
         if (!all_proxy_widgets_in_scene_.contains(widget))
+        {
             all_proxy_widgets_in_scene_.append(widget);
+            connect(widget, SIGNAL(destroyed(QObject*)), SLOT(ProxyDestroyed(QObject*)));
+        }
 
         // \todo Find a proper solution to the problem
         // Proxy widget doesn't get input without main frame resisizing for unknow reason.
@@ -126,17 +129,10 @@ namespace UiServices
     void InworldSceneController::AddWidgetToMenu(QWidget *widget, const QString &name, const QString &menu, const QString &icon)
     {
         ///\todo This string comparison is awful, get rid of this.
-        //if (name == "Inventory")
         if ( name.contains("inv", Qt::CaseInsensitive))
         {
             UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
             control_panel_manager_->GetPersonalWidget()->SetInventoryWidget(uiproxy);
-        }
-        //else if (name == "Avatar Editor")
-        else if ( name.contains("avatar", Qt::CaseInsensitive) )
-        {
-            UiProxyWidget *uiproxy = dynamic_cast<UiProxyWidget *>(widget->graphicsProxyWidget());
-            control_panel_manager_->GetPersonalWidget()->SetAvatarWidget(uiproxy);
         }
         else
             menu_manager_->AddMenuItem(widget->graphicsProxyWidget(), name, menu, icon);
@@ -226,7 +222,7 @@ namespace UiServices
             communication_widget_->UpdateImWidget(im_proxy);
     }
 
-    void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed) const
+    void InworldSceneController::ApplyNewProxySettings(int new_opacity, int new_animation_speed)
     {
         foreach (QGraphicsProxyWidget *widget, all_proxy_widgets_in_scene_)
         {
@@ -409,6 +405,20 @@ namespace UiServices
         docking_widget_proxy_->setVisible(false);
     }
 
+    void InworldSceneController::ProxyDestroyed(QObject *obj)
+    {
+        if (!obj)
+            return;
+        QGraphicsProxyWidget *destroyed = 0;
+        foreach (QGraphicsProxyWidget *widget, all_proxy_widgets_in_scene_)
+        {
+            if (widget == obj)
+                destroyed = widget;
+        }
+        if (destroyed)
+            all_proxy_widgets_in_scene_.removeAll(destroyed);
+    }
+
     void InworldSceneController::DeleteCallingWidgetOnClose()
     {
         QGraphicsProxyWidget *proxy = dynamic_cast<QGraphicsProxyWidget *>(sender());
@@ -424,6 +434,11 @@ namespace UiServices
             return;
         if (widget->scene() == inworld_scene_)
             return;
+        if (name == "Console")
+        {
+            inworld_scene_->addItem(widget);
+            return;
+        }
 
         inworld_scene_->addItem(widget);
         widget->setPos(50,250);

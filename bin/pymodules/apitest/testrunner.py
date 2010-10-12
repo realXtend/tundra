@@ -173,7 +173,7 @@ class TestDynamicProperties(TestRunner):
             yield "failure, avatar didn't appear"
             return
 
-        print 'dynamic property stuff:'
+        print 'dynamic propety stuff:'
         ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent

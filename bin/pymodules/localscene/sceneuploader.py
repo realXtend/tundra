@@ -31,6 +31,7 @@ from constants import MESH_MODEL_FOLDER, MATERIAL_FOLDER, TEXTURE_FOLDER, TEMP_U
 class SceneUploader:
 
     def __init__(self, cap_url, controller):
+        self.controller = controller
         self.host = None
         self.port = None
         self.path = None
@@ -95,7 +96,9 @@ class SceneUploader:
         #self.progressBar.clear()
         
     def handleErrors(self, d):
-        #print d
+        if d==None:
+            self.controller.queue.put(('scene upload', 'server sent malformed responce'))
+            return
         if not d.has_key('error'):
             self.controller.queue.put(('scene upload', 'server sent malformed responce'))
         if(d['error']!='None'):

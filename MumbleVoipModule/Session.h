@@ -93,6 +93,7 @@ namespace MumbleVoip
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally
+        QString server_address_;
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);

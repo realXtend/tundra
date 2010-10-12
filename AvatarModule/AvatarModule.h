@@ -7,6 +7,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
 #include "Input.h"
+#include "QtInputKeyEvent.h"
 #include "SceneManager.h"
 
 #include "WorldStream.h"
@@ -17,6 +18,7 @@
 
 namespace Avatar
 {
+    class AvatarSceneManager;
     class AvatarHandler;
     class AvatarControllable;
     class AvatarEditor;
@@ -51,6 +53,10 @@ namespace Avatar
         //! Populate service_category_identifiers_
         void SubscribeToEventCategories();
 
+        //! Handle our key context input
+        void KeyPressed(KeyEvent *key);
+        void KeyReleased(KeyEvent *key);
+
     public slots:
         Scene::EntityPtr GetAvatarEntity(const RexUUID &uuid);
         Scene::EntityPtr GetAvatarEntity(entity_id_t entity_id);
@@ -72,11 +78,12 @@ namespace Avatar
         QMap<QString, event_category_id_t> service_category_identifiers_;
 
         //! AvatarModules input context
-        InputContextPtr input_context_;
+        InputContextPtr avatar_context_;
 
         AvatarHandlerPtr avatar_handler_;
         AvatarControllablePtr avatar_controllable_;
         AvatarEditorPtr avatar_editor_;
+        AvatarSceneManager *scene_manager_;
 
         ProtocolUtilities::WorldStreamPtr world_stream_;
 

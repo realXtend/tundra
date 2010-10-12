@@ -311,7 +311,9 @@ namespace Communications
     public:
         
         virtual ~ServiceInterface() {};
-        static ServiceInterface* Instance();
+
+    public slots:
+//        static ServiceInterface* Instance();
 
         ///! \todo use WeakPtr instead ?
         virtual InWorldVoice::SessionInterface* InWorldVoiceSession() const = 0;
@@ -332,7 +334,7 @@ namespace Communications
 
     signals:
         void InWorldVoiceAvailable();
-        void InWorldVoiceUnvailable();
+        void InWorldVoiceUnavailable();
         void InWorldChatAvailable();
         void InWorldChatUnavailable();
         //void PrivateChatRequest(PrivateChat::Session session);

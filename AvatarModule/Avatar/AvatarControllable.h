@@ -1,7 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
-#ifndef incl_RexLogic_AvatarControllable_h
-#define incl_RexLogic_AvatarControllable_h
+#ifndef incl_Avatar_AvatarControllable_h
+#define incl_Avatar_AvatarControllable_h
 
 #include "RexTypes.h"
 #include "InputEvents.h"

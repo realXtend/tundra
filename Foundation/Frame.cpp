@@ -6,7 +6,7 @@
  * 
  *  Frame object can be used to:
  *  -retrieve signal every time frame has been processed
- *  -etrieve the wall clock time of Framework
+ *  -retrieve the wall clock time of Framework
  *  -to trigger delayed signals when spesified amount of time has elapsed.
  */
 

@@ -9,6 +9,7 @@
 #include "EntityComponent/EC_AvatarAppearance.h"
 #include "EntityComponent/EC_OpenSimAvatar.h"
 #include "EntityComponent/EC_Controllable.h"
+#include "EntityComponent/EC_Avatar.h"
 
 #include "EC_NetworkPosition.h"
 #ifdef EC_HoveringWidget_ENABLED
@@ -16,50 +17,62 @@
 #endif
 
 #include "Avatar/AvatarHandler.h"
-#include "Avatar/AvatarEditor.h"
 #include "Avatar/AvatarControllable.h"
+#include "AvatarEditing/AvatarEditor.h"
+#include "AvatarEditing/AvatarSceneManager.h"
 
 namespace Avatar
 {
     static std::string module_name = "AvatarModule";
     const std::string &AvatarModule::NameStatic() { return module_name; }
 
-	AvatarModule::AvatarModule() :
-		QObject(),
-		IModule(module_name)
-	{
+    AvatarModule::AvatarModule() :
+        QObject(),
+        IModule(module_name),
+        scene_manager_(0)
+    {
         world_stream_.reset();
         uuid_to_local_id_.clear();
-	}
+    }
 
-	AvatarModule::~AvatarModule()
-	{
-	}
+    AvatarModule::~AvatarModule()
+    {
+    }
 
-	void AvatarModule::Load()
-	{
-		DECLARE_MODULE_EC(EC_AvatarAppearance);
-		DECLARE_MODULE_EC(EC_OpenSimAvatar);
-		DECLARE_MODULE_EC(EC_NetworkPosition);
-		DECLARE_MODULE_EC(EC_Controllable);
+    void AvatarModule::Load()
+    {
+        DECLARE_MODULE_EC(EC_AvatarAppearance);
+        DECLARE_MODULE_EC(EC_OpenSimAvatar);
+        DECLARE_MODULE_EC(EC_NetworkPosition);
+        DECLARE_MODULE_EC(EC_Controllable);
+        DECLARE_MODULE_EC(EC_Avatar);
 #ifdef EC_HoveringWidget_ENABLED
-		DECLARE_MODULE_EC(EC_HoveringWidget);
+        DECLARE_MODULE_EC(EC_HoveringWidget);
 #endif
-	}
+    }
 
-	void AvatarModule::Initialize()
-	{
+    void AvatarModule::Initialize()
+    {
         event_query_categories_ << "Framework" << "Scene" << "NetworkState" << "Avatar" << "Resource" << "Asset" << "Inventory" << "Input" << "Action";
 
         avatar_handler_ = AvatarHandlerPtr(new AvatarHandler(this));
         avatar_controllable_ = AvatarControllablePtr(new AvatarControllable(this));
         avatar_editor_ = AvatarEditorPtr(new AvatarEditor(this));
-	}
+        scene_manager_ = new AvatarSceneManager(this, avatar_editor_.get());
+    }
 
-	void AvatarModule::PostInitialize()
-	{
-		SubscribeToEventCategories();
-	}
+    void AvatarModule::PostInitialize()
+    {
+        SubscribeToEventCategories();
+        scene_manager_->InitScene();
+
+        avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
+        if (avatar_context_)
+        {
+            connect(avatar_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(KeyPressed(KeyEvent*)));
+            connect(avatar_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), SLOT(KeyReleased(KeyEvent*)));
+        }
+    }
 
     void AvatarModule::Uninitialize()
     {
@@ -68,47 +81,50 @@ namespace Avatar
         avatar_editor_.reset();
         world_stream_.reset();
         uuid_to_local_id_.clear();
+
+        SAFE_DELETE(scene_manager_);
     }
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(const RexUUID &uuid)
-	{
-	    if (uuid_to_local_id_.contains(uuid))
+    {
+        if (uuid_to_local_id_.contains(uuid))
             return GetAvatarEntity(uuid_to_local_id_[uuid]);
         else
             return Scene::EntityPtr();
-	}
+    }
 
     Scene::EntityPtr AvatarModule::GetAvatarEntity(entity_id_t entity_id)
-	{
+    {
         Scene::ScenePtr current_scene = GetFramework()->GetDefaultWorldScene();
         if (!current_scene)
             return Scene::EntityPtr();
 
         Scene::EntityPtr entity = current_scene->GetEntity(entity_id);
-        if (entity && entity->GetComponent("EC_OpenSimAvatar"))
+        // Allow also EC_Avatar, the new attribute-based component
+        if (entity && ((entity->GetComponent("EC_OpenSimAvatar")) || (entity->GetComponent("EC_Avatar"))))
             return entity;
         else
             return Scene::EntityPtr();
-	}
+    }
 
     void AvatarModule::RegisterFullId(const RexUUID &full_uuid, entity_id_t entity_id)
-	{
+    {
         if (!uuid_to_local_id_.contains(full_uuid))
         {
-		    uuid_to_local_id_[full_uuid] = entity_id;
+            uuid_to_local_id_[full_uuid] = entity_id;
             Events::SceneRegisterEntityData data(full_uuid, entity_id);
             GetFramework()->GetEventManager()->SendEvent("Avatar", Events::EVENT_REGISTER_UUID_TO_LOCALID, &data);
         }
-	}
+    }
 
     void AvatarModule::UnregisterFullId(const RexUUID &full_uuid)
-	{
-		if (uuid_to_local_id_.remove(full_uuid) > 0)
+    {
+        if (uuid_to_local_id_.remove(full_uuid) > 0)
         {
             Events::SceneRegisterEntityData data(full_uuid);
             GetFramework()->GetEventManager()->SendEvent("Avatar", Events::EVENT_UNREGISTER_UUID_TO_LOCALID, &data);
         }
-	}
+    }
 
     void AvatarModule::Update(f64 frametime)
     {
@@ -116,14 +132,14 @@ namespace Avatar
         avatar_controllable_->AddTime(frametime);
     }
 
-	bool AvatarModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
-	{
+    bool AvatarModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
+    {
         bool handled = false;
         QString category = service_category_identifiers_.keys().value(
             service_category_identifiers_.values().indexOf(category_id));
         
-		if (category == "Framework" && event_id == Foundation::WORLD_STREAM_READY)
-	    {
+        if (category == "Framework" && event_id == Foundation::WORLD_STREAM_READY)
+        {
             ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
             if (event_data)
                 world_stream_ = event_data->WorldStream;
@@ -133,7 +149,6 @@ namespace Avatar
             switch (event_id)
             {
                 case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
-                case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                 {
                     world_stream_.reset();
                     uuid_to_local_id_.clear();
@@ -189,14 +204,31 @@ namespace Avatar
         {
             handled = avatar_handler_->HandleResourceEvent(event_id, data);
         }
-		return handled;
-	}
+        return handled;
+    }
 
-	void AvatarModule::SubscribeToEventCategories()
-	{
-		service_category_identifiers_.clear();
-		foreach (QString category, event_query_categories_)
-			service_category_identifiers_[category] = GetFramework()->GetEventManager()->QueryEventCategory(category.toStdString());
+    void AvatarModule::SubscribeToEventCategories()
+    {
+        service_category_identifiers_.clear();
+        foreach (QString category, event_query_categories_)
+            service_category_identifiers_[category] = GetFramework()->GetEventManager()->QueryEventCategory(category.toStdString());
+    }
+
+    void AvatarModule::KeyPressed(KeyEvent *key)
+    {
+        if (key->IsRepeat())
+            return;
+
+        if (key->HasCtrlModifier() && key->keyCode == Qt::Key_A)
+        {
+            scene_manager_->ToggleScene();
+            return;
+        }
+    }
+
+    void AvatarModule::KeyReleased(KeyEvent *key)
+    {
+    
     }
 }
 

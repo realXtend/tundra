@@ -46,10 +46,25 @@ Environment::Environment(EnvironmentModule *owner) :
     sunPhase_(0.0),
     sunAngVelocity_(RexTypes::Vector3())
   
-{}
+{
+
+#ifdef CAELUM
+    caelumComponents_ = Caelum::CaelumSystem::CAELUM_COMPONENTS_NONE;
+    caelumComponents_ = caelumComponents_ |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SKY_DOME |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_MOON |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SUN |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_POINT_STARFIELD |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_SCREEN_SPACE_FOG |
+        Caelum::CaelumSystem::CAELUM_COMPONENT_GROUND_FOG;
+
+#endif
+    
+}
 
 Environment::~Environment()
 {
+    
     if ( activeEnvEntity_.lock().get() != 0)
     {
         Scene::EntityPtr entity = activeEnvEntity_.lock();
@@ -68,41 +83,71 @@ Environment::~Environment()
 
     activeEnvEntity_.reset();
     owner_ = 0;
-    activeFogComponent_ = 0;
+    
 }
 
-OgreRenderer::EC_OgreEnvironment* Environment::GetEnvironmentComponent()
+EC_OgreEnvironment* Environment::GetEnvironmentComponent()
 {
+
     if (activeEnvEntity_.expired())
         return 0;
     
-    OgreRenderer::EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<OgreRenderer::EC_OgreEnvironment>().get();  
+    EC_OgreEnvironment* ec = activeEnvEntity_.lock()->GetComponent<EC_OgreEnvironment>().get();  
+    
     return ec;
     
 }
 
-
+/*
 Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
 {
     return activeEnvEntity_;
 }
+*/
 
 void Environment::CreateEnvironment()
 {
   
     Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     Scene::EntityPtr entity = active_scene->CreateEntity(active_scene->GetNextFreeId());
-    
+    active_scene->EmitEntityCreated(entity);
+    activeEnvEntity_ = entity;
+
     // Creates Caelum component!!
     entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent("EC_OgreEnvironment"));
     
     // Creates default fog component
-    entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic()));
-    activeFogComponent_ = entity->GetComponent<EC_Fog >().get();
     
-    active_scene->EmitEntityCreated(entity);
-    activeEnvEntity_ = entity;
+    // Does there exist allready Enviroment-entity?
+    //Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
     
+    Scene::Entity* enviroment = active_scene->GetEntityByName("FogEnvironment").get();
+    
+    if (enviroment != 0 )
+    {
+        owner_->RemoveLocalEnvironment();
+        
+        // Has it allready EC_Fog ?
+        if ( !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
+            enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
+       
+       
+    }
+    else
+    {
+        enviroment =  active_scene->GetEntityByName("LocalEnvironment").get();
+        if ( enviroment == 0)
+        {
+            // Create LocalEnvironment- entity
+            enviroment = owner_->CreateEnvironmentEntity("FogEnvironment", EC_Fog::TypeNameStatic()).get();
+        }
+       
+        if ( enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
+            enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
+    
+      
+    }
+
 }
 
 bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData *data)
@@ -135,13 +180,13 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
         dayphase = -0.5 + (sunPhase_ / PI);
 
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return false; 
 
     // Update the sunlight direction and angle velocity.
     ///\note Not needed anymore as we use Caelum now.
-    //OgreRenderer::EC_OgreEnvironment &env = *checked_static_cast<OgreRenderer::EC_OgreEnvironment*>
+    //EC_OgreEnvironment &env = *checked_static_cast<EC_OgreEnvironment*>
     //    (component.get());
     //env.SetSunDirection(-sunDirection_);
 
@@ -155,43 +200,56 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
 
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
-    if ( activeFogComponent_ == 0)
-        return;
+   EC_Fog *fog = GetEnvironmentFog();
 
-    activeFogComponent_->startDistanceAttr.Set(fogStart,AttributeChange::Local);
-    activeFogComponent_->endDistanceAttr.Set(fogEnd, AttributeChange::Local);
-    activeFogComponent_->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Local);
-
-    emit GroundFogAdjusted(fogStart, fogEnd, color);
+   if ( fog == 0)
+       return;
+    
+   fog->startDistanceAttr.Set(fogStart,AttributeChange::Default);
+   fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
+   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
+   
+   emit GroundFogAdjusted(fogStart, fogEnd, color);
 }
 
 void Environment::SetFogColorOverride(bool enabled)
 {
-    if ( activeFogComponent_ == 0)
-        return;
-    
-    activeFogComponent_->useAttr.Set(enabled, AttributeChange::Local);
+   
+   EC_Fog *fog = GetEnvironmentFog();
 
+   if ( fog == 0)
+       return;
+
+   fog->useAttr.Set(enabled, AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
+   
     
 }
 
 bool Environment::GetFogColorOverride() 
 {
-    if ( activeFogComponent_ == 0)
-        return false;
-    
-   return activeFogComponent_->useAttr.Get();
+     
+   EC_Fog *fog = GetEnvironmentFog();
 
+   if ( fog == 0)
+       return false;
 
+   return fog->useAttr.Get();
+   
     
 }
 
 QVector<float> Environment::GetFogGroundColor()
 {
-    if ( activeFogComponent_ == 0)
-        return QVector<float>();
 
-    Ogre::ColourValue color = activeFogComponent_->GetColorAsOgreValue();
+   EC_Fog *fog = GetEnvironmentFog();
+
+   if ( fog == 0)
+    return QVector<float>();
+
+
+    Ogre::ColourValue color = fog->GetColorAsOgreValue();
     QVector<float> vec; 
     vec<<color[0]<<color[1]<<color[2];
     return vec;
@@ -202,10 +260,12 @@ QVector<float> Environment::GetFogGroundColor()
 
 void Environment::Update(f64 frametime)
 {
+    PROFILE(Environment_Update);
+
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
 
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
@@ -252,18 +312,16 @@ void Environment::Update(f64 frametime)
     // Ground fog value. 
     // Caelum calculates this value depending of time ( sun position? )
     Ogre::ColourValue fogColor;
+    EC_Fog* fog = GetEnvironmentFog();
 
 #ifdef CAELUM
        fogColor = caelumSystem->getGroundFog()->getColour();
+       if ( fog != 0 && fog->useAttr.Get() )
+           fogColor = fog->GetColorAsOgreValue();
 #else
-    if ( activeFogComponent_ != 0)
-        fogColor = activeFogComponent_->GetColorAsOgreValue();
+    if ( fog != 0)
+        fogColor = fog->GetColorAsOgreValue();
 #endif 
-
-    if ( activeFogComponent_ != 0 && activeFogComponent_->useAttr.Get())
-    {
-       fogColor = activeFogComponent_->GetColorAsOgreValue();
-    }
 
     if ( underWater )
     {
@@ -296,17 +354,17 @@ void Environment::Update(f64 frametime)
             float fogStart = 100.f;
             float fogEnd = 2000.f;
             Ogre::FogMode mode = Ogre::FOG_LINEAR;
-            if ( activeFogComponent_ != 0)
+            if ( fog != 0 )
             {
-                fogStart = activeFogComponent_->startDistanceAttr.Get();
-                fogEnd = activeFogComponent_->endDistanceAttr.Get();
-                mode = static_cast<Ogre::FogMode>(activeFogComponent_->modeAttr.Get());
+                fogStart = fog->startDistanceAttr.Get();
+                fogEnd = fog->endDistanceAttr.Get();
+                mode = static_cast<Ogre::FogMode>(fog->modeAttr.Get());
             }
           
             ClampFog(fogStart, fogEnd, cameraFarClip);
-//#ifdef CAELUM
-//            caelumSystem_->forceSubcomponentVisibilityFlags(caelumComponents_);
-//#endif
+#ifdef CAELUM
+            caelumSystem->forceSubcomponentVisibilityFlags(caelumComponents_);
+#endif
             sceneManager->setFog(mode, fogColor, 0.001f, fogStart, fogEnd);
             viewport->setBackgroundColour(fogColor);
             camera->setFarClipDistance(cameraFarClip);
@@ -316,10 +374,36 @@ void Environment::Update(f64 frametime)
 
 }
 
+EC_Fog* Environment::GetEnvironmentFog()
+{
+    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::Entity* entity = active_scene->GetEntityByName("FogEnvironment").get();
+    
+    if (entity != 0 )
+    {
+        owner_->RemoveLocalEnvironment();
+        if ( !entity->HasComponent(EC_Fog::TypeNameStatic()) )
+            entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic()));
+    }
+    else
+    {
+        entity =  active_scene->GetEntityByName("LocalEnvironment").get();
+        if ( entity == 0)
+            return 0;
+    }
+  
+    
+    EC_Fog* fog = entity->GetComponent<EC_Fog >().get();
+    
+    return fog;
+    
+
+}
+
 bool Environment::IsCaelum()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return false;
         
@@ -329,48 +413,55 @@ bool Environment::IsCaelum()
 
 void Environment::SetGroundFogColor(const QVector<float>& color)
 {
-   if ( activeFogComponent_ == 0)
-        return;
+   EC_Fog *fog = GetEnvironmentFog();
 
-   activeFogComponent_->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Local);
- 
+   if ( fog == 0)
+    return;
+
+   fog->colorAttr.Set(Color(color[0], color[1], color[2], 1.0), AttributeChange::Default);
+   //fog->ComponentChanged(AttributeChange::Default);
 }
 
 
 
 void Environment::SetGroundFogDistance(float fogStart, float fogEnd)
 {
-    if ( activeFogComponent_ == 0)
-        return;
+   EC_Fog *fog = GetEnvironmentFog();
 
-    activeFogComponent_->startDistanceAttr.Set(fogStart, AttributeChange::Local);
-    activeFogComponent_->endDistanceAttr.Set(fogEnd, AttributeChange::Local);
-     
+   if ( fog == 0)
+    return;
+
+    fog->startDistanceAttr.Set(fogStart, AttributeChange::Default);
+    fog->endDistanceAttr.Set(fogEnd, AttributeChange::Default);
+    //fog->ComponentChanged(AttributeChange::Default);
 }
 
 float Environment::GetGroundFogStartDistance()
 {
+   EC_Fog *fog = GetEnvironmentFog();
+
+   if ( fog == 0)
+    return 0.f;
     
-    if ( activeFogComponent_ == 0)
-        return 0.f;
-    
-    return activeFogComponent_->startDistanceAttr.Get();
+    return fog->startDistanceAttr.Get();
 
 }
 
 float Environment::GetGroundFogEndDistance()
 {
-    if ( activeFogComponent_ == 0)
-        return 0.f;
-    
-    return activeFogComponent_->endDistanceAttr.Get();
+   EC_Fog *fog = GetEnvironmentFog();
+
+   if ( fog == 0)
+    return 0.f;
+ 
+    return fog->endDistanceAttr.Get();
 
 }
 
 void Environment::SetSunDirection(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
     // Assure that we do not given too near of zero vector values, a la HACK. 
@@ -387,7 +478,7 @@ void Environment::SetSunDirection(const QVector<float>& vector)
 QVector<float> Environment::GetSunDirection() 
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(3);
 
@@ -401,7 +492,7 @@ QVector<float> Environment::GetSunDirection()
 void Environment::SetSunColor(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
@@ -421,7 +512,7 @@ void Environment::SetSunColor(const QVector<float>& vector)
 QVector<float> Environment::GetSunColor()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(4);
 
@@ -435,7 +526,7 @@ QVector<float> Environment::GetSunColor()
 QVector<float> Environment::GetAmbientLight()
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return QVector<float>(3);
 
@@ -450,7 +541,7 @@ QVector<float> Environment::GetAmbientLight()
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
     
-    OgreRenderer::EC_OgreEnvironment* env = GetEnvironmentComponent();
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 

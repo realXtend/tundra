@@ -4,6 +4,7 @@
 #define incl_ECEditorModule_ECComponentEditor_h
 
 #include "ForwardDefines.h"
+#include "AttributeChangeType.h"
 
 #include <QObject>
 #include <map>
@@ -18,12 +19,11 @@ namespace ECEditor
     class ECAttributeEditorBase;
 
     //! ECComponentEditor is responsible to create the all attribute editors for each component (Note! each component must contain same attributes).
-    /*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttribute object
+    /*! ECComponentEditor will only accept same type of components. If the attribute type is supported component editor will create ECAttributeEditor object
      *  and insert it to ECBrower object.
-     *  ECAttributeEditor instance for that attribute type.
      *  \ingroup ECEditorModuleClient.
      */
-    class ECComponentEditor: public QObject
+    class ECComponentEditor : public QObject
     {
         Q_OBJECT
     public:
@@ -46,18 +46,16 @@ namespace ECEditor
         //! Remove component from the editor.
         void RemoveComponent(IComponent *component);
 
-        void UpdateEditorUI();
+        //void UpdateEditorUI();
 
     public slots:
-        //! W
-        //! \bug When user reinitialize the attribute editor's properties the order will go invalid.
-        void AttributeEditorUpdated(const std::string &attributeName);
+        //! slot listenes if attribute editor has been reinitialized and need to added a new QProperty to brower.
+        void OnEditorChanged(const QString &name);
 
     private slots:
-        //! When component's state has been changed, this method is called.
-        //! Method will check what component's attribute value has been changed
-        //! and will ask the ECAttributeEditor to update it's fields to new attribute valeus (UpdateEditorUI).
-        void ComponentChanged();
+        //! When component's attribute has been changed, this method is called.
+        //! Method will ask the ECAttributeEditor to update it's fields to new attribute values (UpdateEditorUI).
+        void AttributeChanged(IAttribute* attribute, AttributeChange::Type change);
 
     private:
         //! Method is trying to find the right attribute type by using a dynamic_cast and if attribute is succefully casted 
@@ -73,7 +71,7 @@ namespace ECEditor
 
         //! Create new attribute editors for spesific component.
         //! @param component Compoent that we need to use, to get all attributes that we want to edit.
-        void CreateAttriubteEditors(ComponentPtr component);
+        void CreateAttributeEditors(ComponentPtr component);
 
         void UpdateGroupPropertyText();
 

@@ -105,9 +105,6 @@ namespace UiServices
         //! UiStateMachine pointer
         CoreUi::UiStateMachine *ui_state_machine_;
 
-        //! Service getter, provides functions to access Naali services
-        CoreUi::ServiceGetter *service_getter_;
-
         //! InworldSceneController pointer
         InworldSceneController *inworld_scene_controller_;
 

@@ -18,6 +18,8 @@ namespace Foundation
 
 namespace RexLogic
 {
+	class CameraControl;
+
     class CameraZoomEvent : public IEventData
     {
     public:
@@ -188,6 +190,8 @@ namespace RexLogic
 
         //! Boundary box maximum corner point.
         Vector3df boundaryBoxMax_;
+
+		CameraControl *camera_control_widget_;
     };
 }
 

@@ -80,7 +80,7 @@ namespace RexLogic
         
     public slots:
         //! Trigger EC sync because of component attributes changing
-        void OnComponentChanged(IComponent* comp, AttributeChange::Type change);
+        void OnAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
         //! Trigger EC sync because of components added/removed to entity
         void OnEntityChanged(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
         //! When rex prim propeties have changed, send update to sim
@@ -214,8 +214,6 @@ namespace RexLogic
         typedef std::set<entity_id_t> EntityIdSet;
         //! entities with local EC changes
         EntityIdSet local_dirty_entities_;
-        //! entities with EC changes from the network
-        EntityIdSet network_dirty_entities_;
     };
 }
 #endif

@@ -24,6 +24,7 @@ function onChanged() {
 
 print("2");
 
+// Todo: OnChanged() is deprecated
 component.OnChanged.connect(onChanged);
 //onChanged(); //once to init
 
