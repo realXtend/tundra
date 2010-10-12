@@ -323,7 +323,7 @@ namespace Scene
             \param type Execution type.
         */
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
-
+        
     private:
         Q_DISABLE_COPY(SceneManager);
 
