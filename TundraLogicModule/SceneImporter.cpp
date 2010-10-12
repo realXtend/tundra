@@ -57,7 +57,7 @@ SceneImporter::~SceneImporter()
 }
 
 Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
-    Transform worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets)
+    const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets)
 {
     if (!scene)
     {
@@ -258,7 +258,7 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
 }
 
 bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
-    AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
+    const Transform &worldtransform, AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
 {
     if (!scene)
     {
@@ -348,8 +348,11 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         TundraLogicModule::LogInfo("Creating entities");
-        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
-        
+
+        Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
+            DEGTORAD * worldtransform.rotation.z);
+//        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
+        ProcessNodeForCreation(scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
     }
     catch (Exception& e)
     {
