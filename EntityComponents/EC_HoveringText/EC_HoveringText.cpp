@@ -49,7 +49,10 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
     positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
     gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
-    gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f))
+    gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
+    borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,1.0f)),
+    borderThicknessAttr(this, "Border Thickness", 0.0)
+
 
 
 {
@@ -384,9 +387,19 @@ QPixmap EC_HoveringText::GetTextPixmap()
     else
         painter.setBrush(backgroundColor_);
 
+    QColor borderCol;
+    Color col = borderColorAttr.Get();
+    borderCol.setRgbF(col.r, col.g, col.b, col.a);
+
+
+    
     // Draw background rect
-    painter.setPen(QColor(255,255,255,150));
+    QPen borderPen;
+    borderPen.setColor(borderCol);
+    borderPen.setWidthF(borderThicknessAttr.Get());
+    painter.setPen(borderPen);
     painter.drawRoundedRect(rect, 20.0, 20.0);
+    
 
     // Draw text
     painter.setPen(textColor_);
@@ -446,7 +459,6 @@ void EC_HoveringText::AttributeUpdated(IComponent *component, IAttribute *attrib
 		colEnd.setRgbF(col.r, col.g, col.b);
 		SetBackgroundGradient(colStart, colEnd);
 	}
-
 
 	// Repaint the new text with new appearance.
 	ShowMessage(textAttr.Get());
