@@ -582,8 +582,9 @@ namespace OgreRenderer
 
         bool applyFPSLimit = true;
 
-#ifdef USE_D3D9_SUBSURFACE_BLIT
         NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+
+#ifdef USE_D3D9_SUBSURFACE_BLIT
 
         if (view->IsViewDirty() || resized_dirty_)
         {
@@ -710,21 +711,18 @@ namespace OgreRenderer
                 resized_dirty_--;
         }
 #else
-
-        NaaliGraphicsView *graphicsView = framework_->Ui()->GraphicsView();
-
-        if (graphicsView->IsViewDirty())
+        if (view->IsViewDirty())
         {
             PROFILE(Renderer_Render_QtBlit);
 
-            QImage *backBuffer = graphicsView->BackBuffer();
+            QImage *backBuffer = view->BackBuffer();
             if (!backBuffer)
                 return;
 
-            QSize viewsize(graphicsView->viewport()->size());
+            QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
-            QSize gviewsize(graphicsView->size());
+            QSize gviewsize(view->size());
 
             QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
             QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
@@ -740,7 +738,7 @@ namespace OgreRenderer
 
             // Paint ui view into buffer
             QPainter painter(backBuffer);
-            graphicsView->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
 
             renderWindow->UpdateOverlayImage(*backBuffer);
             if (resized_dirty_ > 0)
