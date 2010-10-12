@@ -1354,46 +1354,7 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //return QString(cache_path.c_str());
 }
 
-//returns the internal Entity that's now a QObject, 
-//with no manual wrapping (just PythonQt exposing qt things)
-//experimental now, may replace the PyType in Entity.h used above
-//largely copy-paste from above now, is an experiment
-/*PyObject* GetQEntity(PyObject *self, PyObject *args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-    const Scene::EntityPtr entityptr;
-    const Scene::Entity entity;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
-        return NULL;   
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    Scene::ScenePtr scene = PythonScript::GetScenePtr();
-
-    if (scene == 0)
-    {
-        PyErr_SetString(PyExc_ValueError, "Scene is none.");
-        return NULL;   
-    }
-
-    entityptr = scene->GetEntity(ent_id);
-    if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-    {
-        return PythonQt::self()->wrapQObject(entity.get());
-    }
-
-    else
-    {
-        PyErr_SetString(PyExc_ValueError, "No entity with the given id found."); //XXX add the id to msg
-        return NULL;   
-    }
-}*/
-
+//XXX remove, use SceneManager
 PyObject* RemoveEntity(PyObject *self, PyObject *value)
 {
     int ent_id;
@@ -1411,57 +1372,6 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
     scene->RemoveEntity(ent_id);
     //PyErr_SetString(PyExc_ValueError, "no error.");
     Py_RETURN_NONE;
-}
-
-PyObject* CreateEntity(PyObject *self, PyObject *value)
-{
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-
-    std::string meshname;
-    const char* c_text;
-    float prio = 0;
-    //PyObject_Print(value, stdout, 0);
-    if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
-    {
-        PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
-        return NULL;
-    }
-
-    meshname = std::string(c_text);
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScenePtr();
-    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
-        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
-        return NULL;   
-    }
-
-    entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
-    
-    QStringList defaultcomponents;
-    defaultcomponents.append(EC_Placeable::TypeNameStatic());
-    //defaultcomponents.append(EC_OgreMovableTextOverlay::TypeNameStatic());
-    defaultcomponents.append(EC_Mesh::TypeNameStatic());
-    //defaultcomponents.append(EC_AnimationController::TypeNameStatic());
-        
-    Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
-
-    ComponentPtr placeable = entity->GetComponent(EC_Placeable::TypeNameStatic());
-    ComponentPtr component_meshptr = entity->GetComponent(EC_Mesh::TypeNameStatic());
-    if (placeable)
-    {
-        EC_Placeable &ogrepos = *checked_static_cast<EC_Placeable*>(placeable.get());
-        if (prio != 0)
-            ogrepos.SetSelectPriority(prio);
-        EC_Mesh &ogremesh = *checked_static_cast<EC_Mesh*>(component_meshptr.get());
-        ogremesh.SetPlaceable(placeable);
-        ogremesh.SetMesh(meshname, true);
-        scene->EmitEntityCreated(entity);
-        return owner->entity_create(ent_id); //return the py wrapper for the new entity
-    }
-    
-    PyErr_SetString(PyExc_ValueError, "placeable not found."); //XXX change the exception
-    return NULL;   
 }
 
 /*
@@ -1836,9 +1746,6 @@ static PyMethodDef EmbMethods[] = {
     "Gets the entity with the given UUID."},
 
     {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
-    "Creates a new entity with the given ID, and returns it."},
-
-    {"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},
 
     {"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
