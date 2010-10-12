@@ -9,7 +9,7 @@
 struct Transform
 {
     Vector3df position;
-    Vector3df rotation;
+    Vector3df rotation; ///< The rotation of this transform in Euler XYZ.
     Vector3df scale;
 
     Transform():
