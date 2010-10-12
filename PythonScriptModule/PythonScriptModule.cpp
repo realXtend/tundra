@@ -105,8 +105,8 @@
 
 #include "PythonQtScriptingConsole.h"
 
-#include "QtInputKeyEvent.h"
-#include "QtInputMouseEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
 
 //#include <QDebug>
 

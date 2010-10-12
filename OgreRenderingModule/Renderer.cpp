@@ -1373,7 +1373,7 @@ namespace OgreRenderer
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
     }
-
+/*
     void Renderer::HideCurrentWorldView()
     {
         q_ogre_world_view_->HideUiOverlay();
@@ -1383,7 +1383,7 @@ namespace OgreRenderer
     {
           q_ogre_world_view_->ShowUiOverlay();
     }
-
+*/
     void Renderer::InitShadows()
     {
         bool using_pssm = (shadowquality_ == Shadows_High);
