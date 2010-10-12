@@ -4,6 +4,8 @@
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
 #include "EC_Placeable.h"
+#include "Entity.h"
+
 #include <Ogre.h>
 #include <QDebug>
 
@@ -30,6 +32,8 @@ EC_Placeable::EC_Placeable(IModule* module) :
     // Hook the transform attribute change
     connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
         SLOT(HandleAttributeChanged(IAttribute*, AttributeChange::Type)));
+
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
 EC_Placeable::~EC_Placeable()
@@ -327,6 +331,44 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         link_scene_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
         
         AttachNode(); // Nodes become visible only after having their position set at least once
+    }
+}
+
+void EC_Placeable::Show()
+{
+	if (!link_scene_node_)
+        return;
+
+link_scene_node_->setVisible(true);
+}
+
+void EC_Placeable::Hide()
+{
+		if (!link_scene_node_)
+			return;	
+		
+		link_scene_node_->setVisible(false);
+}
+
+void EC_Placeable::ToggleVisibility()
+{
+    if (!link_scene_node_)
+        return;
+
+    link_scene_node_->flipVisibility();
+}
+
+void EC_Placeable::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        // Generic actions
+        entity->ConnectAction("ShowEntity", this, SLOT(Show()));
+        entity->ConnectAction("HideEntity", this, SLOT(Hide()));
+        entity->ConnectAction("ToggleEntity", this, SLOT(ToggleVisibility()));
+
     }
 }
 

@@ -186,12 +186,24 @@ public slots:
     //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
     void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
+    /// Shows the Entity
+    void Show();
+
+	/// Hides the Entity
+	void Hide();
+
+	/// Toggle Visibility
+	void ToggleVisibility();
+
 private slots:
     //! Handle attributechange
     /*! \param attribute Attribute that changed.
         \param change Change type.
      */
     void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+	void RegisterActions();
 
 private:
     //! constructor
