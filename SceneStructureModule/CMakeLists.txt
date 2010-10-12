@@ -18,6 +18,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
+#use_package (OGRE)
 use_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule TundraLogicModule
     OgreRenderingModule)
 
@@ -28,6 +29,7 @@ link_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule Tu
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
+#link_package (OGRE)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()
