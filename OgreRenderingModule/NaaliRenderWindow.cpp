@@ -136,6 +136,11 @@ Ogre::Overlay *NaaliRenderWindow::OgreOverlay()
     return overlay;
 }
 
+std::string NaaliRenderWindow::OverlayTextureName() const
+{
+    return rttTextureName;
+}
+
 #if 0
 
 void NaaliRenderWindow::RenderFrame()

@@ -4,6 +4,7 @@
 #define incl_Renderer_NaaliRenderWindow_h
 
 #include <QObject>
+#include <string>
 #include "OgreModuleApi.h"
 
 namespace Ogre
@@ -31,6 +32,8 @@ public:
     Ogre::Overlay *OgreOverlay();
 
 //    void RenderFrame();
+
+    std::string OverlayTextureName() const;
 
     /// Fully repaints the Ogre 2D Overlay from the given source image.
     void UpdateOverlayImage(const QImage &src);

@@ -25,7 +25,7 @@ add_definitions (-DINPUT_API_EXPORTS)
 
 link_package (BOOST)
 link_package (POCO)
-#link_package (OGRE)
+#link_ogre()
 link_package (QT4)
 link_modules (Core Ui)
 

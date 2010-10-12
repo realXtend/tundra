@@ -48,7 +48,7 @@ link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
 link_package (XMLRPC)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 
 if (CAELUM)
