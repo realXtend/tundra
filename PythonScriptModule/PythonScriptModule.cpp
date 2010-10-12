@@ -849,7 +849,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         Scene::EntityPtr entity = rexlogic_->GetPrimEntity(ruuid);
         if (entity)
         {
-            return owner->entity_create(entity->GetId());
+            return PythonScriptModule::GetInstance()->WrapQObject(entity.get());
         }
         else
         {
