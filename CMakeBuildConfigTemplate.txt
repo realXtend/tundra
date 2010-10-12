@@ -102,6 +102,7 @@ add_subdirectory(HttpUtilities)
 add_subdirectory(RpcUtilities)
 add_subdirectory(ProtocolUtilities)     # Depends on Taiga subsystem.
 add_subdirectory(EnvironmentModule)     # Depends on OgreRenderingModule and Taiga subsystem. 
+add_subdirectory(PhysicsModule)         # Depends on OgreRenderingModule.
 
 # The following are not core modules, but you cannot do anything practical without
 # having them, so they are effectively required.
