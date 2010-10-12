@@ -187,6 +187,15 @@ void NaaliRenderWindow::UpdateOverlayImage(const QImage &src)
     texture->getBuffer()->blitFromMemory(bufbox);
 }
 
+void NaaliRenderWindow::ShowOverlay(bool visible)
+{
+    if (overlayContainer)
+        if (!visible)
+            overlayContainer->hide();
+        else
+            overlayContainer->show();
+}
+
 void NaaliRenderWindow::Resize(int width, int height)
 {
     renderWindow->resize(width, height);
