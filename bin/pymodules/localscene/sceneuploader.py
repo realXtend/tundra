@@ -49,9 +49,8 @@ class SceneUploader:
             r.logInfo("Failed to get caps url for scene uploads")
         strict = None
         
-        #self.httpclient = HTTPConnection(self.host, self.port, strict, self.timeout)
-        #self.httpclient = HTTPConnection(self.host, self.port)
-        #self.httpclient.set_debuglevel(1) # f or figuring out what goes wrong
+        self.appDataUploadFolder=None
+        
         
     def uploadScene(self, filepath, dotScene, regionName = None, publishName = None):
         f = None
@@ -148,37 +147,44 @@ class SceneUploader:
         print "----------------"
         #print self.file
         zf = zipfile.ZipFile(self.file, "w")
-        for dirname, dirnames, filenames in os.walk(TEMP_UPLOAD_FOLDER):
+        for dirname, dirnames, filenames in os.walk(self.appDataUploadFolder):
+            # print dirname
+            # print dirnames
+            # print filenames
             for filename in filenames:
                 filepath = os.path.join(dirname, filename)
-                zf.write(filepath)
+                zippath = TEMP_UPLOAD_FOLDER + os.sep + os.path.basename(filepath)
+                #zf.write(filepath)
+                zf.write(filepath, zippath)
         zf.close()
         #cleanup
         #os.remove(temp_upload_folder)
 
     def copyfiles(self, ds):
         # Copy files to temp dir 
+        self.appDataUploadFolder=r.getApplicationDataDirectory()+ os.sep + TEMP_UPLOAD_FOLDER
         
-        if(os.path.exists(TEMP_UPLOAD_FOLDER)==False):
-            os.mkdir(TEMP_UPLOAD_FOLDER)
+        if(os.path.exists(self.appDataUploadFolder)==False):
+            os.mkdir(self.appDataUploadFolder)
         else:
-            #os.remove(TEMP_UPLOAD_FOLDER+os.sep+"*.*")
-            shutil.rmtree("./" + TEMP_UPLOAD_FOLDER)
+            #os.remove(self.appDataUploadFolder+os.sep+"*.*")
+            #shutil.rmtree("./" + self.appDataUploadFolder)
+            shutil.rmtree(self.appDataUploadFolder)
             time.sleep(1)
-            os.mkdir(TEMP_UPLOAD_FOLDER)
+            os.mkdir(self.appDataUploadFolder)
         relativepath = MESH_MODEL_FOLDER.replace("/", os.sep)
         
         # print ds.fileName
         # split = ds.fileName.split('/')
         # name = split[-1]
         name = self.nameFromFilepath(ds.fileName)
-        dstSceneFile = TEMP_UPLOAD_FOLDER + os.sep + name
+        dstSceneFile = self.appDataUploadFolder + os.sep + name
         
         # if exists copy <scene_name>.material file to upload package
         sceneMaterialFilePath=ds.fileName[:-6] + ".material"
         if(self.fileExists(sceneMaterialFilePath)==True):
             materialname = self.nameFromFilepath(sceneMaterialFilePath)
-            dstSceneMaterialFile = TEMP_UPLOAD_FOLDER + os.sep + materialname
+            dstSceneMaterialFile = self.appDataUploadFolder + os.sep + materialname
             shutil.copyfile(sceneMaterialFilePath, dstSceneMaterialFile);
             # copy images in scene material file
             self.copyTextures(sceneMaterialFilePath, TEXTURE_FOLDER)
@@ -188,7 +194,7 @@ class SceneUploader:
         
         for k, oNode in ds.dotscenemanager.nodes.iteritems():
             #print k
-            dstFile = TEMP_UPLOAD_FOLDER + os.sep + oNode.entityMeshFile
+            dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile
             
             # try first load from scene folder
             sceneFilePath = os.path.dirname(ds.fileName) + os.sep + oNode.entityMeshFile
@@ -205,7 +211,7 @@ class SceneUploader:
             
             #print materialfile
             if(self.fileExists(materialfile)==True):
-                dstFile = TEMP_UPLOAD_FOLDER + os.sep + oNode.entityMeshFile[:-5] + ".material"
+                dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile[:-5] + ".material"
                 shutil.copyfile(materialfile, dstFile)
                 self.copyTextures(materialfile, TEXTURE_FOLDER)
             
@@ -213,7 +219,7 @@ class SceneUploader:
             materialfile2 = MATERIAL_FOLDER + os.sep + oNode.entityMeshFile[:-5] + ".material"
             #print materialfile2
             if(self.fileExists(materialfile2)==True):
-                dstFile = TEMP_UPLOAD_FOLDER + os.sep + oNode.entityMeshFile[:-5] + ".material"
+                dstFile = self.appDataUploadFolder + os.sep + oNode.entityMeshFile[:-5] + ".material"
                 shutil.copyfile(materialfile2, dstFile)
                 self.copyTextures(materialfile2, MATERIAL_FOLDER)
 
@@ -222,7 +228,7 @@ class SceneUploader:
         #print list
         for name in list:
             #pathToFile = folder.replace('/', os.sep) + os.sep + name
-            dstFile = TEMP_UPLOAD_FOLDER + os.sep + name
+            dstFile = self.appDataUploadFolder + os.sep + name
             
             dirpath = os.path.dirname(matfile)
             scenePath = dirpath + os.sep + name
