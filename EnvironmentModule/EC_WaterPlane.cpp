@@ -43,7 +43,8 @@ namespace Environment
         fogModeAttr(this, "Fog mode", 3),
         entity_(0),
         node_(0),
-        attached_(false)
+        attached_(false),
+        attachedToRoot_(false)
     {
         static AttributeMetadata metadata;
         static bool metadataInitialized = false;
@@ -197,7 +198,9 @@ namespace Environment
             return;
         
         OgreRenderer::RendererPtr renderer = renderer_.lock();
+
         DetachEntity();
+        
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
         entity_ = 0;
@@ -227,6 +230,7 @@ namespace Environment
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            attachedToRoot_ = true;
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             
@@ -254,6 +258,7 @@ namespace Environment
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            attachedToRoot_ = true;
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             
@@ -393,6 +398,17 @@ namespace Environment
         EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ((!attached_) || (!entity_) || (!placeable))
             return;
+
+        if ( attachedToRoot_ )
+        {
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            node_->detachObject(entity_);
+            attached_ = false;
+            attachedToRoot_ = false;
+            scene_mgr->getRootSceneNode()->removeChild(node_);
+            return;
+            
+        }
 
         Ogre::SceneNode* node = placeable->GetSceneNode();
         node_->detachObject(entity_);
