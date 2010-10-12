@@ -10,6 +10,11 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "Vector3D.h"
+
+class QDragEnterEvent;
+class QDragMoveEvent;
+class QDropEvent;
 
 class SceneStructureWindow;
 
@@ -53,6 +58,28 @@ private slots:
     /** @param e Key event.
     */
     void HandleKeyPressed(KeyEvent *e);
+
+    /// Handles main window drag enter event.
+    /** @param e Event.
+    */
+    void HandleDragEnterEvent(QDragEnterEvent *e);
+
+    /// Handles main window drag move event.
+    /** @param e Event.
+    */
+    void HandleDragMoveEvent(QDragMoveEvent *e);
+
+    /// Handles drop event.
+    /** @param e Event.
+    */
+    void HandleDropEvent(QDropEvent *e);
+
+    ///
+    /** @param filename 
+        @param pos 
+        @param clearScene 
+    */
+    void InstantiateContent(const QString &filename, const Vector3df &pos, bool clearScene);
 };
 
 #endif

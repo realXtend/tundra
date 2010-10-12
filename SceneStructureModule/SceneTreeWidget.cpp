@@ -166,8 +166,8 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         {
             QString filename = url.path();
 #ifdef _WINDOWS
-            // This is very annoying: we have '/' as the first char on windows and the filename
-            // is not indentifed as a file properly. But on other platforms the '/' is valid/required.
+            // We have '/' as the first char on windows and the filename
+            // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
             InstantiateContent(filename, false);
@@ -660,3 +660,4 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         InstantiateContent(filename, clearScene);
     }
 }
+
