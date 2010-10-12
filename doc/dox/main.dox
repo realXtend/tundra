@@ -389,8 +389,7 @@ Implements functionality for editing Naali scene content and Ogre asset data.
 
 <p>Implemented by modules
 <ul>
-<li>ECEditorModule
-<ul><li>Exposes the component SerializationTest.</ul>
+<li>\subpage ec_editormodule "ECEditorModule"
 <li>OgreAssetEditorModule
 <li>WorldBuildingModule
 </ul>
