@@ -23,16 +23,13 @@ def createEntity(comptypes = []):
     return ent
 
 def createMeshEntity(meshname, raycastprio=1):
-    ent = r .createEntity(meshname, raycastprio) #XXX: this returns a PyEntity still, get rid of this somehow
-    return getEntity(ent.id)
-    #XXX ugly workaround
-    #oldpyent = r.getEntity(ent.id)
-    #oldpyent.createComponent("EC_Mesh") #sets placeable too
-
-    #XXX wasn't possible yet. lead into research about adding QPointer support to PythonQt internals etc
-    #ent = naali.createEntity(["EC_Placeable", "EC_Mesh"])
-    #ent.mesh.SetPlaceable(ent.placeable) #wants a boost shared_ptr, which we don't have :/
-    #ent.mesh.SetMesh(meshname)
+    #ent = r .createEntity(meshname, raycastprio) #XXX: this returns a PyEntity still, get rid of this somehow
+    #return getEntity(ent.id)
+    ent = createEntity(["EC_Placeable", "EC_Mesh"])
+    ent.placeable.SetSelectPriority(raycastprio)
+    ent.mesh.SetPlaceable(ent.placeable)
+    ent.mesh.SetMesh(meshname)
+    return ent
 
 #XXX check how to do with SceneManager
 def removeEntity(entity):
