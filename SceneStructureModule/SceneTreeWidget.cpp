@@ -8,6 +8,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "SceneTreeWidget.h"
+#include "SceneStructureModule.h"
 
 #include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
@@ -16,6 +17,7 @@
 #include "LoggingFunctions.h"
 #include "SceneImporter.h"
 #include "ComponentManager.h"
+#include "ModuleManager.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -170,7 +172,7 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            InstantiateContent(filename, false);
+            framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), false);
         }
 
         e->acceptProposedAction();
@@ -294,62 +296,6 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     }
 
     return scene_doc.toString();
-}
-
-void SceneTreeWidget::InstantiateContent(const QString &filename, bool clearScene)
-{
-    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
-    if (!scene)
-        return;
-
-    if (filename.toLower().indexOf(".scene") != -1)
-    {
-        boost::filesystem::path path(filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        TundraLogic::SceneImporter importer(framework);
-        ///\todo Take into account asset sources.
-        importer.Import(scene, filename.toStdString(), dirname, "./data/assets", AttributeChange::Default, clearScene, true, true);
-    }
-    else if (filename.toLower().indexOf(".mesh") != -1)
-    {
-        boost::filesystem::path path(filename.toStdString());
-        std::string dirname = path.branch_path().string();
-
-        // Query position from the user.
-        bool ok;
-        QString posString = QInputDialog::getText(this, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "20.00;20.00;20.00", &ok);
-        if (!ok || posString.isEmpty())
-            return;
-
-        posString.replace(',', '.');
-        QStringList pos = posString.split(';');
-        Transform transform(Vector3df(20.0,20.0,20.0), Vector3df(0,0,0), Vector3df(1,1,1));
-        if (pos.size() > 0)
-            transform.position.x = pos[0].toFloat();
-        if (pos.size() > 1)
-            transform.position.y = pos[1].toFloat();
-        if (pos.size() > 2)
-            transform.position.z = pos[2].toFloat();
-
-        TundraLogic::SceneImporter importer(framework);
-        Scene::EntityPtr entity = importer.ImportMesh(scene, filename.toStdString(), dirname, "./data/assets",
-            transform, std::string(), AttributeChange::Default, true);
-        if (entity)
-            scene->EmitEntityCreated(entity, AttributeChange::Default);
-    }
-    else if (filename.toLower().indexOf(".xml") != -1)
-    {
-        scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
-    }
-    else if (filename.toLower().indexOf(".nbf") != -1)
-    {
-        scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
-    }
-    else
-    {
-        LogError("Unsupported file extension: " + filename.toStdString());
-    }
 }
 
 void SceneTreeWidget::Edit()
@@ -657,7 +603,7 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         if (dialog->windowTitle() == tr("Open New Scene"))
             clearScene = true;
 
-        InstantiateContent(filename, clearScene);
+        framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), clearScene);
     }
 }
 

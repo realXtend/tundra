@@ -2,14 +2,14 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureModule.h
- *  @brief  
+ *  @brief  Provides Scene Structure window and raycast drag-and-drop import of
+ *          mesh, .scene, .xml and .nbf files to the main window.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureModule_h
 #define incl_SceneStructureModule_SceneStructureModule_h
 
 #include "IModule.h"
-#include "ModuleLoggingFunctions.h"
 #include "Vector3D.h"
 
 class QDragEnterEvent;
@@ -18,9 +18,8 @@ class QDropEvent;
 
 class SceneStructureWindow;
 
-///
-/**
-*/
+/// Provides Scene Structure window and raycast drag-and-drop import
+/// of .mesh, .scene, .xml and .nbf files to the main window.
 class SceneStructureModule : public QObject, public IModule
 {
     Q_OBJECT
@@ -35,10 +34,13 @@ public:
     /// IModule override.
     void PostInitialize();
 
-    MODULE_LOGGING_FUNCTIONS
-
-    /// Returns name of this module. Needed for logging.
-    static const std::string &NameStatic() { return typeNameStatic; }
+public slots:
+    /// Instantiates new content from file to the scene.
+    /** @param filename File name.
+        @param worldPos Destination in-world position. If zero vector is given, the position is asked with a simple dialog.
+        @param clearScene Do we want to clear the scene before adding new content.
+    */
+    void InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene);
 
 private:
     //! Type name of the module.
@@ -60,26 +62,22 @@ private slots:
     void HandleKeyPressed(KeyEvent *e);
 
     /// Handles main window drag enter event.
-    /** @param e Event.
+    /** If event's MIME data contains URL's we accept it.
+        @param e Event.
     */
     void HandleDragEnterEvent(QDragEnterEvent *e);
 
     /// Handles main window drag move event.
-    /** @param e Event.
+    /** If event's MIME data contains URL's we accept it.
+        @param e Event.
     */
     void HandleDragMoveEvent(QDragMoveEvent *e);
 
     /// Handles drop event.
-    /** @param e Event.
+    /** If event's MIME data contains URL's we accept it.
+        @param e Event.
     */
     void HandleDropEvent(QDropEvent *e);
-
-    ///
-    /** @param filename 
-        @param pos 
-        @param clearScene 
-    */
-    void InstantiateContent(const QString &filename, const Vector3df &pos, bool clearScene);
 };
 
 #endif
