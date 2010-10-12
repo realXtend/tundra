@@ -828,48 +828,6 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     Py_RETURN_TRUE;
 }
 
-//returns an Entity wrapper, is in actual use
-PyObject* GetEntity(PyObject *self, PyObject *args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
-        return NULL;   
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-
-    Scene::ScenePtr scene = owner->GetScenePtr();
-
-    if (scene == 0)
-    {
-        PyErr_SetString(PyExc_ValueError, "Scene is none.");
-        return NULL;   
-    }
-
-    //PythonScript::foo(); 
-    /*
-    const Scene::EntityPtr entity = scene->GetEntity(ent_id);
-    if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-        return entity_create(ent_id, entity);
-    //the ptr is stored in a separate map now, so also id needs to passed to entity_create
-    */
-    //if would just store the id and always re-get ptr, would do this:
-    if (scene->HasEntity(ent_id))
-        return owner->entity_create(ent_id);
-
-    else
-    {
-        PyErr_SetString(PyExc_ValueError, "No entity with the ent_id found.");
-        return NULL;   
-    }
-}
-
 PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 {
     char* uuidstr;
@@ -1738,9 +1696,6 @@ static PyMethodDef EmbMethods[] = {
 
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},
-
-    {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
-    "Gets the entity with the given ID."},
 
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
