@@ -19,7 +19,8 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
-#include "MainWindow.h"
+#include "NaaliMainWindow.h"
+#include "NaaliUi.h"
 #include <AssetEvents.h>
 #include <EventManager.h>
 //#include "RealXtend/RexProtocolMsgIDs.h"
@@ -277,11 +278,11 @@ bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
     {
         QTreeWidget *widget = dynamic_cast<QTreeWidget*>(obj);
         if (widget == tree_texture_assets_)
-            menu_texture_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+            menu_texture_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
         if (widget == tree_mesh_assets_)
-            menu_mesh_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+            menu_mesh_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
         if (widget == tree_material_assets_)
-            menu_material_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+            menu_material_assets_->popup(framework_->Ui()->MainWindow()->mapFromGlobal(QCursor::pos()));
 
         return true;
     }

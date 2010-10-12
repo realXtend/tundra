@@ -33,7 +33,7 @@ namespace RexLogic
         QString style_end = ");}";
         release_style_= styleSheet();
 
-        using namespace Input::Events;
+        using namespace InputEvents;
         event_to_image_[MOVE_FORWARD_PRESSED] = style_start + "arrow_up_green1.png" + style_end;
         event_to_image_[MOVE_BACK_PRESSED] = style_start + "arrow_down_green1.png" + style_end;
         event_to_image_[MOVE_LEFT_PRESSED] = style_start + "arrow_left_green1.png" + style_end;
@@ -46,7 +46,7 @@ namespace RexLogic
 
     void CameraControl::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
-        using namespace Input::Events;
+        using namespace InputEvents;
 
         QPushButton *manipulate_button = 0;
         bool released_ = false;

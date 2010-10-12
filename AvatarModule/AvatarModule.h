@@ -7,7 +7,7 @@
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
 #include "Input.h"
-#include "QtInputKeyEvent.h"
+#include "KeyEvent.h"
 #include "SceneManager.h"
 
 #include "WorldStream.h"

@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "DebugOperatorNew.h"
+
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
 #include "NaaliGraphicsView.h"
@@ -8,6 +12,11 @@
 #include <QVBoxLayout>
 #include <QScrollBar>
 
+#include "MemoryLeakCheck.h"
+
+/// The SuppressedPaintWidget is used as a viewport for the main Naali QGraphicsView. Its purpose is
+/// to disable all automatic drawing of the QGraphicsView to screen so that we can composit an Ogre
+/// 3D render with the Qt widgets added to a QGraphicsScene.
 class SuppressedPaintWidget : public QWidget {
 public:
     SuppressedPaintWidget(QWidget *parent = 0, Qt::WindowFlags f = 0);
@@ -101,13 +110,15 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
 
     connect(mainWindow, SIGNAL(WindowResizeEvent(int,int)), graphicsView, SLOT(Resize(int,int))); 
 
-//    mainWindow->resize(200, 100); ///\todo. Config.
     mainWindow->LoadWindowSettingsFromFile();
     graphicsView->Resize(mainWindow->width(), mainWindow->height());
 
     graphicsView->show();
     mainWindow->show();
     viewportWidget->show();
+
+    /// Do a full repaint of the view now that we've shown it.
+    graphicsView->MarkViewUndirty();
 }
 
 NaaliUi::~NaaliUi()

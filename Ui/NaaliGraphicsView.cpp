@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "DebugOperatorNew.h"
+
 #include "NaaliGraphicsView.h"
 
 #include <QRect>
@@ -5,6 +9,8 @@
 #include <QEvent>
 #include <QResizeEvent>
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 
@@ -22,7 +28,6 @@ NaaliGraphicsView::NaaliGraphicsView(QWidget *parent)
     setLineWidth(0);
 
     setAttribute(Qt::WA_DontShowOnScreen, true);
-
 }
 
 QImage *NaaliGraphicsView::BackBuffer()

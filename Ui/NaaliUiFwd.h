@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #ifndef incl_Core_UiFwd_h
 #define incl_Core_UiFwd_h
 

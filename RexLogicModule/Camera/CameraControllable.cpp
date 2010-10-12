@@ -120,7 +120,7 @@ namespace RexLogic
     {
         camera_control_widget_->HandleInputEvent(event_id, data);
 
-        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+        if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
             firstperson_pitch_ = 0.0f;

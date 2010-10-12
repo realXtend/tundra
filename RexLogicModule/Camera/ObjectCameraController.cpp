@@ -196,18 +196,18 @@ namespace RexLogic
             return;
 
         bool return_to_avatar = false;
-        if (key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkForward") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkForward2") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkBack") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.WalkBack2") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Down") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Down2") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Up") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.Up2") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.RotateLeft") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.RotateRight") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeLeft") ||
-            key_event->sequence == framework_->Input()->KeyBinding("Avatar.StrafeRight"))
+        if (key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkForward") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkForward2") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkBack") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.WalkBack2") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Down") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Down2") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Up") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.Up2") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.RotateLeft") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.RotateRight") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.StrafeLeft") ||
+            key_event->sequence == framework_->GetInput()->KeyBinding("Avatar.StrafeRight"))
             return_to_avatar = true;
 
         if (return_to_avatar)
