@@ -65,6 +65,10 @@ Registered by RexLogic::RexLogicModule.
 <div>Gradient start</div>
 <li>Color: gradEndAttr
 <div>Gradient End</div>
+<li>Color: borderColorAttr
+<div>define color of the border</div>
+<li>float: borderThicknessAttr
+<din>define width of border</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -162,7 +166,7 @@ public:
 
 	Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
-
+    
 	Q_PROPERTY(bool usingGradAttr READ getusingGradAttr WRITE setusingGradAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGradAttr);
 
