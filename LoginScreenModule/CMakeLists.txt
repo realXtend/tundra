@@ -26,7 +26,7 @@ use_modules (Core Foundation Interfaces RexCommon)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
 link_modules (Core Foundation Interfaces RexCommon)
-link_package (OGRE)
+link_ogre()
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
