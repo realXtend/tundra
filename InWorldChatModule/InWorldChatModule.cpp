@@ -236,7 +236,7 @@ Scene::Entity *InWorldChatModule::GetEntityWithId(const RexUUID &id)
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
 
         boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity.GetComponent<EC_OpenSimPresence>();
         boost::shared_ptr<EC_OpenSimPrim> ec_prim = entity.GetComponent<EC_OpenSimPrim>();

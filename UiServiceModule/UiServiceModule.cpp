@@ -25,9 +25,10 @@ void UiServiceModule::PreInitialize()
 void UiServiceModule::Initialize()
 {
     // Register UI service.
-    assert(GetFramework()->GetUIView());
+    assert(GetFramework()->Ui()->GraphicsView());
     service_ = UiServicePtr(new UiService(GetFramework()->GetUIView()));
     framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, service_);
+    framework_->RegisterDynamicObject("uiservice", service_.get());
 }
 
 void UiServiceModule::PostInitialize()
