@@ -30,8 +30,6 @@
 
 #include <Ogre.h>
 
-//#define USE_D3D9_SUBSURFACE_BLIT
-
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #include <d3d9.h>
 #include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
