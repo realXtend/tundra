@@ -18,6 +18,12 @@ struct AssetReference
     */
     AssetReference(const QString &i, const QString &t) : id(i), type(t) {}
 
+    /// Returns true if other asset reference is equal to this asset reference.
+    bool operator == (const AssetReference &rhs) const { return ((this->id == rhs.id) && (this->type == rhs.type)); }
+
+    /// Returns true if other asset reference is inequal to this asset reference.
+    bool operator != (const AssetReference &rhs) const { return !(*this == rhs); }
+
     /// Asset ID
     QString id;
 

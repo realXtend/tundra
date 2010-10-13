@@ -616,10 +616,10 @@ template<> void Attribute<Color>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value_.a);
 }
 
-template<> void Attribute<Foundation::AssetReference>::ToBinary(kNet::DataSerializer& dest) const
+template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value_.type_);
-    dest.AddString(value_.id_);
+    dest.AddString(value_.type.toStdString());
+    dest.AddString(value_.id.toStdString());
 }
 
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
@@ -711,11 +711,11 @@ template<> void Attribute<Quaternion>::FromBinary(kNet::DataDeserializer& source
     Set(value, change);
 }
 
-template<> void Attribute<Foundation::AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    Foundation::AssetReference value;
-    value.type_ = source.ReadString();
-    value.id_ = source.ReadString();
+    AssetReference value;
+    value.type = source.ReadString().c_str();
+    value.id = source.ReadString().c_str();
     Set(value, change);
 }
 
@@ -821,11 +821,11 @@ template<> bool Attribute<Quaternion>::CompareBinary(kNet::DataDeserializer& sou
     return value_ != value;
 }
 
-template<> bool Attribute<Foundation::AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
+template<> bool Attribute<AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
 {
-    Foundation::AssetReference value;
-    value.type_ = source.ReadString();
-    value.id_ = source.ReadString();
+    AssetReference value;
+    value.type = source.ReadString().c_str();
+    value.id = source.ReadString().c_str();
     return value_ != value;
 }
 
