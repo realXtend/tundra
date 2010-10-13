@@ -10,6 +10,8 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QDebug>
+#include <QStyleFactory>
+
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
