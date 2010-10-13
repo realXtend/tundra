@@ -190,20 +190,21 @@ public:
      */
     virtual void DeserializeFromBinary(kNet::DataDeserializer& source, AttributeChange::Type change);
 
-    /** Handles an event. Override in your own module if you want to receive events. Do not call.
-        @param category_id Category id of the event
+    /// Handles an event. Override in your own module if you want to receive events. Do not call.
+    /** @param category_id Category id of the event
         @param event_id Id of the event
         @param data Event data, or 0 if no data passed.
         @return True if the event was handled and is not to be propagated further.
         For more information, see @ref EventSystem.
-    /// \note This member is deprecated and will be removed in the future. */
+        @note This member is deprecated and will be removed in the future.
+    */
     virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data) { return false; }
 
     /// Returns an Attribute of this component with the given Name. This function iterates through the 
     /// attribute vector and tries to find a member attribute with the given name.
     /// @param The name of the attribute to look for.
     /// @return A pointer to the attribute, or null if no attribute with the given name exists.
-    IAttribute* GetAttribute(QString name) const;
+    IAttribute* GetAttribute(const QString &name) const;
     // NOTE: was made a slot, but interfered with a slot with the same name in EC_DynamicComponent, and this version
     // doesn't work right for py&js 'cause doesn't return a QVariant .. so not a slot now as a temporary measure.
 
@@ -221,8 +222,8 @@ signals:
     /// always connect to the above function and if(...)'ing if it was the change we were interested in.
 
     /// This signal is emitted when the name of this Component has changed. Use this signal to keep track of
-    /// a Component with specified custom name.
-    void OnComponentNameChanged(QString new_name, QString old_name);
+    /// a component with specified custom name.
+    void OnComponentNameChanged(const QString &new_name, const QString &old_name);
 
     /// This signal is emitted when this Component is attached to its owning Entity.
     void ParentEntitySet();

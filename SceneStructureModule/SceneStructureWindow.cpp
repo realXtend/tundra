@@ -15,6 +15,7 @@
 #include "SceneManager.h"
 #include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
+#include "EC_Name.h"
 
 using namespace Scene;
 
@@ -94,17 +95,13 @@ void SceneStructureWindow::Populate()
         return;
     }
 
-    SceneManager::iterator it = s->begin();
-    while(it != s->end())
-    {
+    for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).get());
-        ++it;
-    }
 }
 
 void SceneStructureWindow::Clear()
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         SAFE_DELETE(item);
@@ -116,7 +113,7 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
     EntityTreeWidgetItem *item = new EntityTreeWidgetItem(entity->GetId());
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     // Set local entity's font color blue
-    if (entity->GetId() & Scene::LocalEntity)
+    if (entity->IsLocal())
         item->setTextColor(0, QColor(Qt::blue));
     treeWidget->addTopLevelItem(item);
 
@@ -128,7 +125,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        EntityTreeWidgetItem *item = static_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityTreeWidgetItem *item = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
         if (item && (item->id == entity->GetId()))
         {
             SAFE_DELETE(item);
@@ -149,8 +146,14 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             cItem->setHidden(!showComponents);
             eItem->addChild(cItem);
 
-            if (comp->TypeName() == "EC_Name")
+            connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName(const QString &, const QString &)));
+
+            // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
+            if (comp->TypeName() == EC_Name::TypeNameStatic())
+            {
                 eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+                connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), SLOT(UpdateEntityName(IAttribute *)));
+            }
         }
     }
 }
@@ -173,8 +176,42 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
                 }
             }
 
-            if (comp->TypeName() == "EC_Name")
+            if (comp->TypeName() == EC_Name::TypeNameStatic())
                 eItem->setText(0, QString("%1").arg(entity->GetId()));
         }
     }
 }
+
+void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
+{
+    EC_Name *nameComp = dynamic_cast<EC_Name *>(sender());
+    if (!nameComp || (attr != &nameComp->name) || (nameComp->GetParentEntity() == 0))
+        return;
+
+    Entity *entity = nameComp->GetParentEntity();
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityTreeWidgetItem *item = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        if (item && (item->id == entity->GetId()))
+            item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+    }
+}
+
+void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString &newName)
+{
+    IComponent *comp = dynamic_cast<IComponent *>(sender());
+    if (!comp)
+        return;
+
+    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        QTreeWidgetItem *eItem = treeWidget->topLevelItem(i);
+        for (int j = 0; j < eItem->childCount(); ++j)
+        {
+            ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(j));
+            if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
+                cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
+        }
+    }
+}
+
