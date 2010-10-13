@@ -13,6 +13,7 @@
 #include <QTimer>
 #include <QUuid>
 #include <QDebug>
+#include <QGraphicsScene>
 
 #include "MemoryLeakCheck.h"
 
