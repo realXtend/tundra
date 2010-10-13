@@ -146,19 +146,39 @@ macro (configure_python_qt)
 endmacro (configure_python_qt)
 
 macro (configure_ogre)
-    if (APPLE)
-	FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
-	set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
-	set (OGRE_LIBRARIES ${OGRE_LIBRARY})
-    else ()
-        sagase_configure_package (OGRE 
-          NAMES Ogre OgreSDK ogre OGRE
-          COMPONENTS Ogre ogre OGRE OgreMain 
-          PREFIXES ${ENV_NAALI_DEP_PATH} ${ENV_OGRE_HOME})
-    endif ()
+    if ("$ENV{OGRE_HOME}" STREQUAL "" OR NOT WIN32)
+        if (APPLE)
+    	FIND_LIBRARY(OGRE_LIBRARY NAMES Ogre)
+    	set (OGRE_INCLUDE_DIRS ${OGRE_LIBRARY}/Headers)
+    	set (OGRE_LIBRARIES ${OGRE_LIBRARY})
+        else ()
+            sagase_configure_package (OGRE 
+            NAMES Ogre OgreSDK ogre OGRE
+            COMPONENTS Ogre ogre OGRE OgreMain 
+            PREFIXES ${ENV_OGRE_HOME} ${ENV_NAALI_DEP_PATH})
+        endif ()
 
-    sagase_configure_report (OGRE)
+        sagase_configure_report (OGRE)
+    else()
+        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
+        include_directories($ENV{OGRE_HOME})
+        include_directories($ENV{OGRE_HOME}/include)
+        link_directories($ENV{OGRE_HOME}/lib)
+    endif()    
 endmacro (configure_ogre)
+
+macro(link_ogre)
+    if (OGRE_LIBRARIES)
+        link_package(OGRE)
+    else()    
+        target_link_libraries(${TARGET_NAME} debug OgreMain_d.lib)
+        target_link_libraries(${TARGET_NAME} optimized OgreMain.lib)
+        if (WIN32)
+            target_link_libraries(${TARGET_NAME} debug RenderSystem_Direct3D9_d.lib)
+            target_link_libraries(${TARGET_NAME} optimized RenderSystem_Direct3D9.lib)
+        endif()
+    endif()
+endmacro()
 
 macro (configure_caelum)
     sagase_configure_package (CAELUM 

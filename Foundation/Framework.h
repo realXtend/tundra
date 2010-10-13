@@ -268,6 +268,9 @@ namespace Foundation
         /// Returns the Naali core API UI object.
         NaaliUi *Ui() const;
 
+        /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
+        UiServiceInterface *UiService();
+
         /// Returns the Naali core API Input object.
         Input *GetInput() const;
 

@@ -39,7 +39,7 @@ link_package (QT4)
 link_package (POCO)
 link_package (XMLRPC)
 link_package (CURL)
-link_package (OGRE)
+link_ogre()
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

@@ -35,7 +35,7 @@ link_modules (Core Foundation Interfaces SceneManager RexCommon ProtocolUtilitie
     EC_ChatBubble EC_Billboard EC_OpenSimPresence EC_OpenSimPrim)
 link_package (BOOST)
 link_package (POCO)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 link_package (CURL)
 link_package (XMLRPC)

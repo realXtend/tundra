@@ -62,6 +62,7 @@ class OGRE_MODULE_API EC_Placeable : public IComponent
     Q_PROPERTY(float Yaw READ GetYaw)
     Q_PROPERTY(float Pitch READ GetPitch)
     Q_PROPERTY(float Roll READ GetRoll)
+    Q_PROPERTY(int SelectPriority READ GetSelectPriority WRITE SetSelectPriority)
 
 public:
     //! Transformation attribute for position, rotation and scale adjustments.

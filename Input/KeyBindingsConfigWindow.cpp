@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "DebugOperatorNew.h"
+
 #include <QVBoxLayout>
 #include <QTreeWidget>
 #include <QUiLoader>
@@ -18,6 +22,8 @@
 #include <QMap>
 #include <QEvent>
 #include <QKeyEvent>
+
+#include "MemoryLeakCheck.h"
 
 void KeyBindingsConfigWindow::ShowWindow()
 {
@@ -59,39 +65,30 @@ void KeyBindingsConfigWindow::ApplyKeyConfig()
 {
     ExtractBindingsList();
 
-    bool found = false;
-    QStringList found_sequences;
-    for ( std::map<std::string, QKeySequence>::const_iterator it = editedActions.begin();
-      it != editedActions.end(); ++it )
+    QStringList conflictingSequences;
+    for(std::map<std::string, QKeySequence>::const_iterator it = editedActions.begin(); it != editedActions.end(); ++it)
     {
-        for ( std::map<std::string, QKeySequence>::const_iterator jt = editedActions.begin();
-         jt != editedActions.end(); ++jt )
-        {
-            if(it != jt)
+        std::map<std::string, QKeySequence>::const_iterator jt = it;
+        ++jt;
+        for(;jt != editedActions.end(); ++jt)
+            if(it != jt && it->second == jt->second && it->second == jt->second && !conflictingSequences.contains(it->second.toString()))
             {
-                if(it->second == jt->second)
-                {
-                    if(!found_sequences.contains(it->second.toString()))
-                    {
-                        found_sequences.append(it->second.toString());
-                    }
-                    found = true;
-                    break;
-                }
+                conflictingSequences.append(it->second.toString());
+                break;
             }
+    }
+
+    if (conflictingSequences.size() > 0)
+    {
+        if(!QMessageBox::question(this, tr("Bindings Warning? -- Naali"), 
+            tr("Same shortcut '%1' has been set on multiple actions! Do you wish to continue?").arg(conflictingSequences.join(",")), 
+            tr("&Yes"), tr("&No"),
+            QString::null, 0, 1))
+        {
+            framework->GetInput()->SetKeyBindings(editedActions);
+            framework->GetInput()->SaveKeyBindingsToFile();
         }
     }
-     if(found)
-     {
-        if(!QMessageBox::question(this, tr("Bindings Warning? -- Naali"), 
-                    tr("Same shortcut '%1' has been set on multiple actions! Do you wish to continue?").arg(found_sequences.join(",")), 
-                    tr("&Yes"), tr("&No"),
-                    QString::null, 0, 1 ))
-                    {
-                        framework->GetInput()->SetKeyBindings(editedActions);
-                        framework->GetInput()->SaveKeyBindingsToFile();
-                    }
-     }
 }
 
 /// Read more from http://www.qtcentre.org/threads/26689-QTableWidget-one-column-editable
@@ -142,7 +139,7 @@ void KeyBindingsConfigWindow::ButtonOK()
 
 void KeyBindingsConfigWindow::ButtonCancel()
 {
-    framework->GetInput()->LoadKeyBindingsFromFile();
+    framework->GetInput()->LoadKeyBindingsFromFile();    
 }
 
 bool KeyBindingsConfigWindow::eventFilter(QObject *obj, QEvent *event)
