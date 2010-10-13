@@ -47,6 +47,8 @@ namespace Scene
     SceneManager::~SceneManager()
     {
         RemoveAllEntities(false);
+        
+        emit Removed(this);
     }
 
     Scene::EntityPtr SceneManager::CreateEntity(entity_id_t id, const QStringList &components, AttributeChange::Type change, bool defaultNetworkSync)
