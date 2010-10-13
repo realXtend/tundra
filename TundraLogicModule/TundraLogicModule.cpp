@@ -97,27 +97,31 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::Update(f64 frametime)
 {
-    static bool check_default_server_start = true;
-    if (check_default_server_start)
     {
-        //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
-        ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-        if (!loginModule.lock().get())
+        PROFILE(TundraLogicModule_Update);
+        
+        static bool check_default_server_start = true;
+        if (check_default_server_start)
         {
-            LogInfo("Started server by default");
-            server_->Start(cDefaultPort);
+            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
+            ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
+            if (!loginModule.lock().get())
+            {
+                LogInfo("Started server by default");
+                server_->Start(cDefaultPort);
+            }
+            check_default_server_start = false;
         }
-        check_default_server_start = false;
+        
+        // Update client & server
+        if (client_)
+            client_->Update(frametime);
+        if (server_)
+            server_->Update(frametime);
+        // Run scene sync
+        if (syncManager_)
+            syncManager_->Update(frametime);
     }
-    
-    // Update client & server
-    if (client_)
-        client_->Update(frametime);
-    if (server_)
-        server_->Update(frametime);
-    // Run scene sync
-    if (syncManager_)
-        syncManager_->Update(frametime);
     
     RESETPROFILER;
 }

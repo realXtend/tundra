@@ -45,12 +45,6 @@ public slots:
     //! Return the physics world for a scene if it exists
     PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
     
-    //! Set internal physics fixed update period (= length of each simulation step.) By default 1/60th of a second.
-    void SetPhysicsUpdatePeriod(float updatePeriod);
-    
-    //! Return internal physics fixed update period
-    float GetPhysicsUpdatePeriod() const { return physicsUpdatePeriod_; }
-    
 private slots:
     //! Scene has been removed, so delete also the physics world (if exists)
     void OnSceneRemoved(QObject* scene);
@@ -60,10 +54,6 @@ private:
     
     //! Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
-    
-    //! Physics update period, by default 1/60th of a second
-    float physicsUpdatePeriod_;
-    
 };
 
 }
