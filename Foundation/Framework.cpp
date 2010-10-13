@@ -154,6 +154,11 @@ namespace Foundation
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
+
+            RegisterDynamicObject("ui", ui);
+            RegisterDynamicObject("frame", frame_);
+            RegisterDynamicObject("input", &impl->input);
+            RegisterDynamicObject("console", console_);
         }
     }
 
