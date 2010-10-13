@@ -59,7 +59,7 @@ PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
     Scene::SceneManager* ptr = scene.get();
     boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld());
     physicsWorlds_[ptr] = new_world;
-    QObject::connect(ptr, SIGNAL(destroyed(QObject*)), this, SLOT(OnSceneRemoved(QObject*)));
+    QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
     
     LogInfo("Created new physics world");
     
@@ -78,12 +78,14 @@ PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
     return i->second.get();
 }
 
-void PhysicsModule::OnSceneRemoved(QObject* scene)
+void PhysicsModule::OnSceneRemoved(Scene::SceneManager* scene)
 {
-    Scene::SceneManager* ptr = dynamic_cast<Scene::SceneManager*>(scene);
-    PhysicsWorldMap::iterator i = physicsWorlds_.find(ptr);
+    PhysicsWorldMap::iterator i = physicsWorlds_.find(scene);
     if (i != physicsWorlds_.end())
+    {
+        LogInfo("Scene removed, removing physics world");
         physicsWorlds_.erase(i);
+    }
 }
 
 }

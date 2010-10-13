@@ -47,7 +47,7 @@ public slots:
     
 private slots:
     //! Scene has been removed, so delete also the physics world (if exists)
-    void OnSceneRemoved(QObject* scene);
+    void OnSceneRemoved(Scene::SceneManager* scene);
     
 private:
     typedef std::map<Scene::SceneManager*, boost::shared_ptr<PhysicsWorld> > PhysicsWorldMap;

@@ -324,6 +324,9 @@ namespace Scene
         */
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
         
+        //! Emitted when being destroyed
+        void Removed(Scene::SceneManager* scene);
+        
     private:
         Q_DISABLE_COPY(SceneManager);
 
