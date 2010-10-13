@@ -888,7 +888,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
 
         boost::shared_ptr<EC_Placeable> ogrepos = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_NetworkPosition> netpos = entity.GetComponent<EC_NetworkPosition>();
@@ -934,7 +934,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         // If is an avatar, handle update for avatar animations
         if (entity.GetComponent(EC_OpenSimAvatar::TypeNameStatic()))
         {
-            found_avatars_.push_back(*iter);
+            found_avatars_.push_back(iter->second);
             GetAvatarHandler()->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
 
@@ -1070,7 +1070,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     Scene::SceneManager::iterator end = current_scene->end();
     while (iter != end)
     {
-        Scene::EntityPtr entity = (*iter);
+        Scene::EntityPtr entity = iter->second;
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
         EC_OgreCamera* c = entity->GetComponent<EC_OgreCamera>().get();
         if (c)
@@ -1215,7 +1215,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
         EC_Mesh *ec_mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject *ec_custom = entity.GetComponent<EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
