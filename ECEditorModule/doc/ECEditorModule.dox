@@ -1,0 +1,93 @@
+/*!
+
+\page ec_editormodule EC_EditorModule
+
+\section How to use:
+ECEditor is a tool to edit entity components in runtime. The editor window should be found at top
+left menu in name of "entity component editor" or you can use it through the build mode that can 
+be open using a "Ctrl + B" shortcut.
+
+You can pick the entities that you want to edit by left clicking them on the world scene while the editor window is active. 
+The editor will display entity components in a tree structure (QTreeWidget), where each tree's root item is a component. 
+The editor will display each component's attributes as a individual branches inside the root item, assumed that attribute 
+is implemented for ECAttributeEditor class.
+
+<b>Note:</b> ECEditor will always send changes as in default update mode, this means that component changes are replicated to 
+other every client, but if component uses "local only" update mode, then changes are only local and wont get replicated to 
+other clients. For more information you should take a look at IComponent documentation.
+
+\section How to register new attribute type to editor window:
+To register a new attribute type, you need to do following procedures:
+<ul>
+<li> Create specialization for IAttribute, so that your attribute data can be serialized to a xml format.
+<li> Create specialization for ECAttributeEditor, so that ECEditor will know what ui elments need to be created and how to manipulate their values.
+<li> Register your ECAttributeEditor object creation to CreateAttributeEditor static factory method, switch can be found at ECComponentEditor class.
+<li> Add new attribute typename to ComponentManager, so that the editor can directly create new attribute instances to EC_DynamicComponent.
+</ul>
+
+Here is how you can add new attribute type in the viewer, by specifying following methods in IAttribute class:
+<ul>
+<li> FromString: Converts string value to attribute value.
+<li> ToString: Converts attibute value to string value.
+<li> TypenameToString: Return attribute typename in string format (Only used in EC_DynamicComponent).
+<li> ToQVariant: Converts attribute value to QVariant value.
+<li> FromQVariant: Converts QVariant value to attribute value.
+<li> FromQScriptValue: Converts QscriptValue to attribute value (Javascript spesific, in future should be removed).
+</ul>
+
+If newly created attribute is wanted to show in ECEditor, you need to specify following methods in ECAttributeEditor class:
+<ul>
+<li> Initialize: Will handle ui element creation and add signal slot connections between your attributes and ui elements.
+<li> Update: Will get new attribute value from IAttribute interface and update those values to ui elements.
+<li> Set: Will send a new attribute value to IAttribute object when ui element has changed.
+</ul>
+
+\section Class diagram:
+\image html ECEditorModule.png
+
+\b ECEditorModule
+<ul>
+<li> Core object that owns instance of ECEditorWindow object.
+</ul>
+
+\b ECEditorWindow
+<ul>
+<li> ECEditorWindow is main widget for ECEditor. All editable entities are saved to this object's list in entity_id_t format. 
+<li> Contains entity copy, paste and delete funtionality. 
+<li> Xml editor that is used for component's raw data editing, including attribute types aren't implemented to ECEditor.
+</ul>
+
+\b ECBrowser
+<ul>
+<li> Inherited from QtTreeBrowser class (QtPropertyBrowser).
+<li> Hold list of all entities that are wanted to be edited.
+<li> creates ECComponentEditor object for every component type. If entity is holding EC_DynamicComponent, user can freely add/remove attributes from that component, assuming that their names doesn't duplicate.
+<li> creates ComponentGroup objects for every component that typename and name doesn't match for already created ComponentGroups.
+</ul>
+
+\b ComponentGroup
+<ul>
+<li> Container class that holds same type of components in a single entry. Components are inserted to same ComponentGroup if their typename and name matches. 
+</ul>
+
+\b ECComponentEditor
+<ul>
+<li> Fetches component's attributes and creates ECAttributeEditor instances for every attribute type that is supported in ECAttributeEditor.
+<li> Owns static CreateAttributeEditor factory method, that will handle ECAttributeEditor creation. 
+<li> Handles AttributeChange signals to ECAttributeEditors (Could be moved to ECAttributeEditor?).
+</ul>
+
+\b ECAttributeEditor
+<ul>
+<li> Abstract class that holds three pure virtual methods Initialize, Update and Set that need to be initialized for every new attribute type. 
+<li> Can contain many attributes that it can edit in the same time (Needed for multi editing).
+</ul>
+
+\b ECAttributeEditor
+To get attribute editable in ECEdtior, following methods are needed to get specialized:
+<ul>
+<li> Initialize: Should handle ui element creation. e.g. Color attribute initializes four spinboxes, one per color channel.
+<li> Set: Should send changed ui value to IAttribute objects.
+<li> Update: Should get value from IAttribute object and insert it to ui element.
+</ul>
+*/
