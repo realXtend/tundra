@@ -16,12 +16,14 @@
 #include "ECEditorWindow.h"
 #include "UiServiceInterface.h"
 #include "EC_Name.h"
+#include "AssetReference.h"
 
 using namespace Scene;
 
 SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     framework(fw),
-    showComponents(false)
+    showComponents(false),
+    showAssets(false)
 {
     QVBoxLayout *layout = new QVBoxLayout(this);
     layout->setContentsMargins(0, 0, 0, 0);
@@ -29,9 +31,13 @@ SceneStructureWindow::SceneStructureWindow(Foundation::Framework *fw) :
     setWindowTitle(tr("Scene Structure"));
     resize(200,300);
 
-    QCheckBox *cb = new QCheckBox(tr("Show components"), this);
-    connect(cb, SIGNAL(toggled(bool)), this, SLOT(ShowComponents(bool)));
-    layout->addWidget(cb);
+    QCheckBox *compCheckBox = new QCheckBox(tr("Show components"), this);
+    connect(compCheckBox, SIGNAL(toggled(bool)), this, SLOT(ShowComponents(bool)));
+    layout->addWidget(compCheckBox);
+
+    QCheckBox *assetCheckBox = new QCheckBox(tr("Show asset references"), this);
+    connect(assetCheckBox, SIGNAL(toggled(bool)), this, SLOT(ShowAssetReferences(bool)));
+    layout->addWidget(assetCheckBox);
 
     treeWidget = new SceneTreeWidget(fw, this);
     layout->addWidget(treeWidget);
@@ -76,6 +82,88 @@ void SceneStructureWindow::ShowComponents(bool show)
         for(int j = 0; j < item->childCount(); ++j)
             item->child(j)->setHidden(!showComponents);
     }
+
+    if (showAssets)
+    {
+        // quick hack, implement better
+        ShowAssetReferences(false);
+        ShowAssetReferences(true);
+    }
+}
+
+void SceneStructureWindow::ShowAssetReferences(bool show)
+{
+    showAssets = show;
+    //treeWidget->showAssets = show;
+
+    if (scene.expired())
+    {
+        Clear();
+        return;
+    }
+
+    if (!showAssets)
+    {
+        // Just iterate through whole tree, delete asset ref items and return.
+        QList<AssetItem *> assetItems;
+        QTreeWidgetItemIterator it(treeWidget);
+        while(*it)
+        {
+            AssetItem *aItem = dynamic_cast<AssetItem *>(*it);
+            if (aItem)
+                assetItems << aItem;
+            ++it;
+        }
+
+        foreach(AssetItem *aItem, assetItems)
+        {
+            QTreeWidgetItem *p = aItem->parent();
+            p->removeChild(aItem);
+            SAFE_DELETE(aItem);
+        }
+
+        return;
+    }
+
+    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
+        if (!eItem)
+            continue;
+
+        Scene::EntityPtr entity = scene.lock()->GetEntity(eItem->id);
+        if (!entity)
+            continue;
+
+        // Create asset ref items, if any exist.
+        // If component items are visible, create asset ref items as children of them.
+        if (showComponents)
+        {
+            int entityChildCount = eItem->childCount();
+            for(int j = 0; j < entityChildCount; ++j)
+            {
+                ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
+                if (!cItem)
+                    continue;
+
+                ComponentPtr comp = entity->GetComponent(cItem->typeName, cItem->name);
+                if (!comp)
+                    continue;
+
+                foreach(IAttribute *attr, comp->GetAttributes())
+                    if (attr->TypenameToString() == "assetreference")
+                        AddAssetReference(cItem, attr);
+            }
+        }
+        else
+        {
+            // Create asset ref items as children of entity items.
+            foreach(ComponentPtr comp, entity->GetComponentVector())
+                foreach(IAttribute *attr, comp->GetAttributes())
+                    if (attr->TypenameToString() == "assetreference")
+                        AddAssetReference(eItem, attr);
+        }
+    }
 }
 
 void SceneStructureWindow::changeEvent(QEvent* e)
@@ -110,7 +198,7 @@ void SceneStructureWindow::Clear()
 
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
-    EntityTreeWidgetItem *item = new EntityTreeWidgetItem(entity->GetId());
+    EntityItem *item = new EntityItem(entity->GetId());
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     // Set local entity's font color blue
     if (entity->IsLocal())
@@ -125,7 +213,7 @@ void SceneStructureWindow::RemoveEntity(Scene::Entity* entity)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        EntityTreeWidgetItem *item = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->id == entity->GetId()))
         {
             SAFE_DELETE(item);
@@ -138,10 +226,10 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->id == entity->GetId()))
         {
-            ComponentTreeWidgetItem *cItem = new ComponentTreeWidgetItem(comp->TypeName(), comp->Name(), eItem);
+            ComponentItem *cItem = new ComponentItem(comp->TypeName(), comp->Name(), eItem);
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
             eItem->addChild(cItem);
@@ -154,20 +242,49 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
                 eItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
                 connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), SLOT(UpdateEntityName(IAttribute *)));
             }
+
+            // Add possible asset references.
+            foreach(IAttribute *attr, comp->GetAttributes())
+                if (attr->TypenameToString() == "assetreference")
+                    AddAssetReference(cItem, attr);
         }
     }
+}
+
+void SceneStructureWindow::AddComponent(EntityItem *parentItem, IComponent* comp)
+{
+/*
+    ComponentItem *cItem = new ComponentItem(comp->TypeName(), comp->Name(), parentItem);
+    cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
+    cItem->setHidden(!showComponents);
+    parentItem->addChild(cItem);
+
+    connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName(const QString &, const QString &)));
+
+    // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
+    if (comp->TypeName() == EC_Name::TypeNameStatic())
+    {
+        parentItem->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
+        connect(comp, SIGNAL(OnAttributeChanged(IAttribute *, AttributeChange::Type)), SLOT(UpdateEntityName(IAttribute *)));
+    }
+
+    // Add possible asset references.
+    foreach(IAttribute *attr, comp->GetAttributes())
+        if (attr->TypenameToString() == "assetreference")
+            AddAssetReference(cItem, attr);
+*/
 }
 
 void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* comp)
 {
     for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityItem *eItem = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (eItem && (eItem->id == entity->GetId()))
         {
             for (int j = 0; j < eItem->childCount(); ++j)
             {
-                ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(j));
+                ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
                 if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == comp->Name()))
                 {
                     eItem->removeChild(cItem);
@@ -182,6 +299,22 @@ void SceneStructureWindow::RemoveComponent(Scene::Entity* entity, IComponent* co
     }
 }
 
+void SceneStructureWindow::AddAssetReference(QTreeWidgetItem *parentItem, IAttribute *attr)
+{
+    Attribute<AssetReference> *assetRef = dynamic_cast<Attribute<AssetReference> *>(attr);
+    if (!assetRef)
+        return;
+
+    AssetItem *aItem = new AssetItem(assetRef->Get().type, assetRef->Get().id, parentItem);
+    aItem->setText(0, QString("%1:%2").arg(assetRef->Get().type).arg(assetRef->Get().id));
+    aItem->setHidden(!showAssets);
+    parentItem->addChild(aItem);
+}
+
+void SceneStructureWindow::RemoveAssetReference(IAttribute *attr)
+{
+}
+
 void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
 {
     EC_Name *nameComp = dynamic_cast<EC_Name *>(sender());
@@ -191,7 +324,7 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
     Entity *entity = nameComp->GetParentEntity();
     for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
-        EntityTreeWidgetItem *item = dynamic_cast<EntityTreeWidgetItem *>(treeWidget->topLevelItem(i));
+        EntityItem *item = dynamic_cast<EntityItem *>(treeWidget->topLevelItem(i));
         if (item && (item->id == entity->GetId()))
             item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     }
@@ -208,7 +341,7 @@ void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QSt
         QTreeWidgetItem *eItem = treeWidget->topLevelItem(i);
         for (int j = 0; j < eItem->childCount(); ++j)
         {
-            ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(j));
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(j));
             if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
                 cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
         }

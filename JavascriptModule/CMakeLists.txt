@@ -23,10 +23,11 @@ use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager EntityComponents/EC_Script Input)
+use_modules (Core Foundation Interfaces SceneManager Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
+LinkEntityComponent(EntityComponents/EC_Script EC_Script)
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
 link_modules (Core Foundation Interfaces EC_Script Input)
