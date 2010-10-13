@@ -4,17 +4,16 @@
 #define incl_ECEditorModule_ECAttributeEditor_h
 
 #include "ForwardDefines.h"
-#include <QObject>
-
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
 #include "IComponent.h"
-#include "AssetInterface.h"
-#include "Transform.h"
-#include <map>
+//#include "AssetInterface.h"
 
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
+
+#include <QObject>
+#include <map>
 
 class QtDoublePropertyManager;
 class QtVariantPropertyManager;
@@ -24,6 +23,8 @@ class QtAbstractEditorFactoryBase;
 class QtAbstractPropertyBrowser;
 
 class Color;
+struct AssetReference;
+struct Transform;
 
 namespace ECEditor
 {
@@ -279,9 +280,9 @@ namespace ECEditor
     template<> void ECAttributeEditor<QVariantList >::Initialize();
     template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Update();
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize();
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Set(QtProperty *property);
+    template<> void ECAttributeEditor<AssetReference>::Update();
+    template<> void ECAttributeEditor<AssetReference>::Initialize();
+    template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property);
 }
 
 #endif

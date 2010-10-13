@@ -23,17 +23,17 @@
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
-//#include "MainWindow.h"
 
 #include "NaaliUi.h"
 #include "NaaliMainWindow.h"
+#include "NaaliGraphicsView.h"
 
 #include <Ogre.h>
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/OgreD3D9HardwarePixelBuffer.h>
-#include <RenderSystems/Direct3D9/OgreD3D9RenderWindow.h>
+#include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
+#include <RenderSystems/Direct3D9/include/OgreD3D9RenderWindow.h>
 #endif
 
 
@@ -580,26 +580,28 @@ namespace OgreRenderer
 
         bool applyFPSLimit = true;
 
+        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 
-        if (q_ogre_ui_view_->isDirty() || resized_dirty_)
+        if (view->IsViewDirty() || resized_dirty_)
         {
             applyFPSLimit = false;
 
             PROFILE(Renderer_Render_QtBlit);
 
-            QRectF dirtyRectangle = q_ogre_ui_view_->DirtyRectangle();
+            QRectF dirtyRectangle = view->DirtyRectangle();
             if (resized_dirty_ > 0)
                 dirtyRectangle = QRectF(0, 0, GetWindowWidth(), GetWindowHeight());
 
-            QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
+            QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
             QRect dirty((int)dirtyRectangle.left(), (int)dirtyRectangle.top(), (int)dirtyRectangle.width(), (int)dirtyRectangle.height());
             if (dirty.left() < 0) dirty.setLeft(0);
             if (dirty.top() < 0) dirty.setTop(0);
-            if (dirty.right() > backBuffer.width()) dirty.setRight(backBuffer.width());
-            if (dirty.bottom() > backBuffer.height()) dirty.setBottom(backBuffer.height());
+            if (dirty.right() > view->BackBuffer()->width()) dirty.setRight(view->BackBuffer()->width());
+            if (dirty.bottom() > view->BackBuffer()->height()) dirty.setBottom(view->BackBuffer()->height());
             if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
             if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
 
@@ -609,7 +611,7 @@ namespace OgreRenderer
 //                q_ogre_ui_view_->setTransform(QTransform(1,0,0,0,1,0));
 
                 // Paint ui view into buffer
-                QPainter painter(&backBuffer);
+                QPainter painter(view->BackBuffer());
                 painter.setCompositionMode(QPainter::CompositionMode_Source);
                 painter.fillRect((int)dirtyRectangle.left(), (int)dirtyRectangle.top(), (int)dirtyRectangle.width(), (int)dirtyRectangle.height(),
                     Qt::transparent);
@@ -617,13 +619,13 @@ namespace OgreRenderer
 //                q_ogre_ui_view_->render(&painter, dirtyRectangle, dirty);
 //                q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), dirtyRectangle, dirty);
 
-                q_ogre_ui_view_->viewport()->render(&painter, QPoint((int)dirtyRectangle.left(), (int)dirtyRectangle.top()), QRegion(dirty), QWidget::DrawChildren);
+                view->viewport()->render(&painter, QPoint((int)dirtyRectangle.left(), (int)dirtyRectangle.top()), QRegion(dirty), QWidget::DrawChildren);
     //            q_ogre_ui_view_->render(&painter, QRectF(), dirty);
 //                q_ogre_ui_view_->viewport()->render(&painter, dirtyRectangle, dirty);
             }
 
-            Ogre::D3D9RenderWindow *d3d9rw = dynamic_cast<Ogre::D3D9RenderWindow*>(renderwindow_);
-            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(q_ogre_world_view_->GetOverlayTextureName().c_str());
+            Ogre::D3D9RenderWindow *d3d9rw = dynamic_cast<Ogre::D3D9RenderWindow*>(renderWindow->OgreRenderWindow());
+            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderWindow->OverlayTextureName());
             Ogre::HardwarePixelBufferSharedPtr pb = texture->getBuffer();
             Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
             assert(pixelBuffer);
@@ -646,9 +648,8 @@ namespace OgreRenderer
             if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
             if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
 
-
-            const int copyableHeight = min<int>(dirty.height(), min<int>(backBuffer.height() - dirty.top(), desc.Height - dirty.top()));
-            const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(backBuffer.width() - dirty.left(), desc.Width - dirty.left()));
+            const int copyableHeight = min<int>(dirty.height(), min<int>(view->BackBuffer()->height() - dirty.top(), desc.Height - dirty.top()));
+            const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
             if (copyableHeight <= 0 || copyableWidthBytes <= 0)
             {
                 std::cout << "Nothing to blit!" << std::endl;
@@ -677,7 +678,7 @@ namespace OgreRenderer
             }
             char *surfacePtr = (char *)lock.pBits;
 
-            char *scanlines = (char*)backBuffer.bits();
+            char *scanlines = (char*)view->BackBuffer()->bits();
              assert(scanlines);
              if (!scanlines)
                  return;
@@ -691,7 +692,7 @@ namespace OgreRenderer
 
                 // Update the regions that have changed.
                 for(int y = 0; y < copyableHeight; ++y)
-                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[dirty.left()*4 + (y+dirty.top()) * backBuffer.width()*4], copyableWidthBytes);
+                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[dirty.left()*4 + (y+dirty.top()) * view->BackBuffer()->width()*4], copyableWidthBytes);
             }
 
             {
@@ -708,21 +709,18 @@ namespace OgreRenderer
                 resized_dirty_--;
         }
 #else
-
-        NaaliGraphicsView *graphicsView = framework_->Ui()->GraphicsView();
-
-        if (graphicsView->IsViewDirty())
+        if (view->IsViewDirty())
         {
             PROFILE(Renderer_Render_QtBlit);
 
-            QImage *backBuffer = graphicsView->BackBuffer();
+            QImage *backBuffer = view->BackBuffer();
             if (!backBuffer)
                 return;
 
-            QSize viewsize(graphicsView->viewport()->size());
+            QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
-            QSize gviewsize(graphicsView->size());
+            QSize gviewsize(view->size());
 
             QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
             QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
@@ -738,7 +736,7 @@ namespace OgreRenderer
 
             // Paint ui view into buffer
             QPainter painter(backBuffer);
-            graphicsView->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
 
             renderWindow->UpdateOverlayImage(*backBuffer);
             if (resized_dirty_ > 0)
@@ -760,7 +758,7 @@ namespace OgreRenderer
 
         root_->renderOneFrame();
 //        renderWindow->RenderFrame();
-        graphicsView->MarkViewUndirty();
+        view->MarkViewUndirty();
     }
 
     uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)

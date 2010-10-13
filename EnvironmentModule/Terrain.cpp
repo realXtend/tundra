@@ -515,6 +515,7 @@ namespace Environment
             // Now that we have updated all the height map data for each patch, see if
             // we have enough of the patches loaded in to regenerate the GPU-side resources as well.
             terrainComponent->RegenerateDirtyTerrainPatches();
+            emit HeightmapGeometryUpdated();
             break;
         }
         case TPLayerWater:

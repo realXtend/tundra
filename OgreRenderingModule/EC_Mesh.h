@@ -184,6 +184,7 @@ public slots:
         \param placeable placeable component
      */
     void SetPlaceable(ComponentPtr placeable);
+    void SetPlaceable(EC_Placeable* placeable); //override for pythonqt & qtscript, the shared_ptr issue strikes again
     
     //! sets draw distance
     /*! \param draw_distance New draw distance, 0.0 = draw always (default)

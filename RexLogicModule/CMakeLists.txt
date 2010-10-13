@@ -83,7 +83,7 @@ if (NOT UISERVICE_TEST)
     link_modules (UiModule)
 endif ()
 
-link_package (OGRE)
+link_ogre()
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
