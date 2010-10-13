@@ -17,10 +17,10 @@ namespace Scene
     typedef std::list<EntityPtr> EntityList;
 
     //! Acts as a generic scenegraph for all entities in the world.
-    /*! Contains all entities in the world in a generic fashion.
+    /*! Contains all entities in the world.
         Acts as a factory for all entities.
 
-        To create access and remove scenes, see Framework.
+        To create, access and remove scenes, see Framework.
 
         \ingroup Scene_group
     */

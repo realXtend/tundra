@@ -805,7 +805,7 @@ bool Primitive::HandleOSNE_KillObject(uint32_t objectid)
     //need to remove children aswell... ///\todo is there a better way of doing this?
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
         EC_OpenSimPrim *prim = entity.GetComponent<EC_OpenSimPrim>().get();
         if (!prim)
             continue;
