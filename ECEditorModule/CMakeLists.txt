@@ -34,7 +34,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_package (OGRE)
+link_ogre()
 link_package (QT_PROPERTY_BROWSER)
 link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules)
 

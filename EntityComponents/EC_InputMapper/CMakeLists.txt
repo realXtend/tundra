@@ -18,7 +18,7 @@ QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
-use_modules (Core Foundation Interfaces SceneManager)
+use_modules (Core Foundation Interfaces SceneManager Input)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS} )
 

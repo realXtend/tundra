@@ -17,6 +17,8 @@
 #include <QPixmap>
 #include <QImage>
 
+class NaaliRenderWindow;
+
 namespace OgreRenderer
 {
     /// Shadow quality settings
@@ -33,6 +35,20 @@ namespace OgreRenderer
         Texture_Low = 0, ///< Halved resolution
         Texture_Normal ///< Normal
     };
+
+    class OgreRenderingModule;
+    class LogListener;
+    class ResourceHandler;
+    class RenderableListener;
+    class CAVEManager;
+    class StereoController;
+    class CompositionHandler;
+    class GaussianListener;
+
+    typedef boost::shared_ptr<Ogre::Root> OgreRootPtr;
+    typedef boost::shared_ptr<LogListener> OgreLogListenerPtr;
+    typedef boost::shared_ptr<ResourceHandler> ResourceHandlerPtr;
+    typedef boost::shared_ptr<RenderableListener> RenderableListenerPtr;
 
     //! Ogre renderer
     /*! Created by OgreRenderingModule. Implements the RenderServiceInterface.
@@ -54,10 +70,10 @@ namespace OgreRenderer
 
         //! Hides world view
         //also added for the webserver plugin
-        void HideCurrentWorldView(); 
+//        void HideCurrentWorldView(); 
 
         //! Shows world view
-        void ShowCurrentWorldView();
+//        void ShowCurrentWorldView();
 
         //! Returns window width, or 0 if no render window
         virtual int GetWindowWidth() const;
@@ -167,7 +183,7 @@ namespace OgreRenderer
         Ogre::Camera* GetCurrentCamera() const { return camera_; }
 
         //! Returns current render window
-        Ogre::RenderWindow* GetCurrentRenderWindow() const { return renderwindow_; }
+        Ogre::RenderWindow* GetCurrentRenderWindow() const;// { return renderwindow_; }
 
         //! Returns an unique name to create Ogre objects that require a mandatory name
         ///\todo Generates object names, not material or billboardset names, but anything unique goes.
@@ -205,11 +221,11 @@ namespace OgreRenderer
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
         //! Returns the main window.
-        Foundation::MainWindow *GetMainWindow() const { return main_window_; }
+//        Foundation::MainWindow *GetMainWindow() const { return main_window_; }
 
         /// Returns the backbuffer image that contains the UI layer of the application screen.
         /// Used to perform alpha-keying based input.
-        QImage &GetBackBuffer() { return backBuffer; }
+//        QImage &GetBackBuffer() { return backBuffer; }
 
         //! Returns shadow quality
         ShadowQuality GetShadowQuality() const { return shadowquality_; }
@@ -223,7 +239,7 @@ namespace OgreRenderer
         //! Sets texture quality. Note: changes need viewer restart to take effect
         void SetTextureQuality(TextureQuality newquality);
 
-
+        NaaliRenderWindow *GetRenderWindow() const { return renderWindow; }
 
     public slots:
         //! Toggles fullscreen
@@ -286,8 +302,7 @@ namespace OgreRenderer
         //! Viewport
         Ogre::Viewport* viewport_;
 
-        //! Rendering window
-        Ogre::RenderWindow* renderwindow_;
+        NaaliRenderWindow *renderWindow;
 
         //! Framework we belong to
         Foundation::Framework* framework_;
@@ -325,20 +340,8 @@ namespace OgreRenderer
         //! added resource directories
         StringVector added_resource_directories_;
 
-        //! Qt main window widget
-        Foundation::MainWindow *main_window_;
-
-        //! Ogre UI View Widget, inherits QGraphicsView
-        QOgreUIView *q_ogre_ui_view_;
-
-        //! Ogre World View
-        QOgreWorldView *q_ogre_world_view_;
-
         //! handler for post-processing effects
         CompositionHandler *c_handler_;
-
-        // Compositing back buffer
-        QImage backBuffer;
 
         //! last width/height
         int last_height_;
@@ -346,8 +349,6 @@ namespace OgreRenderer
 
         //! resized dirty count
         int resized_dirty_;
-
-    
 
         //! For render function
         QImage ui_buffer_;

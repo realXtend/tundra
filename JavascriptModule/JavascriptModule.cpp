@@ -15,7 +15,7 @@
 #include "EC_Script.h"
 #include "SceneManager.h"
 #include "InputContext.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "UiServiceInterface.h"
 #include "ISoundService.h"
 #include "Frame.h"
@@ -78,7 +78,7 @@ void JavascriptModule::Initialize()
 
 void JavascriptModule::PostInitialize()
 {
-    input_ = GetFramework()->Input()->RegisterInputContext("ScriptInput", 100);
+    input_ = GetFramework()->GetInput()->RegisterInputContext("ScriptInput", 100);
     UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
 
     RegisterNaaliCoreMetaTypes();

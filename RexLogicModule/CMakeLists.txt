@@ -47,7 +47,7 @@ use_package (OPENJPEG)
 use_package (XMLRPC)
 
 use_modules (RexLogicModule Core Foundation Interfaces SceneManager OgreRenderingModule AssetModule AvatarModule RexCommon
-    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule)
+    HttpUtilities RpcUtilities ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EnvironmentModule Input)
 
 if (NOT UISERVICE_TEST)
     use_modules (UiModule)
@@ -83,7 +83,7 @@ if (NOT UISERVICE_TEST)
     link_modules (UiModule)
 endif ()
 
-link_package (OGRE)
+link_ogre()
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

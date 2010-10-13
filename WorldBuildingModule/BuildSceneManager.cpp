@@ -14,6 +14,7 @@
 #include "EC_OpenSimPrim.h"
 #include "EC_Placeable.h"
 #include "UiServiceInterface.h"
+#include "NaaliApplication.h"
 
 #include <QPixmap>
 #include <QDebug>
@@ -39,7 +40,7 @@ namespace WorldBuilding
         override_server_time_(false)
     {
         setParent(parent);
-        connect(framework_->GetQApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
+        connect(framework_->GetNaaliApplication(), SIGNAL(aboutToQuit()), SLOT(CleanPyWidgets()));
         connect(viewport_poller_, SIGNAL(timeout()), SLOT(UpdateObjectViewport()));
 
         InitScene();

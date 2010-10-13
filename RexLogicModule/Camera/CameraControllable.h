@@ -174,7 +174,7 @@ namespace RexLogic
         Foundation::Framework *framework_;
 
         //! Mouse-look movement
-        Input::Events::Movement movement_;
+        InputEvents::Movement movement_;
 
         //! Do we use terrain height as a camera Z-axis constraint.
         bool useTerrainConstraint_;

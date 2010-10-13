@@ -126,7 +126,7 @@ namespace Avatar
         AvatarModule *avatar_module_;
 
         //! Mouse-look movement
-        Input::Events::Movement movement_;
+        InputEvents::Movement movement_;
     };
 }
 #endif

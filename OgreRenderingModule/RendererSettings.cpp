@@ -7,6 +7,7 @@
 #include "ServiceManager.h"
 #include "Framework.h"
 #include "UiServiceInterface.h"
+#include "../Input/Input.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -80,7 +81,7 @@ namespace OgreRenderer
         }
         
         //fullscreen shortcut key
-        input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
+        input_context_ = framework_->GetInput()->RegisterInputContext("Renderer", 90);
         if(input_context_.get())
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
     }

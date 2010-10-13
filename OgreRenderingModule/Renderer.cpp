@@ -11,8 +11,8 @@
 #include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_OgreMovableTextOverlay.h"
-#include "QOgreUIView.h"
-#include "QOgreWorldView.h"
+#include "NaaliRenderWindow.h"
+#include "NaaliGraphicsView.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 
@@ -23,9 +23,23 @@
 #include "Platform.h"
 #include "CoreException.h"
 #include "Entity.h"
-#include "MainWindow.h"
+
+#include "NaaliUi.h"
+#include "NaaliMainWindow.h"
+#include "NaaliGraphicsView.h"
 
 #include <Ogre.h>
+
+//#define USE_D3D9_SUBSURFACE_BLIT
+
+#ifdef USE_D3D9_SUBSURFACE_BLIT
+#include <d3d9.h>
+#include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
+#include <RenderSystems/Direct3D9/include/OgreD3D9RenderWindow.h>
+#endif
+
+
+//#include <OgreRenderQueue.h>
 
 #include <QApplication>
 #include <QDesktopWidget>
@@ -34,7 +48,12 @@
 #include <QGraphicsScene>
 #include <QCloseEvent>
 #include <QSize>
+#include <QScrollBar>
 #include <QUuid>
+
+#ifdef PROFILING
+#include "Input.h"
+#endif
 
 #include "MemoryLeakCheck.h"
 
@@ -117,7 +136,7 @@ namespace OgreRenderer
         scenemanager_(0),
         default_camera_(0),
         camera_(0),
-        renderwindow_(0),
+//        renderwindow_(0),
         viewport_(0),
         object_id_(0),
         group_id_(0),
@@ -126,8 +145,9 @@ namespace OgreRenderer
         plugins_filename_(plugins),
         ray_query_(0),
         window_title_(window_title),
-        main_window_(0),
-        q_ogre_ui_view_(0),
+        renderWindow(0),
+//        main_window_(0),
+//        q_ogre_ui_view_(0),
         last_width_(0),
         last_height_(0),
         capture_screen_pixel_data_(0),
@@ -145,6 +165,8 @@ namespace OgreRenderer
     {
         RemoveLogListener();
 
+        NaaliMainWindow *main_window_ = framework_->Ui()->MainWindow();
+
         if ((scenemanager_) && (scenemanager_->getRenderQueue()))
             scenemanager_->getRenderQueue()->setRenderableListener(0);
 
@@ -154,8 +176,9 @@ namespace OgreRenderer
             else
                 OgreRenderingModule::LogWarning("Could not free Ogre::RaySceneQuery: The scene manager to which it belongs is not present anymore!");
 
-        if (renderwindow_)
+//        if (renderwindow_)
         {
+            /*
             QDesktopWidget *desktop = QApplication::desktop();
             int desktop_max_width = 0;
             int desktop_max_height = desktop->screenGeometry().height();
@@ -185,10 +208,10 @@ namespace OgreRenderer
                 framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_height", height);
                 framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_left", left);
                 framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_top", top);
-            }
-            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_maximized", maximized);
+            }*/
+//            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "window_maximized", maximized);
             framework_->GetDefaultConfig().SetSetting("OgreRenderer", "view_distance", view_distance_);
-            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "fullscreen", IsFullScreen());
+//            framework_->GetDefaultConfig().SetSetting("OgreRenderer", "fullscreen", IsFullScreen());
         }
 
         ///\todo Is compositorInstance->removeLister(listener) needed here?
@@ -198,7 +221,7 @@ namespace OgreRenderer
         resource_handler_.reset();
         root_.reset();
         SAFE_DELETE(c_handler_);
-        SAFE_DELETE(q_ogre_world_view_);
+//        SAFE_DELETE(q_ogre_world_view_);
 
     }
 
@@ -213,16 +236,8 @@ namespace OgreRenderer
 
     void Renderer::InitializeQt()
     {
-        // FrameworkQtApplication owns the main window.
-        main_window_ = framework_->GetMainWindow();
-        q_ogre_ui_view_ = new QOgreUIView(main_window_);
-
-        main_window_->setLayout(new QVBoxLayout(main_window_));
-        main_window_->layout()->setMargin(0);
-        main_window_->layout()->addWidget(q_ogre_ui_view_);
-
-        // Ownership of uiview passed to framework
-        framework_->SetUIView(std::auto_ptr<QGraphicsView>(q_ogre_ui_view_));
+        // NaaliApplication owns the main window.
+//        NaaliMainWindow *main_window_ = framework_->Ui()->MainWindow();
     }
 
     void Renderer::InitializeEvents()
@@ -256,22 +271,22 @@ namespace OgreRenderer
         Ogre::LogManager::getSingleton().getDefaultLog()->setLogDetail(Ogre::LL_LOW);
         log_listener_ = OgreLogListenerPtr(new LogListener);
         Ogre::LogManager::getSingleton().getDefaultLog()->addListener(log_listener_.get());
-
+/*
         // Read naali config
         int width = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_width", 800);
         int height = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_height", 600);
         int window_left = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_left", -1);
         int window_top = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_top", -1);
         bool maximized = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "window_maximized", false); 
-        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false);
+        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "fullscreen", false); */
         view_distance_ = framework_->GetDefaultConfig().DeclareSetting("OgreRenderer", "view_distance", 500.0);
-
+/*
         // Be sure that window is not out of boundaries.
         if (window_left < 0)
             window_left = 0;
         if (window_top < 25)
             window_top = 25;
-
+*/
         // Load plugins
         LoadPlugins(plugins_filename_);
 
@@ -318,49 +333,46 @@ namespace OgreRenderer
 
         try
         {
-            // Setup Qts mainwindow with title and geometry
-            main_window_->setWindowTitle(QString(window_title_.c_str()));
-            main_window_->setGeometry(window_left, window_top, width, height);
-            if (maximized)
-                main_window_->showMaximized();
-            q_ogre_ui_view_->scene()->setSceneRect(q_ogre_ui_view_->rect());
-           
-
+            int width = framework_->Ui()->GraphicsView()->viewport()->size().width();
+            int height = framework_->Ui()->GraphicsView()->viewport()->size().height();
+            int window_left = 0;
+            int window_top = 0;
+            renderWindow = new NaaliRenderWindow();
+            bool fullscreen = false;
+//            renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView(), window_title_.c_str(), width, height, window_left, window_top, false);
+            renderWindow->CreateRenderWindow(framework_->Ui()->GraphicsView()->viewport(), window_title_.c_str(), width, height, window_left, window_top, false);
+            connect(framework_->Ui()->GraphicsView(), SIGNAL(WindowResized(int, int)), renderWindow, SLOT(Resize(int, int)));
+            renderWindow->Resize(framework_->Ui()->GraphicsView()->width(), framework_->Ui()->GraphicsView()->height());
+            // Create rendering window with QOgreUIView (will pass a Qt winID for rendering. Don't tell to go fullscreen, because Qt handles this)
+//            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(viewportWidget, window_title_, width, height, window_left, window_top, false /*fullscreen*/);
             if(fullscreen)
             {
-                main_window_->showFullScreen();
+                framework_->Ui()->MainWindow()->showFullScreen();
             }
             else
-                main_window_->show();
-
-            // Create rendeing window with QOgreUIView (will pass a Qt winID for rendering. Don't tell to go fullscreen, because Qt handles this
-            renderwindow_ = q_ogre_ui_view_->CreateRenderWindow(window_title_, width, height, window_left, window_top, false);
+                framework_->Ui()->MainWindow()->show();
 
             // Create QOgreWorldView that controls ogres window and ui overlay
-            q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
-            q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
-            q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
+//            q_ogre_world_view_ = new QOgreWorldView(renderwindow_);
+ //           q_ogre_ui_view_->SetWorldView(q_ogre_world_view_);
+  //          q_ogre_world_view_->InitializeOverlay(q_ogre_ui_view_->viewport()->width(), q_ogre_ui_view_->viewport()->height());
+//            q_ogre_world_view_->SetTargetFPSLimit(20);
         }
         catch (Ogre::Exception &/*e*/)
         {
             OgreRenderingModule::LogError("Could not create ogre rendering window!");
+            throw;
         }
 
-        if (renderwindow_)
-        {
-            OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
-            renderwindow_->setDeactivateOnFocusChange(false);
-            SetupResources();
-            SetupScene();
-            initialized_ = true;
-        }
-        else
-            throw Exception("Could not create Ogre rendering window");
+        OgreRenderingModule::LogDebug("Initializing resources, may take a while...");
+        SetupResources();
+        SetupScene();
+        initialized_ = true;
     }
 
     bool Renderer::IsFullScreen() const
     {
-        return main_window_->isFullScreen();
+        return framework_->Ui()->MainWindow()->isFullScreen();
     }
 
     void Renderer::PostInitialize()
@@ -371,9 +383,9 @@ namespace OgreRenderer
     void Renderer::SetFullScreen(bool value)
     {
         if(value)
-            main_window_->showFullScreen();
+            framework_->Ui()->MainWindow()->showFullScreen();
         else
-            main_window_->showNormal();
+            framework_->Ui()->MainWindow()->showNormal();
     }
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
@@ -471,7 +483,7 @@ namespace OgreRenderer
     {
         scenemanager_ = root_->createSceneManager(Ogre::ST_GENERIC, "SceneManager");
         default_camera_ = scenemanager_->createCamera("DefaultCamera");
-        viewport_ = renderwindow_->addViewport(default_camera_);
+        viewport_ = renderWindow->OgreRenderWindow()->addViewport(default_camera_);
 
         default_camera_->setNearClipDistance(0.1f);
         default_camera_->setFarClipDistance(2000.f);
@@ -495,17 +507,15 @@ namespace OgreRenderer
 
     int Renderer::GetWindowWidth() const
     {
-        int size = 0;
-        if (renderwindow_)
-            size = renderwindow_->getWidth();
-        return size;
+        if (renderWindow)
+            return renderWindow->OgreRenderWindow()->getWidth();
+        return 0;
     }
     int Renderer::GetWindowHeight() const
     {
-        int size = 0;
-        if (renderwindow_)
-            size = renderwindow_->getHeight();
-        return size;
+        if (renderWindow)
+            return renderWindow->OgreRenderWindow()->getHeight();
+        return 0;
     }
 
     void Renderer::SubscribeLogListener(const Foundation::LogListenerPtr &listener)
@@ -537,48 +547,220 @@ namespace OgreRenderer
 
     void Renderer::Render()
     {
-        if (!initialized_)
+        using namespace std;
+
+        if (!initialized_) 
             return;
 
         PROFILE(Renderer_Render);
-
         // If rendering into different size window, dirty the UI view for now & next frame
         if (last_width_ != GetWindowWidth() || last_height_ != GetWindowHeight())
         {
             last_width_ = GetWindowWidth();
             last_height_ = GetWindowHeight();
             resized_dirty_ = 2;
+#if 0
+            backBuffer = QImage(last_width_, last_height_, QImage::Format_ARGB32);
+            backBuffer.fill(Qt::transparent);
+#endif
+
+//            viewportWidget->setGeometry(0, 0, backBuffer.width(), backBuffer.height());
+/*
+        QRect mwg = main_window_->geometry();
+        QRect mwga = main_window_->frameGeometry();
+
+        QRect amwg = q_ogre_ui_view_->geometry();
+        QRect amwga = q_ogre_ui_view_->frameGeometry();
+
+        QRect vp = viewportWidget->geometry();
+        QRect vpa = viewportWidget->frameGeometry();
+*/
         }
 
-        if (q_ogre_ui_view_->isDirty() || resized_dirty_)
+//        if (viewportWidget->geometry().x() != 0 || viewportWidget->geometry().y() != 0)
+//            viewportWidget->setGeometry(0, 0, backBuffer.width(), backBuffer.height());
+
+        bool applyFPSLimit = true;
+
+        NaaliGraphicsView *view = framework_->Ui()->GraphicsView();
+
+#ifdef USE_D3D9_SUBSURFACE_BLIT
+
+        if (view->IsViewDirty() || resized_dirty_)
         {
+            applyFPSLimit = false;
+
             PROFILE(Renderer_Render_QtBlit);
 
-            QSize viewsize(q_ogre_ui_view_-> viewport()-> size());
+            QRectF dirtyRectangle = view->DirtyRectangle();
+            if (resized_dirty_ > 0)
+                dirtyRectangle = QRectF(0, 0, GetWindowWidth(), GetWindowHeight());
+
+            QSize viewsize(view->viewport()->size());
             QRect viewrect(QPoint(0, 0), viewsize);
 
-            // Compositing back buffer
-            if (backBuffer.width() != viewsize.width() || backBuffer.height() != viewsize.height() || backBuffer.format() != QImage::Format_ARGB32_Premultiplied)
-                backBuffer = QImage(viewsize, QImage::Format_ARGB32_Premultiplied);
-            backBuffer.fill(Qt::transparent);
+            QRect dirty((int)dirtyRectangle.left(), (int)dirtyRectangle.top(), (int)dirtyRectangle.width(), (int)dirtyRectangle.height());
+            if (dirty.left() < 0) dirty.setLeft(0);
+            if (dirty.top() < 0) dirty.setTop(0);
+            if (dirty.right() > view->BackBuffer()->width()) dirty.setRight(view->BackBuffer()->width());
+            if (dirty.bottom() > view->BackBuffer()->height()) dirty.setBottom(view->BackBuffer()->height());
+            if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
+            if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
 
-            // Paint ui view into buffer
-            QPainter painter(&backBuffer);
-            q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+            {
+                PROFILE(QPainter_Render);
 
-            // Blit ogre view into buffer
-            Ogre::Box bounds(0, 0, viewsize.width(), viewsize.height());
-            Ogre::PixelBox bufbox(bounds, Ogre::PF_A8R8G8B8, (void *)backBuffer.bits());
+//                q_ogre_ui_view_->setTransform(QTransform(1,0,0,0,1,0));
 
-            q_ogre_world_view_->OverlayUI(bufbox);
+                // Paint ui view into buffer
+                QPainter painter(view->BackBuffer());
+                painter.setCompositionMode(QPainter::CompositionMode_Source);
+                painter.fillRect((int)dirtyRectangle.left(), (int)dirtyRectangle.top(), (int)dirtyRectangle.width(), (int)dirtyRectangle.height(),
+                    Qt::transparent);
+                painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+//                q_ogre_ui_view_->render(&painter, dirtyRectangle, dirty);
+//                q_ogre_ui_view_->viewport()->render(&painter, QPoint(0,0), dirtyRectangle, dirty);
+
+                view->viewport()->render(&painter, QPoint((int)dirtyRectangle.left(), (int)dirtyRectangle.top()), QRegion(dirty), QWidget::DrawChildren);
+    //            q_ogre_ui_view_->render(&painter, QRectF(), dirty);
+//                q_ogre_ui_view_->viewport()->render(&painter, dirtyRectangle, dirty);
+            }
+
+            Ogre::D3D9RenderWindow *d3d9rw = dynamic_cast<Ogre::D3D9RenderWindow*>(renderWindow->OgreRenderWindow());
+            Ogre::TexturePtr texture = Ogre::TextureManager::getSingleton().getByName(renderWindow->OverlayTextureName());
+            Ogre::HardwarePixelBufferSharedPtr pb = texture->getBuffer();
+            Ogre::D3D9HardwarePixelBuffer *pixelBuffer = dynamic_cast<Ogre::D3D9HardwarePixelBuffer*>(pb.get());
+            assert(pixelBuffer);
+            LPDIRECT3DSURFACE9 surface = pixelBuffer->getSurface(d3d9rw ? d3d9rw->getD3D9Device() : 0);
+            if (!surface)
+            {
+                std::cout << "No D3DSurface!" << std::endl;
+                return;
+            }
+            D3DSURFACE_DESC desc;
+            HRESULT hr = surface->GetDesc(&desc);
+            if (FAILED(hr))
+            {
+                std::cout << "surface->GetDesc failed!" << std::endl;
+                return;
+            }
+
+            if (dirty.right() > desc.Width) dirty.setRight(desc.Width);
+            if (dirty.bottom() > desc.Height) dirty.setBottom(desc.Height);
+            if (dirty.left() > dirty.right()) dirty.setLeft(dirty.right());
+            if (dirty.top() > dirty.bottom()) dirty.setTop(dirty.bottom());
+
+            const int copyableHeight = min<int>(dirty.height(), min<int>(view->BackBuffer()->height() - dirty.top(), desc.Height - dirty.top()));
+            const int copyableWidthBytes = 4*min<int>(dirty.width(), min<int>(view->BackBuffer()->width() - dirty.left(), desc.Width - dirty.left()));
+            if (copyableHeight <= 0 || copyableWidthBytes <= 0)
+            {
+                std::cout << "Nothing to blit!" << std::endl;
+                return;
+            }
+
+            D3DLOCKED_RECT lock;
+
+            {
+                PROFILE(LockRect);
+//                HRESULT hr = surface->LockRect(&lock, 0, D3DLOCK_DISCARD); // for full UI redraw.
+                RECT lockRect = { dirty.left(), dirty.top(), dirty.right(), dirty.bottom() };
+                HRESULT hr = surface->LockRect(&lock, &lockRect, 0);
+                if (FAILED(hr))
+                {
+                    std::cout << "SubRect Lock Failed!" << std::endl;
+                    return;
+                    HRESULT hr = surface->LockRect(&lock, 0, 0);
+                    if (FAILED(hr))
+                    {
+                        std::cout << "Surface LockRect Failed!" << std::endl;
+                        return;
+                    }
+                }
+                assert(lock.Pitch >= desc.Width*4);
+            }
+            char *surfacePtr = (char *)lock.pBits;
+
+            char *scanlines = (char*)view->BackBuffer()->bits();
+             assert(scanlines);
+             if (!scanlines)
+                 return;
+
+            {
+                PROFILE(surface_memcpy);
+
+// Full UI blit: Profiled to be slower than the non-D3DLOCK_DISCARD -update.
+//                for(int y = 0; y < desc.Height; ++y)
+//                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[y * backBuffer.width()*4], min<int>(desc.Width, backBuffer.width())*4);
+
+                // Update the regions that have changed.
+                for(int y = 0; y < copyableHeight; ++y)
+                    memcpy(surfacePtr + y * lock.Pitch, &scanlines[dirty.left()*4 + (y+dirty.top()) * view->BackBuffer()->width()*4], copyableWidthBytes);
+            }
+
+            {
+                PROFILE(UnlockRect);
+                hr = surface->UnlockRect();
+                if (FAILED(hr))
+                {
+                    std::cout << "Unlock Failed!" << std::endl;
+                    return;
+                }
+            }
+
             if (resized_dirty_ > 0)
                 resized_dirty_--;
         }
-        
+#else
+        if (view->IsViewDirty())
+        {
+            PROFILE(Renderer_Render_QtBlit);
+
+            QImage *backBuffer = view->BackBuffer();
+            if (!backBuffer)
+                return;
+
+            QSize viewsize(view->viewport()->size());
+            QRect viewrect(QPoint(0, 0), viewsize);
+
+            QSize gviewsize(view->size());
+
+            QSize mainwindowSize(framework_->Ui()->MainWindow()->size());
+            QSize renderWindowSize(renderWindow->OgreRenderWindow()->getWidth(), renderWindow->OgreRenderWindow()->getHeight());
+
+            // Compositing back buffer
+            if (backBuffer->width() != viewsize.width() || backBuffer->height() != viewsize.height() || backBuffer->format() != QImage::Format_ARGB32_Premultiplied)
+            {
+//                graphicsView->ResizeBackBuffer(
+//                delete backBuffer;
+ //               backBuffer = new QImage(viewsize, QImage::Format_ARGB32_Premultiplied);
+            }
+            backBuffer->fill(Qt::transparent);
+
+            // Paint ui view into buffer
+            QPainter painter(backBuffer);
+            view->viewport()->render(&painter, QPoint(0,0), QRegion(viewrect), QWidget::DrawChildren);
+
+            renderWindow->UpdateOverlayImage(*backBuffer);
+            if (resized_dirty_ > 0)
+                resized_dirty_--;
+        }
+#endif
+
         // The RenderableListener will fill in visible entities for this frame
         visible_entities_.clear();
-        q_ogre_world_view_->RenderOneFrame();
-        q_ogre_ui_view_->setDirty(false);
+
+#ifdef PROFILING
+        // Performance debugging: Toggle the UI overlay visibility based on a debug key.
+        // Allows testing whether the GPU is majorly fill rate bound.
+        if (framework_->GetInput()->IsKeyDown(Qt::Key_F8))
+            renderWindow->OgreOverlay()->hide();
+        else
+            renderWindow->OgreOverlay()->show();
+#endif
+
+        root_->renderOneFrame();
+//        renderWindow->RenderFrame();
+        view->MarkViewUndirty();
     }
 
     uint GetSubmeshFromIndexRange(uint index, const std::vector<uint>& submeshstartindex)
@@ -772,8 +954,8 @@ namespace OgreRenderer
         if (!initialized_)
             return result;
 
-        float screenx = x / (float)renderwindow_->getWidth();
-        float screeny = y / (float)renderwindow_->getHeight();
+        float screenx = x / (float)renderWindow->OgreRenderWindow()->getWidth();
+        float screeny = y / (float)renderWindow->OgreRenderWindow()->getHeight();
 
         Ogre::Ray ray = camera_->getCameraToViewportRay(screenx, screeny);
         ray_query_->setRay(ray);
@@ -969,6 +1151,11 @@ namespace OgreRenderer
         return l;
     }
 
+    Ogre::RenderWindow *Renderer::GetCurrentRenderWindow() const
+    {
+        return renderWindow->OgreRenderWindow();
+    }
+
     std::string Renderer::GetUniqueObjectName()
     {
         return "obj" + ToString<uint>(object_id_++);
@@ -991,10 +1178,10 @@ namespace OgreRenderer
 
     void Renderer::TakeScreenshot(const std::string& filePath, const std::string& fileName)
     {
-        if (renderwindow_)
+        if (renderWindow)
         {
             Ogre::String file = filePath + fileName;
-            renderwindow_->writeContentsToFile(file);
+            renderWindow->OgreRenderWindow()->writeContentsToFile(file);
         }
     }
 
@@ -1038,8 +1225,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderImage(bool use_main_camera)
     {
-        unsigned window_width = renderwindow_->getWidth();
-        unsigned window_height = renderwindow_->getHeight();
+        int window_width = renderWindow->OgreRenderWindow()->getWidth();
+        int window_height = renderWindow->OgreRenderWindow()->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
@@ -1099,8 +1286,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
     {
-        int window_width = renderwindow_->getWidth();
-        int window_height = renderwindow_->getHeight();
+        int window_width = renderWindow->OgreRenderWindow()->getWidth();
+        int window_height = renderWindow->OgreRenderWindow()->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
@@ -1186,7 +1373,7 @@ namespace OgreRenderer
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
     }
-
+/*
     void Renderer::HideCurrentWorldView()
     {
         q_ogre_world_view_->HideUiOverlay();
@@ -1196,7 +1383,7 @@ namespace OgreRenderer
     {
           q_ogre_world_view_->ShowUiOverlay();
     }
-
+*/
     void Renderer::InitShadows()
     {
         bool using_pssm = (shadowquality_ == Shadows_High);

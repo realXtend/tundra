@@ -18,7 +18,7 @@
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "EnvironmentModule.h"
 #include "Terrain.h"
 #include "EC_Terrain.h"
@@ -120,42 +120,42 @@ namespace RexLogic
     {
         camera_control_widget_->HandleInputEvent(event_id, data);
 
-        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+        if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
             firstperson_pitch_ = 0.0f;
         }
 
-        if (event_id == Input::Events::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
+        if (event_id == InputEvents::INPUTSTATE_FIRSTPERSON && current_state_ != FirstPerson)
         {
             current_state_ = FirstPerson;
             firstperson_pitch_ = 0.0f;
         }
 
-        if (event_id == Input::Events::INPUTSTATE_FREECAMERA && current_state_ != FreeLook)
+        if (event_id == InputEvents::INPUTSTATE_FREECAMERA && current_state_ != FreeLook)
         {
             current_state_ = FreeLook;
             firstperson_pitch_ = 0.0f;
         }
 
-        if (event_id == Input::Events::SCROLL || 
-            event_id == Input::Events::ZOOM_IN_PRESSED || 
-            event_id == Input::Events::ZOOM_OUT_PRESSED)
+        if (event_id == InputEvents::SCROLL || 
+            event_id == InputEvents::ZOOM_IN_PRESSED || 
+            event_id == InputEvents::ZOOM_OUT_PRESSED)
         {
             CameraZoomEvent event_data;
             event_data.entity = camera_entity_.lock();
 
             switch (event_id)
             {
-                case Input::Events::SCROLL:
-                    event_data.amount = checked_static_cast<Input::Events::SingleAxisMovement*>(data)->z_.rel_;
+                case InputEvents::SCROLL:
+                    event_data.amount = checked_static_cast<InputEvents::SingleAxisMovement*>(data)->z_.rel_;
                     break;
 
-                case Input::Events::ZOOM_IN_PRESSED:
+                case InputEvents::ZOOM_IN_PRESSED:
                     event_data.amount = 100;
                     break;
 
-                case Input::Events::ZOOM_OUT_PRESSED:
+                case InputEvents::ZOOM_OUT_PRESSED:
                     event_data.amount = -100;
                     break;
             }
@@ -164,16 +164,16 @@ namespace RexLogic
                 framework_->GetEventManager()->SendEvent(action_event_category_, RexTypes::Actions::Zoom, &event_data);
         }
 
-        if (event_id == Input::Events::MOUSELOOK)
+        if (event_id == InputEvents::MOUSELOOK)
         {
-            Input::Events::Movement *m = checked_static_cast <Input::Events::Movement *> (data);
+            InputEvents::Movement *m = checked_static_cast <InputEvents::Movement *> (data);
             movement_.x_.rel_ += m->x_.rel_;
             movement_.y_.rel_ += m->y_.rel_;
             movement_.x_.abs_ = m->x_.abs_;
             movement_.y_.abs_ = m->y_.abs_;
         }
 
-        if (event_id == Input::Events::INPUTSTATE_CAMERATRIPOD)
+        if (event_id == InputEvents::INPUTSTATE_CAMERATRIPOD)
         {
             current_state_ = Tripod;
             firstperson_pitch_ = 0.0f;
@@ -359,7 +359,7 @@ namespace RexLogic
             {
                 current_state_ = ThirdPerson;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
                 
                 firstperson_pitch_ = 0.0f;
             }
@@ -368,7 +368,7 @@ namespace RexLogic
             if (camera_distance_ == camera_min_distance_)
             {
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FIRSTPERSON, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FIRSTPERSON, 0);
                 current_state_ = FirstPerson;
                 
                 firstperson_pitch_ = 0.0f;

@@ -163,7 +163,7 @@ class LoadURLHandler(Component):
             self.webview.stop()
         if self.proxywidget is not None:
             self.proxywidget.hide()
-            uism = r.getUiSceneManager()
+            uism = naali.ui
             uism.RemoveWidgetFromScene(self.proxywidget)
 
 def loadurl(urlstring):

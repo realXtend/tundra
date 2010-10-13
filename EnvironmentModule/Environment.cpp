@@ -139,7 +139,7 @@ void Environment::CreateEnvironment()
         if ( enviroment == 0)
         {
             // Create LocalEnvironment- entity
-            enviroment = owner_->CreateEnvironmentEntity("FogEnvironment", EC_Fog::TypeNameStatic()).get();
+            //enviroment = owner_->CreateEnvironmentEntity("FogEnvironment", EC_Fog::TypeNameStatic()).get();
         }
        
         if ( enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))

@@ -24,11 +24,18 @@
 
 
 #include "CommonCode.cg"
+
+#define DISABLE_SHADOWS
 //#define LOWEND_SHADOWS
+
+#ifndef DISABLE_SHADOWS
+
 #ifdef LOWEND_SHADOWS
 #include "Shadow1Tap.cg"
 #else
 #include "Shadow4Tap.cg"
+#endif
+
 #endif
 
 
@@ -198,7 +205,8 @@ void mainPS(
 	for(int i = 0; i < cNumPerPixelLights; ++i)
 	{
 		float lightness = 1.f;
-#ifdef SHADOW_MAPPING
+#if definedf(SHADOW_MAPPING) && !defined(DISABLE_SHADOWS)
+
 		if (i == 0) // Only the first light - the directional light uses a shadow map.
 		{
 //			lightness = SampleShadowMap1TapPCF(shadowMap, shadowTex);
