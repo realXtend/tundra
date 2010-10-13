@@ -66,7 +66,7 @@ namespace Avatar
         SubscribeToEventCategories();
         scene_manager_->InitScene();
 
-        avatar_context_ = GetFramework()->Input()->RegisterInputContext("Avatar", 100);
+        avatar_context_ = GetFramework()->GetInput()->RegisterInputContext("Avatar", 100);
         if (avatar_context_)
         {
             connect(avatar_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), SLOT(KeyPressed(KeyEvent*)));

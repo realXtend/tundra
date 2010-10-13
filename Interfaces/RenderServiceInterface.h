@@ -72,7 +72,7 @@ namespace Foundation
 
         /// Returns the backbuffer image that contains the UI layer of the application screen.
         /// Used to perform alpha-keying based input.
-        virtual QImage &GetBackBuffer() = 0;
+//        virtual QImage &GetBackBuffer() = 0;
 
         //! Returns render window width, or 0 if no window is opened
         virtual int GetWindowWidth() const = 0;

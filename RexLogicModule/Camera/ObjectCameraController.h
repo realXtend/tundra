@@ -7,7 +7,7 @@
 #include "ForwardDefines.h"
 #include "Foundation.h"
 #include "CameraControllable.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "IModule.h"
 #include "IEventData.h"
 #include "Renderer.h"

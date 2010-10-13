@@ -6,8 +6,8 @@
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "AvatarModuleApi.h"
-#include "InputServiceInterface.h"
-#include "QtInputKeyEvent.h"
+#include "Input.h"
+#include "KeyEvent.h"
 #include "SceneManager.h"
 
 #include "WorldStream.h"

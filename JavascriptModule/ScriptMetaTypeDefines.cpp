@@ -10,15 +10,13 @@
 #include "ScriptMetaTypeDefines.h"
 
 #include "Entity.h"
-#include "QtInputMouseEvent.h"
-#include "QtInputKeyEvent.h"
+#include "KeyEvent.h"
+#include "MouseEvent.h"
 #include "UiProxyWidget.h"
 #include "Frame.h"
 #include "Console.h"
 #include "ISoundService.h"
 
-#include "QtInputMouseEvent.h"
-#include "QtInputKeyEvent.h"
 #include "EntityAction.h"
 
 #include <QUiLoader>

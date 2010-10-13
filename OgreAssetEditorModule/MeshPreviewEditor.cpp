@@ -14,6 +14,7 @@
 #include "ResourceInterface.h"
 #include "CoreMath.h"
 #include "OgreRenderingModule.h"
+#include "NaaliRenderWindow.h"
 
 #include <QUiLoader>
 #include <QFile>
@@ -172,8 +173,10 @@ void MeshPreviewEditor::Update()
         CreateRenderTexture();
         
     }
-    // Hide ui
-    renderer_->HideCurrentWorldView();
+
+    // Hide the main UI Overlay, because otherwise Ogre will paint the Overlay onto the Mesh preview screen as well,
+    // which is not desired.
+    renderer_->GetRenderWindow()->ShowOverlay(false);
 
     AdjustScene();
 
@@ -206,8 +209,8 @@ void MeshPreviewEditor::Update()
 
     delete[] pixelData;
     
-    // Show ui
-    renderer_->ShowCurrentWorldView();  
+    // Remember to re-enable the main UI now we're finished with the Ogre render.
+    renderer_->GetRenderWindow()->ShowOverlay(true);
 }
 
 void MeshPreviewEditor::AdjustScene()

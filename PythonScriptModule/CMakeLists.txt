@@ -32,25 +32,23 @@ use_package (CURL)
 use_package (XMLRPC)
 
 use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
-    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
+    ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_DynamicComponent EntityComponents/EC_Ruler EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
-    EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent EntityComponents/EC_SoundRuler
-    EntityComponents/EC_Script EntityComponents/EC_NetworkPosition EntityComponents/EC_Ruler)
+    EntityComponents/EC_3DCanvasSource EntityComponents/EC_Script Input Ui)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule EC_Highlight EC_Touchable
-    ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent EC_SoundRuler
-    EC_Script EC_NetworkPosition EC_Ruler)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule EC_Touchable
+    ProtocolUtilities EC_DynamicComponent EC_Ruler EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_Script Input Ui)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
 link_package (PYTHON)
 link_package (PYTHON_QT)
-link_package (OGRE)
+link_ogre()
 link_package (CURL)
 link_package (XMLRPC)
 

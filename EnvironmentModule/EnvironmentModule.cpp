@@ -181,7 +181,6 @@ namespace Environment
                     CreateEnvironment();
                     CreateTerrain();
                     CreateWater();
-                    //CreateEnvironment();
                     CreateSky();
                 }
             }
@@ -269,13 +268,7 @@ namespace Environment
         case RexNetMsgLayerData:
         {
             if(terrain_.get())
-            {
-                static int count = 0;
-                bool kill_event = terrain_->HandleOSNE_LayerData(netdata);
-                if (environment_editor_)
-                    environment_editor_->UpdateTerrain();
-                return kill_event;
-            }
+                return terrain_->HandleOSNE_LayerData(netdata);
         }
         case RexNetMsgGenericMessage:
         {
@@ -615,11 +608,11 @@ namespace Environment
         scene->EmitEntityCreated(entity);
         terrain_->FindCurrentlyActiveTerrain();
         
-        if ( environment_editor_ != 0 )
+        /*if ( environment_editor_ != 0 )
         {
             environment_editor_->InitTerrainTabWindow();
             environment_editor_->InitTerrainTextureTabWindow();
-        }
+        }*/
         
     }
 
@@ -627,8 +620,8 @@ namespace Environment
     {
         water_ = WaterPtr(new Water(this));
         water_->CreateWaterGeometry();
-        if ( environment_editor_ != 0 )
-             environment_editor_->InitWaterTabWindow();
+        /*if ( environment_editor_ != 0 )
+             environment_editor_->InitWaterTabWindow();*/
     }
 
     void EnvironmentModule::CreateEnvironment()
@@ -641,11 +634,11 @@ namespace Environment
     {
         sky_ = SkyPtr(new Sky(this));
 
-        if ( environment_editor_ != 0 )
+        /*if ( environment_editor_ != 0 )
              environment_editor_->InitSkyTabWindow();
         
         if (!GetEnvironmentHandler()->IsCaelum())
-            sky_->CreateDefaultSky(true);
+            sky_->CreateDefaultSky(true);*/
  /*       
         Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
         Scene::EntityPtr sky_entity = scene->CreateEntity(GetFramework()->GetDefaultWorldScene()->GetNextFreeId());

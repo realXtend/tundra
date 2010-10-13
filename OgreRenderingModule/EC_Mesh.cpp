@@ -88,6 +88,12 @@ void EC_Mesh::SetPlaceable(ComponentPtr placeable)
     AttachEntity();
 }
 
+void EC_Mesh::SetPlaceable(EC_Placeable* placeable)
+{
+     ComponentPtr ptr = placeable->GetParentEntity()->GetComponent(placeable->TypeName(), placeable->Name()); //hack to get the shared_ptr to this component
+     SetPlaceable(ptr);
+}
+
 void EC_Mesh::SetAdjustPosition(const Vector3df& position)
 {
     Transform transform = nodeTransformation.Get();

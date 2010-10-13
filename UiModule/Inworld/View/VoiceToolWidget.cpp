@@ -13,7 +13,7 @@
 #include "CommunicationsService.h"
 #include "VoiceStateWidget.h"
 #include "UiServiceInterface.h"
-#include "InputServiceInterface.h"
+#include "Input.h"
 #include "UiProxyWidget.h"
 #include "VoiceControllerWidget.h"
 #include "VoiceUsersInfoWidget.h"
@@ -96,7 +96,7 @@ namespace CommUI
 
             if (framework_)
             {
-                input_context_ = framework_->Input()->RegisterInputContext("CommunicationWidget", 90);
+                input_context_ = framework_->GetInput()->RegisterInputContext("CommunicationWidget", 90);
                 connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(SetPushToTalkOn()));
                 connect(input_context_.get(), SIGNAL(MouseMiddleReleased(MouseEvent*)),voice_controller_widget_, SLOT(SetPushToTalkOff()));
                 connect(input_context_.get(), SIGNAL(MouseMiddlePressed(MouseEvent*)), voice_controller_widget_, SLOT(Toggle()));
