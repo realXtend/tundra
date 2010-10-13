@@ -55,12 +55,6 @@ public:
     //! Destructor
     ~SyncManager();
     
-    //! Set update period (seconds)
-    void SetUpdatePeriod(f64 period);
-    
-    //! Get update period
-    f64 GetUpdatePeriod() { return update_period_; }
-    
     //! Register to entity/component change signals from a specific scene and start syncing them
     void RegisterToScene(Scene::ScenePtr scene);
     
@@ -72,6 +66,13 @@ public:
     
     //! Handle Kristalli event
     void HandleKristalliEvent(event_id_t event_id, IEventData* data);
+    
+public slots:
+    //! Set update period (seconds)
+    void SetUpdatePeriod(float period);
+    
+    //! Get update period
+    float GetUpdatePeriod() { return update_period_; }
     
 private slots:
     //! Trigger EC sync because of component attributes changing
@@ -154,10 +155,10 @@ private:
     //! Scene pointer
     Scene::SceneWeakPtr scene_;
     
-    //! Time period for update (default 0.04 - 25fps)
-    f64 update_period_;
+    //! Time period for update, default 1/30th of a second
+    float update_period_;
     //! Time accumulator for update
-    f64 update_acc_;
+    float update_acc_;
     
     //! Server sync state (client operation only)
     SceneSyncState server_syncstate_;
