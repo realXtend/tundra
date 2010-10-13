@@ -1,5 +1,11 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "StableHeaders.h"
 #include "WebLoginPermanentCookie.h"
+
+#include <QFile>
+#include <QDir>
+
 namespace CoreUi
 {
     namespace Classical
