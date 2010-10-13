@@ -3,6 +3,8 @@
 #ifndef incl_Physics_PhysicsWorld_h
 #define incl_Physics_PhysicsWorld_h
 
+#include "PhysicsModuleApi.h"
+
 #include <QObject>
 
 class btCollisionConfiguration;
@@ -15,7 +17,7 @@ class btDynamicsWorld;
 namespace Physics
 {
 
-class PhysicsWorld : public QObject
+class PHYSICS_MODULE_API PhysicsWorld : public QObject
 {
     Q_OBJECT
     

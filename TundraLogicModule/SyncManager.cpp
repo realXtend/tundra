@@ -529,6 +529,12 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     entitystate->RemoveComponent(j->first, j->second);
                     entitystate->AckRemove(j->first, j->second);
                 }
+                
+                if (removeMsg.components.size())
+                {
+                    destination->Send(removeMsg);
+                    ++num_messages_sent;
+                }
             }
         }
         
