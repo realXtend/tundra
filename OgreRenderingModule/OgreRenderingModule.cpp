@@ -90,6 +90,8 @@ namespace OgreRenderer
         renderer_->Initialize();
 
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Renderer, renderer_);
+
+        framework_->RegisterDynamicObject("renderer", renderer_.get());
     }
 
     // virtual
