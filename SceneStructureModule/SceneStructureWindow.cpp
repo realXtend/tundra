@@ -95,17 +95,13 @@ void SceneStructureWindow::Populate()
         return;
     }
 
-    SceneManager::iterator it = s->begin();
-    while(it != s->end())
-    {
+    for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
         AddEntity((*it).get());
-        ++it;
-    }
 }
 
 void SceneStructureWindow::Clear()
 {
-    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    for(int i = 0; i < treeWidget->topLevelItemCount(); ++i)
     {
         QTreeWidgetItem *item = treeWidget->topLevelItem(i);
         SAFE_DELETE(item);
@@ -149,6 +145,8 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
             eItem->addChild(cItem);
+
+            connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName(const QString &, const QString &)));
 
             // If name component exists, retrieve name from it. Also hook up change signal so that UI keeps synch with the name.
             if (comp->TypeName() == EC_Name::TypeNameStatic())
@@ -201,5 +199,19 @@ void SceneStructureWindow::UpdateEntityName(IAttribute *attr)
 
 void SceneStructureWindow::UpdateComponentName(const QString &oldName, const QString &newName)
 {
+    IComponent *comp = dynamic_cast<IComponent *>(sender());
+    if (!comp)
+        return;
+
+    for (int i = 0; i < treeWidget->topLevelItemCount(); ++i)
+    {
+        QTreeWidgetItem *eItem = treeWidget->topLevelItem(i);
+        for (int j = 0; j < eItem->childCount(); ++j)
+        {
+            ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(j));
+            if (cItem && (cItem->typeName == comp->TypeName()) && (cItem->name == oldName))
+                cItem->setText(0, QString("%1 %2").arg(cItem->typeName).arg(newName));
+        }
+    }
 }
 
