@@ -1,3 +1,5 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
 #include "NaaliGraphicsView.h"
 
 #include <QRect>
@@ -124,6 +126,21 @@ void NaaliGraphicsView::resizeEvent(QResizeEvent *e)
 
 //        viewport()->setGeometry(0, 0, backBuffer->width()-1, backBuffer->height()-1);
 */
+}
+
+void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
+{
+    emit DragEnterEvent(e);
+}
+
+void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
+{
+    emit DragMoveEvent(e);
+}
+
+void NaaliGraphicsView::dropEvent(QDropEvent *e)
+{
+    emit DropEvent(e);
 }
 
 void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)

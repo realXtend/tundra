@@ -29,10 +29,16 @@ namespace Foundation
 namespace TundraLogic
 {
 
+//! Importer tool for OGRE .scene and .mesh files
 class TUNDRALOGIC_MODULE_API SceneImporter
 {
 public:
-    SceneImporter(Foundation::Framework* framework);
+    //! Constructs the importer.
+    /*! \param scene Destination scene
+    */
+    explicit SceneImporter(Foundation::Framework* framework);
+    
+    //! Destroyes the importer.
     ~SceneImporter();
     
     //! Import a single mesh. Scans the mesh for needed skeleton & materials
@@ -40,20 +46,21 @@ public:
         \param meshname Filename of mesh
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
-        \param worldtransform Transform to use for the entity's placeable
+        \param worldtransform Transform to use for the entity's placeable. You can use Transform's default ctor if you don't want to spesify custom Transform.
         \param entity_prefab_xml Prefab data (entity & components in xml serialized format) to use for the entity
         \param change What changetype to use in scene operations
         \param localassets Whether to put file:// prefix into all asset references
         \return Entity pointer if successful (null if failed)
      */
     Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::string& meshname, std::string in_asset_dir, std::string out_asset_dir,
-        Transform worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
+        const Transform &worldtransform, const std::string& entity_prefab_xml, AttributeChange::Type change, bool localassets);
     
     //! Import a dotscene
     /*! \param scene Destination scene
         \param filename Input filename
         \param in_asset_dir Where to read input assets. Typically same as the input file path
         \param out_asset_dir Where to put resulting assets
+        \param worldtransform Transform to use for the entity's placeable
         \param change What changetype to use in scene operations
         \param clearscene Whether to clear scene first. Default false
         \param localassets Whether to put file:// prefix into all asset references
@@ -61,8 +68,8 @@ public:
                Default true. If this is false, all entities will be created as new
         \return true if successful
      */
-    bool Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, AttributeChange::Type change,
-        bool clearscene = false, bool localassets = true, bool replace = true);
+    bool Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
+        AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true);
     
 private:
     //! Process the asset references of a node, and its child nodes
