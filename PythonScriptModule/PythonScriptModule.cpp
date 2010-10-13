@@ -32,7 +32,6 @@
 #include "DebugOperatorNew.h"
 
 #include "PythonScriptModule.h"
-#include "PyEntity.h"
 #include "RexPythonQt.h"
 #include "PythonScriptInstance.h"
 
@@ -1779,12 +1778,6 @@ namespace PythonScript
 
         //event constants are now put in PostInit so that the other modules have registered theirs already.
         //XXX what about new event types defined in py-written modules?
-
-        entity_init(apiModule); 
-        /* this is planned to be vice versa: 
-           the implementing modules, like here scene for Entity,
-           would call something here to get a ref to the module, or something?
-        */
 
         //init PythonQt, implemented in RexPythonQt.cpp
         if (!pythonqt_inited)
