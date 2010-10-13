@@ -231,7 +231,7 @@ class EC_WaterPlane : public IComponent
         Ogre::SceneNode* node_;
        
         bool attached_;
-
+        bool attachedToRoot_;
         int lastXsize_;
         int lastYsize_;
 
