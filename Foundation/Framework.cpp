@@ -154,6 +154,11 @@ namespace Foundation
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
+
+            RegisterDynamicObject("ui", ui);
+            RegisterDynamicObject("frame", frame_);
+            RegisterDynamicObject("input", &impl->input);
+            RegisterDynamicObject("console", console_);
         }
     }
 
@@ -696,6 +701,21 @@ namespace Foundation
 //            throw Exception("Fatal: Sound service not present!");
             RootLogWarning("Framework::Audio(): Sound service not present!");
         return sound_logic.get();
+    }
+
+    bool Framework::RegisterDynamicObject(QString name, QObject *object)
+    {
+        if (name.length() == 0 || !object)
+            return false;
+
+        // We never override a property if it already exists.
+        if (property(name.toStdString().c_str()).isValid())
+            return false;
+
+        setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
+
+        return true;
+
     }
 
     Scene::ScenePtr Framework::GetScene(const QString &name) const

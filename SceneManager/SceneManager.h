@@ -5,7 +5,6 @@
 
 #include "ForwardDefines.h"
 #include "CoreStdIncludes.h"
-#include "CoreAnyIterator.h"
 #include "Entity.h"
 #include "IComponent.h"
 
@@ -18,10 +17,10 @@ namespace Scene
     typedef std::list<EntityPtr> EntityList;
 
     //! Acts as a generic scenegraph for all entities in the world.
-    /*! Contains all entities in the world in a generic fashion.
+    /*! Contains all entities in the world.
         Acts as a factory for all entities.
 
-        To create access and remove scenes, see Framework.
+        To create, access and remove scenes, see Framework.
 
         \ingroup Scene_group
     */
@@ -67,10 +66,10 @@ namespace Scene
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
         //! entity iterator, see begin() and end()
-        typedef MapIterator<EntityMap::iterator, EntityPtr> iterator;
+        typedef EntityMap::iterator iterator;
 
         //! const entity iterator. see begin() and end()
-        typedef MapIterator<EntityMap::const_iterator, const Scene::EntityPtr> const_iterator;
+        typedef EntityMap::const_iterator const_iterator;
 
         //! Returns true if the two scenes have the same name
         bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
