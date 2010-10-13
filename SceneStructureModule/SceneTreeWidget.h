@@ -26,20 +26,20 @@ namespace ECEditor
 class QWidget;
 
 /// Tree widget item representing entity.
-class EntityTreeWidgetItem : public QTreeWidgetItem
+class EntityItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
     /** @param entityID Entity ID.
     */
-    EntityTreeWidgetItem(entity_id_t entityId) : id(entityId) {}
+    EntityItem(entity_id_t entityId) : id(entityId) {}
 
     /// Entity ID associated with this tree widget item.
     entity_id_t id;
 };
 
 /// Tree widget item representing component.
-class ComponentTreeWidgetItem : public QTreeWidgetItem
+class ComponentItem : public QTreeWidgetItem
 {
 public:
     /// Constructor.
@@ -47,7 +47,7 @@ public:
         @param n Name, if applicable.
         @param parent Parent item.
     */
-    explicit ComponentTreeWidgetItem(const QString &tn, const QString &n, QTreeWidgetItem *parent = 0) :
+    explicit ComponentItem(const QString &tn, const QString &n, QTreeWidgetItem *parent = 0) :
         QTreeWidgetItem(parent), typeName(tn), name(n) {}
 
     /// Type name.
@@ -55,6 +55,25 @@ public:
 
     ///  Name, if applicable.
     QString name;
+};
+
+/// Tree widget item representing asset reference.
+class AssetItem : public QTreeWidgetItem
+{
+public:
+    /// Constructor.
+    /** @param i ID.
+        @param t Type.
+        @param parent Parent item.
+    */
+    explicit AssetItem(const QString &i, const QString &t, QTreeWidgetItem *parent = 0) :
+        QTreeWidgetItem(parent), id(i), type(t) {}
+
+    /// ID.
+    QString id;
+
+    /// Type.
+    QString type;
 };
 
 /// Tree widget showing the scene structure.
@@ -99,7 +118,7 @@ private:
     QList<entity_id_t> GetSelectedEntities() const;
 
     /// Returns list of currently selected components.
-    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > GetSelectedComponents() const;
+    QList<QPair<entity_id_t, ComponentItem *> > GetSelectedComponents() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
