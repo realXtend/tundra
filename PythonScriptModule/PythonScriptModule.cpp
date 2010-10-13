@@ -60,7 +60,6 @@
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
-#include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Camera/CameraControllable.h"
@@ -80,7 +79,6 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
-#include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_Touchable.h"
@@ -1123,6 +1121,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+//XXX \todo remove and use the generic component adding mechanism from core directly. remove (canvas &) touchable deps from py module then
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
 {
     if (submeshes.isEmpty())
