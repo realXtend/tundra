@@ -84,7 +84,7 @@ uint IComponent::TypeNameHash() const
     return GetHash(TypeName());
 }
 
-IAttribute* IComponent::GetAttribute(QString name) const
+IAttribute* IComponent::GetAttribute(const QString &name) const
 {
     for(unsigned int i = 0; i < attributes_.size(); ++i)
         if(attributes_[i]->GetNameString() == name.toStdString())
