@@ -2,7 +2,7 @@
 
 \page OpenALAudioModule Using the sound system
 
-	The sound functionality of the viewer is accessed through Foundation::SoundServiceInterface. The OpenALAudioModule implements this using OpenAL.
+	The sound functionality of the viewer is accessed through ISoundService. The OpenALAudioModule implements this using OpenAL.
 	
 	The sound system features include playing 3D positional audio and non-positional audio from both local files (wav and ogg supported) as well
 	as from ogg audio assets loaded from network, adjusting master volume for different categories of sound, as well as recording sound.
@@ -16,9 +16,7 @@
     The sound service should be available if OpenAL was successfully initialized. If not, then the pointer will be null.
 
 \code
-    Foundation::SoundServiceInterface* soundsystem =
-        framework->GetServiceManager()->GetService<Foundation::SoundServiceInterface>(Foundation::Service::ST_Sound).lock().get();
-
+    ISoundService* soundsystem = framework->Audio();
     if (soundsystem)
     {
         // Sound system exists, can proceed to use
@@ -28,27 +26,27 @@
     \section playbackdevices_OAAM Playback devices
 
     By default the OpenAL default device is opened. But there are functions to enumerate all available OpenAL playback devices, and re-initialize
-    the sound system using a different device. See Foundation::SoundServiceInterface::GetPlaybackDevices and Foundation::SoundServiceInterface::Initialize.
+    the sound system using a different device. See ISoundService::GetPlaybackDevices and ISoundService::Initialize.
     
     \section playing_OAAM Playing sounds
 
-    To play sounds, use Foundation::SoundServiceInterface::PlaySound or Foundation::SoundServiceInterface::PlaySound3D. If the local parameter is true,
+    To play sounds, use ISoundService::PlaySound or ISoundService::PlaySound3D. If the local parameter is true,
     the sound name will be interpreted as a file name, otherwise as a sound asset id.
 
     If starting playback was successful, the functions will return a non-zero sound channel identifier sound_id_t, which can be used to adjust the sound's parameters while
-    it is playing, or to stop the sound. See for example the functions Foundation::SoundServiceInterface::SetPitch, Foundation::SoundServiceInterface::SetGain
-    or Foundation::SoundServiceInterface::StopSound.
+    it is playing, or to stop the sound. See for example the functions ISoundService::SetPitch, ISoundService::SetGain
+    or ISoundService::StopSound.
 
     The PlaySound functions can also be given an existing sound identifier: this will stop any previous sound on that channel and replace it with the new sound.
 
     Note that when a sound asset needs to be loaded from the network first, there will be delay before the actual sound playback starts, but the sound channel identifier
-    will nevertheless be given beforehand. By using the Foundation::SoundServiceInterface::GetSoundState function one can see whether the channel is playing, or still
+    will nevertheless be given beforehand. By using the ISoundService::GetSoundState function one can see whether the channel is playing, or still
     pending (waiting audio data).
 
     \section playingstreamed_OAAM Playing streamed sound
 
     For real time sound generation & streaming such as voice applications, a sound channel can also be fed audio data from a memory buffer. For this, use the functions
-    Foundation::SoundServiceInterface::PlaySoundBuffer & Foundation::SoundServiceInterface::PlaySoundBuffer3D. To use, one must first fill a Foundation::SoundServiceInterface::SoundBuffer
+    ISoundService::PlaySoundBuffer & ISoundService::PlaySoundBuffer3D. To use, one must first fill a ISoundService::SoundBuffer
     structure, which points to the audio data and describes the frequency & sample size.
 
     Note that the structure or the sound data is not needed after the call returns: the sound channel will buffer the audio data into its internal memory buffers.
@@ -58,32 +56,45 @@
 
     Also, normally stopped sound channels will be removed automatically by the sound system, but a channel on which PlaySoundBuffer has been used, will be set to "streamed mode" so that
     instead of stopping and being removed, it goes to "pending" if it runs out of sound data (it would be inconvenient to have the channel deleted in case there is a
-    drop-out in sound transfer). But this means, that when done with the stream, one should remember to call Foundation::SoundServiceInterface::StopSound so that the sound
+    drop-out in sound transfer). But this means, that when done with the stream, one should remember to call ISoundService::StopSound so that the sound
     channel resources can be freed.
 
     \section listener_OAAM Setting sound listener position
 
     For 3D positional audio, it is necessary to know the position and orientation of the sound listener. By default the RexLogic::RexLogicModule updates the listener position to
-    either the avatar or camera position. This is accomplished through Foundation::SoundServiceInterface::SetListener.
+    either the avatar or camera position. This is accomplished through ISoundService::SetListener.
 
     \section mastervolume_OAAM Setting sound master volumes
 
-    When starting a sound, one has to specify the type of the sound from the Foundation::SoundServiceInterface::SoundType enum (the default is Triggered, referring
+    When starting a sound, one has to specify the type of the sound from the ISoundService::SoundType enum (the default is Triggered, referring
     to one-shot sounds such as UI sounds or world triggered scripted sounds.) This is so that the master volume of different types of sounds can be adjusted individually,
-    see the function Foundation::SoundServiceInterface::SetSoundMasterGain. The function Foundation::SoundServiceInterface::SetMasterGain on the other hand controls
+    see the function ISoundService::SetSoundMasterGain. The function ISoundService::SetMasterGain on the other hand controls
     the final master volume of the whole sound system.
 
     \section recording_OAAM Recording sound
 
-    The sound system also supports recording sound input. The user's machine may have many sound inputs: these can be enumerated through Foundation::SoundServiceInterface::GetRecordingDevices.
-    To start recording, call the Foundation::SoundServiceInterface::StartRecording with the desired parameters. To get the recorded sound data, call
-    Foundation::SoundServiceInterface::GetRecordedSoundData regularly. One can also call Foundation::SoundServiceInterface::GetRecordedSoundSize to see how many bytes of recorded sound
-    currently exist in the buffer. To stop recording, call Foundation::SoundServiceInterface::StopRecording.
+    The sound system also supports recording sound input. The user's machine may have many sound inputs: these can be enumerated through ISoundService::GetRecordingDevices.
+    To start recording, call the ISoundService::StartRecording with the desired parameters. To get the recorded sound data, call
+    ISoundService::GetRecordedSoundData regularly. One can also call ISoundService::GetRecordedSoundSize to see how many bytes of recorded sound
+    currently exist in the buffer. To stop recording, call ISoundService::StopRecording.
 
     \section attachedsound_OAAM Attaching sounds to entities
 
-    Once a sound channel has been created with the sound system, it can be attached to an entity by using the entity component RexLogic::EC_AttachedSound. The sound source will then
-    appear to follow the entity's world position. See RexLogic::EC_AttachedSound::AddSound. Similarly to the sound types enumeration, the entity component has a number of pre-defined
-    sound categories, see RexLogic::EC_AttachedSound::SoundSlot. This enumeration can be expanded if necessary, or the "Other" category can be used, which allows any number of sounds
-    to be attached to the same entity.
-*/
+	Once a sound channel has been created with the sound system, it can be attached to an entity by using the entity component EC_Sound. The sound source will then
+    appear to follow the entity's world position (EC_Placeable). If entity have a EC_Placeable entity component, sound is played as ambient sound.
+	
+	\section EC_SoundListener
+	
+    Entity-component which provides sound listener position for in-world 3D audio.
+    Updates parent entity's placeable component's position to the sound service each frame.<br>
+    <b>Note:</b>  Only one entity can have active sound listener at a time.<br>
+    <b>Note:</b>   EC_SoundListener is currently only working with avatar and freecamera.
+	
+	\section Using ISoundService through scripts
+	
+	There is an option to control OAAM through scripts. script can communicate with ISoundSerive using Qt's signal/slots mechanism<br>
+	<b>Note:</b> Only public slot mehtods are exposed to scripts.
+		
+	\section OAAM class diagram
+	\image html OpenALAudioModule.png
+	*/
