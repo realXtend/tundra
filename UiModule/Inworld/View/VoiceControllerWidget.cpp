@@ -18,6 +18,8 @@
 
 #include "DebugOperatorNew.h"
 
+#include <QSettings>
+
 namespace CommUI
 {
 
