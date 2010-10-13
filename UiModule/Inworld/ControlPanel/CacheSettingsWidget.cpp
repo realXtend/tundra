@@ -3,6 +3,9 @@
 #include "StableHeaders.h"
 #include "CacheSettingsWidget.h"
 
+#include <QFile>
+#include <QSettings>
+
 namespace CoreUi
 {
     CacheSettingsWidget::CacheSettingsWidget(QObject *settings_object) :
