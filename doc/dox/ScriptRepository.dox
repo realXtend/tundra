@@ -1,0 +1,58 @@
+/**
+
+\page ScriptSamples Naali Scripting Reference
+
+On this page, you can find various examples and small snippets of scripts written in Python and JavaScript that demonstrate how to use the Naali Core APIs and how to interact with the different Entity-Components.
+
+<table>
+<tr>
+<td style="vertical-align:top;">
+<h2>Module</h2>
+- Accessing modules from a script.
+
+<h2>Event</h2>
+- Listening for an event.
+- Posting events.
+- Creating own events.
+
+<h2>Config</h2>
+- Reading and writing configuration data.
+
+<h2>Input</h2>
+- Reading keyboard events.
+- Reading mouse input.
+- Using ECInputMapper.
+
+<h2>UI</h2>
+- Loading and showing UI assets.
+- Creating new UI elements.
+
+</td>
+<td style="vertical-align:top;">
+<h2>Scene</h2>
+- Accessing scene entities and components.
+- Creating and deleting new EC data.
+- Importing and exporting scene content. 
+- Working with Entity Actions.
+- Component replication modes.
+       
+<h2>Asset</h2>
+- Requesting assets.
+- Creating new assets.
+
+<h2>Console</h2>
+- Invoking console commands.
+- Registering new console commands.
+
+<h2>Connection</h2>
+- Accessing the server connection.
+
+<h2>Server</h2>
+- Accessing the client connections.
+
+</td>
+</tr>
+</table>
+
+  
+ */
