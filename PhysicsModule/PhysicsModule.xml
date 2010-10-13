@@ -1,0 +1,4 @@
+<config>
+    <entry>PhysicsModule</entry>
+    <dependency>OgreRenderingModule</dependency>
+</config>

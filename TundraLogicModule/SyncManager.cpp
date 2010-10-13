@@ -35,7 +35,7 @@ namespace TundraLogic
 SyncManager::SyncManager(TundraLogicModule* owner, Foundation::Framework* fw) :
     owner_(owner),
     framework_(fw),
-    update_period_(0.04),
+    update_period_(1.0f / 30.0f),
     update_acc_(0.0)
 {
 }
@@ -44,11 +44,11 @@ SyncManager::~SyncManager()
 {
 }
 
-void SyncManager::SetUpdatePeriod(f64 period)
+void SyncManager::SetUpdatePeriod(float period)
 {
     // Allow max 100fps
-    if (period < 0.01)
-        period = 0.01;
+    if (period < 0.01f)
+        period = 0.01f;
     update_period_ = period;
 }
 
@@ -343,7 +343,7 @@ void SyncManager::Update(f64 frametime)
 {
     PROFILE(SyncManager_Update);
     
-    update_acc_ += frametime;
+    update_acc_ += (float)frametime;
     if (update_acc_ < update_period_)
         return;
     // If multiple updates passed, update still just once
@@ -528,6 +528,12 @@ void SyncManager::ProcessSyncState(kNet::MessageConnection* destination, SceneSy
                     
                     entitystate->RemoveComponent(j->first, j->second);
                     entitystate->AckRemove(j->first, j->second);
+                }
+                
+                if (removeMsg.components.size())
+                {
+                    destination->Send(removeMsg);
+                    ++num_messages_sent;
                 }
             }
         }
