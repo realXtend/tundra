@@ -49,7 +49,6 @@ void JavascriptModule::Load()
     DECLARE_MODULE_EC(EC_DynamicComponent);
 }
 
-
 void JavascriptModule::PreInitialize()
 {
 }
