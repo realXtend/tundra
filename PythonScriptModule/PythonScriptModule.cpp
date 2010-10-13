@@ -631,6 +631,111 @@ namespace PythonScript
         qobj->setProperty(propname, QVariant());
     }
 
+    //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
+    QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, uint refresh_rate)
+    {
+        // Iterate the scene to find all submeshes that use this texture uuid
+        QList<uint> submeshes_;
+        QList<Scene::Entity*> affected_entitys_;
+
+        char* uuidstr;
+
+        if (!qwidget_ptr)
+            return affected_entitys_;
+
+        RexUUID texture_uuid = RexUUID();
+        texture_uuid.FromString(std::string(uuidstr));
+
+        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+        if (!scene)
+        {
+            //PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
+            return affected_entitys_;
+        }
+
+        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
+        /* was wrong way, how did this work? if (!worldLogic)
+        {
+          //PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
+          return;
+          }*/
+
+        Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+        foreach(Scene::EntityPtr e, prims)
+        {
+            submeshes_.clear();
+
+            EC_OpenSimPrim *prim = e->GetComponent<EC_OpenSimPrim>().get();
+
+            if (prim->DrawType == RexTypes::DRAWTYPE_MESH || prim->DrawType == RexTypes::DRAWTYPE_PRIM)
+            {
+                ComponentPtr mesh = e->GetComponent(EC_Mesh::TypeNameStatic());
+                ComponentPtr custom_object = e->GetComponent(EC_OgreCustomObject::TypeNameStatic());
+            
+                EC_Mesh *meshptr = 0;
+                EC_OgreCustomObject *custom_object_ptr = 0;
+
+                if (mesh) 
+                {
+                    meshptr = checked_static_cast<EC_Mesh*>(mesh.get());
+                    if (!meshptr)
+                        continue;
+                    if (!meshptr->GetEntity())
+                        continue;
+                }
+                else if (custom_object)
+                {
+                    custom_object_ptr = checked_static_cast<EC_OgreCustomObject*>(custom_object.get());
+                    if (!custom_object_ptr)
+                        continue;
+                    if (!custom_object_ptr->GetEntity())
+                      continue;
+                }
+                else
+                    continue;
+            
+                // Iterate mesh materials map
+                if (meshptr)
+                {
+                    MaterialMap material_map = prim->Materials;
+                    MaterialMap::const_iterator i = material_map.begin();
+                    while (i != material_map.end())
+                    {
+                        // Store sumbeshes to list where we want to apply the new widget as texture
+                        uint submesh_id = i->first;
+                        if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                            submeshes_.append(submesh_id);
+                        ++i;
+                    }
+                }
+                // Iterate custom object texture map
+                else if (custom_object_ptr && prim->PrimTextures.size() > 0 )
+                {
+                    TextureMap texture_map = prim->PrimTextures;
+                    TextureMap::const_iterator i = texture_map.begin();
+
+                    while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
+                    {
+                        uint submesh_id = i->first;
+                        if (i->second == texture_uuid.ToString())
+                            submeshes_.append(submesh_id);
+                        ++i;
+                    }
+                }
+                else
+                    continue;
+
+                if (submeshes_.size() > 0)
+                {
+                    PythonScriptModule::Add3DCanvasComponents(e.get(), qwidget_ptr, submeshes_, refresh_rate);
+                    affected_entitys_.append(e.get());
+                }
+            }
+        }
+
+        return affected_entitys_;
+    }
+
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
@@ -751,16 +856,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         else
             Py_RETURN_NONE;
     }
-    /*
-    if (result)
-    {
-        //Scene::Events::SceneEventData event_data(entity->GetId());
-        //framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
-        return entity_create(entity->GetId());
-    }
-    else 
-        Py_RETURN_NONE;
-    */
+
     Py_RETURN_NONE;
 }
 
@@ -863,135 +959,6 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_RuntimeError, "RexLogic module not there?");
         return NULL;   
     }
-}
-
-PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
-{
-    PyObject* qwidget;
-    char* uuidstr;
-    uint refresh_rate;
-
-    if(!PyArg_ParseTuple(args, "OsI", &qwidget, &uuidstr, &refresh_rate))
-        Py_RETURN_NONE;
-    if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
-        Py_RETURN_NONE;
-
-    // Prepare QWidget and texture UUID
-    PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
-    QObject* qobject_ptr = wrapped_qwidget->_obj;
-    QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
-    
-    if (!qwidget_ptr)
-        Py_RETURN_NONE;
-
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
-
-    Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
-    if (!scene)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        Py_RETURN_NONE;
-    }
-
-    Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
-    if (worldLogic)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
-        Py_RETURN_NONE;
-    }
-
-    // Iterate the scene to find all submeshes that use this texture uuid
-    QList<uint> submeshes_;
-    QList<entity_id_t> affected_entitys_;
-    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
-    foreach(Scene::EntityPtr e, prims)
-    {
-        Scene::Entity &entity = *e.get();
-        submeshes_.clear();
-
-        EC_OpenSimPrim &prim = *entity.GetComponent<EC_OpenSimPrim>().get();
-
-        if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
-        {
-            ComponentPtr mesh = entity.GetComponent(EC_Mesh::TypeNameStatic());
-            ComponentPtr custom_object = entity.GetComponent(EC_OgreCustomObject::TypeNameStatic());
-            
-            EC_Mesh *meshptr = 0;
-            EC_OgreCustomObject *custom_object_ptr = 0;
-
-            if (mesh) 
-            {
-                meshptr = checked_static_cast<EC_Mesh*>(mesh.get());
-                if (!meshptr)
-                    continue;
-                if (!meshptr->GetEntity())
-                    continue;
-            }
-            else if (custom_object)
-            {
-                custom_object_ptr = checked_static_cast<EC_OgreCustomObject*>(custom_object.get());
-                if (!custom_object_ptr)
-                    continue;
-                if (!custom_object_ptr->GetEntity())
-                    continue;
-            }
-            else
-                continue;
-            
-            // Iterate mesh materials map
-            if (meshptr)
-            {
-                MaterialMap material_map = prim.Materials;
-                MaterialMap::const_iterator i = material_map.begin();
-                while (i != material_map.end())
-                {
-                    // Store sumbeshes to list where we want to apply the new widget as texture
-                    uint submesh_id = i->first;
-                    if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
-                        submeshes_.append(submesh_id);
-                    ++i;
-                }
-            }
-            // Iterate custom object texture map
-            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
-            {
-                TextureMap texture_map = prim.PrimTextures;
-                TextureMap::const_iterator i = texture_map.begin();
-
-                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
-                {
-                    uint submesh_id = i->first;
-                    if (i->second == texture_uuid.ToString())
-                        submeshes_.append(submesh_id);
-                    ++i;
-                }
-            }
-            else
-                continue;
-
-            if (submeshes_.size() > 0)
-            {
-                PythonScriptModule::Add3DCanvasComponents(&entity, qwidget_ptr, submeshes_, refresh_rate);
-                affected_entitys_.append(entity.GetId());
-            }
-        }
-    }
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    if (owner && affected_entitys_.count() > 0)
-    {
-        PyObject *py_ent_ptr_list = PyList_New(affected_entitys_.size());
-        int i = 0;
-        foreach(entity_id_t entity_id, affected_entitys_)
-        {
-            PyList_SET_ITEM(py_ent_ptr_list, i, owner->entity_create(entity_id));
-            ++i;
-        }
-        return py_ent_ptr_list;
-    }
-    else
-        Py_RETURN_NONE;
 }
 
 PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
@@ -1774,9 +1741,6 @@ static PyMethodDef EmbMethods[] = {
 
 //    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
 //    "Finds all entities with material indices which are using the given texture"},
-
-    {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
-    "Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
 
     {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
     "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
