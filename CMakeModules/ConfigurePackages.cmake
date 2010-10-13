@@ -160,6 +160,7 @@ macro (configure_ogre)
 
         sagase_configure_report (OGRE)
     else()
+        add_definitions(-DUSE_D3D9_SUBSURFACE_BLIT)
         include_directories($ENV{OGRE_HOME})
         include_directories($ENV{OGRE_HOME}/include)
         link_directories($ENV{OGRE_HOME}/lib)
