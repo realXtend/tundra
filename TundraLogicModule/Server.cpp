@@ -14,6 +14,8 @@
 #include "RexNetworkUtils.h"
 #include "TundraMessages.h"
 #include "TundraEvents.h"
+#include "PhysicsModule.h"
+#include "PhysicsWorld.h"
 
 #include "MsgLogin.h"
 #include "MsgLoginReply.h"
@@ -56,6 +58,14 @@ bool Server::Start(unsigned short port)
         Scene::ScenePtr scene = framework_->CreateScene("TundraServer");
         framework_->SetDefaultWorldScene(scene);
         owner_->GetSyncManager()->RegisterToScene(scene);
+        
+        // We are server, so create physics world for the scene
+        Physics::PhysicsModule *physics = framework_->GetModule<Physics::PhysicsModule>();
+        if (physics)
+        {
+            Physics::PhysicsWorld* world = physics->CreatePhysicsWorldForScene(scene);
+            world->SetGravity(Vector3df(0.0f,0.0f,-9.81f));
+        }
         
         //! \todo Hack - find better way and remove! Allow environment and fly camera also on server by sending a fake connect event
         Events::TundraConnectedEventData event_data;
