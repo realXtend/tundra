@@ -698,6 +698,21 @@ namespace Foundation
         return sound_logic.get();
     }
 
+    bool Framework::RegisterDynamicObject(QString name, QObject *object)
+    {
+        if (name.length() == 0 || !object)
+            return false;
+
+        // We never override a property if it already exists.
+        if (property(name.toStdString().c_str()).isValid())
+            return false;
+
+        setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
+
+        return true;
+
+    }
+
     Scene::ScenePtr Framework::GetScene(const QString &name) const
     {
         SceneMap::const_iterator scene = scenes_.find(name);
