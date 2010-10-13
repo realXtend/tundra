@@ -2,9 +2,7 @@
  *  For conditions of distribution and use, see copyright notice in license.txt
  *
  *  @file   SceneStructureWindow.h
- *  @brief  Window with tree view of contents of scene.
- *
- *          Detailed desc here.
+ *  @brief  Window with tree view showing every entity in a scene.
  */
 
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
@@ -20,8 +18,9 @@ class QModelIndex;
 
 class SceneTreeWidget;
 
-/// Window with tree view of contents of scene.
-/** Detailed desc here.
+/// Window with tree view showing every entity in a scene.
+/** This class will only handle adding and removing of entities and components and updating
+    their names. The SceneTreeWidget implements most of the functionlity.
 */
 class SceneStructureWindow : public QWidget
 {
@@ -94,6 +93,18 @@ private slots:
         @param comp Component which was removed.
     */
     void RemoveComponent(Scene::Entity* entity, IComponent* comp);
+
+    /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
+    /** EC_Name component's OnAttributeChanged() signal is connected to this slot.
+        @param attr EC_Name's attribute which was changed.
+    */
+    void UpdateEntityName(IAttribute *attr);
+
+    /// Updates component's name in the tree widget if components name has changed.
+    /** @param oldName Old component name.
+        @param newName New component name.
+    */
+    void UpdateComponentName(const QString &oldName, const QString &newName);
 };
 
 #endif
