@@ -9,6 +9,7 @@
 #include "IAttribute.h"
 #include "AssetInterface.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 #include <QVariant>
 
