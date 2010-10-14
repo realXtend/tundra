@@ -256,9 +256,8 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(framework_);
-    bool success = importer.Import(scene, filename, dirname, "./data/assets", Transform(), AttributeChange::Default, clearscene, true, replace);
-    
-    if (success)
+    QList<Scene::Entity *> entities = importer.Import(scene, filename, dirname, "./data/assets", Transform(), AttributeChange::Default, clearscene, true, replace);
+    if (!entities.empty())
     {
         //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because import in clearscene mode clears it
         if (clearscene)

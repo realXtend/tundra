@@ -257,13 +257,14 @@ Scene::EntityPtr SceneImporter::ImportMesh(Scene::ScenePtr scene, const std::str
     return newentity;
 }
 
-bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
+QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir,
     const Transform &worldtransform, AttributeChange::Type change, bool clearscene, bool localassets, bool replace)
 {
+    QList<Scene::Entity *> ret;
     if (!scene)
     {
         TundraLogicModule::LogError("Null scene for import");
-        return false;
+        return ret;
     }
     
     try
@@ -302,7 +303,7 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         {
             file.close();
             TundraLogicModule::LogError("Failed to open file");
-            return false;
+            return QList<Scene::Entity *>();
         }
         
         QDomDocument dotscene;
@@ -310,7 +311,7 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         {
             file.close();
             TundraLogicModule::LogError("Failed to parse XML content");
-            return false;
+            return ret;
         }
         
         file.close();
@@ -319,13 +320,13 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         if (scene_elem.isNull())
         {
             TundraLogicModule::LogError("No scene element");
-            return false;
+            return ret;
         }
         QDomElement nodes_elem = scene_elem.firstChildElement("nodes");
         if (nodes_elem.isNull())
         {
             TundraLogicModule::LogError("No nodes element");
-            return false;
+            return ret;
         }
         
         bool flipyz = false;
@@ -352,16 +353,16 @@ bool SceneImporter::Import(Scene::ScenePtr scene, const std::string& filename, s
         Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
             DEGTORAD * worldtransform.rotation.z);
 //        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
-        ProcessNodeForCreation(scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
+        ret = ProcessNodeForCreation(scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
     }
     catch (Exception& e)
     {
         TundraLogicModule::LogError(std::string("Exception while scene importing: ") + e.what());
-        return false;
+        return QList<Scene::Entity *>();
     }
     
     TundraLogicModule::LogInfo("Finished");
-    return true;
+    return ret;
 }
 
 void SceneImporter::ProcessNodeForAssets(QDomElement node_elem)
@@ -471,9 +472,10 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
     }
 }
 
-void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+QList<Scene::Entity* > SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
     AttributeChange::Type change, bool localassets, bool flipyz, bool replace)
 {
+    QList<Scene::Entity* > ret;
     while (!node_elem.isNull())
     {
         QDomElement pos_elem = node_elem.firstChildElement("position");
@@ -626,6 +628,8 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
                     placeablePtr->ComponentChanged(change);
                     meshPtr->ComponentChanged(change);
                     namePtr->ComponentChanged(change);
+
+                    ret.append(entity.get());
                 }
                 else
                     TundraLogicModule::LogError("Could not create mesh, placeable, name components");
@@ -635,11 +639,13 @@ void SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement no
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ProcessNodeForCreation(scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
+            ret.append(ProcessNodeForCreation(scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace));
         
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
+
+    return ret;
 }
 
 std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets)
