@@ -81,9 +81,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Create context menu actions
-    // New entity, import OGRE scene, open new scene and import content from scene
-    // actions are available always
-
+    // "New entity...", "Import..." and "Open new scene..." actions are available always
     QAction *newAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
     QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
@@ -92,17 +90,29 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
 
-    // Paste action is available only if we have valid entity-component XML data in clipboard.
+    // "Paste" action is available only if we have valid entity-component XML data in clipboard.
+    QAction *pasteAction = 0;
     bool pastePossible = false;
     {
         QDomDocument scene_doc("Scene");
         pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+        if (pastePossible)
+        {
+            pasteAction = new QAction(tr("Paste"), menu);
+            connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
+        }
     }
 
-    QAction *pasteAction = new QAction(tr("Paste"), menu);
-    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
+    // "Save scene as..." action is possible if we have at least one entity in the scene.
+    bool saveSceneAsPossible = (topLevelItemCount() > 0);
+    QAction *saveSceneAsAction = 0;
+    if (saveSceneAsPossible)
+    {
+        saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
+        connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
+    }
 
-    // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
+    // "Edit", "Edit in new", "Delete",and "Copy" actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
         *copyAction = 0, *saveAsAction = 0;
 
@@ -112,19 +122,28 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         editAction = new QAction(tr("Edit"), menu);
         editInNewAction = new QAction(tr("Edit in new window"), menu);
         deleteAction = new QAction(tr("Delete"), menu);
-        //renameAction = new QAction(tr("Rename"), menu);
         copyAction = new QAction(tr("Copy"), menu);
         saveAsAction = new QAction(tr("Save as..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
         connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
-    //    connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
         connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
     }
 
-//    menu->addAction(renameAction);
+    // "Rename" action is possible only if have one entity selected.
+/*
+    bool renamePossible = (selectionModel()->selection().size() == 1)
+    if (renamePossible)
+    {
+        renameAction = new QAction(tr("Rename"), menu);
+        connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
+    }
+
+    if (renamePossible)
+        menu->addAction(renameAction);
+*/
     if (hasSelection)
     {
         menu->addAction(editAction);
@@ -146,6 +165,9 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     if (hasSelection)
         menu->addAction(saveAsAction);
+
+    if (saveSceneAsPossible)
+        menu->addAction(saveSceneAsAction);
 
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
@@ -501,7 +523,13 @@ void SceneTreeWidget::Paste()
 void SceneTreeWidget::SaveAs()
 {
     Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
-        tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
+        tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
+}
+
+void SceneTreeWidget::SaveSceneAs()
+{
+    Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
 void SceneTreeWidget::Import()
@@ -518,7 +546,7 @@ void SceneTreeWidget::OpenNewScene()
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
-void SceneTreeWidget::SaveFileDialogClosed(int result)
+void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 {
     QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
     assert(dialog);
@@ -593,6 +621,51 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
 
     file.write(bytes);
     file.close();
+}
+
+void SceneTreeWidget::SaveSceneDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != 1)
+        return;
+
+    QStringList files = dialog->selectedFiles();
+    if (files.size() != 1)
+        return;
+
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
+    bool binary = false;
+    QString fileExtension;
+    if (files[0].lastIndexOf('.') != -1)
+    {
+        fileExtension = files[0].mid(files[0].lastIndexOf('.'));
+        binary = true;
+    }
+    else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
+    {
+        fileExtension = ".xml";
+        files[0].append(fileExtension);
+    }
+    else if (dialog->selectedNameFilter() == cNaaliBinaryFileFilter)
+    {
+        fileExtension = ".nbf";
+        files[0].append(fileExtension);
+        binary = true;
+    }
+
+    if (binary)
+        scene->SaveSceneBinary(files[0].toStdString());
+    else
+        scene->SaveSceneXML(files[0].toStdString());
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)
