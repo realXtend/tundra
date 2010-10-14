@@ -397,7 +397,6 @@ void SceneStructureWindow::UpdateAssetReference(IAttribute *attr)
     if (!assetRef)
         return;
 
-
     // Find parent item for the asset reference item.
     IComponent *ownerComp = assetRef->GetOwner();
     assert(ownerComp);

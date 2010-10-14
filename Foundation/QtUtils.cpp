@@ -27,7 +27,10 @@ class CustomFileDialog : public QFileDialog
             QFileDialog(parent, caption, dir, filter)
         {
         }
-    
+        ~CustomFileDialog()
+        {
+            // For debug break-point - it seems that we have memory leak somewhere in this file.
+        }
     protected:
         virtual void hideEvent(QHideEvent* e)
         {
