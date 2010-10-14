@@ -80,17 +80,26 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Create context menu actions
-    // paste, new entity, import OGRE scene, open new scene and import content from scene
+    // New entity, import OGRE scene, open new scene and import content from scene
     // actions are available always
-    QAction *pasteAction = new QAction(tr("Paste"), menu);
+
     QAction *newAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
     QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
 
     connect(newAction, SIGNAL(triggered()), SLOT(New()));
-    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
+
+    // Paste action is available only if we have valid entity-component XML data in clipboard.
+    bool pastePossible = false;
+    {
+        QDomDocument scene_doc("Scene");
+        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+    }
+
+    QAction *pasteAction = new QAction(tr("Paste"), menu);
+    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
 
     // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
     QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
@@ -129,7 +138,8 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         menu->addAction(copyAction);
     }
 
-    menu->addAction(pasteAction);
+    if (pastePossible)
+        menu->addAction(pasteAction);
 
     menu->addSeparator();
 
