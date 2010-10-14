@@ -268,6 +268,7 @@ void RexLogicModule::Initialize()
     
     SceneInteract *sceneInteract = new SceneInteract(framework_);
     QObject::connect(sceneInteract, SIGNAL(EntityClicked(Scene::Entity*)), obj_camera_controller_.get(), SLOT(EntityClicked(Scene::Entity*)));
+    framework_->RegisterDynamicObject("sceneinteract", sceneInteract);
 
     movement_damping_constant_ = framework_->GetDefaultConfig().DeclareSetting(
         "RexLogicModule", "movement_damping_constant", 10.0f);
@@ -562,9 +563,9 @@ void RexLogicModule::Update(f64 frametime)
             send_input_state = false;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             if (camera_state_ == CS_Follow)
-                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
+                GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
             else
-                framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
+                GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
         }
         
         // If scene exists, we should be connected and can update these
@@ -639,15 +640,15 @@ void RexLogicModule::SwitchCameraState()
     {
         camera_state_ = CS_Free;
 
-        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
 
-        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -656,14 +657,14 @@ void RexLogicModule::CameraTripod()
     if (camera_state_ == CS_Follow)
     {
         camera_state_ = CS_Tripod;
-        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
     }
     else
     {
         camera_state_ = CS_Follow;
-        event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
+        event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+        GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
     }
 }
 
@@ -902,7 +903,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
 
         boost::shared_ptr<EC_Placeable> ogrepos = entity.GetComponent<EC_Placeable>();
         boost::shared_ptr<EC_NetworkPosition> netpos = entity.GetComponent<EC_NetworkPosition>();
@@ -948,7 +949,7 @@ void RexLogicModule::UpdateObjects(f64 frametime)
         // If is an avatar, handle update for avatar animations
         if (entity.GetComponent(EC_OpenSimAvatar::TypeNameStatic()))
         {
-            found_avatars_.push_back(*iter);
+            found_avatars_.push_back(iter->second);
             GetAvatarHandler()->UpdateAvatarAnimations(entity.GetId(), frametime);
         }
 
@@ -1088,7 +1089,7 @@ bool RexLogicModule::CheckInfoIconIntersection(int x, int y, Foundation::Raycast
     Scene::SceneManager::iterator end = current_scene->end();
     while (iter != end)
     {
-        Scene::EntityPtr entity = (*iter);
+        Scene::EntityPtr entity = iter->second;
         EC_HoveringWidget* widget = entity->GetComponent<EC_HoveringWidget>().get();
         EC_OgreCamera* c = entity->GetComponent<EC_OgreCamera>().get();
         if (c)
@@ -1216,8 +1217,8 @@ Console::CommandResult RexLogicModule::ConsoleLogout(const StringVector &params)
 
 Console::CommandResult RexLogicModule::ConsoleToggleFlyMode(const StringVector &params)
 {
-    event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-    framework_->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
+    event_category_id_t event_category = GetFramework()->GetEventManager()->QueryEventCategory("Input");
+    GetFramework()->GetEventManager()->SendEvent(event_category, InputEvents::TOGGLE_FLYMODE, 0);
     return Console::ResultSuccess();
 }
 
@@ -1233,7 +1234,7 @@ Console::CommandResult RexLogicModule::ConsoleHighlightTest(const StringVector &
 
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
         EC_Mesh *ec_mesh = entity.GetComponent<EC_Mesh>().get();
         EC_OgreCustomObject *ec_custom = entity.GetComponent<EC_OgreCustomObject>().get();
         if (ec_mesh || ec_custom)
@@ -1285,7 +1286,7 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 #endif
 
 #ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
-    else if (component->TypeName() == EC_Movable::TypeNameStatic())
+    if (component->TypeName() == EC_Movable::TypeNameStatic())
     {
         entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }

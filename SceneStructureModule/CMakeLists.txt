@@ -29,7 +29,7 @@ link_modules (Core Foundation Interfaces Ui Input SceneManager ECEditorModule Tu
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-#link_package (OGRE)
+#link_ogre()
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

@@ -194,6 +194,12 @@ void EC_Terrain::AttributeUpdated(IAttribute *attribute)
     }
     else if (changedAttribute == material.GetNameString())
     {
+        SetTerrainMaterialTexture(0, texture0.Get().toStdString().c_str());
+        SetTerrainMaterialTexture(1, texture1.Get().toStdString().c_str());
+        SetTerrainMaterialTexture(2, texture2.Get().toStdString().c_str());
+        SetTerrainMaterialTexture(3, texture3.Get().toStdString().c_str());
+        SetTerrainMaterialTexture(4, texture4.Get().toStdString().c_str());
+
         for(int y = 0; y < patchHeight; ++y)
             for(int x = 0; x < patchWidth; ++x)
                 UpdateTerrainPatchMaterial(x, y);

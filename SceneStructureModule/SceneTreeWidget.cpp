@@ -198,9 +198,9 @@ QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
         // If showComponents is false or parent index == QModelIndex(), it's guaranteed 
         // that we have top-level item i.e. entity always selected. Else we have component selected 
         // and we don't want to select it as entity.
-        EntityTreeWidgetItem  *eItem = 0;
+        EntityItem  *eItem = 0;
         if (!showComponents || (index.parent() == QModelIndex()))
-            eItem = dynamic_cast<EntityTreeWidgetItem *>(topLevelItem(index.row()));
+            eItem = dynamic_cast<EntityItem *>(topLevelItem(index.row()));
 
         if (eItem)
             ids << eItem->id;
@@ -209,9 +209,9 @@ QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
     return ids;
 }
 
-QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > SceneTreeWidget::GetSelectedComponents() const
+QList<QPair<entity_id_t, ComponentItem *> > SceneTreeWidget::GetSelectedComponents() const
 {
-    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > components;
+    QList<QPair<entity_id_t, ComponentItem *> > components;
     const QItemSelection &selection = selectionModel()->selection();
     if (selection.isEmpty())
         return components;
@@ -223,12 +223,12 @@ QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > SceneTreeWidget::GetSelect
         if (!index.isValid() || index.parent() == QModelIndex())
             continue;
 
-        EntityTreeWidgetItem *eItem = dynamic_cast<EntityTreeWidgetItem *>(topLevelItem(index.parent().row()));
+        EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(index.parent().row()));
         assert(eItem);
         if (!eItem)
             continue;
 
-        ComponentTreeWidgetItem *cItem = dynamic_cast<ComponentTreeWidgetItem *>(eItem->child(index.row()));
+        ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(index.row()));
         if (cItem)
             components << qMakePair(eItem->id, cItem);
     }
@@ -244,7 +244,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
         return QString();
 
     QList<entity_id_t> ids = GetSelectedEntities();
-    QList<QPair<entity_id_t, ComponentTreeWidgetItem *> > comps;
+    QList<QPair<entity_id_t, ComponentItem *> > comps;
     if (ids.empty())
     {
         comps = GetSelectedComponents();
@@ -279,10 +279,10 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     }
     else if (!comps.empty())
     {
-        QListIterator<QPair<entity_id_t, ComponentTreeWidgetItem *> > it(comps);
+        QListIterator<QPair<entity_id_t, ComponentItem *> > it(comps);
         while(it.hasNext())
         {
-            QPair<entity_id_t, ComponentTreeWidgetItem *> pair = it.next();
+            QPair<entity_id_t, ComponentItem *> pair = it.next();
             Scene::EntityPtr entity = scene->GetEntity(pair.first);
             if (entity)
             {

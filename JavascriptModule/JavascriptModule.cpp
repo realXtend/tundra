@@ -13,6 +13,7 @@
 #include "JavascriptEngine.h"
 
 #include "EC_Script.h"
+#include "EC_DynamicComponent.h"
 #include "SceneManager.h"
 #include "InputContext.h"
 #include "Input.h"
@@ -45,8 +46,8 @@ JavascriptModule::~JavascriptModule()
 void JavascriptModule::Load()
 {
     DECLARE_MODULE_EC(EC_Script);
+    DECLARE_MODULE_EC(EC_DynamicComponent);
 }
-
 
 void JavascriptModule::PreInitialize()
 {

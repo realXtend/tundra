@@ -9,7 +9,6 @@ from eventlet import websocket
 from PythonQt.QtGui import QVector3D as Vec3
 from PythonQt.QtGui import QQuaternion as Quat
 
-import rexviewer as r
 import naali
 import mathutils
 
@@ -29,12 +28,11 @@ class NaaliWebsocketServer(circuits.BaseComponent):
         print "websocket server started."
 
         NaaliWebsocketServer.instance = self
-        self.previd = 500000
         self.clientavs = {}
 
     def newclient(self, clientid, position, orientation):
         #self.clients.add()
-        ent = r.createEntity("Jack.mesh", self.previd)
+        ent = naali.createMeshEntity("Jack.mesh")
         self.previd += 1
 
         ent.placeable.Position = Vec3(position[0], position[1], position[2])

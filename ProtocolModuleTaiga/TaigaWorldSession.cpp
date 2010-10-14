@@ -48,10 +48,15 @@ namespace TaigaProtocol
         boost::shared_ptr<TaigaProtocol::ProtocolModuleTaiga> spTaiga = networkTaiga_.lock();
         if (spTaiga.get())
         {
+            if (!spTaiga->GetLoginWorker())
+                return false;
+            if (spTaiga->GetLoginWorker()->GetState() == ProtocolUtilities::Connection::STATE_CONNECTED)
+                return false;
             spTaiga->GetLoginWorker()->PrepareTaigaLogin(address, port, thread_state);
             spTaiga->SetAuthenticationType(ProtocolUtilities::AT_Taiga);
             spTaiga->SetIdentityUrl(identityUrl);
             spTaiga->SetHostUrl(address + port);
+
             // Start the thread.
             boost::thread(boost::ref(*spTaiga->GetLoginWorker()));
         }

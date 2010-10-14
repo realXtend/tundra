@@ -125,6 +125,8 @@ namespace UiServices
             framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Gui, ui_scene_service_);
             connect(ui_scene_service_.get(), SIGNAL(TransferRequest(const QString&, QGraphicsProxyWidget*)),
                     inworld_scene_controller_, SLOT(HandleWidgetTransfer(const QString&, QGraphicsProxyWidget*)));
+
+            framework_->RegisterDynamicObject("uiservice", ui_scene_service_.get());
         }
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");

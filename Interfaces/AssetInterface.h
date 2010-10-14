@@ -14,35 +14,6 @@ namespace Foundation
     class AssetInterface;
     typedef boost::shared_ptr<AssetInterface> AssetPtr;
 
-    //! Reference to an asset
-    struct AssetReference
-    {
-        AssetReference()
-        {
-        }
-        
-        AssetReference(const std::string& id, const std::string& type) :
-            id_(id),
-            type_(type)
-        {
-        }
-        
-        //! Asset id
-        std::string id_;
-        //! Asset type
-        std::string type_;
-        
-        bool operator == (const AssetReference& rhs) const
-        {
-            return (id_ == rhs.id_) && (type_ == rhs.type_);
-        }
-        
-        bool operator != (const AssetReference& rhs) const
-        {
-            return !(*this == rhs);
-        }
-    };
-    
     //! Interface for assets
     class MODULE_API AssetInterface
     {
@@ -69,7 +40,5 @@ namespace Foundation
         virtual AssetMetadataInterface* GetMetadata() const = 0;
     };
 }
-
-Q_DECLARE_METATYPE(Foundation::AssetReference)
 
 #endif

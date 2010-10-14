@@ -515,6 +515,7 @@ namespace Environment
             // Now that we have updated all the height map data for each patch, see if
             // we have enough of the patches loaded in to regenerate the GPU-side resources as well.
             terrainComponent->RegenerateDirtyTerrainPatches();
+            emit HeightmapGeometryUpdated();
             break;
         }
         case TPLayerWater:
@@ -618,7 +619,7 @@ namespace Environment
         Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
-            Scene::Entity &entity = **iter;
+            Scene::Entity &entity = *iter->second;
             EC_Terrain *terrainComponent = entity.GetComponent<EC_Terrain>().get();
             if (terrainComponent)
                 cachedTerrainEntity_ = scene->GetEntity(entity.GetId());

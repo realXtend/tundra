@@ -71,7 +71,6 @@ namespace CoreUi
         void CheckAndSwitch(const QString scene_name);
         void DelayedSceneChange();
         void SetTransitions();
-        void ViewKeyEvent(QKeyEvent *key_event);
 
         void StateSwitch();
         void AnimationsStart();

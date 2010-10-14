@@ -123,7 +123,7 @@ class MediaURLHandler(Component):
                     
             # If widget was created (texture found in scene), then apply to submeshes
             if mv.playback_widget != None:
-                affected_entitys = r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
+                affected_entitys = naali._pythonscriptmodule.ApplyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
                 # Connect affected entities Toucheble signals to to MediaurlView
                 if affected_entitys != None:
                     for entity in affected_entitys:
@@ -189,4 +189,4 @@ class MediaURLHandler(Component):
                 if mediaurlview is None:
                     continue
                 #print tx, mediaurlview.url().toString()
-                r.applyUICanvasToSubmeshesWithTexture(mediaurlview.playback_widget, tx, mediaurlview.refreshrate)
+                naali._pythonscriptmodule.ApplyUICanvasToSubmeshesWithTexture(mediaurlview.playback_widget, tx, mediaurlview.refreshrate)

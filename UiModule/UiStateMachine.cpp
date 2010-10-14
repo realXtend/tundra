@@ -38,14 +38,6 @@ namespace CoreUi
         connect(state_inworld_, SIGNAL(exited()), SLOT(StateSwitch()));
     }
 
-    void UiStateMachine::ViewKeyEvent(QKeyEvent *key_event)
-    {
-        if (key_event->isAutoRepeat())
-            return;      
-        if (ether_toggle_seq_list_.contains(QKeySequence(key_event->key() + key_event->modifiers())))
-            ToggleEther();
-    }
-
     void UiStateMachine::StateSwitch()
     {
         if (current_scene_ == scene_map_["Ether"])
@@ -196,8 +188,7 @@ namespace CoreUi
         }
         else
         {
-            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-
+            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( HandleSceneChanged(const QList<QRectF> &)));
             QString old_scene_name = current_scene_name_;
             current_scene_ = scene_map_[name];
             current_scene_name_ = name;
@@ -209,7 +200,7 @@ namespace CoreUi
             if (view_->scene() != current_scene_)
                 view_->setScene(current_scene_);
 
-            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT(HandleSceneChanged(const QList<QRectF> &) ));
+            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( HandleSceneChanged(const QList<QRectF> &)));
 
             if (animations_map_.contains(current_scene_))
             {

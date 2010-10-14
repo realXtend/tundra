@@ -100,7 +100,7 @@ void ParticipantWindow::PopulateUserList()
     Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
         boost::shared_ptr<EC_OpenSimPresence> ec_presence = entity.GetComponent<EC_OpenSimPresence>();
         if (ec_presence)
             AddUserEntry(ec_presence.get());

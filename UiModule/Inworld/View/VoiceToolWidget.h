@@ -15,7 +15,7 @@
 #include "ui_VoiceToolWidget.h"
 #include "IToolWidget.h"
 #include <QPushButton>
-#include "InputServiceInterface.h"
+#include "Input.h"
 
 class UiProxyWidget;
 
