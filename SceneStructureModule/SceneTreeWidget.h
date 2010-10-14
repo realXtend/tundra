@@ -148,16 +148,24 @@ private slots:
     /// Saves selected entities as XML or binary file.
     void SaveAs();
 
+    /// Saves entire scene as XML or binary file.
+    void SaveSceneAs();
+
     /// Imports OGRE or Naali scene file.
     void Import();
 
     /// Loads new scene.
     void OpenNewScene();
 
-    /// Called by save file dialog when it's closed.
+    /// Called by "Save Selection" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
-    void SaveFileDialogClosed(int result);
+    void SaveSelectionDialogClosed(int result);
+
+    /// Called by "Save Scene" save file dialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void SaveSceneDialogClosed(int result);
 
     /// Called by open file dialog when it's closed.
     /** @param result Result of dialog closure. Open is 1, Cancel is 0.
