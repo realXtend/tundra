@@ -66,9 +66,9 @@ public:
         \param localassets Whether to put file:// prefix into all asset references
         \param replace Whether to search for entities by name and replace just the visual components (placeable, mesh) if an existing entity is found.
                Default true. If this is false, all entities will be created as new
-        \return true if successful
+        \return List of created entities, of empty list if import failed.
      */
-    bool Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
+    QList<Scene::Entity *> Import(Scene::ScenePtr scene, const std::string& filename, std::string in_asset_dir, std::string out_asset_dir, const Transform &worldtransform,
         AttributeChange::Type change, bool clearscene = false, bool localassets = true, bool replace = true);
     
 private:
@@ -96,8 +96,9 @@ private:
         \param localassets Whether to put file:// prefix into all asset references
         \param flipyz Whether to switch y/z axes from Ogre to OpenSim convention
         \param replace Whether to replace contents of entities by name. If false, all entities will be created as new
+        \return List of created entities
      */
-    void ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+    QList<Scene::Entity* > ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
         AttributeChange::Type change, bool localassets, bool flipyz, bool replace);
     
     //! Process a material file, searching for used materials and writing them to separate files if found, and also recording used textures

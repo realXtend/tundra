@@ -19,7 +19,7 @@ namespace KristalliProtocol
 
 namespace
 {
-    const std::string moduleName("KristalliProtocolModule");
+    const std::string moduleName("KristalliProtocol");
 
 /*
     const struct
@@ -136,7 +136,8 @@ void KristalliProtocolModule::Update(f64 frametime)
     if (server)
         server->Process();
     
-    if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed || serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
+    if ((!serverConnection || serverConnection->GetConnectionState() == ConnectionClosed ||
+        serverConnection->GetConnectionState() == ConnectionPending) && serverIp.length() != 0)
     {
         const int cReconnectTimeout = 5 * 1000.f;
         if (reconnectTimer.Test())
@@ -265,7 +266,6 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
 {
     // Delete from connection list if it was a known user
     for(UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-    {
         if (iter->connection == source)
         {
             Events::KristalliUserDisconnected msg(&(*iter));
@@ -275,8 +275,7 @@ void KristalliProtocolModule::ClientDisconnected(MessageConnection *source)
             connections.erase(iter);
             return;
         }
-    }
-    
+
     LogInfo("Unknown user disconnected");
 }
 
@@ -292,8 +291,8 @@ void KristalliProtocolModule::HandleMessage(MessageConnection *source, message_i
         framework_->GetEventManager()->SendEvent(networkEventCategory, Events::NETMESSAGE_IN, &msg);
     } catch(std::exception &e)
     {
-        LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " + ToString(id) + " size " + ToString((int)numBytes) + " from client " 
-            + source->ToString());
+        LogError("KristalliProtocolModule: Exception \"" + std::string(e.what()) + "\" thrown when handling network message id " +
+            ToString(id) + " size " + ToString((int)numBytes) + " from client " + source->ToString());
     }
 }
 
@@ -314,22 +313,18 @@ u8 KristalliProtocolModule::AllocateNewConnectionID() const
 UserConnection* KristalliProtocolModule::GetUserConnection(MessageConnection* source)
 {
     for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-    {
         if (iter->connection == source)
             return &(*iter);
-    }
-    
+
     return 0;
 }
 
 UserConnection* KristalliProtocolModule::GetUserConnection(u8 id)
 {
     for (UserConnectionList::iterator iter = connections.begin(); iter != connections.end(); ++iter)
-    {
         if (iter->userID == id)
             return &(*iter);
-    }
-    
+
     return 0;
 }
 
@@ -337,11 +332,9 @@ UserConnectionList KristalliProtocolModule::GetAuthenticatedUsers() const
 {
     UserConnectionList ret;
     for (UserConnectionList::const_iterator iter = connections.begin(); iter != connections.end(); ++iter)
-    {
         if (iter->authenticated)
             ret.push_back(*iter);
-    }
-    
+
     return ret;
 }
 
