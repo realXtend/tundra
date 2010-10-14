@@ -673,7 +673,7 @@ namespace ECEditor
                 }
                 comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
                 if (comp)
-                    entity->AddComponent(comp, AttributeChange::Default);
+                    entity->AddComponent(comp, dialog->GetSynchronization());
             }
             component_dialog_->deleteLater();
             component_dialog_ = 0;

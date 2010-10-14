@@ -373,7 +373,7 @@ namespace ECEditor
         }
         else
         {
-            QAction *addComponent = new QAction(tr("Add new component"), menu_);
+            QAction *addComponent = new QAction(tr("Add new component ..."), menu_);
             QAction *pasteComponent = new QAction(tr("Paste"), menu_);
             menu_->addAction(addComponent);
             menu_->addAction(pasteComponent);
