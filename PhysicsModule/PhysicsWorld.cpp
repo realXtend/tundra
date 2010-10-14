@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "PhysicsUtils.h"
 #include "Profiler.h"
@@ -13,7 +14,7 @@ namespace Physics
 // Assume we generate at least 10 frames per second. If less, the physics will start to slow down.
 static const float cMinFps = 10.0f;
 
-PhysicsWorld::PhysicsWorld() :
+PhysicsWorld::PhysicsWorld(PhysicsModule* owner) :
     collisionConfiguration_(0),
     collisionDispatcher_(0),
     broadphase_(0),
@@ -26,6 +27,7 @@ PhysicsWorld::PhysicsWorld() :
     broadphase_ = new btDbvtBroadphase();
     solver_ = new btSequentialImpulseConstraintSolver();
     world_ = new btDiscreteDynamicsWorld(collisionDispatcher_, broadphase_, solver_, collisionConfiguration_);
+    world_->setDebugDrawer(owner);
 }
 
 PhysicsWorld::~PhysicsWorld()
