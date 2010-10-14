@@ -619,7 +619,7 @@ namespace Environment
         Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
         for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
         {
-            Scene::Entity &entity = **iter;
+            Scene::Entity &entity = *iter->second;
             EC_Terrain *terrainComponent = entity.GetComponent<EC_Terrain>().get();
             if (terrainComponent)
                 cachedTerrainEntity_ = scene->GetEntity(entity.GetId());
