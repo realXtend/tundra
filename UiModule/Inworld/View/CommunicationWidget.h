@@ -71,7 +71,6 @@ namespace CoreUi
         void InitializeInWorldChat();
         void UninitializeInWorldVoice();
         void UpdateInWorldChatView(const Communications::InWorldChat::TextMessageInterface &message);
-        void ConnectParticipantVoiceAvticitySignals(Communications::InWorldVoice::ParticipantInterface* p);
 
     private:
         Foundation::Framework* framework_;
