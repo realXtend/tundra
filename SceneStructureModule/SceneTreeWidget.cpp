@@ -18,6 +18,8 @@
 #include "SceneImporter.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
+#include "TundraEvents.h"
+#include "EventManager.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 

@@ -219,13 +219,13 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
         useBinary = true;
     
     // Do the scene load as replicable only if we are a server
-    bool success;
+    QList<Scene::Entity *> entities;
     if (!useBinary)
-        success = scene->LoadSceneXML(params[0], true/*clearScene*/, AttributeChange::Default);
+        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, AttributeChange::Default);
     else
-        success = scene->LoadSceneBinary(params[0], true/*clearScene*/, AttributeChange::Default);
+        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, AttributeChange::Default);
     
-    if (success)
+    if (!entities.empty())
     {
         //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because loadscene clears it
         Events::TundraConnectedEventData event_data;
