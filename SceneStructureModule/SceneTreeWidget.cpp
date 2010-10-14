@@ -334,8 +334,16 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 void SceneTreeWidget::Edit()
 {
     QList<entity_id_t> ids = GetSelectedEntities();
+    QList<QPair<entity_id_t, ComponentItem *> > comps;
     if (ids.empty())
-        return;
+    {
+        comps = GetSelectedComponents();
+        if (comps.empty())
+            return;
+
+        for(int i = 0; i <comps.size(); ++i)
+            ids.append(comps[i].first);
+    }
 
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
@@ -370,7 +378,7 @@ void SceneTreeWidget::EditInNew()
     if (ids.empty())
         return;
 
-    // Create new editor instance every time.
+    // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
@@ -381,6 +389,9 @@ void SceneTreeWidget::EditInNew()
     foreach(entity_id_t id, ids)
         editor->AddEntity(id);
     editor->SetSelectedEntities(ids);
+
+    if (!ecEditor)
+        ecEditor = editor;
 
     ui->AddWidgetToScene(editor);
     ui->ShowWidget(editor);
@@ -410,7 +421,6 @@ void SceneTreeWidget::New()
     QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
-
 
     if (type == tr("Synchronized"))
     {
