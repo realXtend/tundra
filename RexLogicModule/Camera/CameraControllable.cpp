@@ -39,9 +39,10 @@ namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
-    CameraControllable::CameraControllable(Foundation::Framework *fw) :
-        framework_(fw),
-        action_event_category_(fw->GetEventManager()->QueryEventCategory("Action")),
+    CameraControllable::CameraControllable(RexLogicModule *rex_logic) :
+        rex_logic_(rex_logic),
+        framework_(rex_logic->GetFramework()),
+        action_event_category_(rex_logic->GetFramework()->GetEventManager()->QueryEventCategory("Action")),
         current_state_(ThirdPerson),
         firstperson_pitch_(0),
         firstperson_yaw_(0),
@@ -86,19 +87,9 @@ namespace RexLogic
         action_trans_[RexTypes::Actions::MoveRight] = Vector3df::UNIT_X;
         action_trans_[RexTypes::Actions::MoveUp] = Vector3df::UNIT_Y;
         action_trans_[RexTypes::Actions::MoveDown] = Vector3df::NEGATIVE_UNIT_Y;
-
+    
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-
-		camera_control_widget_ = new CameraControl();
-        /*
-		Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
-        if (ui_service)
-		{
-			ui_service->AddWidgetToScene(camera_control_widget_);
-			ui_service->AddWidgetToMenu(camera_control_widget_);
-		}
-        */
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -118,9 +109,13 @@ namespace RexLogic
 
     bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
+<<<<<<< HEAD
         camera_control_widget_->HandleInputEvent(event_id, data);
 
         if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+=======
+        if (event_id == Input::Events::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
+>>>>>>> Camera controls widget
         {
             current_state_ = ThirdPerson;
             firstperson_pitch_ = 0.0f;
@@ -331,7 +326,6 @@ namespace RexLogic
                     pos += camera_placeable->GetOrientation() * normalized_free_translation_ * trans_dt;
                     ClampPosition(pos);
                     camera_placeable->SetPosition(pos);
-
                     camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
                     camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
                 }
