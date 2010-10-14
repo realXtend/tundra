@@ -77,6 +77,7 @@ namespace RexLogic
     class WorldInputLogic;
     class LoginHandler;
     class ObjectCameraController;
+    class CameraControl;
 
     namespace InWorldChat { class Provider; }
 
@@ -84,6 +85,7 @@ namespace RexLogic
     typedef boost::shared_ptr<Primitive> PrimitivePtr;
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<ObjectCameraController> ObjectCameraControllerPtr;
+    typedef boost::shared_ptr<CameraControl> CameraControlPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -209,6 +211,9 @@ namespace RexLogic
         //! Launch estateownermessage event
         void EmitIncomingEstateOwnerMessageEvent(QVariantList params);
 
+        ObjectCameraControllerPtr GetObjectCameraController() { return obj_camera_controller_; }
+        CameraControlPtr GetCameraControlWidget() { return camera_control_widget_; }
+
     public slots:
         //! logout from server and delete current scene
         void LogoutAndDeleteWorld();
@@ -324,6 +329,8 @@ namespace RexLogic
         CameraControllablePtr camera_controllable_;
 
         ObjectCameraControllerPtr obj_camera_controller_;
+
+        CameraControlPtr camera_control_widget_;
 
         //! Avatar entities found this frame. Needed so that we can update name overlays last, after all other updates
         std::vector<Scene::EntityWeakPtr> found_avatars_;
