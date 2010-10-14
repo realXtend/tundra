@@ -117,18 +117,7 @@ namespace ECEditor
                 entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
             entity_id_to_name_.insert(QString::number(entity_id), entity_name);
 
-            QString entity_id_str;
-            entity_list_->clearSelection();
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, QString::number((int)entity_id)));
-            if(entity_name.isEmpty())
-            {
-                entity_id_str = QString::number(entity_id);
-                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
-            }
-            else
-            {
-                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
-            }
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
         }
     }
 
@@ -145,13 +134,12 @@ namespace ECEditor
 
         QList<QListWidgetItem *> items = entity_list_->findItems(entity_id_str, Qt::MatchExactly);
         for(uint i = 0; i < items.size(); i++)
-        {
             SAFE_DELETE(items[i]);
-        }
+
         items.clear();
     }
 
-    void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> ids)
+    void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
     {
         if (!entity_list_)
             return;
@@ -225,11 +213,9 @@ namespace ECEditor
         if (!ok)
             return;
 
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        for (uint i = 0; i < entities.size(); ++i)
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
         {
-            ComponentPtr comp;
-            comp = entities[i]->GetComponent(typeName, name);
+            ComponentPtr comp = entity->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
                 continue;
@@ -240,7 +226,7 @@ namespace ECEditor
             else
                 comp = framework_->GetComponentManager()->CreateComponent(typeName); 
             if (comp)
-                entities[i]->AddComponent(comp, AttributeChange::Default);
+                entity->AddComponent(comp, AttributeChange::Default);
         }
     }
 
@@ -250,9 +236,8 @@ namespace ECEditor
         if (!scene)
             return;
 
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        for(uint i = 0; i < entities.size(); ++i)
-            scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Default);
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
+            scene->RemoveEntity(entity->GetId(), AttributeChange::Default);
     }
 
     void ECEditorWindow::CopyEntity()
@@ -273,10 +258,9 @@ namespace ECEditor
                 id_str.setNum((int)entity->GetId());
                 entity_elem.setAttribute("id", id_str);
 
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                for(uint i = 0; i < components.size(); ++i)
-                    if (components[i]->IsSerializable())
-                        components[i]->SerializeTo(temp_doc, entity_elem);
+                foreach(ComponentPtr component, entity->GetComponentVector())
+                    if (component->IsSerializable())
+                        component->SerializeTo(temp_doc, entity_elem);
 
                 temp_doc.appendChild(entity_elem);
             }
