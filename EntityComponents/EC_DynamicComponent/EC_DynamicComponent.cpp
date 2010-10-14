@@ -167,11 +167,12 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
     IAttribute *attribute = 0;
-    if(ContainsAttribute(name))
+    if (ContainsAttribute(name))
         return attribute;
+
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
-    if(attribute)
-        emit AttributeAdded(name);
+    if (attribute)
+        emit AttributeAdded(attribute);
 
     AttributeChanged(attribute, change);
 
@@ -186,6 +187,7 @@ void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::
         {
             //! /todo Make sure that component removal is replicated to the server if change type is Replicate.
             AttributeChanged(*iter, change);
+            emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
@@ -201,7 +203,7 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
         AttributeChanged(attribute, change);
-        emit AttributeAdded(name);
+        emit AttributeAdded(attribute);
     }
     LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
 }
