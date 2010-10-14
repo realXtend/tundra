@@ -1,3 +1,4 @@
+
 #!/bin/bash
 set -e
 set -x
@@ -95,6 +96,22 @@ function build-regular {
 	touch $tags/$what-done
     fi
 }
+
+what=knet
+if test -f $tags/what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf knet
+    hg clone http://bitbucket.org/clb/knet
+    cd knet
+    cmake .
+    make -j2
+    cp lib/libkNet.a $prefix/lib/
+    rsync -r include/* $prefix/include/
+fi
+
+
 
 what=Caelum
 if test -f $tags/$what-done; then
