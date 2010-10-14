@@ -65,6 +65,10 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
 
 SceneTreeWidget::~SceneTreeWidget()
 {
+    if (ecEditor)
+        ecEditor->close();
+    if (fileDialog)
+        fileDialog->close();
 }
 
 void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
@@ -532,26 +536,34 @@ void SceneTreeWidget::Paste()
 
 void SceneTreeWidget::SaveAs()
 {
-    Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
 }
 
 void SceneTreeWidget::SaveSceneAs()
 {
-    Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
 void SceneTreeWidget::Import()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenNewScene()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
