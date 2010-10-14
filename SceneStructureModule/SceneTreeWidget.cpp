@@ -29,10 +29,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include "MemoryLeakCheck.h"
 
-const QString cOgreSceneFileFilter("OGRE scene (*.scene)");
-const QString cOgreMeshFileFilter("OGRE mesh (*.mesh)");
-const QString cNaaliXmlFileFilter("Naali scene XML(*.xml)");
-const QString cNaaliBinaryFileFilter("Naali Binary Format (*.nbf)");
+const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
+const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
+const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
+const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
+const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
@@ -80,17 +81,26 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Create context menu actions
-    // paste, new entity, import OGRE scene, open new scene and import content from scene
+    // New entity, import OGRE scene, open new scene and import content from scene
     // actions are available always
-    QAction *pasteAction = new QAction(tr("Paste"), menu);
+
     QAction *newAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
     QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
 
     connect(newAction, SIGNAL(triggered()), SLOT(New()));
-    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
+
+    // Paste action is available only if we have valid entity-component XML data in clipboard.
+    bool pastePossible = false;
+    {
+        QDomDocument scene_doc("Scene");
+        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+    }
+
+    QAction *pasteAction = new QAction(tr("Paste"), menu);
+    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
 
     // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
     QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
@@ -129,7 +139,8 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         menu->addAction(copyAction);
     }
 
-    menu->addAction(pasteAction);
+    if (pastePossible)
+        menu->addAction(pasteAction);
 
     menu->addSeparator();
 
@@ -372,21 +383,22 @@ void SceneTreeWidget::New()
     AttributeChange::Type changeType;
 
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
-    QStringList types(QStringList() << "Local" << "Synchronized");
+    QStringList types(QStringList() << tr("Synchronized") << tr("Local"));
     bool ok;
     QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
-    if (type == tr("Local"))
-    {
-        id =scene->GetNextFreeIdLocal();
-        changeType = AttributeChange::LocalOnly;
-    }
-    else if(type == tr("Synchronized"))
+
+    if (type == tr("Synchronized"))
     {
         id = scene->GetNextFreeId();
         changeType = AttributeChange::Replicate;
+    }
+    else if(type == tr("Local"))
+    {
+        id =scene->GetNextFreeIdLocal();
+        changeType = AttributeChange::LocalOnly;
     }
     else
     {
@@ -494,13 +506,15 @@ void SceneTreeWidget::SaveAs()
 
 void SceneTreeWidget::Import()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;"
-        + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+    Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter,
+        tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenNewScene()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 

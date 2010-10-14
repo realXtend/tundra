@@ -26,16 +26,21 @@ namespace ECEditor
     typedef std::vector<ComponentWeakPtr> ComponentWeakPtrVector;
     typedef std::list<ComponentGroup*> ComponentGroupList;
 
-    //! ECBrowser is a widget that will display all selected entity components and their attributes.
-    /*! The ECBrowser will iterate all entity's components and pass them to a ECComponentEditor switch is responsible to handling component's attribute editing.
-     *  User can add new editable enitites by using AddEntity and RemoveEntity methods and the browser will iterate trhought all the entitys components and pass them to ECComponentEditors.
-     *  ECBrowser has implement options to add, delete, copy and paste components from the selected entities by using a CopyComponent, DeleteComponent, PasteComponent and EditXml mehtods.
-     *  User can add and remove attributes from the dynamic component aswell. CreateAttribute method can be used to create new attributes to a dynamic component and RemoveAttribute is used
-     *  to delete them from the dynamic component.
-     *  \todo Try to find a way to remove the unecessary paint events when we are updating the browser parameters.
-     *  \ingroup ECEditorModuleClient.
+    //! Widget that will display all selected entity components and their attributes.
+    /*! The ECBrowser will iterate all entity's components and pass them to an ECComponentEditor,
+        which is responsible to handling component's attribute editing.
+
+        User can add new editable entities by using AddEntity() and RemoveEntity() methods and the browser will 
+        iterate through all the entity's components and pass them to ECComponentEditors.
+        ECBrowser has implemented options to add, delete, copy and paste components from the selected entities by
+        using a CopyComponent(), DeleteComponent(), PasteComponent() and EditXml() methods.
+
+        User can add attributes to dynamic component by using CreateAttribute() and remove attributes with RemoveAttribute().
+
+        \todo Try to find a way to remove the unecessary paint events when we are updating the browser parameters.
+        \ingroup ECEditorModuleClient.
      */
-    class ECBrowser: public QtTreePropertyBrowser
+    class ECBrowser : public QtTreePropertyBrowser
     {
         Q_OBJECT
     public:
@@ -132,11 +137,14 @@ namespace ECEditor
         //! User has selected delete action from a QMenu.
         void DeleteComponent();
         //! New dynamic component attribute has been added.
-        /*! @todo When many attributes has been added/removed from the editor this method is called multiple times and each time this method seems to reinitialize the component editor.
-         * This will consume too much time and should be fixed so that coponent editor will be initialized only once when all the dynamic component's attributes have been added.
+        /*! @todo When many attributes has been added/removed from the editor this method is called 
+            multiple times and each time this method seems to reinitialize the component editor.
+            This will consume too much time and should be fixed so that coponent editor will be 
+            initialized only once when all the dynamic component's attributes have been added.
          */
-        void DynamicComponentChanged(const QString &name);
-        //! Component's name has been changed and we need to remove component from it's previous ComponentGroup and create/add component to another componentgroup.
+        void DynamicComponentChanged();
+        //! Component's name has been changed and we need to remove component from it's previous 
+        //! ComponentGroup and create/add component to another componentgroup.
         /*! @param newName component's new name.
          */
         void ComponentNameChanged(const QString &newName);
