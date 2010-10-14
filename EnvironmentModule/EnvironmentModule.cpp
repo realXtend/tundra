@@ -29,7 +29,8 @@
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
 #include <EC_Name.h>
-
+//ENNE
+#include "UiExternalServiceInterface.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
@@ -88,13 +89,17 @@ namespace Environment
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
-            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+            //ENNE MOD UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+			//ENNE MODIF!!
+			Foundation::UiExternalServiceInterface *ui = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
             if (!ui)
                 return;
 
-            ui->AddWidgetToScene(postprocess_dialog_);
-            ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
-                "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+            //ENNE  ui->AddWidgetToScene(postprocess_dialog_);
+			QWidget *aux = ui->AddExternalPanel(postprocess_dialog_,"Environment Edicion");
+			ui->AddExternalMenuItem(aux,"Environment Edicion", "Panels");
+            //ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
+            //    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
         }
 
         environment_editor_ = new EnvironmentEditor(this);

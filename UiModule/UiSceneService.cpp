@@ -122,7 +122,7 @@ namespace UiServices
 
     bool UiSceneService::SwitchToScene(const QString &name)
     {
-        return owner_->GetUiStateMachine()->SwitchToScene(name);
+       return owner_->GetUiStateMachine()->SwitchToScene(name);
     }
 
     void UiSceneService::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)

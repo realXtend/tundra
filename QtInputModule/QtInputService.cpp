@@ -90,8 +90,11 @@ framework(framework_)
     // to track mouse move events from that window.
     mainWindow = mainView;
 
-    while(mainWindow->parentWidget())
-        mainWindow = mainWindow->parentWidget();
+	//$ BEGIN_MOD $
+	//$ MOD_DESCRIPTION Commented to get the events only on the render window $ 
+    //while(mainWindow->parentWidget())
+    //    mainWindow = mainWindow->parentWidget();
+	//$ END_MOD $ 
 
     mainWindow->setMouseTracking(true);
     // For Mouse wheel events, key releases, and mouse moves (no button down).

@@ -14,7 +14,7 @@
 #include <QObject>
 
 class QWidget;
-class QGraphicsProxyWidget;
+class QGraphicsProxyWidget; 
 class QGraphicsScene;
 
 class UiProxyWidget;

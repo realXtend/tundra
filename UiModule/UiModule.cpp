@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -82,6 +83,11 @@ namespace UiServices
         QFontDatabase::addApplicationFont("./media/fonts/FACBK.TTF");
 
         event_query_categories_ << "Framework" << "Scene" << "Input";
+
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION The call is put here because to see the scene we need to set the central widget before the render of the mainwindow takes place.. $
+		CreateAndConfigureMainWin();
+		//$ END_MOD $
     }
 
     void UiModule::Unload()
@@ -92,7 +98,7 @@ namespace UiServices
 
     void UiModule::Initialize()
     {
-        ui_view_ = GetFramework()->GetUIView();
+        ui_view_ = GetFramework()->GetUIView(); 
         if (ui_view_)
         {
             ui_state_machine_ = new CoreUi::UiStateMachine(ui_view_, this);
@@ -135,6 +141,41 @@ namespace UiServices
         else
             LogWarning("Could not acquire QGraphicsView shared pointer from framework, UiServices are disabled");
     }
+
+	//$ BEGIN_MOD $
+	//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
+	void UiModule::CreateAndConfigureMainWin(){
+
+		qtWin_ = new QMainWindow();
+
+		// Create window title
+        std::string group = Foundation::Framework::ConfigurationGroup();
+        std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
+        std::string version_minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
+        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
+		
+
+		//Get config parameters
+		int width = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_width", 800);
+        int height = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_height", 600);
+        bool maximized = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "window_maximized", false); 
+        bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
+
+		//Assign parameters to our window
+		qtWin_->setWindowTitle("RealXtend UiExternal");
+		qtWin_->setMinimumSize(width,height);
+		qtWin_->setDockNestingEnabled(true);
+		qtWin_->setCentralWidget(GetFramework()->GetMainWindow());
+		
+		//Menu bar for Qwin this Mac support
+		 QMenuBar *menuBar = new QMenuBar(qtWin_);
+		 menuBar->heightForWidth(500);
+		 qtWin_->setMenuBar(menuBar);
+				
+		//Show  window
+		qtWin_->show();		
+	}
+	//$ END_MOD $
 
     void UiModule::PostInitialize()
     {

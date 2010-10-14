@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_UiModule_UiModule_h
@@ -14,6 +15,13 @@
 #include <QMap>
 #include <QPair>
 #include <QStringList>
+//$ BEGIN_MOD $
+#include <QMainWindow>
+#include <QString>
+#include <QMenuBar>
+#include <QAction>
+#include "MainWindow.h"
+//$ END_MOD $
 
 class KeyEvent;
 class InputContext;
@@ -74,6 +82,11 @@ namespace UiServices
         //! Returns name of this module.
         static const std::string &NameStatic() { return type_name_static_; }
 
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
+		QMainWindow *qtWin_; 
+		//$END_MOD$
+
     private slots:
         void OnKeyPressed(KeyEvent *key);
 
@@ -132,6 +145,11 @@ namespace UiServices
         //! Welcome message to be sent when inworld scene is enabled
         //! Do NOT delete this on deconstructor or anywhere else for that matter!
         MessageNotification *welcome_message_;
+
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Inside this method is where we create the QMainWindow of the main Aplication $
+		void CreateAndConfigureMainWin();
+		//$ END_MOD $
     };
 }
 
