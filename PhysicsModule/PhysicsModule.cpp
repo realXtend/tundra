@@ -9,20 +9,31 @@
 #include "Entity.h"
 #include "Framework.h"
 #include "SceneManager.h"
+#include "ServiceManager.h"
 #include "Profiler.h"
+#include "Renderer.h"
+#include "ConsoleCommandServiceInterface.h"
+#include "btBulletDynamicsCommon.h"
+
+#include <Ogre.h>
 
 namespace Physics
 {
 
 const std::string PhysicsModule::moduleName = std::string("Physics");
 
-PhysicsModule::PhysicsModule() : 
-    IModule(NameStatic())
+PhysicsModule::PhysicsModule() :
+    IModule(NameStatic()),
+    drawDebugGeometry_(false),
+    debugGeometryObject_(0),
+    debugDrawMode_(0)
 {
 }
 
 PhysicsModule::~PhysicsModule()
 {
+    // Delete the physics manual object if it exists
+    SetDrawDebugGeometry(false);
 }
 
 void PhysicsModule::Load()
@@ -32,6 +43,16 @@ void PhysicsModule::Load()
 
 void PhysicsModule::PostInitialize()
 {
+    RegisterConsoleCommand(Console::CreateCommand("physicsdebug",
+        "Toggles drawing of physics debug geometry.",
+        Console::Bind(this, &PhysicsModule::ConsoleToggleDebugGeometry)));
+}
+
+Console::CommandResult PhysicsModule::ConsoleToggleDebugGeometry(const StringVector& params)
+{
+    SetDrawDebugGeometry(!drawDebugGeometry_);
+    
+    return Console::ResultSuccess();
 }
 
 void PhysicsModule::Update(f64 frametime)
@@ -45,6 +66,9 @@ void PhysicsModule::Update(f64 frametime)
             i->second->Simulate(frametime);
             ++i;
         }
+        
+        if (drawDebugGeometry_)
+            UpdateDebugGeometry();
     }
     
     RESETPROFILER;
@@ -63,7 +87,7 @@ PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
     }
     
     Scene::SceneManager* ptr = scene.get();
-    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld());
+    boost::shared_ptr<PhysicsWorld> new_world(new PhysicsWorld(this));
     physicsWorlds_[ptr] = new_world;
     QObject::connect(ptr, SIGNAL(Removed(Scene::SceneManager*)), this, SLOT(OnSceneRemoved(Scene::SceneManager*)));
     
@@ -95,6 +119,72 @@ void PhysicsModule::OnSceneRemoved(Scene::SceneManager* scene)
     {
         LogInfo("Scene removed, removing physics world");
         physicsWorlds_.erase(i);
+    }
+}
+
+void PhysicsModule::SetDrawDebugGeometry(bool enable)
+{
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = framework_->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer).lock();
+    if (!renderer)
+        return;
+    Ogre::SceneManager* scenemgr = renderer->GetSceneManager();
+    
+    drawDebugGeometry_ = enable;
+    if (!enable)
+    {
+        if (debugGeometryObject_)
+        {
+            scenemgr->getRootSceneNode()->detachObject(debugGeometryObject_);
+            scenemgr->destroyManualObject(debugGeometryObject_);
+            debugGeometryObject_ = 0;
+        }
+    }
+    else
+    {
+        if (!debugGeometryObject_)
+        {
+            debugGeometryObject_ = scenemgr->createManualObject("physics_debug");
+            debugGeometryObject_->setDynamic(true);
+            scenemgr->getRootSceneNode()->attachObject(debugGeometryObject_);
+        }
+    }
+}
+
+void PhysicsModule::UpdateDebugGeometry()
+{
+    if (!drawDebugGeometry_)
+        return;
+
+    PROFILE(PhysicsModule_UpdateDebugGeometry);
+
+    setDebugMode(btIDebugDraw::DBG_DrawWireframe);
+
+    // Draw debug only for the active scene
+    PhysicsWorld* world = GetPhysicsWorldForScene(framework_->GetDefaultWorldScene());
+    if (!world)
+        return;
+    
+    debugGeometryObject_->clear();
+    debugGeometryObject_->begin("PhysicsDebug", Ogre::RenderOperation::OT_LINE_LIST);
+    
+    world->GetWorld()->debugDrawWorld();
+
+    debugGeometryObject_->end();
+}
+
+void PhysicsModule::reportErrorWarning(const char* warningString)
+{
+    LogWarning("Physics: " + std::string(warningString));
+}
+
+void PhysicsModule::drawLine(const btVector3& from, const btVector3& to, const btVector3& color)
+{
+    if ((drawDebugGeometry_) && (debugGeometryObject_))
+    {
+        debugGeometryObject_->position(from.x(), from.y(), from.z());
+        debugGeometryObject_->colour(color.x(), color.y(), color.z(), 1.0f);
+        debugGeometryObject_->position(to.x(), to.y(), to.z());
+        debugGeometryObject_->colour(color.x(), color.y(), color.z(), 1.0f);
     }
 }
 

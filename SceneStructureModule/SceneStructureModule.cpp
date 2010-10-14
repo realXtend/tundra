@@ -65,9 +65,11 @@ void SceneStructureModule::InstantiateContent(const QString &filename, Vector3df
     {
         bool ok;
         QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "20.00;20.00;20.00", &ok);
-        if (!ok || posString.isEmpty())
+        if (!ok)
             return;
 
+        if (posString.isEmpty())
+            posString = "0;0;0";
         posString.replace(',', '.');
         QStringList pos = posString.split(';');
         if (pos.size() > 0)

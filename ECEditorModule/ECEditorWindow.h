@@ -76,7 +76,7 @@ namespace ECEditor
         /// Sets which entities are selected in the editor window.
         /** @param ids List of entity ID's.
         */
-        void SetSelectedEntities(const QList<entity_id_t> ids);
+        void SetSelectedEntities(const QList<entity_id_t> &ids);
 
         /// Clears entity list.
         void ClearEntities();

@@ -18,12 +18,14 @@ class btDynamicsWorld;
 namespace Physics
 {
 
+class PhysicsModule;
+
 class PHYSICS_MODULE_API PhysicsWorld : public QObject
 {
     Q_OBJECT
     
 public:
-    PhysicsWorld();
+    PhysicsWorld(PhysicsModule* owner);
     virtual ~PhysicsWorld();
     
     //! Step the physics world. May trigger several internal simulation substeps, according to the deltatime given.
