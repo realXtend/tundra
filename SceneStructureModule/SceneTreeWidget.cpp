@@ -221,23 +221,19 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
 Selection SceneTreeWidget::GetSelection() const
 {
     Selection ret;
-    QTreeWidgetItemIterator it(const_cast<SceneTreeWidget *>(this));
-    while (*it)
+    QListIterator<QTreeWidgetItem *> it(selectedItems());
+    while(it.hasNext())
     {
-        QTreeWidgetItem *item = *it;
-        if (item->isSelected())
+        QTreeWidgetItem *item = it.next();
+        EntityItem *eItem = dynamic_cast<EntityItem *>(item);
+        if (eItem)
+            ret.entities << eItem;
+        else
         {
-            EntityItem *eItem = dynamic_cast<EntityItem *>(item);
-            if (eItem)
-                ret.entities << eItem;
-            else
-            {
-                ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
-                if (cItem)
-                    ret.components << cItem;
-            }
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+            if (cItem)
+                ret.components << cItem;
         }
-        ++it;
     }
 
     return ret;
