@@ -30,6 +30,11 @@ NaaliGraphicsView::NaaliGraphicsView(QWidget *parent)
     setAttribute(Qt::WA_DontShowOnScreen, true);
 }
 
+NaaliGraphicsView::~NaaliGraphicsView()
+{
+    delete backBuffer;
+}
+
 QImage *NaaliGraphicsView::BackBuffer()
 { 
     return backBuffer;
