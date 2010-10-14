@@ -218,59 +218,29 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         QTreeWidget::dropEvent(e);
 }
 
-QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
+Selection SceneTreeWidget::GetSelection() const
 {
-    QList<entity_id_t> ids;
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return ids;
-
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
+    Selection ret;
+    QTreeWidgetItemIterator it(const_cast<SceneTreeWidget *>(this));
+    while (*it)
     {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-
-        // If showComponents is false or parent index == QModelIndex(), it's guaranteed 
-        // that we have top-level item i.e. entity always selected. Else we have component selected 
-        // and we don't want to select it as entity.
-        EntityItem  *eItem = 0;
-        if (!showComponents || (index.parent() == QModelIndex()))
-            eItem = dynamic_cast<EntityItem *>(topLevelItem(index.row()));
-
-        if (eItem)
-            ids << eItem->id;
+        QTreeWidgetItem *item = *it;
+        if (item->isSelected())
+        {
+            EntityItem *eItem = dynamic_cast<EntityItem *>(item);
+            if (eItem)
+                ret.entities << eItem;
+            else
+            {
+                ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+                if (cItem)
+                    ret.components << cItem;
+            }
+        }
+        ++it;
     }
 
-    return ids;
-}
-
-QList<QPair<entity_id_t, ComponentItem *> > SceneTreeWidget::GetSelectedComponents() const
-{
-    QList<QPair<entity_id_t, ComponentItem *> > components;
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return components;
-
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid() || index.parent() == QModelIndex())
-            continue;
-
-        EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(index.parent().row()));
-        assert(eItem);
-        if (!eItem)
-            continue;
-
-        ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(index.row()));
-        if (cItem)
-            components << qMakePair(eItem->id, cItem);
-    }
-
-    return components;
+    return ret;
 }
 
 QString SceneTreeWidget::GetSelectionAsXml() const
@@ -280,24 +250,19 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     if (!scene)
         return QString();
 
-    QList<entity_id_t> ids = GetSelectedEntities();
-    QList<QPair<entity_id_t, ComponentItem *> > comps;
-    if (ids.empty())
-    {
-        comps = GetSelectedComponents();
-        if (comps.empty())
-            return QString();
-    }
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
+        return QString();
 
     // Create root Scene element always for consistency, even if we only have one entity
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    if (!ids.empty())
+    if (selection.HasEntities())
     {
-        foreach(entity_id_t id, ids)
+        foreach(EntityItem *eItem, selection.entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(id);
+            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
             assert(entity.get());
             if (entity)
             {
@@ -314,18 +279,20 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 
         scene_doc.appendChild(scene_elem);
     }
-    else if (!comps.empty())
+    else if (selection.HasComponents())
     {
-        QListIterator<QPair<entity_id_t, ComponentItem *> > it(comps);
-        while(it.hasNext())
+        foreach(ComponentItem *cItem, selection.components)
         {
-            QPair<entity_id_t, ComponentItem *> pair = it.next();
-            Scene::EntityPtr entity = scene->GetEntity(pair.first);
-            if (entity)
+            EntityItem *eItem = dynamic_cast<EntityItem *>(cItem->parent());
+            if (eItem)
             {
-                ComponentPtr component = entity->GetComponent(pair.second->typeName, pair.second->name);
-                if (component->IsSerializable())
-                    component->SerializeTo(scene_doc, scene_elem);
+                Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+                if (entity)
+                {
+                    ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
+                    if (component->IsSerializable())
+                        component->SerializeTo(scene_doc, scene_elem);
+                }
             }
         }
 
@@ -337,17 +304,9 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 
 void SceneTreeWidget::Edit()
 {
-    QList<entity_id_t> ids = GetSelectedEntities();
-    QList<QPair<entity_id_t, ComponentItem *> > comps;
-    if (ids.empty())
-    {
-        comps = GetSelectedComponents();
-        if (comps.empty())
-            return;
-
-        for(int i = 0; i <comps.size(); ++i)
-            ids.append(comps[i].first);
-    }
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
+        return;
 
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
@@ -355,9 +314,9 @@ void SceneTreeWidget::Edit()
     // If we have existing editor instance, use it.
     if (ecEditor)
     {
-        foreach(entity_id_t id, ids)
+        foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id);
-        ecEditor->SetSelectedEntities(ids);
+        ecEditor->SetSelectedEntities(selection.EntityIds().toList());
         ui->BringWidgetToFront(ecEditor);
         return;
     }
@@ -367,9 +326,9 @@ void SceneTreeWidget::Edit()
     ecEditor->setAttribute(Qt::WA_DeleteOnClose);
     ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
     ecEditor->hide();
-    foreach(entity_id_t id, ids)
+    foreach(entity_id_t id, selection.EntityIds())
         ecEditor->AddEntity(id);
-    ecEditor->SetSelectedEntities(ids);
+    ecEditor->SetSelectedEntities(selection.EntityIds().toList());
 
     ui->AddWidgetToScene(ecEditor);
     ui->ShowWidget(ecEditor);
@@ -378,8 +337,8 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    QList<entity_id_t> ids = GetSelectedEntities();
-    if (ids.empty())
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
         return;
 
     // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
@@ -390,9 +349,9 @@ void SceneTreeWidget::EditInNew()
     editor->setAttribute(Qt::WA_DeleteOnClose);
     editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
-    foreach(entity_id_t id, ids)
+    foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
-    editor->SetSelectedEntities(ids);
+    editor->SetSelectedEntities(selection.EntityIds().toList());
 
     if (!ecEditor)
         ecEditor = editor;
@@ -456,7 +415,7 @@ void SceneTreeWidget::Delete()
         return;
 
     // Remove entities.
-    foreach(entity_id_t id, GetSelectedEntities())
+    foreach(entity_id_t id, GetSelection().EntityIds())
         scene->RemoveEntity(id, AttributeChange::Replicate);
 }
 
@@ -499,9 +458,9 @@ void SceneTreeWidget::Paste()
         }
 
         // Get currently selected entities and paste components to them.
-        foreach(entity_id_t id, GetSelectedEntities())
+        foreach(EntityItem *eItem, GetSelection().entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(id);
+            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -620,18 +579,18 @@ void SceneTreeWidget::SaveSelectionDialogClosed(int result)
     else
     {
         // Handle all other as binary.
-        QList<entity_id_t> ids = GetSelectedEntities();
-        if (!ids.empty())
+        Selection sel = GetSelection();
+        if (!sel.IsEmpty())
         {
             // Assume 4MB max for now
             bytes.resize(4 * 1024 * 1024);
             kNet::DataSerializer dest(bytes.data(), bytes.size());
 
-            dest.Add<u32>(ids.size());
+            dest.Add<u32>(sel.entities.size());
 
-            foreach(entity_id_t id, ids)
+            foreach(EntityItem *e, sel.entities)
             {
-                Scene::EntityPtr entity = scene->GetEntity(id);
+                Scene::EntityPtr entity = scene->GetEntity(e->id);
                 assert(entity.get());
                 if (entity)
                     entity->SerializeToBinary(dest);
