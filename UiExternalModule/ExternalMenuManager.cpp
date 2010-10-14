@@ -93,7 +93,7 @@ namespace UiExternalServices
 				category_menu_[del]->removeAction(adel);
 			return true;
 		//}*/
-		return false;
+		return true;
     }
 
     void ExternalMenuManager::ActionNodeClicked()

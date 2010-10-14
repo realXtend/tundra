@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 /**
  *  For conditions of distribution and use, see copyright notice in license.txt
  *  @file   EnvironmentModule.cpp
@@ -29,8 +30,9 @@
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
 #include <EC_Name.h>
-//ENNE
+//$ BEGIN_MOD $
 #include "UiExternalServiceInterface.h"
+//$ END_MOD $
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
@@ -82,24 +84,25 @@ namespace Environment
         framework_event_category_ = event_manager_->QueryEventCategory("Framework");
         input_event_category_ = event_manager_->QueryEventCategory("Input");
 
-        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>();
+        OgreRenderer::Renderer *renderer = framework_->GetService<OgreRenderer::Renderer>(); 
         if (renderer)
         {
             // Initialize post-process dialog.
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
-            //ENNE MOD UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-			//ENNE MODIF!!
+			//$ BEGIN_MOD $            
 			Foundation::UiExternalServiceInterface *ui = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
             if (!ui)
-                return;
-
-            //ENNE  ui->AddWidgetToScene(postprocess_dialog_);
+                return;            
 			QWidget *aux = ui->AddExternalPanel(postprocess_dialog_,"Environment Edicion");
-			ui->AddExternalMenuItem(aux,"Environment Edicion", "Panels");
+			ui->AddExternalMenuPanel(aux,"Environment Edicion", "Panels");
+			//$ MOD_DESCRIPTION Commented to check if the new EXTERNAL ui module works fine $
+			//UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
+			//ui->AddWidgetToScene(postprocess_dialog_);
             //ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
             //    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			//$ END_MOD $
         }
 
         environment_editor_ = new EnvironmentEditor(this);
