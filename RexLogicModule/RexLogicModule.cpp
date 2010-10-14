@@ -1286,7 +1286,7 @@ void RexLogicModule::NewComponentAdded(Scene::Entity *entity, IComponent *compon
 #endif
 
 #ifdef EC_Movable_ENABLED ///\todo When the Connection API is complete, remove this altogether. The EC_Movable can access the connection via that. -jj.
-    else if (component->TypeName() == EC_Movable::TypeNameStatic())
+    if (component->TypeName() == EC_Movable::TypeNameStatic())
     {
         entity->GetComponent<EC_Movable>()->SetWorldStreamPtr(GetServerConnection());
     }
