@@ -24,6 +24,7 @@ namespace ECEditor
 }
 
 class QWidget;
+class QFileDialog;
 
 /// Tree widget item representing entity.
 class EntityItem : public QTreeWidgetItem
@@ -111,7 +112,7 @@ private:
     /// Framework pointer.
     Foundation::Framework *framework;
 
-    /// Framework pointer.
+    /// This widget's "own" EC editor.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
     /// Returns list currently selected entity ID's.
@@ -122,6 +123,9 @@ private:
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
+
+    /// Keeps track of the latest opened file save or open dialog, so that we won't multiple open.
+    QPointer<QFileDialog> fileDialog;
 
 private slots:
     /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
