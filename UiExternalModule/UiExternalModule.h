@@ -31,7 +31,7 @@ namespace Foundation
 
 namespace UiExternalServices
 {
-	class ExternalPanelManger;
+	class ExternalPanelManager;
 	class ExternalMenuManager;
 	class UiExternalService;
 

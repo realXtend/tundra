@@ -55,7 +55,7 @@ namespace UiExternalServices
         if (qWin_)
         {
 		   //Create MenuManager and PanelManager
-		   menu_manager_ = new ExternalMenuManager(qWin_->menuBar());
+		   menu_manager_ = new ExternalMenuManager(qWin_->menuBar(), this);
 		   panel_manager_ = new ExternalPanelManager(qWin_);
 		   
 			// Register UI service

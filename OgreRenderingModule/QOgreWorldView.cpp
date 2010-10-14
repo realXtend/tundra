@@ -54,7 +54,10 @@ namespace OgreRenderer
         if (win_)
         {
             PROFILE(QOgreWorldView_ResizeWindow);
-            win_->resize(width, height); 
+			//$ BEGIN_MOD $
+			//$ MOD_DESCRIPTION Comment this to make it render in the correct place with the new QMainWindow $
+            //win_->resize(width, height); 
+			//$ END_MOD $
             win_->windowMovedOrResized();
         }
     }

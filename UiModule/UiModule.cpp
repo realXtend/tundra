@@ -144,7 +144,8 @@ namespace UiServices
         std::string group = Foundation::Framework::ConfigurationGroup();
         std::string version_major = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_major");
         std::string version_minor = framework_->GetDefaultConfig().GetSetting<std::string>(group, "version_minor");
-        std::string window_title = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
+        std::string window_titleaux = framework_->GetDefaultConfig().GetSetting<std::string>(group, "window_title") + " " + version_major + "." + version_minor;
+		QString window_title = QString::fromStdString(window_titleaux);
 		
 
 		//Get config parameters
@@ -154,7 +155,7 @@ namespace UiServices
         bool fullscreen = framework_->GetDefaultConfig().DeclareSetting("UiQMainWindow", "fullscreen", false);
 
 		//Assign parameters to our window
-		qtWin_->setWindowTitle("RealXtend UiExternal");
+		qtWin_->setWindowTitle(window_title);
 		qtWin_->setMinimumSize(width,height);
 		qtWin_->setDockNestingEnabled(true);
 		qtWin_->setCentralWidget(GetFramework()->GetMainWindow());

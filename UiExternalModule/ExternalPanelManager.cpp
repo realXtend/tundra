@@ -31,14 +31,7 @@ namespace UiExternalServices
         {
             SAFE_DELETE(wid);
             return false;
-        }
-        
-        // If the widget has WA_DeleteOnClose on, connect its proxy's visibleChanged()
-        // signal to a slot which handles the deletion. This must be done because closing
-        // proxy window in our system doesn't yield closeEvent, but hideEvent instead.
-        if (widget->testAttribute(Qt::WA_DeleteOnClose))
-            connect(wid, SIGNAL(visibleChanged()), SLOT(DeleteCallingWidgetOnClose()));
-
+        }        
         return wid;
     }
 
@@ -78,13 +71,6 @@ namespace UiExternalServices
 			return false;		
     }
     
-
-	void ExternalPanelManager::DeleteCallingWidgetOnClose()
-    {
-        QDockWidget *wid = dynamic_cast<QDockWidget*>(sender());
-        if (wid && !wid->isVisible())
-            wid->deleteLater();
-    }
 
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))

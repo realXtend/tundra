@@ -14,8 +14,9 @@ namespace UiExternalServices
     QString ExternalMenuManager::defaultItemIcon = "./data/ui/images/menus/edbutton_MATWIZ_normal.png";
     QString ExternalMenuManager::defaultGroupIcon = "./data/ui/images/menus/edbutton_WRLDTOOLS_icon.png";
 
-    ExternalMenuManager::ExternalMenuManager(QMenuBar *parent) :
-            root_menu_(parent)
+    ExternalMenuManager::ExternalMenuManager(QMenuBar *parent, UiExternalModule *owner) :
+            root_menu_(parent),
+			owner_(owner)
     {
     }
 
@@ -74,7 +75,7 @@ namespace UiExternalServices
             category_menu_[menu]->addAction(action);
         }
 		
-		QString *aux = new QString(name+"+"+menu);
+		QString *aux = new QString(menu+"+"+name);
         controller_panels_[*aux] = widget;
 		controller_actions_[*aux]= action;
 		connect(action, SIGNAL(triggered()), SLOT(ActionNodeClicked()));
@@ -83,17 +84,20 @@ namespace UiExternalServices
 
     bool ExternalMenuManager::RemoveExternalMenuPanel(QWidget *controlled_widget)
     { 
-		/*QString del = controller_panels_.key(controlled_widget);
-		//if (del){
+		//The widget is the widget of RealXtend that is inside a dockwidget!
+		QString del = controller_panels_.key(dynamic_cast<QDockWidget*>(controlled_widget->parentWidget()));
+		if (controller_actions_.contains(del)){
 			QAction *adel = controller_actions_[del];
 			//disconnect action
 			QObject::disconnect(adel, SIGNAL(triggered()), this, SLOT(ActionNodeClicked()));
-			//Delete action from menu
-			if (category_menu_.contains(del))
-				category_menu_[del]->removeAction(adel);
-			return true;
-		//}*/
-		return true;
+			//Get menu name and delete action from menu
+			QStringList menu = del.split("+");
+			if (category_menu_.contains(menu.at(0))) {
+				category_menu_[menu.at(0)]->removeAction(adel);
+				return true;
+			}
+		}
+		return false;
     }
 
     void ExternalMenuManager::ActionNodeClicked()
@@ -112,7 +116,8 @@ namespace UiExternalServices
 			aux->hide();
 
 		//To test it
-		RemoveExternalMenuPanel(aux->widget());
+		//RemoveExternalMenuPanel(aux->widget());
+		//owner_->GetExternalPanelManager()->RemoveExternalPanel(aux->widget());
 
     }
 }

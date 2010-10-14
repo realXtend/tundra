@@ -75,12 +75,6 @@ namespace UiExternalServices
 
         //! Internal list of proxy widgets in scene.
 		QList<QDockWidget *> all_qdockwidgets_in_window_;
-
-
-    private slots:
-        //! Deletes widget and the corresponding proxy widget if widget has WA_DeleteOnClose on.
-        //! The caller of this slot is retrieved by using QObject::sender().
-        void DeleteCallingWidgetOnClose();
     };
 }
 
