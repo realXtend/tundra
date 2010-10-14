@@ -62,7 +62,9 @@
     \section listener_OAAM Setting sound listener position
 
     For 3D positional audio, it is necessary to know the position and orientation of the sound listener. By default the RexLogic::RexLogicModule updates the listener position to
-    either the avatar or camera position. This is accomplished through ISoundService::SetListener.
+    either the avatar or camera position. This is accomplished through ISoundService::SetListener. An easy way to use sound listener, is to attach it to entity by using EC_SoundListener
+	entity-component. EC_SoundListener will follow entity's world position, that EC_Placeable entity-component will provide.
+    <b>Note:</b> Only one entity can have active sound listener at a time.<br>
 
     \section mastervolume_OAAM Setting sound master volumes
 
@@ -83,17 +85,12 @@
 	Once a sound channel has been created with the sound system, it can be attached to an entity by using the entity component EC_Sound. The sound source will then
     appear to follow the entity's world position (EC_Placeable). If entity have a EC_Placeable entity component, sound is played as ambient sound.
 	
-	\section EC_SoundListener
-	
-    Entity-component which provides sound listener position for in-world 3D audio.
-    Updates parent entity's placeable component's position to the sound service each frame.<br>
-    <b>Note:</b>  Only one entity can have active sound listener at a time.<br>
-    <b>Note:</b>   EC_SoundListener is currently only working with avatar and freecamera.
-	
-	\section Using ISoundService through scripts
+	\section using ISoundService through scripts
 	
 	There is an option to control OAAM through scripts. script can communicate with ISoundSerive using Qt's signal/slots mechanism<br>
 	<b>Note:</b> Only public slot mehtods are exposed to scripts.
+	
+	\todo When script examples are completed, add their link to this section.
 		
 	\section OAAM class diagram
 	\image html OpenALAudioModule.png
