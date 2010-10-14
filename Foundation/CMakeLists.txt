@@ -18,14 +18,14 @@ use_package (BOOST)
 use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
-use_modules (Foundation Core Interfaces SceneManager Ui Input)
+use_modules (Foundation Core Interfaces SceneManager Ui Input Asset)
 
 build_library (${TARGET_NAME} STATIC ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_modules (Core Interfaces SceneManager Ui Input)
+link_modules (Core Interfaces SceneManager Ui Input Asset)
 
 SetupCompileFlagsWithPCH()
 

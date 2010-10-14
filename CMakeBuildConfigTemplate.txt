@@ -57,6 +57,7 @@ add_subdirectory(Application)
 
 add_subdirectory(Input)
 add_subdirectory(Ui)
+add_subdirectory(Asset)
 
 # The AddEntityComponent macros must appear before any of the add_subdirectory() directives for modules that use the ECs, or otherwise
 # they will not be able to conditionally compile the EC.

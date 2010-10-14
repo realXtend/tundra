@@ -158,10 +158,12 @@ configure_qtpropertybrowser()
 
 include_directories(Input)
 include_directories(Ui)
+include_directories(Asset)
 include_directories(SceneManager) # This will be renamed to Scene.
 
 link_directories(Input)
 link_directories(Ui)
+link_directories(Asset)
 link_directories(SceneManager) # This will be renamed to Scene.
 
 # If the custom optional modules configuration file does not yet
