@@ -122,6 +122,12 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
+    /// Inserts new attribute value to attribute. Note: this is only meant to be used through javascripts.
+    /** @param name Name of the attribute.
+     *  @param value Value of the attribe.
+     *  @param change Change type.
+     *  @todo remove this from dynamic component when possible.
+     */
     void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change);
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
