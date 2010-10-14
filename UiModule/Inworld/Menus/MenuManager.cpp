@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $ 
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -33,9 +34,12 @@ namespace CoreUi
         // Create the root menu
         root_menu_ = new GroupNode(true, "RootNode", "", -20, 5);
         category_map_["Root"] = root_menu_;
-        layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
+        //$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Not used until one module needs to put a widget in the scene and an option on the menu, so we do it later if needed $ 
+		/*layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
         connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
-                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));*/
+		//$ END_MOD $ 
     }
 
     MenuManager::~MenuManager()
@@ -45,7 +49,14 @@ namespace CoreUi
 
     void MenuManager::AddMenuGroup(const QString &name, const QString &icon, qreal hgap, qreal vgap)
     {
-        ///\todo Remove this hack at some point.
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Someone needs to render something in the screen $ 
+		layout_manager_->AddCornerAnchor(root_menu_, Qt::TopLeftCorner, Qt::TopLeftCorner);
+        connect(root_menu_, SIGNAL(NodeGroupClicked(GroupNode*, QParallelAnimationGroup*, QParallelAnimationGroup*)),
+                SLOT(GroupNodeClicked(GroupNode*, QParallelAnimationGroup *, QParallelAnimationGroup *)));
+		//$ END_MOD $         
+		
+		///\todo Remove this hack at some point.
         QString hack_icon;
         QString base_url = "./data/ui/images/menus/";
         if (name == "Server Tools")
