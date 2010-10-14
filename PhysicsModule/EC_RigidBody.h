@@ -3,6 +3,7 @@
 #ifndef incl_Physics_EC_RigidBody_h
 #define incl_Physics_EC_RigidBody_h
 
+#include "Core.h"
 #include "IComponent.h"
 #include "LinearMath/btMotionState.h"
 #include "Declare_EC.h"
@@ -31,6 +32,10 @@ Registered by Physics::PhysicsModule.
 <ul>
 <li>float: mass
 <div>Mass of the body. Set to 0 to have a static (immovable) object</div>
+<li>int: shapetype
+<div>Shape type. Can be box, sphere, cylinder, capsule, trimesh (not yet supported) or heightfield (not yet supported)</div>
+<li>Vector3df: size
+<div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -52,12 +57,31 @@ Does not emit any actions.
 class EC_RigidBody : public IComponent, public btMotionState
 {
     Q_OBJECT
+    Q_ENUMS(EventType)
     
     DECLARE_EC(EC_RigidBody);
 public:
+    enum ShapeType
+    {
+        Shape_Box = 0,
+        Shape_Sphere,
+        Shape_Cylinder,
+        Shape_Capsule,
+        Shape_TriMesh,
+        Shape_HeightField
+    };
+    
     //! Mass of the body. Set to 0 for static
     Q_PROPERTY(float mass READ getmass WRITE setmass);
     DEFINE_QPROPERTY_ATTRIBUTE(float, mass);
+    
+    //! Shape type
+    Q_PROPERTY(int shapeType READ getshapeType WRITE setshapeType)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, shapeType);
+    
+    //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
+    Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
     
     virtual ~EC_RigidBody();
     
@@ -126,6 +150,11 @@ private:
     
     //! PhysicsModule pointer
     Physics::PhysicsModule* owner_;
+    
+    //! Cached shapetype (last created)
+    int cachedShapeType_;
+    //! Cached shapesize (last created)
+    Vector3df cachedSize_;
 };
 
 #endif

@@ -21,8 +21,25 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     shape_(0),
     placeableDisconnected_(false),
     owner_(dynamic_cast<PhysicsModule*>(module)),
-    mass(this, "Mass", 0.0f)
+    mass(this, "Mass", 0.0f),
+    shapeType(this, "Shape Type", (int)Shape_Box),
+    size(this, "Size", Vector3df(1,1,1)),
+    cachedShapeType_(-1)
 {
+    static AttributeMetadata metadata;
+    static bool metadataInitialized = false;
+    if(!metadataInitialized)
+    {
+        metadata.enums[Shape_Box] = "Box";
+        metadata.enums[Shape_Sphere] = "Sphere";
+        metadata.enums[Shape_Cylinder] = "Cylinder";
+        metadata.enums[Shape_Capsule] = "Capsule";
+        metadata.enums[Shape_TriMesh] = "TriMesh";
+        metadata.enums[Shape_HeightField] = "HeightField";
+        metadataInitialized = true;
+    }
+    shapeType.SetMetadata(&metadata);
+
     // Note: we cannot create the body yet because we are not in an entity/scene yet (and thus don't know what physics world we belong to)
     // We will create the body when the scene is known.
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
@@ -68,8 +85,43 @@ void EC_RigidBody::CreateCollisionShape()
 {
     RemoveCollisionShape();
     
-    //! \todo create the proper shape according to attributes
-    shape_ = new btBoxShape(btVector3(0.5f, 0.5f, 0.5f));
+    Vector3df sizeVec = size.Get();
+    // Sanitize the size
+    if (sizeVec.x < 0)
+        sizeVec.x = 0;
+    if (sizeVec.y < 0)
+        sizeVec.y = 0;
+    if (sizeVec.z < 0)
+        sizeVec.z = 0;
+        
+    switch (shapeType.Get())
+    {
+    case Shape_Box:
+        // Note: Bullet uses box halfsize
+        shape_ = new btBoxShape(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
+        break;
+    case Shape_Sphere:
+        shape_ = new btSphereShape(sizeVec.x * 0.5f);
+        break;
+    case Shape_Cylinder:
+        shape_ = new btCylinderShapeZ(btVector3(sizeVec.x * 0.5f, sizeVec.y * 0.5f, sizeVec.z * 0.5f));
+        break;
+    case Shape_Capsule:
+        shape_ = new btCapsuleShapeZ(sizeVec.x * 0.5f, sizeVec.z * 0.5f);
+        break;
+    }
+    
+    // If placeable exists, set local scaling from its scale
+    /*! \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion, but Ogre scaling of child nodes disregards the rotation,
+     * so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
+     */
+    EC_Placeable* placeable = placeable_.lock().get();
+    if ((placeable) && (shape_))
+    {
+        const Transform& trans = placeable->transform.Get();
+        shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.z, trans.scale.y));
+    }
+    
     // If body already exists, set the new collision shape, and remove/readd the body to the physics world to make sure Bullet's internal representations are updated
     ReaddBody();
 }
@@ -122,6 +174,7 @@ void EC_RigidBody::ReaddBody()
     
     world_->GetWorld()->removeRigidBody(body_);
     world_->GetWorld()->addRigidBody(body_);
+    body_->clearForces();
     body_->activate();
 }
 
@@ -186,6 +239,15 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
             // Readd body to the world in case static/dynamic classification changed
             ReaddBody();
     }
+    if ((attribute == &shapeType) || (attribute == &size))
+    {
+        if ((shapeType.Get() != cachedShapeType_) || (size.Get() != cachedSize_))
+        {
+            CreateCollisionShape();
+            cachedShapeType_ = shapeType.Get();
+            cachedSize_ = size.Get();
+        }
+    }
 }
 
 void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
@@ -211,7 +273,10 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
         interpTrans.setRotation(worldTrans.getRotation());
         body_->setInterpolationWorldTransform(interpTrans);
         
-        body_->setLinearVelocity(ToBtVector3(Vector3df(0,0,1)));
+        body_->activate();
+        
+        if (shape_)
+            shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.z, trans.scale.y));
     }
 }
 
