@@ -21,6 +21,7 @@
 #include "SceneEvents.h"
 #include "EventManager.h"
 #include "EC_Placeable.h"
+#include "AddComponentDialog.h"
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -97,7 +98,8 @@ namespace ECEditor
         framework_(framework),
         toggle_entities_button_(0),
         entity_list_(0),
-        browser_(0)
+        browser_(0),
+        component_dialog_(0)
     {
         Initialize();
     }
@@ -206,7 +208,18 @@ namespace ECEditor
     
     void ECEditorWindow::CreateComponent()
     {
-        bool ok;
+        //If old dialog window is still open destroy it before we open another.
+        if(component_dialog_)
+            SAFE_DELETE(component_dialog_);
+
+        if(selectedEntities_.size())
+        {
+            component_dialog_ = new AddComponentDialog(framework_, *(selectedEntities_.begin()), this);
+            component_dialog_->SetComponentList(GetAvailableComponents());
+            connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinnished(int)));
+            component_dialog_->show();
+        }
+        /*bool ok;
         QString typeName = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
         if (!ok || typeName.isEmpty())
             return;
@@ -230,7 +243,7 @@ namespace ECEditor
                 comp = framework_->GetComponentManager()->CreateComponent(typeName); 
             if (comp)
                 entities[i]->AddComponent(comp, AttributeChange::Default);
-        }
+        }*/
     }
 
     void ECEditorWindow::DeleteEntity()
@@ -634,6 +647,41 @@ namespace ECEditor
                        this, SLOT(EntityRemoved(Scene::Entity*)));
             connect(scenePtr.get(), SIGNAL(EntityRemoved(Scene::Entity*, AttributeChange::Type)), 
                     this, SLOT(EntityRemoved(Scene::Entity*)));
+        }
+    }
+
+    void ECEditorWindow::ComponentDialogFinnished(int result)
+    {
+        AddComponentDialog *dialog = qobject_cast<AddComponentDialog*>(sender());
+        if(dialog && component_dialog_ == dialog)
+        {
+            if(result == QDialog::Accepted)
+            {
+                Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+                if(!scene)
+                {
+                    //Add log warning.
+                    return;
+                }
+                Scene::EntityPtr entity = scene->GetEntity(dialog->GetEntityId());
+                if(!entity)
+                {
+                    //Add log warning
+                    return;
+                }
+                ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+                // Check if component has been already added to a entity.
+                if(comp)
+                {
+                    //Add log warning
+                    return;
+                }
+                comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+                if (comp)
+                    entity->AddComponent(comp, AttributeChange::Default);
+            }
+            component_dialog_->deleteLater();
+            component_dialog_ = 0;
         }
     }
 
