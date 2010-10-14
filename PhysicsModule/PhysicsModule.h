@@ -27,6 +27,9 @@ public:
     MODULE_LOGGING_FUNCTIONS
 
     //! IModule override.
+    void Load();
+    
+    //! IModule override.
     void PostInitialize();
 
     //! IModule override.
@@ -44,6 +47,9 @@ public slots:
     
     //! Return the physics world for a scene if it exists
     PhysicsWorld* GetPhysicsWorldForScene(Scene::ScenePtr scene);
+    
+    //! Return the physics world for a scene if it exists
+    PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
     
 private slots:
     //! Scene has been removed, so delete also the physics world (if exists)

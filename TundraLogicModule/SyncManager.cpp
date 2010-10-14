@@ -161,7 +161,7 @@ void SyncManager::NewUserConnected(KristalliProtocol::UserConnection* user)
     
     for(Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::EntityPtr entity = *iter;
+        Scene::EntityPtr entity = iter->second;
         entity_id_t id = entity->GetId();
         // If we cross over to local entities (ID range 0x80000000 - 0xffffffff), break
         if (id & Scene::LocalEntity)

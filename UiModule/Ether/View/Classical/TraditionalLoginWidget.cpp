@@ -5,6 +5,8 @@
 #include "TraditionalLoginWidget.h"
 #include "MemoryLeakCheck.h"
 
+#include <QTimer>
+
 namespace CoreUi
 {
     namespace Classical

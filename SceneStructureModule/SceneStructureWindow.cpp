@@ -201,6 +201,9 @@ void SceneStructureWindow::ClearAssetReferences()
         p->removeChild(aItem);
         SAFE_DELETE(aItem);
     }
+
+    for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
+        AddEntity(it->second.get());
 }
 
 AssetItem *SceneStructureWindow::GetAssetItem(const QString &type, const QString &id) const

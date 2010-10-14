@@ -313,22 +313,23 @@ void EC_Placeable::HandleAttributeChanged(IAttribute* attribute, AttributeChange
         if (!link_scene_node_)
             return;
         
-        Transform newTransform = transform.Get();
-        link_scene_node_->setPosition(newTransform.position.x, newTransform.position.y, newTransform.position.z);
-        Quaternion orientation(DEGTORAD * newTransform.rotation.x,
-                          DEGTORAD * newTransform.rotation.y,
-                          DEGTORAD * newTransform.rotation.z);
+        const Transform& trans = transform.Get();
+        link_scene_node_->setPosition(trans.position.x, trans.position.y, trans.position.z);
+        Quaternion orientation(DEGTORAD * trans.rotation.x,
+                          DEGTORAD * trans.rotation.y,
+                          DEGTORAD * trans.rotation.z);
         link_scene_node_->setOrientation(Ogre::Quaternion(orientation.w, orientation.x, orientation.y, orientation.z));
 
         // Prevent Ogre exception from zero scale
-        if (newTransform.scale.x < 0.0000001f)
-            newTransform.scale.x = 0.0000001f;
-        if (newTransform.scale.y < 0.0000001f)
-            newTransform.scale.y = 0.0000001f;
-        if (newTransform.scale.z < 0.0000001f)
-            newTransform.scale.z = 0.0000001f;
+        Vector3df scale(trans.scale.x, trans.scale.y, trans.scale.z);
+        if (scale.x < 0.0000001f)
+            scale.x = 0.0000001f;
+        if (scale.y < 0.0000001f)
+            scale.y = 0.0000001f;
+        if (scale.z < 0.0000001f)
+            scale.z = 0.0000001f;
 
-        link_scene_node_->setScale(newTransform.scale.x, newTransform.scale.y, newTransform.scale.z);
+        link_scene_node_->setScale(scale.x, scale.y, scale.z);
         
         AttachNode(); // Nodes become visible only after having their position set at least once
     }
