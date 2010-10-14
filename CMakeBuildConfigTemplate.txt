@@ -85,8 +85,8 @@ AddEntityComponent(EntityComponents/EC_SoundListener EC_SoundListener)
 # The following EC's are declared by AvatarModule. Optional.
 AddEntityComponent(EntityComponents/EC_HoveringWidget EC_HoveringWidget)
 
-# Declared by PythonScriptModule. Optional.
-AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Used by ECEditorModule.
+# The following two are declared by both PythonScriptModule and JavascriptModule. They are optional.
+AddEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)      # Required by ECEditorModule.
 AddEntityComponent(EntityComponents/EC_Script EC_Script)
 
 # The following modules are required.
@@ -123,7 +123,7 @@ add_subdirectory(JavascriptModule)      # Allows QtScript-created scene script i
 add_subdirectory(CommunicationsModule)  # Enables communication capabilities.
 add_subdirectory(TelepathyIMModule)     # Telepathy Messaging support. Depends on OgreRenderingModule.
 add_subdirectory(InWorldChatModule)     # Implements in-world text communication.
-add_subdirectory (CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
+add_subdirectory(CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
