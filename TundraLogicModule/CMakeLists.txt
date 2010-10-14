@@ -29,6 +29,7 @@ use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package_knet()
+use_package_bullet()
 use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule PhysicsModule RexCommon EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
