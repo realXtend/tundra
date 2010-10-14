@@ -11,6 +11,7 @@ class RotationHandler(circuits.BaseComponent):
         self.entity = entity
         self.comp = comp
         if self.comp is not None: #normal run, check for nonEC run now
+            # Todo: OnChanged() is deprecated
             comp.connect("OnChanged()", self.onChanged)
         self.rot = Quat.fromAxisAndAngle(Vec(0, 1, 0), 1)
 

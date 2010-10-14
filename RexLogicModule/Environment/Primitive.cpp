@@ -123,12 +123,8 @@ Scene::EntityPtr Primitive::CreateNewPrimEntity(entity_id_t entityid)
     components.append(EC_NetworkPosition::TypeNameStatic());
     components.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
 
-    Scene::EntityPtr entity = scene->CreateEntity(entityid, components);
-
-    // Now switch networksync off from the placeable, before we do any damage
-    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    if (placeable)
-        placeable->SetNetworkSyncEnabled(false);
+    // Create entity with all default components non-networksynced
+    Scene::EntityPtr entity = scene->CreateEntity(entityid, components, AttributeChange::LocalOnly, false);
 
     return entity;
 }
@@ -204,24 +200,24 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         prim->UpdateFlags = msg->ReadU32();
 
         // Read prim shape
-        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::Local);
-        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::Local);
-        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::Local);
-        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::Local);
-        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Local);
-        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::Local);
-        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::Local);
-        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::Local);
-        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
-        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::Local);
+        prim->PathCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->ProfileCurve.Set(msg->ReadU8(), AttributeChange::LocalOnly);
+        prim->PathBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->PathScaleX.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathScaleY.Set(msg->ReadU8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearX.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathShearY.Set(((int8_t)msg->ReadU8()) * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwist.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTwistBegin.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRadiusOffset.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperX.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathTaperY.Set(msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->PathRevolutions.Set(1.0f + msg->ReadU8() * 0.015f, AttributeChange::LocalOnly);
+        prim->PathSkew.Set( msg->ReadS8() * 0.01f, AttributeChange::LocalOnly);
+        prim->ProfileBegin.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileEnd.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
+        prim->ProfileHollow.Set(msg->ReadU16() * 0.00002f, AttributeChange::LocalOnly);
         prim->HasPrimShapeData = true;
 
         // Texture entry
@@ -281,7 +277,7 @@ bool Primitive::HandleOSNE_ObjectUpdate(ProtocolUtilities::NetworkEventInboundDa
         {
             Scene::ScenePtr scene = rexlogicmodule_->GetFramework()->GetDefaultWorldScene();
             if (scene)
-                scene->EmitEntityCreated(entity, AttributeChange::Network);
+                scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
         }
     }
 
@@ -403,7 +399,8 @@ bool Primitive::HandleRexGM_RexPrimAnim(ProtocolUtilities::NetworkEventInboundDa
     if (!anim)
         return false;
     // Attach the mesh entity to animationcontroller, if not yet attached
-    ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+    //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+    ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
     if (!mesh)
         return false;
     OgreRenderer::EC_Mesh *ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
@@ -670,16 +667,16 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
 
     // graphical values
     prim->DrawType = ReadUInt8FromBytes(primdata,idx);
-    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Local);
-    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::Local);
+    prim->IsVisible.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->CastShadows.Set(ReadBoolFromBytes(primdata,idx), AttributeChange::LocalOnly);
     prim->LightCreatesShadows = ReadBoolFromBytes(primdata,idx);
     prim->DescriptionTexture = ReadBoolFromBytes(primdata,idx);
     prim->ScaleToPrim = ReadBoolFromBytes(primdata,idx);
-    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Local);
-    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::Local);
+    prim->DrawDistance.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
+    prim->LOD.Set(ReadFloatFromBytes(primdata,idx), AttributeChange::LocalOnly);
 
     prim->MeshID = ReadUUIDFromBytes(primdata,idx).ToString();
-    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();    
+    prim->CollisionMeshID = ReadUUIDFromBytes(primdata,idx).ToString();
     prim->ParticleScriptID = ReadUUIDFromBytes(primdata,idx).ToString();
 
     // animation
@@ -839,8 +836,8 @@ bool Primitive::HandleOSNE_ObjectProperties(ProtocolUtilities::NetworkEventInbou
     if (entity)
     {
         EC_OpenSimPrim *prim = entity->GetComponent<EC_OpenSimPrim>().get();
-        prim->Name.Set(QString::fromStdString(name), AttributeChange::Local);
-        prim->Description.Set(QString::fromStdString(desc), AttributeChange::Local);
+        prim->Name.Set(QString::fromStdString(name), AttributeChange::LocalOnly);
+        prim->Description.Set(QString::fromStdString(desc), AttributeChange::LocalOnly);
         
         ///\todo Odd behavior? The ENTITY_SELECTED event is passed only after the server responds with an ObjectProperties
         /// message. Should we maintain our own notion of what's selected and rename this event to PRIM_OBJECT_PROPERTIES or
@@ -881,7 +878,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
             entity->RemoveComponent(customptr);
 
         // Get/create mesh component 
-        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetOrCreateComponent(OgreRenderer::EC_Mesh::TypeNameStatic(), "rex");
         if (!meshptr)
             return;
         OgreRenderer::EC_Mesh& mesh = *(dynamic_cast<OgreRenderer::EC_Mesh*>(meshptr.get()));
@@ -939,7 +937,8 @@ void Primitive::HandleDrawType(entity_id_t entityid)
     else if (prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         // Remove mesh component if exists
-        ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        //ComponentPtr meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+        ComponentPtr meshptr = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
         if (meshptr)
             entity->RemoveComponent(meshptr);
         // Detach from animationcontroller
@@ -1171,7 +1170,8 @@ void Primitive::HandleMeshAnimation(entity_id_t entityid)
         if (anim)
         {
             // Attach the mesh entity to animationcontroller, if not yet attached
-            ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+            //ComponentPtr mesh = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
+            ComponentPtr mesh = entity->GetComponent<OgreRenderer::EC_Mesh>("rex");
             if (!mesh)
                 return;
             OgreRenderer::EC_Mesh* ogre_mesh = dynamic_cast<OgreRenderer::EC_Mesh*>(mesh.get());
@@ -1934,7 +1934,6 @@ void Primitive::HandleLogout()
     pending_rexprimdata_.clear();
     pending_rexfreedata_.clear();
     local_dirty_entities_.clear();
-    network_dirty_entities_.clear();
 }
 
 
@@ -1967,29 +1966,34 @@ std::string Primitive::UrlForRexObjectUpdatePacket(RexTypes::RexAssetID id)
 
 void Primitive::RegisterToComponentChangeSignals(Scene::ScenePtr scene)
 {
-    connect(scene.get(), SIGNAL( ComponentChanged(IComponent*, AttributeChange::Type) ),
-        this, SLOT( OnComponentChanged(IComponent*, AttributeChange::Type) ));
+    connect(scene.get(), SIGNAL( AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ),
+        this, SLOT( OnAttributeChanged(IComponent*, IAttribute*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnEntityChanged(Scene::Entity*, IComponent*, AttributeChange::Type) ));
     connect(scene.get(), SIGNAL( ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type) ),
         this, SLOT( OnEntityChanged(Scene::Entity*, IComponent*, AttributeChange::Type) ));
 }
 
-void Primitive::OnComponentChanged(IComponent* comp, AttributeChange::Type change)
+void Primitive::OnAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change)
 {
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
     Scene::Entity* parent_entity = comp->GetParentEntity();
     if (!parent_entity)
         return;
     entity_id_t entityid = parent_entity->GetId();
     
-    if (change == AttributeChange::Local)
+    if (change == AttributeChange::Replicate)
+    {
+        //std::cout << "Added component " + comp->TypeName().toStdString() + " to replication list" << std::endl;
         local_dirty_entities_.insert(entityid);
-    if (change == AttributeChange::Network)
-        network_dirty_entities_.insert(entityid);
+    }
 }
 
 void Primitive::OnEntityChanged(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change)
 {
+    if ((!comp) || (!comp->IsSerializable()) || (!comp->GetNetworkSyncEnabled()))
+        return;
     if (!entity)
         return;
     
@@ -1997,10 +2001,11 @@ void Primitive::OnEntityChanged(Scene::Entity* entity, IComponent* comp, Attribu
     // (actually the component pointer is of no interest right now)
     entity_id_t entityid = entity->GetId();
     
-    if (change == AttributeChange::Local)
+    if (change == AttributeChange::Replicate)
+    {
+        //std::cout << "Added to replication list due to component add/remove" << std::endl;
         local_dirty_entities_.insert(entityid);
-    if (change == AttributeChange::Network)
-        network_dirty_entities_.insert(entityid);
+    }
 }
 
 void Primitive::OnRexPrimDataChanged(Scene::Entity* entity)
@@ -2043,29 +2048,14 @@ void Primitive::OnPrimDescriptionChanged(const EC_OpenSimPrim& prim)
 
 void Primitive::SerializeECsToNetwork()
 {
-    // Process first the Network change list. This actually needs no further actions, except that we reset 
-    // the attribute dirty flags resulting from deserializing the EC data that came from server
-    for (EntityIdSet::iterator i = network_dirty_entities_.begin(); i != network_dirty_entities_.end(); ++i)
-    {
-        // If we have a pending local update while a network update occurred, we just override it. Sorry!
-        if (local_dirty_entities_.find(*i) != local_dirty_entities_.end())
-            local_dirty_entities_.erase(*i);
-        // Network based change needs no work except resetting the change flag on all components
-        Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
-        if (!entity)
-            continue;
-        const Scene::Entity::ComponentVector& comps = entity->GetComponentVector();
-        for (uint j = 0; j < comps.size(); ++j)
-            comps[j]->ResetChange();
-    }
-    network_dirty_entities_.clear();
-    
     // Process the local change list for entities we have modified ourselves and have to send the EC data for
     for (EntityIdSet::iterator i = local_dirty_entities_.begin(); i != local_dirty_entities_.end(); ++i)
     {
         Scene::EntityPtr entity = rexlogicmodule_->GetPrimEntity(*i);
         if (!entity)
             continue;
+        
+        //std::cout << "Processing locally dirty entity" << std::endl;
         
         const Scene::Entity::ComponentVector& components = entity->GetComponentVector();
         
@@ -2086,8 +2076,6 @@ void Primitive::SerializeECsToNetwork()
         {
             if ((components[j]->IsSerializable()) && (components[j]->GetNetworkSyncEnabled()))
                 components[j]->SerializeTo(temp_doc, entity_elem);
-            // Clear the change flag now that component has been processed
-            components[j]->ResetChange();
         }
         
         temp_doc.appendChild(entity_elem);
@@ -2099,6 +2087,7 @@ void Primitive::SerializeECsToNetwork()
             continue;
         }
         
+        //std::cout << "Sending freedata" << std::endl;
         free.FreeData = std::string(bytes.data(), bytes.size());
         SendRexFreeData(*i);
     }
@@ -2110,6 +2099,7 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
     StringVector type_names;
     StringVector names;
     QDomElement entity_elem = doc.firstChildElement("entity");
+    std::vector<ComponentPtr> deserialized;
     if (!entity_elem.isNull())
     {
         QDomElement comp_elem = entity_elem.firstChildElement("component");
@@ -2119,12 +2109,14 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
             std::string name = comp_elem.attribute("name").toStdString();
             type_names.push_back(type_name);
             names.push_back(name);
-            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str());
+            // Signal the add of component right away
+            ComponentPtr new_comp = entity->GetOrCreateComponent(type_name.c_str(), name.c_str(), AttributeChange::LocalOnly);
             // If it's an existing component, and has network sync disabled, skip
             if ((new_comp) && (new_comp->GetNetworkSyncEnabled()))
             {
-                new_comp->DeserializeFrom(comp_elem, AttributeChange::Network);
-                new_comp->ComponentChanged(AttributeChange::Network);
+                // Deserialize in disconnected manner, signal the attribute changes later
+                new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
+                deserialized.push_back(new_comp);
             }
             else
                 RexLogicModule::LogWarning("Could not create entity component from XML data: " + type_name);
@@ -2149,9 +2141,15 @@ void Primitive::DeserializeECsFromFreeData(Scene::EntityPtr entity, QDomDocument
                 }
             }
             if (!found)
-                entity->RemoveComponent(all_components[i]);
+                entity->RemoveComponent(all_components[i], AttributeChange::LocalOnly);
         }
     }
+    
+    // Finally trigger localonly change for the components we deserialized.
+    //! \todo All attributes will reflect a change, even if they had the same value as before. Optimize this away.
+    //! \todo ComponentChanged() currently triggers deprecated OnChanged() signal. This will be removed. Do not rely on it!
+    for (uint i = 0; i < deserialized.size(); ++i)
+        deserialized[i]->ComponentChanged(AttributeChange::LocalOnly);
 }
 
 } // namespace RexLogic

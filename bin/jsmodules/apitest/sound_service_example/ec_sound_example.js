@@ -21,6 +21,7 @@ function OnObjectClicked()
 {
 	var sound = me.GetComponentRaw("EC_Sound");
 	sound.triggerSound = true;
+    # Todo: OnChanged() is deprecated
 	sound.OnChanged();
 }
 

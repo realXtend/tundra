@@ -12,7 +12,6 @@
 #include "Inworld/ControlPanel/BackdropWidget.h"
 #include "Inworld/ControlPanel/ControlPanelButton.h"
 #include "Inworld/ControlPanel/SettingsWidget.h"
-#include "Inworld/ControlPanel/BindingWidget.h"
 #include "Inworld/ControlPanel/PersonalWidget.h"
 #include "Inworld/ControlPanel/LanguageWidget.h"
 #include "Inworld/ControlPanel/TeleportWidget.h"
@@ -30,7 +29,6 @@ namespace CoreUi
         layout_manager_(layout_manager),
         backdrop_widget_(new CoreUi::BackdropWidget()),
         settings_widget_(0),
-        binding_widget_(0),
         language_widget_(0),
         teleport_widget_(0),
         changetheme_widget_(0)
@@ -46,10 +44,6 @@ namespace CoreUi
         SetHandler(UiServices::Settings, settings_action);
         connect(settings_action, SIGNAL(toggled(bool)), SLOT(ToggleSettingsVisibility(bool)));
         connect(settings_widget_, SIGNAL(Hidden()), SLOT(CheckSettingsButtonStyle()));
-
-        // Binding widget as settings tab
-        //binding_widget_ = new BindingWidget(settings_widget_);
-        //settings_widget_->AddWidget(binding_widget_, "Controls");
 
         // Adding cache tab
         cache_settings_widget_ = new CacheSettingsWidget(settings_widget_);
@@ -213,16 +207,4 @@ namespace CoreUi
         return backdrop_widget_->GetContentWidth();
     }
 
-    void ControlPanelManager::SetServiceGetter(QObject *service_getter)
-    {
-        if (binding_widget_)
-        {
-            connect(service_getter, SIGNAL(KeyBindingsChanged(Foundation::KeyBindings*)),
-                    binding_widget_, SLOT(UpdateContent(Foundation::KeyBindings*)));
-            connect(binding_widget_, SIGNAL(KeyBindingsUpdated(Foundation::KeyBindings*)),
-                    service_getter, SLOT(SetKeyBindings(Foundation::KeyBindings*)));
-            connect(binding_widget_, SIGNAL(RestoreDefaultBindings()),
-                    service_getter, SLOT(RestoreKeyBindings()));
-        }
-    }
 }

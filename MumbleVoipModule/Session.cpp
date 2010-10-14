@@ -39,7 +39,8 @@ namespace MumbleVoip
         server_info_(server_info),
         connection_(0),
         settings_(settings),
-        local_echo_mode_(false)
+        local_echo_mode_(false),
+        server_address_("")
     {
         channel_name_ = server_info.channel;
         OpenConnection(server_info);
@@ -73,6 +74,7 @@ namespace MumbleVoip
             return;
         }
         state_ = STATE_OPEN;
+        server_address_ = server_info_.server;
 
         connect(connection_, SIGNAL(UserJoinedToServer(MumbleLib::User*)), SLOT(CreateNewParticipant(MumbleLib::User*)) );
         connect(connection_, SIGNAL(UserLeftFromServer(MumbleLib::User*)), SLOT(UpdateParticipantList()) );
@@ -635,7 +637,7 @@ namespace MumbleVoip
 
     QString Session::GetServerInfo() const
     {
-        return server_info_.server;
+        return server_address_;
     }
 
 } // MumbleVoip

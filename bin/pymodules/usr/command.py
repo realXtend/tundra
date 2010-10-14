@@ -1311,6 +1311,7 @@ if 0: #the new DynamicComponent with individual attrs etc
     a = dc.GetAttribute("opened")
     print a, type(a)
     dc.SetAttribute("opened", True)
+    # Todo: OnChanged() is deprecated
     dc.OnChanged()
 
     jssrc = dc.GetAttribute("js_src")
@@ -1506,3 +1507,12 @@ if 0: #estate management uses presence info. websocketserver too
     for ent in ents:
         displaystring = ent.opensimpresence.QGetFullName() + "|" + ent.opensimpresence.QGetUUIDString()
         print displaystring
+
+if 1: #start a pythonqt console
+    try:
+        r.qtconsole
+    except:
+        r.qtconsole = naali._pythonscriptmodule.CreateConsole()
+    
+    #show also if was hidden previously
+    r.qtconsole.show()

@@ -101,6 +101,8 @@
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
+#include "PythonQtScriptingConsole.h"
+
 #include "QtInputKeyEvent.h"
 #include "QtInputMouseEvent.h"
 
@@ -654,6 +656,12 @@ namespace PythonScript
     void PythonScriptModule::OnComponentRemoved(Scene::Entity *entity, IComponent *component)
     {
     }
+
+    PythonQtScriptingConsole* PythonScriptModule::CreateConsole()
+    {
+        PythonQtScriptingConsole* pythonqtconsole = new PythonQtScriptingConsole(NULL, PythonQt::self()->getMainModule());
+        return pythonqtconsole;
+    }
 }
 
 extern "C" void POCO_LIBRARY_API SetProfiler(Foundation::Profiler *profiler);
@@ -967,8 +975,6 @@ PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
                     continue;
                 if (!custom_object_ptr->GetEntity())
                     continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1078,8 +1084,6 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
                     continue;
                 if (!custom_object_ptr->GetEntity())
                     continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1220,11 +1224,12 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     {
         entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_Touchable::TypeNameStatic()));
         ec_touchable = entity->GetComponent<EC_Touchable>().get();
+        ec_touchable->SetNetworkSyncEnabled(false);
     }
     if (ec_touchable)
     {
-        ec_touchable->highlightOnHover.Set(false, AttributeChange::Local);
-        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Local);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::LocalOnly);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::LocalOnly);
     }
 }
 
@@ -1274,8 +1279,6 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
                 Py_RETURN_NONE;
             if (!custom_object_ptr->GetEntity())
                 Py_RETURN_NONE;
-            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-            custom_object_ptr->CommitChanges(manual);
         }
         else
             Py_RETURN_NONE;
@@ -1297,6 +1300,11 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         // Iterate custom object texture map
         else if (custom_object_ptr)
         {
+            //! todo: fix this shit, find a smarter way than regenerating the prims multiple times without optimisation
+            //! so that we get the correct submesh indexes from it.
+            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+            custom_object_ptr->CommitChanges(manual);
+
             TextureMap texture_map = prim.PrimTextures;
             TextureMap::const_iterator i = texture_map.begin();
             if (i == texture_map.end())
@@ -1961,9 +1969,11 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Foundation::WorldLogicInterface::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::SceneManager::staticMetaObject);
             PythonQt::self()->registerClass(&MediaPlayer::ServiceInterface::staticMetaObject);
+            PythonQt::self()->registerClass(&PythonQtScriptingConsole::staticMetaObject);
 
             mainModule.addObject("_naali", GetFramework());
             PythonQt::self()->registerClass(&Frame::staticMetaObject);
+            PythonQt::self()->registerClass(&DelayedSignal::staticMetaObject);
             PythonQt::self()->registerClass(&ScriptConsole::staticMetaObject);
             PythonQt::self()->registerClass(&Command::staticMetaObject);
             PythonQt::self()->registerClass(&Scene::Entity::staticMetaObject);

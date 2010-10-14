@@ -63,7 +63,7 @@ namespace ECEditor
         return true;
     }
 
-    bool ComponentGroup::ContainComponent(const IComponent *component) const
+    bool ComponentGroup::ContainsComponent(const IComponent *component) const
     {
         for(uint i = 0; i < components_.size(); i++)
         {
@@ -75,7 +75,7 @@ namespace ECEditor
         return false;
     }
 
-    bool ComponentGroup::ContainAttribute(const std::string &name) const
+    bool ComponentGroup::ContainsAttribute(const QString &name) const
     {
         if(components_.empty())
             return false;
@@ -84,7 +84,7 @@ namespace ECEditor
         {
             if(components_[i].expired())
                 continue;
-            if(components_[i].lock()->GetAttribute(name.c_str()))
+            if(components_[i].lock()->GetAttribute(name))
                 return true;
         }
         return false;
@@ -93,7 +93,7 @@ namespace ECEditor
     bool ComponentGroup::AddComponent(ComponentPtr comp)
     {
         //Check if the component have already added to component group or it's name or type are different for the component group.
-        if(ContainComponent(comp.get()) || comp->Name() != name_ || comp->TypeName() != typeName_) 
+        if(ContainsComponent(comp.get()) || comp->Name() != name_ || comp->TypeName() != typeName_) 
             return false;
         components_.push_back(ComponentWeakPtr(comp));
         editor_->AddNewComponent(comp, false);
@@ -102,7 +102,7 @@ namespace ECEditor
 
     bool ComponentGroup::RemoveComponent(IComponent *comp)
     {
-        if(!ContainComponent(comp))
+        if(!ContainsComponent(comp))
             return false;
 
         std::vector<ComponentWeakPtr>::iterator iter = components_.begin();
@@ -127,20 +127,4 @@ namespace ECEditor
     { 
         return editor_->RootProperty() == property;
     }
-
-    /*bool ComponentGroup::operator< (const ComponentGroup &comp)
-    {
-        if(comp.typeName_ < typeName_)
-            return true;
-        if(comp.name_ < name_)
-            return true;
-        return false;
-    }
-
-    bool ComponentGroup::operator== (const ComponentGroup &comp)
-    {
-        if(comp.name_ == name_ && comp.typeName_ == typeName_)
-            return true;
-        return false;
-    }*/
 }

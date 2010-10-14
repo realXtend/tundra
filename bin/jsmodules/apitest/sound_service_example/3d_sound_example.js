@@ -5,7 +5,7 @@ var audio_asset_ref = "b31a9a52-fb05-4648-87de-60c8697db3ca";
 var local_audio = "file://rapinaa.ogg";
 
 // Javascript engine will call this function before it destroy the script instance.
-function OnScriptDestoyed()
+function OnScriptDestroyed()
 {
 	if (sound_rotator != undefined)
 		sound_rotator.Stop();
@@ -42,20 +42,23 @@ SoundRotator.prototype.Stop = function()
 
 SoundRotator.prototype.Update = function(frame_time)
 {
-	var trans = me.GetComponentRaw("EC_Mesh").nodeTransformation;
-	if (trans != undefined)
-	{
-		trans.pos.x = Math.sin(this.Rotation) * this.Radius;
-		trans.pos.y = Math.cos(this.Rotation) * this.Radius;
-		me.GetComponentRaw("EC_Mesh").nodeTransformation = trans;
-	}
-	
-	var Origin = me.GetComponentRaw("EC_OgrePlaceable").Position;
+	var Origin = me.ogreplaceable.Position;
 	if (Origin != undefined)
 	{
 		Origin.x += Math.sin(this.Rotation) * this.Radius;
 		Origin.y += Math.cos(this.Rotation) * this.Radius;
 		audio.SetPosition(this.SoundID, Origin);
+	}
+	
+	var trans = me.mesh.nodeTransformation;
+	if (trans != undefined)
+	{
+		trans.pos.x = Math.sin(this.Rotation) * this.Radius;
+		trans.pos.y = Math.cos(this.Rotation) * this.Radius;
+		var mode = me.mesh.GetUpdateMode();
+		mode.value = 2;
+		me.mesh.SetUpdateMode(mode);
+		me.mesh.nodeTransformation = trans;
 	}
 	
 	this.Rotation = this.Rotation + (this.Speed * frame_time);
@@ -76,7 +79,7 @@ function componentAdded(entity, component)
 }
 
 var sound_rotator = 0;
-if(me.GetComponentRaw("EC_OgrePlaceable"))
-	componentAdded(me, me.GetComponentRaw("EC_OgrePlaceable"));
+if(me.ogreplaceable)
+	componentAdded(me, me.ogreplaceable);
 else //If user login to server and script is run before EC_OgrePlaceable has been created this ensures that we get the actual component when it's added to scene.
 	scene.ComponentAdded.connect(componentAdded);

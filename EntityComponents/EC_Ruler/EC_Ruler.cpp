@@ -44,7 +44,7 @@ EC_Ruler::EC_Ruler(IModule *module) :
     rulerName = uuid.ToString() + "ruler";
     nodeName = uuid.ToString() + "node";
     
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateRuler()));
+    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateRuler()));
 }
 
 EC_Ruler::~EC_Ruler()
@@ -297,22 +297,25 @@ void EC_Ruler::SetupTranslateRuler() {
     if(!rulerObject)
         return;
 
-    float x, y, z;
-    x = y = z = 0;
-    
     float size = radiusAttr_.Get();
-
-    // Note, this arbitrary order is result from Py Code
-    // TODO: Fix this to something more unified (0 = x, 1 = y, 2 = z) throughout
-    // manipulator widget code
+    float x, y, z, p, delta;
+    
+    x = y = z = p = 0;
+    
     switch(axisAttr_.Get()) {
         case EC_Ruler::X:
             x = size;
+            p = fmodf(abs(pos_.x()), 1.0f);
+            delta = pos_.x()-newpos_.x();
             break;
         case EC_Ruler::Y:
+            p = fmodf(abs(pos_.y()), 1.0f);
+            delta = pos_.y()-newpos_.y();
             y = size;
             break;
         case EC_Ruler::Z:
+            p = fmodf(abs(pos_.z()), 1.0f);
+            delta = pos_.z()-newpos_.z();
             z = size;
             break;
         default:
@@ -324,6 +327,58 @@ void EC_Ruler::SetupTranslateRuler() {
     rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
     rulerObject->position(x, y, z);
     rulerObject->position(-x, -y, -z);
+    rulerObject->end();
+    
+    // create grid
+    rulerObject->begin("BaseWhiteNoLighting", Ogre::RenderOperation::OT_LINE_LIST);
+    float crossp;
+    for(int step=-5; step <= 5; step += 1) {
+        crossp = (float)step + p + delta;
+        switch(axisAttr_.Get()) {
+            case EC_Ruler::X:
+                // side one
+                rulerObject->position(crossp, -1, 0.05f);
+                rulerObject->position(crossp, -1, -0.05f);
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(crossp, -0.95f, 0);
+                rulerObject->position(crossp, -1.05f, 0);
+                // side two
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(crossp, 0.95f, 0);
+                rulerObject->position(crossp, 1.05f, 0);
+                rulerObject->position(crossp, 1, 0.05f);
+                rulerObject->position(crossp, 1, -0.05f);
+                break;
+            case EC_Ruler::Y:
+                // side one
+                rulerObject->position(-1, crossp, 0.05f);
+                rulerObject->position(-1, crossp, -0.05f);
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(-0.95f, crossp, 0);
+                rulerObject->position(-1.05f, crossp, 0);
+                // side two
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(0.95f, crossp, 0);
+                rulerObject->position(1.05f, crossp, 0);
+                rulerObject->position(1, crossp, 0.05f);
+                rulerObject->position(1, crossp, -0.05f);
+                break;
+            case EC_Ruler::Z:
+                // side one
+                rulerObject->position(-1, 0.05f, crossp);
+                rulerObject->position(-1, -0.05f, crossp);
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(-0.95f, 0, crossp);
+                rulerObject->position(-1.05f, 0, crossp);
+                // side two
+                if(abs(crossp) > 0.5f)
+                    rulerObject->position(0.95f, 0, crossp);
+                rulerObject->position(1.05f, 0, crossp);
+                rulerObject->position(1, 0.05f, crossp);
+                rulerObject->position(1, -0.05f, crossp);
+                break;
+        }
+    }
     rulerObject->end();
 }
 

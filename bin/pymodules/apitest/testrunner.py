@@ -172,16 +172,24 @@ class TestDynamicProperties(TestRunner):
         if not ent:
             yield "failure, avatar didn't appear"
             return
+
         print 'dynamic propety stuff:'
         ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent
-        d.CreateAttribute("real", 42.0)
+        val = 42.0
+        d.CreateAttribute("real", val)
+        # Todo: OnChanged() is deprecated
         d.OnChanged()
-        d.SetAttribute("real", 8.5)
+        assert val == d.GetAttribute("real")
+
+        val = 8.5
+        d.SetAttribute("real", val)
         d.OnChanged()
+        assert val == d.GetAttribute("real")
         d.RemoveAttribute("real")
         d.OnChanged()
+
         yield "created, changed and removed attribute"
         r.exit()
         yield "success"

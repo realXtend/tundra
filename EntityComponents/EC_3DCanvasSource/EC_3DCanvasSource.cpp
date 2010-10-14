@@ -39,7 +39,7 @@ EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
     source_edit_(0),
     manipulate_ec_3dcanvas(true)
 {
-    connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas()));
     connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
@@ -69,8 +69,8 @@ void EC_3DCanvasSource::SourceEdited()
     {
         // Replicate changed source to network
         // std::cout << "Changed source to " << new_source << std::endl;
-        source_.Set(new_source, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(new_source, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -116,8 +116,8 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         last_source_ = url_str;
         
         // std::cout << "Changed source by click to " << url_str << std::endl;
-        source_.Set(url_str, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(url_str, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 

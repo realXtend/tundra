@@ -2206,5 +2206,36 @@ namespace Avatar
         
         SetupAppearance(entity);
         return true;
-    }         
+    }
+    
+    
+    void AvatarAppearance::ProcessECAvatarAppearance(entity_id_t entityID, const u8* data, uint size)
+    {
+        Scene::EntityPtr entity = avatar_module_->GetAvatarEntity(entityID);
+        if (!entity)
+            return;
+        EC_AvatarAppearance* appearance = entity->GetComponent<EC_AvatarAppearance>().get();
+        if (!appearance)
+            return;
+        
+        std::string data_str((const char*)data, size);
+
+        QDomDocument avatar_doc("Avatar");
+        avatar_doc.setContent(QString::fromStdString(data_str));
+
+        // Deserialize appearance from the document into the EC
+        if (!LegacyAvatarSerializer::ReadAvatarAppearance(*appearance, avatar_doc))
+        {
+            AvatarModule::LogError("Failed to parse avatar description");
+            return;
+        }
+        
+        const AvatarAssetMap& assets = appearance->GetAssetMap();
+        
+        uint pending_requests = RequestAvatarResources(entity, assets, true);
+        
+        // In the unlikely case of no requests at all, rebuild avatar now
+        if (!pending_requests)
+            SetupAppearance(entity);
+    }
 }

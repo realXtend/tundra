@@ -57,13 +57,17 @@ namespace ECEditor
         if(attributes_.size() == 1)
         {
             if(!useMultiEditor_ && editorState_ != Uninitialized)
+            {
+                listenEditorChangedSignal_ = false;
                 Update(); 
+                listenEditorChangedSignal_ = true;
+            }
             else
             {
                 useMultiEditor_ = false;
                 Initialize();
             }
-            emit AttributeChanged(attributeName_.toStdString());
+            //emit AttributeChanged(attributeName_.toStdString());
         }
         else if(attributes_.size() > 1)
         {
@@ -87,8 +91,12 @@ namespace ECEditor
             if(editorState_ == Uninitialized)
                 Initialize();
             else
-                Update();
-            emit AttributeChanged(attributeName_.toStdString()); 
+            {
+                listenEditorChangedSignal_ = false;
+                Update(); 
+                listenEditorChangedSignal_ = true;
+            }
+            //emit AttributeChanged(attributeName_.toStdString()); 
         }
     }
 
@@ -280,7 +288,7 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            //Check if int need to have min and max value setted and also enum types are presented as a int value.
+            //Check if int need to have min and max value set and also enum types are presented as a int value.
             AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
             if(metaData)
             {
@@ -718,7 +726,7 @@ namespace ECEditor
 
     //-------------------------QVARIANTLIST ATTRIBUTE TYPE---------------------------
 
-        template<> void ECAttributeEditor<QVariantList >::Initialize()
+    template<> void ECAttributeEditor<QVariantList >::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)

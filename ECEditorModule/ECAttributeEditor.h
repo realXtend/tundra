@@ -10,6 +10,7 @@
 #include "CoreStringUtils.h"
 #include "IComponent.h"
 #include "AssetInterface.h"
+#include "Transform.h"
 #include <map>
 
 #include "MultiEditPropertyManager.h"
@@ -35,24 +36,6 @@ namespace ECEditor
         UsingMinValue    = 1 << 2,
         UsingStepValue   = 1 << 3,
         UsingDescription = 1 << 4
-    };
-
-    class AbstractAttributeUiElement
-    {
-    public:
-        AbstractAttributeUiElement(IAttribute *attribute,
-                                   QtAbstractPropertyBrowser *owner):
-            attribute_(attribute),
-            owner_(owner)
-        {}
-        ~AbstractAttributeUiElement() {}
-
-        virtual void Update() = 0;
-        virtual void Set(const std::string &value) = 0;
-        virtual std::string Get() const = 0;
-    private:
-        IAttribute *attribute_;
-        QtAbstractPropertyBrowser *owner_;
     };
 
     //! ECAttributeEditorBase class.
@@ -120,14 +103,13 @@ namespace ECEditor
             AttributeList::iterator iter = attributes_.begin();
             for(;iter != attributes_.end(); iter++)
             {
-                (*iter)->FromString(value.toStdString(), AttributeChange::Local);
-                (*iter)->GetOwner()->ComponentChanged(AttributeChange::Local);
+                (*iter)->FromString(value.toStdString(), AttributeChange::Default);
             }
         }
 
     signals:
         //! Attribute value has been changed in the editor.
-        void AttributeChanged(const std::string &attributeName);
+        //void AttributeChanged(const std::string &attributeName);
 
     protected:
         //! Initialize attribute editor's components.
@@ -167,7 +149,7 @@ namespace ECEditor
      *     PropertyManager and PropertyFactory that are reponssible for registering and creating all visual elements to the QtPropertyBrowser.
      *   - Set: Is a setter funtion for editor to AttributeInterface switch will send all user's
      *     made changes to actual object.
-     *   - Update: Getter function between AttriubteInterface and Editor. Editor will ask attribute's value and
+     *   - Update: Getter function between AttributeInterface and Editor. Editor will ask attribute's value and
      *     set it to editor's ui element.
      *   - FromString: This method is used for multiediting. When user has picked one of the multiedit options we need to 
      *     convert the string value to actual attribute value (usually this is done by using a boost's lexical_cast).
@@ -203,9 +185,9 @@ namespace ECEditor
                 Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(*iter);
                 if(attribute)
                 {
-                    attribute->Set(value, AttributeChange::Local);
                     listenEditorChangedSignal_ = false;
-                    attribute->GetOwner()->ComponentChanged(AttributeChange::Local);
+                    attribute->Set(value, AttributeChange::Default);
+                    //attribute->GetOwner()->ComponentChanged(AttributeChange::Default);
                     listenEditorChangedSignal_ = true;
                 }
                 iter++;
@@ -287,9 +269,9 @@ namespace ECEditor
     template<> void ECAttributeEditor<QVariant>::Initialize();
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Update();
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Initialize();
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Set(QtProperty *property);
+    template<> void ECAttributeEditor<Transform>::Update();
+    template<> void ECAttributeEditor<Transform>::Initialize();
+    template<> void ECAttributeEditor<Transform>::Set(QtProperty *property);
 
     template<> void ECAttributeEditor<QVariantList >::Update();
     template<> void ECAttributeEditor<QVariantList >::Initialize();

@@ -204,9 +204,6 @@ namespace OgreRenderer
         //! returns the composition handler responsible of the post-processing effects
         CompositionHandler *GetCompositionHandler() const { return c_handler_; }
 
-        //! Update key bindings to QGraphicsView
-        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
-
         //! Returns the main window.
         Foundation::MainWindow *GetMainWindow() const { return main_window_; }
 

@@ -117,7 +117,7 @@ EC_Touchable::EC_Touchable(IModule *module) :
     hoverCursor.SetMetadata(&metadata);
 
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-    connect(this, SIGNAL(OnChanged()), SLOT(UpdateMaterial()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(UpdateMaterial()));
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 //    connect(this, SIGNAL(ParentEntitySet()), SLOT(Create()));
 }

@@ -27,7 +27,7 @@ namespace OgreRenderer
 <table class="header">
 <tr>
 <td>
-<h2>OgreMesh</h2>
+<h2>Mesh</h2>
 Ogre mesh entity component
 Needs to be attached to a placeable (aka scene node) to be visible. 
 
@@ -37,7 +37,7 @@ Registered by OgreRenderer::OgreRenderingModule.
 <ul>
 <li>Transform: nodePosition
 <div>Transformation attribute is used to do some position, rotation and scale adjustments.</div>
-<li>QString: meshResouceId
+<li>QString: meshResourceId
 <div>Mesh resource ref is a asset id for a mesh resource that user wants to apply to scene.</div>
 <li>QString: skeletonId
 <div>Skeleton asset ref is a string that should contain skeleton asset id.</div>

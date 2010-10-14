@@ -28,7 +28,6 @@ namespace Foundation
         virtual QObject *GetPersonalWidget() const = 0;
         virtual QObject *GetTeleportWidget() const = 0;
         virtual QObject *GetLanguageWidget() const = 0;
-        virtual QObject *GeBindingsWidget() const = 0;
         virtual QObject *GetCacheSettingsWidget() const = 0;
 
     };

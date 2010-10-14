@@ -26,7 +26,7 @@ namespace OgreRenderer
 EC_Mesh::EC_Mesh(IModule* module) :
     IComponent(module->GetFramework()),
     // Note: we put the opensim haxor adjust right here in the defaults, instead of hardcoding it in code.
-    nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(180,0,90),Vector3df(1,1,1))),
+    nodeTransformation(this, "Transform", Transform(Vector3df(0,0,0),Vector3df(90,0,180),Vector3df(1,1,1))),
     meshResourceId(this, "Mesh ref", ""),
     skeletonId(this, "Skeleton ref", ""),
     meshMaterial(this, "Mesh materials"),
@@ -93,7 +93,7 @@ void EC_Mesh::SetAdjustPosition(const Vector3df& position)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetPos(position.x, position.y, position.z);
-    nodeTransformation.Set(transform, AttributeChange::Local);
+    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
 void EC_Mesh::SetAdjustOrientation(const Quaternion& orientation)
@@ -102,14 +102,14 @@ void EC_Mesh::SetAdjustOrientation(const Quaternion& orientation)
     Vector3df euler;
     orientation.toEuler(euler);
     transform.SetRot(euler.x * RADTODEG, euler.y * RADTODEG, euler.z * RADTODEG);
-    nodeTransformation.Set(transform, AttributeChange::Local);
+    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
 void EC_Mesh::SetAdjustScale(const Vector3df& scale)
 {
     Transform transform = nodeTransformation.Get();
     transform.SetScale(scale.x, scale.y, scale.z);
-    nodeTransformation.Set(transform, AttributeChange::Local);
+    nodeTransformation.Set(transform, AttributeChange::LocalOnly);
 }
 
 void EC_Mesh::SetAttachmentPosition(uint index, const Vector3df& position)
@@ -186,7 +186,7 @@ Vector3df EC_Mesh::GetAttachmentScale(uint index) const
 
 void EC_Mesh::SetDrawDistance(float draw_distance)
 {
-    drawDistance.Set(draw_distance, AttributeChange::Local);
+    drawDistance.Set(draw_distance, AttributeChange::LocalOnly);
 }
 
 bool EC_Mesh::SetMesh(const std::string& mesh_name, bool clone)
@@ -599,7 +599,7 @@ bool EC_Mesh::SetAttachmentMaterial(uint index, uint submesh_index, const std::s
 
 void EC_Mesh::SetCastShadows(bool enabled)
 {
-    castShadows.Set(enabled, AttributeChange::Local);
+    castShadows.Set(enabled, AttributeChange::LocalOnly);
 }
 
 uint EC_Mesh::GetNumMaterials() const
@@ -956,6 +956,9 @@ bool EC_Mesh::HandleMeshResourceEvent(event_id_t event_id, IEventData* data)
     //! remember to track the cause of this when I some extra time.
     SetMesh(QString::fromStdString(meshResourceId.Get().toStdString()));
 
+    // Hack to request materials now
+    AttributeUpdated(&meshMaterial);
+
     return true;
 }
 
@@ -1011,8 +1014,7 @@ bool EC_Mesh::HandleMaterialResourceEvent(event_id_t event_id, IEventData* data)
         SetMaterial(index, material_name);
         materialRequestTags_[index] = 0;
     }
-    else
-        LogWarning("Failed to set a new material to mesh.");
+
     return true;
 }
 

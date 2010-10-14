@@ -189,9 +189,17 @@ public slots:
 
     ///\todo Add the following scriptable functions:
     /// void SetHeight(int x, int y, float height);
-    /// void LoadFromFile(const char *filename);
-    /// void SaveToFile(const char *filename);
     /// void LoadFromAsset(const char *texture); // Takes a texture and converts it to a height map.
+
+    /// Saves the height map data and the associated per-vertex attributes to a Naali Terrain File. This is a binary
+    /// dump file, and as a convention, use the file suffix ".ntf" for these.
+    void SaveToFile(QString filename);
+
+    /// Loads the terrain height map data from the given Naali Terrain File. You should prefer using
+    /// the Attribute heightMap to recreate the terrain from a terrain file instead of calling this function directly,
+    /// since this function only performs a local (hidden) change, whereas the heightMap attribute change is visible both
+    /// locally and on the network.
+    void LoadFromFile(QString filename);
 
 public:
     Q_PROPERTY(Transform nodeTransformation READ getnodeTransformation WRITE setnodeTransformation NOTIFY TransformChanged);
@@ -202,6 +210,12 @@ public:
 
     Q_PROPERTY(int yPatches READ getyPatches WRITE setyPatches NOTIFY TerrainSizeChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(int, yPatches);
+
+    Q_PROPERTY(float uScale READ getuScale WRITE setuScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, uScale);
+
+    Q_PROPERTY(float vScale READ getvScale WRITE setvScale);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, vScale);
 
     Q_PROPERTY(QString material READ getmaterial WRITE setmaterial NOTIFY MaterialChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, material);
@@ -220,6 +234,12 @@ public:
 
     Q_PROPERTY(QString texture4 READ gettexture4 WRITE settexture4 NOTIFY TextureChanged);
     DEFINE_QPROPERTY_ATTRIBUTE(QString, texture4);
+
+    Q_PROPERTY(QString heightMap READ getheightMap WRITE setheightMap NOTIFY HeightMapChanged);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, heightMap);
+
+    /// Marks all terrain patches dirty.
+    void DirtyAllTerrainPatches();
 
     void RegenerateDirtyTerrainPatches();
 
@@ -260,8 +280,10 @@ private:
     Ogre::SceneNode *rootNode;
 
     int patchWidth;
-
     int patchHeight;
+    /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
+    /// the same value is received from the network, reloading the terrain can be avoided.
+    QString currentHeightmapAssetSource;
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;

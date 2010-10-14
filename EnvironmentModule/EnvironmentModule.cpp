@@ -129,6 +129,8 @@ namespace Environment
     {
         RESETPROFILER;
      
+        PROFILE(EnvironmentModule_Update);
+
         // Idea of next lines:  Because of initialisation chain, enviroment editor stays in wrong state after logout/login-process. 
         // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
@@ -317,7 +319,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height, AttributeChange::Network);
+                        water_->SetWaterHeight(height, AttributeChange::LocalOnly);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -514,7 +516,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height, AttributeChange::Network);
+            water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID

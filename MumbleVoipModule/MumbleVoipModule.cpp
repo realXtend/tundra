@@ -58,10 +58,6 @@ namespace MumbleVoip
             server_info_provider_ = new ServerInfoProvider(framework_);
             connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
         }
-        else
-        {
-            in_world_voice_provider_ = new Provider(framework_, &settings_);
-        }
 
         link_plugin_ = new LinkPlugin();
     }
@@ -76,6 +72,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::PostInitialize()
     {
+        if (!use_native_mumble_client_)
+            in_world_voice_provider_ = new Provider(framework_, &settings_);
+
         InitializeConsoleCommands();
         
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");

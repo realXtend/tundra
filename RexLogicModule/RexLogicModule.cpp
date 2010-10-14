@@ -965,13 +965,13 @@ void RexLogicModule::UpdateSoundListener()
     {
         EC_SoundListener *listener = GetCameraEntity()->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
     else if (GetUserAvatarEntity())
     {
         EC_SoundListener *listener = GetUserAvatarEntity()->GetComponent<EC_SoundListener>().get();
         if (listener && !listener->active.Get())
-            listener->active.Set(true, AttributeChange::Local);
+            listener->active.Set(true, AttributeChange::Default);
     }
 #endif
 }

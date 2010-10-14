@@ -19,6 +19,7 @@
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
+#include "MainWindow.h"
 #include <AssetEvents.h>
 #include <EventManager.h>
 //#include "RealXtend/RexProtocolMsgIDs.h"
@@ -35,6 +36,7 @@
 #include <QTreeWidgetItemIterator>
 #include <QtAlgorithms>
 #include <QTextEdit>
+#include <QMenu>
 
 #include <OgreFontManager.h>
 
@@ -213,14 +215,95 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
 
-    QObject::connect(tree_mesh_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    QObject::connect(tree_texture_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
+    QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
+    QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0)
         asset_event_category_ = event_manager_->QueryEventCategory("Asset");
 
+    // Add a context menu to Textures, Meshes and Materials widgets.
+    if (tree_texture_assets_)
+    {
+        tree_texture_assets_->installEventFilter(this);
+        menu_texture_assets_ = new QMenu(tree_texture_assets_);
+        menu_texture_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_texture_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
+        menu_texture_assets_->addAction(copyAssetName);
+    }
+    if (tree_mesh_assets_)
+    {
+        tree_mesh_assets_->installEventFilter(this);
+        menu_mesh_assets_ = new QMenu(tree_mesh_assets_);
+        menu_mesh_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_mesh_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
+        menu_mesh_assets_->addAction(copyAssetName);
+    }
+    if (tree_material_assets_)
+    {
+        tree_material_assets_->installEventFilter(this);
+        menu_material_assets_ = new QMenu(tree_material_assets_);
+        menu_material_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_material_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
+        menu_material_assets_->addAction(copyAssetName);
+    }
 }
+
+namespace
+{
+    /// Takes the currentItem() of the given widget and copies the text of its first column to clipboard, if it exists.
+    void CopySelectedItemName(QTreeWidget *treeWidget)
+    {
+        if (!treeWidget)
+            return;
+
+        QTreeWidgetItem *item = treeWidget->currentItem();
+
+        if (!item)
+            return;
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(item->text(0));
+
+    }
+}
+
+bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::ContextMenu)
+    {
+        QTreeWidget *widget = dynamic_cast<QTreeWidget*>(obj);
+        if (widget == tree_texture_assets_)
+            menu_texture_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == tree_mesh_assets_)
+            menu_mesh_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == tree_material_assets_)
+            menu_material_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+
+        return true;
+    }
+    return false;
+}
+
+void TimeProfilerWindow::CopyTextureAssetName()
+{
+    CopySelectedItemName(tree_texture_assets_);
+}
+
+void TimeProfilerWindow::CopyMeshAssetName()
+{
+    CopySelectedItemName(tree_mesh_assets_);
+}
+
+void TimeProfilerWindow::CopyMaterialAssetName()
+{
+    CopySelectedItemName(tree_material_assets_);
+}
+
+
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {

@@ -32,7 +32,6 @@ namespace Avatar
         {
             QWidget *info = new QWidget();
             info_ui_.setupUi(info);
-            info_ui_.icon_label->hide();
             info_proxy_ = CreateProxy(info);
             return info_proxy_;
         }
@@ -48,6 +47,7 @@ namespace Avatar
         void UiHelper::ShowStatus(const QString &message, int msec_timeout)
         {
             info_ui_.info_label->setText(message);
+            info_ui_.icon_label->hide();
             info_proxy_->show();
 
             if (msec_timeout > 0)
@@ -56,6 +56,10 @@ namespace Avatar
 
         void UiHelper::ShowError(const QString &error, int msec_timeout)
         {
+            info_ui_.icon_label->setStyleSheet("QLabel#icon_label{background-image:url('./data/ui/images/icon_warning.png');}");
+            if (!info_ui_.icon_label->isVisible())
+                info_ui_.icon_label->show();
+
             info_ui_.info_label->setText(error);
             info_proxy_->show();
 

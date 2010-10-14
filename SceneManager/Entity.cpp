@@ -47,9 +47,18 @@ namespace Scene
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
         {
+            QString componentTypeName = component->TypeName();
+            componentTypeName.replace(0, 3, "");
+            componentTypeName = componentTypeName.toLower();
+            if(!property(componentTypeName.toStdString().c_str()).isValid())
+            {
+                QVariant var = QVariant::fromValue<QObject*>(component.get());
+                setProperty(componentTypeName.toStdString().c_str(), var);
+            }
+
             component->SetParentEntity(this);
             components_.push_back(component);
-        
+
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
@@ -62,6 +71,21 @@ namespace Scene
             ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
             if (iter != components_.end())
             {
+                QString componentTypeName = component->TypeName();
+                componentTypeName.replace(0, 3, "");
+                componentTypeName = componentTypeName.toLower();
+                if(property(componentTypeName.toStdString().c_str()).isValid())
+                {
+                    QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
+                    //Make sure that QObject is inherited by the IComponent.
+                    if (obj && dynamic_cast<IComponent*>(obj))
+                    {
+                        //Make sure that name is matching incase there are many of same type of components in entity.
+                        if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
+                            setProperty(componentTypeName.toStdString().c_str(), QVariant());
+                    }
+                }
+
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
@@ -81,7 +105,7 @@ namespace Scene
         RemoveComponent(ptr);
     }
 
-    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
@@ -91,6 +115,8 @@ namespace Scene
         ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }
@@ -99,7 +125,7 @@ namespace Scene
         return ComponentPtr();
     }
 
-    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
@@ -109,6 +135,8 @@ namespace Scene
         ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }
@@ -166,12 +194,6 @@ namespace Scene
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return true;
         return false;
-    }
-
-    void Entity::ResetChange()
-    {
-        for (size_t i = 0; i < components_.size(); ++i)
-            components_[i]->ResetChange();
     }
 
     IAttribute *Entity::GetAttributeInterface(const std::string &name) const
@@ -258,16 +280,19 @@ namespace Scene
         if (!HasReceivers(act))
             return;
 
-        if (params.size() == 0)
-            act->Trigger();
-        else if (params.size() == 1)
-            act->Trigger(params[0]);
-        else if (params.size() == 2)
-            act->Trigger(params[0], params[1]);
-        else if (params.size() == 3)
-            act->Trigger(params[0], params[1], params[2]);
-        else if (params.size() >= 4)
-            act->Trigger(params[0], params[1], params[2], params.mid(3));
+        if ((type & EntityAction::Local) != 0)
+        {
+            if (params.size() == 0)
+                act->Trigger();
+            else if (params.size() == 1)
+                act->Trigger(params[0]);
+            else if (params.size() == 2)
+                act->Trigger(params[0], params[1]);
+            else if (params.size() == 3)
+                act->Trigger(params[0], params[1], params[2]);
+            else if (params.size() >= 4)
+                act->Trigger(params[0], params[1], params[2], params.mid(3));
+        }
 
         GetScene()->EmitActionTriggered(this, action, params, type);
     }

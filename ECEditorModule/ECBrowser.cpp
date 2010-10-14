@@ -95,11 +95,11 @@ namespace ECEditor
         }
 
         // Update component editors ui.
-        ComponentGroupList::iterator compIter = componentGroups_.begin();
+        /*ComponentGroupList::iterator compIter = componentGroups_.begin();
         for(; compIter != componentGroups_.end(); compIter++)
         {
             (*compIter)->editor_->UpdateEditorUI();
-        }
+        }*/
         if(treeWidget_)
             treeWidget_->setSortingEnabled(true);
         /*if(treeWidget_)
@@ -200,8 +200,8 @@ namespace ECEditor
                     Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                     if(attribute)
                     {
-                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                     }
                 }
                 else if(attr->TypenameToString() == "qvariant")
@@ -211,8 +211,8 @@ namespace ECEditor
                     {
                         if(attribute->Get().type() == QVariant::String)
                         {
-                            attribute->Set(asset_id, AttributeChange::Local);
-                            compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                            attribute->Set(asset_id, AttributeChange::Default);
+                            //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                         }
                     }
                 }
@@ -240,8 +240,8 @@ namespace ECEditor
                         else
                             return false;
 
-                        attribute->Set(variants, AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
                     }
                 }
                 else if(attr->TypenameToString() == "qvariantlist")
@@ -268,8 +268,8 @@ namespace ECEditor
                         else
                             return false;
 
-                        attribute->Set(variants, AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
                     }
                 }
             }
@@ -360,7 +360,7 @@ namespace ECEditor
                 if((*iter)->isDynamic_)
                 {
                     // Check if the selected tree widget name is same as some of the dynamic component's attribute name.
-                    if((*iter)->ContainAttribute(treeWidgetItem->text(0).toStdString()))
+                    if((*iter)->ContainsAttribute(treeWidgetItem->text(0)))
                     {
                         QObject::disconnect(deleteAction, SIGNAL(triggered()), this, SLOT(DeleteComponent()));
                         QObject::connect(deleteAction, SIGNAL(triggered()), this, SLOT(RemoveAttribute()));
@@ -414,7 +414,7 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if((*iterComp)->ContainComponent(comp))
+            if((*iterComp)->ContainsComponent(comp))
                 return;
         }
         ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
@@ -432,7 +432,7 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if(!(*iterComp)->ContainComponent(comp))
+            if(!(*iterComp)->ContainsComponent(comp))
                 continue;
             
             ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
@@ -514,7 +514,7 @@ namespace ECEditor
                 if(!(*iter)->HasComponent(type, name))
                 {
                     component = framework_->GetComponentManager()->CreateComponent(type, name);
-                    (*iter)->AddComponent(component, AttributeChange::Local);
+                    (*iter)->AddComponent(component, AttributeChange::Default);
                 }
                 else
                     component = (*iter)->GetComponent(type, name);
@@ -523,8 +523,8 @@ namespace ECEditor
                     iter++;
                     continue;
                 }
-                component->DeserializeFrom(comp_elem, AttributeChange::Local);
-                component->ComponentChanged(AttributeChange::Local);
+                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+                //component->ComponentChanged(AttributeChange::Default);
                 iter++;
             }
         }
@@ -550,7 +550,7 @@ namespace ECEditor
                 {
                     ComponentPtr comp = pointer.lock();
                     Scene::Entity *entity = comp->GetParentEntity();
-                    entity->RemoveComponent(comp, AttributeChange::Local);
+                    entity->RemoveComponent(comp, AttributeChange::Default);
                 }
                 else
                 {
@@ -628,7 +628,7 @@ namespace ECEditor
             if(component)
             {
                 if(component->CreateAttribute(typeName, name))
-                    component->ComponentChanged("Local");
+                    component->ComponentChanged(AttributeChange::Default);
             }
         }
     }
@@ -658,7 +658,7 @@ namespace ECEditor
             if(comp)
             {
                 comp->RemoveAttribute(item->text(0));
-                comp->ComponentChanged("Local");
+                comp->ComponentChanged(AttributeChange::Default);
             }
         }
         //RemoveComponentGroup(*iter);
@@ -696,7 +696,7 @@ namespace ECEditor
         if(iter != componentGroups_.end())
         {
             // No point to add same component multiple times.
-            if((*iter)->ContainComponent(comp.get()))
+            if((*iter)->ContainsComponent(comp.get()))
                 return;
 
             (*iter)->editor_->AddNewComponent(comp, false);
@@ -754,7 +754,7 @@ namespace ECEditor
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(!(*iter)->ContainComponent(comp))
+            if(!(*iter)->ContainsComponent(comp))
                 continue;
             if((*iter)->IsDynamic())
             {

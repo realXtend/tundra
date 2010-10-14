@@ -125,9 +125,9 @@ namespace Avatar
         defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
         defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
 
-        // Note: we assume the avatar is created because of a message from network
-        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents);
-        scene->EmitEntityCreated(entity, AttributeChange::Network);
+        // Create avatar entity with all default components non-networked
+        Scene::EntityPtr entity = scene->CreateEntity(entityid, defaultcomponents, AttributeChange::LocalOnly, false);
+        scene->EmitEntityCreated(entity, AttributeChange::LocalOnly);
 
         ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
         if (placeable)
@@ -830,5 +830,10 @@ namespace Avatar
     {
         avatar_appearance_.InventoryExportReset();
         pending_appearances_.clear();
+    }
+    
+    void AvatarHandler::SetupECAvatar(entity_id_t entityID, const u8* data, uint size)
+    {
+        avatar_appearance_.ProcessECAvatarAppearance(entityID, data, size);
     }
 }
