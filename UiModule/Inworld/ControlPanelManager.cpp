@@ -207,7 +207,4 @@ namespace CoreUi
         return backdrop_widget_->GetContentWidth();
     }
 
-    void ControlPanelManager::SetServiceGetter(QObject *service_getter)
-    {
-    }
 }

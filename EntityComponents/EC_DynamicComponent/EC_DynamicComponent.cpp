@@ -105,6 +105,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     std::vector<DeserializeData> remAttributes;
     AttributeVector::iterator iter1 = oldAttributes.begin();
     std::vector<DeserializeData>::iterator iter2 = deserializedAttributes.begin();
+
     // Check what attributes we need to add or remove from the dynamic component (done by comparing two list differences).
     while(iter1 != oldAttributes.end() || iter2 != deserializedAttributes.end())
     {
@@ -112,9 +113,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if(iter1 == oldAttributes.end())
         {
             for(;iter2 != deserializedAttributes.end(); iter2++)
-            {
                 addAttributes.push_back(*iter2);
-            }
             break;
         }
         // Only old attributes are left and they can be removed from the dynamic component.
@@ -128,7 +127,10 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         // Attribute has already created and we only need to update it's value.
         if((*iter1)->GetNameString() == (*iter2).name_)
         {
-            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
+                if ((*attr_iter)->GetNameString() == iter2->name_)
+                    (*attr_iter)->FromString(iter2->value_, change);
             iter2++;
             iter1++;
         }

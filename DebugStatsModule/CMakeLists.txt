@@ -29,7 +29,7 @@ use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModu
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
-link_package (OGRE)
+link_ogre()
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

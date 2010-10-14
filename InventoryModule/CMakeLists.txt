@@ -51,7 +51,7 @@ link_package (POCO)
 link_package (CURL)
 link_package (XMLRPC)
 link_package (OPENJPEG)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 link_package (PYTHON_QT)
 

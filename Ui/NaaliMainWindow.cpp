@@ -1,5 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
+#include "DebugOperatorNew.h"
+
 #include "NaaliMainWindow.h"
 #include "Framework.h"
 #include "ConfigurationManager.h"
@@ -10,6 +12,8 @@
 
 #include <utility>
 #include <iostream>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 

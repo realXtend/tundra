@@ -13,6 +13,7 @@
 #include "Core.h"
 #include "CoreStdIncludes.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 #include <QVariant>
 #include <QStringList>
@@ -100,10 +101,9 @@ template<> std::string Attribute<Color>::ToString() const
         ::ToString<float>(value.a);
 }
 
-template<> std::string Attribute<Foundation::AssetReference>::ToString() const
+template<> std::string Attribute<AssetReference>::ToString() const
 {
-    Foundation::AssetReference value = Get();
-    return value.type_ + "," + value.id_;
+    return Get().type.toStdString() + "," + Get().id.toStdString();
 }
 
 template<> std::string Attribute<QVariant>::ToString() const
@@ -191,7 +191,7 @@ template<> std::string Attribute<Color>::TypenameToString() const
     return "color";
 }
 
-template<> std::string Attribute<Foundation::AssetReference>::TypenameToString() const
+template<> std::string Attribute<AssetReference>::TypenameToString() const
 {
     return "assetreference";
 }
@@ -322,7 +322,7 @@ template<> void Attribute<Quaternion>::FromString(const std::string& str, Attrib
     }
 }
 
-template<> void Attribute<Foundation::AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
+template<> void Attribute<AssetReference>::FromString(const std::string& str, AttributeChange::Type change)
 {
     // We store type first, then ",", then asset id
     std::string::size_type pos = str.find(',');
@@ -330,9 +330,8 @@ template<> void Attribute<Foundation::AssetReference>::FromString(const std::str
         return;
     std::string type = str.substr(0, pos);
     std::string id = str.substr(pos + 1);
-    
-    Foundation::AssetReference value(id, type);
-    Set(value, change);
+
+    Set(AssetReference(id.c_str(), type.c_str()), change);
 }
 
 template<> void Attribute<QVariant>::FromString(const std::string& str, AttributeChange::Type change)
@@ -418,9 +417,9 @@ template<> void Attribute<Quaternion>::FromQVariant(const QVariant &variant, Att
     Set(qvariant_cast<Quaternion>(variant), change);
 }
 
-template<> void Attribute<Foundation::AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
+template<> void Attribute<AssetReference>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
 {
-    Set(qvariant_cast<Foundation::AssetReference>(variant), change);
+    Set(qvariant_cast<AssetReference>(variant), change);
 }
 
 template<> void Attribute<QVariant>::FromQVariant(const QVariant &variant, AttributeChange::Type change)
@@ -480,9 +479,9 @@ template<> QVariant Attribute<Color>::ToQVariant() const
     return QVariant::fromValue<Color>(Get());
 }
 
-template<> QVariant Attribute<Foundation::AssetReference>::ToQVariant() const
+template<> QVariant Attribute<AssetReference>::ToQVariant() const
 {
-    return QVariant::fromValue<Foundation::AssetReference>(Get());
+    return QVariant::fromValue<AssetReference>(Get());
 }
 
 template<> QVariant Attribute<QVariant>::ToQVariant() const
@@ -542,9 +541,9 @@ template<> void Attribute<Color>::FromScriptValue(const QScriptValue &value, Att
     Set(qScriptValueToValue<Color>(value), change);
 }
 
-template<> void Attribute<Foundation::AssetReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
+template<> void Attribute<AssetReference>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
 {
-    Set(qScriptValueToValue<Foundation::AssetReference>(value), change);
+    Set(qScriptValueToValue<AssetReference>(value), change);
 }
 
 template<> void Attribute<QVariant>::FromScriptValue(const QScriptValue &value, AttributeChange::Type change)
@@ -617,10 +616,10 @@ template<> void Attribute<Color>::ToBinary(kNet::DataSerializer& dest) const
     dest.Add<float>(value_.a);
 }
 
-template<> void Attribute<Foundation::AssetReference>::ToBinary(kNet::DataSerializer& dest) const
+template<> void Attribute<AssetReference>::ToBinary(kNet::DataSerializer& dest) const
 {
-    dest.AddString(value_.type_);
-    dest.AddString(value_.id_);
+    dest.AddString(value_.type.toStdString());
+    dest.AddString(value_.id.toStdString());
 }
 
 template<> void Attribute<QVariant>::ToBinary(kNet::DataSerializer& dest) const
@@ -712,11 +711,11 @@ template<> void Attribute<Quaternion>::FromBinary(kNet::DataDeserializer& source
     Set(value, change);
 }
 
-template<> void Attribute<Foundation::AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
+template<> void Attribute<AssetReference>::FromBinary(kNet::DataDeserializer& source, AttributeChange::Type change)
 {
-    Foundation::AssetReference value;
-    value.type_ = source.ReadString();
-    value.id_ = source.ReadString();
+    AssetReference value;
+    value.type = source.ReadString().c_str();
+    value.id = source.ReadString().c_str();
     Set(value, change);
 }
 
@@ -822,11 +821,11 @@ template<> bool Attribute<Quaternion>::CompareBinary(kNet::DataDeserializer& sou
     return value_ != value;
 }
 
-template<> bool Attribute<Foundation::AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
+template<> bool Attribute<AssetReference>::CompareBinary(kNet::DataDeserializer& source) const
 {
-    Foundation::AssetReference value;
-    value.type_ = source.ReadString();
-    value.id_ = source.ReadString();
+    AssetReference value;
+    value.type = source.ReadString().c_str();
+    value.id = source.ReadString().c_str();
     return value_ != value;
 }
 
