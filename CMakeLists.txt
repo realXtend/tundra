@@ -86,6 +86,14 @@ endmacro()
 # Adds a compilation step that copies the module entry & dependency XML file to the runtime /bin/modules/core directory.
 # Before calling this, define the XML_FILES list in your module.
 macro(CopyModuleXMLFile)
+    # Recreate the /bin/modules/core folder if it does not exist.
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/bin/modules)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/modules)
+    endif ()    
+    if (NOT EXISTS ${PROJECT_SOURCE_DIR}/bin/modules/core)
+        execute_process(COMMAND ${CMAKE_COMMAND} -E make_directory ${PROJECT_SOURCE_DIR}/bin/modules/core)
+    endif ()
+
     foreach(XML_FILE ${XML_FILES})
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
     endforeach()
@@ -147,6 +155,16 @@ configure_xmlrpc()
 configure_curl()
 configure_openjpeg()
 configure_qtpropertybrowser()
+
+include_directories(Input)
+include_directories(Ui)
+include_directories(Asset)
+include_directories(SceneManager) # This will be renamed to Scene.
+
+link_directories(Input)
+link_directories(Ui)
+link_directories(Asset)
+link_directories(SceneManager) # This will be renamed to Scene.
 
 # If the custom optional modules configuration file does not yet
 # exist, create it from the template file.

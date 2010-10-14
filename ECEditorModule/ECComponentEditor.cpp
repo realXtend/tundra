@@ -10,6 +10,7 @@
 #include "ECAttributeEditor.h"
 #include "IComponent.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 #include <QtTreePropertyBrowser>
 #include <QtGroupPropertyManager>
@@ -44,8 +45,8 @@ namespace ECEditor
             attributeEditor = new ECAttributeEditor<QVariant>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<QVariantList > *>(&attribute))
             attributeEditor = new ECAttributeEditor<QVariantList >(browser, &attribute, editor);
-        else if(dynamic_cast<const Attribute<Foundation::AssetReference> *>(&attribute))
-            attributeEditor = new ECAttributeEditor<Foundation::AssetReference>(browser, &attribute, editor);
+        else if(dynamic_cast<const Attribute<AssetReference> *>(&attribute))
+            attributeEditor = new ECAttributeEditor<AssetReference>(browser, &attribute, editor);
         else if(dynamic_cast<const Attribute<Transform> *>(&attribute))
             attributeEditor = new ECAttributeEditor<Transform>(browser, &attribute, editor);
         return attributeEditor;

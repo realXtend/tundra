@@ -516,11 +516,11 @@ namespace Environment
         
         }
 
-        if (!entity->HasComponent(EC_WaterPlane::TypeNameStatic()) ||
-            !entity->HasComponent(EC_Fog::TypeNameStatic())  || 
-            !entity->HasComponent(EC_SkyPlane::TypeNameStatic()) || 
-            !entity->HasComponent(EC_SkyBox::TypeNameStatic()) || 
-            !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) ||
+        if (!entity->HasComponent(EC_WaterPlane::TypeNameStatic()) &&
+            !entity->HasComponent(EC_Fog::TypeNameStatic())  && 
+            !entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && 
+            !entity->HasComponent(EC_SkyBox::TypeNameStatic()) && 
+            !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) &&
             !entity->HasComponent(EC_SkyDome::TypeNameStatic())) 
                 active_scene->RemoveEntity(entity->GetId());
         
