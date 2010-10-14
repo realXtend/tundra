@@ -5,8 +5,8 @@
  *  @brief  The main client module of Naali.
  *
  *          RexLogicModule is the main client module of Naali and controls
- *          most of the world logic e.g. the default world scene creation and deletion,
- *          avatars, prims, and camera.
+ *          most of the OpenSim/realXtend-like world logic, e.g. the default world
+ *          scene creation and deletion, avatars, prims, and camera.
  *
  *  @note   Avoid direct module dependency to RexLogicModule at all costs because
  *          it's likely to cause cyclic dependy which fails the whole application.

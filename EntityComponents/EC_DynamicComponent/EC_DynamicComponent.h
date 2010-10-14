@@ -180,12 +180,18 @@ public slots:
 
 signals:
     /// Emitted when a new attribute is added to this component.
-    /** @param name Name of the attribute.
+    /** @param attr New attribute.
     */
-    void AttributeAdded(const QString &name);
+    void AttributeAdded(IAttribute *attr);
+
+    /// Emitted when attribute is about to be removed.
+    /** @param attr Attribute about to be removed.
+    */
+    void AttributeAboutToBeRemoved(IAttribute *attr);
 
     /// Emitted when attribute is removed from this component.
     /** @param name Name of the attribute.
+        @todo REMOVE
     */
     void AttributeRemoved(const QString &name);
 
