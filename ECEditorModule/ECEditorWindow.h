@@ -44,6 +44,7 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class ECBrowser;
+    class AddComponentDialog;
 
     /// Entity-component editor window.
     /** @todo add description.
@@ -149,6 +150,9 @@ namespace ECEditor
 
     private slots:
         void SceneAdded(const QString &name);
+        
+        //When user have pressed ok or cancel button in component dialog this mehtod is called.
+        void ComponentDialogFinnished(int result);
 
     private:
         void BoldEntityListItem(entity_id_t, bool bold = true);
@@ -171,6 +175,7 @@ namespace ECEditor
         EntityIdToNameMap entity_id_to_name_;
         typedef QSet<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
+        AddComponentDialog *component_dialog_;
     };
 }
 
