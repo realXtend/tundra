@@ -20,6 +20,9 @@
 #include "EC_SkyPlane.h"
 #include "EC_SkyBox.h"
 #include "EC_SkyDome.h"
+#include "EC_EnvironmentLight.h"
+
+#include <EC_OgreEnvironment.h>
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -70,6 +73,7 @@ namespace Environment
         DECLARE_MODULE_EC(EC_SkyPlane);
         DECLARE_MODULE_EC(EC_SkyBox);
         DECLARE_MODULE_EC(EC_SkyDome);
+        DECLARE_MODULE_EC(EC_EnvironmentLight);
     }
 
     void EnvironmentModule::Initialize()
@@ -157,7 +161,21 @@ namespace Environment
             //    sky_->Update();
         }
     }
+#ifdef CAELUM
+    Caelum::CaelumSystem* EnvironmentModule::GetCaelum()
+    {   
+         if (environment_.get() != 0)
+         {
+            EC_OgreEnvironment* ev = environment_->GetEnvironmentComponent();
+            if ( ev != 0)
+                return ev->GetCaelum();
 
+         }
+         
+         return 0;
+    }
+#endif
+    
     bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if(category_id == framework_event_category_)
@@ -484,18 +502,27 @@ namespace Environment
         {   
             if ( entity->HasComponent(EC_WaterPlane::TypeNameStatic()) && active_scene->GetEntityByName("WaterEnvironment").get() != 0 )
                 entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
-           
             if  ( entity->HasComponent(EC_Fog::TypeNameStatic()) && active_scene->GetEntityByName("FogEnvironment").get() != 0)
                  entity->RemoveComponent(entity->GetComponent(EC_Fog::TypeNameStatic()));
             if ( entity->HasComponent(EC_SkyPlane::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_SkyPlane::TypeNameStatic()));
             if ( entity->HasComponent(EC_SkyBox::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
                 entity->RemoveComponent(entity->GetComponent(EC_SkyBox::TypeNameStatic()));
+             if ( entity->HasComponent(EC_SkyDome::TypeNameStatic()) && active_scene->GetEntityByName("SkyEnvironment").get() != 0)
+                entity->RemoveComponent(entity->GetComponent(EC_SkyDome::TypeNameStatic()));
+            if ( entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) && active_scene->GetEntityByName("LightEnvironment").get() != 0)
+                entity->RemoveComponent(entity->GetComponent(EC_EnvironmentLight::TypeNameStatic()));
             
         
         }
 
-        active_scene->RemoveEntity(entity->GetId());
+        if (!entity->HasComponent(EC_WaterPlane::TypeNameStatic()) ||
+            !entity->HasComponent(EC_Fog::TypeNameStatic())  || 
+            !entity->HasComponent(EC_SkyPlane::TypeNameStatic()) || 
+            !entity->HasComponent(EC_SkyBox::TypeNameStatic()) || 
+            !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) ||
+            !entity->HasComponent(EC_SkyDome::TypeNameStatic())) 
+                active_scene->RemoveEntity(entity->GetId());
         
 
     }
