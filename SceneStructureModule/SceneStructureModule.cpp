@@ -87,8 +87,13 @@ void SceneStructureModule::InstantiateContent(const QString &filename, Vector3df
 
         TundraLogic::SceneImporter importer(framework_);
         ///\todo Take into account asset sources.
-        importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
+        QList<Scene::Entity *> entities = importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
+
+        if (entities.empty())
+            LogError("Import failed");
+        else
+            LogInfo("Import succesful. " + ToString(entities.size()) + " entities created.");
     }
     else if (filename.toLower().indexOf(".mesh") != -1)
     {
