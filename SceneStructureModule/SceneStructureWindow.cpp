@@ -203,25 +203,6 @@ void SceneStructureWindow::ClearAssetReferences()
     }
 }
 
-AssetItem *SceneStructureWindow::GetAssetItem(const QString &type, const QString &id) const
-{
-    AssetItem *assetItem = 0;
-    QTreeWidgetItemIterator it(treeWidget);
-    while(*it)
-    {
-        AssetItem *a = dynamic_cast<AssetItem *>(*it);
-        if (a && (a->type == type && a->id == id))
-        {
-            assetItem = a;
-            break;
-        }
-
-        ++it;
-    }
-
-    return assetItem;
-}
-
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
     EntityItem *item = new EntityItem(entity->GetId());

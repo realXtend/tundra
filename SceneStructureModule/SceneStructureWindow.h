@@ -8,7 +8,6 @@
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
 #define incl_SceneStructureModule_SceneStructureWindow_h
 
-
 #include "ForwardDefines.h"
 
 #include <QWidget>
@@ -17,9 +16,6 @@
 class QTreeWidgetItem;
 
 class SceneTreeWidget;
-class EntityItem;
-class ComponentItem;
-class AssetItem;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
@@ -67,13 +63,11 @@ private:
     /// Clears tree widget.
     void Clear();
 
-    ///
+    /// Creates asset reference items.
     void CreateAssetReferences();
 
-    ///
+    /// Clears i.e. deletes all asset reference items.
     void ClearAssetReferences();
-
-    AssetItem *GetAssetItem(const QString &type, const QString &id) const;
 
     /// Create asset reference item to the tree widget.
     /** @param parentItem Parent item, can be entity or component item.
