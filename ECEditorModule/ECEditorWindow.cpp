@@ -117,18 +117,7 @@ namespace ECEditor
                 entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
             entity_id_to_name_.insert(QString::number(entity_id), entity_name);
 
-            QString entity_id_str;
-            entity_list_->clearSelection();
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, QString::number((int)entity_id)));
-            if(entity_name.isEmpty())
-            {
-                entity_id_str = QString::number(entity_id);
-                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
-            }
-            else
-            {
-                entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
-            }
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
         }
     }
 

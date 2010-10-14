@@ -1766,7 +1766,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
     // Loop through entities to see mesh usage
     for (Scene::SceneManager::iterator iter = scene->begin(); iter != scene->end(); ++iter)
     {
-        Scene::Entity &entity = **iter;
+        Scene::Entity &entity = *iter->second;
         entities++;
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
