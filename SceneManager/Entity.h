@@ -280,6 +280,17 @@ namespace Scene
         void SerializeToBinary(kNet::DataSerializer &dst) const;
 //        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
 
+    signals:
+        //! A component has been added to the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentAdded(IComponent* component, AttributeChange::Type change);
+        
+        //! A component has been removed from the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentRemoved(IComponent* component, AttributeChange::Type change);
+
     public slots:
         void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
 //        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);

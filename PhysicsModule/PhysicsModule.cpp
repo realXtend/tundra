@@ -2,6 +2,7 @@
 
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
+#include "EC_RigidBody.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "MemoryLeakCheck.h"
@@ -22,6 +23,11 @@ PhysicsModule::PhysicsModule() :
 
 PhysicsModule::~PhysicsModule()
 {
+}
+
+void PhysicsModule::Load()
+{
+    DECLARE_MODULE_EC(EC_RigidBody);
 }
 
 void PhysicsModule::PostInitialize()
@@ -66,16 +72,20 @@ PhysicsWorld* PhysicsModule::CreatePhysicsWorldForScene(Scene::ScenePtr scene)
     return new_world.get();
 }
 
-PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
+PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::SceneManager* sceneraw)
 {
-    if (!scene)
+    if (!sceneraw)
         return 0;
     
-    Scene::SceneManager* ptr = scene.get();
-    PhysicsWorldMap::iterator i = physicsWorlds_.find(ptr);
+    PhysicsWorldMap::iterator i = physicsWorlds_.find(sceneraw);
     if (i == physicsWorlds_.end())
         return 0;
     return i->second.get();
+}
+
+PhysicsWorld* PhysicsModule::GetPhysicsWorldForScene(Scene::ScenePtr scene)
+{
+    return GetPhysicsWorldForScene(scene.get());
 }
 
 void PhysicsModule::OnSceneRemoved(Scene::SceneManager* scene)

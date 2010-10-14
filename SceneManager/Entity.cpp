@@ -63,7 +63,9 @@ namespace Scene
 
             component->SetParentEntity(this);
             components_.push_back(component);
-
+            
+            if (change != AttributeChange::Disconnected)
+                emit ComponentAdded(component.get(), change);
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
@@ -91,6 +93,8 @@ namespace Scene
                     }
                 }
 
+                if (change != AttributeChange::Disconnected)
+                    emit ComponentRemoved((*iter).get(), change);
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
