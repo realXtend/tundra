@@ -184,7 +184,7 @@ void SceneStructureWindow::Populate()
     }
 
     for(SceneManager::iterator it = s->begin(); it != s->end(); ++it)
-        AddEntity((*it).get());
+        AddEntity(it->second.get());
 }
 
 void SceneStructureWindow::Clear()
