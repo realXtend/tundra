@@ -6,10 +6,9 @@
 #include "Entity.h"
 #include "SceneManager.h"
 #include "EC_Name.h"
-#include "Action.h"
 
 #include "Framework.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "CoreStringUtils.h"
 #include "ComponentManager.h"
 #include "LoggingFunctions.h"
@@ -43,26 +42,50 @@ namespace Scene
         qDeleteAll(actions_);
     }
 
-    void Entity::AddComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::AddComponent(const ComponentPtr &component, AttributeChange::Type change)
     {
         // Must exist and be free
         if (component && component->GetParentEntity() == 0)
         {
+            QString componentTypeName = component->TypeName();
+            componentTypeName.replace(0, 3, "");
+            componentTypeName = componentTypeName.toLower();
+            if(!property(componentTypeName.toStdString().c_str()).isValid())
+            {
+                QVariant var = QVariant::fromValue<QObject*>(component.get());
+                setProperty(componentTypeName.toStdString().c_str(), var);
+            }
+
             component->SetParentEntity(this);
             components_.push_back(component);
-        
+
             if (scene_)
                 scene_->EmitComponentAdded(this, component.get(), change);
         }
     }
 
-    void Entity::RemoveComponent(const Foundation::ComponentInterfacePtr &component, AttributeChange::Type change)
+    void Entity::RemoveComponent(const ComponentPtr &component, AttributeChange::Type change)
     {
         if (component)
         {
             ComponentVector::iterator iter = std::find(components_.begin(), components_.end(), component);
             if (iter != components_.end())
             {
+                QString componentTypeName = component->TypeName();
+                componentTypeName.replace(0, 3, "");
+                componentTypeName = componentTypeName.toLower();
+                if(property(componentTypeName.toStdString().c_str()).isValid())
+                {
+                    QObject *obj = property(componentTypeName.toStdString().c_str()).value<QObject*>();
+                    //Make sure that QObject is inherited by the IComponent.
+                    if (obj && dynamic_cast<IComponent*>(obj))
+                    {
+                        //Make sure that name is matching incase there are many of same type of components in entity.
+                        if (dynamic_cast<IComponent*>(obj)->Name() == component->Name())
+                            setProperty(componentTypeName.toStdString().c_str(), QVariant());
+                    }
+                }
+
                 if (scene_)
                     scene_->EmitComponentRemoved(this, (*iter).get(), change);
 
@@ -76,67 +99,77 @@ namespace Scene
         }
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change)
+    void Entity::RemoveComponentRaw(IComponent* comp)
+    {
+        ComponentPtr ptr = GetComponent(comp->TypeName(), comp->Name()); //the shared_ptr to this component
+        RemoveComponent(ptr);
+    }
+
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
         // If component was not found, try to create
-        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }
 
         // Could not be created
-        return Foundation::ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change)
+    ComponentPtr Entity::GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change, bool syncEnabled)
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name && components_[i]->Name() == name)
                 return components_[i];
 
         // If component was not found, try to create
-        Foundation::ComponentInterfacePtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
+        ComponentPtr new_comp = framework_->GetComponentManager()->CreateComponent(type_name, name);
         if (new_comp)
         {
+            if (!syncEnabled)
+                new_comp->SetNetworkSyncEnabled(false);
             AddComponent(new_comp, change);
             return new_comp;
         }
 
         // Could not be created
-        return Foundation::ComponentInterfacePtr();
+        return ComponentPtr();
     }
     
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const QString &type_name) const
+    ComponentPtr Entity::GetComponent(const QString &type_name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if (components_[i]->TypeName() == type_name)
                 return components_[i];
 
-        return Foundation::ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const Foundation::ComponentInterface *component) const
+    ComponentPtr Entity::GetComponent(const IComponent *component) const
     {
         for (size_t i = 0; i < components_.size(); i++)
             if(component->TypeName() == components_[i]->TypeName() &&
                component->Name() == components_[i]->Name())
                return components_[i];
-        return Foundation::ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
-    Foundation::ComponentInterfacePtr Entity::GetComponent(const QString &type_name, const QString& name) const
+    ComponentPtr Entity::GetComponent(const QString &type_name, const QString& name) const
     {
         for (size_t i=0 ; i<components_.size() ; ++i)
             if ((components_[i]->TypeName() == type_name) && (components_[i]->Name() == name))
                 return components_[i];
 
-        return Foundation::ComponentInterfacePtr();
+        return ComponentPtr();
     }
 
     bool Entity::HasComponent(const QString &type_name) const
@@ -163,6 +196,29 @@ namespace Scene
         return false;
     }
 
+    IAttribute *Entity::GetAttributeInterface(const std::string &name) const
+    {
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
+            if (attr)
+                return attr;
+        }
+        return 0;
+    }
+
+    AttributeVector Entity::GetAttributes(const std::string &name) const
+    {
+        std::vector<IAttribute *> ret;
+        for(size_t i = 0; i < components_.size() ; ++i)
+        {
+            IAttribute *attr = components_[i]->GetAttribute(QString(name.c_str()));
+            if (attr)
+                ret.push_back(attr);
+        }
+        return ret;
+    }
+
     QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
@@ -181,84 +237,72 @@ namespace Scene
             return "";
     }
 
-    Action *Entity::RegisterAction(const QString &name)
+    EntityAction *Entity::Action(const QString &name)
     {
         if (actions_.contains(name))
             return actions_[name];
 
-        Action *action = new Action(name);
+        EntityAction *action = new EntityAction(name);
         actions_.insert(name, action);
         return action;
     }
 
     void Entity::ConnectAction(const QString &name, const QObject *receiver, const char *member)
     {
-        Action *action = RegisterAction(name);
+        EntityAction *action = Action(name);
         assert(action);
-        connect(action, SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)), receiver, member);
+        connect(action, SIGNAL(Triggered(QString, QString, QString, QStringList)), receiver, member);
     }
 
-    void Entity::Exec(const QString &action)
+    void Entity::Exec(const QString &action, EntityAction::ExecutionType type)
     {
-        Action *act = RegisterAction(action);
+        Exec(action, QStringList(), type);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param, EntityAction::ExecutionType type)
+    {
+        Exec(action, QStringList(QStringList() << param), type);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, EntityAction::ExecutionType type)
+    {
+        Exec(action, QStringList(QStringList() << param1 << param2), type);
+    }
+
+    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3, EntityAction::ExecutionType type)
+    {
+        Exec(action, QStringList(QStringList() << param1 << param2 << param3), type);
+    }
+
+    void Entity::Exec(const QString &action, const QStringList &params, EntityAction::ExecutionType type)
+    {
+        EntityAction *act = Action(action);
         if (!HasReceivers(act))
             return;
 
-        act->Trigger();
+        if ((type & EntityAction::Local) != 0)
+        {
+            if (params.size() == 0)
+                act->Trigger();
+            else if (params.size() == 1)
+                act->Trigger(params[0]);
+            else if (params.size() == 2)
+                act->Trigger(params[0], params[1]);
+            else if (params.size() == 3)
+                act->Trigger(params[0], params[1], params[2]);
+            else if (params.size() >= 4)
+                act->Trigger(params[0], params[1], params[2], params.mid(3));
+        }
+
+        GetScene()->EmitActionTriggered(this, action, params, type);
     }
 
-    void Entity::Exec(const QString &action, const QString &param)
+    bool Entity::HasReceivers(EntityAction *action)
     {
-        Action *act = RegisterAction(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param);
-    }
-
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2)
-    {
-        Action *act = RegisterAction(action);
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param1, param2);
-    }
-
-    void Entity::Exec(const QString &action, const QString &param1, const QString &param2, const QString &param3)
-    {
-        Action *act = RegisterAction(action);
-        int receivers = act->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
-        if (!HasReceivers(act))
-            return;
-
-        act->Trigger(param1, param2, param3);
-    }
-
-    void Entity::Exec(const QString &action, const QStringVector &params)
-    {
-        Action *act = RegisterAction(action);
-        if (!HasReceivers(act))
-            return;
-
-        if (params.size() == 0)
-            act->Trigger();
-        else if (params.size() == 1)
-            act->Trigger(params[0]);
-        else if (params.size() == 2)
-            act->Trigger(params[0], params[1]);
-        else if (params.size() == 3)
-            act->Trigger(params[0], params[1], params[2]);
-        else if (params.size() >= 4)
-            act->Trigger(params[0], params[1], params[2], params.mid(3));
-    }
-
-    bool Entity::HasReceivers(Action *action)
-    {
-        int receivers = action->receivers(SIGNAL(Triggered(const QString &, const QString &, const QString &, const QStringVector &)));
+        int receivers = action->receivers(SIGNAL(Triggered(QString, QString, QString, QStringList)));
         if (receivers == 0)
         {
-            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
+//            LogInfo("No receivers found for action \"" + action->Name().toStdString() + "\" removing the action.");
             actions_.remove(action->Name());
             SAFE_DELETE(action);
             return false;

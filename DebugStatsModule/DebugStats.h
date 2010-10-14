@@ -10,7 +10,7 @@
 #define incl_DebugStats_h
 
 #include "DebugStatsModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "RexTypes.h"
 
@@ -20,11 +20,6 @@
 namespace OgreRenderer
 {
     class EC_OgrePlaceable;
-}
-
-namespace Foundation
-{
-    class EventDataInterface;
 }
 
 namespace ProtocolUtilities
@@ -38,7 +33,7 @@ namespace DebugStats
     class TimeProfilerWindow;
     class ParticipantWindow;
 
-    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public Foundation::ModuleInterface
+    class DEBUGSTATS_MODULE_API DebugStatsModule : public QObject, public IModule
     {
         Q_OBJECT
 
@@ -48,7 +43,7 @@ namespace DebugStats
 
         void PostInitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         MODULE_LOGGING_FUNCTIONS
 
@@ -60,7 +55,7 @@ namespace DebugStats
 
     public slots:
         /// Creates and shows the profiling window.
-        Console::CommandResult ShowProfilingWindow(const StringVector &params);
+        Console::CommandResult ShowProfilingWindow(/*const StringVector &params*/);
 
         /// Creates and shows the participant window.
         Console::CommandResult ShowParticipantWindow(const StringVector &params);

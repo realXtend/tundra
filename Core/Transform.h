@@ -4,27 +4,22 @@
 #include "CoreMath.h"
 #include "Vector3D.h"
 
+#include <QMetaType>
+
 struct Transform
 {
-    Vector3D<float> position;
-    Vector3D<float> rotation;
-    Vector3D<float> scale;
+    Vector3df position;
+    Vector3df rotation;
+    Vector3df scale;
 
     Transform():
-        position(0),
-        rotation(0),
-        scale(1)
+        position(0,0,0),
+        rotation(0,0,0),
+        scale(1,1,1)
     {
     }
 
-    Transform(const Transform &other):
-        position(other.position),
-        rotation(other.rotation),
-        scale(other.scale)
-    {
-    }
-
-    Transform(const Vector3D<float> &pos, const Vector3D<float> &rot, const Vector3D<float> &scale):
+    Transform(const Vector3df &pos, const Vector3df &rot, const Vector3df &scale):
         position(pos),
         rotation(rot),
         scale(scale)
@@ -51,13 +46,19 @@ struct Transform
         scale.x = x;
         scale.y = y;
         scale.z = z;
-        // Ogre dont like if we are setting scale value to zero so we add very small number instead.
-        if(x == 0)
-            scale.x += 0.0000001f;
-        if(y == 0)
-            scale.y += 0.0000001f;
-        if(z == 0)
-            scale.z += 0.0000001f;
+    }
+    
+    bool operator == (const Transform& rhs) const
+    {
+        return (position == rhs.position) && (rotation == rhs.rotation) && (scale == rhs.scale);
+    }
+    
+    bool operator != (const Transform& rhs) const
+    {
+        return !(*this == rhs);
     }
 };
+
+Q_DECLARE_METATYPE(Transform)
+
 #endif

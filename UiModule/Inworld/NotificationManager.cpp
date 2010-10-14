@@ -116,6 +116,18 @@ namespace UiServices
             browser_widget_->AnimatedHide();
     }
 
+    void NotificationManager::HideAllNotifications()
+    {
+        foreach(CoreUi::NotificationBaseWidget *notification, visible_notifications_)
+            notification->HideNow();
+    }
+
+    void NotificationManager::SceneAboutToChange(const QString &old_name, const QString &new_name)
+    {
+        if (old_name.toLower() == "inworld")
+            HideAllNotifications();
+    }
+
     // Public
 
     void NotificationManager::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)

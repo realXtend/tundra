@@ -3,30 +3,54 @@
 #ifndef incl_OgreRenderer_EC_OgrePlaceable_h
 #define incl_OgreRenderer_EC_OgrePlaceable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "OgreModuleApi.h"
+#include "OgreModuleFwd.h"
+#include "Transform.h"
 #include "Vector3D.h"
 #include "Quaternion.h"
 #include "Declare_EC.h"
-#include <QtGui/qquaternion.h>
-#include <QtGui/qvector3d.h>
 
-namespace Ogre
-{
-    class SceneNode;
-}
+#include <QQuaternion>
+#include <QVector3D>
 
 namespace OgreRenderer
 {
-    class Renderer;
-    
-    typedef boost::shared_ptr<Renderer> RendererPtr;
-    typedef boost::weak_ptr<Renderer> RendererWeakPtr;
-    
-    //! Ogre placeable (scene node) component
-    /*! \ingroup OgreRenderingModuleClient
-     */
-    class OGRE_MODULE_API EC_OgrePlaceable : public Foundation::ComponentInterface
+//! Ogre placeable (scene node) component
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OgrePlaceable</h2>
+Ogre (scene node) component.
+
+Registered by OgreRenderer::OgreRenderingModule.
+
+<b>Attributes</b>:
+<ul>
+<li>Transform: transform
+<div>Sets the position, rotation and scale of the entity. Not usable and not replicated in Opensim worlds.</div>
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"translate": translate
+<li>"LookAt": LookAt wrapper that accepts a QVector3D for py & js e.g. camera use. 
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
+    class OGRE_MODULE_API EC_OgrePlaceable : public IComponent
     {
         DECLARE_EC(EC_OgrePlaceable);
 
@@ -42,13 +66,24 @@ namespace OgreRenderer
         Q_PROPERTY(float Roll READ GetRoll)
 
     public:
+        //! Transformation attribute for position, rotation and scale adjustments.
+        //! @todo Transform attribute is not working in js need to expose it to QScriptEngine somehow.
+        Q_PROPERTY(Transform transform READ gettransform WRITE settransform);
+        DEFINE_QPROPERTY_ATTRIBUTE(Transform, transform);
+
         virtual ~EC_OgrePlaceable();
+        
+        //! Set component as serializable.
+        /*! Note that despite this, in OpenSim worlds, the network sync will be disabled from the component,
+            as EC_NetworkPosition controls the actual authoritative position (including interpolation)
+         */
+        virtual bool IsSerializable() const { return true; }
         
         //! sets parent placeable
         /*! set null placeable to attach to scene root (the default)
             \param placeable new parent
          */
-        void SetParent(Foundation::ComponentPtr placeable);
+        void SetParent(ComponentPtr placeable);
         
         //! sets position
         /*! \param position new position
@@ -94,7 +129,7 @@ namespace OgreRenderer
         void SetSelectPriority(int priority) { select_priority_ = priority; }
         
         //! gets parent placeable
-        Foundation::ComponentPtr GetParent() { return parent_; }
+        ComponentPtr GetParent() { return parent_; }
         
         //! returns position
         Vector3df GetPosition() const;
@@ -153,11 +188,18 @@ namespace OgreRenderer
         //! LookAt wrapper that accepts a QVector3D for py & js e.g. camera use
         void LookAt(const QVector3D look_at) { LookAt(Vector3df(look_at.x(), look_at.y(), look_at.z())); }
 
+    private slots:
+        //! Handle attributechange
+        /*! \param attribute Attribute that changed.
+            \param change Change type.
+         */
+        void HandleAttributeChanged(IAttribute* attribute, AttributeChange::Type change);
+    
     private:
         //! constructor
         /*! \param module renderer module
          */
-        explicit EC_OgrePlaceable(Foundation::ModuleInterface* module);
+        explicit EC_OgrePlaceable(IModule* module);
         
         //! attaches scenenode to parent
         void AttachNode();
@@ -169,7 +211,7 @@ namespace OgreRenderer
         RendererWeakPtr renderer_;
         
         //! parent placeable
-        Foundation::ComponentPtr parent_;
+        ComponentPtr parent_;
         
         //! Ogre scene node for geometry. scale is handled here
         Ogre::SceneNode* scene_node_;

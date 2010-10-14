@@ -9,23 +9,29 @@
 
 #include "StableHeaders.h"
 #include "EC_SoundListener.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "SceneManager.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include "LoggingFunctions.h"
+#include "Frame.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundListener")
 
-EC_SoundListener::EC_SoundListener(Foundation::ModuleInterface *module):
-    Foundation::ComponentInterface(module->GetFramework()),
-    active_(false)
+EC_SoundListener::EC_SoundListener(IModule *module):
+    IComponent(module->GetFramework()),
+    active(this, "active", false)
 {
-    soundService_ = GetFramework()->GetServiceManager()->GetService<Foundation::SoundServiceInterface>();
+    // By default, this component is NOT network-serialized
+    SetNetworkSyncEnabled(false);
+
+    soundService_ = GetFramework()->GetServiceManager()->GetService<ISoundService>();
 
     connect(this, SIGNAL(ParentEntitySet()), SLOT(RetrievePlaceable()));
-    connect(GetFramework(), SIGNAL(FrameProcessed(double)), SLOT(Update()));
+    connect(GetFramework()->GetFrame(), SIGNAL(Updated(float)), SLOT(Update()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), SLOT(OnActiveChanged()));
+    connect(this, SIGNAL(ParentEntitySet()), SLOT(RegisterActions()));
 }
 
 EC_SoundListener::~EC_SoundListener()
@@ -42,15 +48,22 @@ void EC_SoundListener::RetrievePlaceable()
         LogError("Couldn't find an EC_OgrePlaceable component from the parent entity.");
 }
 
-void EC_SoundListener::SetActive(bool active)
+void EC_SoundListener::Update()
 {
-    active_ = active;
+    if (active.Get() && !placeable_.expired() && !soundService_.expired())
+        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
+}
 
+void EC_SoundListener::OnActiveChanged()
+{
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
+    {
+        LogError("Failed on OnActiveChanged method cause default world scene wasn't setted.");
         return;
+    }
 
-    if (active_)
+    if (active.Get())
     {
         // Disable all the other listeners, only one can be active at a time.
         ///\todo Maybe not the most sophisticated way to handle this here; do this in RexLogicModule maybe.
@@ -59,14 +72,21 @@ void EC_SoundListener::SetActive(bool active)
         {
             EC_SoundListener *ec = listener->GetComponent<EC_SoundListener>().get();
             if (ec != this)
-                listener->GetComponent<EC_SoundListener>()->SetActive(!active_);
+                listener->GetComponent<EC_SoundListener>()->active.Set(false, AttributeChange::Default);
         }
     }
 }
 
-void EC_SoundListener::Update()
+void EC_SoundListener::RegisterActions()
 {
-    if (active_ && !placeable_.expired() && !soundService_.expired())
-        soundService_.lock()->SetListener(placeable_.lock()->GetPosition(), placeable_.lock()->GetOrientation());
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+    {
+        entity->ConnectAction("Active", this, SLOT(OnActiveChanged()));
+    }
+    else
+    {
+        LogError("Fail to register actions cause component's parent entity is null.");
+    }
 }
-

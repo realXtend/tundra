@@ -98,8 +98,9 @@ namespace Asset
         
         //! Stores an asset to the asset cache
         /*! \param asset Asset to store
+            \param store_to_disk Whether to store to disk cache also. Default true.
          */
-        virtual void StoreAsset(Foundation::AssetPtr asset);
+        virtual void StoreAsset(Foundation::AssetPtr asset, bool store_to_disk = true);
         
         //! Performs time-based update
         /*! Calls update function of all registered asset providers, and of cache

@@ -4,14 +4,14 @@
  *  @file   EC_Clone.h
  *  @brief  EC_Clone creates an OGRE clone entity from the the original entity.
  *          This component can be used e.g. when visualizing object duplication in the world.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
 #ifndef incl_EC_Clone_EC_Clone_h
 #define incl_EC_Clone_EC_Clone_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -31,7 +31,41 @@ namespace Ogre
     class Entity;
 }
 
-class EC_Clone : public Foundation::ComponentInterface
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Clone</h2>
+Clone creates an OGRE clone entity from the the original entity.
+This component can be used e.g. when visualizing object duplication in the world.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes.</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Shows the clone  
+<li>"Hide": Hide the clone
+<li>"IsVisible": Returns if the clone visualization component is visible or not.
+    @true If the clone visualization component is visible, false if it's hidden or not initialized properly.
+<li>"GetPosition": Returns the position of the clone component.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+<b>The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
+EC_OgreCustomObject (if prim) components available in advance.</b>
+</table>
+*/
+
+
+class EC_Clone : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Clone);
@@ -39,7 +73,7 @@ class EC_Clone : public Foundation::ComponentInterface
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Clone(Foundation::ModuleInterface *module);
+    explicit EC_Clone(IModule *module);
 
 public:
     /// Destructor.

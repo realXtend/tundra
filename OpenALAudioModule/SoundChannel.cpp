@@ -11,7 +11,7 @@ namespace OpenALAudio
     static const float DEFAULT_INNER_RADIUS = 1.0f;
     static const float DEFAULT_OUTER_RADIUS = 50.0f;
     
-    SoundChannel::SoundChannel(Foundation::SoundServiceInterface::SoundType type) :
+    SoundChannel::SoundChannel(ISoundService::SoundType type) :
         type_(type),
         handle_(0),
         pitch_(1.0f),
@@ -25,7 +25,7 @@ namespace OpenALAudio
         positional_(false),
         looped_(false),
         buffered_mode_(false),
-        state_(Foundation::SoundServiceInterface::Stopped)
+        state_(ISoundService::Stopped)
     { 
     }
     
@@ -41,7 +41,7 @@ namespace OpenALAudio
         QueueBuffers();
         UnqueueBuffers();
         
-        if (state_ == Foundation::SoundServiceInterface::Playing)
+        if (state_ == ISoundService::Playing)
         {
             if (handle_)
             {
@@ -53,10 +53,10 @@ namespace OpenALAudio
                     // do that in buffered mode
                     if (buffered_mode_)
                     {
-                        state_ = Foundation::SoundServiceInterface::Pending;
+                        state_ = ISoundService::Pending;
                     }
                     else
-                        state_ = Foundation::SoundServiceInterface::Stopped;
+                        state_ = ISoundService::Stopped;
                 }
             }
         }
@@ -73,11 +73,11 @@ namespace OpenALAudio
         pending_sounds_.push_back(sound);
         
         // Start actual playback on next update
-        state_ = Foundation::SoundServiceInterface::Pending;
+        state_ = ISoundService::Pending;
         buffered_mode_ = false;
     }
     
-    void SoundChannel::AddBuffer(const Foundation::SoundServiceInterface::SoundBuffer& buffer)
+    void SoundChannel::AddBuffer(const ISoundService::SoundBuffer& buffer)
     {
         // Construct a sound from the buffer
         SoundPtr new_sound(new Sound("buffer"));
@@ -92,8 +92,8 @@ namespace OpenALAudio
         SetLooped(false);
         
         // Start actual playback on next update
-        if (state_ == Foundation::SoundServiceInterface::Stopped)
-            state_ = Foundation::SoundServiceInterface::Pending;
+        if (state_ == ISoundService::Stopped)
+            state_ = ISoundService::Pending;
         buffered_mode_ = true;
     }
     
@@ -142,7 +142,7 @@ namespace OpenALAudio
         pending_sounds_.clear();
         playing_sounds_.clear();
         
-        state_ = Foundation::SoundServiceInterface::Stopped;
+        state_ = ISoundService::Stopped;
     }
     
     const std::string& SoundChannel::GetSoundName() const
@@ -288,7 +288,7 @@ namespace OpenALAudio
         // Create source now if did not exist already
         if (!CreateSource())
         {
-            state_ = Foundation::SoundServiceInterface::Stopped;
+            state_ = ISoundService::Stopped;
             pending_sounds_.clear();
             return;
         }
@@ -339,7 +339,7 @@ namespace OpenALAudio
             alGetSourcei(handle_, AL_SOURCE_STATE, &playing);
             if (playing != AL_PLAYING)
                 alSourcePlay(handle_);
-            state_ = Foundation::SoundServiceInterface::Playing;
+            state_ = ISoundService::Playing;
         }
     }
     

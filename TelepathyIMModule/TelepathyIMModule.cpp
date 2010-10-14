@@ -28,7 +28,7 @@ namespace Communication
     std::string TelepathyIMModule::type_name_static_ = "TelepathyIM";
 
     TelepathyIMModule::TelepathyIMModule()
-        : ModuleInterface(type_name_static_),
+        : IModule(type_name_static_),
           im_ui_(0),
           im_ui_proxy_widget_(0),
           communication_service_(0),
@@ -116,7 +116,7 @@ namespace Communication
 
     }
 
-    bool TelepathyIMModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TelepathyIMModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         event_category_networkstate_ = framework_->GetEventManager()->QueryEventCategory("NetworkState");
 
@@ -175,7 +175,7 @@ namespace Communication
     void TelepathyIMModule::AddWidgetToUi(const QString &name)
     {
         UiServices::UiModule *ui_module = framework_->GetModule<UiServices::UiModule>();
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui_module && ui)
         {
             if (name == "IM")
@@ -190,7 +190,7 @@ namespace Communication
 
     void TelepathyIMModule::RemoveProxyWidgetFromUi(UiProxyWidget *proxy_widget)
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
             ui->RemoveWidgetFromScene(proxy_widget);
     }
@@ -204,6 +204,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Communication;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
 POCO_EXPORT_CLASS(TelepathyIMModule)
 POCO_END_MANIFEST

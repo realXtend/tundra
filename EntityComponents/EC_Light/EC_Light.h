@@ -3,8 +3,8 @@
 #ifndef incl_EC_Light_EC_Light_h
 #define incl_EC_Light_EC_Light_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 #include "Color.h"
@@ -17,9 +17,9 @@ namespace Ogre
 /// Makes the entity a light source.
 /**
 
-<table style="margin: 20px;">
+<table class="header">
 <tr>
-<td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
+<td>
 <h2>Light</h2>
 Makes the entity a light source.
 
@@ -28,27 +28,27 @@ Registered by RexLogic::RexLogicModule.
 <b>Attributes</b>:
 <ul>
 <li>Vector3df: direction.
-<div style="margin: 5px;">Specifies the direction vector the light is shining at.</div> 
+<div>Specifies the direction vector the light is shining at.</div> 
 <li>enum: light type. 
-<div style="margin: 5px;">One of the values "Point", "Spot" or "Directional".</div> 
+<div>One of the values "Point", "Spot" or "Directional".</div> 
 <li>Color: diffuse color.
-<div style="margin: 5px;">Specifies the color the light casts.</div> 
+<div>Specifies the color the light casts.</div> 
 <li>Color: specular color.
-<div style="margin: 5px;">Specifies the color of the reflections the light casts.</div> 
+<div>Specifies the color of the reflections the light casts.</div> 
 <li>bool: cast shadows.
-<div style="margin: 5px;">If true, this light casts dynamically calculated shadows on the scene.</div> 
+<div>If true, this light casts dynamically calculated shadows on the scene.</div> 
 <li>float: light range.
-<div style="margin: 5px;">Specifies how far in world space units the light reaches.</div> 
+<div>Specifies how far in world space units the light reaches.</div> 
 <li>float: constant attenuation.
-<div style="margin: 5px;">Specifies the constant term of the light attenuation equation.</div> 
+<div>Specifies the constant term of the light attenuation equation.</div> 
 <li>float: linear attenuation.
-<div style="margin: 5px;">Specifies the linear term of the light attenuation equation.</div> 
+<div>Specifies the linear term of the light attenuation equation.</div> 
 <li>float: quadratic attenuation.
-<div style="margin: 5px;">Specifies the quadratic term of the light attenuation equation.</div> 
+<div>Specifies the quadratic term of the light attenuation equation.</div> 
 <li>float: light inner angle.
-<div style="margin: 5px;">Specifies inner umbra angle of the light. Only applicable for spotlights.</div> 
+<div>Specifies inner umbra angle of the light. Only applicable for spotlights.</div> 
 <li>float: light outer angle.   
-<div style="margin: 5px;">Specifies outer penumbra angle of the light. Only applicable for spotlights.</div>
+<div>Specifies outer penumbra angle of the light. Only applicable for spotlights.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -71,7 +71,7 @@ Does not emit any actions.
 </table>
 
 */
-class EC_Light : public Foundation::ComponentInterface
+class EC_Light : public IComponent
 {
     DECLARE_EC(EC_Light);
     
@@ -92,49 +92,61 @@ public:
     virtual bool IsSerializable() const { return true; }
 
     //! Gets placeable component
-    Foundation::ComponentPtr GetPlaceable() const { return placeable_; }
+    ComponentPtr GetPlaceable() const { return placeable_; }
     
     //! Sets placeable component
     /*! Set a null placeable (or do not set a placeable) to have a detached light
         \param placeable placeable component
      */
-    void SetPlaceable(Foundation::ComponentPtr placeable);
+    void SetPlaceable(ComponentPtr placeable);
     
     //! @return Ogre light pointer
     Ogre::Light* GetLight() const { return light_; }
     
     //! Light direction
-    Attribute<Vector3df> directionAttr_;
+    Q_PROPERTY(Vector3df direction READ getdirection WRITE setdirection)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, direction);
     
     //! Light type
-    Attribute<int> typeAttr_;
+    Q_PROPERTY(int type READ gettype WRITE settype)
+    DEFINE_QPROPERTY_ATTRIBUTE(int, type);
     
     //! Light diffuse color
-    Attribute<Color> diffColorAttr_;
+    Q_PROPERTY(Color diffColor READ getdiffColor WRITE setdiffColor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, diffColor);
     
     //! Light specular color
-    Attribute<Color> specColorAttr_;
+    Q_PROPERTY(Color specColor READ getspecColor WRITE setspecColor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, specColor);
     
     //! Cast shadows flag
-    Attribute<bool> castShadowsAttr_;
+    //! /todo check if this attribute can be removed cause atm it's not in use.
+    Q_PROPERTY(bool castShadows READ getcastShadows WRITE setcastShadows)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, castShadows);
     
     //! Light range
-    Attribute<float> rangeAttr_;
+    Q_PROPERTY(float range READ getrange WRITE setrange)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, range);
     
     //! Light constant attenuation
-    Attribute<float> constAttenAttr_;
+    Q_PROPERTY(float constAtten READ getconstAtten WRITE setconstAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, constAtten);
     
     //! Light linear attenuation
-    Attribute<float> linearAttenAttr_;
+    Q_PROPERTY(float linearAtten READ getlinearAtten WRITE setlinearAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, linearAtten);
     
     //! Light quadratic attenuation
-    Attribute<float> quadraAttenAttr_;
+    Q_PROPERTY(float quadraAtten READ getquadraAtten WRITE setquadraAtten)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, quadraAtten);
     
     //! Spotlight inner angle (degrees)
-    Attribute<float> innerAngleAttr_;
+    Q_PROPERTY(float innerAngle READ getinnerAngle WRITE setinnerAngle)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, innerAngle);
     
     //! Spotlight outer angle (degrees)
-    Attribute<float> outerAngleAttr_;
+    Q_PROPERTY(float outerAngle READ getouterAngle WRITE setouterAngle)
+    DEFINE_QPROPERTY_ATTRIBUTE(float, outerAngle);
     
 
 private slots:
@@ -144,7 +156,7 @@ private:
     //! Constuctor.
     /*! \param module Module.
      */
-    explicit EC_Light(Foundation::ModuleInterface *module);
+    explicit EC_Light(IModule *module);
     
     //! Attaches light to placeable
     void AttachLight();
@@ -153,7 +165,7 @@ private:
     void DetachLight();
     
     //! Placeable component, optional
-    Foundation::ComponentPtr placeable_;
+    ComponentPtr placeable_;
     
     //! Ogre light
     Ogre::Light* light_;

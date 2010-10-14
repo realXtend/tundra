@@ -30,8 +30,14 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
+#include "Console.h"
 
 #include <utility>
+#include <QDebug>
+
+#ifdef Q_WS_WIN
+#include "Performance.h"
+#endif 
 
 
 #include <QCryptographicHash>
@@ -46,7 +52,7 @@ namespace DebugStats
 const std::string DebugStatsModule::moduleName = std::string("DebugStats");
 
 DebugStatsModule::DebugStatsModule() :
-    ModuleInterface(NameStatic()),
+    IModule(NameStatic()),
     frameworkEventCategory_(0),
     networkEventCategory_(0),
     networkOutEventCategory_(0),
@@ -69,9 +75,12 @@ void DebugStatsModule::PostInitialize()
 #endif
 
 #ifdef PROFILING
+/*
     RegisterConsoleCommand(Console::CreateCommand("Prof", 
         "Shows the profiling window.",
         Console::Bind(this, &DebugStatsModule::ShowProfilingWindow)));
+*/
+    framework_->Console()->RegisterCommand("prof", "Shows the profiling window.", this, SLOT(ShowProfilingWindow()));
 
     RegisterConsoleCommand(Console::CreateCommand("rin", 
         "Sends a random network message in.",
@@ -112,6 +121,13 @@ void DebugStatsModule::PostInitialize()
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
+
+//#ifdef Q_WS_WIN
+// 
+//    PDH::PerformanceMonitor monitor;
+//    int treads = monitor.GetThreadCount();
+//#endif 
+
     AddProfilerWidgetToUi();
 }
 
@@ -120,7 +136,7 @@ void DebugStatsModule::AddProfilerWidgetToUi()
     if (profilerWindow_)
         return;
 
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -142,9 +158,9 @@ void DebugStatsModule::StartProfiling(bool visible)
         profilerWindow_->OnProfilerWindowTabChanged(-1); 
 }
 
-Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector &params)
+Console::CommandResult DebugStatsModule::ShowProfilingWindow(/*const StringVector &params*/)
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
 
@@ -160,7 +176,7 @@ Console::CommandResult DebugStatsModule::ShowProfilingWindow(const StringVector 
 
 Console::CommandResult DebugStatsModule::ShowParticipantWindow(const StringVector &params)
 {
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (!ui)
         return Console::ResultFailure("Failed to acquire UI service!");
 
@@ -206,7 +222,7 @@ void DebugStatsModule::Update(f64 frametime)
 #endif
 }
 
-bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface *data)
+bool DebugStatsModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     using namespace ProtocolUtilities;
     PROFILE(DebugStatsModule_HandleEvent);
@@ -522,7 +538,7 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
 
-    QStringVector execParameters;
+    QStringList execParameters;
     for(size_t i = 2; i < params.size(); ++i)
         execParameters << params[i].c_str();
 
@@ -541,6 +557,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace DebugStats;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(DebugStatsModule)
 POCO_END_MANIFEST 

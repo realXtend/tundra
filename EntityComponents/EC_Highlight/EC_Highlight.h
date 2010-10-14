@@ -3,14 +3,14 @@
  *
  *  @file   EC_Highlight.h
  *  @brief  EC_Highlight enables visual highlighting effect for of scene entity.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
 #ifndef incl_EC_Highlight_EC_Highlight_h
 #define incl_EC_Highlight_EC_Highlight_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 
 namespace OgreRenderer
@@ -23,8 +23,40 @@ namespace Ogre
     class SceneNode;
     class Entity;
 }
+/**
+<table class="header">
+<tr>
+<td>
+<h2>HighLight</h2>
+Enables visual highlighting effect for of scene entity.
 
-class EC_Highlight : public Foundation::ComponentInterface
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes.</b>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"hide": Disables the highlighting effect.
+<li>"show": Shows the highlighting effect.
+<li>"IsVisible": Returns if the highlight component is visible or not.
+  @true If the highlight component is visible, false if it's hidden or not initialized properly.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on components OgrePlaceable, OgreMesh and OgreCustomObject</b>. 
+</table>
+*/
+
+
+class EC_Highlight : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Highlight);
@@ -47,7 +79,7 @@ public slots:
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Highlight(Foundation::ModuleInterface *module);
+    explicit EC_Highlight(IModule *module);
 
     /// Creates the clone entity used for highlighting from the original.
     void Create();

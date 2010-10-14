@@ -18,7 +18,7 @@ namespace Console
     typedef boost::tokenizer< boost::char_separator<char> > tokenizer;
     typedef boost::tokenizer< boost::escaped_list_separator<char> > escape_tokenizer;
 
-    CommandManager::CommandManager(Foundation::ModuleInterface *parent, ConsoleServiceInterface *console) :
+    CommandManager::CommandManager(IModule *parent, ConsoleServiceInterface *console) :
         Console::ConsoleCommandServiceInterface(),
         parent_ (checked_static_cast< ConsoleModule* >(parent)),
         console_(console)
@@ -124,7 +124,7 @@ namespace Console
         if (it == commandline_tok.end())
         {
             console_->Print("Failed to parse malformed command line: " + commandline);
-            Console::CommandResult result = { false, "" };
+            Console::CommandResult result = { false, "", false };
             return result;
         }
 
@@ -135,30 +135,25 @@ namespace Console
         if (it != commandline_tok.end())
         {
             param_line = *it;
-
             // Separate parameters and push to vector
-            
             boost::escaped_list_separator<char> param_sep;
             escape_tokenizer param_tok(param_line);
-
             try
             {
-                for (escape_tokenizer::iterator it = param_tok.begin() ;
-                     it != param_tok.end() ; 
-                     ++it)
+                for (escape_tokenizer::iterator it = param_tok.begin();it != param_tok.end() ; ++it)
                 {
                     std::string param = *it;
                     boost::trim(param);
                     params.push_back(param);
                 }
-            } catch (boost::escaped_list_error e)
+            }
+            catch (boost::escaped_list_error &/*e*/)
             {
-                UNREFERENCED_PARAM(e);
                 console_->Print("Invalid use of escaping.");
-                Console::CommandResult result = { false, "" };
+                Console::CommandResult result = { false, "", false };
                 return result;
             }
-            }
+        }
 
         /* an alternative version that allows using () inside the command arguments, useful for pyexec & jsexec
           \todo fix the impl above to support parentheses too
@@ -187,7 +182,7 @@ namespace Console
             if (iter == commands_.end())
             {
                 console_->Print("Command: " + name + " not found. Type 'help' for list of available commands.");
-                Console::CommandResult result = { false, "" };
+                Console::CommandResult result = { false, "", false };
                 return result;
             }
             callback = iter->second.callback_;
@@ -198,16 +193,24 @@ namespace Console
             }
         }
 
+        // If no callback, we have Qt slot console command
+        if (!callback)
+        {
+            QStringList qparams;
+            for(size_t i = 0; i < params.size(); ++i)
+                qparams << params[i].c_str();
+            emit CommandInvoked(name.c_str(), qparams);
+            Console::CommandResult result = { true, "", false };
+            return result;
+        }
+
         Console::CommandResult result = (*callback)(params);
         if (result.why_.empty() == false)
         {
             if (result.success_ == false)
-            {
                 console_->Print("Error: " + result.why_);
-            } else
-            {
+            else
                 console_->Print(result.why_);
-            }
         }
         return result;
     }

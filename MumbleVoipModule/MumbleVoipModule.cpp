@@ -26,7 +26,7 @@ namespace MumbleVoip
     std::string MumbleVoipModule::module_name_ = "MumbleVoip";
 
     MumbleVoipModule::MumbleVoipModule()
-        : ModuleInterface(module_name_),
+        : IModule(module_name_),
           link_plugin_(0),
           server_info_provider_(0),
           in_world_voice_provider_(0),
@@ -58,10 +58,6 @@ namespace MumbleVoip
             server_info_provider_ = new ServerInfoProvider(framework_);
             connect(server_info_provider_, SIGNAL(MumbleServerInfoReceived(ServerInfo)), SLOT(StartMumbleClient(ServerInfo)));
         }
-        else
-        {
-            in_world_voice_provider_ = new Provider(framework_, &settings_);
-        }
 
         link_plugin_ = new LinkPlugin();
     }
@@ -76,6 +72,9 @@ namespace MumbleVoip
 
     void MumbleVoipModule::PostInitialize()
     {
+        if (!use_native_mumble_client_)
+            in_world_voice_provider_ = new Provider(framework_, &settings_);
+
         InitializeConsoleCommands();
         
         event_category_framework_ = framework_->GetEventManager()->QueryEventCategory("Framework");
@@ -113,7 +112,7 @@ namespace MumbleVoip
             in_world_voice_provider_->Update(frametime);
     }
 
-    bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool MumbleVoipModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if (in_world_voice_provider_)
             in_world_voice_provider_->HandleEvent(category_id, event_id, data);
@@ -338,7 +337,7 @@ namespace MumbleVoip
 
     void MumbleVoipModule::SetupSettingsWidget()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 
@@ -384,6 +383,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace MumbleVoip;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(MumbleVoipModule)
 POCO_END_MANIFEST

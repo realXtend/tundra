@@ -1,6 +1,8 @@
 # Define target name and output directory
 init_target (ECEditorModule OUTPUT modules/core)
 
+GetEntityComponents()
+
 # Define source files
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
@@ -25,7 +27,7 @@ use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities EntityComponents/EC_DynamicComponent)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
@@ -34,25 +36,11 @@ link_package (POCO)
 link_package (QT4)
 link_package (OGRE)
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules EC_DynamicComponent)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
+LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 
-# MSVC -specific settings for preprocessor and PCH use
-if (MSVC)
-    # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
-    # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
-    foreach(src_file ${CPP_FILES})
-            if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
-            else()
-                get_filename_component(basename ${src_file} NAME)
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
-            endif()
-    endforeach(src_file ${CPP_FILES})
-endif (MSVC)
+SetupCompileFlagsWithPCH()
+CopyModuleXMLFile()
 
 final_target ()

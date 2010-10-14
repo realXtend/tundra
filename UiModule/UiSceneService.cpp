@@ -17,6 +17,8 @@
 #include "Inworld/Menus/MenuManager.h"
 #include "Inworld/NotificationManager.h"
 
+#include <QUiLoader>
+
 namespace UiServices
 {
     UiSceneService::UiSceneService(UiModule *owner) : owner_(owner)
@@ -131,6 +133,18 @@ namespace UiServices
     void UiSceneService::ShowNotification(CoreUi::NotificationBaseWidget *notification_widget)
     {
         owner_->GetNotificationManager()->ShowNotification(notification_widget);
+    }
+
+    QWidget *UiSceneService::LoadFromFile(const QString &file_path, bool add_to_scene, QWidget *parent)
+    {
+        QWidget *widget = 0;
+        QUiLoader loader;
+        QFile file(file_path); 
+        file.open(QFile::ReadOnly);
+        widget = loader.load(&file, parent);
+        if(add_to_scene && widget)
+            AddWidgetToScene(widget);
+        return widget;
     }
 
     void UiSceneService::TranferWidgets()

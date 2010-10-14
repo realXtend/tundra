@@ -13,8 +13,6 @@
 #include "EC_OgreMovableTextOverlay.h"
 #include "QOgreUIView.h"
 #include "QOgreWorldView.h"
-#include "CAVEManager.h"
-#include "StereoController.h"
 #include "OgreShadowCameraSetupFocusedPSSM.h"
 #include "CompositionHandler.h"
 
@@ -133,8 +131,6 @@ namespace OgreRenderer
         last_width_(0),
         last_height_(0),
         capture_screen_pixel_data_(0),
-        cave_manager_(new CAVEManager(this)),
-        stereo_controller_(new StereoController(this)),
         resized_dirty_(0),
         view_distance_(500.0),
         shadowquality_(Shadows_High),
@@ -203,8 +199,7 @@ namespace OgreRenderer
         root_.reset();
         SAFE_DELETE(c_handler_);
         SAFE_DELETE(q_ogre_world_view_);
-        SAFE_DELETE(stereo_controller_);
-        SAFE_DELETE(cave_manager_);
+
     }
 
     void Renderer::RemoveLogListener()
@@ -371,8 +366,6 @@ namespace OgreRenderer
     void Renderer::PostInitialize()
     {
         resource_handler_->PostInitialize();
-        cave_manager_->InitializeUi();
-		stereo_controller_->InitializeUi();
     }
 
     void Renderer::SetFullScreen(bool value)
@@ -382,14 +375,6 @@ namespace OgreRenderer
         else
             main_window_->showNormal();
     }
-
-
-	QVector<Ogre::RenderWindow*> Renderer::GetCAVERenderWindows()
-	{
-		
-		return cave_manager_->getExternalWindows();
-
-	}
 
     void Renderer::SetShadowQuality(ShadowQuality newquality)
     {
@@ -1033,7 +1018,7 @@ namespace OgreRenderer
             cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
             scene->EmitEntityCreated(cam_entity);
             
-            Foundation::ComponentInterfacePtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            ComponentPtr component_placable = cam_entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
             EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
             if (!component_placable.get() || !ec_camera)
                 return;
@@ -1053,8 +1038,8 @@ namespace OgreRenderer
 
     QPixmap Renderer::RenderImage(bool use_main_camera)
     {
-        int window_width = renderwindow_->getWidth();
-        int window_height = renderwindow_->getHeight();
+        unsigned window_width = renderwindow_->getWidth();
+        unsigned window_height = renderwindow_->getHeight();
         PrepareImageRendering(window_width, window_height);
         if (!texture_rendering_cam_entity_)
             return QPixmap();
@@ -1112,7 +1097,7 @@ namespace OgreRenderer
         return return_pixmap;
     }
 
-    QPixmap Renderer::RenderAvatar(const Vector3Df &avatar_position, const Quaternion &avatar_orientation)
+    QPixmap Renderer::RenderAvatar(const Vector3df &avatar_position, const Quaternion &avatar_orientation)
     {
         int window_width = renderwindow_->getWidth();
         int window_height = renderwindow_->getHeight();
@@ -1200,12 +1185,6 @@ namespace OgreRenderer
     {
         if (resized_dirty_ < 1)
             resized_dirty_  = 1;
-    }
-
-    void Renderer::UpdateKeyBindings(Foundation::KeyBindings *bindings) 
-    {
-        if (q_ogre_ui_view_) 
-            q_ogre_ui_view_->UpdateKeyBindings(bindings); 
     }
 
     void Renderer::HideCurrentWorldView()

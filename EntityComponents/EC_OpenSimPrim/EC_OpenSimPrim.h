@@ -8,7 +8,7 @@
 #ifndef incl_EC_OpenSimPrim_EC_OpenSimPrim_h
 #define incl_EC_OpenSimPrim_EC_OpenSimPrim_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "RexUUID.h"
 #include "Color.h"
 #include "Declare_EC.h"
@@ -40,8 +40,62 @@ typedef std::map<uint8_t, uint8_t> MaterialTypeMap;
 //! Map for holding prim face uv parameter info
 typedef std::map<uint8_t, float> UVParamMap;
 
+/**
+<table class="header">
+<tr>
+<td>
+<h2>OpenSimPrim</h2>
+Each scene entity representing a prim in OpenSim sense has this component.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>"float": PathEnd
+<li>"float": PathScaleX
+<li>"float": PathScaleY
+<li>"float": PathShearX
+<li>"float": PathShearY
+<li>"float": PathTwist
+<li>"float": PathTwistBegin
+<li>"float": PathRadiusOffset
+<li>"float": PathTaperX
+<li>"float": PathTaperY
+<li>"float": PathRevolutions
+<li>"float": PathSkew
+<li>"float": ProfileBegin
+<li>"float": ProfileEnd
+<li>"float": ProfileHollow
+</ul>
+
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"GetChildren": 
+<li>"SetEditor": 
+<li>"MyPropertyChanged": 
+<li>"SendRexPrimDataUpdate": 
+<li>"SendObjectShapeUpdate": 
+<li>"SendObjectNameUpdate": 
+<li>"SendObjectDescriptionUpdate": 
+</ul>
+
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Doesn't depend on any components</b>.
+</table>
+*/
+
 //! Each scene entity representing a prim in OpenSim sense has this component.
-class EC_OpenSimPrim : public Foundation::ComponentInterface
+class EC_OpenSimPrim : public IComponent
 {
     DECLARE_EC(EC_OpenSimPrim);
 
@@ -161,67 +215,67 @@ public:
 
     // 0 to 1, quanta = 0.01
     double getPathBegin() const { return (double)PathBegin.Get(); }
-    void setPathBegin(double value) { value = clamp<double>(value, 0.00, 1.00); PathBegin.Set((float)value, AttributeChange::Local); }
+    void setPathBegin(double value) { value = clamp<double>(value, 0.00, 1.00); PathBegin.Set((float)value, AttributeChange::Default); }
 
     // 0 to 1, quanta = 0.01
     double getPathEnd()const  { return (double)PathEnd.Get(); }
-    void setPathEnd(double value) { value = clamp<double>(value, 0.00, 1.00); PathEnd.Set((float)value, AttributeChange::Local); }
+    void setPathEnd(double value) { value = clamp<double>(value, 0.00, 1.00); PathEnd.Set((float)value, AttributeChange::Default); }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleX() const { return (double)PathScaleX.Get(); }
-    void setPathScaleX(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleX.Set((float)value, AttributeChange::Local); }
+    void setPathScaleX(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleX.Set((float)value, AttributeChange::Default); }
 
     // 0 to 1, quanta = 0.01
     double getPathScaleY() const { return (double)PathScaleY.Get(); }
-    void setPathScaleY(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleY.Set((float)value, AttributeChange::Local); }
+    void setPathScaleY(double value) { value = clamp<double>(value, 0.00, 1.00); PathScaleY.Set((float)value, AttributeChange::Default); }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearX() const { return (double)PathShearX.Get(); }
-    void setPathShearX(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearX.Set((float)value, AttributeChange::Local); }
+    void setPathShearX(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearX.Set((float)value, AttributeChange::Default); }
 
     // -.5 to .5, quanta = 0.01
     double getPathShearY() const { return (double)PathShearY.Get(); }
-    void setPathShearY(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearY.Set((float)value, AttributeChange::Local); }
+    void setPathShearY(double value) { value = clamp<double>(value, -0.50, 0.50); PathShearY.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathTwist() const { return (double)PathTwist.Get(); }
-    void setPathTwist(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwist.Set((float)value, AttributeChange::Local); }
+    void setPathTwist(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwist.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathTwistBegin() const { return (double)PathTwistBegin.Get(); }
-    void setPathTwistBegin(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwistBegin.Set((float)value, AttributeChange::Local); }
+    void setPathTwistBegin(double value) { value = clamp<double>(value, -1.00, 1.00); PathTwistBegin.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathRadiusOffset() const { return (double)PathRadiusOffset.Get(); }
-    void setPathRadiusOffset(double value) { value = clamp<double>(value, -1.00, 1.00); PathRadiusOffset.Set((float)value, AttributeChange::Local); }
+    void setPathRadiusOffset(double value) { value = clamp<double>(value, -1.00, 1.00); PathRadiusOffset.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperX() const { return (double)PathTaperX.Get(); }
-    void setPathTaperX(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperX.Set((float)value, AttributeChange::Local); }
+    void setPathTaperX(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperX.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathTaperY() const { return (double)PathTaperY.Get(); }
-    void setPathTaperY(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperY.Set((float)value, AttributeChange::Local); }
+    void setPathTaperY(double value) { value = clamp<double>(value, -1.00, 1.00); PathTaperY.Set((float)value, AttributeChange::Default); }
 
     // 0 to 3, quanta = 0.015
     double getPathRevolutions() const { return (double)PathRevolutions.Get(); }
-    void setPathRevolutions(double value) { value = clamp<double>(value, 0.000, 3.000); PathRevolutions.Set((float)value, AttributeChange::Local); }
+    void setPathRevolutions(double value) { value = clamp<double>(value, 0.000, 3.000); PathRevolutions.Set((float)value, AttributeChange::Default); }
 
     // -1 to 1, quanta = 0.01
     double getPathSkew() const { return (double)PathSkew.Get(); }
-    void setPathSkew(double value) { value = clamp<double>(value, -1.00, 1.00); PathSkew.Set((float)value, AttributeChange::Local); }
+    void setPathSkew(double value) { value = clamp<double>(value, -1.00, 1.00); PathSkew.Set((float)value, AttributeChange::Default); }
     
     // 0 to 1, quanta = 0.01
     double getProfileBegin() const { return (double)ProfileBegin.Get(); }
-    void setProfileBegin(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileBegin.Set((float)value, AttributeChange::Local); }
+    void setProfileBegin(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileBegin.Set((float)value, AttributeChange::Default); }
 
     // 0 to 1, quanta = 0.01
     double getProfileEnd() const { return (double)ProfileEnd.Get(); }
-    void setProfileEnd(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileEnd.Set((float)value, AttributeChange::Local); }
+    void setProfileEnd(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileEnd.Set((float)value, AttributeChange::Default); }
 
     // 0 to 1, quanta = 0.01
     double getProfileHollow() const { return (double)ProfileHollow.Get(); }
-    void setProfileHollow(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileHollow.Set((float)value, AttributeChange::Local); }
+    void setProfileHollow(double value) { value = clamp<double>(value, 0.00, 1.00); ProfileHollow.Set((float)value, AttributeChange::Default); }
 
     bool getHasPrimShapeData() const { return HasPrimShapeData; }
 
@@ -411,7 +465,7 @@ signals:
     void PrimDescriptionChanged(const EC_OpenSimPrim&);
 
 private:
-    EC_OpenSimPrim(Foundation::ModuleInterface* module);
+    EC_OpenSimPrim(IModule* module);
 
     QObject *editor_;
 

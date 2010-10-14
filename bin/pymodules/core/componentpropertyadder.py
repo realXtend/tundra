@@ -1,14 +1,23 @@
 import circuits
 import naali
+import rexviewer as r
+#from PythonQt.QtCore import QVariant
+import PythonQt
 
 #the ones not listed here are added using the c++ name, e.g. ent.EC_NetworkPosition
 compshorthand = {
+    'EC_OpenSimPrim': 'prim',
     'EC_OgrePlaceable': 'placeable',
-    'EC_OgreMesh':'mesh',
+    'EC_NetworkPosition': 'network',
+    'EC_Mesh':'mesh',
     'EC_OgreCamera': 'camera',
     'EC_OgreAnimationController': 'animationcontroller',
     'EC_Highlight': 'highlight',
-    'EC_Touchable': 'touchable'
+    'EC_Touchable': 'touchable',
+    'EC_AttachedSound': 'sound',
+    'EC_OpenSimPresence': 'opensimpresence',
+    'EC_SoundRuler': 'soundruler',
+    'EC_Ruler': 'ruler'
     }   
 
 class ComponentPropertyAdder(circuits.BaseComponent):
@@ -21,7 +30,8 @@ class ComponentPropertyAdder(circuits.BaseComponent):
         s = naali.getScene(name)
 
         #s.connect("ComponentInitialized(Foundation::ComponentInterface*)", self.onComponentInitialized)
-        s.connect("ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)", self.onComponentAdded)
+        s.connect("ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentAdded)
+        s.connect("ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)", self.onComponentRemoved)
 
     def onComponentAdded(self, ent, comp, changetype):
         #print "Comp added:", ent, comp, comp.TypeName, comp.Name, changetype
@@ -36,4 +46,19 @@ class ComponentPropertyAdder(circuits.BaseComponent):
             #consistent with how inside the c++ side single GetComponent works
             ent.setProperty(propname, comp)
 
-    #XXX \todo: add component removal handling too!
+    def onComponentRemoved(self, ent, comp, changetype):
+        #r.logInfo("XXX onComponentRemoved called")
+        if comp.TypeName in compshorthand:
+            propname = compshorthand[comp.TypeName]
+        else:
+            propname = comp.TypeName
+        #r.logInfo("XXX propname " +str(propname))
+        #r.logInfo("XXX dynamicpropertynames " + str(ent.dynamicPropertyNames()))
+        if propname in ent.dynamicPropertyNames():
+            # qt docs: "A property can be removed from an instance by
+            # passing the property name and an invalid QVariant value
+            # to QObject::setProperty(). The default constructor for
+            # QVariant constructs an invalid QVariant."
+            #this is probably impossible on py side 'cause we don't see QVariants here, so there's a helper on the c++ side instead.
+            #ent.setProperty(propname, invalid_qvariant())
+            naali._pythonscriptmodule.RemoveQtDynamicProperty(ent, propname)

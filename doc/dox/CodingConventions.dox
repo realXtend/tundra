@@ -36,6 +36,8 @@ When passing non-const pointers or references to a function, document the parame
 <b>[out]</b>, <b>[in,out]</b> tags. If you only intend to read from a pointer or reference passed to a function, mark it const.
 
 \subsection scope Scoping and Namespaces
+Avoid unnecessary use of namespaces. One namespace within one module enough.
+
 Do not place the <b>using namespace</b> directives in .h- or .inl -files. Please use the <b>using namespace</b> directive at a local scope 
 whenever it improves readability.
 
@@ -51,7 +53,7 @@ void AvatarNode::WalkForward();
 \endverbatim
 
 Prefer "XmlRpcConnection" naming over "XMLRPCConnection" when class names contain acronyms.
-Interfaces should be postfixed with 'Interface'. ex: MyNewClassInterface.
+Interfaces should be prefixed with 'I'. ex: IMyNewClass.
 
 Local variables and public/protected member variables are written in lower case with an underscore:
 \verbatim

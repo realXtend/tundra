@@ -8,7 +8,7 @@
 #ifndef incl_EC_Movable_EC_Movable_h
 #define incl_EC_Movable_EC_Movable_h
 
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "Declare_EC.h"
 #include "Vector3D.h"
 
@@ -22,16 +22,35 @@ namespace ProtocolUtilities
 
 /// Contains Entity Actions for moving entity with this component in scene.
 /**
-        Currently this EC is pretty much for testing and debugging purposes only.
-        Supports the following actions:
-        -Move(Forward)
-        -Move(Backward)
-        -Move(Left)
-        -Move(Right)
-        -Rotate(Left)
-        -Rotate(Right)
+<table class="header">
+<tr>
+<td>
+<h2>Movable</h2>
+Contains Entity Actions for moving entity with this component in scene.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>No Attributes</b>.
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Move": Move(Forward), Move(Backward), Move(Left), Move(Right)
+<li>"Rotate": Rotate(Left), Rotate(Right)
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>...
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>Depends on the component OgrePlaceable and OpenSimPrim</b>.
+</table>
 */
-class EC_Movable : public Foundation::ComponentInterface
+class EC_Movable : public IComponent
 {
     DECLARE_EC(EC_Movable);
     Q_OBJECT
@@ -43,13 +62,13 @@ public:
     void SetWorldStreamPtr(ProtocolUtilities::WorldStreamPtr worldStream);
 
 public slots:
-    /** Moves the entity this component is attached to.
-        @param direction Forward, Backward, Left or Right
+    /// Moves the entity this component is attached to.
+    /** @param direction Forward, Backward, Left or Right
     */
     void Move(const QString &direction);
 
-    /** Rotates the entity this component is attached to.
-        @param direction Left or Right
+    /// Rotates the entity this component is attached to.
+    /** @param direction Left or Right
     */
     void Rotate(const QString &direction);
 
@@ -57,7 +76,7 @@ private:
     /** Constructor.
         @param module Declaring module.
      */
-    explicit EC_Movable(Foundation::ModuleInterface *module);
+    explicit EC_Movable(IModule *module);
 
     void SendMultipleObjectUpdatePacket(const Vector3df &deltaPos, const Quaternion &deltaOri);
 

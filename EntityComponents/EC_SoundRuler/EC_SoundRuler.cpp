@@ -10,12 +10,12 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_SoundRuler.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Entity.h"
 #include "Renderer.h"
 #include "OgreMaterialUtils.h"
 #include "EC_OgrePlaceable.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_OpenSimPrim.h"
 #include "LoggingFunctions.h"
@@ -26,8 +26,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_SoundRuler")
 
 #include "MemoryLeakCheck.h"
 
-EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_SoundRuler::EC_SoundRuler(IModule *module) :
+    IComponent(module->GetFramework()),
     radiusAttr_(this, "radius", 5),
     volumeAttr_(this, "volume", 5),
     segmentsAttr_(this, "segments", 29),
@@ -36,7 +36,7 @@ EC_SoundRuler::EC_SoundRuler(Foundation::ModuleInterface *module) :
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
     
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateSoundRuler()));
+    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateSoundRuler()));
     
     RexUUID uuid = RexUUID::CreateRandom();
     rulerName = uuid.ToString() + "ruler";

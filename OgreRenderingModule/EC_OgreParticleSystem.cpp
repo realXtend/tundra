@@ -3,6 +3,7 @@
 #include "StableHeaders.h"
 #include "OgreRenderingModule.h"
 #include "Renderer.h"
+#include "Entity.h"
 #include "EC_OgrePlaceable.h"
 #include "EC_OgreParticleSystem.h"
 #include "RexTypes.h"
@@ -11,8 +12,8 @@
 
 namespace OgreRenderer
 {
-    EC_OgreParticleSystem::EC_OgreParticleSystem(Foundation::ModuleInterface* module) :
-        Foundation::ComponentInterface(module->GetFramework()),
+    EC_OgreParticleSystem::EC_OgreParticleSystem(IModule* module) :
+        IComponent(module->GetFramework()),
         renderer_(checked_static_cast<OgreRenderingModule*>(module)->GetRenderer()),
         adjustment_node_(0),
         attached_(false),
@@ -40,7 +41,7 @@ namespace OgreRenderer
         }
     }
     
-    void EC_OgreParticleSystem::SetPlaceable(Foundation::ComponentPtr placeable)
+    void EC_OgreParticleSystem::SetPlaceable(ComponentPtr placeable)
     {
         if (!dynamic_cast<EC_OgrePlaceable*>(placeable.get()))
         {
@@ -61,6 +62,18 @@ namespace OgreRenderer
             
         try
         {
+            // If placeable is not set yet, set it manually by searching it from the parent entity
+            if (!placeable_)
+            {
+                Scene::Entity* entity = GetParentEntity();
+                if (entity)
+                {
+                    ComponentPtr placeable = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+                    if (placeable)
+                        SetPlaceable(placeable);
+                }
+            }
+            
             Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
             Ogre::ParticleSystem* system = scene_mgr->createParticleSystem(renderer->GetUniqueObjectName(), system_name);
             if (system)

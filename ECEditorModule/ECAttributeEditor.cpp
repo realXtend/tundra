@@ -5,7 +5,7 @@
 
 #include "ECEditorModule.h"
 #include "ECAttributeEditor.h"
-#include "AttributeInterface.h"
+#include "IAttribute.h"
 #include "MultiEditPropertyManager.h"
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
@@ -22,7 +22,7 @@
 namespace ECEditor
 {
     ECAttributeEditorBase::ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                                                 AttributeInterface *attribute,
+                                                 IAttribute *attribute,
                                                  QObject *parent):
         QObject(parent),
         owner_(owner),
@@ -57,13 +57,17 @@ namespace ECEditor
         if(attributes_.size() == 1)
         {
             if(!useMultiEditor_ && editorState_ != Uninitialized)
+            {
+                listenEditorChangedSignal_ = false;
                 Update(); 
+                listenEditorChangedSignal_ = true;
+            }
             else
             {
                 useMultiEditor_ = false;
                 Initialize();
             }
-            emit AttributeChanged(attributeName_.toStdString());
+            //emit AttributeChanged(attributeName_.toStdString());
         }
         else if(attributes_.size() > 1)
         {
@@ -87,12 +91,16 @@ namespace ECEditor
             if(editorState_ == Uninitialized)
                 Initialize();
             else
-                Update();
-            emit AttributeChanged(attributeName_.toStdString()); 
+            {
+                listenEditorChangedSignal_ = false;
+                Update(); 
+                listenEditorChangedSignal_ = true;
+            }
+            //emit AttributeChanged(attributeName_.toStdString()); 
         }
     }
 
-    void ECAttributeEditorBase::AddNewAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::AddNewAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
@@ -104,7 +112,7 @@ namespace ECEditor
         UpdateEditorUI();
     }
 
-    void ECAttributeEditorBase::RemoveAttribute(AttributeInterface *attribute)
+    void ECAttributeEditorBase::RemoveAttribute(IAttribute *attribute)
     {
         AttributeList::iterator iter = attributes_.begin();
         for(;iter != attributes_.end(); iter++)
@@ -280,7 +288,7 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            //Check if int need to have min and max value setted and also enum types are presented as a int value.
+            //Check if int need to have min and max value set and also enum types are presented as a int value.
             AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
             if(metaData)
             {
@@ -716,9 +724,9 @@ namespace ECEditor
             UpdateMultiEditorValue();
     }
 
-    //-------------------------QVARIANTARRAY ATTRIBUTE TYPE-------------------------
+    //-------------------------QVARIANTLIST ATTRIBUTE TYPE---------------------------
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Initialize()
+    template<> void ECAttributeEditor<QVariantList >::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
@@ -736,8 +744,8 @@ namespace ECEditor
             {
                 QtProperty *childProperty = 0;
                 // Get number of elements in attribute array and create for property for each array element.
-                Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
-                std::vector<QVariant> variantArray = attribute->Get();
+                Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
+                QVariantList variantArray = attribute->Get();
                 for(uint i = 0; i < variantArray.size(); i++)
                 {
                     childProperty = stringManager->addProperty(QString::fromStdString("[" + ::ToString<uint>(i) + "]"));
@@ -755,14 +763,14 @@ namespace ECEditor
             InitializeMultiEditor();
     }
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Set(QtProperty *property)
+    template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
     {
         if (listenEditorChangedSignal_)
         {
-            Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
+            Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
-            std::vector<QVariant> value;
+            QVariantList value;
             for(uint i = 0; i < children.size(); i++)
             {
                 QVariant variant = QVariant(stringManager->value(children[i]));
@@ -778,14 +786,14 @@ namespace ECEditor
         }
     }
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Update()
+    template<> void ECAttributeEditor<QVariantList >::Update()
     {
         if(!useMultiEditor_)
         {
-            Attribute<std::vector<QVariant> > *attribute = dynamic_cast<Attribute<std::vector<QVariant> >*>(*(attributes_.begin()));
+            Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList >*>(*(attributes_.begin()));
             QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(optionalPropertyManagers_[0]);
             QList<QtProperty*> children = rootProperty_->subProperties();
-            std::vector<QVariant> value = attribute->Get();
+            QVariantList value = attribute->Get();
             //! @todo It's tend to be heavy operation to reinitialize all ui elements when new parameters have been added.
             //! replace this so that only single vector's element is added/deleted from the editor.
             if(value.size() + 1 != children.size())

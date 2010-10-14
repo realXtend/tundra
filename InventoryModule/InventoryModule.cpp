@@ -54,7 +54,7 @@ namespace Inventory
 std::string InventoryModule::type_name_static_ = "Inventory";
 
 InventoryModule::InventoryModule() :
-    ModuleInterface(type_name_static_),
+    IModule(type_name_static_),
     inventoryEventCategory_(0),
     networkStateEventCategory_(0),
     networkInEventCategory_(0),
@@ -124,7 +124,7 @@ void InventoryModule::Update(f64 frametime)
     RESETPROFILER;
 }
 
-bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
 {
     // NetworkState
     if (category_id == networkStateEventCategory_)
@@ -232,7 +232,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
         case ProtocolUtilities::Events::EVENT_SERVER_DISCONNECTED:
         {
             // Disconnected from server. Close/delete inventory, upload progress, and all item properties windows.
-            //Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            //UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
             //if (ui)
             {
                 if (inventoryWindow_)
@@ -400,7 +400,7 @@ bool InventoryModule::HandleEvent(event_category_id_t category_id, event_id_t ev
 
 void InventoryModule::OpenItemPropertiesWindow(const QString &inventory_id)
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -453,7 +453,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
     if (!wnd)
         return;
 
-    Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+    UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
     if (ui)
         ui->RemoveWidgetFromScene(wnd);
 
@@ -471,7 +471,7 @@ void InventoryModule::CloseItemPropertiesWindow(const QString &inventory_id, boo
 
 void InventoryModule::CreateInventoryWindow()
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
         return;
 
@@ -599,7 +599,7 @@ Console::CommandResult InventoryModule::InventoryServiceTest(const StringVector 
     return Console::ResultSuccess();
 }
 
-void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleInventoryDescendents(IEventData* event_data)
 {
     NetworkEventInboundData *data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -737,7 +737,7 @@ void InventoryModule::HandleInventoryDescendents(Foundation::EventDataInterface*
     return;
 }
 
-void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUpdateCreateInventoryItem(IEventData* event_data)
 {
     NetworkEventInboundData* data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -798,7 +798,7 @@ void InventoryModule::HandleUpdateCreateInventoryItem(Foundation::EventDataInter
     }
 }
 
-void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidNameReply(IEventData* event_data)
 {
     NetworkEventInboundData *data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -826,7 +826,7 @@ void InventoryModule::HandleUuidNameReply(Foundation::EventDataInterface* event_
         it.next().value()->HandleUuidNameReply(map);
 }
 
-void InventoryModule::HandleUuidGroupNameReply(Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleUuidGroupNameReply(IEventData* event_data)
 {
     NetworkEventInboundData* data = checked_static_cast<NetworkEventInboundData *>(event_data);
     assert(data);
@@ -887,7 +887,7 @@ void InventoryModule::ConnectSignals()
 */
 }
 
-void InventoryModule::HandleWebDavAvatarUploadRequest(event_id_t event_id, Foundation::EventDataInterface* event_data)
+void InventoryModule::HandleWebDavAvatarUploadRequest(event_id_t event_id, IEventData* event_data)
 {
     if (inventoryType_ != IDMT_WebDav)
     {
@@ -955,6 +955,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Inventory;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(InventoryModule)
 POCO_END_MANIFEST

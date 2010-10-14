@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "ECBrowser.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "ECComponentEditor.h"
 #include "SceneManager.h"
 #include "ECEditorModule.h"
@@ -48,15 +48,11 @@ namespace ECEditor
 
         selectedEntities_.insert(entity);
 
-        QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentAdded(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                         this,
-                         SLOT(NewComponentAdded(Scene::Entity*, Foundation::ComponentInterface*)));
+        connect(entity->GetScene(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
 
-        QObject::connect(entity->GetScene(),
-                         SIGNAL(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*, AttributeChange::Type)),
-                         this,
-                         SLOT(ComponentRemoved(Scene::Entity*, Foundation::ComponentInterface*)));
+        connect(entity->GetScene(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
+            SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
     }
 
     void ECBrowser::RemoveEntity(Scene::Entity *entity)
@@ -99,11 +95,11 @@ namespace ECEditor
         }
 
         // Update component editors ui.
-        ComponentGroupList::iterator compIter = componentGroups_.begin();
+        /*ComponentGroupList::iterator compIter = componentGroups_.begin();
         for(; compIter != componentGroups_.end(); compIter++)
         {
             (*compIter)->editor_->UpdateEditorUI();
-        }
+        }*/
         if(treeWidget_)
             treeWidget_->setSortingEnabled(true);
         /*if(treeWidget_)
@@ -180,7 +176,7 @@ namespace ECEditor
         {
             for(uint i = 0; i < (*iter)->components_.size(); i++)
             {
-                Foundation::ComponentWeakPtr compWeak = (*iter)->components_[i];
+                ComponentWeakPtr compWeak = (*iter)->components_[i];
                 if(compWeak.expired())
                     continue;
 
@@ -190,10 +186,10 @@ namespace ECEditor
                     names << item->parent()->text(0);
 
                 // Try to find the right attribute.
-                AttributeInterface *attr = 0;
+                IAttribute *attr = 0;
                 for(uint i = 0; i < names.size(); i++)
                 {
-                    attr = compWeak.lock()->GetAttribute(names[i].toStdString());
+                    attr = compWeak.lock()->GetAttribute(names[i]);
                     if(attr)
                         break;
                 }
@@ -204,8 +200,8 @@ namespace ECEditor
                     Attribute<QString> *attribute = dynamic_cast<Attribute<QString> *>(attr);
                     if(attribute)
                     {
-                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                        attribute->Set(QString::fromStdString(asset_id.toStdString()), AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                     }
                 }
                 else if(attr->TypenameToString() == "qvariant")
@@ -215,8 +211,8 @@ namespace ECEditor
                     {
                         if(attribute->Get().type() == QVariant::String)
                         {
-                            attribute->Set(asset_id, AttributeChange::Local);
-                            compWeak.lock()->ComponentChanged(AttributeChange::Local);
+                            attribute->Set(asset_id, AttributeChange::Default);
+                            //compWeak.lock()->ComponentChanged(AttributeChange::Default);
                         }
                     }
                 }
@@ -244,8 +240,36 @@ namespace ECEditor
                         else
                             return false;
 
-                        attribute->Set(variants, AttributeChange::Local);
-                        compWeak.lock()->ComponentChanged(AttributeChange::Local); 
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
+                    }
+                }
+                else if(attr->TypenameToString() == "qvariantlist")
+                {
+                    Attribute<QVariantList > *attribute = dynamic_cast<Attribute<QVariantList > *>(attr);
+                    if(attribute)
+                    {
+                        // We asume that item's name is form of "[0]","[1]" etc. We need to cut down those first and last characters
+                        // to able to get real index number of that item that is cause sorting can make the item order a bit odd.
+                        QString indexText = "";
+                        QString itemText = item->text(0);
+                        for(uint i = 1; i < itemText.size() - 1; i++)
+                            indexText += itemText[i];
+                        bool ok;
+                        int index = indexText.toInt(&ok);
+                        if(!ok)
+                            return false;
+
+                        QVariantList variants = attribute->Get();
+                        if(variants.size() > index)
+                            variants[index] = asset_id;
+                        else if(variants.size() == index)
+                            variants.push_back(asset_id);
+                        else
+                            return false;
+
+                        attribute->Set(variants, AttributeChange::Default);
+                        //compWeak.lock()->ComponentChanged(AttributeChange::Default); 
                     }
                 }
             }
@@ -282,8 +306,9 @@ namespace ECEditor
 
     void ECBrowser::ShowComponentContextMenu(const QPoint &pos)
     {
-        //! @todo position should be converted to treeWidget's space so that editor will select the right component when user right clicks on the browser.
-        //! right now position is bit off and wrong item is selected. Included fast fix that wont make it work perfectly.
+        //! @todo position should be converted to treeWidget's space so that editor will select the right
+        //! component when user right clicks on the browser. right now position is bit off and wrong item 
+        //! is selected. Included fast fix that wont make it work perfectly.
         if(!treeWidget_)
             return;
 
@@ -303,8 +328,9 @@ namespace ECEditor
             QAction *copyComponent = new QAction(tr("Copy"), menu_);
             QAction *pasteComponent = new QAction(tr("Paste"), menu_);
             QAction *editXml= new QAction(tr("Edit XML..."), menu_);
-            //Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
-            //If root item is selected we assume that we want to remove component and if attributes root node is selected we want to remove that attribute instead.
+            // Delete action functionality can vary based on what QTreeWidgetItem is selected on the browser.
+            // If root item is selected we assume that we want to remove component and if attributes root
+            // node is selected we want to remove that attribute instead.
             QAction *deleteAction= new QAction(tr("Delete"), menu_);
 
             //Add shortcuts for actions
@@ -334,7 +360,7 @@ namespace ECEditor
                 if((*iter)->isDynamic_)
                 {
                     // Check if the selected tree widget name is same as some of the dynamic component's attribute name.
-                    if((*iter)->ContainAttribute(treeWidgetItem->text(0).toStdString()))
+                    if((*iter)->ContainsAttribute(treeWidgetItem->text(0)))
                     {
                         QObject::disconnect(deleteAction, SIGNAL(triggered()), this, SLOT(DeleteComponent()));
                         QObject::connect(deleteAction, SIGNAL(triggered()), this, SLOT(RemoveAttribute()));
@@ -378,7 +404,7 @@ namespace ECEditor
         }
     }
     
-    void ECBrowser::NewComponentAdded(Scene::Entity* entity, Foundation::ComponentInterface* comp) 
+    void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
     {
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
@@ -388,15 +414,15 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if((*iterComp)->ContainComponent(comp))
+            if((*iterComp)->ContainsComponent(comp))
                 return;
         }
-        Foundation::ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+        ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
         AddNewComponentToGroup(componentPtr);
     }
 
-    void ECBrowser::ComponentRemoved(Scene::Entity* entity, Foundation::ComponentInterface* comp)
+    void ECBrowser::ComponentRemoved(Scene::Entity* entity, IComponent* comp)
     {
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
@@ -406,17 +432,16 @@ namespace ECEditor
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
         for(; iterComp != componentGroups_.end(); iterComp++)
         {
-            if(!(*iterComp)->ContainComponent(comp))
+            if(!(*iterComp)->ContainsComponent(comp))
                 continue;
             
-            Foundation::ComponentInterfacePtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
             assert(componentPtr.get());
             RemoveComponentFromGroup(comp);
             return;
         }
     }
 
-    
     void ECBrowser::OpenComponentXmlEditor()
     {
         QTreeWidgetItem *item = treeWidget_->currentItem();
@@ -430,7 +455,7 @@ namespace ECEditor
             {
                 if(!(*iter)->components_.size())
                     return;
-                Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
+                ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
                 {
                     emit ShowXmlEditorForComponent(pointer.lock()->TypeName().toStdString());
@@ -459,7 +484,7 @@ namespace ECEditor
                     return;
                 // Just take a first component from the componentgroup and copy it's attribute values to clipboard. 
                 // Note! wont take account that other components might have different values in their attributes
-                Foundation::ComponentWeakPtr pointer = (*iter)->components_[0];
+                ComponentWeakPtr pointer = (*iter)->components_[0];
                 if(!pointer.expired())
                 {
                     pointer.lock()->SerializeTo(temp_doc, entity_elem);
@@ -483,13 +508,13 @@ namespace ECEditor
             EntitySet::iterator iter = selectedEntities_.begin();
             while(iter != selectedEntities_.end())
             {
-                Foundation::ComponentInterfacePtr component;
+                ComponentPtr component;
                 QString type = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
                 if(!(*iter)->HasComponent(type, name))
                 {
                     component = framework_->GetComponentManager()->CreateComponent(type, name);
-                    (*iter)->AddComponent(component, AttributeChange::Local);
+                    (*iter)->AddComponent(component, AttributeChange::Default);
                 }
                 else
                     component = (*iter)->GetComponent(type, name);
@@ -498,8 +523,8 @@ namespace ECEditor
                     iter++;
                     continue;
                 }
-                component->DeserializeFrom(comp_elem, AttributeChange::Local);
-                component->ComponentChanged(AttributeChange::Local);
+                component->DeserializeFrom(comp_elem, AttributeChange::Default);
+                //component->ComponentChanged(AttributeChange::Default);
                 iter++;
             }
         }
@@ -520,12 +545,12 @@ namespace ECEditor
 
             while(!componentGroup->components_.empty())
             {
-                Foundation::ComponentWeakPtr pointer = componentGroup->components_.back();
+                ComponentWeakPtr pointer = componentGroup->components_.back();
                 if(!pointer.expired())
                 {
-                    Foundation::ComponentInterfacePtr comp = pointer.lock();
+                    ComponentPtr comp = pointer.lock();
                     Scene::Entity *entity = comp->GetParentEntity();
-                    entity->RemoveComponent(comp, AttributeChange::Local);
+                    entity->RemoveComponent(comp, AttributeChange::Default);
                 }
                 else
                 {
@@ -536,7 +561,7 @@ namespace ECEditor
             break;
         }
     }
-    
+
     void ECBrowser::DynamicComponentChanged(const QString &name)
     {
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
@@ -544,21 +569,21 @@ namespace ECEditor
             return;
 
         Scene::Entity *entity = component->GetParentEntity();
-        Foundation::ComponentInterfacePtr compPtr = entity->GetComponent(component);
+        ComponentPtr compPtr = entity->GetComponent(component);
         RemoveComponentFromGroup(component);
         AddNewComponentToGroup(compPtr);
     }
 
-    void ECBrowser::ComponentNameChanged(const std::string &newName)
+    void ECBrowser::ComponentNameChanged(const QString &newName)
     {
-        Foundation::ComponentInterface *component = dynamic_cast<Foundation::ComponentInterface*>(sender());
+        IComponent *component = dynamic_cast<IComponent*>(sender());
         if(component)
         {
             RemoveComponentFromGroup(component);
             Scene::Entity *entity = component->GetParentEntity();
             if(!entity)
                 return;
-            Foundation::ComponentInterfacePtr compPtr = entity->GetComponent(component);
+            ComponentPtr compPtr = entity->GetComponent(component);
             AddNewComponentToGroup(compPtr);
         }
     }
@@ -585,7 +610,8 @@ namespace ECEditor
         for(uint i = 0; i < attributeTypes.size(); i++)
             attributeList.push_back(QString::fromStdString(attributeTypes[i]));
 
-        //! @todo replace this code with a one that will use Dialog::open method and listens a signal that will tell us when dialog is closed. Should be more safe way to get this done.
+        //! @todo replace this code with a one that will use Dialog::open method and listens a signal
+        //! that will tell us when dialog is closed. Should be more safe way to get this done.
         QString typeName = QInputDialog::getItem(this, tr("Give attribute type"), tr("Typename:"), attributeList, 0, false, &ok);
         if (!ok)
             return;
@@ -593,7 +619,7 @@ namespace ECEditor
         if (!ok)
             return;
 
-        std::vector<Foundation::ComponentWeakPtr> components = (*iter)->components_;
+        std::vector<ComponentWeakPtr> components = (*iter)->components_;
         for(uint i = 0; i < components.size(); i++)
         {
             if(components[i].expired())
@@ -602,7 +628,7 @@ namespace ECEditor
             if(component)
             {
                 if(component->CreateAttribute(typeName, name))
-                    component->ComponentChanged("Local");
+                    component->ComponentChanged(AttributeChange::Default);
             }
         }
     }
@@ -623,7 +649,7 @@ namespace ECEditor
         if(!(*iter)->IsDynamic())
             return;
 
-        std::vector<Foundation::ComponentWeakPtr> components = (*iter)->components_;
+        std::vector<ComponentWeakPtr> components = (*iter)->components_;
         for(uint i = 0; i < components.size(); i++)
         {
             if(components[i].expired())
@@ -632,13 +658,13 @@ namespace ECEditor
             if(comp)
             {
                 comp->RemoveAttribute(item->text(0));
-                comp->ComponentChanged("Local");
+                comp->ComponentChanged(AttributeChange::Default);
             }
         }
         //RemoveComponentGroup(*iter);
     }
 
-    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const Foundation::ComponentInterface &comp)
+    ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const IComponent &comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
@@ -660,7 +686,7 @@ namespace ECEditor
         return iter;
     }
 
-    void ECBrowser::AddNewComponentToGroup(Foundation::ComponentInterfacePtr comp)
+    void ECBrowser::AddNewComponentToGroup(ComponentPtr comp)
     {
         assert(comp.get());
         if(!comp.get() && !treeWidget_)
@@ -670,20 +696,18 @@ namespace ECEditor
         if(iter != componentGroups_.end())
         {
             // No point to add same component multiple times.
-            if((*iter)->ContainComponent(comp.get()))
+            if((*iter)->ContainsComponent(comp.get()))
                 return;
 
             (*iter)->editor_->AddNewComponent(comp, false);
-            (*iter)->components_.push_back(Foundation::ComponentWeakPtr(comp));
+            (*iter)->components_.push_back(ComponentWeakPtr(comp));
             if((*iter)->IsDynamic())
             {
-                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent*>(comp.get());
-                connect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                        this, SLOT(ComponentNameChanged(const std::string&)));
+                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
+                connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
+                    SLOT(ComponentNameChanged(const QString&)));
             }
             return;
         }
@@ -712,13 +736,10 @@ namespace ECEditor
         bool dynamic = comp->TypeName() == "EC_DynamicComponent";
         if(dynamic)
         {
-            EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent*>(comp.get());
-            connect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                    this, SLOT(DynamicComponentChanged(const QString &)));
-            connect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                    this, SLOT(DynamicComponentChanged(const QString &)));
-            connect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                    this, SLOT(ComponentNameChanged(const std::string&)));
+            EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
+            connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)));
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
         if(compGroup)
@@ -728,22 +749,19 @@ namespace ECEditor
             treeWidget_->collapseItem(newItem);
     }
 
-    void ECBrowser::RemoveComponentFromGroup(Foundation::ComponentInterface *comp)
+    void ECBrowser::RemoveComponentFromGroup(IComponent *comp)
     {
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(!(*iter)->ContainComponent(comp))
+            if(!(*iter)->ContainsComponent(comp))
                 continue;
             if((*iter)->IsDynamic())
             {
-                EC_DynamicComponent *dynComp = dynamic_cast<EC_DynamicComponent *>(comp);
-                disconnect(dynComp, SIGNAL(AttributeAdded(const QString &)), 
-                           this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dynComp, SIGNAL(AttributeRemoved(const QString &)), 
-                        this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dynComp, SIGNAL(OnComponentNameChanged(const std::string&)), 
-                           this, SLOT(ComponentNameChanged(const std::string&)));
+                EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp);
+                disconnect(dc, SIGNAL(AttributeAdded(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
             }
             (*iter)->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.

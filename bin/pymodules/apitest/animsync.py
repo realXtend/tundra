@@ -21,6 +21,7 @@ Now finally for Naali 0.3.0 this system is quite full featured: the DynamicCompo
 from __future__ import division
 import time
 import rexviewer as r
+import naali
 
 import PythonQt
 from PythonQt import QtGui, QtCore
@@ -37,6 +38,7 @@ class AnimationSync(circuits.BaseComponent):
         circuits.BaseComponent.__init__(self)
         self.inworld_inited = False #a cheap hackish substitute for some initin
         self.initgui()
+        #todo: OnChanged() is deprecated
         comp.connect("OnChanged()", self.onChanged)
 
     def initgui(self):
@@ -44,7 +46,7 @@ class AnimationSync(circuits.BaseComponent):
         self.widget.connect('valueChanged(int)', self.sliderChanged)
 
         #naali proxywidget boilerplate
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         self.proxywidget = r.createUiProxyWidget(self.widget)
         self.proxywidget.setWindowTitle(self.GUINAME)
         if not uism.AddWidgetToScene(self.proxywidget):
@@ -61,7 +63,8 @@ class AnimationSync(circuits.BaseComponent):
             now = time.time()
             if self.prev_sync + INTERVAL < now:
                 comp.SetAttribute("timepos", guival / 100)
-                comp.ComponentChanged("Local")
+                #ComponentChanged is no longer necessary to trigger network sync
+                #comp.ComponentChanged("Local")
                 self.prev_sync = now
 
     def onChanged(self):
@@ -70,19 +73,19 @@ class AnimationSync(circuits.BaseComponent):
         #copy-paste from door.py which also had a onClick handler
         if not self.inworld_inited:
             try:
-                ent = r.getEntity(self.comp.GetParentEntityId())
+                ent = self.comp.GetParentEntity()
             except ValueError:
                 return
 
             try:
                 t = ent.touchable
             except AttributeError:
-                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.id
-                print ent.createComponent("EC_Touchable")
+                print "no touchable in animsynced obj? it doesn't persist yet? adding..", ent.Id
+                print ent.GetOrCreateComponentRaw("EC_Touchable")
                 t = ent.touchable
             else:
                 print "touchable pre-existed in animated character for animsync."
-            t.connect('Clicked()', self.showgui)
+            t.connect('MousePressed()', self.showgui)
             self.inworld_inited = True        
 
         if self.proxywidget is None and self.widget is not None:
@@ -96,7 +99,7 @@ class AnimationSync(circuits.BaseComponent):
         if comp is not None:
             #print comp.GetAttribute()
             try:
-                ent = r.getEntity(comp.GetParentEntityId())
+                ent = comp.GetParentEntity()
             except ValueError:
                 print "No entity"
                 return
@@ -120,7 +123,7 @@ class AnimationSync(circuits.BaseComponent):
     @circuits.handler("on_logout")
     def removegui(self, evid):
         self.proxywidget.hide()
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.RemoveWidgetFromScene(self.proxywidget)
 
 COMPNAME = "animsync"

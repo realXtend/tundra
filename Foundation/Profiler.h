@@ -64,14 +64,14 @@ namespace Foundation
                 // yield time to other threads, to potentially reduce chance of another thread pre-empting our profiling effort.
                 // Commented out because can in itself skew pofiling data.
                 // boost::this_thread::yield();
-                start_time_ = Core::GetCurrentClockTime();
+                start_time_ = GetCurrentClockTime();
             }
         }
 
         void Stop()
         {
             if (supported_) {
-                end_time_ = Core::GetCurrentClockTime();
+                end_time_ = GetCurrentClockTime();
             }
         }
 
@@ -80,7 +80,7 @@ namespace Foundation
         {
             if (supported_) {
                 time_elapsed_ = end_time_ - start_time_;
-                double elapsed_s = (double)time_elapsed_ / (double)Core::GetCurrentClockFreq();
+                double elapsed_s = (double)time_elapsed_ / (double)GetCurrentClockFreq();
                 return (elapsed_s < 0 ? 0 : elapsed_s);
             } else {
                 return 0.0;
@@ -90,7 +90,7 @@ namespace Foundation
         static double ElapsedTimeSeconds(const boost::int64_t &start, const boost::int64_t &end)
         {
             if (supported_) {
-                double elapsed_s = (double)(end - start) / (double)Core::GetCurrentClockFreq();
+                double elapsed_s = (double)(end - start) / (double)GetCurrentClockFreq();
                 return (elapsed_s < 0 ? 0 : elapsed_s);
             } else {
                 return 0.0;
@@ -102,7 +102,7 @@ namespace Foundation
         {
             if (supported_) {
                 time_elapsed_ = end_time_ - start_time_;
-                boost::int64_t elapsed_us = static_cast<boost::int64_t>(time_elapsed_ * 1000000) / Core::GetCurrentClockFreq();
+                boost::int64_t elapsed_us = static_cast<boost::int64_t>(time_elapsed_ * 1000000) / GetCurrentClockFreq();
                 return (elapsed_us < 0 ? 0 : (boost::int64_t)0);
             } else {
                 return 0.0;
@@ -278,7 +278,7 @@ namespace Foundation
         //! Maximum time spend in this profile during last frame
         double elapsed_max_;
 
-        // Profiling data is also accumulated here, and can be resetted on a custom interval.
+        // Profiling data is also accumulated here, and can be reset on a custom interval.
         // Mutable since the application can alter these at will, but the above "official"
         // values may not be touched.
         mutable unsigned long num_called_custom_;

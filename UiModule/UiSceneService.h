@@ -22,7 +22,7 @@ namespace UiServices
      *  Basically this class is just a wrapper around InworldSceneController
      *  and UiStateMachine.
      */
-    class UiSceneService : public Foundation::UiServiceInterface
+    class UiSceneService : public UiServiceInterface
     {
         Q_OBJECT
 
@@ -95,6 +95,9 @@ namespace UiServices
 
         /// UiServiceInterface override.
         void ShowNotification(CoreUi::NotificationBaseWidget *notification_widget);
+
+        /// UiServiceInterface override.
+        QWidget *LoadFromFile(const QString &file_path,  bool add_to_scene = true, QWidget *parent = 0);
 
     private slots:
         void TranferWidgets();

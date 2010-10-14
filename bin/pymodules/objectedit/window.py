@@ -1,11 +1,10 @@
 import rexviewer as r
+import naali
 
 import PythonQt
 from PythonQt.QtGui import QWidget, QTreeWidgetItem, QSizePolicy, QIcon, QHBoxLayout, QVBoxLayout, QComboBox, QDoubleSpinBox, QPixmap, QLabel, QComboBox
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, QSize, Qt
-import conversions as conv
-reload(conv)
 import math
 
 try:
@@ -43,7 +42,7 @@ class ObjectEditWindow:
         width = ui.size.width()
         height = ui.size.height()
         
-        uism = r.getUiSceneManager()
+        uism = naali.ui
 
         self.widget = ui
 
@@ -253,13 +252,11 @@ class ObjectEditWindow:
             self.clearDialogForm()
             qprim = ent.prim
             mats = qprim.Materials
-            #print mats#, r.formwidget.formLayout.children() 
 
-            #for tuple in sorted(mats.itervalues()):
             for i in range(len(mats)):
                 index = str(i)
                 tuple = mats[index]
-                line = lines.UUIDEditLine(self.controller)#QLineEdit()
+                line = lines.UUIDEditLine(self.controller)
                 line.update_text(tuple[1])
                 line.name = index
                 asset_type = tuple[0]
@@ -270,7 +267,6 @@ class ObjectEditWindow:
                 
                 if PRIMTYPES.has_key(asset_type):
                     realIndex = combobox.findText(PRIMTYPES[asset_type])
-                    #print realIndex, asset_type, PRIMTYPES[asset_type]
                     combobox.setCurrentIndex(realIndex)
                 
                 applyButton = self.getButton("materialApplyButton", self.ICON_OK, line, line.applyAction)

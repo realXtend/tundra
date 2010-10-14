@@ -28,7 +28,7 @@ Makefile
 *.cmake
 CMakeFiles
 CMakeCache.txt
-CMakeOptionalModules.txt
+CMakeBuildConfig.txt
 ZERO_CHECK.dir/
 
 # Qt build objects

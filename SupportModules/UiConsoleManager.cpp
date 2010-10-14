@@ -35,7 +35,7 @@ namespace Console
     {
         // Init internals
         console_ui_->setupUi(console_widget_);
-        Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+        UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
         if (ui)
         {
             proxy_widget_ = ui->AddWidgetToScene(console_widget_);
@@ -46,27 +46,23 @@ namespace Console
             ui->RegisterUniversalWidget("Console", proxy_widget_);
         }
 
+        // Init animation
         animation_.setTargetObject(proxy_widget_);
         animation_.setPropertyName("geometry");
         animation_.setDuration(300);
 
-        // Proxy show/hide toggle
-//        connect(ui_view_, SIGNAL( ConsoleToggleRequest() ), this, SLOT( ToggleConsole() ));
-        // Input field
+        // Handle line edit input
         connect(console_ui_->ConsoleInputArea, SIGNAL(returnPressed()), SLOT(HandleInput()));
-        // Scene to notify rect changes
-        
         // Print queuing with Qt::QueuedConnection to avoid problems when printing from threads
         connect(this, SIGNAL(PrintOrderReceived(const QString &)), SLOT(PrintToConsole(const QString &)), Qt::QueuedConnection);
-
         // Init event categories
         console_category_id_ = framework_->GetEventManager()->QueryEventCategory("Console");
     }
 
     UiConsoleManager::~UiConsoleManager()
     {
+        // console_widget_ gets deleted by the scene it is in currently
         SAFE_DELETE(console_ui_);
-        SAFE_DELETE(console_widget_);
     }
 
     void UiConsoleManager::HandleInput()
@@ -110,7 +106,7 @@ namespace Console
 
         if (!hooked_to_scenes_)
         {
-            Foundation::UiServicePtr ui = framework_->GetService<Foundation::UiServiceInterface>(Foundation::Service::ST_Gui).lock();
+            UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
             if (ui)
             {
                 QGraphicsScene *scene = ui->GetScene("Inworld");
@@ -120,6 +116,9 @@ namespace Console
                 if (scene)
                     connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
                 scene = ui->GetScene("Ether");
+                if (scene)
+                    connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
+                scene = ui->GetScene("Avatar");
                 if (scene)
                     connect(scene, SIGNAL( sceneRectChanged(const QRectF &)), SLOT( AdjustToSceneRect(const QRectF &) ));
                 hooked_to_scenes_ = true;

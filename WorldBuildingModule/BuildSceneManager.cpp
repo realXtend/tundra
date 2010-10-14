@@ -10,7 +10,7 @@
 #include "BuildingWidget.h"
 #include "UiHelper.h"
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_OgrePlaceable.h"
 #include "UiServiceInterface.h"
@@ -105,7 +105,7 @@ namespace WorldBuilding
         layout_ = new AnchorLayout(this, scene_);
 
         // Register scene to ui service
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             ui->RegisterScene(scene_name_, scene_);
@@ -492,7 +492,7 @@ namespace WorldBuilding
         if (!inworld_state)
             return;
 
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             ui->SwitchToScene(scene_name_);
@@ -503,7 +503,7 @@ namespace WorldBuilding
 
     void BuildSceneManager::HideBuildScene()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (ui)
         {
             if (inworld_state)
@@ -609,7 +609,7 @@ namespace WorldBuilding
         if (!prim)
         {
             // Manipulators wont have prim, but will have mesh
-            if (entity->HasComponent("EC_OgreMesh"))
+            if (entity->HasComponent("EC_Mesh"))
                 return;
             ObjectSelected(false);
             python_handler_->EmitRemoveHightlight();

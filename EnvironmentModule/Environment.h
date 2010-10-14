@@ -11,9 +11,11 @@
 #include "EnvironmentModuleApi.h"
 #include "ForwardDefines.h"
 #include "RexTypes.h"
+#include "EC_Fog.h"
 
 #include <QVector>
 #include <QObject>
+
 
 namespace ProtocolUtilities
 {
@@ -66,14 +68,6 @@ namespace Environment
         bool HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEventInboundData* data);
 
         /** 
-         * Sets a water fog for current active environment.
-         * @param fogStart distance in world unit at which linear fog start ot encroach. 
-         * @param fogEnd distance in world units at which linear fog becomes completely opaque.
-         * @param color the colour of the fog. 
-         **/
-        void SetWaterFog(float fogStart, float fogEnd, const QVector<float>& color);
- 
-        /** 
          * Sets a ground fog for current active environment.
          * @param fogStart distance in world unit at which linear fog start ot encroach. 
          * @param fogEnd distance in world units at which linear fog becomes completely opaque.
@@ -102,12 +96,7 @@ namespace Environment
          **/
         void SetGroundFogColor(const QVector<float>& color);
 
-        /**
-         * Set new water fog color.
-         * @param new color value.
-         **/
-        void SetWaterFogColor(const QVector<float>& color);
-
+       
         /**
          * Set new ground fog distance.
          * @param fogStart start distance from the viewpoint.
@@ -115,23 +104,7 @@ namespace Environment
          **/
         void SetGroundFogDistance(float fogStart, float fogEnd);
 
-        /**
-         * Set new underwater fog distance.
-         * @param fogStart start distance from the viewpoint.
-         * @param fogEnd end distance from the viewpoint.
-         **/
-        void SetWaterFogDistance(float fogStart, float fogEnd);
-
-        /**
-         * @return underwater fog start distance. 
-         */
-        float GetWaterFogStartDistance();
-
-        /**
-         * @return underwater fog end distance. 
-         */
-        float GetWaterFogEndDistance();
-
+      
         /**
          * @return ground fog start distance. 
          */
@@ -147,11 +120,6 @@ namespace Environment
          */
         QVector<float> GetFogGroundColor();
         
-        /** 
-         * Returns current fog water color.
-         **/
-        QVector<float> GetFogWaterColor();
-
         /**
          * Updates the visual effects (fog, skybox etc).
          **/
@@ -213,15 +181,15 @@ namespace Environment
         bool GetTimeOverride() { return time_override_; }
 
     signals:
-        //! Emitted when water fog is adjusted.
-        void WaterFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
-
+      
         //! Emitted when ground fog is adjusted.
         void GroundFogAdjusted(float fogStart, float fogEnd, const QVector<float>& color);
 
     private:
         /// Creates the global sunlight.
         void CreateGlobalLight();
+
+        EC_Fog* GetEnvironmentFog();
 
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
@@ -249,6 +217,8 @@ namespace Environment
 
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
+
+        
 
     };
 }

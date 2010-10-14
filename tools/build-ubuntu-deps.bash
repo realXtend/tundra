@@ -42,7 +42,7 @@ export CCACHE_DIR=$deps/ccache
 if lsb_release -c | grep -q lucid; then
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libglib libogre-dev libboost-all-dev libpoco-dev \
+	 build-essential g++ libogre-dev libboost-all-dev libpoco-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
          libtelepathy-farsight-dev libnice-dev libgstfarsight0.10-dev \
          libtelepathy-qt4-dev python-gst0.10-dev \
@@ -54,7 +54,7 @@ fi
 if lsb_release -c | grep -q karmic; then
 	sudo aptitude -y install scons python-dev libogg-dev libvorbis-dev \
 	 libopenjpeg-dev libcurl4-gnutls-dev libexpat1-dev libphonon-dev \
-	 build-essential g++ libglib libogre-dev \
+	 build-essential g++ libogre-dev \
 	 python-gtk2-dev libdbus-glib-1-dev ccache libqt4-dev python-dev \
 	 libxmlrpc-epi-dev bison flex libxml2-dev libois-dev cmake libalut-dev
 	sudo apt-get install 'libboost1.38.*-dev' 

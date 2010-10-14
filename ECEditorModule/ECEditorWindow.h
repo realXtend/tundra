@@ -26,7 +26,7 @@ QT_END_NAMESPACE;
 struct EntityComponentSelection
 {
     Scene::EntityPtr entity;
-    std::vector<Foundation::ComponentInterfacePtr> components;
+    std::vector<ComponentPtr> components;
 };
 
 namespace ECEditor
@@ -71,11 +71,14 @@ namespace ECEditor
         /// Deletes entity.
         void DeleteEntity();
 
+        /// Copy serializable component values to clipboard.
         void CopyEntity();
+
+        /// Paste serializable component 
         void PasteEntity();
 
         /// Highlights all entities from the list that owns the component.
-        void HighlightEntities(Foundation::ComponentInterface *component);
+        void HighlightEntities(IComponent *component);
 
         /// If entity selection different from previous update change browser to fit those changes.
         void RefreshPropertyBrowser();
@@ -88,7 +91,7 @@ namespace ECEditor
         void ShowXmlEditorForEntity();
 
         /// Shows EC XML editor.for each components.
-        void ShowXmlEditorForComponent(std::vector<Foundation::ComponentInterfacePtr> components);
+        void ShowXmlEditorForComponent(std::vector<ComponentPtr> components);
 
         /// Shows EC XML editor.for a single component.
         //void ShowXmlEditorForComponent();
@@ -97,12 +100,15 @@ namespace ECEditor
         /// Show/Hide entity list.
         void ToggleEntityList();
 
+        /// Checks if deleted entity is located in editor's list and if so remove it from the editor.
+        void EntityRemoved(Scene::Entity* entity);
+
     signals:
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         void EditEntityXml(Scene::EntityPtr entity);
 
         /// Emitted user wants to edit EC attributes in XML editor.
-        void EditComponentXml(Foundation::ComponentPtr component);
+        void EditComponentXml(ComponentPtr component);
 
         /// Emitted user wants to edit entity's EC attributes in XML editor.
         /// @param entities list of entities
@@ -110,7 +116,7 @@ namespace ECEditor
 
         /// Emitted user wants to edit EC attributes in XML editor.
         /// @param list of components
-        void EditComponentXml(const QList<Foundation::ComponentPtr> & components);
+        void EditComponentXml(const QList<ComponentPtr> & components);
 
     protected:
         /// QWidget override.
@@ -118,6 +124,9 @@ namespace ECEditor
 
         /// QWidget override.
         void changeEvent(QEvent *change_event);
+
+    private slots:
+        void SceneAdded(const QString &name);
 
     private:
         void BoldEntityListItem(entity_id_t entity_id, bool bold = true);
@@ -128,7 +137,7 @@ namespace ECEditor
         QStringList GetAvailableComponents() const;
 
         /// Returns list of selected entities.
-        std::vector<Scene::EntityPtr> GetSelectedEntities();
+        std::vector<Scene::EntityPtr> GetSelectedEntities() const;
 
         /// Framework pointer.
         Foundation::Framework *framework_;

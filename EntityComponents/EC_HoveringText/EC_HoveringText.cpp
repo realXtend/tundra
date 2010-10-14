@@ -10,12 +10,13 @@
 #include "DebugOperatorNew.h"
 
 #include "EC_HoveringText.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
+#include "SceneManager.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
@@ -31,17 +32,26 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Touchable");
 
 #include "MemoryLeakCheck.h"
 
-EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_HoveringText::EC_HoveringText(IModule *module) :
+    IComponent(module->GetFramework()),
     font_(QFont("Arial", 100)),
     backgroundColor_(Qt::transparent),
     textColor_(Qt::black),
     billboardSet_(0),
     billboard_(0),
-    text_(""),
     visibility_animation_timeline_(new QTimeLine(1000, this)),
     visibility_timer_(new QTimer(this)),
-    using_gradient_(false)
+    usingGradAttr(this, "Use Gradiant", false),
+	textAttr(this, "Text"),
+	fontAttr(this, "Font", "Arial"),
+	fontColorAttr(this, "Font Color"),
+	fontSizeAttr(this, "Font Size", 100),	
+	backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
+	positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
+	gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
+	gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f))
+
+
 {
     renderer_ = module->GetFramework()->GetServiceManager()->GetService<OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
 
@@ -51,12 +61,54 @@ EC_HoveringText::EC_HoveringText(Foundation::ModuleInterface *module) :
 
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
+
+	QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
 {
-    if (!renderer_.expired())
+    Destroy();
+}
+
+void EC_HoveringText::Destroy()
+{
+	boost::shared_ptr<OgreRenderer::Renderer> renderer = renderer_.lock();
+    if (renderer)
+    {
+        try{
         Ogre::TextureManager::getSingleton().remove(textureName_);
+        } catch(...)
+        {
+        }
+        try{
+        Ogre::MaterialManager::getSingleton().remove(materialName_);
+        } catch(...)
+        {
+        }
+		try{
+		if (billboardSet_ && billboard_)
+			billboardSet_->removeBillboard(billboard_);
+        } catch(...)
+        {
+        }
+		try{
+		
+		if (billboardSet_)
+		{
+			Ogre::SceneManager *scene = renderer->GetSceneManager();
+			if (scene)
+				scene->destroyBillboardSet(billboardSet_);
+		}
+
+        } catch(...)
+        {
+        }
+    }
+
+	billboard_ = 0;
+	billboardSet_ = 0;
+	textureName_ = "";
+    materialName_ = "";
 }
 
 void EC_HoveringText::SetPosition(const Vector3df& position)
@@ -80,7 +132,7 @@ void EC_HoveringText::SetTextColor(const QColor &color)
 void EC_HoveringText::SetBackgroundColor(const QColor &color)
 {
     backgroundColor_ = color;
-    using_gradient_ = false;
+	//using_gradient_ = false;
     Redraw();
 }
 
@@ -88,7 +140,7 @@ void EC_HoveringText::SetBackgroundGradient(const QColor &start_color, const QCo
 {
     bg_grad_.setColorAt(0.0, start_color);
     bg_grad_.setColorAt(1.0, end_color);
-    using_gradient_ = true;
+	//using_gradient_ = true;
 }
 
 void EC_HoveringText::Show()
@@ -198,7 +250,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
         billboardSet_ = scene->createBillboardSet(renderer_.lock()->GetUniqueObjectName(), 1);
         assert(billboardSet_);
 
-        materialName_ = std::string("material") + renderer_.lock()->GetUniqueObjectName();
+        materialName_ = std::string("HoveringTextMaterial") + renderer_.lock()->GetUniqueObjectName();
         OgreRenderer::CloneMaterial("HoveringText", materialName_);
         billboardSet_->setMaterialName(materialName_);
         billboardSet_->setCastShadows(false);
@@ -213,7 +265,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (text.isNull() || text.isEmpty())
         return;
 
-    text_ = text;
+	//textAttr.Set(text);
     Redraw();
 }
 
@@ -234,7 +286,7 @@ void EC_HoveringText::Redraw()
     {
         if (textureName_.empty())
         {
-            textureName_ = "ChatBubbleTexture" + renderer_.lock()->GetUniqueObjectName();
+            textureName_ = "HoveringTextTexture" + renderer_.lock()->GetUniqueObjectName();
 
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
@@ -294,10 +346,11 @@ QPixmap EC_HoveringText::GetTextPixmap()
 //    const int max_width = viewport->getActualWidth()/4;
 //    int max_height = viewport->getActualHeight()/10;
 
-    if (renderer_.expired() || text_.isEmpty() || text_ == " ")
+	//if (renderer_.expired() || text_.isEmpty() || text_ == " ")
+    if (renderer_.expired())
         return 0;
 
-    QRect max_rect(0, 0, 1600, 800);
+    QRect max_rect(0, 0, 1024, 512);
 
     // Create transparent pixmap
     QPixmap pixmap(max_rect.size());
@@ -308,19 +361,18 @@ QPixmap EC_HoveringText::GetTextPixmap()
 
     // Ask painter the rect for the text
     painter.setFont(font_);
-    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
+    QRect rect = painter.boundingRect(max_rect, Qt::AlignCenter | Qt::TextWordWrap, textAttr.Get());
 
     // Add some padding to it
     QFontMetrics metric(font_); 
-    int width = metric.width(text_) + metric.averageCharWidth();
+    int width = metric.width(textAttr.Get()) + metric.averageCharWidth();
     int height = metric.height() + 20;
     rect.setWidth(width);
     rect.setHeight(height);
 
     // Set background brush
-    if (using_gradient_)
-    {
-        bg_grad_.setStart(QPointF(0,rect.top()));
+    if (usingGradAttr.Get())
+    {   bg_grad_.setStart(QPointF(0,rect.top()));
         bg_grad_.setFinalStop(QPointF(0,rect.bottom()));
         painter.setBrush(QBrush(bg_grad_));
     }
@@ -333,8 +385,67 @@ QPixmap EC_HoveringText::GetTextPixmap()
 
     // Draw text
     painter.setPen(textColor_);
-    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, text_);
+    painter.drawText(rect, Qt::AlignCenter | Qt::TextWordWrap, textAttr.Get());
 
     return pixmap;
 }
+
+void EC_HoveringText::UpdateSignals()
+{
+    disconnect(this, SLOT(AttributeUpdated(IComponent *, IAttribute *)));
+    if(GetParentEntity())
+    {
+        Scene::SceneManager *scene = GetParentEntity()->GetScene();
+        if(scene)
+        connect(scene, SIGNAL(AttributeChanged(IComponent*, IAttribute*, AttributeChange::Type)),
+                this, SLOT(AttributeUpdated(IComponent*, IAttribute*))); 
+    }
+}
+
+void EC_HoveringText::AttributeUpdated(IComponent *component, IAttribute *attribute)
+{
+    if(component != this)
+        return;
+
+    QString attrName = QString::fromStdString(attribute->GetNameString());
+   
+	if(QString::fromStdString(fontAttr.GetNameString()) == attrName ||QString::fromStdString(fontSizeAttr.GetNameString()) == attrName)
+    {
+		SetFont(QFont(fontAttr.Get(), fontSizeAttr.Get()));
+    }
+
+	else if(QString::fromStdString(backgroundColorAttr.GetNameString()) == attrName)
+	{
+		Color col = backgroundColorAttr.Get();
+		backgroundColor_.setRgbF(col.r, col.g, col.b, col.a);
+	}
+
+	else if(QString::fromStdString(fontColorAttr.GetNameString()) == attrName)
+	{		
+		Color col = fontColorAttr.Get();		
+		textColor_.setRgbF(col.r, col.g, col.b, col.a);
+	}
+			
+	else if(QString::fromStdString(positionAttr.GetNameString()) == attrName)
+	{
+		SetPosition(positionAttr.Get());
+	}
+
+	else if(QString::fromStdString(gradEndAttr.GetNameString()) == attrName || QString::fromStdString(gradStartAttr.GetNameString()) == attrName || QString::fromStdString(gradEndAttr.GetNameString()) == attrName)
+	{
+		QColor colStart;
+		QColor colEnd;
+		Color col = gradStartAttr.Get();
+		colStart.setRgbF(col.r, col.g, col.b);
+		col = gradEndAttr.Get();
+		colEnd.setRgbF(col.r, col.g, col.b);
+		SetBackgroundGradient(colStart, colEnd);
+	}
+
+
+	// Repaint the new text with new appearance.
+	ShowMessage(textAttr.Get());
+
+}
+
 

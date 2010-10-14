@@ -13,8 +13,9 @@
 #include "Environment.h"
 #include "Sky.h"
 #include "EnvironmentEditor.h"
-#include "EC_Water.h"
 #include "PostProcessWidget.h"
+#include "EC_WaterPlane.h"
+#include "EC_Fog.h"
 
 #include "Renderer.h"
 #include "RealXtend/RexProtocolMsgIDs.h"
@@ -27,6 +28,7 @@
 #include "EventManager.h"
 #include "RexNetworkUtils.h"
 #include "CompositionHandler.h"
+#include <EC_Name.h>
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
@@ -40,7 +42,7 @@ namespace Environment
     std::string EnvironmentModule::type_name_static_ = "Environment";
 
     EnvironmentModule::EnvironmentModule() :
-        ModuleInterface(type_name_static_),
+        IModule(type_name_static_),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -59,7 +61,8 @@ namespace Environment
     void EnvironmentModule::Load()
     {
         DECLARE_MODULE_EC(EC_Terrain);
-        DECLARE_MODULE_EC(EC_Water);
+        DECLARE_MODULE_EC(EC_WaterPlane);
+        DECLARE_MODULE_EC(EC_Fog);
     }
 
     void EnvironmentModule::Initialize()
@@ -85,7 +88,7 @@ namespace Environment
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
 
             // Add to scene.
-            Foundation::UiServiceInterface *ui = GetFramework()->GetService<Foundation::UiServiceInterface>();
+            UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
                 return;
 
@@ -121,6 +124,8 @@ namespace Environment
     {
         RESETPROFILER;
      
+        PROFILE(EnvironmentModule_Update);
+
         // Idea of next lines:  Because of initialisation chain, enviroment editor stays in wrong state after logout/login-process. 
         // Solution for that problem is that we initialise it again at that moment when user clicks environment editor, 
         // because currently editor is plain QWidget we have not access to show() - slot. So we here poll widget, and when polling tells us that widget is seen, 
@@ -137,12 +142,14 @@ namespace Environment
 
         if ((currentWorldStream_) && currentWorldStream_->IsConnected())
         {
-            if (environment_.get())
+            if (environment_.get() != 0)
                 environment_->Update(frametime);
+            if (water_.get() !=0 )
+                water_->Update();
         }
     }
 
-    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         if(category_id == framework_event_category_)
         {
@@ -189,7 +196,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleResouceEvent(event_id_t event_id, IEventData* data)
     {
         if (event_id == Resource::Events::RESOURCE_READY)
         {
@@ -219,7 +226,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleFrameworkEvent(event_id_t event_id, IEventData* data)
     {
         switch(event_id)
         {
@@ -243,7 +250,7 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentModule::HandleNetworkEvent(event_id_t event_id, IEventData* data)
     {
         ProtocolUtilities::NetworkEventInboundData *netdata = checked_static_cast<ProtocolUtilities::NetworkEventInboundData *>(data);
         assert(netdata);
@@ -307,7 +314,7 @@ namespace Environment
                     try
                     {
                         float height = boost::lexical_cast<float>(message);
-                        water_->SetWaterHeight(height);
+                        water_->SetWaterHeight(height, AttributeChange::LocalOnly);
                     }
                     catch(boost::bad_lexical_cast&)
                     {
@@ -360,12 +367,12 @@ namespace Environment
                 {
                     return false;
                 }
-                if (environment_ != 0)
+                if (water_ != 0 )
                 {
                     // Adjust fog.
                     QVector<float> color;
                     color<<fogC_r<<fogC_g<<fogC_b;
-                    environment_->SetWaterFog(fogStart, fogEnd, color); 
+                    water_->SetWaterFog(fogStart, fogEnd, color); 
                 }
             }
             else if (methodname == "RexAmbientL")
@@ -422,7 +429,70 @@ namespace Environment
         return false;
     }
 
-    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    Scene::EntityPtr EnvironmentModule::CreateEnvironmentEntity(const QString& entity_name, const QString& component_name) 
+    {
+        
+        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        // Search first that does there exist environment entity
+        Scene::EntityPtr entity = active_scene->GetEntityByName(entity_name);
+        if (entity != 0)
+        {
+            // Does it have component? If not create. 
+            if ( !entity->HasComponent(component_name) )
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+        
+        
+            return entity;
+        }
+       
+
+        entity = active_scene->GetEntityByName("LocalEnvironment");
+
+        if (entity != 0)
+        {
+             // Does it have component? If not create. 
+            if ( !entity->HasComponent(component_name) )
+                entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+
+        }
+        else
+        {
+            int id = active_scene->GetNextFreeId();
+            entity = active_scene->CreateEntity(id);
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Name::TypeNameStatic()));
+            EC_Name* nameComp = entity->GetComponent<EC_Name >().get();
+            nameComp->name.Set("LocalEnvironment", AttributeChange::LocalOnly);
+            
+            // Create param component.
+            entity->AddComponent(framework_->GetComponentManager()->CreateComponent(component_name));
+        }
+        
+        return entity;
+  
+    }
+
+    void EnvironmentModule::RemoveLocalEnvironment()
+    {
+        Scene::ScenePtr active_scene = framework_->GetDefaultWorldScene();
+        Scene::Entity* entity = active_scene->GetEntityByName("LocalEnvironment").get();
+    
+        if ( entity == 0)
+            return;
+        else
+        {   
+            if ( entity->HasComponent(EC_WaterPlane::TypeNameStatic()) )
+                entity->RemoveComponent(entity->GetComponent(EC_WaterPlane::TypeNameStatic()));  
+            if  ( entity->HasComponent(EC_Fog::TypeNameStatic()))
+                 entity->RemoveComponent(entity->GetComponent(EC_Fog::TypeNameStatic()));
+        
+        }
+
+        active_scene->RemoveEntity(entity->GetId());
+        
+
+    }
+
+    bool EnvironmentModule::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
         return false;
     }
@@ -441,7 +511,7 @@ namespace Environment
         // Water height.
         float water_height = msg.ReadF32();
         if(water_.get())
-            water_->SetWaterHeight(water_height);
+            water_->SetWaterHeight(water_height, AttributeChange::LocalOnly);
 
         msg.SkipToNextVariable(); // BillableFactor
         msg.SkipToNextVariable(); // CacheID
@@ -598,6 +668,6 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace Environment;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(EnvironmentModule)
 POCO_END_MANIFEST

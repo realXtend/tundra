@@ -12,7 +12,7 @@ namespace TextureDecoder
 {
     std::string TextureDecoderModule::type_name_static_ = "TextureDecoder";
 
-    TextureDecoderModule::TextureDecoderModule() : ModuleInterface(type_name_static_)
+    TextureDecoderModule::TextureDecoderModule() : IModule(type_name_static_)
     {
     }
 
@@ -54,7 +54,7 @@ namespace TextureDecoder
         texture_service_.reset();
     }
     
-    bool TextureDecoderModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data)
+    bool TextureDecoderModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
         PROFILE(TextureDecoderModule_HandleEvent);
         if (category_id == asset_event_category_)
@@ -81,7 +81,7 @@ void SetProfiler(Foundation::Profiler *profiler)
 
 using namespace TextureDecoder;
 
-POCO_BEGIN_MANIFEST(Foundation::ModuleInterface)
+POCO_BEGIN_MANIFEST(IModule)
     POCO_EXPORT_CLASS(TextureDecoderModule)
 POCO_END_MANIFEST
 

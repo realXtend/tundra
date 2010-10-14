@@ -8,14 +8,9 @@
 #define incl_EnvironmentModule_EnvironmentModule_h
 
 #include "EnvironmentModuleApi.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
-
-namespace Foundation
-{
-    class EventDataInterface;
-}
 
 namespace Environment
 {
@@ -38,7 +33,7 @@ namespace Environment
         Also module will handle all environment editing via EnvironmentEditor. Module receives network
         messages and send them forward to other components that will need them.
     */
-    class ENVIRONMENT_MODULE_API EnvironmentModule : public Foundation::ModuleInterface
+    class ENVIRONMENT_MODULE_API EnvironmentModule : public IModule
     {
     public:
         //! Constructor.
@@ -52,31 +47,31 @@ namespace Environment
         void PostInitialize();
         void Uninitialize();
         void Update(f64 frametime);
-        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         //! Handles resouce event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleResouceEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleResouceEvent(event_id_t event_id, IEventData* data);
 
         //! Handles framework event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleFrameworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleFrameworkEvent(event_id_t event_id, IEventData* data);
 
         //! Handles resouce event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleNetworkEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleNetworkEvent(event_id_t event_id, IEventData* data);
 
         //! Handles input event category.
         //! @param event_id event id
         //! @param data event data pointer
         //! @return Should return true if the event was handled and is not to be propagated further
-        bool HandleInputEvent(event_id_t event_id, Foundation::EventDataInterface* data);
+        bool HandleInputEvent(event_id_t event_id, IEventData* data);
 
         //! Get terrain texture ids, terrain height and water height values.
         //! @param network data pointer.
@@ -120,10 +115,24 @@ namespace Environment
          */
         void SendModifyLandMessage(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
+        /**
+         * Creates a local enviroment entity. This is called if there does not exist outside enviroment entity (entity, which has EC_NAME component which attribute name is entity_name + Enviroment example WaterEnviroment).
+         * IF there exist a that kind entity it will be used to syncronize water, fog etc. things to other clients/server. 
+         * @param entity_name is entity which exist in world.
+         * @param component_name is name of component which is added into local enviroment entity.
+         */
+        Scene::EntityPtr CreateEnvironmentEntity(const QString& entity_name, const QString& component_name);
+        /** 
+         * Removes local dump enviroment entity. 
+         */ 
+        void RemoveLocalEnvironment();
+
         MODULE_LOGGING_FUNCTIONS
 
         //! @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
+
+
 
     private:
         EnvironmentModule(const EnvironmentModule &);

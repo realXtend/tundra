@@ -33,7 +33,7 @@ namespace OgreRenderer
 
     void RendererSettings::InitWindow()
     {
-        Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
         if (!ui)
             return;
 
@@ -80,7 +80,7 @@ namespace OgreRenderer
         }
         
         //fullscreen shortcut key
-        input_context_ = framework_->Input().RegisterInputContext("Renderer", 90);
+        input_context_ = framework_->Input()->RegisterInputContext("Renderer", 90);
         if(input_context_.get())
             connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), this, SLOT(KeyPressed(KeyEvent*)));
     }

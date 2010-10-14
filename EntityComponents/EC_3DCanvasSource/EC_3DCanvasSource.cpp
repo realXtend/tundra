@@ -6,9 +6,9 @@
 #include "EC_3DCanvasSource.h"
 
 #include "EC_3DCanvas.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleManager.h"
 #include "Entity.h"
 #include "UiProxyWidget.h"
@@ -26,8 +26,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_3DCanvasSource")
 
 #include "MemoryLeakCheck.h"
 
-EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_3DCanvasSource::EC_3DCanvasSource(IModule *module) :
+    IComponent(module->GetFramework()),
     source_(this, "source"),
     position_(this, "position", 0),
     submesh_(this, "submesh", 0),
@@ -39,24 +39,19 @@ EC_3DCanvasSource::EC_3DCanvasSource(Foundation::ModuleInterface *module) :
     source_edit_(0),
     manipulate_ec_3dcanvas(true)
 {
-    connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateWidgetAndCanvas()));
+    connect(this, SIGNAL(ParentEntitySet()), this, SLOT(RegisterActions()));
     CreateWidget();
 }
 
 EC_3DCanvasSource::~EC_3DCanvasSource()
 {
-    Scene::Entity* entity = GetParentEntity();
-
-    if (widget_)
-    {
-        // Note: content widget is inside widget_s layout,
-        // no need to do a separate deleteLater for it. This would cause problems on rundown.
-        widget_->deleteLater();
-        widget_ = 0;
-    }
+    // Note: content widget is inside widget_s layout,
+    // no need to do a separate deleteLater for it. This would cause problems on rundown.
+    SAFE_DELETE_LATER(widget_);
 }
 
-void EC_3DCanvasSource::Clicked()
+void EC_3DCanvasSource::OnClick()
 {
     if ((show2d_.Get() == true) && (widget_) && (proxy_))
     {
@@ -74,8 +69,8 @@ void EC_3DCanvasSource::SourceEdited()
     {
         // Replicate changed source to network
         // std::cout << "Changed source to " << new_source << std::endl;
-        source_.Set(new_source, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(new_source, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -121,8 +116,8 @@ void EC_3DCanvasSource::WebViewLinkClicked(const QUrl& url)
         last_source_ = url_str;
         
         // std::cout << "Changed source by click to " << url_str << std::endl;
-        source_.Set(url_str, AttributeChange::Local);
-        ComponentChanged(AttributeChange::Local);
+        source_.Set(url_str, AttributeChange::Default);
+        ComponentChanged(AttributeChange::Default);
     }
 }
 
@@ -135,7 +130,7 @@ void EC_3DCanvasSource::RepaintCanvas()
     if (!entity)
         return;
 
-    Foundation::ComponentInterfacePtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
         return;
 
@@ -212,7 +207,7 @@ void EC_3DCanvasSource::UpdateCanvas()
         return;
     }
     
-    Foundation::ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");
@@ -220,7 +215,7 @@ void EC_3DCanvasSource::UpdateCanvas()
     }
     
     // If entity has no valid mesh or prim yet, start a retry timer and try to set the canvas later
-    if ((!entity->GetComponent(OgreRenderer::EC_OgreMesh::TypeNameStatic())) && 
+    if ((!entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic())) && 
         (!entity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic())))
     {
         //LogInfo("Mesh or prim did not exist yet, retrying");
@@ -249,7 +244,7 @@ void EC_3DCanvasSource::FetchWebViewUrl()
         return;
     }
     
-    Foundation::ComponentInterfacePtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
+    ComponentPtr comp = entity->GetOrCreateComponent(EC_3DCanvas::TypeNameStatic());
     if (!comp)
     {
         LogError("Could not create/get 3DCanvas component");
@@ -284,7 +279,7 @@ void EC_3DCanvasSource::ChangeLanguage()
 
 void EC_3DCanvasSource::CreateWidget()
 {
-    Foundation::UiServiceInterface *ui = framework_->GetService<Foundation::UiServiceInterface>();
+    UiServiceInterface *ui = framework_->GetService<UiServiceInterface>();
     if (!ui)
     {
         LogError("Failed to acquire UI service");
@@ -325,5 +320,13 @@ void EC_3DCanvasSource::CreateWidget()
     if (button) connect(button, SIGNAL( clicked() ), this, SLOT( NextPressed() ));
     button = widget_->findChild<QPushButton*>("but_end");
     if (button) connect(button, SIGNAL( clicked() ), this, SLOT( EndPressed() ));
+}
+
+void EC_3DCanvasSource::RegisterActions()
+{
+    Scene::Entity *entity = GetParentEntity();
+    assert(entity);
+    if (entity)
+        entity->ConnectAction("MousePress", this, SLOT(OnClick()));
 }
 

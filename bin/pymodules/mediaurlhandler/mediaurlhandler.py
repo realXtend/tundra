@@ -161,13 +161,13 @@ class MediaURLHandler(Component):
                 else:
                     r.applyUICanvasToSubmeshes(entid, submeshes, mediaurlview.playback_widget, mediaurlview.refreshrate)
                 # Get entity for id and hook to Touchable signals
-                entity = r.getEntity(entid)
+                entity = naali.getEntity(entid)
                 self.connect_touchable(mediaurlview, entity)
                 
     def connect_touchable(self, mediaurlview, entity):
         if mediaurlview == None or entity == None:
             return
-        entid = entity.id
+        entid = entity.Id
         try:
             mediaurlview.entid_clicked_connected.index(entid) # already hooked up this entity
             return
@@ -176,7 +176,7 @@ class MediaURLHandler(Component):
         try:
             touchable = entity.touchable
             if touchable != None:
-                touchable.connect("Clicked()", mediaurlview.mouse_clicked)
+                touchable.connect("MousePressed()", mediaurlview.mouse_clicked)
             else:
                 r.logWarning("MediaUrlHandler - Could not find touchable from entity")
         except:

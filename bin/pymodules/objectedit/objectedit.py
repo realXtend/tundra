@@ -21,16 +21,16 @@ TODO (most work is in api additions on the c++ side, then simple usage here):
 from __future__ import division
 
 from circuits import Component
+import mathutils as mu
+
 from PythonQt.QtUiTools import QUiLoader
 from PythonQt.QtCore import QFile, Qt
-import conversions as conv
-reload(conv) # force reload, otherwise conversions is not reloaded on python restart in Naali
 from PythonQt.QtGui import QVector3D
-from PythonQt.QtGui import QQuaternion as Quat
+from PythonQt.QtGui import QQuaternion as QQuaternion
 
 import rexviewer as r
-import naali #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
-from naali import renderer
+import naali
+from naali import renderer #naali.renderer for FrustumQuery, hopefully all ex-rexviewer things soon
 
 try:
     window
@@ -46,12 +46,7 @@ else:
     manipulator = reload(manipulator)
     
 def editable(ent): #removed this from PyEntity
-    try:
-        ent.prim
-    except AttributeError:
-        return False
-    else:
-        return True
+    return ent.HasComponent('EC_OpenSimPrim')
     
 class ObjectEdit(Component):
     EVENTHANDLED = False
@@ -107,7 +102,7 @@ class ObjectEdit(Component):
         
         #uiprops.my_size_ = QSize(width, height) #not needed anymore, uimodule reads it
         proxy = r.createUiProxyWidget(self.selection_rect)
-        uism = r.getUiSceneManager()
+        uism = naali.ui
         uism.AddWidgetToScene(proxy)
         proxy.setWindowFlags(0) #changing it to Qt::Widget
         
@@ -180,13 +175,11 @@ class ObjectEdit(Component):
         ent, children = self.parentalCheck(ent)
         
         self.sel_activated = False
-        self.worldstream.SendObjectSelectPacket(ent.id)
+        self.worldstream.SendObjectSelectPacket(ent.Id)
         #self.updateSelectionBox(ent)
         self.highlight(ent)
         self.soundRuler(ent)
         self.changeManipulator(self.MANIPULATE_FREEMOVE)
-
-        #print "selected", ent
         
         return ent, children
         
@@ -204,7 +197,7 @@ class ObjectEdit(Component):
                 #~ r.logInfo("Entity had a parent, lets pick that instead!")
                 # get the parent entity, and if it is editable set it to ent.
                 # on next loop we get prim from it and from that we get children.
-                temp_ent = r.getEntity(qprim.ParentId)
+                temp_ent = naali.getEntity(qprim.ParentId)
                 if not editable(temp_ent):
                     # not a prim, so not selecting all children
                     break
@@ -232,7 +225,7 @@ class ObjectEdit(Component):
     
     def highlightChildren(self, children):
         for child_id in children:
-            child = r.getEntity(int(child_id))
+            child = naali.getEntity(int(child_id))
             self.highlight(child)
             self.soundRuler(child)
             
@@ -241,9 +234,8 @@ class ObjectEdit(Component):
             self.remove_highlight(ent)
             self.removeSoundRuler(ent)
         for _ent in self.sels: #need to find the matching id in list 'cause PyEntity instances are not reused yet XXX
-            if _ent.id == ent.id:
+            if _ent.Id == ent.Id:
                 self.sels.remove(_ent)
-                self.window.deselectSelection(_end.id)
             
     def deselect_all(self):
         if len(self.sels) > 0:
@@ -266,31 +258,30 @@ class ObjectEdit(Component):
         try:
             ent.highlight
         except AttributeError:
-            ent.createComponent("EC_Highlight")
-            #print "created a new Highlight component"
+            ent.GetOrCreateComponentRaw("EC_Highlight")
 
         h = ent.highlight
-        #print type(h), h
     
         if not h.IsVisible():
             h.Show()
         else:
-            r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.id)
+            r.logInfo("objectedit.highlight called for an already hilited entity: %d" % ent.Id)
             
     def remove_highlight(self, ent):
         try:
             h = ent.highlight
         except AttributeError:
-            r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.id)
+            r.logInfo("objectedit.remove_highlight called for a non-hilited entity: %d" % ent.Id)
         else:
-            h.Hide()
+            ent.RemoveComponentRaw(h)
 
     def soundRuler(self, ent):
         if ent.prim and ent.prim.SoundID and ent.prim.SoundID not in (u'', '00000000-0000-0000-0000-000000000000'):
             try:
-                ent.soundruler
-            except AttributeError:
-                ent.createComponent("EC_SoundRuler")
+                sr = ent.GetOrCreateComponentRaw('EC_SoundRuler')
+            except:
+                # what to do? no soundruler O.o
+                return
 
             sr = ent.soundruler
             sr.SetVolume(ent.prim.SoundVolume)
@@ -303,20 +294,16 @@ class ObjectEdit(Component):
             try:
                 sr = ent.soundruler
             except AttributeError:
-                r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.id)
+                r.logInfo("objectedit.removeSoundRuler called for an object without one: %d" % ent.Id)
             else:
-                sr.Hide()
+                ent.RemoveComponentRaw(sr)
 
     def changeManipulator(self, id):
-        #r.logInfo("changing manipulator to " + str(id))
-        
         newmanipu = self.manipulators[id]
         if newmanipu.NAME != self.manipulator.NAME:
             #r.logInfo("was something completely different")
             self.manipulator.hideManipulator()
             self.manipulator = newmanipu
-        
-        #ent = self.active
         self.manipulator.showManipulator(self.sels)
     
     def hideManipulator(self):
@@ -336,11 +323,11 @@ class ObjectEdit(Component):
             qprim = ent.prim
             children = qprim.GetChildren()
             for child_id in children:
-                #child =  r.getEntity(int(child_id))
+                #child =  naali.getEntity(int(child_id))
                 id = int(child_id)
                 if id not in ids:
                     ids.append(id)
-            ids.append(ent.id)
+            ids.append(ent.Id)
         return ids
     
     def linkObjects(self):
@@ -370,29 +357,30 @@ class ObjectEdit(Component):
         ent = None
         if results is not None and results[0] != 0:
             id = results[0]
-            ent = r.getEntity(id)
+            ent = naali.getEntity(id)
 
         if not self.manipulatorsInit:
             self.manipulatorsInit = True
             for manipulator in self.manipulators.values():
                 manipulator.initVisuals()
-        self.manipulator.initManipulation(ent, results)
+
+        self.manipulator.initManipulation(ent, results, self.sels)
         self.usingManipulator = True
 
         if ent is not None:
-            if not self.manipulator.compareIds(ent.id) and editable(ent): #ent.id != self.selection_box.id and 
+            if not self.manipulator.compareIds(ent.Id) and editable(ent): #ent.Id != self.selection_box.Id and 
                 r.eventhandled = self.EVENTHANDLED
                 found = False
                 for entity in self.sels:
-                    if entity.id == ent.id:
+                    if entity.Id == ent.Id:
                         found = True
                
-                if self.active is None or self.active.id != ent.id: #a diff ent than prev sel was changed  
-                    if self.validId(ent.id):
+                if self.active is None or self.active.Id != ent.Id: #a diff ent than prev sel was changed  
+                    if self.validId(ent.Id):
                         if not found:
                             self.select(ent)
 
-                elif self.active.id == ent.id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
+                elif self.active.Id == ent.Id: #canmove is the check for click and then another click for moving, aka. select first, then start to manipulate
                     self.canmove = True
                     
         else:
@@ -416,7 +404,7 @@ class ObjectEdit(Component):
                 for ent in self.sels:
                     #~ print "LeftMouseReleased, networkUpdate call"
                     parent, children = self.parentalCheck(ent)
-                    r.networkUpdate(ent.id)
+                    r.networkUpdate(ent.Id)
                     for child in children:
                         child_id = int(child)
                         r.networkUpdate(child_id)
@@ -464,14 +452,14 @@ class ObjectEdit(Component):
             ent = None
             if results is not None and results[0] != 0:
                 id = results[0]
-                ent = r.getEntity(id)
+                ent = naali.getEntity(id)
                 
             found = False
             if ent is not None:                
                 for entity in self.sels:
-                    if entity.id == ent.id:
+                    if entity.Id == ent.Id:
                         found = True
-                if self.validId(ent.id):
+                if self.validId(ent.Id):
                     if not found:
                         self.multiselect(ent)
                     else:
@@ -480,8 +468,8 @@ class ObjectEdit(Component):
             
     def validId(self, id):
         if id != 0 and id > 50: #terrain seems to be 3 and scene objects always big numbers, so > 50 should be good, though randomly created local entities can get over 50...
-            if id != naali.worldlogic.GetUserAvatarEntityRaw().Id: #XXX add other avatar id's check
-                if not self.manipulator.compareIds(id):  #and id != self.selection_box.id:
+            if id != naali.getUserAvatar().Id: #XXX add other avatar id's check
+                if not self.manipulator.compareIds(id):  #and id != self.selection_box.Id:
                     return True
         return False
 
@@ -567,7 +555,7 @@ class ObjectEdit(Component):
         #ent = self.active
         #if ent is not None:
         for ent in self.sels:
-            self.worldstream.SendObjectDuplicatePacket(ent.id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
+            self.worldstream.SendObjectDuplicatePacket(ent.Id, ent.prim.UpdateFlags, 1, 1, 0) #nasty hardcoded offset
         
     def createObject(self):
         avatar = naali.getUserAvatar()
@@ -583,13 +571,13 @@ class ObjectEdit(Component):
     def deleteObject(self):
         if self.active is not None:
             for ent in self.sels:
-                #r.logInfo("deleting " + str(ent.id))
+                #r.logInfo("deleting " + str(ent.Id))
                 ent, children = self.parentalCheck(ent)
                 for child_id in children:
-                    child = r.getEntity(int(child_id))
-                    #~ self.worldstream.SendObjectDeRezPacket(child.id, r.getTrashFolderId())
+                    child = naali.getEntity(int(child_id))
+                    #~ self.worldstream.SendObjectDeRezPacket(child.Id, r.getTrashFolderId())
                 #~ if len(children) == 0:
-                self.worldstream.SendObjectDeRezPacket(ent.id, r.getTrashFolderId())
+                self.worldstream.SendObjectDeRezPacket(ent.Id, r.getTrashFolderId())
                 #~ else:
                     #~ r.logInfo("trying to delete a parent, need to fix this!")
             
@@ -621,15 +609,15 @@ class ObjectEdit(Component):
             ent.network.Position = qpos
             self.manipulator.moveTo(self.sels)
 
-            self.modified = True
             if not self.dragging:
-                r.networkUpdate(ent.id)
+                r.networkUpdate(ent.Id)
+            self.modified = True
             
     def changescale(self, i, v):
         ent = self.active
         if ent is not None:
             qscale = ent.placeable.Scale
-            oldscale = list((qscale.x(), qscale.y(), qscale.z()))
+            #oldscale = list((qscale.x(), qscale.y(), qscale.z()))
             scale = list((qscale.x(), qscale.y(), qscale.z()))
                 
             if not self.float_equal(scale[i],v):
@@ -645,7 +633,7 @@ class ObjectEdit(Component):
                 ent.placeable.Scale = QVector3D(scale[0], scale[1], scale[2])
                 
                 if not self.dragging:
-                    r.networkUpdate(ent.id)
+                    r.networkUpdate(ent.Id)
                 self.modified = True
                 
     def changerot(self, i, v):
@@ -654,17 +642,11 @@ class ObjectEdit(Component):
         #print "pos index %i changed to: %f" % (i, v[i])
         ent = self.active
         if ent is not None and not self.usingManipulator:
-            quat = conv.euler_to_quat(v)
-            # convert between conversions.Quat tuple (x,y,z,w) format and QQuaternion (w,x,y,z)
-            # TODO: it seems that visualisation compared to what we give/understand on ob edit
-            # level is shifted. For now leave this 'shift' in, but need to investigate later. At
-            # least visual changes triggered through ob edit window widgets seem to correspond
-            # better to what one expects.
-            ort = Quat(quat[3], quat[1], quat[2], quat[0])
+            ort = mu.euler_to_quat(v)
             ent.placeable.Orientation = ort
             ent.network.Orientation = ort
             if not self.dragging:
-                r.networkUpdate(ent.id)
+                r.networkUpdate(ent.Id)
                 
             self.modified = True
 
@@ -715,7 +697,7 @@ class ObjectEdit(Component):
             try:
                 self.manipulator.hideManipulator()
                 #if self.move_arrows is not None:
-                    #ent = self.move_arrows.id 
+                    #ent = self.move_arrows.Id 
                     #is called by qt also when viewer is exiting,
                     #when the scene (in rexlogic module) is not there anymore.
             except RuntimeError, e:
@@ -755,7 +737,7 @@ class ObjectEdit(Component):
                 #except ValueError:
                 #that would work also, but perhaps this is nicer:
                 s = naali.getDefaultScene()
-                if not s.HasEntityId(ent.id):
+                if not s.HasEntityId(ent.Id):
                     #my active entity was removed from the scene by someone else
                     self.deselect(ent, valid=False)
                     return

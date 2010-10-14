@@ -4,12 +4,12 @@
 #include "EC_3DCanvas.h"
 
 #include "Renderer.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "OgreMaterialUtils.h"
 #include "Entity.h"
 #include "RexTypes.h"
 
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 
 #include <QWidget>
@@ -17,8 +17,8 @@
 
 #include <QDebug>
 
-EC_3DCanvas::EC_3DCanvas(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_3DCanvas::EC_3DCanvas(IModule *module) :
+    IComponent(module->GetFramework()),
     widget_(0),
     update_internals_(false),
     refresh_timer_(0),
@@ -191,7 +191,7 @@ void EC_3DCanvas::UpdateSubmeshes()
 
     int draw_type = -1;
     uint submesh_count = 0;
-    OgreRenderer::EC_OgreMesh* ec_mesh = entity->GetComponent<OgreRenderer::EC_OgreMesh>().get();
+    OgreRenderer::EC_Mesh* ec_mesh = entity->GetComponent<OgreRenderer::EC_Mesh>().get();
     OgreRenderer::EC_OgreCustomObject* ec_custom_object = entity->GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
 
     if (ec_mesh)

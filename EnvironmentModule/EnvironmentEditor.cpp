@@ -23,6 +23,7 @@
 #include "OgreRenderingModule.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+#include <AttributeChangeType.h>
 
 #include <OgreManualObject.h>
 #include <OgreSceneManager.h>
@@ -229,7 +230,7 @@ namespace Environment
 
     void EnvironmentEditor::InitEditorWindow()
     {
-        Foundation::UiServiceInterface *ui = environment_module_->GetFramework()->GetService<Foundation::UiServiceInterface>();
+        UiServiceInterface *ui = environment_module_->GetFramework()->GetService<UiServiceInterface>();
         if (!ui) // If this occurs, we're most probably operating in headless mode.
             return;
 
@@ -423,9 +424,8 @@ namespace Environment
                 water_toggle_box->setChecked(true);
                 // If water is created after, this connection must be made!
                 QObject::connect(water.get(), SIGNAL(HeightChanged(double)), water_height_box, SLOT(setValue(double)));
-                // Idea here is that if for some reason server removes water it state is updated to editor correctly.
-                QObject::connect(water.get(), SIGNAL(WaterRemoved()), this, SLOT(ToggleWaterCheckButton()));
-                QObject::connect(water.get(), SIGNAL(WaterCreated()), this, SLOT(ToggleWaterCheckButton()));
+                QObject::connect(water.get(), SIGNAL(ExistWater(bool)), water_toggle_box, SLOT(setChecked(bool)));
+           
               
             }
             else
@@ -563,25 +563,28 @@ namespace Environment
                     QVector<float> color = environment->GetFogGroundColor();
 
                     fog_ground_red->setMinimum(0.0);
-                    fog_ground_red->setValue(color[0]);   
-
                     fog_ground_blue->setMinimum(0.0);
-                    fog_ground_blue->setValue(color[1]);
-
                     fog_ground_green->setMinimum(0.0);
-                    fog_ground_green->setValue(color[2]);
+                    fog_ground_start_distance->setMinimum(0.0);
+                    fog_ground_end_distance->setMinimum(0.0);
+                    
+                    QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
+                    fog_ground_start_distance->setMaximum(1000.0);
+                    fog_ground_end_distance->setMaximum(1000.0);
 
+                    if ( color.size() != 0 )
+                    {
+                        fog_ground_red->setValue(color[0]);   
+                        fog_ground_blue->setValue(color[1]);
+                        fog_ground_green->setValue(color[2]);
+                    }
+
+                    fog_ground_start_distance->setValue(environment->GetGroundFogStartDistance());
+                    fog_ground_end_distance->setValue(environment->GetGroundFogEndDistance());
+                    
                     QObject::connect(environment.get(), SIGNAL(GroundFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateGroundFog(float, float, const QVector<float>&)));
                     QObject::connect(fog_ground_color_button, SIGNAL(clicked()), this, SLOT(SetGroundFog()));
 
-                    fog_ground_start_distance->setMinimum(0.0);
-                    fog_ground_end_distance->setMinimum(0.0);
-
-                    QObject::connect(fog_ground_distance_button, SIGNAL(clicked()), this, SLOT(SetGroundFogDistance()));
-                    fog_ground_start_distance->setMaximum(1000.0);
-                    fog_ground_start_distance->setValue(environment->GetGroundFogStartDistance());
-                    fog_ground_end_distance->setMaximum(1000.0);
-                    fog_ground_end_distance->setValue(environment->GetGroundFogEndDistance());
             }
 
             if ( fog_water_red != 0 
@@ -593,28 +596,35 @@ namespace Environment
                 && fog_water_distance_button != 0)
             {
                 // Fog water color. 
-                QVector<float> color = environment->GetFogWaterColor();
 
+                WaterPtr water = environment_module_->GetWaterHandler();
+                if ( water == 0)
+                    return;
+
+                QVector<float> color = water->GetFogWaterColor();
+            
                 fog_water_red->setMinimum(0.0);
-                fog_water_red->setValue(color[0]);   
-
                 fog_water_blue->setMinimum(0.0);
-                fog_water_blue->setValue(color[1]);
-
                 fog_water_green->setMinimum(0.0);
-                fog_water_green->setValue(color[2]);
-
-                QObject::connect(environment.get(), SIGNAL(WaterFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateWaterFog(float, float, const QVector<float>&)));
-                QObject::connect(fog_water_color_button, SIGNAL(clicked()), this, SLOT(SetWaterFog()));
-
+                fog_water_start_distance->setMaximum(1000.0);
+                fog_water_end_distance->setMaximum(1000.0);
                 fog_water_start_distance->setMinimum(0.0);
                 fog_water_end_distance->setMinimum(0.0);
 
+                if ( color.size() != 0)
+                {
+                
+                    fog_water_red->setValue(color[0]);   
+                    fog_water_blue->setValue(color[1]);
+                    fog_water_green->setValue(color[2]);
+                    fog_water_start_distance->setValue(water->GetWaterFogStartDistance());
+                    fog_water_end_distance->setValue(water->GetWaterFogEndDistance());
+                }
+                
+                QObject::connect(water.get(), SIGNAL(WaterFogAdjusted(float, float, const QVector<float>&)), this, SLOT(UpdateWaterFog(float, float, const QVector<float>&)));
+                QObject::connect(fog_water_color_button, SIGNAL(clicked()), this, SLOT(SetWaterFog()));
                 QObject::connect(fog_water_distance_button, SIGNAL(clicked()), this, SLOT(SetWaterFogDistance()));
-                fog_water_start_distance->setMaximum(1000.0);
-                fog_water_start_distance->setValue(environment->GetWaterFogStartDistance());
-                fog_water_end_distance->setMaximum(1000.0);
-                fog_water_end_distance->setValue(environment->GetWaterFogEndDistance());
+                
             }
         }
     }
@@ -1385,7 +1395,7 @@ namespace Environment
         QDoubleSpinBox* water_height_box = editor_widget_->findChild<QDoubleSpinBox* >("water_height_doublespinbox");
         WaterPtr water = environment_module_->GetWaterHandler();
         if (water.get() != 0 && water_height_box != 0)
-            water->SetWaterHeight(static_cast<float>(water_height_box->value())); 
+            water->SetWaterHeight(static_cast<float>(water_height_box->value()), AttributeChange::Default); 
     }
 
     void EnvironmentEditor::UpdateWaterGeometry(int state)
@@ -1398,7 +1408,11 @@ namespace Environment
         case Qt::Checked:
             {
                 if ( water_height_box != 0 && water.get() != 0 )
-                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()));
+                {
+                    water->CreateWaterGeometry(static_cast<float>(water_height_box->value()), AttributeChange::Default);
+                    // If water is re-created it will be always created to fixed height.
+                    water->SetWaterHeight(20.0, AttributeChange::Default);
+                }
                 else if ( water.get() != 0)
                     water->CreateWaterGeometry();
                 
@@ -1624,21 +1638,7 @@ namespace Environment
             environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
-    void EnvironmentEditor::ToggleWaterCheckButton()
-    {
-        QCheckBox* water_toggle_box = editor_widget_->findChild<QCheckBox* >("water_toggle_box");
-        WaterPtr water = environment_module_->GetWaterHandler();
-
-        // Dirty way to check that what is state of water. 
-        if ( water.get() != 0 && water_toggle_box != 0)
-        {
-            if (water->GetWaterEntity().expired())
-                water_toggle_box->setChecked(false); 
-            else
-                water_toggle_box->setChecked(true);
-        }
-    }
-
+   
     void EnvironmentEditor::UpdateTerrainTextureRanges()
     {
         assert(environment_module_);
@@ -1783,7 +1783,7 @@ namespace Environment
         assert(environment_module_);
 
         // Priority 110: Must be over EtherInput priority (100, see UiModule.cpp) to get the ESC edit cancel message.
-        terrainPaintInputContext = environment_module_->GetFramework()->Input().RegisterInputContext("TerrainPaint", 110);
+        terrainPaintInputContext = environment_module_->GetFramework()->Input()->RegisterInputContext("TerrainPaint", 110);
         terrainPaintInputContext->SetTakeKeyboardEventsOverQt(true); // To be able to process ESC over Qt and Ether.
         terrainPaintInputContext->SetTakeMouseEventsOverQt(true);
 
@@ -1823,7 +1823,7 @@ namespace Environment
         return terrainPaintMode_;
     }
 
-    bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, Foundation::EventDataInterface* data)
+    bool EnvironmentEditor::HandleMouseDragEvent(event_id_t event_id, IEventData* data)
     {
         //Painting is only enabled when window's is created and visible.
         if(!editor_widget_)
@@ -2395,8 +2395,8 @@ namespace Environment
     
     void EnvironmentEditor::SetWaterFog()
     {
-        EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        WaterPtr water = environment_module_->GetWaterHandler();
+        if(!water.get())
             return;
 
         QDoubleSpinBox* fog_water_red = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_red_dSpinBox");
@@ -2411,7 +2411,7 @@ namespace Environment
             color << fog_water_red->value();
             color << fog_water_blue->value();
             color << fog_water_green->value();
-            environment->SetGroundFogColor(color);
+            water->SetWaterFogColor(color);
         }
     }
 
@@ -2431,15 +2431,15 @@ namespace Environment
 
     void EnvironmentEditor::SetWaterFogDistance()
     {
-        EnvironmentPtr environment = environment_module_->GetEnvironmentHandler();
-        if(!environment.get())
+        WaterPtr water = environment_module_->GetWaterHandler();
+        if(!water.get())
             return;
 
         QDoubleSpinBox* fog_water_start_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_start_distance_dSpinBox");
         QDoubleSpinBox* fog_water_end_distance = editor_widget_->findChild<QDoubleSpinBox* >("fog_water_end_distance_dSpinBox");   
 
         if ( fog_water_start_distance != 0 && fog_water_end_distance != 0)
-            environment->SetWaterFogDistance(fog_water_start_distance->value(), fog_water_end_distance->value());
+           water->SetWaterFogDistance(fog_water_start_distance->value(), fog_water_end_distance->value());
     }
 
     void EnvironmentEditor::ToggleFogOverride()

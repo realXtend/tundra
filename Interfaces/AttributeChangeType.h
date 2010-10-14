@@ -4,7 +4,7 @@
  *  @file   AttributeChangeType.h
  *  @brief  Dummy class containing enumeration of attribute/component change types for replication.
  *          This is done in separate file in order to overcome cyclic inclusion dependency
- *          between AttributeInterface and ComponentInterface.
+ *          between IAttribute and IComponent.
  */
 
 #ifndef incl_Interfaces_AttributeChangeType_h
@@ -22,14 +22,18 @@ public:
     //! Enumeration of attribute/component change types for replication
     enum Type
     {
-        //! No change: attribute/component is up to date
-        None = 0,
-        //! Local change that should be replicated to server
-        Local,
-        //! Local change that should not be replicated to server
+        /// Use the current sync method specified in the IComponent this attribute is part of
+        Default = 0,
+        /// The value will be changed, but no notifications will be sent (even locally). This
+        /// is useful when you are doing batch updates of several attributes at a time and want to minimize
+        /// the amount of re-processing that is done.
+        Disconnected,
+        /// The value change will be signalled locally immediately after the change occurs, but
+        /// it is not sent to the network.
         LocalOnly,
-        //! Change that came from network
-        Network
+        /// Replicate: After changing the value, the change will be signalled locally and this change is
+        /// transmitted to the network as well.
+        Replicate
     };
 };
 

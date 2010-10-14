@@ -8,7 +8,7 @@ set (PYTHON_FORCE_RELEASE_VERSION 0) # set if you want to use release version of
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES PythonScriptModule.h)
+file (GLOB MOC_FILES PythonScriptModule.h PythonQtScriptingConsole.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Wrap
@@ -31,19 +31,19 @@ use_package (OGRE)
 use_package (CURL)
 use_package (XMLRPC)
 
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule
     ProtocolUtilities ProtocolModuleOpenSim ProtocolModuleTaiga EntityComponents/EC_Highlight EntityComponents/EC_Touchable
     EntityComponents/EC_OpenSimPresence EntityComponents/EC_OpenSimPrim EntityComponents/EC_3DCanvas
     EntityComponents/EC_3DCanvasSource EntityComponents/EC_DynamicComponent EntityComponents/EC_SoundRuler
-    EntityComponents/EC_Script)
+    EntityComponents/EC_Script EntityComponents/EC_NetworkPosition EntityComponents/EC_Ruler)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_directories (${PROJECT_BINARY_DIR}/RexLogicModule/Debug ${PROJECT_BINARY_DIR}/RexLogicModule/Release)
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule EC_Highlight EC_Touchable
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon RexLogicModule AvatarModule EC_Highlight EC_Touchable
     ProtocolUtilities EC_OpenSimPresence EC_OpenSimPrim EC_3DCanvas EC_3DCanvasSource EC_DynamicComponent EC_SoundRuler
-    EC_Script)
+    EC_Script EC_NetworkPosition EC_Ruler)
 
 link_package (BOOST)
 link_package (POCO)
@@ -54,23 +54,7 @@ link_package (OGRE)
 link_package (CURL)
 link_package (XMLRPC)
 
-# Copy XML files from source directory to target directory
-foreach (XML_FILE ${XML_FILES})
-    add_custom_command (TARGET ${TARGET_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} ARGS -E copy_if_different ${XML_FILE} ${TARGET_DIR})
-endforeach (XML_FILE)
-
-# MSVC -specific settings for preprocessor and PCH use
-if (MSVC)
-    # Label StableHeaders.cpp to create the PCH file and mark all other .cpp files to use that PCH file.
-    # Add a #define DEBUG_CPP_NAME "this compilation unit name" to each compilation unit to aid in memory leak checking.
-    foreach(src_file ${CPP_FILES})
-            if (${src_file} MATCHES "StableHeaders.cpp$")
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YcStableHeaders.h")
-            else()
-                get_filename_component(basename ${src_file} NAME)
-                set_source_files_properties(${src_file} PROPERTIES COMPILE_FLAGS "/YuStableHeaders.h -DDEBUG_CPP_NAME=\"\\\"${basename}\"\\\"")
-            endif()
-    endforeach(src_file ${CPP_FILES})
-endif (MSVC)
+SetupCompileFlagsWithPCH()
+CopyModuleXMLFile()
 
 final_target ()

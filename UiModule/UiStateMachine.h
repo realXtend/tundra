@@ -13,8 +13,6 @@
 #include <QKeyEvent>
 #include <QMap>
 
-namespace Foundation { class KeyBindings; }
-
 namespace CoreUi
 {
     typedef QMap<QString, QGraphicsProxyWidget*> UniversalWidgetMap;
@@ -31,6 +29,7 @@ namespace CoreUi
         void SwitchToInworldScene();
         void SwitchToEtherScene();
         void SwitchToBuildScene();
+        void SwitchToAvatarScene();
         void ToggleEther();
 
         /** Registers new scene.
@@ -64,8 +63,6 @@ namespace CoreUi
         QString GetCurrentSceneName() const { return current_scene_name_;}
 
         void SetConnectionState(UiServices::ConnectionState new_connection_state);
-        void SetServiceGetter(QObject *service_getter);
-
         void RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget);
 
         UniversalWidgetMap GetUniversalWidgets() { return universal_widgets_; }
@@ -74,8 +71,6 @@ namespace CoreUi
         void CheckAndSwitch(const QString scene_name);
         void DelayedSceneChange();
         void SetTransitions();
-        void ViewKeyEvent(QKeyEvent *key_event);
-        void UpdateKeyBindings(Foundation::KeyBindings *bindings);
 
         void StateSwitch();
         void AnimationsStart();
@@ -87,8 +82,6 @@ namespace CoreUi
         QStateMachine *state_machine_;
         QState *state_ether_;
         QState *state_inworld_;
-        QState *state_connecting_;
-        QState *state_animating_change_;
 
         QGraphicsView *view_;
         QGraphicsScene *current_scene_;
@@ -98,8 +91,6 @@ namespace CoreUi
 
         UiServices::ConnectionState connection_state_;
 
-        QList<QKeySequence> ether_toggle_seq_list_;
-
         QString current_scene_name_;
         QString next_scene_name_;
 
@@ -108,6 +99,7 @@ namespace CoreUi
     signals:
         void EtherTogglePressed();
         void SceneOutAnimationFinised();
+        void SceneAboutToChange(const QString &oldName, const QString &newName);
         void SceneChanged(const QString &oldName, const QString &newName);
         void SceneChangeComplete();
 

@@ -16,9 +16,10 @@
 #include "SceneManager.h"
 #include "RenderServiceInterface.h"
 #include "EC_OpenSimPrim.h"
-#include "EC_OgreMesh.h"
+#include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
 #include "EC_Terrain.h"
+#include "MainWindow.h"
 #include <AssetEvents.h>
 #include <EventManager.h>
 //#include "RealXtend/RexProtocolMsgIDs.h"
@@ -35,6 +36,7 @@
 #include <QTreeWidgetItemIterator>
 #include <QtAlgorithms>
 #include <QTextEdit>
+#include <QMenu>
 
 #include <OgreFontManager.h>
 
@@ -213,14 +215,95 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         logDirectory_.mkdir(DEFAULT_LOG_DIR);
     logDirectory_.cd(DEFAULT_LOG_DIR);
 
-    QObject::connect(tree_mesh_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
-    QObject::connect(tree_texture_assets_, SIGNAL(itemClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
+    QObject::connect(tree_mesh_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowMeshAsset(QTreeWidgetItem*, int)));
+    QObject::connect(tree_texture_assets_, SIGNAL(itemDoubleClicked(QTreeWidgetItem*, int)), this, SLOT(ShowTextureAsset(QTreeWidgetItem*, int)));
 
     boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0)
         asset_event_category_ = event_manager_->QueryEventCategory("Asset");
 
+    // Add a context menu to Textures, Meshes and Materials widgets.
+    if (tree_texture_assets_)
+    {
+        tree_texture_assets_->installEventFilter(this);
+        menu_texture_assets_ = new QMenu(tree_texture_assets_);
+        menu_texture_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_texture_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyTextureAssetName()));
+        menu_texture_assets_->addAction(copyAssetName);
+    }
+    if (tree_mesh_assets_)
+    {
+        tree_mesh_assets_->installEventFilter(this);
+        menu_mesh_assets_ = new QMenu(tree_mesh_assets_);
+        menu_mesh_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_mesh_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMeshAssetName()));
+        menu_mesh_assets_->addAction(copyAssetName);
+    }
+    if (tree_material_assets_)
+    {
+        tree_material_assets_->installEventFilter(this);
+        menu_material_assets_ = new QMenu(tree_material_assets_);
+        menu_material_assets_->setAttribute(Qt::WA_DeleteOnClose);
+        QAction *copyAssetName = new QAction(tr("Copy"), menu_material_assets_);
+        QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
+        menu_material_assets_->addAction(copyAssetName);
+    }
 }
+
+namespace
+{
+    /// Takes the currentItem() of the given widget and copies the text of its first column to clipboard, if it exists.
+    void CopySelectedItemName(QTreeWidget *treeWidget)
+    {
+        if (!treeWidget)
+            return;
+
+        QTreeWidgetItem *item = treeWidget->currentItem();
+
+        if (!item)
+            return;
+
+        QClipboard *clipboard = QApplication::clipboard();
+        clipboard->setText(item->text(0));
+
+    }
+}
+
+bool TimeProfilerWindow::eventFilter(QObject *obj, QEvent *event)
+{
+    if (event->type() == QEvent::ContextMenu)
+    {
+        QTreeWidget *widget = dynamic_cast<QTreeWidget*>(obj);
+        if (widget == tree_texture_assets_)
+            menu_texture_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == tree_mesh_assets_)
+            menu_mesh_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+        if (widget == tree_material_assets_)
+            menu_material_assets_->popup(framework_->GetMainWindow()->mapFromGlobal(QCursor::pos()));
+
+        return true;
+    }
+    return false;
+}
+
+void TimeProfilerWindow::CopyTextureAssetName()
+{
+    CopySelectedItemName(tree_texture_assets_);
+}
+
+void TimeProfilerWindow::CopyMeshAssetName()
+{
+    CopySelectedItemName(tree_mesh_assets_);
+}
+
+void TimeProfilerWindow::CopyMaterialAssetName()
+{
+    CopySelectedItemName(tree_material_assets_);
+}
+
+
 
 void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 {
@@ -1345,9 +1428,9 @@ void RedrawHistoryGraph(const std::vector<double> &data, QLabel *label)
         maxVal = max(maxVal, data[data.size()-1-i]);
 
     double bucketSize = 1.0;
-    Core::tick_t time = Core::GetCurrentClockTime();
-    Core::tick_t modulus = (Core::tick_t)(Core::GetCurrentClockFreq() * bucketSize);
-    Core::tick_t modulus2 = (Core::tick_t)(Core::GetCurrentClockFreq() * bucketSize * 2.0);
+    tick_t time = GetCurrentClockTime();
+    tick_t modulus = (tick_t)(GetCurrentClockFreq() * bucketSize);
+    tick_t modulus2 = (tick_t)(GetCurrentClockFreq() * bucketSize * 2.0);
     QColor colorEven = QColor(0, 0, 0xFF);
     QColor colorOdd = QColor(0xD0, 0xD0, 0xFF);
     if (time % modulus2 >= modulus)
@@ -1686,7 +1769,7 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         entities++;
         EC_OpenSimPrim* prim = entity.GetComponent<EC_OpenSimPrim>().get();
         Environment::EC_Terrain* terrain = entity.GetComponent<Environment::EC_Terrain>().get();
-        OgreRenderer::EC_OgreMesh* mesh = entity.GetComponent<OgreRenderer::EC_OgreMesh>().get();
+        OgreRenderer::EC_Mesh* mesh = entity.GetComponent<OgreRenderer::EC_Mesh>().get();
         OgreRenderer::EC_OgreCustomObject* custom = entity.GetComponent<OgreRenderer::EC_OgreCustomObject>().get();
         Ogre::Entity* ogre_entity = 0;
         
@@ -1723,9 +1806,8 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
         // Get Ogre meshes from terrain EC
         else if (terrain)
         {
-            for (int y = 0; y < Environment::EC_Terrain::cNumPatchesPerEdge; ++y)
-            {
-                for(int x = 0; x < Environment::EC_Terrain::cNumPatchesPerEdge; ++x)
+            for (int y = 0; y < terrain->PatchHeight(); ++y)
+                for(int x = 0; x < terrain->PatchWidth(); ++x)
                 {
                     Ogre::SceneNode *node = terrain->GetPatch(x, y).node;
                     if (!node)
@@ -1744,7 +1826,6 @@ void TimeProfilerWindow::RefreshSceneComplexityProfilingData()
                         GetTexturesFromMaterials(temp_mat, scene_textures);
                     }
                 }
-            }
         }
         
         // Check drawtype for prims

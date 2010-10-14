@@ -4,7 +4,7 @@
 #define incl_MumbleVoipModule_Session_h
 
 #include "CommunicationsService.h"
-#include "SoundServiceInterface.h"
+#include "ISoundService.h"
 #include <QMap>
 
 namespace Foundation
@@ -70,7 +70,7 @@ namespace MumbleVoip
         void SendRecordedAudio();
         void PlaybackReceivedAudio();
         void PlaybackAudioFrame(MumbleLib::User* user, PCMAudioFrame* frame);
-        boost::shared_ptr<Foundation::SoundServiceInterface> SoundService();
+        boost::shared_ptr<ISoundService> SoundService();
         void ApplyMicrophoneLevel(PCMAudioFrame* frame);
 
         Foundation::Framework* framework_;
@@ -93,6 +93,7 @@ namespace MumbleVoip
         std::string recording_device_;
         Settings* settings_;
         bool local_echo_mode_; // if true then acudio is only played locally
+        QString server_address_;
 
     private slots:
         void CreateNewParticipant(MumbleLib::User*);

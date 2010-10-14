@@ -3,7 +3,7 @@
 #ifndef incl_AssetModule_h
 #define incl_AssetModule_h
 
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "ModuleLoggingFunctions.h"
 
 #include "ConsoleCommandServiceInterface.h"
@@ -34,7 +34,7 @@ namespace Asset
     */
 
     //! Asset module.
-    class ASSET_MODULE_API AssetModule : public Foundation::ModuleInterface
+    class ASSET_MODULE_API AssetModule : public IModule
     {
     public:
         AssetModule();
@@ -46,7 +46,7 @@ namespace Asset
         virtual void Uninitialize();
         virtual void Update(f64 frametime);
 
-        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, Foundation::EventDataInterface* data);
+        virtual bool HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
         virtual void SubscribeToNetworkEvents(boost::weak_ptr<ProtocolUtilities::ProtocolModuleInterface> currentProtocolModule);
         void UnsubscribeNetworkEvents();

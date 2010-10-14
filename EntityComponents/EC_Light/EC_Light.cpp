@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "EC_Light.h"
-#include "ModuleInterface.h"
+#include "IModule.h"
 #include "Renderer.h"
 #include "EC_OgrePlaceable.h"
 #include "Entity.h"
@@ -20,21 +20,21 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_Light")
 using namespace RexTypes;
 using namespace OgreRenderer;
 
-EC_Light::EC_Light(Foundation::ModuleInterface *module) :
-    Foundation::ComponentInterface(module->GetFramework()),
+EC_Light::EC_Light(IModule *module) :
+    IComponent(module->GetFramework()),
     light_(0),
     attached_(false),
-    typeAttr_(this, "light type", LT_Point),
-    directionAttr_(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
-    diffColorAttr_(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
-    specColorAttr_(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
-    castShadowsAttr_(this, "cast shadows", false),
-    rangeAttr_(this, "light range", 100.0f),
-    constAttenAttr_(this, "constant atten", 0.0f),
-    linearAttenAttr_(this, "linear atten", 0.01f),
-    quadraAttenAttr_(this, "quadratic atten", 0.01f),
-    innerAngleAttr_(this, "light inner angle", 30.0f),
-    outerAngleAttr_(this, "light outer angle", 40.0f)
+    type(this, "light type", LT_Point),
+    direction(this, "direction", Vector3df(0.0f, 0.0f, 1.0f)),
+    diffColor(this, "diffuse color", Color(1.0f, 1.0f, 1.0f)),
+    specColor(this, "specular color", Color(0.0f, 0.0f, 0.0f)),
+    castShadows(this, "cast shadows", false),
+    range(this, "light range", 100.0f),
+    constAtten(this, "constant atten", 0.0f),
+    linearAtten(this, "linear atten", 0.01f),
+    quadraAtten(this, "quadratic atten", 0.01f),
+    innerAngle(this, "light inner angle", 30.0f),
+    outerAngle(this, "light outer angle", 40.0f)
 {
     static AttributeMetadata typeAttrData;
     static bool metadataInitialized = false;
@@ -45,7 +45,7 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
         typeAttrData.enums[LT_Directional] = "Directional";
         metadataInitialized = true;
     }
-    typeAttr_.SetMetadata(&typeAttrData);
+    type.SetMetadata(&typeAttrData);
 
     boost::shared_ptr<Renderer> renderer = module->GetFramework()->GetServiceManager()->GetService
         <Renderer>(Foundation::Service::ST_Renderer).lock();
@@ -55,10 +55,7 @@ EC_Light::EC_Light(Foundation::ModuleInterface *module) :
     Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
     light_ = scene_mgr->createLight(renderer->GetUniqueObjectName());
     
-    QObject::connect(this, SIGNAL(OnChanged()), this, SLOT(UpdateOgreLight()));
-
-   
-
+    QObject::connect(this, SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(UpdateOgreLight()));
 }
 
 EC_Light::~EC_Light()
@@ -80,7 +77,7 @@ EC_Light::~EC_Light()
     }
 }
 
-void EC_Light::SetPlaceable(Foundation::ComponentPtr placeable)
+void EC_Light::SetPlaceable(ComponentPtr placeable)
 {
     if (dynamic_cast<EC_OgrePlaceable*>(placeable.get()) == 0)
     {
@@ -120,21 +117,21 @@ void EC_Light::DetachLight()
 
 void EC_Light::UpdateOgreLight()
 {
-    // Now the true hack: because we don't (yet) store EC links/references, we hope to find a valid placeable from the entity, and to set it
-    if (parent_entity_)
+    // If placeable is not set yet, set it manually by searching it from the parent entity
+    if (!placeable_)
     {
-        Foundation::ComponentPtr placeable = parent_entity_->GetComponent(EC_OgrePlaceable::TypeNameStatic());
-        if (placeable)
-            SetPlaceable(placeable);
-        else
-            LogError("No EC_OgrePlaceable in entity, EC_Light could not attach itself to scenenode");
+        Scene::Entity* entity = GetParentEntity();
+        if (entity)
+        {
+            ComponentPtr placeable = entity->GetComponent(EC_OgrePlaceable::TypeNameStatic());
+            if (placeable)
+                SetPlaceable(placeable);
+        }
     }
-    else
-        LogError("Parent entity not set, EC_Light could not auto-set placeable");
     
     Ogre::Light::LightTypes ogre_type = Ogre::Light::LT_POINT;
 
-    switch (typeAttr_.Get())
+    switch (type.Get())
     {
         case LT_Spot:
         ogre_type = Ogre::Light::LT_SPOTLIGHT;
@@ -148,13 +145,13 @@ void EC_Light::UpdateOgreLight()
     try
     {
         light_->setType(ogre_type);
-        light_->setDirection(ToOgreVector3(directionAttr_.Get()));
-        light_->setDiffuseColour(ToOgreColor(diffColorAttr_.Get()));
-        light_->setSpecularColour(ToOgreColor(specColorAttr_.Get()));
-        light_->setAttenuation(rangeAttr_.Get(), constAttenAttr_.Get(), linearAttenAttr_.Get(), quadraAttenAttr_.Get());
+        light_->setDirection(ToOgreVector3(direction.Get()));
+        light_->setDiffuseColour(ToOgreColor(diffColor.Get()));
+        light_->setSpecularColour(ToOgreColor(specColor.Get()));
+        light_->setAttenuation(range.Get(), constAtten.Get(), linearAtten.Get(), quadraAtten.Get());
         // Note: Ogre throws exception if we try to set this when light is not spotlight
-        if (typeAttr_.Get() == LT_Spot)
-            light_->setSpotlightRange(Ogre::Degree(innerAngleAttr_.Get()), Ogre::Degree(outerAngleAttr_.Get()));
+        if (type.Get() == LT_Spot)
+            light_->setSpotlightRange(Ogre::Degree(innerAngle.Get()), Ogre::Degree(outerAngle.Get()));
     }
     catch (Ogre::Exception& e)
     {

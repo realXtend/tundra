@@ -8,8 +8,9 @@
 
 #include "Vector3D.h"
 #include "CoreStringUtils.h"
-#include "ComponentInterface.h"
+#include "IComponent.h"
 #include "AssetInterface.h"
+#include "Transform.h"
 #include <map>
 
 #include "MultiEditPropertyManager.h"
@@ -37,24 +38,6 @@ namespace ECEditor
         UsingDescription = 1 << 4
     };
 
-    class AbstractAttributeUiElement
-    {
-    public:
-        AbstractAttributeUiElement(AttributeInterface *attribute,
-                                   QtAbstractPropertyBrowser *owner):
-            attribute_(attribute),
-            owner_(owner)
-        {}
-        ~AbstractAttributeUiElement() {}
-
-        virtual void Update() = 0;
-        virtual void Set(const std::string &value) = 0;
-        virtual std::string Get() const = 0;
-    private:
-        AttributeInterface *attribute_;
-        QtAbstractPropertyBrowser *owner_;
-    };
-
     //! ECAttributeEditorBase class.
     /*! Abstract base class for attribute editing. User can add editable components using the AddNewComponent method and the component is inculded
      *  inside the object's map. Note! ECAttributeEditor wont update the ui until UpdateEditorUI method is called.
@@ -78,7 +61,7 @@ namespace ECEditor
         };
 
         ECAttributeEditorBase(QtAbstractPropertyBrowser *owner,
-                              AttributeInterface *attribute,
+                              IAttribute *attribute,
                               QObject *parent = 0);
 
         virtual ~ECAttributeEditorBase();
@@ -105,11 +88,11 @@ namespace ECEditor
         //! Add new attribute to the editor. If attribute has already added do nothing.
         /*! @param attribute Attribute that we want to add to editor.
          */
-        void AddNewAttribute(AttributeInterface *attribute);
+        void AddNewAttribute(IAttribute *attribute);
         //! Remove attribute from the editor.
         /*! @param attribute Attribute that we want to remove from the editor.
          */
-        void RemoveAttribute(AttributeInterface *attribute);
+        void RemoveAttribute(IAttribute *attribute);
 
     private slots:
         //! Called when user has picked one of the multiselect values.
@@ -120,14 +103,13 @@ namespace ECEditor
             AttributeList::iterator iter = attributes_.begin();
             for(;iter != attributes_.end(); iter++)
             {
-                (*iter)->FromString(value.toStdString(), AttributeChange::Local);
-                (*iter)->GetOwner()->ComponentChanged(AttributeChange::Local);
+                (*iter)->FromString(value.toStdString(), AttributeChange::Default);
             }
         }
 
     signals:
         //! Attribute value has been changed in the editor.
-        void AttributeChanged(const std::string &attributeName);
+        //void AttributeChanged(const std::string &attributeName);
 
     protected:
         //! Initialize attribute editor's components.
@@ -154,7 +136,7 @@ namespace ECEditor
         QtProperty *rootProperty_;
         QString attributeName_;
         bool listenEditorChangedSignal_;
-        typedef std::list<AttributeInterface*> AttributeList;
+        typedef std::list<IAttribute*> AttributeList;
         AttributeList attributes_;
         bool useMultiEditor_;
         AttributeEditorState editorState_;
@@ -167,7 +149,7 @@ namespace ECEditor
      *     PropertyManager and PropertyFactory that are reponssible for registering and creating all visual elements to the QtPropertyBrowser.
      *   - Set: Is a setter funtion for editor to AttributeInterface switch will send all user's
      *     made changes to actual object.
-     *   - Update: Getter function between AttriubteInterface and Editor. Editor will ask attribute's value and
+     *   - Update: Getter function between AttributeInterface and Editor. Editor will ask attribute's value and
      *     set it to editor's ui element.
      *   - FromString: This method is used for multiediting. When user has picked one of the multiedit options we need to 
      *     convert the string value to actual attribute value (usually this is done by using a boost's lexical_cast).
@@ -176,7 +158,7 @@ namespace ECEditor
     {
     public:
         ECAttributeEditor(QtAbstractPropertyBrowser *owner,
-                          AttributeInterface *attribute,
+                          IAttribute *attribute,
                           QObject *parent = 0):
             ECAttributeEditorBase(owner, attribute, parent)
         {
@@ -203,9 +185,9 @@ namespace ECEditor
                 Attribute<T> *attribute = dynamic_cast<Attribute<T>*>(*iter);
                 if(attribute)
                 {
-                    attribute->Set(value, AttributeChange::Local);
                     listenEditorChangedSignal_ = false;
-                    attribute->GetOwner()->ComponentChanged(AttributeChange::Local);
+                    attribute->Set(value, AttributeChange::Default);
+                    //attribute->GetOwner()->ComponentChanged(AttributeChange::Default);
                     listenEditorChangedSignal_ = true;
                 }
                 iter++;
@@ -287,9 +269,13 @@ namespace ECEditor
     template<> void ECAttributeEditor<QVariant>::Initialize();
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property);
 
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Update();
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Initialize();
-    template<> void ECAttributeEditor<std::vector<QVariant> >::Set(QtProperty *property);
+    template<> void ECAttributeEditor<Transform>::Update();
+    template<> void ECAttributeEditor<Transform>::Initialize();
+    template<> void ECAttributeEditor<Transform>::Set(QtProperty *property);
+
+    template<> void ECAttributeEditor<QVariantList >::Update();
+    template<> void ECAttributeEditor<QVariantList >::Initialize();
+    template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property);
 
     template<> void ECAttributeEditor<Foundation::AssetReference>::Update();
     template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize();

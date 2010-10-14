@@ -7,20 +7,16 @@
  *          when it is clicked i.e. touched. The effect is not visible by default.
  *          You must call Show() function separately. The effect is visible only
  *          for certain time.
- *  @note   The entity must have EC_OgrePlaceable and EC_OgreMesh (if mesh) or
+ *  @note   The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
  *          EC_OgreCustomObject (if prim) components available in advance.
  */
 
 #ifndef incl_EC_Highlight_EC_Touchable_h
 #define incl_EC_Highlight_EC_Touchable_h
 
-#include "ComponentInterface.h"
-#include "AttributeInterface.h"
+#include "IComponent.h"
+#include "IAttribute.h"
 #include "Declare_EC.h"
-
-#include <QCursor>
-
-class QTimer;
 
 namespace OgreRenderer
 {
@@ -33,7 +29,62 @@ namespace Ogre
     class Entity;
 }
 
-class EC_Touchable : public Foundation::ComponentInterface
+/// Touchable enables visual effect for scene entity in cases where the entity can be 
+/// considered to have some kind of functionality when it is clicked i.e. touched.
+/**
+<table class="header">
+<tr>
+<td>
+<h2>Touchable</h2>
+Touchable enables visual effect for scene entity in cases where
+the entity can be considered to have some kind of functionality
+when it is clicked i.e. touched. The effect is not visible by default.
+You must call Show() function separately. The effect is visible only
+for certain time.
+
+Registered by RexLogic::RexLogicModule.
+
+<b>Attributes</b>:
+<ul>
+<li>QString : materialName
+<div>Name of the material used for this EC. </div>
+</ul>
+<ul>
+<li>bool : highlightOnHover
+<div>Is highlight material shown on mouse hover.</div>
+</ul>
+<ul>
+<li>int : hoverCursor
+<div>Hover mouse cursor, see @see Qt::CursorShape</div>
+</ul>
+
+<b>Exposes the following scriptable functions:</b>
+<ul>
+<li>"Show": Shows the effect.
+<li>"Hide": Hides the effect.
+<li>"IsVisible": Returns if the component is visible or not.
+        @true If the component is visible, false if it's hidden or not initialized properly.
+</ul>
+
+<b>Reacts on the following actions:</b>
+<ul>
+<li>"Show": Shows the effect.
+<li>"Hide": Hides the effect.
+<li>"MouseHoverIn": 
+<li>"MouseHover": 
+<li>"MouseHoverOut": 
+<li>"MousePressed": 
+</ul>
+</td>
+</tr>
+
+Does not emit any actions.
+
+<b>The entity must have EC_OgrePlaceable and EC_Mesh (if mesh) or
+EC_OgreCustomObject (if prim) components available in advance.</b>. 
+</table>
+*/
+class EC_Touchable : public IComponent
 {
     Q_OBJECT
     DECLARE_EC(EC_Touchable);
@@ -42,28 +93,19 @@ public:
     /// Destructor.
     ~EC_Touchable();
 
-    /// ComponentInterface override.
+    /// IComponent override.
     bool IsSerializable() const { return true; }
 
     /// Name of the material used for this EC.
     Attribute<QString> materialName;
 
-    /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER upon this
-    void OnHover();
+    /// Is highlight material shown on mouse hover.
+    Attribute<bool> highlightOnHover;
 
-    /// Called by rexlogic when EVENT_ENTITY_MOUSE_HOVER when not anymore hovered
-    void OnHoverOut();
-
-    /// Called by rexlogic when EVENT_ENTITY_CLICKED on this
-    void OnClick();
+    /// Hover mouse cursor, see @see Qt::CursorShape
+    Attribute<int> hoverCursor;
 
 public slots:
-    /// Set if highlight material is shown on hover
-    void SetHighlightOnHover(bool enabled);
-
-    /// Set cursor shape for when entity is hovered
-    void SetHoverCursor(Qt::CursorShape shape);
-
     /// Shows the effect.
     void Show();
 
@@ -74,23 +116,17 @@ public slots:
     /// @true If the component is visible, false if it's hidden or not initialized properly.
     bool IsVisible() const;
 
-private slots:
-    /// Updates the component if its material changes.
-    void UpdateMaterial();
-
-    /// Slot for emitting HoverIn the first time we get OnHover() call
-    void OnHoverIn();
-
-    /// Set our hover cursor visible
-    void SetCursorVisible(bool visible);
+signals:
+    //! Signal when mouse hovers over the entity with this touchable component
+    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
+    void MouseHoverIn();
+    void MouseHoverOut();
+    void MousePressed();
 
 private:
     /// Constuctor.
     /// @param module Owner module.
-    explicit EC_Touchable(Foundation::ModuleInterface *module);
-
-    /// Creates the clone entity used for highlighting from the original.
-    void Create();
+    explicit EC_Touchable(IModule *module);
 
     /// Renderer pointer.
     boost::weak_ptr<OgreRenderer::Renderer> renderer_;
@@ -104,21 +140,30 @@ private:
     /// Name of the cloned entity used for highlighting
     std::string cloneName_;
 
-    /// Bool to define if highlight material will be shown on hover
-    bool show_material_;
+private slots:
+    /// Creates the clone entity used for highlighting from the original.
+    void Create();
 
-    /// Bool to tell if we have emitted MouseHoverIn and are in hover state
-    bool hovering_;
+    /// Updates the component if its material changes.
+    void UpdateMaterial();
 
-    /// Hover cursor
-    QCursor hover_cursor_;
+    /// Set our hover cursor visible
+    void SetCursorVisible(bool visible);
 
-signals:
-    //! Signal when mouse hovers over the entity with this touchable component
-    void MouseHover(); //\todo change RaycastResult to a QObject with QVector3D etc and put here
-    void MouseHoverIn();
-    void MouseHoverOut();
-    void Clicked(); //consider naming, qt has .clicked .. browser .onclick(?)
+    /// Slot for emitting HoverIn the first time we get OnHover() call
+    void OnHoverIn();
+
+    /// Shows the effect and sets override cursor.
+    void OnHover();
+
+    /// Hides the effect and restores override cursor.
+    void OnHoverOut();
+
+    /// \todo Remove this altogether
+    void OnClick();
+
+    /// Registers the action this EC provides to the parent entity, when it's set.
+    void RegisterActions();
 };
 
 #endif
