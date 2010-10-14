@@ -18,6 +18,8 @@ class UI_API NaaliGraphicsView : public QGraphicsView
 public:
     explicit NaaliGraphicsView(QWidget *parent);
 
+    ~NaaliGraphicsView();
+
     /// Returns the currently shown UI content as an image.
     QImage *BackBuffer();
 
