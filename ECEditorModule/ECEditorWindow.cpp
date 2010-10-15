@@ -98,8 +98,7 @@ namespace ECEditor
         framework_(framework),
         toggle_entities_button_(0),
         entity_list_(0),
-        browser_(0),
-        component_dialog_(0)
+        browser_(0)
     {
         Initialize();
     }
@@ -207,13 +206,12 @@ namespace ECEditor
     
     void ECEditorWindow::CreateComponent()
     {
-        //If old dialog window is still open destroy it before we open another.
         if(component_dialog_)
-            SAFE_DELETE(component_dialog_);
+            component_dialog_->deleteLater();
 
         if(selectedEntities_.size())
         {
-            component_dialog_ = new AddComponentDialog(framework_, *(selectedEntities_.begin()), this);
+            component_dialog_ = new AddComponentDialog(framework_, selectedEntities_.toList(), this);
             component_dialog_->SetComponentList(GetAvailableComponents());
             connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinnished(int)));
             component_dialog_->show();
@@ -648,7 +646,7 @@ namespace ECEditor
     void ECEditorWindow::ComponentDialogFinnished(int result)
     {
         AddComponentDialog *dialog = qobject_cast<AddComponentDialog*>(sender());
-        if(dialog && component_dialog_ == dialog)
+        if(dialog)
         {
             if(result == QDialog::Accepted)
             {
@@ -658,25 +656,27 @@ namespace ECEditor
                     //Add log warning.
                     return;
                 }
-                Scene::EntityPtr entity = scene->GetEntity(dialog->GetEntityId());
-                if(!entity)
+                QList<entity_id_t> entities = dialog->GetEntityIds();
+                for(uint i = 0; i < entities.size(); i++)
                 {
-                    //Add log warning
-                    return;
+                    Scene::EntityPtr entity = scene->GetEntity(entities[i]);
+                    if(!entity)
+                    {
+                        //Add log warning
+                        continue;
+                    }
+                    ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+                    // Check if component has been already added to a entity.
+                    if(comp)
+                    {
+                        //Add log warning
+                        continue;
+                    }
+                    comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+                    if (comp)
+                        entity->AddComponent(comp, dialog->GetSynchronization());
                 }
-                ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
-                // Check if component has been already added to a entity.
-                if(comp)
-                {
-                    //Add log warning
-                    return;
-                }
-                comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
-                if (comp)
-                    entity->AddComponent(comp, dialog->GetSynchronization());
             }
-            component_dialog_->deleteLater();
-            component_dialog_ = 0;
         }
     }
 
