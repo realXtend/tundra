@@ -44,7 +44,7 @@ namespace UiExternalServices
         //Configure zones for the dockwidget
 		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
 		widget->setAllowedAreas(Qt::LeftDockWidgetArea | Qt::RightDockWidgetArea | Qt::BottomDockWidgetArea);
-		widget->setFloating(false);
+		widget->setFloating(true);
 		widget->hide();
 
         // Add to internal control list
