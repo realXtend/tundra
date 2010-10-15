@@ -20,6 +20,14 @@
 
 Registered by Enviroment::EnvironmentModule. 
 
+<h3> Using component to syncronize sky in Taiga </h3>
+
+Currently (not in Tundra) EC_SkyPlane component can be used to syncronize sky in Taiga worlds. This can be done
+so that user creates entity and sets entity EC_Name-component. If this component name is set as "SkyEnvironment" our current implementation
+will create automagically a EC_SkyPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users. This syncronized sky plane component can also edit through environment editor (in world tools). Currently Caelum must be disabled 
+before these features can be used.
+
 <b>Attributes</b>:
 <ul>
 <li> QString : materialAttr.
