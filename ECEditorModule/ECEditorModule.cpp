@@ -166,10 +166,12 @@ namespace ECEditor
         if (editor_window_)
         {
 //$ BEGIN_MOD $
-            if(!framework_->GetService<Foundation::UiExternalServiceInterface>()){
+            Foundation::UiExternalServiceInterface *uiExternal=framework_->GetService<Foundation::UiExternalServiceInterface>();
+			if(uiExternal)
+				uiExternal->ShowWidget(xmlEditor_);
+			else
 				ui->BringWidgetToFront(editor_window_);
-				return Console::ResultSuccess();
-			}
+			return Console::ResultSuccess();
 //$ END_MOD $
         }
         else
@@ -256,9 +258,9 @@ namespace ECEditor
 		}
 
         xmlEditor_->SetEntity(entities);
-		if(!uiExternal)
-		//	uiExternal->ShowWidget(xmlEditor_);
-		//else
+		if(uiExternal)
+			uiExternal->ShowWidget(xmlEditor_);
+		else
 			ui->BringWidgetToFront(xmlEditor_);
 //$ END_MOD $
     }
@@ -289,9 +291,9 @@ namespace ECEditor
 		}
 
         xmlEditor_->SetComponent(components);
-		if(!uiExternal)
-		//	uiExternal->ShowWidget(xmlEditor_);
-		//else
+		if(uiExternal)
+			uiExternal->ShowWidget(xmlEditor_);
+		else
 			ui->BringWidgetToFront(xmlEditor_);
 //$ END_MOD $
     }
