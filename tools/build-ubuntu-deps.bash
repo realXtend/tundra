@@ -97,6 +97,20 @@ function build-regular {
     fi
 }
 
+what=bullet-2.77
+if test -f $tags/what-done; then
+    echo $what is done
+else
+    cd $build
+    rm -rf $what
+    test -f $tarballs/$what.tgz || wget -P $tarballs http://bullet.googlecode.com/files/$what.tgz
+    tar zxf $tarballs/$what.tgz
+    cd $what
+    cmake -DCMAKE_INSTALL_PREFIX=$prefix .
+    make -j $nprocs
+    make install
+fi
+
 what=knet
 if test -f $tags/what-done; then
     echo $what is done
@@ -105,13 +119,13 @@ else
     rm -rf knet
     hg clone http://bitbucket.org/clb/knet
     cd knet
+    sed "s/USE_TINYXML TRUE/USE_TINYXML FALSE/" < CMakeLists.txt > x
+    mv x CMakeLists.txt
     cmake .
-    make -j2
+    make -j $nprocs
     cp lib/libkNet.a $prefix/lib/
     rsync -r include/* $prefix/include/
 fi
-
-
 
 what=Caelum
 if test -f $tags/$what-done; then
