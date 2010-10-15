@@ -87,11 +87,17 @@ namespace Environment
             {
                 Caelum::BaseSkyLight* sun = caelumSystem_->getSun();
                 if ( sun != 0)
+                {
                     sun->setLightColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
+                }
             }
 #else
            if (sunLight_ != 0)
+           {
                sunLight_->setDiffuseColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
+               sunLight_->setCastShadows(sunCastShadowsAttr.Get());
+               sunLight_->setDirection(OgreRenderer::ToOgreVector3(sunDirectionAttr.Get()));
+           }
            else
             CreateOgreLight();
 #endif
@@ -258,6 +264,7 @@ namespace Environment
         {
             UpdateTime();
         }
+        
         
     }
     

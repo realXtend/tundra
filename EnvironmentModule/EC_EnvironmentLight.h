@@ -43,26 +43,39 @@ namespace Caelum
 <table class="header">
 <tr>
 <td>
-<h2>Water plane</h2>
+<h2>Environment Light</h2>
 
-Registered by Enviroment::EnvironmentModule. 
+Enviroment light component is registered by Enviroment::EnvironmentModule. Component gives an access to various scene related environment settings, 
+such as sunlight, ambient light. On default component uses Caelum and because of that changes to some of attributes (sun light color, direction ambient color) 
+does not work until user disables Caelum (by setting useCaelum attribute to false). Use can also override server time by setting useFixedTime true, if that and useCaelum is set 
+false user can totally control scene "global" lights.   
+
+<h3> Using component to syncronize environment in Taiga </h3>
+
+Currently (not in Tundra) EC_EnvironmentLight component can be used to syncronize lights in Taiga worlds. This can be done
+so that user creates entity and sets entity EC_Name-component. If this component name is set as "LightEnvironment" our current implementation
+will create automagically a EC_EnvironmentLight-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users.  
 
 <b>Attributes</b>:
 <ul>
 <li> Color : sunColorAttr.
-<div> </div>
+<div> Defines sun color (in Caelum) </div>
 <li> Color : ambientColorAttr.
-<div> </div>
+<div> Defines scene ambient color. </div>
 <li> Color : sunDiffuseColorAttr.
-<div> </div>
+<div> Defines sun diffuse color.  </div>
 <li> Vector3df : sunDirectionAttr.
-<div></div>
+<div> Defines sun direction vector (note caelum must be disabled). </div>
 <li> bool : fixedTimeAttr.
-<div></div>
+<div> Defines that do we use time from server or do we use given fixed time. </div>
 <li> float : currentTimeAttr.
-<div>  </div>
+<div> Current time which is used in scene </div>
 <li> bool : sunCastShadowsAttr.
-<div>  </div>
+<div> Defines that does sun cast shadows (usable only if caelum is disabled) </div>
+<li> bool : useCaelumAttr.
+<div> Defines that do we use Caelum or not. </div>
+
 
 </table>
 
@@ -128,9 +141,10 @@ class EC_EnvironmentLight : public IComponent
         /// Update ambient light state.
         void UpdateAmbientLight();
 
-        /// This is update loop, which will update caelum systems 
+        /// This is update loop, which will update caelum systems this is called in Environment-class for each frame.
         void Update(float frameTime);
 
+        /// Update time.
         void UpdateTime();
 
     private:
