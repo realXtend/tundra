@@ -10,6 +10,7 @@
 
 class btRigidBody;
 class btCollisionShape;
+class btTriangleMesh;
 class EC_Placeable;
 
 namespace Physics
@@ -83,6 +84,10 @@ public:
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
     
+    //! Collision mesh asset ID
+    Q_PROPERTY(QString collisionMeshId READ getcollisionMeshId WRITE setcollisionMeshId);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, collisionMeshId);
+    
     virtual ~EC_RigidBody();
     
     //! Set component as serializable.
@@ -133,6 +138,9 @@ private:
      */
     void ReaddBody();
     
+    //! Update scale from placeable & own size setting
+    void UpdateScale();
+    
     //! Placeable found-flag
     boost::weak_ptr<EC_Placeable> placeable_;
     
@@ -155,6 +163,15 @@ private:
     int cachedShapeType_;
     //! Cached shapesize (last created)
     Vector3df cachedSize_;
+    
+    //! Request tag for the collision mesh
+    request_tag_t collision_mesh_tag_;
+    //! Resource event category
+    event_category_id_t resource_event_category_;
+    
+    //! Bullet triangle mesh
+    boost::shared_ptr<btTriangleMesh> triangleMesh_;
 };
+
 
 #endif

@@ -44,7 +44,7 @@ EC_Mesh::EC_Mesh(IModule* module) :
     adjustment_node_ = scene_mgr->createSceneNode();
     
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
-    if(event_manager)
+    if (event_manager)
     {
         event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
