@@ -175,6 +175,8 @@ void EC_RigidBody::ReaddBody()
     world_->GetWorld()->removeRigidBody(body_);
     world_->GetWorld()->addRigidBody(body_);
     body_->clearForces();
+    body_->setLinearVelocity(btVector3(0.0f, 0.0f, 0.0f));
+    body_->setAngularVelocity(btVector3(0.0f, 0.0f, 0.0f));
     body_->activate();
 }
 
@@ -275,6 +277,9 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
         
         body_->activate();
         
+        /*! \todo Evil hack: we currently have an adjustment node for Ogre->OpenSim coordinate space conversion, but Ogre scaling of child nodes disregards the rotation,
+         * so have to swap y/z axes here to have meaningful controls. Hopefully removed in the future.
+         */
         if (shape_)
             shape_->setLocalScaling(btVector3(trans.scale.x, trans.scale.z, trans.scale.y));
     }
