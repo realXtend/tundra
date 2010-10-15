@@ -90,8 +90,8 @@ namespace Environment
                     sun->setLightColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
             }
 #else
-           if (sunlight_ != 0)
-               sunlight_->setDiffuseColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
+           if (sunLight_ != 0)
+               sunLight_->setDiffuseColour(OgreRenderer::ToOgreColor(sunColorAttr.Get()));
            else
             CreateOgreLight();
 #endif
