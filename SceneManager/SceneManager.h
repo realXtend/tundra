@@ -222,11 +222,11 @@ namespace Scene
         /*! \param filename File name
             \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
 
             \todo Add replaceOnConflict parameter
          */
-        bool LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change);
+        QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change);
 
         //! Save the scene to XML
         /*! \param filename File name
@@ -239,11 +239,11 @@ namespace Scene
             \param filename File name
             \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
 
             \todo Add replaceOnConflict parameter
          */
-        bool LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change);
+        QList<Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change);
 
         //! Save the scene to binary
         /*! \param filename File name
@@ -255,34 +255,34 @@ namespace Scene
         /*! \param xml XML document as string.
             \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
          */
-        bool CreateContentFromXml(const QString &xml, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *> CreateContentFromXml(const QString &xml, bool replaceOnConflict, AttributeChange::Type change);
 
         //! This is an overloaded function.
         /*! \param xml XML document.
             \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
          */
-        bool CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *>CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
 
         //! Creates scene content from binary file.
         /*! \param filename File name.
             \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
          */
-        bool CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *>CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
 
         //! This is an overloaded function.
         /*! \param data Data buffer.
             \param numBytes Data size.
             \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-            \return true if successful
+            \return List of created entities.
          */
-        bool CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
+        QList<Entity *>CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
     signals:
         //! Signal when an attribute of a component has changed
