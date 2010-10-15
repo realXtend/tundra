@@ -13,11 +13,13 @@
 namespace Ogre
 {
     class ManualObject;
+    class Mesh;
 }
 
 #include <QObject>
 
 class btVector3;
+class btTriangleMesh;
 
 namespace Physics
 {
@@ -51,6 +53,12 @@ public:
     
     //! Toggles physics debug geometry
     Console::CommandResult ConsoleToggleDebugGeometry(const StringVector& params);
+
+    //! Stops physics
+    Console::CommandResult ConsoleStopPhysics(const StringVector& params);
+    
+    //! Starts physics
+    Console::CommandResult ConsoleStartPhysics(const StringVector& params);
     
     //! IDebugDraw override
     virtual void drawLine(const btVector3& from, const btVector3& to, const btVector3& color);
@@ -69,7 +77,12 @@ public:
     
     //! IDebugDraw override
     virtual int getDebugMode() const { return debugDrawMode_; }
-
+    
+    //! Get a Bullet triangle mesh corresponding to an Ogre mesh.
+    /*! If already has been generated, returns the previously created one
+     */
+    boost::shared_ptr<btTriangleMesh> GetTriangleMeshFromOgreMesh(Ogre::Mesh* ogreMesh);
+    
 public slots:
     //! Create a physics world for a scene
     PhysicsWorld* CreatePhysicsWorldForScene(Scene::ScenePtr scene);
@@ -79,6 +92,9 @@ public slots:
     
     //! Return the physics world for a scene if it exists
     PhysicsWorld* GetPhysicsWorldForScene(Scene::SceneManager* sceneraw);
+    
+    //! Enable/disable physics simulation
+    void SetRunPhysics(bool enable);
     
     //! Enable/disable debug geometry
     void SetDrawDebugGeometry(bool enable);
@@ -98,14 +114,26 @@ private:
     //! Map of physics worlds assigned to scenes
     PhysicsWorldMap physicsWorlds_;
     
+    typedef std::map<std::string, boost::shared_ptr<btTriangleMesh> > TriangleMeshMap;
+    //! Bullet triangle meshes generated from Ogre meshes
+    TriangleMeshMap triangleMeshes_;
+    
     //! Debug geometry enabled flag
     bool drawDebugGeometry_;
     
     //! Manual object for the debug geometry
     Ogre::ManualObject* debugGeometryObject_;
     
+    //! Whether should run physics. Default true
+    bool runPhysics_;
+    
     //! Bullet debug draw / debug behaviour flags
     int debugDrawMode_;
+    
+    //! Accept debug lines flag (ie. manual object is open for editing)
+    /*! This is a safety for the case Bullet decides to call drawLine() at an unexpected time
+     */ 
+    bool acceptDebugLines_;
 };
 
 }

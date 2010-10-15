@@ -10,6 +10,7 @@
 
 class btRigidBody;
 class btCollisionShape;
+class btTriangleMesh;
 class EC_Placeable;
 
 namespace Physics
@@ -32,10 +33,24 @@ Registered by Physics::PhysicsModule.
 <ul>
 <li>float: mass
 <div>Mass of the body. Set to 0 to have a static (immovable) object</div>
-<li>int: shapetype
-<div>Shape type. Can be box, sphere, cylinder, capsule, trimesh (not yet supported) or heightfield (not yet supported)</div>
+<li>int: shapeType
+<div>Shape type. Can be box, sphere, cylinder, capsule, trimesh, or heightfield (not yet supported)</div>
 <li>Vector3df: size
 <div>Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.</div>
+<li>QString: collisionMeshId
+<div>Asset ref of the collision mesh. Only effective if shapetype is TriMesh.</div>
+<li>float: friction
+<div>Friction coefficient between 0.0 - 1.0.</div>
+<li>float: restitution
+<div>Restitution coefficient between 0.0 - 1.0.</div>
+<li>float: linearDamping
+<div>Linear damping coefficient of the object (makes it lose velocity even when no force acts on it)</div>
+<li>float: angularDamping
+<div>Angular damping coefficient of the object (makes it lose angular velocity even when no force acts on it)</div>
+<li>Vector3df: linearFactor
+<div>Specifies the axes on which forces can act on the object, making it move</div>
+<li>Vector3df: angularFactor
+<div>Specifies the axes on which torques can act on the object, making it rotate. Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -82,6 +97,34 @@ public:
     //! Size (scaling) of the shape. Sphere only uses x-axis, and capsule uses only x & z axes. Shape is further scaled by Placeable scale.
     Q_PROPERTY(Vector3df size READ getsize WRITE setsize)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, size);
+    
+    //! Collision mesh asset ID
+    Q_PROPERTY(QString collisionMeshId READ getcollisionMeshId WRITE setcollisionMeshId);
+    DEFINE_QPROPERTY_ATTRIBUTE(QString, collisionMeshId);
+    
+    //! Friction
+    Q_PROPERTY(float friction READ getfriction WRITE setfriction);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, friction);
+    
+    //! Restitution
+    Q_PROPERTY(float restitution READ getrestitution WRITE setrestitution);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, restitution);
+    
+    //! Linear damping
+    Q_PROPERTY(float linearDamping READ getlinearDamping WRITE setlinearDamping);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, linearDamping);
+    
+    //! Angular damping
+    Q_PROPERTY(float angularDamping READ getangularDamping WRITE setangularDamping);
+    DEFINE_QPROPERTY_ATTRIBUTE(float, angularDamping);
+    
+    //! Linear factor. Defines in which dimensions the object can move
+    Q_PROPERTY(Vector3df linearFactor READ getlinearFactor WRITE setlinearFactor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, linearFactor);
+    
+    //! Angular factor. Defines in which dimensions the object can rotate
+    Q_PROPERTY(Vector3df angularFactor READ getangularFactor WRITE setangularFactor)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularFactor);
     
     virtual ~EC_RigidBody();
     
@@ -133,6 +176,9 @@ private:
      */
     void ReaddBody();
     
+    //! Update scale from placeable & own size setting
+    void UpdateScale();
+    
     //! Placeable found-flag
     boost::weak_ptr<EC_Placeable> placeable_;
     
@@ -155,6 +201,15 @@ private:
     int cachedShapeType_;
     //! Cached shapesize (last created)
     Vector3df cachedSize_;
+    
+    //! Request tag for the collision mesh
+    request_tag_t collision_mesh_tag_;
+    //! Resource event category
+    event_category_id_t resource_event_category_;
+    
+    //! Bullet triangle mesh
+    boost::shared_ptr<btTriangleMesh> triangleMesh_;
 };
+
 
 #endif
