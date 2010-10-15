@@ -31,6 +31,9 @@
 #include <Ogre.h>
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
+#undef SAFE_DELETE
+#undef SAFE_DELETE_ARRAY
+
 #include <d3d9.h>
 #include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
 #include <RenderSystems/Direct3D9/include/OgreD3D9RenderWindow.h>

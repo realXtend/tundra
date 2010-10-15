@@ -54,20 +54,23 @@ void SceneStructureModule::PostInitialize()
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
 }
 
-void SceneStructureModule::InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene)
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene)
 {
+    QList<Scene::Entity *> ret;
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
     if (!scene)
-        return;
+        return ret;
 
     // If zero vector position, query position from the user.
     if (worldPos == Vector3df())
     {
         bool ok;
         QString posString = QInputDialog::getText(0, tr("Position"), tr("position (x;y;z):"), QLineEdit::Normal, "20.00;20.00;20.00", &ok);
-        if (!ok || posString.isEmpty())
-            return;
+        if (!ok)
+            return ret;
 
+        if (posString.isEmpty())
+            posString = "0;0;0";
         posString.replace(',', '.');
         QStringList pos = posString.split(';');
         if (pos.size() > 0)
@@ -85,8 +88,13 @@ void SceneStructureModule::InstantiateContent(const QString &filename, Vector3df
 
         TundraLogic::SceneImporter importer(framework_);
         ///\todo Take into account asset sources.
-        importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
+        ret = importer.Import(scene, filename.toStdString(), dirname, "./data/assets",
             Transform(worldPos, Vector3df(0,0,0), Vector3df(1,1,1)), AttributeChange::Default, clearScene, true, false);
+
+        if (ret.empty())
+            LogError("Import failed");
+        else
+            LogInfo("Import succesful. " + ToString(ret.size()) + " entities created.");
     }
     else if (filename.toLower().indexOf(".mesh") != -1)
     {
@@ -101,16 +109,18 @@ void SceneStructureModule::InstantiateContent(const QString &filename, Vector3df
     }
     else if (filename.toLower().indexOf(".xml") != -1)
     {
-        scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
+        ret = scene->LoadSceneXML(filename.toStdString(), clearScene, AttributeChange::Replicate);
     }
     else if (filename.toLower().indexOf(".nbf") != -1)
     {
-        scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
+        ret = scene->CreateContentFromBinary(filename, true, AttributeChange::Replicate);
     }
     else
     {
         LogError("Unsupported file extension: " + filename.toStdString());
     }
+
+    return ret;
 }
 
 void SceneStructureModule::ShowSceneStructureWindow()

@@ -24,6 +24,7 @@ namespace ECEditor
 }
 
 class QWidget;
+class QFileDialog;
 
 /// Tree widget item representing entity.
 class EntityItem : public QTreeWidgetItem
@@ -76,6 +77,41 @@ public:
     QString type;
 };
 
+/// Represents selection of selected scene tree widget items.
+struct Selection
+{
+    /// Returns true if no entity or component items selected.
+    bool IsEmpty() const { return entities.size() == 0 && components.size() == 0; }
+
+    /// Returns true if selection contains entities;
+    bool HasEntities() const { return entities.size() > 0; }
+
+    /// Returns true if selected contains components.
+    bool HasComponents() const { return components.size() > 0; }
+
+    /// Returns set containing entity ID's of both selected entities and parent entities of selected components
+    QSet<entity_id_t> EntityIds() const
+    {
+        QSet<entity_id_t> ids;
+        foreach(EntityItem *e, entities)
+            ids.insert(e->id);
+        foreach(ComponentItem *c, components)
+        {
+            EntityItem *e = dynamic_cast<EntityItem *>(c->parent());
+            if (e)
+                ids.insert(e->id);
+        }
+
+        return ids;
+    }
+
+    /// List of selected entities.
+    QList<EntityItem *> entities;
+
+    /// List of selected components.
+    QList<ComponentItem *> components;
+};
+
 /// Tree widget showing the scene structure.
 class SceneTreeWidget : public QTreeWidget
 {
@@ -111,17 +147,17 @@ private:
     /// Framework pointer.
     Foundation::Framework *framework;
 
-    /// Framework pointer.
+    /// This widget's "own" EC editor.
     QPointer<ECEditor::ECEditorWindow> ecEditor;
 
-    /// Returns list currently selected entity ID's.
-    QList<entity_id_t> GetSelectedEntities() const;
-
-    /// Returns list of currently selected components.
-    QList<QPair<entity_id_t, ComponentItem *> > GetSelectedComponents() const;
+    /// Returns selected items as Selection struct, which contains both selected entities and components.
+    Selection GetSelection() const;
 
     /// Returns currently selected entities as XML string.
     QString GetSelectionAsXml() const;
+
+    /// Keeps track of the latest opened file save/open dialog, so that we won't multiple open at the same time.
+    QPointer<QFileDialog> fileDialog;
 
 private slots:
     /// Opens selected entities in EC editor window. An exisiting editor window is used if possible.
@@ -148,16 +184,24 @@ private slots:
     /// Saves selected entities as XML or binary file.
     void SaveAs();
 
+    /// Saves entire scene as XML or binary file.
+    void SaveSceneAs();
+
     /// Imports OGRE or Naali scene file.
     void Import();
 
     /// Loads new scene.
     void OpenNewScene();
 
-    /// Called by save file dialog when it's closed.
+    /// Called by "Save Selection" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
-    void SaveFileDialogClosed(int result);
+    void SaveSelectionDialogClosed(int result);
+
+    /// Called by "Save Scene" save file dialog when it's closed.
+    /** @param result Result of dialog closure. Save is 1, Cancel is 0.
+    */
+    void SaveSceneDialogClosed(int result);
 
     /// Called by open file dialog when it's closed.
     /** @param result Result of dialog closure. Open is 1, Cancel is 0.
