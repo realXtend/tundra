@@ -17,6 +17,7 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
+#include <OgreMath.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -239,8 +240,9 @@ namespace Environment
         Ogre::Vector3 current_pos = node_->_getDerivedPosition();
         Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
         tmp = current_pos + tmp;
-        if ( tmp.isNaN())
+        if ( Ogre::Math::isNaN(vec.x) || Ogre::Math::isNaN(vec.y) || Ogre::Math::isNaN(vec.z) )
             return;
+
         node_->setPosition(tmp);
 #else
         Ogre::Vector3 pos(vec.x, vec.y, vec.z);
