@@ -15,6 +15,8 @@
 
 #include "MemoryLeakCheck.h"
 
+#include <QGraphicsView>
+
 #define DOCK_WIDTH          (300)
 #define DIST_FROM_BOTTOM    (200)
 #define DIST_FROM_TOP       (50)

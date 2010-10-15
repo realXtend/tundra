@@ -32,12 +32,12 @@ function keyUp(event)
     print(event.sequence.toString() + " Key Up.");
 }
 
-input.MouseMove.connect(mouseMove);
-input.MouseLeftPressed.connect(mousePress);
-input.MouseMiddlePressed.connect(mousePress);
-input.MouseRightPressed.connect(mousePress);
-input.MouseScroll.connect(scroll); //Not working!
+input.TopLevelInputContext().MouseMove.connect(mouseMove);
+input.TopLevelInputContext().MouseLeftPressed.connect(mousePress);
+input.TopLevelInputContext().MouseMiddlePressed.connect(mousePress);
+input.TopLevelInputContext().MouseRightPressed.connect(mousePress);
+input.TopLevelInputContext().MouseScroll.connect(scroll); //Not working!
 
-input.KeyPressed.connect(keyPressed);
-input.KeyDown.connect(keyDown); //Not working!
-input.KeyReleased.connect(keyUp);
+input.TopLevelInputContext().KeyPressed.connect(keyPressed);
+input.TopLevelInputContext().KeyDown.connect(keyDown); //Not working!
+input.TopLevelInputContext().KeyReleased.connect(keyUp);

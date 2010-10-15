@@ -41,6 +41,7 @@ namespace OpenALAudio
         if (!soundsystem_->IsInitialized())
             return;
         framework_->GetServiceManager()->RegisterService(Foundation::Service::ST_Sound, soundsystem_);
+        framework_->RegisterDynamicObject("audio", soundsystem_.get());
     }
 
     void OpenALAudioModule::PostInitialize()

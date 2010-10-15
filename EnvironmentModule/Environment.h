@@ -16,6 +16,7 @@
 #include <QVector>
 #include <QObject>
 
+#include "EC_EnvironmentLight.h"
 
 namespace ProtocolUtilities
 {
@@ -189,6 +190,8 @@ namespace Environment
         void CreateGlobalLight();
 
         EC_Fog* GetEnvironmentFog();
+
+        EC_EnvironmentLight* GetEnvironmentLight();
 
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;

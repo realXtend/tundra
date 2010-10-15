@@ -83,7 +83,6 @@ public slots:
     void ComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
 
 private:
-    InputContextPtr input_;
     /// Type name of the module.
     static std::string type_name_static_;
     typedef QMap<QString, QObject*> ServiceMap;
