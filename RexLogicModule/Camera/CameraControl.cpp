@@ -7,10 +7,7 @@
 #include <QApplication>
 #include <QInputContext>
 #include <QGraphicsView>
-#include "MainWindow.h"
 #include "InputContext.h"
-#include "InputServiceInterface.h"
-#include "QtInputKeyEvent.h"
 #include "ObjectCameraController.h"
 #include "UiServiceInterface.h"
 #include "Frame.h"
@@ -170,8 +167,8 @@ namespace RexLogic
                 case Free:
                     {
                         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
-                        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+                        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
+                        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
                     }
                     break;
                 case Object:
@@ -184,7 +181,7 @@ namespace RexLogic
             ModifyRotationWidget(camera_mode);
             widget_state_ = camera_mode;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
         }
         if (camera_mode == Avatar)
         {
@@ -195,7 +192,7 @@ namespace RexLogic
                 case Free:
                     {
                         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+                        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
                     }
                     break;
                 case Object:
@@ -208,7 +205,7 @@ namespace RexLogic
             ModifyRotationWidget(camera_mode);
             widget_state_ = camera_mode;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_THIRDPERSON, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
         }
         if (camera_mode == Free)
         {
@@ -217,7 +214,7 @@ namespace RexLogic
                 case Tripod:
                     {
                         event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                        framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_CAMERATRIPOD, 0);
+                        framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_CAMERATRIPOD, 0);
                     }
                     break;
                 case Avatar:
@@ -232,14 +229,13 @@ namespace RexLogic
             ModifyRotationWidget(camera_mode);
             widget_state_ = camera_mode;
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::INPUTSTATE_FREECAMERA, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_FREECAMERA, 0);
         }
         if (camera_mode == Object)
         {
             ModifyRotationWidget(camera_mode);
             widget_state_ = Object;
             AltKeyPressed();
-            framework_->GetQApplication()->activeWindow()->setFocus();  
         }
     }
 
@@ -248,7 +244,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_FORWARD_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_FORWARD_PRESSED, 0);
         }
     }
 
@@ -257,7 +253,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_FORWARD_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_FORWARD_RELEASED, 0);
         }
     }
 
@@ -266,7 +262,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_BACK_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_BACK_PRESSED, 0);
         }
     }
 
@@ -275,7 +271,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_BACK_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_BACK_RELEASED, 0);
         }
     }
 
@@ -284,7 +280,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_RIGHT_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_RIGHT_PRESSED, 0);
         }
     }
 
@@ -293,7 +289,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_RIGHT_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_RIGHT_RELEASED, 0);
         }
     }
 
@@ -302,7 +298,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_LEFT_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_LEFT_PRESSED, 0);
         }
     }
 
@@ -311,7 +307,7 @@ namespace RexLogic
         if (widget_state_ != None)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_LEFT_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_LEFT_RELEASED, 0);
         }
     }
 
@@ -320,7 +316,7 @@ namespace RexLogic
         if (widget_state_ == Free)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_FORWARD_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_FORWARD_PRESSED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Avatar)
         {
@@ -333,13 +329,13 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ZOOM_IN_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ZOOM_IN_RELEASED, 0);
             zoom_in_pressed_ = false;
         }
         if (widget_state_ == Free)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_FORWARD_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_FORWARD_RELEASED, 0);
         }
         if (widget_state_ == Object)
         {
@@ -352,7 +348,7 @@ namespace RexLogic
         if (widget_state_ == Free)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_BACK_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_BACK_PRESSED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Avatar)
         {
@@ -365,13 +361,13 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ZOOM_OUT_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ZOOM_OUT_RELEASED, 0);
             zoom_out_pressed_ = false;
         }
         if (widget_state_ == Free)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOVE_BACK_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOVE_BACK_RELEASED, 0);
         }
         if (widget_state_ == Object)
         {
@@ -416,7 +412,7 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ROTATE_RIGHT_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ROTATE_RIGHT_PRESSED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Free)
         {
@@ -429,7 +425,7 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ROTATE_RIGHT_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ROTATE_RIGHT_RELEASED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Free)
         {
@@ -442,7 +438,7 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ROTATE_LEFT_PRESSED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ROTATE_LEFT_PRESSED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Free)
         {
@@ -455,7 +451,7 @@ namespace RexLogic
         if (widget_state_ == Avatar)
         {
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-            framework_->GetEventManager()->SendEvent(event_category, Input::Events::ROTATE_LEFT_RELEASED, 0);
+            framework_->GetEventManager()->SendEvent(event_category, InputEvents::ROTATE_LEFT_RELEASED, 0);
         }
         if (widget_state_ == Object || widget_state_ == Free)
         {
@@ -470,7 +466,7 @@ namespace RexLogic
         alt_press_event.modifiers = Qt::NoModifier;
         alt_press_event.eventType = KeyEvent::KeyPressed;
         rex_logic_->GetObjectCameraController().get()->KeyPressed(&alt_press_event);
-        framework_->GetQApplication()->activeWindow()->setFocus();
+        QApplication::activeWindow()->setFocus();
     }
 
     void CameraControl::AltKeyReleased()
@@ -557,7 +553,7 @@ namespace RexLogic
         {
             if (camera_up_pressed_)
             {
-                Input::Events::Movement movement;
+                InputEvents::Movement movement;
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
@@ -565,11 +561,11 @@ namespace RexLogic
                 movement.y_.rel_ = -5;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOUSELOOK, &movement);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
             }
             if (camera_down_pressed_)
             {
-                Input::Events::Movement movement;
+                InputEvents::Movement movement;
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
@@ -577,11 +573,11 @@ namespace RexLogic
                 movement.y_.rel_ = 5;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOUSELOOK, &movement);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
             }
             if (camera_left_pressed_)
             {
-                Input::Events::Movement movement;
+                InputEvents::Movement movement;
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
@@ -589,11 +585,11 @@ namespace RexLogic
                 movement.y_.rel_ = 0;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOUSELOOK, &movement);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
             }
             if (camera_right_pressed_)
             {
-                Input::Events::Movement movement;
+                InputEvents::Movement movement;
                 movement.x_.abs_ = 0;
                 movement.y_.abs_ = 0;
                 movement.z_.abs_ = 0;
@@ -601,7 +597,7 @@ namespace RexLogic
                 movement.y_.rel_ = 0;
                 movement.z_.rel_ = -1;
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::MOUSELOOK, &movement);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::MOUSELOOK, &movement);
             }
         }
         if (widget_state_ == Avatar)
@@ -609,12 +605,12 @@ namespace RexLogic
             if (zoom_in_pressed_)
             {
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::ZOOM_IN_PRESSED, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::ZOOM_IN_PRESSED, 0);
             }
             if (zoom_out_pressed_)
             {
                 event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
-                framework_->GetEventManager()->SendEvent(event_category, Input::Events::ZOOM_OUT_PRESSED, 0);
+                framework_->GetEventManager()->SendEvent(event_category, InputEvents::ZOOM_OUT_PRESSED, 0);
             }
         }
     }

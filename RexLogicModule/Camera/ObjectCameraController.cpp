@@ -23,7 +23,6 @@
 
 #include <Ogre.h>
 
-#include "QtInputKeyEvent.h"
 #include "InputContext.h"
 
 namespace RexLogic
@@ -482,12 +481,7 @@ namespace RexLogic
             return;
         returning_to_avatar_ = true;
         vectors_position_.first = cam_placable->GetPosition();
-<<<<<<< HEAD
         vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
-
-=======
-        vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
->>>>>>> Camera controls widget
         if (selected_entity_)
             vectors_lookat_.first = selected_entity_->GetComponent<EC_Placeable>().get()->GetPosition();
         else
