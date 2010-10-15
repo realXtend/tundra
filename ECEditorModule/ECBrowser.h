@@ -27,7 +27,7 @@ namespace ECEditor
     typedef std::list<ComponentGroup*> ComponentGroupList;
 
     //! ECBrowser is a widget that will display all selected entity components and their attributes.
-    /*! The ECBrowser will iterate all entity's components and pass them to a ECComponentEditor switch is responsible to handling component's attribute editing.
+    /*! The ECBrowser will iterate all entity's components and pass them to a ECComponentEditor, which is responsible to handling component's attribute editing.
      *  User can add new editable enitites by using AddEntity and RemoveEntity methods and the browser will iterate trhought all the entitys components and pass them to ECComponentEditors.
      *  ECBrowser has implement options to add, delete, copy and paste components from the selected entities by using a CopyComponent, DeleteComponent, PasteComponent and EditXml mehtods.
      *  User can add and remove attributes from the dynamic component aswell. CreateAttribute method can be used to create new attributes to a dynamic component and RemoveAttribute is used

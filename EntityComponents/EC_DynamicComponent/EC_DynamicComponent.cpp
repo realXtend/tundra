@@ -124,7 +124,14 @@ void EC_DynamicComponent::DeserializeFrom(QDomElement& element, AttributeChange:
         // Attribute has already created and we only need to update it's value.
         if((*iter1)->GetNameString() == (*iter2).name_)
         {
-            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
+            {
+                if((*attr_iter)->GetNameString() == iter2->name_)
+                {
+                    (*attr_iter)->FromString(iter2->value_, change);
+                }
+            }
             iter2++;
             iter1++;
         }

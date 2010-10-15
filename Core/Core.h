@@ -14,8 +14,6 @@
 #include "CoreException.h"
 #pragma warning( pop )
 
-//#include "CoreAnyIterator.h"
-
 #include "CoreMath.h"
 #include "Vector3D.h"
 #include "Matrix4.h"
