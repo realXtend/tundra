@@ -131,7 +131,7 @@ namespace Foundation
        
         if ( specialEvents_.contains(group) )
         {
-            QList<IComponent* > lst = specialEvents_[group];
+            QList<IComponent* >& lst = specialEvents_[group];
             for ( int i = 0; i < lst.size(); ++i)
             {
                 EventSubscriber<IComponent> subs;
@@ -179,14 +179,14 @@ namespace Foundation
        
         if ( specialEvents_.contains(group) )
         {
-            QList<IComponent* > lst = specialEvents_[group];
+            QList<IComponent* >& lst = specialEvents_[group];
             lst.append(component);
         }
         else
         {
             QList<IComponent* > lst;
             lst.append(component);
-            specialEvents_.insert(group,lst); 
+            specialEvents_.insert(group,lst);
         }
 
         return true;
@@ -197,7 +197,16 @@ namespace Foundation
        QPair<event_category_id_t, event_id_t> group = qMakePair<event_category_id_t, event_id_t>(category_id, event_id);
        if ( specialEvents_.contains(group) )
        {
-            specialEvents_.remove(group);
+            QList<IComponent* >& lst = specialEvents_[group];
+            for(int i = lst.size() - 1; i >= 0; --i)
+            {
+                if (lst[i] == component)
+                    lst.removeAt(i);
+            }
+            
+            if (lst.empty())
+                specialEvents_.remove(group);
+            
             return true;
        }
 
