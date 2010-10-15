@@ -76,9 +76,9 @@ bool EC_Avatar::HandleAssetReady(IEventData* data)
             return false;
         
         // Create components the avatar needs, with network sync disabled, if they don't exist yet
-        //! \todo we want the animationcontroller to be synced, once it has attributes
+        // Note: the mesh & avatarappearance are created as non-syncable on purpose, as each client's EC_Avatar should execute this code upon receiving the appearance
         ComponentPtr mesh = entity->GetOrCreateComponent(EC_Mesh::TypeNameStatic(), AttributeChange::LocalOnly, false);
-        ComponentPtr anim = entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic(), AttributeChange::LocalOnly, false);
+        ComponentPtr anim = entity->GetOrCreateComponent(EC_AnimationController::TypeNameStatic(), AttributeChange::LocalOnly);
         entity->GetOrCreateComponent(EC_AvatarAppearance::TypeNameStatic(), AttributeChange::LocalOnly, false);
         // Associate the animationcontroller with the mesh
         EC_AnimationController* anim_ptr = checked_static_cast<EC_AnimationController*>(anim.get());

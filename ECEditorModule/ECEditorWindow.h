@@ -20,10 +20,10 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-//#include <set>
+
 #include <QMap>
 #include <QSet>
-
+#include <QPointer>
 #include <QWidget>
 
 extern std::vector<std::string> AttributeTypenames;
@@ -172,10 +172,11 @@ namespace ECEditor
         QListWidget* entity_list_;
         ECBrowser *browser_;
         typedef QMap<QString, QString> EntityIdToNameMap;
+        /// To keep book what entity_id belongs to switch name.
         EntityIdToNameMap entity_id_to_name_;
         typedef QSet<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
-        AddComponentDialog *component_dialog_;
+        QPointer<AddComponentDialog> component_dialog_;
     };
 }
 

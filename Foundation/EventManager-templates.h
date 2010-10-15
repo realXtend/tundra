@@ -84,19 +84,16 @@ namespace Foundation
             QMap<QPair<event_category_id_t, event_id_t>, QList<IComponent* > >::iterator iter;
             for (iter = specialEvents_.begin(); iter != specialEvents_.end();)
             {
-                QList<IComponent* > lst = specialEvents_[iter.key()];
+                QList<IComponent* >& lst = specialEvents_[iter.key()];
 
-                bool found = false;
-
-                // Here we assume that component has not register many times...
-                for(int i = 0; i < lst.size() && !found; ++i)
+                for(int i = lst.size() - 1; i >= 0; --i)
+                {
                     if ( lst[i] == component )
                     {
                         lst.removeAt(i);
-                        found = true;
                         ret2 = true;
-                        break;
                     }
+                }
 
                 if (lst.isEmpty())
                     iter = specialEvents_.erase(iter);
