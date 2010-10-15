@@ -39,8 +39,9 @@ public slots:
     /** @param filename File name.
         @param worldPos Destination in-world position. If zero vector is given, the position is asked with a simple dialog.
         @param clearScene Do we want to clear the scene before adding new content.
+        @return List of created entities.
     */
-    void InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene);
+    QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene);
 
 private:
     //! Type name of the module.

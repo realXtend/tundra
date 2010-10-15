@@ -18,6 +18,8 @@
 #include "SceneImporter.h"
 #include "ComponentManager.h"
 #include "ModuleManager.h"
+#include "TundraEvents.h"
+#include "EventManager.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
@@ -29,10 +31,11 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneTreeView");
 
 #include "MemoryLeakCheck.h"
 
-const QString cOgreSceneFileFilter("OGRE scene (*.scene)");
-const QString cOgreMeshFileFilter("OGRE mesh (*.mesh)");
-const QString cNaaliXmlFileFilter("Naali scene XML(*.xml)");
-const QString cNaaliBinaryFileFilter("Naali Binary Format (*.nbf)");
+const QString cOgreSceneFileFilter(QApplication::translate("SceneTreeWidget", "OGRE scene (*.scene)"));
+const QString cOgreMeshFileFilter(QApplication::translate("SceneTreeWidget", "OGRE mesh (*.mesh)"));
+const QString cNaaliXmlFileFilter(QApplication::translate("SceneTreeWidget", "Naali scene XML(*.xml)"));
+const QString cNaaliBinaryFileFilter(QApplication::translate("SceneTreeWidget", "Naali Binary Format (*.nbf)"));
+const QString cAllSupportedTypesFileFilter(QApplication::translate("SceneTreeWidget", "All supported types (*.scene *.mesh *.xml *.nbf)"));
 
 SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     QTreeWidget(parent),
@@ -64,6 +67,10 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
 
 SceneTreeWidget::~SceneTreeWidget()
 {
+    if (ecEditor)
+        ecEditor->close();
+    if (fileDialog)
+        fileDialog->close();
 }
 
 void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
@@ -80,19 +87,38 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->setAttribute(Qt::WA_DeleteOnClose);
 
     // Create context menu actions
-    // paste, new entity, import OGRE scene, open new scene and import content from scene
-    // actions are available always
-    QAction *pasteAction = new QAction(tr("Paste"), menu);
+    // "New entity...", "Import..." and "Open new scene..." actions are available always
     QAction *newAction = new QAction(tr("New entity..."), menu);
     QAction *importAction = new QAction(tr("Import..."), menu);
     QAction *openNewSceneAction = new QAction(tr("Open new scene..."), menu);
 
     connect(newAction, SIGNAL(triggered()), SLOT(New()));
-    connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
     connect(importAction, SIGNAL(triggered()), SLOT(Import()));
     connect(openNewSceneAction, SIGNAL(triggered()), SLOT(OpenNewScene()));
 
-    // Edit, edit in new, delete, rename and copy actions are available only if we have valid index active
+    // "Paste" action is available only if we have valid entity-component XML data in clipboard.
+    QAction *pasteAction = 0;
+    bool pastePossible = false;
+    {
+        QDomDocument scene_doc("Scene");
+        pastePossible = scene_doc.setContent(QApplication::clipboard()->text());
+        if (pastePossible)
+        {
+            pasteAction = new QAction(tr("Paste"), menu);
+            connect(pasteAction, SIGNAL(triggered()), SLOT(Paste()));
+        }
+    }
+
+    // "Save scene as..." action is possible if we have at least one entity in the scene.
+    bool saveSceneAsPossible = (topLevelItemCount() > 0);
+    QAction *saveSceneAsAction = 0;
+    if (saveSceneAsPossible)
+    {
+        saveSceneAsAction = new QAction(tr("Save scene as..."), menu);
+        connect(saveSceneAsAction, SIGNAL(triggered()), SLOT(SaveSceneAs()));
+    }
+
+    // "Edit", "Edit in new", "Delete",and "Copy" actions are available only if we have selection.
     QAction *editAction = 0, *editInNewAction = 0, *deleteAction = 0, *renameAction = 0,
         *copyAction = 0, *saveAsAction = 0;
 
@@ -102,19 +128,28 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         editAction = new QAction(tr("Edit"), menu);
         editInNewAction = new QAction(tr("Edit in new window"), menu);
         deleteAction = new QAction(tr("Delete"), menu);
-        //renameAction = new QAction(tr("Rename"), menu);
         copyAction = new QAction(tr("Copy"), menu);
         saveAsAction = new QAction(tr("Save as..."), menu);
 
         connect(editAction, SIGNAL(triggered()), SLOT(Edit()));
         connect(editInNewAction, SIGNAL(triggered()), SLOT(EditInNew()));
         connect(deleteAction, SIGNAL(triggered()), SLOT(Delete()));
-    //    connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
         connect(copyAction, SIGNAL(triggered()), SLOT(Copy()));
         connect(saveAsAction, SIGNAL(triggered()), SLOT(SaveAs()));
     }
 
-//    menu->addAction(renameAction);
+    // "Rename" action is possible only if have one entity selected.
+/*
+    bool renamePossible = (selectionModel()->selection().size() == 1)
+    if (renamePossible)
+    {
+        renameAction = new QAction(tr("Rename"), menu);
+        connect(renameAction, SIGNAL(triggered()), SLOT(Rename()));
+    }
+
+    if (renamePossible)
+        menu->addAction(renameAction);
+*/
     if (hasSelection)
     {
         menu->addAction(editAction);
@@ -129,12 +164,16 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
         menu->addAction(copyAction);
     }
 
-    menu->addAction(pasteAction);
+    if (pastePossible)
+        menu->addAction(pasteAction);
 
     menu->addSeparator();
 
     if (hasSelection)
         menu->addAction(saveAsAction);
+
+    if (saveSceneAsPossible)
+        menu->addAction(saveSceneAsAction);
 
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
@@ -181,59 +220,25 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
         QTreeWidget::dropEvent(e);
 }
 
-QList<entity_id_t> SceneTreeWidget::GetSelectedEntities() const
+Selection SceneTreeWidget::GetSelection() const
 {
-    QList<entity_id_t> ids;
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return ids;
-
-    QListIterator<QModelIndex> it(selection.indexes());
+    Selection ret;
+    QListIterator<QTreeWidgetItem *> it(selectedItems());
     while(it.hasNext())
     {
-        QModelIndex index = it.next();
-        if (!index.isValid())
-            continue;
-
-        // If showComponents is false or parent index == QModelIndex(), it's guaranteed 
-        // that we have top-level item i.e. entity always selected. Else we have component selected 
-        // and we don't want to select it as entity.
-        EntityItem  *eItem = 0;
-        if (!showComponents || (index.parent() == QModelIndex()))
-            eItem = dynamic_cast<EntityItem *>(topLevelItem(index.row()));
-
+        QTreeWidgetItem *item = it.next();
+        EntityItem *eItem = dynamic_cast<EntityItem *>(item);
         if (eItem)
-            ids << eItem->id;
+            ret.entities << eItem;
+        else
+        {
+            ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+            if (cItem)
+                ret.components << cItem;
+        }
     }
 
-    return ids;
-}
-
-QList<QPair<entity_id_t, ComponentItem *> > SceneTreeWidget::GetSelectedComponents() const
-{
-    QList<QPair<entity_id_t, ComponentItem *> > components;
-    const QItemSelection &selection = selectionModel()->selection();
-    if (selection.isEmpty())
-        return components;
-
-    QListIterator<QModelIndex> it(selection.indexes());
-    while(it.hasNext())
-    {
-        QModelIndex index = it.next();
-        if (!index.isValid() || index.parent() == QModelIndex())
-            continue;
-
-        EntityItem *eItem = dynamic_cast<EntityItem *>(topLevelItem(index.parent().row()));
-        assert(eItem);
-        if (!eItem)
-            continue;
-
-        ComponentItem *cItem = dynamic_cast<ComponentItem *>(eItem->child(index.row()));
-        if (cItem)
-            components << qMakePair(eItem->id, cItem);
-    }
-
-    return components;
+    return ret;
 }
 
 QString SceneTreeWidget::GetSelectionAsXml() const
@@ -243,24 +248,19 @@ QString SceneTreeWidget::GetSelectionAsXml() const
     if (!scene)
         return QString();
 
-    QList<entity_id_t> ids = GetSelectedEntities();
-    QList<QPair<entity_id_t, ComponentItem *> > comps;
-    if (ids.empty())
-    {
-        comps = GetSelectedComponents();
-        if (comps.empty())
-            return QString();
-    }
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
+        return QString();
 
     // Create root Scene element always for consistency, even if we only have one entity
     QDomDocument scene_doc("Scene");
     QDomElement scene_elem = scene_doc.createElement("scene");
 
-    if (!ids.empty())
+    if (selection.HasEntities())
     {
-        foreach(entity_id_t id, ids)
+        foreach(EntityItem *eItem, selection.entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(id);
+            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
             assert(entity.get());
             if (entity)
             {
@@ -277,18 +277,20 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 
         scene_doc.appendChild(scene_elem);
     }
-    else if (!comps.empty())
+    else if (selection.HasComponents())
     {
-        QListIterator<QPair<entity_id_t, ComponentItem *> > it(comps);
-        while(it.hasNext())
+        foreach(ComponentItem *cItem, selection.components)
         {
-            QPair<entity_id_t, ComponentItem *> pair = it.next();
-            Scene::EntityPtr entity = scene->GetEntity(pair.first);
-            if (entity)
+            EntityItem *eItem = dynamic_cast<EntityItem *>(cItem->parent());
+            if (eItem)
             {
-                ComponentPtr component = entity->GetComponent(pair.second->typeName, pair.second->name);
-                if (component->IsSerializable())
-                    component->SerializeTo(scene_doc, scene_elem);
+                Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+                if (entity)
+                {
+                    ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
+                    if (component->IsSerializable())
+                        component->SerializeTo(scene_doc, scene_elem);
+                }
             }
         }
 
@@ -300,8 +302,8 @@ QString SceneTreeWidget::GetSelectionAsXml() const
 
 void SceneTreeWidget::Edit()
 {
-    QList<entity_id_t> ids = GetSelectedEntities();
-    if (ids.empty())
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
         return;
 
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
@@ -310,9 +312,9 @@ void SceneTreeWidget::Edit()
     // If we have existing editor instance, use it.
     if (ecEditor)
     {
-        foreach(entity_id_t id, ids)
+        foreach(entity_id_t id, selection.EntityIds())
             ecEditor->AddEntity(id);
-        ecEditor->SetSelectedEntities(ids);
+        ecEditor->SetSelectedEntities(selection.EntityIds().toList());
         ui->BringWidgetToFront(ecEditor);
         return;
     }
@@ -322,9 +324,9 @@ void SceneTreeWidget::Edit()
     ecEditor->setAttribute(Qt::WA_DeleteOnClose);
     ecEditor->move(mapToGlobal(pos()) + QPoint(50, 50));
     ecEditor->hide();
-    foreach(entity_id_t id, ids)
+    foreach(entity_id_t id, selection.EntityIds())
         ecEditor->AddEntity(id);
-    ecEditor->SetSelectedEntities(ids);
+    ecEditor->SetSelectedEntities(selection.EntityIds().toList());
 
     ui->AddWidgetToScene(ecEditor);
     ui->ShowWidget(ecEditor);
@@ -333,11 +335,11 @@ void SceneTreeWidget::Edit()
 
 void SceneTreeWidget::EditInNew()
 {
-    QList<entity_id_t> ids = GetSelectedEntities();
-    if (ids.empty())
+    Selection selection = GetSelection();
+    if (selection.IsEmpty())
         return;
 
-    // Create new editor instance every time.
+    // Create new editor instance every time, but if our "singleton" editor is not instantiated, create it.
     UiServiceInterface *ui = framework->GetService<UiServiceInterface>();
     assert(ui);
 
@@ -345,9 +347,12 @@ void SceneTreeWidget::EditInNew()
     editor->setAttribute(Qt::WA_DeleteOnClose);
     editor->move(mapToGlobal(pos()) + QPoint(50, 50));
     editor->hide();
-    foreach(entity_id_t id, ids)
+    foreach(entity_id_t id, selection.EntityIds())
         editor->AddEntity(id);
-    editor->SetSelectedEntities(ids);
+    editor->SetSelectedEntities(selection.EntityIds().toList());
+
+    if (!ecEditor)
+        ecEditor = editor;
 
     ui->AddWidgetToScene(editor);
     ui->ShowWidget(editor);
@@ -372,21 +377,21 @@ void SceneTreeWidget::New()
     AttributeChange::Type changeType;
 
     // Show a dialog so that user can choose if he wants to create local or synchronized entity.
-    QStringList types(QStringList() << "Local" << "Synchronized");
+    QStringList types(QStringList() << tr("Synchronized") << tr("Local"));
     bool ok;
     QString type = QInputDialog::getItem(this, tr("Choose Entity Type"), tr("Type:"), types, 0, false, &ok);
     if (!ok || type.isEmpty())
         return;
 
-    if (type == tr("Local"))
-    {
-        id =scene->GetNextFreeIdLocal();
-        changeType = AttributeChange::LocalOnly;
-    }
-    else if(type == tr("Synchronized"))
+    if (type == tr("Synchronized"))
     {
         id = scene->GetNextFreeId();
         changeType = AttributeChange::Replicate;
+    }
+    else if(type == tr("Local"))
+    {
+        id =scene->GetNextFreeIdLocal();
+        changeType = AttributeChange::LocalOnly;
     }
     else
     {
@@ -408,7 +413,7 @@ void SceneTreeWidget::Delete()
         return;
 
     // Remove entities.
-    foreach(entity_id_t id, GetSelectedEntities())
+    foreach(entity_id_t id, GetSelection().EntityIds())
         scene->RemoveEntity(id, AttributeChange::Replicate);
 }
 
@@ -451,9 +456,9 @@ void SceneTreeWidget::Paste()
         }
 
         // Get currently selected entities and paste components to them.
-        foreach(entity_id_t id, GetSelectedEntities())
+        foreach(EntityItem *eItem, GetSelection().entities)
         {
-            Scene::EntityPtr entity = scene->GetEntity(id);
+            Scene::EntityPtr entity = scene->GetEntity(eItem->id);
             if (entity)
             {
                 while(!componentElem.isNull())
@@ -488,23 +493,39 @@ void SceneTreeWidget::Paste()
 
 void SceneTreeWidget::SaveAs()
 {
-    Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
-        tr("Save"), "", 0, this, SLOT(SaveFileDialogClosed(int)));
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        tr("Save Selection"), "", 0, this, SLOT(SaveSelectionDialogClosed(int)));
+}
+
+void SceneTreeWidget::SaveSceneAs()
+{
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::SaveFileDialogNonModal(cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+        tr("Save Scene"), "", 0, this, SLOT(SaveSceneDialogClosed(int)));
 }
 
 void SceneTreeWidget::Import()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;"
-        + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter, tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter,
+        tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
 void SceneTreeWidget::OpenNewScene()
 {
-    Foundation::QtUtils::OpenFileDialogNonModal(cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
+    if (fileDialog)
+        fileDialog->close();
+    fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
+        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
-void SceneTreeWidget::SaveFileDialogClosed(int result)
+void SceneTreeWidget::SaveSelectionDialogClosed(int result)
 {
     QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
     assert(dialog);
@@ -556,18 +577,18 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
     else
     {
         // Handle all other as binary.
-        QList<entity_id_t> ids = GetSelectedEntities();
-        if (!ids.empty())
+        Selection sel = GetSelection();
+        if (!sel.IsEmpty())
         {
             // Assume 4MB max for now
             bytes.resize(4 * 1024 * 1024);
             kNet::DataSerializer dest(bytes.data(), bytes.size());
 
-            dest.Add<u32>(ids.size());
+            dest.Add<u32>(sel.entities.size());
 
-            foreach(entity_id_t id, ids)
+            foreach(EntityItem *e, sel.entities)
             {
-                Scene::EntityPtr entity = scene->GetEntity(id);
+                Scene::EntityPtr entity = scene->GetEntity(e->id);
                 assert(entity.get());
                 if (entity)
                     entity->SerializeToBinary(dest);
@@ -579,6 +600,51 @@ void SceneTreeWidget::SaveFileDialogClosed(int result)
 
     file.write(bytes);
     file.close();
+}
+
+void SceneTreeWidget::SaveSceneDialogClosed(int result)
+{
+    QFileDialog *dialog = dynamic_cast<QFileDialog *>(sender());
+    assert(dialog);
+    if (!dialog)
+        return;
+
+    if (result != 1)
+        return;
+
+    QStringList files = dialog->selectedFiles();
+    if (files.size() != 1)
+        return;
+
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    // Check out file extension. If filename has none, use the selected name filter from the save file dialog.
+    bool binary = false;
+    QString fileExtension;
+    if (files[0].lastIndexOf('.') != -1)
+    {
+        fileExtension = files[0].mid(files[0].lastIndexOf('.'));
+        binary = true;
+    }
+    else if (dialog->selectedNameFilter() == cNaaliXmlFileFilter)
+    {
+        fileExtension = ".xml";
+        files[0].append(fileExtension);
+    }
+    else if (dialog->selectedNameFilter() == cNaaliBinaryFileFilter)
+    {
+        fileExtension = ".nbf";
+        files[0].append(fileExtension);
+        binary = true;
+    }
+
+    if (binary)
+        scene->SaveSceneBinary(files[0].toStdString());
+    else
+        scene->SaveSceneXML(files[0].toStdString());
 }
 
 void SceneTreeWidget::OpenFileDialogClosed(int result)

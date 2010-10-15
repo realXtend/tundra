@@ -8,7 +8,6 @@
 #ifndef incl_SceneStructureModule_SceneStructureWindow_h
 #define incl_SceneStructureModule_SceneStructureWindow_h
 
-
 #include "ForwardDefines.h"
 
 #include <QWidget>
@@ -17,8 +16,6 @@
 class QTreeWidgetItem;
 
 class SceneTreeWidget;
-class EntityItem;
-class ComponentItem;
 
 /// Window with tree view showing every entity in a scene.
 /** This class will only handle adding and removing of entities and components and updating
@@ -66,6 +63,18 @@ private:
     /// Clears tree widget.
     void Clear();
 
+    /// Creates asset reference items.
+    void CreateAssetReferences();
+
+    /// Clears i.e. deletes all asset reference items.
+    void ClearAssetReferences();
+
+    /// Create asset reference item to the tree widget.
+    /** @param parentItem Parent item, can be entity or component item.
+        @param attr AssetReference attribute.
+    */
+    void CreateAssetItem(QTreeWidgetItem *parentItem, IAttribute *attr);
+
     /// Framework.
     Foundation::Framework *framework;
 
@@ -98,29 +107,29 @@ private slots:
     */
     void AddComponent(Scene::Entity *entity, IComponent *comp);
 
-    /// This is an overload function.
-    /** @param parentItem
-        @param comp Component which was added.
-    */
-    void AddComponent(EntityItem *parentItem, IComponent *comp);
-
     /// Removes entity from the tree widget.
     /** @param entity Aletred entity.
         @param comp Component which was removed.
     */
     void RemoveComponent(Scene::Entity *entity, IComponent *comp);
 
-    /// Adds asset reference to the tree widget.
-    /** @param parentItem Parent item, can be entity or component item.
+    /// This is an overloaded function.
+    /** This is called only by EC_DynamicComponent when asset ref attribute is added to it.
         @param attr AssetReference attribute.
     */
-    void AddAssetReference(QTreeWidgetItem *parentItem, IAttribute *attr);
+    void AddAssetReference(IAttribute *attr);
 
     /// Removes asset reference from the tree widget.
-    /** @param 
+    /** This is called only by EC_DynamicComponent when asset ref attribute is removed from it.
+        @param 
         @param attr AssetReference attribute.
     */
     void RemoveAssetReference(IAttribute *attr);
+
+    /// When asset reference attribute changes, update UI accordingly.
+    /** @param attr AssetReference attribute.
+    */
+    void UpdateAssetReference(IAttribute *attr);
 
     /// Updates entity's name in the tree widget if entity's EC_Name component's "name" attribute has changed.
     /** EC_Name component's OnAttributeChanged() signal is connected to this slot.

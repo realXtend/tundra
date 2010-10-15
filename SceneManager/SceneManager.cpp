@@ -308,22 +308,23 @@ namespace Scene
         return ret;
     }
 
-    bool SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         QDomDocument scene_doc("Scene");
         
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("Failed to open file " + filename + " when loading scene xml.");
-            return false;
+            return ret;
         }
 
         if (!scene_doc.setContent(&file))
         {
             LogError("Parsing scene XML from "+ filename + " failed when loading scene xml.");
             file.close();
-            return false;
+            return ret;
         }
 
         // Purge all old entities. Send events for the removal
@@ -359,13 +360,14 @@ namespace Scene
         }
     }
     
-    bool SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change)
+    QList<Entity *> SceneManager::LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         QFile file(filename.c_str());
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("Failed to open file " + filename + " when loading scene binary.");
-            return false;
+            return ret;
         }
 
         QByteArray bytes = file.readAll();
@@ -374,7 +376,7 @@ namespace Scene
         if (!bytes.size())
         {
             LogError("File " + filename + " contained 0 bytes when loading scene binary.");
-            return false;
+            return ret;
         }
 
         if (clearScene)
@@ -411,27 +413,29 @@ namespace Scene
         }
     }
 
-    bool SceneManager::CreateContentFromXml(const QString &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromXml(const QString &xml,  bool replaceOnConflict, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         QString errorMsg;
         QDomDocument scene_doc("Scene");
         if (!scene_doc.setContent(xml, false, &errorMsg))
         {
             LogError("Parsing scene XML from text failed: " + errorMsg.toStdString());
-            return false;
+            return ret;
         }
 
         return CreateContentFromXml(scene_doc, replaceOnConflict, change);
     }
 
-    bool SceneManager::CreateContentFromXml(const QDomDocument &xml,  bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromXml(const QDomDocument &xml,  bool replaceOnConflict, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         // Check for existence of the scene element before we begin
         QDomElement scene_elem = xml.firstChildElement("scene");
         if (scene_elem.isNull())
         {
             LogError("Could not find 'scene' element from XML.");
-            return false;
+            return ret;
         }
 
         QDomElement ent_elem = scene_elem.firstChildElement("entity");
@@ -475,21 +479,24 @@ namespace Scene
                     const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
                     for(uint i = 0; i < components.size(); ++i)
                         components[i]->ComponentChanged(change);
+
+                    ret.append(entity.get());
                 }
             }
             ent_elem = ent_elem.nextSiblingElement("entity");
         }
 
-        return true;
+        return ret;
     }
 
-    bool SceneManager::CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         QFile file(filename);
         if (!file.open(QIODevice::ReadOnly))
         {
             LogError("Failed to open file " + filename.toStdString() + " when loading scene binary.");
-            return false;
+            return ret;
         }
 
         QByteArray bytes = file.readAll();
@@ -498,14 +505,15 @@ namespace Scene
         if (!bytes.size())
         {
             LogError("File " + filename.toStdString() + "contained 0 bytes when loading scene binary.");
-            return false;
+            return ret;
         }
 
         return CreateContentFromBinary(bytes.data(), bytes.size(), replaceOnConflict, change);
     }
 
-    bool SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change)
+    QList<Entity *> SceneManager::CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change)
     {
+        QList<Entity *> ret;
         assert(data);
         assert(numBytes > 0);
         try
@@ -533,7 +541,7 @@ namespace Scene
                 if (!entity)
                 {
                     std::cout << "Failed to create entity, stopping scene load" << std::endl;
-                    return false; // If entity creation fails, stream desync is more than likely so stop right here
+                    return ret; // If entity creation fails, stream desync is more than likely so stop right here
                 }
                 
                 uint num_components = source.Read<u32>();
@@ -577,14 +585,16 @@ namespace Scene
                 // This allows to resolve component references to the same entity (for example to the Placeable) at this point
                 foreach(ComponentPtr component, entity->GetComponentVector())
                     component->ComponentChanged(change);
+
+                ret.append(entity.get());
             }
         }
         catch (...)
         {
-            return false;
+            return QList<Entity *>();
         }
 
-        return true;
+        return ret;
     }
 
     QByteArray SceneManager::GetEntityXml(Scene::Entity *entity)
