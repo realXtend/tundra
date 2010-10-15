@@ -56,6 +56,8 @@ namespace Environment
          **/
         EC_OgreEnvironment* GetEnvironmentComponent();
 
+        EC_EnvironmentLight* GetEnvironmentLight();
+
         /**
          * Creates the environment EC to current active scene and adjust it using default parameters.
          **/
@@ -191,7 +193,7 @@ namespace Environment
 
         EC_Fog* GetEnvironmentFog();
 
-        EC_EnvironmentLight* GetEnvironmentLight();
+     
 
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;

@@ -417,6 +417,13 @@ namespace Environment
 
                 if ( environment_ != 0 )
                 {
+                      EC_EnvironmentLight* light = environment_->GetEnvironmentLight();
+                      if ( light != 0)
+                      {
+                          // Because of caelum defines environment light values normally we need to set it off. 
+                          light->useCaelumAttr.Set(false, AttributeChange::LocalOnly);
+                      }
+
                       environment_->SetSunDirection(environment_->ConvertToQVector<float>(sun_light_direction));
                       environment_->SetSunColor(environment_->ConvertToQVector<float>(sun_light_color));
                       environment_->SetAmbientLight(environment_->ConvertToQVector<float>(ambient_light_color));
