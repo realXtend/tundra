@@ -109,6 +109,7 @@ else
     cmake -DCMAKE_INSTALL_PREFIX=$prefix .
     make -j $nprocs
     make install
+    touch $tags/$what-done
 fi
 
 what=knet
@@ -125,6 +126,7 @@ else
     make -j $nprocs
     cp lib/libkNet.a $prefix/lib/
     rsync -r include/* $prefix/include/
+    touch $tags/$what-done
 fi
 
 what=Caelum
