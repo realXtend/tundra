@@ -119,9 +119,10 @@ add_subdirectory (DebugStatsModule)      # Enables a developer window for debugg
 add_subdirectory (PythonScriptModule)    # Allows Python-created modules and scene script instances.
 add_subdirectory (JavascriptModule)      # Allows QtScript-created scene script instances.
 add_subdirectory (CommunicationsModule)  # Enables communication capabilities.
-add_subdirectory (TelepathyIMModule)     # Telepathy Messaging support.
+#add_subdirectory (TelepathyIMModule)     # Telepathy Messaging support.
 add_subdirectory (InWorldChatModule)     # Implements in-world text communication.
 add_subdirectory (CAVEStereoModule)	 # Implements CAVE and Stereoscopy functionality
+add_subdirectory (UiExtenalModule)     # Implements external ui funcionality.
 
 AddEntityComponent(EntityComponents/EC_ChatBubble EC_ChatBubble)   # declared by InWorldChatModule 
 AddEntityComponent(EntityComponents/EC_Billboard EC_Billboard)     # declared by InWorldChatModule
