@@ -1,7 +1,11 @@
+#$ HEADER_MOD_FILE $
 """namespace config, 'cause the c++ side doesn't do it too nicely"""
 
 from __main__ import _pythonscriptmodule
 from __main__ import _naali
+#$ BEGIN_MOD $
+from __main__ import _uiExternal
+#$ END_MOD $
 import rexviewer as r #the old module is still used , while porting away from it
 #from _naali import *
 
@@ -52,7 +56,9 @@ input = _naali.Input()
 audio = _naali.Audio()
 ui = _naali.Ui()
 framework = _naali
-
+#$ BEGIN_MOD $
+uiexternal = _uiExternal
+#$ END_MOD $
 #not used in this branch, which tries to avoid extra Entity wrapper alltogether
 # class Entity:
 #     compnames = {

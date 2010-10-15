@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_PythonScriptModule_PythonScriptModule_h
@@ -12,6 +13,7 @@
 #include <QList>
 #include <QString>
 #include <QVariantMap>
+#include <QDockWidget>
 
 #ifdef PYTHON_FORCE_RELEASE_VERSION
   #ifdef _DEBUG
@@ -132,6 +134,9 @@ namespace PythonScript
 
         /// Keep list of proxy widgets created from py as the cause mem leaks if not deleted explicitily.
         QList<UiProxyWidget *> proxyWidgets;
+//$ BEGIN_MOD $
+		QList<QDockWidget *> qDockWidgets;
+//$ END_MOD $
 
     private:
         //! Type name of the module.

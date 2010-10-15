@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -258,7 +259,7 @@ namespace Environment
         setWindowTitle(tr("Environment Editor"));
 //$ BEGIN_MOD $
 		Foundation::UiExternalServiceInterface *uiExternal= environment_module_->GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
-		if (!uiExternal)
+		if (uiExternal)
 		{
 			uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(this,"Enviroment editor"),"Enviroment","Panels");
 		}
