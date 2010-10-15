@@ -353,7 +353,7 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
         Quaternion rot(DEGTORAD * worldtransform.rotation.x, DEGTORAD * worldtransform.rotation.y,
             DEGTORAD * worldtransform.rotation.z);
 //        ProcessNodeForCreation(scene, node_elem, Vector3df(0.0f, 0.0f, 0.0f), Quaternion(0.0f, 0.0f, 0.0f, 1.0f), Vector3df(1.0f, 1.0f, 1.0f), change, localassets, flipyz, replace);
-        ret = ProcessNodeForCreation(scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
+        ProcessNodeForCreation(ret, scene, node_elem, worldtransform.position, rot, worldtransform.scale, change, localassets, flipyz, replace);
     }
     catch (Exception& e)
     {
@@ -472,10 +472,9 @@ void SceneImporter::ProcessAssets(const std::string& filename, const std::string
     }
 }
 
-QList<Scene::Entity* > SceneImporter::ProcessNodeForCreation(Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
+void SceneImporter::ProcessNodeForCreation(QList<Scene::Entity* > &entities, Scene::ScenePtr scene, QDomElement node_elem, Vector3df pos, Quaternion rot, Vector3df scale,
     AttributeChange::Type change, bool localassets, bool flipyz, bool replace)
 {
-    QList<Scene::Entity* > ret;
     while (!node_elem.isNull())
     {
         QDomElement pos_elem = node_elem.firstChildElement("position");
@@ -548,9 +547,8 @@ QList<Scene::Entity* > SceneImporter::ProcessNodeForCreation(Scene::ScenePtr sce
             
             // Try to find existing entity by name
             if (replace)
-            {
                 entity = scene->GetEntity(node_name_qstr);
-            }
+
             if (!entity)
             {
                 entity = scene->CreateEntity(scene->GetNextFreeId());
@@ -629,7 +627,7 @@ QList<Scene::Entity* > SceneImporter::ProcessNodeForCreation(Scene::ScenePtr sce
                     meshPtr->ComponentChanged(change);
                     namePtr->ComponentChanged(change);
 
-                    ret.append(entity.get());
+                    entities.append(entity.get());
                 }
                 else
                     TundraLogicModule::LogError("Could not create mesh, placeable, name components");
@@ -639,13 +637,11 @@ QList<Scene::Entity* > SceneImporter::ProcessNodeForCreation(Scene::ScenePtr sce
         // Process child nodes
         QDomElement childnode_elem = node_elem.firstChildElement("node");
         if (!childnode_elem.isNull())
-            ret.append(ProcessNodeForCreation(scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace));
+            ProcessNodeForCreation(entities, scene, childnode_elem, newpos, newrot, newscale, change, localassets, flipyz, replace);
         
         // Process siblings
         node_elem = node_elem.nextSiblingElement("node");
     }
-
-    return ret;
 }
 
 std::set<std::string> SceneImporter::ProcessMaterialFile(const std::string& matfilename, const std::set<std::string>& used_materials, const std::string& out_asset_dir, bool localassets)
