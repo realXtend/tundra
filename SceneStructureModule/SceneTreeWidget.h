@@ -169,6 +169,11 @@ private slots:
     /// Renames selected entity.
     void Rename();
 
+    ///
+    /** @item The item which was edited.
+    */
+    void OnItemEdited(QTreeWidgetItem *item);
+
     /// Creates new entity.
     void New();
 

@@ -375,6 +375,13 @@ namespace Scene
         return ret;
     }
 
+    void Entity::SetName(const QString &name)
+    {
+        ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
+        EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
+        ecName->name.Set(name, AttributeChange::Default);
+    }
+
     QString Entity::GetName() const
     {
         boost::shared_ptr<EC_Name> name = GetComponent<EC_Name>();
@@ -382,6 +389,13 @@ namespace Scene
             return name->name.Get();
         else
             return "";
+    }
+
+    void Entity::SetDescription(const QString &desc)
+    {
+        ComponentPtr comp = GetOrCreateComponent(EC_Name::TypeNameStatic(), AttributeChange::Default, true);
+        EC_Name * ecName = checked_static_cast<EC_Name*>(comp.get());
+        ecName->description.Set(desc, AttributeChange::Default);
     }
 
     QString Entity::GetDescription() const

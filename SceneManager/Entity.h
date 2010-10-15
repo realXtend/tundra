@@ -307,38 +307,46 @@ namespace Scene
         void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name), change); }
         void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name, name), change); }
 
-        //! Returns list of components with type 'type_name' or if typename is empty return all components
+        //! Returns list of components with type @c type_name or if @c type_name is empty return all components
         //! \param type_name type of the component
         QObjectList GetComponentsRaw(const QString &type_name) const
         {
             QObjectList ret;
-            if(type_name.isNull())
-            {
+            if (type_name.isNull())
                 for(size_t i = 0; i < components_.size() ; ++i)
                     ret.push_back(components_[i].get());
-            }
             else
-            {
                 for(size_t i = 0; i < components_.size() ; ++i)
                     if (components_[i]->TypeName() == type_name)
                         ret.push_back(components_[i].get());
-            }
             return ret;
         }
 
         //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name Type of the component.
+        /*! \param type_name Type of the component.
+        */
         bool HasComponent(const QString &type_name) const;
         bool HasComponent(uint type_hash) const;
-        
+
         //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name type of the component
-        //! \param name name of the component
+        /*! \param type_name type of the component
+            \param name name of the component
+        */
         bool HasComponent(const QString &type_name, const QString &name) const;
         bool HasComponent(uint type_hash, const QString &name) const;
 
+        //! Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param name Name.
+        */
+        void SetName(const QString &name);
+
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
         QString GetName() const;
+
+        //! Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param desc Description.
+        */
+        void SetDescription(const QString &desc);
 
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;
