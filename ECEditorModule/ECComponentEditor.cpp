@@ -58,9 +58,23 @@ namespace ECEditor
         groupPropertyManager_(0),
         propertyBrowser_(propertyBrowser)
     {
+        assert(component);
         typeName_ = component->TypeName();
         name_ = component->Name();
-        InitializeEditor(component);
+
+        assert(propertyBrowser_);
+        if(!propertyBrowser_)
+           return;
+
+        groupPropertyManager_ = new QtGroupPropertyManager(this);
+        if(groupPropertyManager_)
+        {
+            groupProperty_ = groupPropertyManager_->addProperty();
+            AddNewComponent(component, true);
+            CreateAttributeEditors(component);
+        }
+
+        propertyBrowser_->addProperty(groupProperty_);
     }
     
     ECComponentEditor::~ECComponentEditor()
@@ -73,21 +87,6 @@ namespace ECEditor
             SAFE_DELETE(attributeEditors_.begin()->second)
             attributeEditors_.erase(attributeEditors_.begin());
         }
-    }
-
-    void ECComponentEditor::InitializeEditor(ComponentPtr component)
-    {
-        if(!propertyBrowser_)
-           return;
-
-        groupPropertyManager_ = new QtGroupPropertyManager(this);
-        if(groupPropertyManager_)
-        {
-            groupProperty_ = groupPropertyManager_->addProperty();
-            AddNewComponent(component, true);
-            CreateAttributeEditors(component);
-        }
-        propertyBrowser_->addProperty(groupProperty_);
     }
 
     void ECComponentEditor::CreateAttributeEditors(ComponentPtr component)
@@ -110,9 +109,9 @@ namespace ECEditor
     {
         if(!groupProperty_ || !components_.size())
             return;
-        std::string componentName = typeName_.toStdString(); //\todo remove the back&forth string conversions XXX
-        ReplaceSubstringInplace(componentName, "EC_", "");
-        QString groupPropertyName = componentName.c_str();
+        QString componentName = typeName_;
+        componentName.replace("EC_", "");
+        QString groupPropertyName = componentName;
         if(!name_.isEmpty())
             groupPropertyName += " (" + name_ + ") ";
         if(components_.size() > 1)
@@ -148,16 +147,15 @@ namespace ECEditor
                 iter->second->AddNewAttribute(attribute);
             iter++;
         }
-        QObject::connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
+
+        connect(component.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+            SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
         UpdateGroupPropertyText();
     }
 
     void ECComponentEditor::RemoveComponent(IComponent *component)
     {
-        if(!component)
-            return;
-
-        if(component->TypeName() != typeName_)
+        if(!component ||(component->TypeName() != typeName_))
             return;
 
         ComponentSet::iterator iter = components_.begin();
@@ -174,7 +172,9 @@ namespace ECEditor
                         attributeIter->second->RemoveAttribute(attribute);
                     attributeIter++;
                 }
-                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
+
+                disconnect(componentPtr.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)),
+                    this, SLOT(AttributeChanged(IAttribute*, AttributeChange::Type)));
                 components_.erase(iter);
                 break;
             }
