@@ -42,7 +42,7 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     framework(fw),
     showComponents(false)
 {
-    setEditTriggers(QAbstractItemView::NoEditTriggers/*EditKeyPressed*/);
+    setEditTriggers(QAbstractItemView::EditKeyPressed/* NoEditTriggers/*EditKeyPressed*/);
     setDragDropMode(QAbstractItemView::DropOnly/*DragDrop*/);
 //    setDragEnabled(true);
     setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -56,10 +56,12 @@ SceneTreeWidget::SceneTreeWidget(Foundation::Framework *fw, QWidget *parent) :
     connect(this, SIGNAL(doubleClicked(const QModelIndex &)), SLOT(Edit()));
 
     // Create keyboard shortcuts.
+    QShortcut *renameShortcut = new QShortcut(QKeySequence(Qt::Key_F2), this);
     QShortcut *deleteShortcut = new QShortcut(QKeySequence(Qt::Key_Delete), this);
     QShortcut *copyShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), this);
     QShortcut *pasteShortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), this);
 
+    connect(renameShortcut, SIGNAL(activated()), this, SLOT(Rename()));
     connect(deleteShortcut, SIGNAL(activated()), this, SLOT(Delete()));
     connect(copyShortcut, SIGNAL(activated()), this, SLOT(Copy()));
     connect(pasteShortcut, SIGNAL(activated()), this, SLOT(Paste()));
@@ -139,8 +141,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     }
 
     // "Rename" action is possible only if have one entity selected.
-/*
-    bool renamePossible = (selectionModel()->selection().size() == 1)
+    bool renamePossible = (selectionModel()->selection().size() == 1);
     if (renamePossible)
     {
         renameAction = new QAction(tr("Rename"), menu);
@@ -149,7 +150,7 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
 
     if (renamePossible)
         menu->addAction(renameAction);
-*/
+
     if (hasSelection)
     {
         menu->addAction(editAction);
@@ -361,9 +362,38 @@ void SceneTreeWidget::EditInNew()
 
 void SceneTreeWidget::Rename()
 {
-    QModelIndex index = selectionModel()->currentIndex();
-    if (!index.isValid())
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
         return;
+
+    Selection sel = GetSelection();
+    QModelIndex index = selectionModel()->currentIndex();
+    if (sel.entities.size() == 1 && index.isValid())
+    {
+        EntityItem *eItem = sel.entities[0];
+        // Remove the entity ID from the text when user is editing entity's name.
+        eItem->setText(0, scene->GetEntity(eItem->id)->GetName());
+        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+        edit(index);
+    }
+}
+
+void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
+{
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    EntityItem *eItem = dynamic_cast<EntityItem *>(item);
+    if (eItem)
+    {
+        QString newName = eItem->text(0);
+        disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+        // We don't need to set text to the item here. It's done when be SceneStructureWindow.
+        scene->GetEntity(eItem->id)->SetName(newName);
+    }
 }
 
 void SceneTreeWidget::New()

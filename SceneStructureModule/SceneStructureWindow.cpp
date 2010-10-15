@@ -206,6 +206,7 @@ void SceneStructureWindow::ClearAssetReferences()
 void SceneStructureWindow::AddEntity(Scene::Entity* entity)
 {
     EntityItem *item = new EntityItem(entity->GetId());
+    item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
     // Set local entity's font color blue
     if (entity->IsLocal())
