@@ -89,20 +89,21 @@ namespace Environment
         {
             // Initialize post-process dialog.
             postprocess_dialog_ = new PostProcessWidget(renderer->GetCompositionHandler());
-
+			
             // Add to scene.
-			//$ BEGIN_MOD $            
-			Foundation::UiExternalServiceInterface *ui = GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+         
+			UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
             if (!ui)
-                return;            
-			QWidget *aux = ui->AddExternalPanel(postprocess_dialog_,"Environment Edicion");
-			ui->AddExternalMenuPanel(aux,"Environment Edicion", "Panels");
-			//$ MOD_DESCRIPTION Commented to check if the new EXTERNAL ui module works fine $
-			//UiServiceInterface *ui = GetFramework()->GetService<UiServiceInterface>();
-			//ui->AddWidgetToScene(postprocess_dialog_);
-            //ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),
-            //    "./data/ui/images/menus/edbutton_POSTPR_normal.png");
-			//$ END_MOD $
+                return;
+//$ BEGIN_MOD $   
+			Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+            if (uiExternal)
+				uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(postprocess_dialog_,"Post-processing"),"Post-processing","Panels");
+			else{
+				ui->AddWidgetToScene(postprocess_dialog_);
+				ui->AddWidgetToMenu(postprocess_dialog_, QObject::tr("Post-processing"), QObject::tr("World Tools"),"./data/ui/images/menus/edbutton_POSTPR_normal.png");
+			}
+//$ END_MOD $
         }
 
         environment_editor_ = new EnvironmentEditor(this);
@@ -179,8 +180,8 @@ namespace Environment
                 {
                     CreateEnvironment();
                     CreateTerrain();
-                    CreateWater();
-                    //CreateEnvironment();
+                    //CreateWater();
+                    CreateEnvironment();
                     CreateSky();
                 }
             }

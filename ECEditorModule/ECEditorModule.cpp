@@ -17,7 +17,9 @@
 #include "EC_DynamicComponent.h"
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
-
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+//$ END_MOD $
 #include "MemoryLeakCheck.h"
 
 namespace ECEditor
@@ -137,11 +139,17 @@ namespace ECEditor
             return;
 
         editor_window_ = new ECEditorWindow(GetFramework());
+//$ BEGIN_MOD $
+		Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
 
-        UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
-        ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
-        ui->RegisterUniversalWidget("Components", editor_proxy);
-
+		if (uiExternal){
+				uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(editor_window_,"Entity-component Editor"),"EC Editor","Panels");
+		}else{
+			UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
+			ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");
+			ui->RegisterUniversalWidget("Components", editor_proxy);
+		}
+//$ END_MOD $
         connect(editor_window_, SIGNAL(EditEntityXml(Scene::EntityPtr)), this, SLOT(CreateXmlEditor(Scene::EntityPtr)));
         connect(editor_window_, SIGNAL(EditComponentXml(ComponentPtr)), this, SLOT(CreateXmlEditor(ComponentPtr)));
         connect(editor_window_, SIGNAL(EditEntityXml(const QList<Scene::EntityPtr> &)), this, SLOT(CreateXmlEditor(const QList<Scene::EntityPtr> &)));
@@ -156,8 +164,12 @@ namespace ECEditor
 
         if (editor_window_)
         {
-            ui->BringWidgetToFront(editor_window_);
-            return Console::ResultSuccess();
+//$ BEGIN_MOD $
+            if(!framework_->GetService<Foundation::UiExternalServiceInterface>()){
+				ui->BringWidgetToFront(editor_window_);
+				return Console::ResultSuccess();
+			}
+//$ END_MOD $
         }
         else
             return Console::ResultFailure("EC Editor window was not initialised, something went wrong on startup!");
@@ -226,18 +238,28 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<Scene::EntityPtr> &entities)
     {
+//$ BEGIN_MOD $
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-        if (entities.empty() || !ui)
+		Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+        
+		if (entities.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            ui->AddWidgetToScene(xmlEditor_);
-        }
+			if(uiExternal)
+				uiExternal->AddExternalPanel(xmlEditor_,"EC XML Editor");
+			else
+				ui->AddWidgetToScene(xmlEditor_);
+		}
 
         xmlEditor_->SetEntity(entities);
-        ui->BringWidgetToFront(xmlEditor_);
+		if(!uiExternal)
+		//	uiExternal->ShowWidget(xmlEditor_);
+		//else
+			ui->BringWidgetToFront(xmlEditor_);
+//$ END_MOD $
     }
 
     void ECEditorModule::CreateXmlEditor(ComponentPtr component)
@@ -249,18 +271,28 @@ namespace ECEditor
 
     void ECEditorModule::CreateXmlEditor(const QList<ComponentPtr> &components)
     {
+//$ BEGIN_MOD $
         UiServicePtr ui = framework_->GetService<UiServiceInterface>(Foundation::Service::ST_Gui).lock();
-        if (components.empty() || !ui)
+		Foundation::UiExternalServiceInterface *uiExternal= GetFramework()->GetService<Foundation::UiExternalServiceInterface>();
+        
+		if (components.empty() || !ui)
             return;
 
         if (!xmlEditor_)
         {
             xmlEditor_ = new EcXmlEditorWidget(framework_);
-            ui->AddWidgetToScene(xmlEditor_);
-        }
+			if(uiExternal)
+				uiExternal->AddExternalPanel(xmlEditor_,"EC XML Editor");
+			else
+				ui->AddWidgetToScene(xmlEditor_);
+		}
 
         xmlEditor_->SetComponent(components);
-        ui->BringWidgetToFront(xmlEditor_);
+		if(!uiExternal)
+		//	uiExternal->ShowWidget(xmlEditor_);
+		//else
+			ui->BringWidgetToFront(xmlEditor_);
+//$ END_MOD $
     }
 }
 
