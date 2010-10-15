@@ -57,8 +57,9 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     Foundation::EventManager *event_manager = framework_->GetEventManager().get();
     if(event_manager)
     {
-        event_manager->RegisterEventSubscriber(this, 99);
+        //event_manager->RegisterEventSubscriber(this, 99);
         resource_event_category_ = event_manager->QueryEventCategory("Resource");
+        event_manager->RegisterEventSubscriber(this, resource_event_category_, Resource::Events::RESOURCE_READY);
     }
     else
     {
