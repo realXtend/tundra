@@ -239,9 +239,15 @@ namespace Environment
         Ogre::Vector3 current_pos = node_->_getDerivedPosition();
         Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
         tmp = current_pos + tmp;
+        if ( tmp.isNaN())
+            return;
         node_->setPosition(tmp);
 #else
-        node_->_setDerivedPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
+        Ogre::Vector3 pos(vec.x, vec.y, vec.z);
+        if ( pos.isNaN())
+            return;
+
+        node_->_setDerivedPosition(pos);
 #endif
 
     }
