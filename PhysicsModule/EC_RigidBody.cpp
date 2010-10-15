@@ -28,9 +28,15 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     placeableDisconnected_(false),
     owner_(checked_static_cast<PhysicsModule*>(module)),
     mass(this, "Mass", 0.0f),
-    shapeType(this, "Shape Type", (int)Shape_Box),
+    shapeType(this, "Shape type", (int)Shape_Box),
     size(this, "Size", Vector3df(1,1,1)),
     collisionMeshId(this, "Collision mesh ref", ""),
+    friction(this, "Friction", 0.5f),
+    restitution(this, "Restitution", 0.0f),
+    linearDamping(this, "Linear damping", 0.0f),
+    angularDamping(this, "Angular damping", 0.0f),
+    linearFactor(this, "Linear factor", Vector3df(1,1,1)),
+    angularFactor(this, "Angular factor", Vector3df(1,1,1)),
     cachedShapeType_(-1),
     collision_mesh_tag_(0)
 {
@@ -259,6 +265,46 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
         else
             // Readd body to the world in case static/dynamic classification changed
             ReaddBody();
+    }
+    
+    if (attribute == &friction)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+            body_->setFriction(friction.Get());
+    }
+    
+    if (attribute == &restitution)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+            body_->setRestitution(friction.Get());
+    }
+    
+    if ((attribute == &linearDamping) || (attribute == &angularDamping))
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+            body_->setDamping(linearDamping.Get(), angularDamping.Get());
+    }
+    
+    if (attribute == &linearFactor)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+            body_->setLinearFactor(ToBtVector3(linearFactor.Get()));
+    }
+    
+    if (attribute == &angularFactor)
+    {
+        if (!body_)
+            CreateBody();
+        if (body_)
+            body_->setAngularFactor(ToBtVector3(angularFactor.Get()));
     }
     
     if ((attribute == &shapeType) || (attribute == &size))
