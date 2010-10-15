@@ -24,7 +24,7 @@ namespace ECEditor
         Q_OBJECT
 
     public:
-        AddComponentDialog(Foundation::Framework *framework, entity_id_t entity_id, QWidget *parent = 0, Qt::WindowFlags f = 0);
+        AddComponentDialog(Foundation::Framework *framework, QList<entity_id_t> entities, QWidget *parent = 0, Qt::WindowFlags f = 0);
         ~AddComponentDialog();
 
         //! Set list of available component types.
@@ -44,15 +44,20 @@ namespace ECEditor
         AttributeChange::Type GetSynchronization() const;
 
         //! Get the entity that component is added to.
-        entity_id_t GetEntityId() const;
+        QList<entity_id_t> GetEntityIds() const;
 
     private slots:
-        //! Make sure that component name dont duplicate with existing entity's components, and if it do disable ok button.
+        //! Make sure that component name don't duplicate with existing entity's components, and if it do disable ok button.
         void CheckComponentName(const QString &name);
+
+    protected:
+        //! Over-ride event from QDialog.
+        void hideEvent(QHideEvent *event);
 
     private:
         void Initialize();
 
+        QLabel *component_count_label_;
         QLabel *component_type_label_;
         QLabel *component_name_label_;
         QLabel *component_synch_label_;
@@ -62,8 +67,9 @@ namespace ECEditor
         QPushButton *ok_button_;
         QPushButton *cancel_button_;
 
-        //! Entity that new component is planned to be added.
-        entity_id_t entity_id_;
+        //! Entities that new component is planned to be added.
+        typedef QList<entity_id_t> EntityIdList;
+        EntityIdList entities_;
         Foundation::Framework *framework_;
     };
 }
