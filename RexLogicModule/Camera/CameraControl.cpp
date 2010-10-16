@@ -58,6 +58,7 @@ namespace RexLogic
         zoom_in_pressed_(false),
         zoom_out_pressed_(false)
     {
+        setupUi(this);
         using namespace InputEvents;
 
         rotation_widget = new RotationWidget(this);
