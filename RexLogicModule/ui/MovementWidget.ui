@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MovementWidget</class>
+ <widget class="QWidget" name="MovementWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>131</width>
+    <height>131</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>131</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>131</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame.RightFrame { border-image: url(./data/ui/images/cameracontrol/camera_no_arrows.png);}
+
+QPushButton.forward {border-image: url(./data/ui/images/cameracontrol/arrow_up_white1.png); }
+
+QPushButton.forward:hover {border-image: url(./data/ui/images/cameracontrol/arrow_up_grey1.png);}
+
+QPushButton.forward:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_up_green1.png);}
+
+QPushButton.st_right {border-image: url(./data/ui/images/cameracontrol/arrow_right_white1.png); }
+
+QPushButton.st_right:hover {border-image: url(./data/ui/images/cameracontrol/arrow_right_grey1.png);}
+
+QPushButton.st_right:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_right_green1.png);}
+
+QPushButton.st_left {border-image: url(./data/ui/images/cameracontrol/arrow_left_white1.png); }
+
+QPushButton.st_left:hover {border-image: url(./data/ui/images/cameracontrol/arrow_left_grey1.png);}
+
+QPushButton.st_left:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_left_green1.png);}
+
+QPushButton.backward {border-image: url(./data/ui/images/cameracontrol/arrow_down_white1.png); }
+
+QPushButton.backward:hover {border-image: url(./data/ui/images/cameracontrol/arrow_down_grey1.png);}
+
+QPushButton.backward:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_down_green1.png);}</string>
+  </property>
+  <widget class="QFrame" name="frame_5">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>131</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>131</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>131</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <property name="class" stdset="0">
+    <string>RightFrame</string>
+   </property>
+   <widget class="QPushButton" name="moveBACKWARD_button">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>80</y>
+      <width>31</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>backward</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="moveLEFT_button">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>41</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>st_left</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="moveRIGHT_button">
+    <property name="geometry">
+     <rect>
+      <x>80</x>
+      <y>50</y>
+      <width>41</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>st_right</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="moveFORWARD_button">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>31</width>
+      <height>41</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+    <property name="class" stdset="0">
+     <string>forward</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

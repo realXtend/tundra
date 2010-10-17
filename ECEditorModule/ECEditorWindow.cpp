@@ -111,7 +111,7 @@ namespace ECEditor
     {
         if (entity_list_)
         {
-            //If entity don't have EC_Name then entity_name is same as it's id.
+            //If entity don't have EC_Name component, then use it's id as name.
             QString entity_name = QString::number(entity_id);
             Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
             if(entity && entity->HasComponent("EC_Name"))
@@ -296,7 +296,7 @@ namespace ECEditor
         if (temp_doc.setContent(clipboard->text()))
         {
             //Check if clipboard contain infomation about entity's id,
-            //switch is used to find a right type of entity from the scene.
+            //which is used to find a right type of entity from the scene.
             QDomElement ent_elem = temp_doc.firstChildElement("entity");
             if(ent_elem.isNull())
                 return;

@@ -2,7 +2,7 @@
 
 \page ec_editormodule EC_EditorModule
 
-<H2>How to use:</H2>
+\section How to use:
 ECEditor is a tool to edit entity components in runtime. The editor window should be found at top
 left menu in name of "entity component editor" or you can use it through the build mode that can 
 be open using a "Ctrl + B" shortcut.
@@ -16,7 +16,7 @@ is implemented for ECAttributeEditor class.
 other every client, but if component uses "local only" update mode, then changes are only local and wont get replicated to 
 other clients. For more information you should take a look at IComponent documentation.
 
-<H2>How to register new attribute type to editor window:</H2>
+\section How to register new attribute type to editor window:
 To register a new attribute type, you need to do following procedures:
 <ul>
 <li> Create specialization for IAttribute, so that your attribute data can be serialized to a xml format.
@@ -42,22 +42,22 @@ If newly created attribute is wanted to show in ECEditor, you need to specify fo
 <li> Set: Will send a new attribute value to IAttribute object when ui element has changed.
 </ul>
 
-<H2>Class diagram:</H2>
+\section Class diagram:
 \image html ECEditorModule.png
 
-<h3>ECEditorModule</h3>
+\b ECEditorModule
 <ul>
 <li> Core object that owns instance of ECEditorWindow object.
 </ul>
 
-<h3>ECEditorWindow</h3>
+\b ECEditorWindow
 <ul>
 <li> ECEditorWindow is main widget for ECEditor. All editable entities are saved to this object's list in entity_id_t format. 
 <li> Contains entity copy, paste and delete funtionality. 
 <li> Xml editor that is used for component's raw data editing, including attribute types aren't implemented to ECEditor.
 </ul>
 
-<h3>ECBrowser</h3>
+\b ECBrowser
 <ul>
 <li> Inherited from QtTreeBrowser class (QtPropertyBrowser).
 <li> Hold list of all entities that are wanted to be edited.
@@ -65,25 +65,25 @@ If newly created attribute is wanted to show in ECEditor, you need to specify fo
 <li> creates ComponentGroup objects for every component that typename and name doesn't match for already created ComponentGroups.
 </ul>
 
-<h3>ComponentGroup</h3>
+\b ComponentGroup
 <ul>
 <li> Container class that holds same type of components in a single entry. Components are inserted to same ComponentGroup if their typename and name matches. 
 </ul>
 
-<h3>ECComponentEditor</h3>
+\b ECComponentEditor
 <ul>
 <li> Fetches component's attributes and creates ECAttributeEditor instances for every attribute type that is supported in ECAttributeEditor.
 <li> Owns static CreateAttributeEditor factory method, that will handle ECAttributeEditor creation. 
 <li> Handles AttributeChange signals to ECAttributeEditors (Could be moved to ECAttributeEditor?).
 </ul>
 
-<h3>ECAttributeEditor</h3>
+\b ECAttributeEditor
 <ul>
 <li> Abstract class that holds three pure virtual methods Initialize, Update and Set that need to be initialized for every new attribute type. 
 <li> Can contain many attributes that it can edit in the same time (Needed for multi editing).
 </ul>
 
-<h3>ECAttributeEditor</h3>
+\b ECAttributeEditor
 To get attribute editable in ECEdtior, following methods are needed to get specialized:
 <ul>
 <li> Initialize: Should handle ui element creation. e.g. Color attribute initializes four spinboxes, one per color channel.

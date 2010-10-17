@@ -16,6 +16,8 @@
 #include "EC_WaterPlane.h"
 #include "OgreRenderingModule.h"
 
+
+
 #ifdef CAELUM
 #include <Caelum.h>
 #endif
@@ -191,12 +193,43 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
     //env.SetSunDirection(-sunDirection_);
 
     if (!time_override_)
-        env->SetTime(dayphase);
-    
+    {
+        EC_EnvironmentLight* light = GetEnvironmentLight();
+        if ( light != 0 )
+        {
+            if ( light->fixedTimeAttr.Get() == false)
+                light->currentTimeAttr.Set(dayphase, AttributeChange::LocalOnly);
+        }
+        else
+            env->SetTime(dayphase);
+    }
     return false;
 }
 
+EC_EnvironmentLight* Environment::GetEnvironmentLight()
+{
+    Scene::ScenePtr active_scene = owner_->GetFramework()->GetDefaultWorldScene();
+    Scene::Entity* entity = active_scene->GetEntityByName("LightEnvironment").get();
+    
+    if (entity != 0 )
+    {
+        owner_->RemoveLocalEnvironment();
+        if ( !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()) )
+            entity->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_EnvironmentLight::TypeNameStatic()));
+    }
+    else
+    {
+        entity =  active_scene->GetEntityByName("LocalEnvironment").get();
+        if ( entity == 0)
+            return 0;
+    }
+  
+    
+    EC_EnvironmentLight* light = entity->GetComponent<EC_EnvironmentLight >().get();
+    
+    return light;
 
+}
 
 void Environment::SetGroundFog(float fogStart, float fogEnd, const QVector<float>& color)
 {
@@ -262,18 +295,32 @@ void Environment::Update(f64 frametime)
 {
     PROFILE(Environment_Update);
 
+  
     // We are still little depend of old EC_OgreEnvironment component,
     /// todo refactor away depency of old EC_OgreEnvironmen component 
-
     EC_OgreEnvironment* env = GetEnvironmentComponent();
-    if (!env)
-        return;
+    
+    
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+  
+    if ( light != 0)
+    {
+        light->Update(frametime);
+    }
+    else
+    {
+       
+        if (!env)
+            return;
+        // Currently updates other then water and fog.
+        env->UpdateVisualEffects(frametime);
+    }
+   
 
-
-     // Currently updates other then water and fog.
-    env->UpdateVisualEffects(frametime);
 
 #ifdef CAELUM
+     if (!env)
+        return;
     Caelum::CaelumSystem* caelumSystem = env->GetCaelum();
 #endif
 
@@ -460,25 +507,44 @@ float Environment::GetGroundFogEndDistance()
 
 void Environment::SetSunDirection(const QVector<float>& vector)
 {
-    
-    EC_OgreEnvironment* env = GetEnvironmentComponent();
-    if (!env)
-        return;
-    // Assure that we do not given too near of zero vector values, a la HACK. 
+     // Assure that we do not given too near of zero vector values, a la HACK. 
     float squaredLength = vector[0] * vector[0] + vector[1]* vector[1] + vector[2] * vector[2];
     // Length must be diffrent then zero, so we say that value must be higher then our tolerance. 
     float tolerance = 0.001f;
+   
+    if ( squaredLength < tolerance) 
+        return;
 
-    if ( squaredLength > tolerance) 
-       env->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    if ( light != 0)
+    {
+        light->sunDirectionAttr.Set(Vector3df(vector[0], vector[1], vector[2]), AttributeChange::Default);
+        return;
+    }
+
+    EC_OgreEnvironment* env = GetEnvironmentComponent();
+    if (!env)
+        return;
+   
+    env->SetSunDirection(Vector3df(vector[0], vector[1], vector[2]));
     
     
 }
 
 QVector<float> Environment::GetSunDirection() 
 {
-    
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    if ( light != 0)
+    {
+        Vector3df vec = light->sunDirectionAttr.Get();
+        QVector<float> vector;
+        vector.append(vec.x), vector.append(vec.y), vector.append(vec.z);
+        return vector;
+    }
+
+
     EC_OgreEnvironment* env = GetEnvironmentComponent();
+    
     if (!env)
         return QVector<float>(3);
 
@@ -491,26 +557,49 @@ QVector<float> Environment::GetSunDirection()
 
 void Environment::SetSunColor(const QVector<float>& vector)
 {
-    
+
+    Color color;
+    if ( vector.size() == 4)
+    {
+       color = Color(vector[0], vector[1], vector[2], vector[3]);    
+    }
+    else if ( vector.size() == 3 )
+    {
+            
+      color = Color(vector[0], vector[1], vector[2], 1.0);   
+    }
+
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    if ( light != 0)
+    {   
+        light->sunColorAttr.Set(color, AttributeChange::Default);
+        return;
+    }
+
+
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;
 
-    if ( vector.size() == 4)
-    {
-        Color color(vector[0], vector[1], vector[2], vector[3]);
-        env->SetSunColor(color);
-    }
-    else if ( vector.size() == 3 )
-    {
-        Color color(vector[0], vector[1], vector[2], 1.0);
-        env->SetSunColor(color);
-    }
+    env->SetSunColor(color);
+
+  
     
 }
 
 QVector<float> Environment::GetSunColor()
 {
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    
+    if ( light != 0)
+    {
+       Color color =  light->sunColorAttr.Get();
+       
+       QVector<float> vec(4);
+       vec[0] = color.r, vec[1] = color.g, vec[2] = color.b, vec[3] = color.a;
+       return vec;
+
+    }
     
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
@@ -525,6 +614,15 @@ QVector<float> Environment::GetSunColor()
 
 QVector<float> Environment::GetAmbientLight()
 {
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    
+    if ( light != 0)
+    {
+        Color color = light->ambientColorAttr.Get();
+        QVector<float> vec(3);
+        vec[0] = color.r, vec[1] = color.g, vec[2] = color.b;
+        return vec;
+    }
     
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
@@ -541,6 +639,15 @@ QVector<float> Environment::GetAmbientLight()
 void Environment::SetAmbientLight(const QVector<float>& vector)
 {
     
+    EC_EnvironmentLight* light = GetEnvironmentLight();
+    
+    if ( light != 0)
+    {
+        light->ambientColorAttr.Set(Color(vector[0], vector[1], vector[2]), AttributeChange::Default);
+        return;
+    }
+
+
     EC_OgreEnvironment* env = GetEnvironmentComponent();
     if (!env)
         return;

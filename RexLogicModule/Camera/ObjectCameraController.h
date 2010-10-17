@@ -16,7 +16,6 @@
 #include <EC_Placeable.h>
 #include <EC_OgreCamera.h>
 
-
 #include <QObject>
 #include <QStringList>
 #include <QMap>

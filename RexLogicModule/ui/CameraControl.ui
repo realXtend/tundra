@@ -2,29 +2,34 @@
 <ui version="4.0">
  <class>CameraControl</class>
  <widget class="QWidget" name="CameraControl">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>394</width>
+    <width>99</width>
     <height>155</height>
    </rect>
   </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
   <property name="windowTitle">
-   <string>Camera Controls</string>
+   <string>CameraControl</string>
   </property>
   <property name="styleSheet">
-   <string notr="true">QPushButton.tripod { border-image: url(./data/ui/images/cameracontrol/tripod_curved.png);}
+   <string notr="true">QFrame.button_frame {border-color: transparent}
 
-QPushButton.tripod:hover { border-image: url(./data/ui/images/cameracontrol/camera_tripod_grey.png);}
+QPushButton.tripod { border-image: url(./data/ui/images/cameracontrol/camera_tripod_white.png);}
 
-QPushButton.tripod:checked { border-image: url(./data/ui/images/cameracontrol/tripod_curved_green.png);}
+QPushButton.tripod:hover{border-image: url(./data/ui/images/cameracontrol/camera_tripod_grey.png);}
 
-QFrame.LeftFrame { border-image: url(./data/ui/images/cameracontrol/widget_no_arrows.png);}
-
-QFrame.RightFrame { border-image: url(./data/ui/images/cameracontrol/camera_no_arrows.png);}
-
-QFrame.ZoomFrame { border-image: url(./data/ui/images/cameracontrol/zoom3.png); }
+QPushButton.tripod:checked {border-image: url(./data/ui/images/cameracontrol/camera_tripod_green.png);}
 
 QPushButton.free { border-image: url(./data/ui/images/cameracontrol/camera_free_white1.png);}
 
@@ -38,399 +43,241 @@ QPushButton.focus:hover { border-image: url(./data/ui/images/cameracontrol/camer
 
 QPushButton.focus:checked { border-image: url(./data/ui/images/cameracontrol/camera_focus_green1.png) ;}
 
-QPushButton.up {border-image: url(./data/ui/images/cameracontrol/widget1_up_white2.png); }
-
-QPushButton.up:hover {border-image: url(./data/ui/images/cameracontrol/widget1_up_grey2.png);}
-
-QPushButton.up:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_up_green2.png);}
-
-QPushButton.right {border-image: url(./data/ui/images/cameracontrol/widget1_right_white2.png); }
-
-QPushButton.right:hover {border-image: url(./data/ui/images/cameracontrol/widget1_right_grey2.png);}
-
-QPushButton.right:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_right_green2.png);}
-
-QPushButton.left {border-image: url(./data/ui/images/cameracontrol/widget1_left_white2.png); }
-
-QPushButton.left:hover {border-image: url(./data/ui/images/cameracontrol/widget1_left_grey2.png);}
-
-QPushButton.left:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_left_green2.png);}
-
-QPushButton.down {border-image: url(./data/ui/images/cameracontrol/widget1_down_white2.png); }
-
-QPushButton.down:hover {border-image: url(./data/ui/images/cameracontrol/widget1_down_grey2.png);}
-
-QPushButton.down:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_down_green2.png);}
-
-QPushButton.forward {border-image: url(./data/ui/images/cameracontrol/arrow_up_bela1.png); }
-
-QPushButton.forward:hover {border-image: url(./data/ui/images/cameracontrol/arrow_up_grey1.png);}
-
-QPushButton.forward:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_up_green1.png);}
-
-QPushButton.st_right {border-image: url(./data/ui/images/cameracontrol/arrow_right_white1.png); }
-
-QPushButton.st_right:hover {border-image: url(./data/ui/images/cameracontrol/arrow_right_grey1.png);}
-
-QPushButton.st_right:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_right_green1.png);}
-
-QPushButton.st_left {border-image: url(./data/ui/images/cameracontrol/arrow_left_white1.png); }
-
-QPushButton.st_left:hover {border-image: url(./data/ui/images/cameracontrol/arrow_left_grey1.png);}
-
-QPushButton.st_left:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_left_green1.png);}
-
-QPushButton.backward {border-image: url(./data/ui/images/cameracontrol/arrow_down_white1.png); }
-
-QPushButton.backward:hover {border-image: url(./data/ui/images/cameracontrol/arrow_down_grey1.png);}
-
-QPushButton.backward:pressed {border-image: url(./data/ui/images/cameracontrol/arrow_down_green1.png);}
-
-QPushButton.plus {background-color: transparent ; font-weight: bold; border:transparent; color: white; font: 30px; }
-
-QPushButton.plus:hover {background-color: transparent ; font-weight: bold;border:transparent;  color: grey; font: 30px; }
-
-QPushButton.plus:pressed {background-color: transparent ; font-weight: bold;border:transparent;  color: green; font: 30px; }
-
-QPushButton.minus {background-color: transparent ; font-weight: bold; border:transparent; color: white; font: 50px; }
-
-QPushButton.minus:hover {background-color: transparent ; font-weight: bold; border:transparent; color: grey; font: 50px; }
-
-QPushButton.minus:pressed {background-color: transparent ; border:transparent; font-weight: bold; color: green; font: 50px; }
-
-QPushButton.close { background-color: transparent; font-weight: bold; color: white; font: 15px; border:transparent;}
-
-QPushButton.close:hover { background-color: transparent; font-weight: bold; color: black; font: 15px; border:transparent;}
-
-QPushButton.close:pressed { background-color: transparent; font-weight: bold; color: red; font: 15px; border:transparent;}
-
 QPushButton.avatar {border-image: url(./data/ui/images/cameracontrol/avatar_look_white1.png); }
 
 QPushButton.avatar:hover {border-image: url(./data/ui/images/cameracontrol/avatar_look_grey1.png);}
 
 QPushButton.avatar:checked {border-image: url(./data/ui/images/cameracontrol/avatar_look_green1.png);}
 
-QLabel {color: white; font: 15px; font-weight: bold;}</string>
+</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout">
    <property name="spacing">
     <number>0</number>
    </property>
-   <property name="margin">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetFixedSize</enum>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>5</number>
+   </property>
+   <property name="bottomMargin">
     <number>0</number>
    </property>
    <item>
     <layout class="QVBoxLayout" name="verticalLayout_2">
+     <property name="spacing">
+      <number>0</number>
+     </property>
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinimumSize</enum>
+     </property>
      <item>
       <layout class="QHBoxLayout" name="horizontalLayout_6">
+       <property name="spacing">
+        <number>8</number>
+       </property>
+       <property name="sizeConstraint">
+        <enum>QLayout::SetMinimumSize</enum>
+       </property>
        <item>
         <layout class="QVBoxLayout" name="verticalLayout_6">
-         <property name="leftMargin">
+         <property name="spacing">
+          <number>10</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
+         <property name="margin">
           <number>5</number>
          </property>
-         <property name="rightMargin">
-          <number>5</number>
-         </property>
          <item>
-          <widget class="QPushButton" name="cameraTRIPOD_button">
+          <widget class="QFrame" name="frame">
            <property name="minimumSize">
             <size>
-             <width>35</width>
-             <height>25</height>
+             <width>50</width>
+             <height>131</height>
             </size>
            </property>
            <property name="maximumSize">
             <size>
-             <width>35</width>
-             <height>25</height>
+             <width>50</width>
+             <height>131</height>
             </size>
            </property>
-           <property name="text">
-            <string/>
+           <property name="frameShape">
+            <enum>QFrame::StyledPanel</enum>
            </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
+           <property name="frameShadow">
+            <enum>QFrame::Raised</enum>
            </property>
            <property name="class" stdset="0">
-            <string>tripod</string>
+            <string>button_frame</string>
            </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cameraFREE_button">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-           <property name="class" stdset="0">
-            <string>free</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cameraFOCUS_button">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-           <property name="class" stdset="0">
-            <string>focus</string>
-           </property>
-          </widget>
-         </item>
-         <item>
-          <widget class="QPushButton" name="cameraAVATAR_button">
-           <property name="minimumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>35</width>
-             <height>25</height>
-            </size>
-           </property>
-           <property name="text">
-            <string/>
-           </property>
-           <property name="checkable">
-            <bool>true</bool>
-           </property>
-           <property name="autoExclusive">
-            <bool>true</bool>
-           </property>
-           <property name="class" stdset="0">
-            <string>avatar</string>
-           </property>
+           <widget class="QPushButton" name="cameraFREE_button">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>34</y>
+              <width>35</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="class" stdset="0">
+             <string>free</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="cameraFOCUS_button">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>67</y>
+              <width>35</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="class" stdset="0">
+             <string>focus</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="cameraTRIPOD_button">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>1</y>
+              <width>35</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="class" stdset="0">
+             <string>tripod</string>
+            </property>
+           </widget>
+           <widget class="QPushButton" name="cameraAVATAR_button">
+            <property name="geometry">
+             <rect>
+              <x>10</x>
+              <y>100</y>
+              <width>35</width>
+              <height>25</height>
+             </rect>
+            </property>
+            <property name="minimumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="maximumSize">
+             <size>
+              <width>35</width>
+              <height>25</height>
+             </size>
+            </property>
+            <property name="text">
+             <string/>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="autoExclusive">
+             <bool>true</bool>
+            </property>
+            <property name="class" stdset="0">
+             <string>avatar</string>
+            </property>
+           </widget>
           </widget>
          </item>
         </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_9">
-         <item>
-          <widget class="QFrame" name="frame_4">
-           <property name="minimumSize">
-            <size>
-             <width>131</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>131</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <property name="class" stdset="0">
-            <string>LeftFrame</string>
-           </property>
-           <widget class="QPushButton" name="cameraLEFT_button">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>50</y>
-              <width>31</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>left</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="cameraUP_button">
-            <property name="geometry">
-             <rect>
-              <x>50</x>
-              <y>10</y>
-              <width>31</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="mouseTracking">
-             <bool>false</bool>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="checkable">
-             <bool>false</bool>
-            </property>
-            <property name="checked">
-             <bool>false</bool>
-            </property>
-            <property name="class" stdset="0">
-             <string>up</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="cameraDOWN_button">
-            <property name="geometry">
-             <rect>
-              <x>50</x>
-              <y>90</y>
-              <width>31</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>down</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="cameraRIGHT_button">
-            <property name="geometry">
-             <rect>
-              <x>90</x>
-              <y>50</y>
-              <width>31</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>right</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
         </layout>
        </item>
        <item>
         <layout class="QHBoxLayout" name="horizontalLayout_10">
-         <item>
-          <widget class="QFrame" name="frame_6">
-           <property name="minimumSize">
-            <size>
-             <width>41</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>41</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <property name="class" stdset="0">
-            <string>ZoomFrame</string>
-           </property>
-           <widget class="QPushButton" name="zoomIN_button">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>41</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>+</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-            <property name="class" stdset="0">
-             <string>plus</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="pushButton_16">
-            <property name="geometry">
-             <rect>
-              <x>30</x>
-              <y>100</y>
-              <width>41</width>
-              <height>21</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>-</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-            <property name="class" stdset="0">
-             <string>minus</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="zoomOUT_button">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>100</y>
-              <width>41</width>
-              <height>21</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string>-</string>
-            </property>
-            <property name="flat">
-             <bool>true</bool>
-            </property>
-            <property name="class" stdset="0">
-             <string>minus</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
+         <property name="spacing">
+          <number>0</number>
+         </property>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetDefaultConstraint</enum>
+         </property>
         </layout>
        </item>
        <item>
@@ -438,95 +285,9 @@ QLabel {color: white; font: 15px; font-weight: bold;}</string>
          <property name="spacing">
           <number>0</number>
          </property>
-         <item>
-          <widget class="QFrame" name="frame_5">
-           <property name="minimumSize">
-            <size>
-             <width>131</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="maximumSize">
-            <size>
-             <width>131</width>
-             <height>131</height>
-            </size>
-           </property>
-           <property name="frameShape">
-            <enum>QFrame::StyledPanel</enum>
-           </property>
-           <property name="frameShadow">
-            <enum>QFrame::Raised</enum>
-           </property>
-           <property name="class" stdset="0">
-            <string>RightFrame</string>
-           </property>
-           <widget class="QPushButton" name="moveBACKWARD_button">
-            <property name="geometry">
-             <rect>
-              <x>50</x>
-              <y>80</y>
-              <width>31</width>
-              <height>41</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>backward</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="moveLEFT_button">
-            <property name="geometry">
-             <rect>
-              <x>10</x>
-              <y>50</y>
-              <width>41</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>st_left</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="moveRIGHT_button">
-            <property name="geometry">
-             <rect>
-              <x>80</x>
-              <y>50</y>
-              <width>41</width>
-              <height>31</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>st_right</string>
-            </property>
-           </widget>
-           <widget class="QPushButton" name="moveFORWARD_button">
-            <property name="geometry">
-             <rect>
-              <x>50</x>
-              <y>10</y>
-              <width>31</width>
-              <height>41</height>
-             </rect>
-            </property>
-            <property name="text">
-             <string/>
-            </property>
-            <property name="class" stdset="0">
-             <string>forward</string>
-            </property>
-           </widget>
-          </widget>
-         </item>
+         <property name="sizeConstraint">
+          <enum>QLayout::SetMinimumSize</enum>
+         </property>
         </layout>
        </item>
       </layout>
@@ -535,6 +296,7 @@ QLabel {color: white; font: 15px; font-weight: bold;}</string>
    </item>
   </layout>
  </widget>
+ <layoutdefault spacing="6" margin="11"/>
  <resources/>
  <connections/>
 </ui>
