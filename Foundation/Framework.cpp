@@ -187,7 +187,7 @@ namespace Foundation
         if (log_formatter_)
             log_formatter_->release();
 
-        SAFE_DELETE(ui_);
+        SAFE_DELETE(ui);
         SAFE_DELETE(asset);
     }
 

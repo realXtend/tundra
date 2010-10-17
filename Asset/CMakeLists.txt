@@ -7,7 +7,7 @@ init_target(Asset)
 # Define source files
 file(GLOB CPP_FILES *.cpp)
 file(GLOB H_FILES *.h)
-file(GLOB MOC_FILES )
+file(GLOB MOC_FILES AssetAPI.h IAsset.h IAssetTransfer.h)
 
 set(SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
