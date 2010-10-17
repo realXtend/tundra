@@ -23,8 +23,7 @@
 
 #include <Ogre.h>
 
-
-#include <QDebug>
+#include "InputContext.h"
 
 namespace RexLogic
 {
@@ -43,9 +42,11 @@ namespace RexLogic
         returning_to_avatar_(false),
         dont_accept_clicks_(false)
     {
-         timeline_ = new QTimeLine(750, this);
-         timeline_->setCurveShape(QTimeLine::EaseInOutCurve);
-         timeline_->setFrameRange(0, 100);
+        vectors_lookat_.first = Vector3df::ZERO;
+        vectors_lookat_.second = Vector3df::ZERO;
+        timeline_ = new QTimeLine(750, this);
+        timeline_->setCurveShape(QTimeLine::EaseInOutCurve);
+        timeline_->setFrameRange(0, 100);
     }
 
     ObjectCameraController::~ObjectCameraController()
@@ -187,7 +188,7 @@ namespace RexLogic
             return;
 
         if (key_event->keyCode == Qt::Key_Alt)
-        {   
+        { 
             alt_key_pressed_ = true;
             QApplication::setOverrideCursor(Qt::PointingHandCursor);
         } 
@@ -429,19 +430,20 @@ namespace RexLogic
             position.x = (position_end.x - position_start.x) * step + position_start.x;
             position.y = (position_end.y - position_start.y) * step + position_start.y;
             position.z = (position_end.z - position_start.z) * step + position_start.z;
-            cam_ec_placable_->SetPosition(position);
+            if (object_selected_)
+                cam_ec_placable_->SetPosition(position);
         }
 
         if (vectors_lookat_.first != Vector3df::ZERO && vectors_lookat_.second != Vector3df::ZERO)
         {
             Vector3df lookat_start = vectors_lookat_.first;
             Vector3df lookat_end = vectors_lookat_.second;
-
             Vector3df look_at;
             look_at.x = (lookat_end.x - lookat_start.x) * step + lookat_start.x;
             look_at.y = (lookat_end.y - lookat_start.y) * step + lookat_start.y;
             look_at.z = (lookat_end.z - lookat_start.z) * step + lookat_start.z;
-            cam_ec_placable_->LookAt(look_at);
+            if (object_selected_)
+                cam_ec_placable_->LookAt(look_at);
         } 
     }
 
@@ -477,11 +479,9 @@ namespace RexLogic
             return;
         if (timeline_->state() == QTimeLine::Running)
             return;
-        
         returning_to_avatar_ = true;
         vectors_position_.first = cam_placable->GetPosition();
         vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
-
         if (selected_entity_)
             vectors_lookat_.first = selected_entity_->GetComponent<EC_Placeable>().get()->GetPosition();
         else

@@ -12,6 +12,7 @@
 #include "Sky.h"
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
+
 #include "SceneManager.h"
 
 #include "ModuleManager.h"
@@ -2607,6 +2608,18 @@ namespace Environment
             return;
         if (!environment->GetTimeOverride())
             return;
+        
+        EC_EnvironmentLight* light = environment->GetEnvironmentLight();
+        if ( light != 0)
+        {
+            light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
+            
+            qreal float_time = new_value;
+            float_time /= 100;
+            
+            light->currentTimeAttr.Set(float_time, AttributeChange::LocalOnly);
+            return;
+        }
 
         EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
         if (ec_ogre_env)

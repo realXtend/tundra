@@ -11,7 +11,7 @@ namespace ECEditor
 {
     //! MultiEditorPropertyManager will listen if property value has been changed by user and it will inform them to a MultiEditPropertyFactory.
     /*! MultiEditorPropertyManager will create new properties and return their pointer to user. When user change that property parameters manager
-     *  will inform the registered factory about those changes switch will update them to ui widget.
+     *  will inform the registered factory about those changes, which will update them to ui widget.
      *  \ingroup ECEditorModuleClient.
      */
     class MultiEditPropertyManager: public QtAbstractPropertyManager

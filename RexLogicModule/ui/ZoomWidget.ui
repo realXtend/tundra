@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ZoomWidget</class>
+ <widget class="QWidget" name="ZoomWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>41</width>
+    <height>131</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>41</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>41</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame.ZoomFrame { border-image: url(./data/ui/images/cameracontrol/zoom3.png); }
+
+QPushButton.plus {background-color: transparent ; font-weight: bold; border:transparent; color: white; font: 30px; }
+
+QPushButton.plus:hover {background-color: transparent ; font-weight: bold;border:transparent;  color: grey; font: 30px; }
+
+QPushButton.plus:pressed {background-color: transparent ; font-weight: bold;border:transparent;  color: green; font: 30px; }
+
+QPushButton.minus {background-color: transparent ; font-weight: bold; border:transparent; color: white; font: 50px; }
+
+QPushButton.minus:hover {background-color: transparent ; font-weight: bold; border:transparent; color: grey; font: 50px; }
+
+QPushButton.minus:pressed {background-color: transparent ; border:transparent; font-weight: bold; color: green; font: 50px; }</string>
+  </property>
+  <widget class="QFrame" name="frame_6">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>41</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>41</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>41</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <property name="class" stdset="0">
+    <string>ZoomFrame</string>
+   </property>
+   <widget class="QPushButton" name="zoomIN_button">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>0</y>
+      <width>41</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>+</string>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+    <property name="class" stdset="0">
+     <string>plus</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="zoomOUT_button">
+    <property name="geometry">
+     <rect>
+      <x>0</x>
+      <y>100</y>
+      <width>41</width>
+      <height>21</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>-</string>
+    </property>
+    <property name="flat">
+     <bool>true</bool>
+    </property>
+    <property name="class" stdset="0">
+     <string>minus</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>
