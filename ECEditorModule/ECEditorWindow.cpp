@@ -349,6 +349,8 @@ namespace ECEditor
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
     {
+        PROFILE(ECEditorWindow_SelectionChanged);
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
@@ -698,6 +700,7 @@ namespace ECEditor
 
     std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     {
+        PROFILE(ECEditorWindow_GetSelectedEntities);
         std::vector<Scene::EntityPtr> ret;
 
         if (!entity_list_)
