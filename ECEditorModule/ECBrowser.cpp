@@ -40,6 +40,8 @@ namespace ECEditor
 
     void ECBrowser::AddNewEntity(Scene::Entity *entity)
     {
+        PROFILE(ECBrowser_AddNewEntity);
+
         assert(entity);
         if(!entity)
             return;
@@ -57,6 +59,8 @@ namespace ECEditor
 
     void ECBrowser::RemoveEntity(Scene::Entity *entity)
     {
+        PROFILE(ECBrowser_RemoveEntity);
+
         if(!entity)
             return;
         if(selectedEntities_.find(entity) == selectedEntities_.end())
@@ -81,6 +85,8 @@ namespace ECEditor
 
     void ECBrowser::UpdateBrowser()
     {
+        PROFILE(ECBrowser_UpdateBrowser);
+
         // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
@@ -385,6 +391,8 @@ namespace ECEditor
     
     void ECBrowser::SelectionChanged()
     {
+        PROFILE(ECBrowser_SelectionChanged);
+
         QTreeWidgetItem *item = treeWidget_->currentItem();
         if(!item)
             return;
@@ -397,6 +405,7 @@ namespace ECEditor
         {
             for(uint i = 0; i < (*iter)->components_.size(); i++)
             {
+                PROFILE(ECBrowser_SelectionChanged_inner);
                 if((*iter)->components_[i].expired())
                     continue;
                 emit ComponentSelected((*iter)->components_[i].lock().get());
@@ -406,6 +415,8 @@ namespace ECEditor
     
     void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
     {
+        PROFILE(ECBrowser_NewComponentAdded);
+
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
         if(iter == selectedEntities_.end())
@@ -666,6 +677,8 @@ namespace ECEditor
 
     ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const IComponent &comp)
     {
+        PROFILE(ECBrowser_FindSuitableGroup);
+
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
