@@ -25,6 +25,7 @@ class QObject;
 class ISoundService;
 class UiServiceInterface;
 class Frame;
+class AssetAPI;
 class ScriptConsole;
 
 class Input;
@@ -274,6 +275,7 @@ namespace Foundation
         /// Returns the Naali core API Audio object.
         ISoundService *Audio() const;
 
+        AssetAPI *Asset() const;
         /// Stores the given QObject as a dynamic property into the Framework. This is done to implement
         /// easier script access for QObject-based interface objects.
         /// @param name The name to use for the property. Fails if name is an empty string.
@@ -363,6 +365,9 @@ namespace Foundation
         boost::program_options::options_description cm_descriptions_;
 
         NaaliUi *ui;
+
+        /// This object represents the Naali core Asset API.
+        AssetAPI *asset;
 
         //! command line arguments as supplied by the operating system
         int argc_;
