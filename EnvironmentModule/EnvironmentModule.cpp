@@ -15,6 +15,7 @@
 #include "EnvironmentEditor.h"
 #include "PostProcessWidget.h"
 
+
 #include "EC_WaterPlane.h"
 #include "EC_Fog.h"
 #include "EC_SkyPlane.h"
@@ -36,6 +37,7 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "ConsoleCommandServiceInterface.h"
 
 #include "TerrainWeightEditor.h"
 
@@ -117,7 +119,9 @@ namespace Environment
 
         w_editor_ = new TerrainWeightEditor(this);
         w_editor_->Initialize();
-        
+        RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
+            "Shows the terrain texture weight editor.",
+            Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
     }
 
     void EnvironmentModule::Uninitialize()
