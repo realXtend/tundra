@@ -249,6 +249,8 @@ namespace OgreRenderer
                             texUnit->setTextureName(texture_name);
                         else
                             texUnit->setTextureName("TextureMissing.png");
+
+                        return; // We found and replaced the index we wanted to - can early-out return without looping the rest of the indices for nothing.
                     }
                     cmp_index++;
                 }

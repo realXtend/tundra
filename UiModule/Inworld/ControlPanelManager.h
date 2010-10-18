@@ -10,7 +10,6 @@
 #include <QAction>
 #include <QMap>
 
-namespace Foundation { class KeyBindings; }
 namespace UiServices { class UiAction; }
 
 namespace CoreUi
@@ -20,7 +19,6 @@ namespace CoreUi
     class ControlPanelButton;
 
     class SettingsWidget;
-    class BindingWidget;
     class PersonalWidget;
     class LanguageWidget;
     class TeleportWidget;
@@ -43,7 +41,6 @@ namespace CoreUi
         qreal GetContentHeight() const;
         qreal GetContentWidth() const;
 
-        void SetServiceGetter(QObject *service_getter);
         SettingsWidget *GetSettingsWidget()  const { return settings_widget_; }
         PersonalWidget *GetPersonalWidget() const { return personal_widget_; }
         TeleportWidget *GetTeleportWidget() const { return teleport_widget_; }
@@ -68,12 +65,10 @@ namespace CoreUi
 
         QList<ControlPanelButton *> control_buttons_;
         QMap<UiServices::ControlButtonType, ControlPanelButton *> backdrop_area_buttons_map_;
-
         QMap<UiServices::ControlButtonType, UiServices::UiAction *> action_map_;
 
         // Contolled core widgets
         SettingsWidget *settings_widget_;
-        BindingWidget *binding_widget_;
         PersonalWidget *personal_widget_;
         LanguageWidget* language_widget_;
         TeleportWidget* teleport_widget_;

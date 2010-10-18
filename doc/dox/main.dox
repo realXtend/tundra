@@ -40,13 +40,15 @@ Contact Naali developers and users at
 </ul>
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0ffd0; vertical-align: top; padding: 5px;">
-<h2>Technical Guidelines</h2>
+<h2>Technical Resources</h2>
 See the following pages for help on working on the Naali codebase.  
 <ul>
 <li>\ref progconv "Coding conventions."
 <li><a href="http://wiki.realxtend.org/index.php/Header_Usage_Best_Practices">Header usage best practices</a>.
 <li><a href="http://doc.qt.nokia.com/">Qt documentation</a>.
 <li><a href="http://www.ogre3d.org/docs/api/html/">Ogre documentation</a>.
+<li>\ref component_base "Entity-Component Reference"
+<li>\ref ScriptSamples "Scripting Samples"
 </ul>
 </td>
 </tr>
@@ -77,7 +79,7 @@ The \ref ModuleArchitecture "Module" API gives access to all the modules registe
 Classes:
 <ul>
 <li>Foundation::ModuleManager
-<li>Foundation::ModuleInterface
+<li>IModule
 </ul>  
 </td>
 <td style="width:500px; height: 100px; border: solid 1px black; background-color: #e0d0ff; vertical-align: top; padding: 5px;">
@@ -92,7 +94,7 @@ Information:
 
 Classes:
 <ul>
-<li>Foundation::EventDataInterface
+<li>IEventData
 <li>Foundation::EventManager
 </ul>
    
@@ -157,9 +159,9 @@ Exposes the Naali main window and allows clients to create and show their own Qt
 Gives access to the Naali 3D scene structure: entities, components and attributes.
 Topics:
 <ul>
-<li>\subpage SceneModelPage "Scenes, entities and components."
+<li>\ref SceneModelPage "Scenes, entities and components."
 <li>Attributes and attribute metadata.
-<li>\subpage EntityActionPage "Entity actions".
+<li>\ref EntityActionPage "Entity actions".
 <li>Accessing scene contents from C++ code.
 <li>Working with multiple scenes.
 <li>Accessing entity attributes using JavaScript.   
@@ -170,10 +172,10 @@ Topics:
 </ul>
 Classes:
 <ul>
-<li>Foundation::AttributeInterface
-<li>Foundation::AttributeMetadata
+<li>IAttribute
+<li>AttributeMetadata
 <li>Foundation::ComponentManager
-<li>Foundation::ComponentInterface
+<li>IComponent
 <li>Scene::SceneManager
 <li>Scene::Entity
 <li>Scene::EntityAction
@@ -185,9 +187,9 @@ Classes:
 Implements the Naali asset system and a pluggable asset provider architecture for streaming in asset data files.
 
 For more information, see
-- \subpage AssetModule "Using the asset module".
-- \subpage Resources "Using resources".
-- \subpage TextureDecoderModule "Texture decoding".
+- \ref AssetModule "Using the asset module".
+- \ref Resources "Using resources".
+- \ref TextureDecoderModule "Texture decoding".
 - Assets on localhost.
 - HTTP asset provider.
 - Implementing a new asset provider plugin.
@@ -240,9 +242,9 @@ Provides functions for playing back audio on the client. \ref OpenALAudioModule 
 Topics:
  - \ref OpenALAudioModule "Using the sound system".
  - todo: add here the concepts related to audio.
-	
+
 Classes:
- - Foundation::SoundServiceInterface.
+ - ISoundService.
  - OpenALAudio::Sound.
  - OpenALAudio::SoundChannel.
  - OpenALAudio::SoundSettings.
@@ -276,7 +278,7 @@ The Frame API is accessed through the class \ref Foundation::Frame "Frame".
 <h2>Naali Scene Structure</h2>
 
 The most visible part of Naali to end-users and world builders is the Naali scene structure. The Scene API is used to access this scene in program code. 
-The \subpage component_base "Naali Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
+The \ref component_base "Naali Entity Component Reference" page contains a reference documentation for all the components that make up a scene. 
 
 <h2>Subsystems</h2>
 In addition to providing the core API, Naali contains the following functional subsystems, implemented as sets of modules.
@@ -288,7 +290,7 @@ In addition to providing the core API, Naali contains the following functional s
 This subsystem consists of the rendering library and the graphics-related Naali scene features.  
 
 See the following topics for more information:
-	- \subpage OgreRenderingModule "Using the Ogre renderer module".	
+	- \ref OgreRenderingModule "Using the Ogre renderer module".	
 	
 <p>Implemented by modules
 <ul>
@@ -328,9 +330,9 @@ The subsystem of Naali that provides video and audio communication features betw
 This subsystem consists of the modules that provide the features to access the features of a Taiga server or an OpenSim server.
 
 Topics:
-	- \subpage OpenSimProtocolConnection "Overview of login procedure". 
-	- \subpage OSUDP "Interfacing with the OpenSim world using OSUDP messages".
-	- \subpage XMLRPC "Performing custom XMLRPC calls".
+	- \ref OpenSimProtocolConnection "Overview of login procedure". 
+	- \ref OSUDP "Interfacing with the OpenSim world using OSUDP messages".
+	- \ref XMLRPC "Performing custom XMLRPC calls".
 
 <p>Implemented by modules
 <ul>
@@ -340,7 +342,7 @@ Topics:
 <li>LegacyAvatarModule
 <li>ProtocolModuleOpenSim
 <li>ProtocolModuleTaiga
-<li>\subpage RexLogic_Module "RexLogicModule"
+<li>\ref RexLogic_Module "RexLogicModule"
 <ul><li>Exposes the components FreeData, AttachedSound, OpenSimAvatar, NetworkPosition, Controllable, AvatarAppearance, HoveringWidget, Highlight, HoveringText, Clone, Light, OpenSimPresence, OpenSimPrim, Touchable, 3DCanvas, 3DCanvasSource, Ruler, SoundRuler, Name, ParticleSystem, SoundListener, Sound, Mesh, InputMapper, Movable.</ul>
 <li>WorldMapModule
 </ul>
@@ -389,8 +391,7 @@ Implements functionality for editing Naali scene content and Ogre asset data.
 
 <p>Implemented by modules
 <ul>
-<li>ECEditorModule
-<ul><li>Exposes the component SerializationTest.</ul>
+<li>\ref ec_editormodule "ECEditorModule"
 <li>OgreAssetEditorModule
 <li>WorldBuildingModule
 </ul>

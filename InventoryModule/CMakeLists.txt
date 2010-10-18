@@ -1,10 +1,3 @@
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-#############################################################################################
-
 # Define target name and output directory
 init_target (InventoryModule OUTPUT modules/core)
 
@@ -58,7 +51,7 @@ link_package (POCO)
 link_package (CURL)
 link_package (XMLRPC)
 link_package (OPENJPEG)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 link_package (PYTHON_QT)
 

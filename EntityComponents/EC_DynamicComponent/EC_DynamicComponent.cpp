@@ -7,6 +7,9 @@
 #include "Entity.h"
 #include "LoggingFunctions.h"
 
+#include <QScriptEngine>
+#include <QScriptValueIterator>
+
 #include "kNet.h"
 
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_DynamicComponent")
@@ -102,6 +105,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
     std::vector<DeserializeData> remAttributes;
     AttributeVector::iterator iter1 = oldAttributes.begin();
     std::vector<DeserializeData>::iterator iter2 = deserializedAttributes.begin();
+
     // Check what attributes we need to add or remove from the dynamic component (done by comparing two list differences).
     while(iter1 != oldAttributes.end() || iter2 != deserializedAttributes.end())
     {
@@ -109,9 +113,7 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         if(iter1 == oldAttributes.end())
         {
             for(;iter2 != deserializedAttributes.end(); iter2++)
-            {
                 addAttributes.push_back(*iter2);
-            }
             break;
         }
         // Only old attributes are left and they can be removed from the dynamic component.
@@ -125,7 +127,10 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
         // Attribute has already created and we only need to update it's value.
         if((*iter1)->GetNameString() == (*iter2).name_)
         {
-            SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            //SetAttribute(QString::fromStdString(iter2->name_), QString::fromStdString(iter2->value_), change);
+            for(AttributeVector::const_iterator attr_iter = attributes_.begin(); attr_iter != attributes_.end(); attr_iter++)
+                if ((*attr_iter)->GetNameString() == iter2->name_)
+                    (*attr_iter)->FromString(iter2->value_, change);
             iter2++;
             iter1++;
         }
@@ -162,34 +167,32 @@ void EC_DynamicComponent::DeserializeCommon(std::vector<DeserializeData>& deseri
 IAttribute *EC_DynamicComponent::CreateAttribute(const QString &typeName, const QString &name, AttributeChange::Type change)
 {
     IAttribute *attribute = 0;
-    if(ContainsAttribute(name))
+    if (ContainsAttribute(name))
         return attribute;
+
     attribute = framework_->GetComponentManager()->CreateAttribute(this, typeName.toStdString(), name.toStdString());
-    if(attribute)
-        emit AttributeAdded(name);
+    if (attribute)
+        emit AttributeAdded(attribute);
 
     AttributeChanged(attribute, change);
 
     return attribute;
 }
 
-void EC_DynamicComponent::RemoveAttribute(const QString &name)
+void EC_DynamicComponent::RemoveAttribute(const QString &name, AttributeChange::Type change)
 {
-    AttributeVector::iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
+    for(AttributeVector::iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
     {
-        if((*iter)->GetName() == name)
+        if((*iter)->GetNameString() == name.toStdString())
         {
-            // Send change signal just before delete, so that network syncmanager catches it
-            //! \todo changetype should be configurable. Now it's assumed to use Default
-            AttributeChanged(*iter, AttributeChange::Default);
-            
+            //! /todo Make sure that component removal is replicated to the server if change type is Replicate.
+            AttributeChanged(*iter, change);
+            emit AttributeAboutToBeRemoved(*iter);
             SAFE_DELETE(*iter);
             attributes_.erase(iter);
             emit AttributeRemoved(name);
             break;
         }
-        iter++;
     }
 }
 
@@ -200,168 +203,69 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
     {
         Attribute<QVariant> *attribute = new Attribute<QVariant>(this, name.toStdString().c_str());
         AttributeChanged(attribute, change);
-        emit AttributeAdded(name);
+        emit AttributeAdded(attribute);
     }
+    LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
 }
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
 {
-    QVariant value;
-    if(index < attributes_.size())
+    if(index < attributes_.size() && index >= 0)
     {
-        /*AttributeVector::const_iterator iter = attributes_.begin();
-        for(uint i = 0; i < index; i++)
-            iter++;*/
-
-        IAttribute *attribute = attributes_[index];//(*iter);
-        if(!attribute)
-            return value;
-        Attribute<QVariant> *variantAttribute = dynamic_cast<Attribute<QVariant>*>(attribute);
-        //In case the attribute is not QVariant type then return QVariant value as string.
-        if(!variantAttribute)
-        {
-            value = QVariant(attribute->ToString().c_str());
-            return value;
-        }
-        value = variantAttribute->Get();
+        return attributes_[index]->ToQVariant();
     }
-    return value;
+    return QVariant();
 }
 
 QVariant EC_DynamicComponent::GetAttribute(const QString &name) const
 {
-    QVariant value;
-    IAttribute *attribute = 0;
-    AttributeVector::const_iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
-    {
-        IAttribute *attributeInterface = *iter;
-        std::string attrName = attributeInterface->GetNameString();
-        if(attrName == name.toStdString())
-        {
-            attribute = attributeInterface;
-            break;
-        }
-        iter++;
-    }
+    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); ++iter)
+        if ((*iter)->GetNameString() == name.toStdString())
+            return (*iter)->ToQVariant();
 
-    if(!attribute)
-        return value;
-    Attribute<QVariant> *variantAttribute = dynamic_cast<Attribute<QVariant>*>(attribute);
-    //In case the attribute is not QVariant type then return QVariant value as string.
-    if(!variantAttribute)
-    {
-        //except if it's a bool, make a qvariant of that .. as a test
-        if(attribute->TypenameToString() == "bool")
-        {
-            Attribute<bool> *boolAttribute = dynamic_cast<Attribute<bool>*>(attribute);
-            value = QVariant(boolAttribute->Get());
-            return value;
-        }
-        //do this trick for real/floats too
-        else if(attribute->TypenameToString() == "real")
-        {
-            Attribute<float> *realAttribute = dynamic_cast<Attribute<float>*>(attribute);
-            value = QVariant(realAttribute->Get());
-            return value;
-        }
-        else
-        {
-            value = QVariant(attribute->ToString().c_str());
-            return value;
-        }
-    }
-
-    return variantAttribute->Get();
+    return QVariant();
 }
 
 void EC_DynamicComponent::SetAttribute(int index, const QVariant &value, AttributeChange::Type change)
 {
-    if(index < attributes_.size())
+    if(index < attributes_.size() && index >= 0)
     {
-        AttributeVector::const_iterator iter = attributes_.begin();
-        for(uint i = 0; i < index; i++)
-            iter++;
+        attributes_[index]->FromQVariant(value, change);
+    }
+    LogWarning("Cannot get attribute name, cause index is out of range.");
+}
 
-        IAttribute *attribute = (*iter);
-        if(!attribute)
-            return;
-        //Check if attribute is Attribute<QVariant> type and if not use attribute interface's FromString method to convert it to right format.
-        Attribute<QVariant> *variantAttribute = dynamic_cast<Attribute<QVariant>*>(attribute);
-        if(!variantAttribute)
+void EC_DynamicComponent::SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change)
+{
+    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
+    {
+        if((*iter)->GetNameString() == name.toStdString())
         {
-            //except if it's a bool, get the value from the qvariant .. as a test
-            //! @todo commeted out cause lines below causes null pointer crash
-            /*Attribute<bool> *boolAttribute = dynamic_cast<Attribute<bool>*>(attribute);
-            if(boolAttribute)
-            {
-                if (value.type() == QVariant::Bool)
-                {
-                    variantAttribute->Set(value, change);
-                }
-            }
-            //and for real/floats..
-            Attribute<float> *realAttribute = dynamic_cast<Attribute<float>*>(attribute);
-            if(realAttribute)
-            {
-                if (value.type() == QVariant::Double)
-                {
-                    variantAttribute->Set(value, change);
-                }
-            }
-
-            else
-            {
-                attribute->FromString(value.toString().toStdString(), change);
-            }*/
-            attribute->FromString(value.toString().toStdString(), change);
-            return;
+            (*iter)->FromScriptValue(value, change);
+            break; 
         }
-
-        variantAttribute->Set(value, change);
-        //IComponent::ComponentChanged(change);
     }
 }
 
 void EC_DynamicComponent::SetAttribute(const QString &name, const QVariant &value, AttributeChange::Type change)
 {
-    IAttribute *attribute = 0;
-    AttributeVector::const_iterator iter = attributes_.begin();
-    while(iter != attributes_.end())
+    for(AttributeVector::const_iterator iter = attributes_.begin(); iter != attributes_.end(); iter++)
     {
-        IAttribute *attributeInterface = *iter;
-        std::string attrName = attributeInterface->GetNameString();
-        if(attrName == name.toStdString())
+        if((*iter)->GetNameString() == name.toStdString())
         {
-            attribute = attributeInterface;
+            (*iter)->FromQVariant(value, change);
             break;
         }
-        iter++;
     }
-
-    if(!attribute)
-        return;
-    //Check if attribute is Attribute<QVariant> type and if not use attribute interface's FromString method to convert it to right format.
-    Attribute<QVariant> *variantAttribute = dynamic_cast<Attribute<QVariant>*>(attribute);
-    if(!variantAttribute)
-    {
-        attribute->FromString(value.toString().toStdString(), change);
-        return;
-    }
-    variantAttribute->Set(value, change);
-    //IComponent::ComponentChanged(change);
 }
 
 QString EC_DynamicComponent::GetAttributeName(int index) const
 {
-    if(index < attributes_.size())
+    if(index < attributes_.size() && index >= 0)
     {
-        /*AttributeVector::const_iterator iter = attributes_.begin();
-        for(uint i = 0; i < index; i++)
-            iter++;
-        return (*iter)->GetName();*/
         return attributes_[index]->GetName();
     }
+    LogWarning("Cannot get attribute name, cause index is out of range.");
     return QString();
 }
 

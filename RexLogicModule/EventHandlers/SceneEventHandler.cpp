@@ -5,7 +5,7 @@
 #include "SceneEvents.h"
 #include "RexLogicModule.h"
 #include "SceneManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "WorldStream.h"
 #include "EC_OpenSimPrim.h"
 
@@ -20,7 +20,7 @@ void PopulateUpdateInfos(std::vector<ProtocolUtilities::MultiObjectUpdateInfo>& 
             continue;
 
         boost::shared_ptr<EC_OpenSimPrim> prim = src[i]->GetComponent<EC_OpenSimPrim>();
-        boost::shared_ptr<OgreRenderer::EC_OgrePlaceable> ogre_pos = src[i]->GetComponent<OgreRenderer::EC_OgrePlaceable >();
+        boost::shared_ptr<EC_Placeable> ogre_pos = src[i]->GetComponent<EC_Placeable >();
         if (!prim && !ogre_pos)
             continue;
 

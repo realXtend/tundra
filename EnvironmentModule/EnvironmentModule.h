@@ -12,6 +12,16 @@
 #include "ModuleLoggingFunctions.h"
 #include "WorldStream.h"
 
+#ifdef CAELUM
+    namespace Caelum
+    {
+        class CaelumSystem;
+    }
+
+
+#endif
+
+
 namespace Environment
 {
     class Terrain;
@@ -132,7 +142,9 @@ namespace Environment
 
         //! @return Returns name of this module. Needed for logging.
         static const std::string &NameStatic() { return type_name_static_; }
-
+#ifdef CAELUM
+        Caelum::CaelumSystem* GetCaelum();
+#endif 
 
 
     private:

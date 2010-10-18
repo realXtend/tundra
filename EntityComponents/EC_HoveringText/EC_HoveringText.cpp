@@ -3,7 +3,7 @@
  *
  *  @file   EC_HoveringText.cpp
  *  @brief  EC_HoveringText shows a hovering text attached to an entity.
- *  @note   The entity must EC_OgrePlaceable available in advance.
+ *  @note   The entity must EC_Placeable available in advance.
  */
 
 #include "StableHeaders.h"
@@ -12,7 +12,7 @@
 #include "EC_HoveringText.h"
 #include "IModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
@@ -42,14 +42,17 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     visibility_animation_timeline_(new QTimeLine(1000, this)),
     visibility_timer_(new QTimer(this)),
     usingGradAttr(this, "Use Gradiant", false),
-	textAttr(this, "Text"),
-	fontAttr(this, "Font", "Arial"),
-	fontColorAttr(this, "Font Color"),
-	fontSizeAttr(this, "Font Size", 100),	
-	backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
-	positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
-	gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
-	gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f))
+    textAttr(this, "Text"),
+    fontAttr(this, "Font", "Arial"),
+    fontColorAttr(this, "Font Color"),
+    fontSizeAttr(this, "Font Size", 100),	
+    backgroundColorAttr(this, "Background Color", Color(1.0f,1.0f,1.0f,0.0f)),
+    positionAttr(this, "Position", Vector3df(0.0f, 0.0f, 1.0f)),
+    gradStartAttr(this, "Gradient Start", Color(0.0f,0.0f,0.0f,1.0f)),
+    gradEndAttr(this, "Gradient End", Color(1.0f,1.0f,1.0f,1.0f)),
+    borderColorAttr(this, "Border Color", Color(0.0f,0.0f,0.0f,1.0f)),
+    borderThicknessAttr(this, "Border Thickness", 0.0)
+
 
 
 {
@@ -62,7 +65,7 @@ EC_HoveringText::EC_HoveringText(IModule *module) :
     connect(visibility_animation_timeline_, SIGNAL(frameChanged(int)), SLOT(UpdateAnimationStep(int)));
     connect(visibility_animation_timeline_, SIGNAL(finished()), SLOT(AnimationFinished()));
 
-	QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
+    QObject::connect(this, SIGNAL(ParentEntitySet()), this, SLOT(UpdateSignals()));
 }
 
 EC_HoveringText::~EC_HoveringText()
@@ -235,7 +238,7 @@ void EC_HoveringText::ShowMessage(const QString &text)
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *node = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *node = entity->GetComponent<EC_Placeable>().get();
     if (!node)
         return;
 
@@ -290,7 +293,10 @@ void EC_HoveringText::Redraw()
 
             texPtr = Ogre::TextureManager::getSingleton().createManual(
                 textureName_, Ogre::ResourceGroupManager::DEFAULT_RESOURCE_GROUP_NAME, Ogre::TEX_TYPE_2D,
-                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+                img.width(), img.height(), 0, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
+    ///\todo Disabled mip map generation for now, since the line 'texPtr->getBuffer()->blitFromMemory(pixel_box);' below
+    /// will not regenerate them. 
+//                img.width(), img.height(), Ogre::MIP_DEFAULT, Ogre::PF_A8R8G8B8, Ogre::TU_DEFAULT);
 
             assert(!texPtr.isNull());
             if (texPtr.isNull())
@@ -317,7 +323,9 @@ void EC_HoveringText::Redraw()
         Ogre::Box dimensions(0,0, img.width(), img.height());
         Ogre::PixelBox pixel_box(dimensions, Ogre::PF_A8R8G8B8, (void*)img.bits());
         if (!texPtr->getBuffer().isNull())
+        {
             texPtr->getBuffer()->blitFromMemory(pixel_box);
+        }
     }
     catch (Ogre::Exception &e)
     {
@@ -379,9 +387,19 @@ QPixmap EC_HoveringText::GetTextPixmap()
     else
         painter.setBrush(backgroundColor_);
 
+    QColor borderCol;
+    Color col = borderColorAttr.Get();
+    borderCol.setRgbF(col.r, col.g, col.b, col.a);
+
+
+    
     // Draw background rect
-    painter.setPen(QColor(255,255,255,150));
+    QPen borderPen;
+    borderPen.setColor(borderCol);
+    borderPen.setWidthF(borderThicknessAttr.Get());
+    painter.setPen(borderPen);
     painter.drawRoundedRect(rect, 20.0, 20.0);
+    
 
     // Draw text
     painter.setPen(textColor_);
@@ -441,7 +459,6 @@ void EC_HoveringText::AttributeUpdated(IComponent *component, IAttribute *attrib
 		colEnd.setRgbF(col.r, col.g, col.b);
 		SetBackgroundGradient(colStart, colEnd);
 	}
-
 
 	// Repaint the new text with new appearance.
 	ShowMessage(textAttr.Get());

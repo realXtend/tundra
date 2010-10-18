@@ -81,7 +81,8 @@ namespace ProtocolUtilities
         //------------------- Connection managing functions ------------------- //
 
         /// Creates the UDP connection after a succesfull XML-RPC login.
-        /// @return True, if success.
+        /** @return True, if success.
+        */
         bool CreateUdpConnection();
 
         /// Request logout from the server.
@@ -120,24 +121,27 @@ namespace ProtocolUtilities
         /// Sends a message which creates a default prim in the world.
         /// @param position Position in the world.
         void SendObjectAddPacket(const RexTypes::Vector3 &position);
-        
+
         /// Sends a message which creates a default prim in the world.
-        /// @param x X coordinate in the world
-        /// @param y Y coordinate in the world
-        /// @param z Z coordinate in the world
+        /** @param x X coordinate in the world
+            @param y Y coordinate in the world
+            @param z Z coordinate in the world
+        */
         void SendObjectAddPacket(float x, float y, float z);
 
-        /// Sends a message which requests object removal.
-        /// @param local_id Local ID.
-        /// @param force God trying to force delete.
+        /** Sends a message which requests object removal.
+            @param local_id Local ID.
+            @param force God trying to force delete.
+        */
         void SendObjectDeletePacket(const uint32_t &local_id, const bool force = false);
 
-        /// Sends a message which requests object removal.
-        /// @param local_id_list List of Local ID's.
-        /// @param force God trying to force delete.
+        /** Sends a message which requests object removal.
+            @param local_id_list List of Local ID's.
+            @param force God trying to force delete.
+        */
         void SendObjectDeletePacket(const std::vector<uint32_t> &local_id_list, const bool force = false);
 
-        // Sends the basic movement message
+        /// Sends the basic movement message
         void SendAgentUpdatePacket(
             Quaternion bodyrot,
             Quaternion headrot,
@@ -151,47 +155,56 @@ namespace ProtocolUtilities
             uint8_t flags);
 
         /// Sends a packet which indicates selection of a group of prims.
-        /// @param Local ID of the object which is selected.
+        /** @param Local ID of the object which is selected.
+        */
         void SendObjectSelectPacket(const unsigned int object_id);
 
         /// Sends a packet which indicates selection of a prim.
-        /// @param List of local ID's of objects which are selected.
+        /** @param List of local ID's of objects which are selected.
+        */
         void SendObjectSelectPacket(std::vector<entity_id_t> object_id_list);
 
         /// Sends a packet which indicates deselection of prim(s).
-        /// @param Local ID of the object which is deselected.
+        /** @param Local ID of the object which is deselected.
+        */
         void SendObjectDeselectPacket(entity_id_t object_id);
 
         /// Sends an object shape update
-        /// @param prim to update
+        /** @param prim to update
+        */
         void SendObjectShapeUpdate(const EC_OpenSimPrim &prim);
 
         /// Sends a packet which indicates deselection of a group of prims.
-        /// @param List of local ID's of objects which are deselected.
+        /** @param List of local ID's of objects which are deselected.
+        */
         void SendObjectDeselectPacket(std::vector<entity_id_t> object_id_list);
 
         /// Sends a packet indicating change in Object's position, rotation and scale.
-        /// @param List of updated entity id's/pos/rot/scale
+        /** @param List of updated entity id's/pos/rot/scale
+        */
         void SendMultipleObjectUpdatePacket(const std::vector<MultiObjectUpdateInfo>& update_info_list);
-
-        // Convienience function for sending only one instead of list
-        // @param name info struct
-        void SendObjectNamePacket(const ObjectNameInfo& name_info);
 
         /// Sends a packet indicating change in Object's name.
         /// @param List of updated entity ids/names
         void SendObjectNamePacket(const std::vector<ObjectNameInfo>& name_info_list);
 
+        /// This is an overloaded function. Convenience function for sending only one instead of list.
+        /** @param name info struct
+        */
+        void SendObjectNamePacket(const ObjectNameInfo& name_info);
+
         /// Sends a packet which indicates object has been touched.
         /// @param Local ID of the object which has been touched.
         void SendObjectGrabPacket(entity_id_t object_id);
-        
-        // Convienience function for sending only one instead of list
-        // @param description info struct
+
+        /// Convienience function for sending only one instead of list
+        /** @param description info struct
+        */
         void SendObjectDescriptionPacket(const ObjectDescriptionInfo& description_info);
 
         /// Sends a packet indicating change in Object's description
-        /// @param List of updated entity pointers.
+        /** @param List of updated entity pointers.
+        */
         void SendObjectDescriptionPacket(const std::vector<ObjectDescriptionInfo>& description_info_list);
 
         /// Sends handshake reply packet
@@ -200,69 +213,71 @@ namespace ProtocolUtilities
         /// Sends hardcoded agentappearance packet
         void SendAgentSetAppearancePacket();
 
-        /** Sends packet which modifies the world terrain.
-         *  @param x World x position
-         *  @param y World y position
-         *  @param brush Brush size (small = 0, medium = 1, large = 2)
-         *  @param action Modify land action type (flatten = 0, raise = 1, lower = 2, smooth = 3, roughen = 4, revert = 5)
-         *  @param seconds How long terrain has been modified on viewer (delta time).
-         *  @param height Previous height value on spesific world position.
-         */
+        /// Sends packet which modifies the world terrain.
+        /** @param x World x position
+            @param y World y position
+            @param brush Brush size (small = 0, medium = 1, large = 2)
+            @param action Modify land action type (flatten = 0, raise = 1, lower = 2, smooth = 3, roughen = 4, revert = 5)
+            @param seconds How long terrain has been modified on viewer (delta time).
+            @param height Previous height value on spesific world position.
+        */
         void SendModifyLandPacket(f32 x, f32 y, u8 brush, u8 action, float seconds, float height);
 
-        /** Send a new terrain texture that we want to use.
-         *  @param new_texture_id id for asset resouce that we want to use as our terrain texture.
-         *  @param texture_index switch texture we want to change currently supports 4 different textures. (0 = lowest and 3 = highest)
-         */
+        /// Send a new terrain texture that we want to use.
+        /** @param new_texture_id id for asset resouce that we want to use as our terrain texture.
+            @param texture_index switch texture we want to change currently supports 4 different textures. (0 = lowest and 3 = highest)
+        */
         void SendTextureDetail(const RexTypes::RexAssetID &new_texture_id, uint texture_index);
 
-        /** Sends EstateOwnerMessage that will inculde data of terrain texture height, range and corner.
-        /*  @param start_height height value where texture start to show (meters).
-         *  @param height_range how much up texture will go from the texture_start_height (meters)
-         *  @param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE)
-         *          Note: in Rex this variable will only tell what texture height values we are changing.
-         */
+        /// Sends EstateOwnerMessage that will inculde data of terrain texture height, range and corner.
+        /** @param start_height height value where texture start to show (meters).
+            @param height_range how much up texture will go from the texture_start_height (meters)
+            @param corner what corner will the texture be used (0 = SW, 1 = NW, 2 = SE and 3 = NE)
+                    Note: in Rex this variable will only tell what texture height values we are changing.
+        */
         void SendTextureHeightsMessage(float start_height, float height_range, uint corner);
 
         /// Request new region information from the server(RegionHandshake is sented every client on that server)
-        /// ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures,
-        /// terrain texture startheights/ranges and WaterHeight)
+        /** ReqionHandshakeMessage will contain all new information about spesific region (e.g. new TerrainBase/TerrainDetail textures,
+            terrain texture startheights/ranges and WaterHeight)
+        */
         void SendTextureCommitMessage();
 
-        /** Sends a packet which creates a new inventory folder.
-         *  @param parent_id The parent folder UUID.
-         *  @param folder_id UUID of the folder.
-         *  @param type Asset type for the folder.
-         *  @param name Name of the folder.
-         */
+        /// Sends a packet which creates a new inventory folder.
+        /** @param parent_id The parent folder UUID.
+            @param folder_id UUID of the folder.
+            @param type Asset type for the folder.
+            @param name Name of the folder.
+        */
         void SendCreateInventoryFolderPacket(
             const RexUUID &parent_id,
             const RexUUID &folder_id,
             asset_type_t type,
             const std::string &name);
 
-        /** Sends a which moves inventory folder and its contains to other folder.
-         *  Used when deleting/removing folders to the Trash folder.
-         *  @param parent_id The parent folder (folder where we want to move another folder) UUID.
-         *  @param folder_id UUID of the folder to be moved.
-         *  @param re_timestamp Should the server re-timestamp children.
-         */
+        /// Sends a which moves inventory folder and its contains to other folder.
+        /** Used when deleting/removing folders to the Trash folder.
+            @param parent_id The parent folder (folder where we want to move another folder) UUID.
+            @param folder_id UUID of the folder to be moved.
+            @param re_timestamp Should the server re-timestamp children.
+        */
         void SendMoveInventoryFolderPacket(
             const RexUUID &folder_id,
             const RexUUID &parent_id,
             bool re_timestamp = true);
 
-        /** Sends a packet which deletes inventory folder.
-         *  @param folders List of new folders.
-         *  @param re_timestamp Should the server re-timestamp children.
-         */
+        /// Sends a packet which deletes inventory folder.
+        /** @param folders List of new folders.
+            @param re_timestamp Should the server re-timestamp children.
+        */
         //void SendMoveInventoryFolderPacket(
         //    std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders,
         //    const bool &re_timestamp = true);
 
         /// Send a packet which deletes inventory folder.
-        /// Works when to folder is in the Trash folder.
-        /// @param folder_id Folder ID.
+        /** Works when to folder is in the Trash folder.
+            @param folder_id Folder ID.
+        */
         void SendRemoveInventoryFolderPacket(const RexUUID &folder_id);
 
         /// Send a packet which deletes inventory folders.
@@ -272,10 +287,11 @@ namespace ProtocolUtilities
         //    std::list<ProtocolUtilities::InventoryFolderSkeleton *> folders);
 
         /// Sends packet which moves an inventory item to another folder within My Inventory.
-        /// @param item_id ID of the item to be moved.
-        /// @param folder_id ID of the destionation folder.
-        /// @param new_name New name for the item. Can be the same as before.
-        /// @param re_timestamp Should the server re-timestamp children.
+        /** @param item_id ID of the item to be moved.
+            @param folder_id ID of the destionation folder.
+            @param new_name New name for the item. Can be the same as before.
+            @param re_timestamp Should the server re-timestamp children.
+        */
         void SendMoveInventoryItemPacket(
             const RexUUID &item_id,
             const RexUUID &folder_id,
@@ -283,10 +299,11 @@ namespace ProtocolUtilities
             bool re_timestamp = true);
 
         /// Sends packet which requests an inventory item copy.
-        /// @param old_agent_id Agent ID.
-        /// @param old_item_id Item ID.
-        /// @param new_folder_id Destionation folder ID.
-        /// @param new_name New name for the item. Can be the same as before.
+        /** @param old_agent_id Agent ID.
+            @param old_item_id Item ID.
+            @param new_folder_id Destionation folder ID.
+            @param new_name New name for the item. Can be the same as before.
+        */
         void SendCopyInventoryItemPacket(
             const RexUUID &old_agent_id,
             const RexUUID &old_item_id,
@@ -294,18 +311,21 @@ namespace ProtocolUtilities
             const std::string &new_name);
 
         /// Sends packet which moves an inventory item to another folder.
-        /// @param item_id ID of the item to be moved.
+        /** @param item_id ID of the item to be moved.
+        */
         void SendRemoveInventoryItemPacket(const RexUUID &item_id);
 
         /// Sends packet which moves an inventory item to another folder.
-        /// @param item_id_list List of ID's of the items to be removed.
+        /** @param item_id_list List of ID's of the items to be removed.
+        */
         void SendRemoveInventoryItemPacket(std::list<RexUUID> item_id_list);
 
         /// Sends packet which modifies inventory folder's name and/or type.
-        /// @param parent_id The parent folder ID.
-        /// @param folder_id Folder ID.
-        /// @param type New type.
-        /// @param name New name.
+        /** @param parent_id The parent folder ID.
+            @param folder_id Folder ID.
+            @param type New type.
+            @param name New name.
+        */
         void SendUpdateInventoryFolderPacket(
             const RexUUID &folder_id,
             const RexUUID &parent_id,
@@ -313,12 +333,13 @@ namespace ProtocolUtilities
             const std::string &name);
 
         /// Sends packet which modifies inventory item's name, description, type etc.
-        /// @param item_id Item ID.
-        /// @param folder_id Folder ID.
-        /// @param asset_type Asset type.
-        /// @param inventory_type Inventory type.
-        /// @param name Name.
-        /// @param description Description.
+        /** @param item_id Item ID.
+            @param folder_id Folder ID.
+            @param asset_type Asset type.
+            @param inventory_type Inventory type.
+            @param name Name.
+            @param description Description.
+        */
         void SendUpdateInventoryItemPacket(
             const RexUUID &item_id,
             const RexUUID &folder_id,
@@ -327,13 +348,13 @@ namespace ProtocolUtilities
             const std::string &name,
             const std::string &description);
 
-        /** Sends a packet requesting contents of a inventory folder.
-         *  @param folder_id Folder UUID.
-         *  @param owner_id Owner UUID. If null, we use agent ID.
-         *  @param sort_order Sort order, 0 = name, 1 = time.
-         *  @param fetch_folders False will omit folders in query.
-         *  @param fetch_items False will omit items in query.
-         */
+        /// Sends a packet requesting contents of a inventory folder.
+        /** @param folder_id Folder UUID.
+            @param owner_id Owner UUID. If null, we use agent ID.
+            @param sort_order Sort order, 0 = name, 1 = time.
+            @param fetch_folders False will omit folders in query.
+            @param fetch_items False will omit items in query.
+        */
         void SendFetchInventoryDescendentsPacket(
             const RexUUID &folder_id,
             const RexUUID &owner_id = RexUUID(),
@@ -341,38 +362,33 @@ namespace ProtocolUtilities
             bool fetch_folders = true,
             bool fetch_items = true);
 
-        /**
-         *  Send a packet to Opensim server to accept friend request
-         *  @param transaction_id Unknown
-         *  @param folder_id Folder for calling card for this friend
-         *  @todo Find out the meaning of transaction_id argument
-         */
+        /// Send a packet to Opensim server to accept friend request
+        /** @param transaction_id Unknown
+            @param folder_id Folder for calling card for this friend
+            @todo Find out the meaning of transaction_id argument
+        */
         void SendAcceptFriendshipPacket(const RexUUID &transaction_id, const RexUUID &folder_id);
 
-        /**
-         *  Send a packet to Opensim server to decline received friend request
-         *  @param transaction_id Unknown
-         *  @todo Find out the meaning of transaction_id argument
-         */
+        /// Send a packet to Opensim server to decline received friend request
+        /** @param transaction_id Unknown
+            @todo Find out the meaning of transaction_id argument
+        */
         void SendDeclineFriendshipPacket(const RexUUID &transaction_id);
 
-        /**
-         *  Send friend request to Opensim server
-         *  @param dest_id Target id
-         */
+        ///Send friend request to Opensim server
+        /** @param dest_id Target id
+        */
         void SendFormFriendshipPacket(const RexUUID &dest_id);
 
-        /**
-         *  Sends a packet to remove friend from friend list.
-         *  @param other_id Unknown
-         *  @todo Find out meaning of the other_id argument
-         */
+        /// Sends a packet to remove friend from friend list.
+        /** @param other_id Unknown
+            @todo Find out meaning of the other_id argument
+        */
         void SendTerminateFriendshipPacket(const RexUUID &other_id);
 
+        ///
         /**
-         *
-         *
-         */
+        */
         void SendImprovedInstantMessagePacket(const RexUUID &target, const std::string &text);
 
         //! Sends a generic message
@@ -428,29 +444,35 @@ namespace ProtocolUtilities
         void SendObjectDuplicatePacket(const unsigned long ent_id, const unsigned long flags);
 
         /// Sends an UUIDNameRequest for UUID-username lookup.
-        ///@param user_id User ID.
+        /** @param user_id User ID.
+        */
         void SendUUIDNameRequestPacket(const RexUUID &user_id);
 
         /// Sends an UUIDNameRequest for UUID-username lookup.
-        /// Translate a UUID into first and last names
-        ///@param user_ids List of user ID's.
+        /** Translate a UUID into first and last names
+            @param user_ids List of user ID's.
+        */
         void SendUUIDNameRequestPacket(const std::vector<RexUUID> &user_ids);
 
         /// Sends an UUIDGroupNameRequest packet for UUID-group name lookup.
-        ///@param group_id Group ID.
+        /** @param group_id Group ID.
+        */
         void SendUUIDGroupNameRequestPacket(const RexUUID &group_id);
 
         /// Sends an UUIDGroupNameRequest packet for UUID-group name lookup.
-        ///@param group_ids List of group ID's.
+        /** @param group_ids List of group ID's.
+        */
         void SendUUIDGroupNameRequestPacket(const std::vector<RexUUID> &group_ids);
 
         /// Sends an ObjectLink packet.
-        ///@param local_ids List of local entity ID's.
+        /** @param local_ids List of local entity ID's.
+        */
         void SendObjectLinkPacket(const std::vector<entity_id_t> &local_ids);
         void SendObjectLinkPacket(const QStringList& strings);
 
         /// Sends an ObjectDelink packet.
-        ///@param local_ids List of local entity ID's.
+        /** @param local_ids List of local entity ID's.
+        */
         void SendObjectDelinkPacket(const std::vector<entity_id_t> &local_ids);
         void SendObjectDelinkPacket(const QStringList& strings);
 
@@ -458,38 +480,43 @@ namespace ProtocolUtilities
         void SendMapBlockRequest();
 
         /// Sends RequestGodlikePowers packet.
-        /// @param godlike Do we want to be requesting enablind or disabling god-like powers.
+        /** @param godlike Do we want to be requesting enablind or disabling god-like powers.
+        */
         void SendRequestGodlikePowersPacket(const bool godlike);
 
         /// Sends GodKickUser packet to kick out user from the server.
-        /// @param user_id ID of the user we wan't to kick.
-        /// @param reason Reason of the kicking.
+        /** @param user_id ID of the user we wan't to kick.
+            @param reason Reason of the kicking.
+        */
         void SendGodKickUserPacket(const RexUUID &user_id, const std::string &reason);
 
         /// Send GodKickUser packet with params as QString's
-        /// @param user_id ID of the user we wan't to kick.
-        /// @param reason Reason of the kicking.
+        /** @param user_id ID of the user we wan't to kick.
+            @param reason Reason of the kicking.
+        */
         void SendGodKickUserPacket(const QString &user_id, const QString &reason);
 
         /// Sends EstateInfoRequest packet to get current estate info.
-        /// @param method EstateInfoRequest method name
-        /// @param paramlist parameters
+        /** @param method EstateInfoRequest method name
+            @param paramlist parameters
+        */
         void SendEstateOwnerMessage(const QString &method, const QStringList& paramlist);
 
         //------------------- Utility functions ------------------- //
 
-        /// Set the connection type.
-        /// @param ConnectionType enum.
+        /// Sets the connection type.
+        /** @param ConnectionType enum.
+        */
         void SetConnectionType(const ConnectionType &type) { connection_type_ = type; }
 
-        /// Get the connection type.
-        /// @return ConnectionType enum.
+        /// Returns the connection type.
         ConnectionType GetConnectionType() const { return connection_type_; }
 
         /// Set credential info
-        /// @param identity Identity
-        /// @param password Password (if known)
-        /// @param authentication Authentication url (if known)
+        /** @param identity Identity
+            @param password Password (if known)
+            @param authentication Authentication url (if known)
+        */
         void StoreCredentials(const std::string& identity, const std::string& password, const std::string& authentication)
         {
             username_ = identity;
@@ -507,8 +534,9 @@ namespace ProtocolUtilities
         ClientParameters GetInfo() const { return clientParameters_; }
 
         /// Returns capability URL by name.
-        /// @param name Name of the capability.
-        /// @return Capability URL or empty string if capability doesn't exist network interface not available.
+        /** @param name Name of the capability.
+            @return Capability URL or empty string if capability doesn't exist network interface not available.
+        */
         QString GetCapability(const QString &name) const;
 
         /// @return Last used password
@@ -539,11 +567,13 @@ namespace ProtocolUtilities
         boost::shared_ptr<ProtocolModuleInterface> GetCurrentProtocolModule() const;
 
         /// Get boost::weak_ptr to current Protocol Module
-        /// @return boost::weak_ptr to current Protocol Module
+        /** @return boost::weak_ptr to current Protocol Module
+        */
         boost::weak_ptr<ProtocolModuleInterface> GetCurrentProtocolModuleWeakPointer() const;
 
         /// Prepares the network events of current module
-        /// @return True if preparations succeeded
+        /** @return True if preparations succeeded
+        */
         bool PrepareCurrentProtocolModule();
 
         /// Unregisters the eventmanager from current Protocol Module
@@ -552,7 +582,8 @@ namespace ProtocolUtilities
         /// Set authentication type
         void SetAuthenticationType(AuthenticationType authentication_type) { authentication_type_ = authentication_type; }
 
-        AuthenticationType GetAuthenticationType() { return authentication_type_; }
+        /// Returns authentication type.
+        AuthenticationType GetAuthenticationType() const { return authentication_type_; }
 
     private:
         Q_DISABLE_COPY(WorldStream);
@@ -601,7 +632,7 @@ namespace ProtocolUtilities
 
         /// Type of the connection.
         ConnectionType connection_type_;
-        
+
         /// Type of the authentication to this stream
         AuthenticationType authentication_type_;
 

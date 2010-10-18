@@ -3,7 +3,7 @@
 #include "StableHeaders.h"
 #include "DebugOperatorNew.h"
 #include "EC_WaterPlane.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "IAttribute.h"
 
 #include "Renderer.h"
@@ -17,6 +17,9 @@ DEFINE_POCO_LOGGING_FUNCTIONS("EC_WaterPlane")
 #include <Ogre.h>
 #include <OgreQuaternion.h>
 #include <OgreColourValue.h>
+#include <OgreMath.h>
+// NaN - check
+#include <RexNetworkUtils.h>
 
 #include "MemoryLeakCheck.h"
 
@@ -43,7 +46,8 @@ namespace Environment
         fogModeAttr(this, "Fog mode", 3),
         entity_(0),
         node_(0),
-        attached_(false)
+        attached_(false),
+        attachedToRoot_(false)
     {
         static AttributeMetadata metadata;
         static bool metadataInitialized = false;
@@ -78,7 +82,7 @@ namespace Environment
         
         // If there exist placeable copy its position for default position and rotation.
        
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ( placeable != 0)
         {
             Vector3df vec = placeable->GetPosition();
@@ -180,7 +184,7 @@ namespace Environment
                 entity_ = sceneMgr->createEntity(renderer_.lock()->GetUniqueObjectName(), name_.toStdString().c_str());
                 entity_->setMaterialName(materialNameAttr.Get().toStdString().c_str());
                 entity_->setCastShadows(false);
-                // Tries to attach entity, if there is not EC_OgrePlaceable availible, it will not attach object
+                // Tries to attach entity, if there is not EC_Placeable availible, it will not attach object
                 AttachEntity();
                
             }
@@ -197,7 +201,9 @@ namespace Environment
             return;
         
         OgreRenderer::RendererPtr renderer = renderer_.lock();
+
         DetachEntity();
+        
         Ogre::SceneManager* scene_mgr = renderer->GetSceneManager();
         scene_mgr->destroyEntity(entity_);
         entity_ = 0;
@@ -227,6 +233,7 @@ namespace Environment
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            attachedToRoot_ = true;
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             
@@ -239,9 +246,19 @@ namespace Environment
         Ogre::Vector3 current_pos = node_->_getDerivedPosition();
         Ogre::Vector3 tmp(vec.x,vec.y,vec.z);
         tmp = current_pos + tmp;
+        
+        Vector3df pos(tmp.x, tmp.y, tmp.z);
+        if ( !RexTypes::IsValidPositionVector(pos) )
+            return;
+       
         node_->setPosition(tmp);
 #else
-        node_->_setDerivedPosition(Ogre::Vector3(vec.x, vec.y, vec.z));
+        Ogre::Vector3 pos(vec.x, vec.y, vec.z);
+        if ( !RexTypes::IsValidPositionVector(vec) )
+            return;
+        
+
+        node_->_setDerivedPosition(pos);
 #endif
 
     }
@@ -254,6 +271,7 @@ namespace Environment
             Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
             node_->attachObject(entity_);
             attached_ = true;
+            attachedToRoot_ = true;
             scene_mgr->getRootSceneNode()->addChild(node_);
             node_->setVisible(true);
             
@@ -305,7 +323,7 @@ namespace Environment
             // Change rotation
 
             // Is there placeable component? If not use given rotation 
-            //if ( dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get()) == 0 )
+            //if ( dynamic_cast<EC_Placeable*>(FindPlaceable().get()) == 0 )
             //{
                SetOrientation();
             //}
@@ -367,7 +385,7 @@ namespace Environment
         ComponentPtr comp;
         if(!GetParentEntity())
             return comp;
-        comp = GetParentEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>();
+        comp = GetParentEntity()->GetComponent<EC_Placeable>();
         return comp;
 
     }
@@ -375,7 +393,7 @@ namespace Environment
    
     void EC_WaterPlane::AttachEntity()
     {
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ((!entity_) || (!placeable) || attached_)
             return;
 
@@ -390,9 +408,20 @@ namespace Environment
       
     void EC_WaterPlane::DetachEntity()
     {
-        OgreRenderer::EC_OgrePlaceable* placeable = dynamic_cast<OgreRenderer::EC_OgrePlaceable*>(FindPlaceable().get());
+        EC_Placeable* placeable = dynamic_cast<EC_Placeable*>(FindPlaceable().get());
         if ((!attached_) || (!entity_) || (!placeable))
             return;
+
+        if ( attachedToRoot_ )
+        {
+            Ogre::SceneManager* scene_mgr = renderer_.lock()->GetSceneManager();
+            node_->detachObject(entity_);
+            attached_ = false;
+            attachedToRoot_ = false;
+            scene_mgr->getRootSceneNode()->removeChild(node_);
+            return;
+            
+        }
 
         Ogre::SceneNode* node = placeable->GetSceneNode();
         node_->detachObject(entity_);

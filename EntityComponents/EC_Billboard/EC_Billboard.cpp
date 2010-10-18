@@ -3,14 +3,14 @@
  *
  *  @file   EC_Billboard.cpp
  *  @brief  EC_Billboard shows a billboard (3D sprite) that is attached to an entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
  */
 
 #include "StableHeaders.h"
 #include "EC_Billboard.h"
 #include "IModule.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "Entity.h"
 #include "OgreMaterialUtils.h"
 #include "LoggingFunctions.h"
@@ -68,7 +68,7 @@ void EC_Billboard::Show(const std::string &imageName, int timeToShow)
     if (!entity)
         return;
 
-    OgreRenderer::EC_OgrePlaceable *placeable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+    EC_Placeable *placeable = entity->GetComponent<EC_Placeable>().get();
     if (!placeable)
         return;
 

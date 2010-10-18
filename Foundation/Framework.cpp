@@ -22,6 +22,7 @@
 #include "../Input/Input.h"
 #include "ISoundService.h"
 #include "Frame.h"
+#include "AssetAPI.h"
 #include "Console.h"
 #include "UiServiceInterface.h"
 
@@ -89,6 +90,7 @@ namespace Foundation
         initialized_(false),
         log_formatter_(0),
         splitterchannel(0),
+        asset(0),
         frame_(new Frame(this)),
         console_(new ScriptConsole(this))
     {
@@ -131,7 +133,7 @@ namespace Foundation
 
             // Set config values we explicitly always want to override
             config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_major"), std::string("0"));
-            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.1"));
+            config_manager_->SetSetting(Framework::ConfigurationGroup(), std::string("version_minor"), std::string("3.2"));
 
             CreateLoggingSystem(); // depends on config and platform
 
@@ -151,9 +153,16 @@ namespace Foundation
             initialized_ = true;
 
             ui = new NaaliUi(this);
+            asset = new AssetAPI(this);
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
             impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
+
+            RegisterDynamicObject("ui", ui);
+            RegisterDynamicObject("frame", frame_);
+            RegisterDynamicObject("input", &impl->input);
+            RegisterDynamicObject("console", console_);
+            RegisterDynamicObject("asset", asset);
         }
     }
 
@@ -178,6 +187,9 @@ namespace Foundation
         log_channels_.clear();
         if (log_formatter_)
             log_formatter_->release();
+
+        SAFE_DELETE(ui);
+        SAFE_DELETE(asset);
     }
 
     void Framework::CreateLoggingSystem()
@@ -679,6 +691,11 @@ namespace Foundation
         return ui;
     }
 
+    UiServiceInterface *Framework::UiService() 
+    { 
+        return GetService<UiServiceInterface>(); 
+    }
+
     ScriptConsole *Framework::Console() const
     { 
         return console_;
@@ -692,6 +709,26 @@ namespace Foundation
 //            throw Exception("Fatal: Sound service not present!");
             RootLogWarning("Framework::Audio(): Sound service not present!");
         return sound_logic.get();
+    }
+
+    AssetAPI *Framework::Asset() const
+    {
+        return asset;
+    }
+
+    bool Framework::RegisterDynamicObject(QString name, QObject *object)
+    {
+        if (name.length() == 0 || !object)
+            return false;
+
+        // We never override a property if it already exists.
+        if (property(name.toStdString().c_str()).isValid())
+            return false;
+
+        setProperty(name.toStdString().c_str(), QVariant::fromValue<QObject*>(object));
+
+        return true;
+
     }
 
     Scene::ScenePtr Framework::GetScene(const QString &name) const

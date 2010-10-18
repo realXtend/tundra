@@ -1,3 +1,7 @@
+// For conditions of distribution and use, see copyright notice in license.txt
+
+#include "DebugOperatorNew.h"
+
 #include "NaaliGraphicsView.h"
 
 #include <QRect>
@@ -5,6 +9,8 @@
 #include <QEvent>
 #include <QResizeEvent>
 #include <utility>
+
+#include "MemoryLeakCheck.h"
 
 using namespace std;
 
@@ -22,7 +28,11 @@ NaaliGraphicsView::NaaliGraphicsView(QWidget *parent)
     setLineWidth(0);
 
     setAttribute(Qt::WA_DontShowOnScreen, true);
+}
 
+NaaliGraphicsView::~NaaliGraphicsView()
+{
+    delete backBuffer;
 }
 
 QImage *NaaliGraphicsView::BackBuffer()
@@ -126,16 +136,33 @@ void NaaliGraphicsView::resizeEvent(QResizeEvent *e)
 */
 }
 
+void NaaliGraphicsView::dragEnterEvent(QDragEnterEvent *e)
+{
+    emit DragEnterEvent(e);
+}
+
+void NaaliGraphicsView::dragMoveEvent(QDragMoveEvent *e)
+{
+    emit DragMoveEvent(e);
+}
+
+void NaaliGraphicsView::dropEvent(QDropEvent *e)
+{
+    emit DropEvent(e);
+}
+
 void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
 {
     using namespace std;
 
+#ifndef USE_D3D9_SUBSURFACE_BLIT
     // We received an unknown-sized scene change message. Mark everything dirty! (I've no idea what Qt
     // means when it sends a message saying 'nothing changed').
     if (rectangles.size() == 0)
         dirtyRectangle = QRectF(0, 0, width(), height());
+#endif
 
-    if (!IsViewDirty())
+    if (!IsViewDirty() && rectangles.size() > 0)
         dirtyRectangle = rectangles[0];
 
     // Include an extra guardband pixel to avoid graphical artifacts from occurring when redrawing.

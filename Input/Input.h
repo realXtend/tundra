@@ -128,7 +128,7 @@ public slots:
     /// Returns the highest-priority input context that gets all events first to handle (even before going to Qt widgets).
     /// You may register your own keyboard and mouse handlers in this context and block events from going to the main window
     /// (by setting the .handled member of the event to true), but be very careful when doing so.
-    InputContext &TopLevelInputContext() { return topLevelInputContext; }
+    InputContext *TopLevelInputContext() { return &topLevelInputContext; }
 
     /// Associates the given custom action with the given key.
     void SetKeyBinding(const QString &actionName, QKeySequence key);

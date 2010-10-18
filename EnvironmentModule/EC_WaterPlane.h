@@ -40,6 +40,14 @@ namespace OgreRenderer
 Registered by Enviroment::EnvironmentModule. Water plane component defines into world actually water cube. Inside of that water cube scene fog is changed to correspond, given
 water plane underwater fog properties. Water plane cannot visualize outside as a water cube (it still looks just plane). 
 
+<h3> Using component to syncronize ocean in Taiga </h3>
+
+Currently (not in Tundra) EC_WaterPlane component can be used to syncronize Ocean in Taiga worlds. This can be done
+so that user creates entity and sets entity EC_Name-component. If this component name is set as "WaterEnvironment" our current implementation
+will create automagically a EC_WaterPlane-component on it. This component is now usable for every users and all changes on it will be transfered 
+to all users. This syncronized Water-plane component can also edit through environment editor (in world tools).  
+
+
 <b>Attributes</b>:
 <ul>
 <li> int : xSizeAttr.
@@ -74,21 +82,9 @@ water plane underwater fog properties. Water plane cannot visualize outside as a
 <div> UnderWater fog mode, defines how Fog density increases. </div>
 </ul>
 
-<b> Exposes the following scriptable functions: </b>
-<ul>
-<li>...
-</ul>
-
-<b> Reacts on the following actions: </b>
-<ul>
-<li>...
-</ul>
-</td>
-</tr>
-
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>. The position in the OgrePlaceable component specifies the position in the world space where this water plane is by default is placed at. 
+<b>Depends on the component Placeable</b>. The position in the Placeable component specifies the position in the world space where this water plane is by default is placed at. 
 </table>
 
 */
@@ -202,8 +198,8 @@ class EC_WaterPlane : public IComponent
         explicit EC_WaterPlane(IModule *module);
         
         /**
-         * Finds out that is EC_OgrePlaceable component connected to same entity where waterplane compontent is placed. 
-         * @returns component pointer to EC_OgrePlaceable component.
+         * Finds out that is EC_Placeable component connected to same entity where waterplane compontent is placed. 
+         * @returns component pointer to EC_Placeable component.
          */
         ComponentPtr FindPlaceable() const;
         
@@ -214,14 +210,14 @@ class EC_WaterPlane : public IComponent
         
         /**
          * Changes water plane position, this function should be called only if 
-         * entity where water plane is connected has not a EC_OgrePlaceable component. 
+         * entity where water plane is connected has not a EC_Placeable component. 
          * @note uses attribute @p positionAttr_ to for waterplane defining water plane posititon 
          */
         void SetPosition();
         
          /**
          * Changes water plane rotation, this function should be called only if 
-         * entity where water plane is connected has not a EC_OgrePlaceable component. 
+         * entity where water plane is connected has not a EC_Placeable component. 
          * @note uses attribute @p rotationAttr_ to for waterplane defining water plane rotation
          */
         void SetOrientation();
@@ -231,7 +227,7 @@ class EC_WaterPlane : public IComponent
         Ogre::SceneNode* node_;
        
         bool attached_;
-
+        bool attachedToRoot_;
         int lastXsize_;
         int lastYsize_;
 

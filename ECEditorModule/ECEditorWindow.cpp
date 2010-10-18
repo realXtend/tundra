@@ -15,11 +15,13 @@
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
+#include "EC_Name.h"
 #include "ComponentManager.h"
 #include "XMLUtilities.h"
 #include "SceneEvents.h"
 #include "EventManager.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
+#include "AddComponentDialog.h"
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -93,7 +95,6 @@ namespace ECEditor
     }
 
     ECEditorWindow::ECEditorWindow(Foundation::Framework* framework) :
-        QWidget(),
         framework_(framework),
         toggle_entities_button_(0),
         entity_list_(0),
@@ -110,10 +111,14 @@ namespace ECEditor
     {
         if (entity_list_)
         {
-            QString entity_id_str;
-            entity_id_str.setNum((int)entity_id);
-            entity_list_->clearSelection();
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_id_str));
+            //If entity don't have EC_Name component, then use it's id as name.
+            QString entity_name = QString::number(entity_id);
+            Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
+            if(entity && entity->HasComponent("EC_Name"))
+                entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
+            entity_id_to_name_.insert(QString::number(entity_id), entity_name);
+
+            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
         }
     }
 
@@ -122,36 +127,64 @@ namespace ECEditor
         if (!entity_list_)
             return;
 
-        for(int i = 0; i < entity_list_->count(); ++i)
-        {
-            if (entity_list_->item(i)->text() == QString::number(entity_id))
+        QString entity_id_str = QString::number(entity_id);
+        EntityIdToNameMap::iterator iter = entity_id_to_name_.find(entity_id_str);
+        if(iter != entity_id_to_name_.end())
+            entity_id_str = iter.value();
+            entity_id_to_name_.erase(iter);
+
+        QList<QListWidgetItem *> items = entity_list_->findItems(entity_id_str, Qt::MatchExactly);
+        for(uint i = 0; i < items.size(); i++)
+            SAFE_DELETE(items[i]);
+
+        items.clear();
+    }
+
+    void ECEditorWindow::SetSelectedEntities(const QList<entity_id_t> &ids)
+    {
+        if (!entity_list_)
+            return;
+
+        foreach(entity_id_t id, ids)
+            for (uint i = 0; i < entity_list_->count(); ++i)
             {
-                QListWidgetItem* item = entity_list_->takeItem(i);
-                SAFE_DELETE(item);
+                QListWidgetItem *item = entity_list_->item(i);
+                if (id == (entity_id_t)item->text().toInt())
+                {
+                    item->setSelected(true);
+                    break;
+                }
             }
-        }
+
+        RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::ClearEntities()
     {
         if (entity_list_)
             entity_list_->clear();
+        entity_id_to_name_.clear();
         RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::DeleteEntitiesFromList()
     {
         if ((entity_list_) && (entity_list_->hasFocus()))
-        {
-            for (int i = entity_list_->count() - 1; i >= 0; --i)
-            {
+            for(int i = entity_list_->count() - 1; i >= 0; --i)
                 if (entity_list_->item(i)->isSelected())
                 {
                     QListWidgetItem* item = entity_list_->takeItem(i);
+                    EntityIdToNameMap::iterator iter = entity_id_to_name_.find(item->text());
+                    if(iter != entity_id_to_name_.end())
+                        entity_id_to_name_.erase(iter);
+                    else
+                    {
+                        QString key = entity_id_to_name_.key(item->text(), QString());
+                        if(!key.isNull())
+                            entity_id_to_name_.erase(entity_id_to_name_.find(key));
+                    }
                     delete item;
                 }
-            }
-        }
     }
 
     void ECEditorWindow::DeleteComponent(const QString &componentType, const QString &name)
@@ -173,7 +206,17 @@ namespace ECEditor
     
     void ECEditorWindow::CreateComponent()
     {
-        bool ok;
+        if(component_dialog_)
+            component_dialog_->deleteLater();
+
+        if(selectedEntities_.size())
+        {
+            component_dialog_ = new AddComponentDialog(framework_, selectedEntities_.toList(), this);
+            component_dialog_->SetComponentList(GetAvailableComponents());
+            connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinnished(int)));
+            component_dialog_->show();
+        }
+        /*bool ok;
         QString typeName = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
         if (!ok || typeName.isEmpty())
             return;
@@ -181,11 +224,9 @@ namespace ECEditor
         if (!ok)
             return;
 
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        for (uint i = 0; i < entities.size(); ++i)
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
         {
-            ComponentPtr comp;
-            comp = entities[i]->GetComponent(typeName, name);
+            ComponentPtr comp = entity->GetComponent(typeName, name);
             // Check if component has been already added to a entity.
             if(comp.get())
                 continue;
@@ -196,8 +237,8 @@ namespace ECEditor
             else
                 comp = framework_->GetComponentManager()->CreateComponent(typeName); 
             if (comp)
-                entities[i]->AddComponent(comp, AttributeChange::Default);
-        }
+                entity->AddComponent(comp, AttributeChange::Default);
+        }*/
     }
 
     void ECEditorWindow::DeleteEntity()
@@ -206,9 +247,8 @@ namespace ECEditor
         if (!scene)
             return;
 
-        std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
-        for(uint i = 0; i < entities.size(); ++i)
-            scene->RemoveEntity(entities[i]->GetId(), AttributeChange::Default);
+        foreach(Scene::EntityPtr entity, GetSelectedEntities())
+            scene->RemoveEntity(entity->GetId(), AttributeChange::Default);
     }
 
     void ECEditorWindow::CopyEntity()
@@ -229,10 +269,9 @@ namespace ECEditor
                 id_str.setNum((int)entity->GetId());
                 entity_elem.setAttribute("id", id_str);
 
-                const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                for(uint i = 0; i < components.size(); ++i)
-                    if (components[i]->IsSerializable())
-                        components[i]->SerializeTo(temp_doc, entity_elem);
+                foreach(ComponentPtr component, entity->GetComponentVector())
+                    if (component->IsSerializable())
+                        component->SerializeTo(temp_doc, entity_elem);
 
                 temp_doc.appendChild(entity_elem);
             }
@@ -257,7 +296,7 @@ namespace ECEditor
         if (temp_doc.setContent(clipboard->text()))
         {
             //Check if clipboard contain infomation about entity's id,
-            //switch is used to find a right type of entity from the scene.
+            //which is used to find a right type of entity from the scene.
             QDomElement ent_elem = temp_doc.firstChildElement("entity");
             if(ent_elem.isNull())
                 return;
@@ -279,7 +318,7 @@ namespace ECEditor
             for(uint i = 0; i < components.size(); i++)
             {
                 // If the entity is holding placeable component we can place it into the scene.
-                if(components[i]->TypeName() == "EC_OgrePlaceable")
+                if(components[i]->TypeName() == "EC_Placeable")
                 {
                     hasPlaceable = true;
                     ComponentPtr component = entity->GetOrCreateComponent(components[i]->TypeName(), components[i]->Name(), AttributeChange::Default);
@@ -310,6 +349,8 @@ namespace ECEditor
 
     void ECEditorWindow::HighlightEntities(IComponent *component)
     {
+        PROFILE(ECEditorWindow_SelectionChanged);
+
         std::vector<Scene::EntityPtr> entities = GetSelectedEntities();
         for(uint i = 0; i < entities.size(); i++)
         {
@@ -340,7 +381,7 @@ namespace ECEditor
             browser_->clear();
             // Unbold all list elements from the enity list.
             for(uint i = 0; i < entity_list_->count(); i++)
-                BoldEntityListItem(entity_list_->item(i)->text().toInt(), false);
+                BoldEntityListItem(entity_list_->item(i)->text().toUInt(), false);
             return;
         }
 
@@ -348,6 +389,7 @@ namespace ECEditor
         //! so that unnecessary widget paints are avoided. This need be fixed in a way that browser's load is minimal.
         //! To ensure that the editor can handle thousands of induvicual elements in the same time.
         browser_->hide();
+        //EntityIdSet noneSelectedEntities = selectedEntities_;
         EntityIdSet noneSelectedEntities = selectedEntities_;
         selectedEntities_.clear();
         // Check what new entities has been added and what old need to be removed from the browser.
@@ -355,10 +397,13 @@ namespace ECEditor
         {
             browser_->AddNewEntity(entities[i].get());
             selectedEntities_.insert(entities[i]->GetId());
-            noneSelectedEntities.erase(entities[i]->GetId());
+            
+            EntityIdSet::iterator iter = noneSelectedEntities.find(entities[i]->GetId());
+            if(iter != noneSelectedEntities.end())
+                noneSelectedEntities.erase(iter);
         }
-        // After we have the list of entities that need to be removed we do so and after we are done, we will update browser's ui
-        // to fit those changes that we just made.
+        // After we have the list of entities that need to be removed, we do so and after we are done, we will update browser's ui
+        // to fit those changes that were just made.
         while(!noneSelectedEntities.empty())
         {
             Scene::EntityPtr entity = scene->GetEntity(*(noneSelectedEntities.begin()));
@@ -506,14 +551,16 @@ namespace ECEditor
 
     void ECEditorWindow::BoldEntityListItem(entity_id_t entity_id, bool bold)
     {
-        QString entity_id_str;
-        entity_id_str.setNum((int)entity_id);
-        QList<QListWidgetItem*> items = entity_list_->findItems(QString::fromStdString(entity_id_str.toStdString()), Qt::MatchExactly);
-        for(uint i = 0; i < items.size(); i++)
+        EntityIdToNameMap::iterator iter = entity_id_to_name_.find(QString::number(entity_id));
+        if(iter != entity_id_to_name_.end())
         {
-            QFont font = items[i]->font();
-            font.setBold(bold);
-            items[i]->setFont(font);
+            QList<QListWidgetItem*> items = entity_list_->findItems(iter.value(), Qt::MatchExactly);
+            for(uint i = 0; i < items.size(); i++)
+            {
+                QFont font = items[i]->font();
+                font.setBold(bold);
+                items[i]->setFont(font);
+            }
         }
     }
 
@@ -569,8 +616,8 @@ namespace ECEditor
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
             QShortcut* delete_shortcut = new QShortcut(QKeySequence(Qt::Key_Delete), entity_list_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_C), entity_list_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::Key_Control + Qt::Key_V), entity_list_);
+            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), entity_list_);
+            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), entity_list_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteEntitiesFromList()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyEntity()));
             connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteEntity()));
@@ -598,6 +645,43 @@ namespace ECEditor
         }
     }
 
+    void ECEditorWindow::ComponentDialogFinnished(int result)
+    {
+        AddComponentDialog *dialog = qobject_cast<AddComponentDialog*>(sender());
+        if(dialog)
+        {
+            if(result == QDialog::Accepted)
+            {
+                Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
+                if(!scene)
+                {
+                    //Add log warning.
+                    return;
+                }
+                QList<entity_id_t> entities = dialog->GetEntityIds();
+                for(uint i = 0; i < entities.size(); i++)
+                {
+                    Scene::EntityPtr entity = scene->GetEntity(entities[i]);
+                    if(!entity)
+                    {
+                        //Add log warning
+                        continue;
+                    }
+                    ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
+                    // Check if component has been already added to a entity.
+                    if(comp)
+                    {
+                        //Add log warning
+                        continue;
+                    }
+                    comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+                    if (comp)
+                        entity->AddComponent(comp, dialog->GetSynchronization());
+                }
+            }
+        }
+    }
+
     QStringList ECEditorWindow::GetAvailableComponents() const
     {
         using namespace Foundation;
@@ -616,6 +700,7 @@ namespace ECEditor
 
     std::vector<Scene::EntityPtr> ECEditorWindow::GetSelectedEntities() const
     {
+        PROFILE(ECEditorWindow_GetSelectedEntities);
         std::vector<Scene::EntityPtr> ret;
 
         if (!entity_list_)
@@ -630,10 +715,21 @@ namespace ECEditor
             QListWidgetItem* item = entity_list_->item(i);
             if (item->isSelected())
             {
-                entity_id_t id = (entity_id_t)item->text().toInt();
-                Scene::EntityPtr entity = scene->GetEntity(id);
-                if (entity)
-                    ret.push_back(entity);
+                QString key = entity_id_to_name_.key(item->text(), QString());
+                if(!key.isNull())
+                {
+                    Scene::EntityPtr entity = scene->GetEntity(key.toUInt());
+                    if(entity)
+                        ret.push_back(entity);
+                }
+                else
+                {
+                    entity_id_t id = (entity_id_t)item->text().toUInt();
+
+                    Scene::EntityPtr entity = scene->GetEntity(id);
+                    if (entity)
+                        ret.push_back(entity);
+                }
             }
         }
         return ret;

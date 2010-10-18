@@ -1,10 +1,3 @@
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-#############################################################################################
-
 # Define target name and output directory
 init_target (EnvironmentModule OUTPUT modules/core)
 
@@ -32,7 +25,6 @@ if (CAELUM)
 	add_definitions (-DCAELUM)
 endif (CAELUM)
 
-
 if (HYDRAX)
 	add_definitions (-DHYDRAX)
 endif (HYDRAX)
@@ -48,15 +40,15 @@ if (CAELUM)
     use_package (CAELUM)
 endif (CAELUM)
 
-use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim) 
+use_modules (Core Foundation Interfaces SceneManager RexCommon OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim Asset)
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS} ${UI_SRCS})
-link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim)
+link_modules (Core Foundation Interfaces RexCommon SceneManager OgreRenderingModule ProtocolUtilities ProtocolModuleTaiga ProtocolModuleOpenSim Asset)
 
 link_package (BOOST)
 link_package (POCO)
 link_package (CURL)
 link_package (XMLRPC)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 
 if (CAELUM)

@@ -40,6 +40,8 @@ namespace ECEditor
 
     void ECBrowser::AddNewEntity(Scene::Entity *entity)
     {
+        PROFILE(ECBrowser_AddNewEntity);
+
         assert(entity);
         if(!entity)
             return;
@@ -57,6 +59,8 @@ namespace ECEditor
 
     void ECBrowser::RemoveEntity(Scene::Entity *entity)
     {
+        PROFILE(ECBrowser_RemoveEntity);
+
         if(!entity)
             return;
         if(selectedEntities_.find(entity) == selectedEntities_.end())
@@ -81,6 +85,8 @@ namespace ECEditor
 
     void ECBrowser::UpdateBrowser()
     {
+        PROFILE(ECBrowser_UpdateBrowser);
+
         // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
@@ -296,8 +302,8 @@ namespace ECEditor
             treeWidget_->setDragDropMode(QAbstractItemView::DropOnly);
             connect(treeWidget_, SIGNAL(itemSelectionChanged()), this, SLOT(SelectionChanged()));
             QShortcut* delete_shortcut = new QShortcut(Qt::Key_Delete, treeWidget_);
-            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_C), treeWidget_);
-            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_V), treeWidget_);
+            QShortcut* copy_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_C), treeWidget_);
+            QShortcut* paste_shortcut = new QShortcut(QKeySequence(Qt::ControlModifier + Qt::Key_V), treeWidget_);
             connect(delete_shortcut, SIGNAL(activated()), this, SLOT(DeleteComponent()));
             connect(copy_shortcut, SIGNAL(activated()), this, SLOT(CopyComponent()));
             connect(paste_shortcut, SIGNAL(activated()), this, SLOT(PasteComponent()));
@@ -373,7 +379,7 @@ namespace ECEditor
         }
         else
         {
-            QAction *addComponent = new QAction(tr("Add new component"), menu_);
+            QAction *addComponent = new QAction(tr("Add new component ..."), menu_);
             QAction *pasteComponent = new QAction(tr("Paste"), menu_);
             menu_->addAction(addComponent);
             menu_->addAction(pasteComponent);
@@ -385,6 +391,8 @@ namespace ECEditor
     
     void ECBrowser::SelectionChanged()
     {
+        PROFILE(ECBrowser_SelectionChanged);
+
         QTreeWidgetItem *item = treeWidget_->currentItem();
         if(!item)
             return;
@@ -397,6 +405,7 @@ namespace ECEditor
         {
             for(uint i = 0; i < (*iter)->components_.size(); i++)
             {
+                PROFILE(ECBrowser_SelectionChanged_inner);
                 if((*iter)->components_[i].expired())
                     continue;
                 emit ComponentSelected((*iter)->components_[i].lock().get());
@@ -406,6 +415,8 @@ namespace ECEditor
     
     void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
     {
+        PROFILE(ECBrowser_NewComponentAdded);
+
         EntitySet::iterator iter = selectedEntities_.find(entity);
         // We aren't interested in entities that aren't selected.
         if(iter == selectedEntities_.end())
@@ -562,7 +573,7 @@ namespace ECEditor
         }
     }
 
-    void ECBrowser::DynamicComponentChanged(const QString &name)
+    void ECBrowser::DynamicComponentChanged()
     {
         EC_DynamicComponent *component = dynamic_cast<EC_DynamicComponent*>(sender());
         if(!component)
@@ -666,6 +677,8 @@ namespace ECEditor
 
     ComponentGroupList::iterator ECBrowser::FindSuitableGroup(const IComponent &comp)
     {
+        PROFILE(ECBrowser_FindSuitableGroup);
+
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
@@ -704,8 +717,8 @@ namespace ECEditor
             if((*iter)->IsDynamic())
             {
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
-                connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
-                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+                connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()));
+                connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()));
                 connect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString&)),
                     SLOT(ComponentNameChanged(const QString&)));
             }
@@ -737,8 +750,8 @@ namespace ECEditor
         if(dynamic)
         {
             EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent*>(comp.get());
-            connect(dc, SIGNAL(AttributeAdded(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
-            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged(const QString &)));
+            connect(dc, SIGNAL(AttributeAdded(IAttribute *)), SLOT(DynamicComponentChanged()));
+            connect(dc, SIGNAL(AttributeRemoved(const QString &)), SLOT(DynamicComponentChanged()));
             connect(dc, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(ComponentNameChanged(const QString&)));
         }
         ComponentGroup *compGroup = new ComponentGroup(comp, componentEditor, newItem, dynamic);
@@ -746,7 +759,11 @@ namespace ECEditor
             componentGroups_.push_back(compGroup);
 
         if(treeWidget_)
-            treeWidget_->collapseItem(newItem);
+        {
+            treeWidget_->expandItem(newItem);
+            for(uint i = 0; i < newItem->childCount(); i++)
+                treeWidget_->collapseItem(newItem->child(i));
+        }
     }
 
     void ECBrowser::RemoveComponentFromGroup(IComponent *comp)
@@ -754,20 +771,21 @@ namespace ECEditor
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(!(*iter)->ContainsComponent(comp))
+            ComponentGroup *group = *iter;
+            if (!group->ContainsComponent(comp))
                 continue;
-            if((*iter)->IsDynamic())
+            if (group->IsDynamic())
             {
                 EC_DynamicComponent *dc = dynamic_cast<EC_DynamicComponent *>(comp);
-                disconnect(dc, SIGNAL(AttributeAdded(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
-                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged(const QString &)));
+                disconnect(dc, SIGNAL(AttributeAdded(IAttribute *)), this, SLOT(DynamicComponentChanged()));
+                disconnect(dc, SIGNAL(AttributeRemoved(const QString &)), this, SLOT(DynamicComponentChanged()));
                 disconnect(dc, SIGNAL(OnComponentNameChanged(const QString&, const QString &)), this, SLOT(ComponentNameChanged(const QString&)));
             }
-            (*iter)->RemoveComponent(comp);
+            group->RemoveComponent(comp);
             //Ensure that coponent group is valid and if it's not, remove it from the browser list.
-            if(!(*iter)->IsValid())
+            if (!group->IsValid())
             {
-                SAFE_DELETE(*iter)
+                SAFE_DELETE(group)
                 componentGroups_.erase(iter);
             }
             break;

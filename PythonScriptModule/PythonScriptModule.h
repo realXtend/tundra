@@ -69,7 +69,7 @@ namespace PythonScript
         InputContext* CreateInputContext(const QString &name, int priority = 100);
         MediaPlayer::ServiceInterface* GetMediaPlayerService() const;
         void RemoveQtDynamicProperty(QObject* qobj, char* propname);
-
+        QList<Scene::Entity*> ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate);
         /** Prepares Python script instance used with EC_Script for execution.
             The script is executed instantly only if the runOnLoad attribute of the script EC is true.
             @param filename Filename of the script.

@@ -16,16 +16,16 @@
 #include <QVector>
 #include <QObject>
 
+#include "EC_EnvironmentLight.h"
 
 namespace ProtocolUtilities
 {
     class NetworkEventInboundData;
 }
 
-namespace OgreRenderer
-{
-    class EC_OgreEnvironment;
-}
+
+class EC_OgreEnvironment;
+
 
 namespace Environment
 {
@@ -54,7 +54,9 @@ namespace Environment
         /**
          * @return Enviroment entity component, or 0 if does not exist
          **/
-        OgreRenderer::EC_OgreEnvironment* GetEnvironmentComponent();
+        EC_OgreEnvironment* GetEnvironmentComponent();
+
+        EC_EnvironmentLight* GetEnvironmentLight();
 
         /**
          * Creates the environment EC to current active scene and adjust it using default parameters.
@@ -191,6 +193,8 @@ namespace Environment
 
         EC_Fog* GetEnvironmentFog();
 
+     
+
         /// Pointer to the environment module which owns this class.
         EnvironmentModule *owner_;
 
@@ -217,6 +221,9 @@ namespace Environment
 
         /// Sun's angle velocity.
         RexTypes::Vector3 sunAngVelocity_;
+
+        /// Bit mask of Caelum components we use.
+        int caelumComponents_;
 
         
 

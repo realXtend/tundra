@@ -98,27 +98,40 @@ class XmlSceneRegionResponceParser(XmlBaseParser):
     def __init__(self, xmlstring):
         XmlBaseParser.__init__(self, xmlstring)
     def parse(self):
-        self.xml = self.correctUtfCoding(self.xml)
-        d = {}
-        if not (self.xml==None):
-            dom = parseString(self.xml)
-            dictionaryElem = dom.getElementsByTagName('dictionary')[0]
-            items = dictionaryElem.getElementsByTagName('item')
-            for item in items:
-                keyElem = item.getElementsByTagName('key')[0]
-                valueElem = item.getElementsByTagName('value')[0]
-                keyStringElem = keyElem.getElementsByTagName('string')[0]
-                sceneRegion = valueElem.getElementsByTagName('SceneRegion')[0]
-                sceneName = sceneRegion.getElementsByTagName('SceneName')[0]
-                region = sceneRegion.getElementsByTagName('Region')[0]
-                sceneUuid = sceneRegion.getElementsByTagName('SceneUuid')[0]
-                sceneNameValue = sceneName.childNodes[0].nodeValue
-                sceneUuidValue = sceneUuid.childNodes[0].nodeValue
-                print region.childNodes.length
-                regionValue = ""
-                if(region.childNodes.length!=0):
-                    regionValue = region.childNodes[0].nodeValue
-                d[keyStringElem.childNodes[0].nodeValue]=(sceneNameValue,regionValue,sceneUuidValue)
-        return d
+        try:
+            self.xml = self.correctUtfCoding(self.xml)
+            d = {}
+            if not (self.xml==None):
+                dom = parseString(self.xml)
+                dictionaryElem = dom.getElementsByTagName('dictionary')[0]
+                items = dictionaryElem.getElementsByTagName('item')
+                for item in items:
+                    keyElem = item.getElementsByTagName('key')[0]
+                    valueElem = item.getElementsByTagName('value')[0]
+                    keyStringElem = keyElem.getElementsByTagName('string')[0]
+                    sceneRegion = valueElem.getElementsByTagName('SceneRegion')[0]
+                    sceneName = sceneRegion.getElementsByTagName('SceneName')[0]
+                    region = sceneRegion.getElementsByTagName('Region')[0]
+                    sceneUuid = sceneRegion.getElementsByTagName('SceneUuid')[0]
+                    sceneNameValue = None
+                    if(sceneName.childNodes.__len__()!=0):
+                        sceneNameValue = sceneName.childNodes[0].nodeValue
+                    else:
+                        sceneNameValue = ""
+                    if(sceneUuid.childNodes.__len__()!=0):
+                        sceneUuidValue = sceneUuid.childNodes[0].nodeValue
+                    else:
+                        sceneUuidValue = ""
+                    #print region.childNodes.length
+                    regionValue = ""
+                    if(region.childNodes.length!=0):
+                        regionValue = region.childNodes[0].nodeValue
+                    d[keyStringElem.childNodes[0].nodeValue]=(sceneNameValue,regionValue,sceneUuidValue)
+            return d
+        except:
+            import traceback
+            exc_type, exc_value, exc_traceback = sys.exc_info()
+            traceback.print_tb(exc_traceback, limit=5, file=sys.stdout)
+            return None
     pass
         

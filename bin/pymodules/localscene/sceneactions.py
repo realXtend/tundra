@@ -25,6 +25,7 @@ class SceneActions:
         self.ongoingDeleteServerScene = False
         self.ongoingUnloadServerScene = False
         self.ongoingGetLoadServerScene = False
+        self.ongoingUploadSceneUrl = False
         pass
 
     def timeout(self, func, args=(), kwargs={}, timeout_duration=60.0, default=None):
@@ -90,6 +91,13 @@ class SceneActions:
                 self.ongoingGetLoadServerScen = True
                 return True
             pass
+        elif(action=="UploadSceneUrl"):
+            if(self.ongoingUploadSceneUrl == False):
+                return False
+            else:
+                self.ongoingUploadSceneUrl = True
+                return True
+            pass
         return False;
         
         
@@ -99,38 +107,65 @@ class SceneActions:
         if(action=="UnloadServerScene"):
             key, region = param
             param = key + ":" + region
+            
+        url = None 
+        offset = None
+        if(action=="UploadSceneUrl"):
+            url, offset = param
+            param = ""
+
         datagen, headers = multipart_encode({"uploadscene": param})
         headers['USceneMethod']=action
-        request = urllib2.Request(self.cap_url, datagen, headers) # post
-        responce = urllib2.urlopen(request).read()
-        r.logInfo(responce)
-        if(action=="GetUploadSceneList"):
-            parser = sceneactionsxml.XmlSceneRegionResponceParser(responce)
-            d = parser.parse()
-            if d.has_key('error'):
+
+        if(action=="UploadSceneUrl"):
+            headers['OffSet']=offset
+            headers['SceneUrl']=url
+
+        try:
+
+            request = urllib2.Request(self.cap_url, datagen, headers) # post
+            responce = urllib2.urlopen(request).read()
+            #r.logInfo(responce)
+            if(action=="GetUploadSceneList"):
+                parser = sceneactionsxml.XmlSceneRegionResponceParser(responce)
+                d = parser.parse()
+                if d.has_key('error'):
+                    self.handleErrors(d)
+                self.controller.window.setServerScenes(d)
+                self.ongoingGetUploadSceneList = False
+                pass
+            elif(action=="DeleteServerScene"):
+                parser = sceneactionsxml.XmlStringDictionaryParser(responce)
+                d = parser.parse()
+                self.ongoingDeleteServerScene = False
                 self.handleErrors(d)
-            self.controller.window.setServerScenes(d)
-            self.ongoingGetUploadSceneList = False
-            pass
-        elif(action=="DeleteServerScene"):
-            parser = sceneactionsxml.XmlStringDictionaryParser(responce)
-            d = parser.parse()
-            self.ongoingDeleteServerScene = False
-            self.handleErrors(d)
-            pass
-        elif(action=="UnloadServerScene"):
-            parser = sceneactionsxml.XmlStringDictionaryParser(responce)
-            d = parser.parse()
-            self.ongoingUnloadServerScene = False
-            self.handleErrors(d)
-            pass
-        elif(action=="LoadServerScene"):
-            parser = sceneactionsxml.XmlStringDictionaryParser(responce)
-            d = parser.parse()
-            self.ongoingGetLoadServerScene = False
-            self.handleErrors(d)
-            pass
-        return 1
+                pass
+            elif(action=="UnloadServerScene"):
+                parser = sceneactionsxml.XmlStringDictionaryParser(responce)
+                d = parser.parse()
+                self.ongoingUnloadServerScene = False
+                self.handleErrors(d)
+                pass
+            elif(action=="LoadServerScene"):
+                parser = sceneactionsxml.XmlStringDictionaryParser(responce)
+                d = parser.parse()
+                self.ongoingGetLoadServerScene = False
+                self.handleErrors(d)
+                pass
+            elif(action=="UploadSceneUrl"):
+                # cant parse this if there's no error resp must be = None or '' lets find out
+                if responce == None or str(responce)== "":
+                    return 1
+                else:
+                    parser = sceneactionsxml.XmlStringDictionaryParser(responce)
+                    d = parser.parse()
+                    self.ongoingUploadSceneUrl = False
+                    self.handleErrors(d)
+                pass
+            return 1
+        except URLError, e:
+            r.logInfo(e.code)
+            return 0
             
     def handleErrors(self, d):
         #print d

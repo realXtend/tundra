@@ -16,15 +16,14 @@
 #include <QApplication>
 
 #include <SceneManager.h>
-#include <EC_OgrePlaceable.h>
+#include <EC_Placeable.h>
 #include <EC_OgreCamera.h>
 #include <EC_Mesh.h>
 #include <EC_OgreCustomObject.h>
 
 #include <Ogre.h>
 
-
-#include <QDebug>
+#include "InputContext.h"
 
 namespace RexLogic
 {
@@ -43,9 +42,11 @@ namespace RexLogic
         returning_to_avatar_(false),
         dont_accept_clicks_(false)
     {
-         timeline_ = new QTimeLine(750, this);
-         timeline_->setCurveShape(QTimeLine::EaseInOutCurve);
-         timeline_->setFrameRange(0, 100);
+        vectors_lookat_.first = Vector3df::ZERO;
+        vectors_lookat_.second = Vector3df::ZERO;
+        timeline_ = new QTimeLine(750, this);
+        timeline_->setCurveShape(QTimeLine::EaseInOutCurve);
+        timeline_->setFrameRange(0, 100);
     }
 
     ObjectCameraController::~ObjectCameraController()
@@ -97,7 +98,7 @@ namespace RexLogic
                 EntityClicked(in_data->avatar_entity);
                 dont_accept_clicks_ = true;
 
-                vectors_position_.first = camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+                vectors_position_.first = camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
                 vectors_position_.second = in_data->end_position;
                 timeline_->start();
             }
@@ -138,16 +139,16 @@ namespace RexLogic
 
         if (alt_key_pressed_ || avatar_edit_mode_)
         {
-            ec_camera_ = camera_entity_->GetComponent<OgreRenderer::EC_OgreCamera>().get();
-            cam_ec_placable_ = camera_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            ec_camera_ = camera_entity_->GetComponent<EC_OgreCamera>().get();
+            cam_ec_placable_ = camera_entity_->GetComponent<EC_Placeable>().get();
 
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = 0;
+            EC_Placeable *camera_placeable = 0;
             vectors_position_.first = Vector3df::ZERO;
             vectors_position_.second = Vector3df::ZERO;
             
             if (!selected_entity_)
             {
-                cam_ec_placable_->SetPosition(camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition());         
+                cam_ec_placable_->SetPosition(camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition());         
                 vectors_lookat_.first = camera_controllable_->GetThirdPersonLookAt();
 
                 avatar_camera_position_ = cam_ec_placable_->GetPosition();
@@ -155,11 +156,11 @@ namespace RexLogic
             } 
             else
             {   
-                camera_placeable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                camera_placeable = selected_entity_->GetComponent<EC_Placeable>().get();
                 vectors_lookat_.first = camera_placeable->GetPosition();
             }
 
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *entity_ec_placable = entity->GetComponent<EC_Placeable>().get();
             if (entity_ec_placable)
             {
                 cam_ec_placable_->LookAt(vectors_lookat_.first);
@@ -187,7 +188,7 @@ namespace RexLogic
             return;
 
         if (key_event->keyCode == Qt::Key_Alt)
-        {   
+        { 
             alt_key_pressed_ = true;
             QApplication::setOverrideCursor(Qt::PointingHandCursor);
         } 
@@ -264,7 +265,7 @@ namespace RexLogic
         {
             if (!selected_entity_)
                 return;
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *entity_ec_placable = selected_entity_->GetComponent<EC_Placeable>().get();
             if (!entity_ec_placable)
                 return;
 
@@ -286,7 +287,7 @@ namespace RexLogic
     {
         if (selected_entity_)
         {
-            OgreRenderer::EC_OgrePlaceable *entity_ec_placable = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *entity_ec_placable = selected_entity_->GetComponent<EC_Placeable>().get();
             if (entity_ec_placable)
             {
                 qreal acceleration_x = 1;
@@ -350,11 +351,11 @@ namespace RexLogic
         if (!cam_entity.get())
             return;
 
-        cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()));
-        cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(OgreRenderer::EC_OgreCamera::TypeNameStatic()));
+        cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_Placeable::TypeNameStatic()));
+        cam_entity->AddComponent(framework_->GetComponentManager()->CreateComponent(EC_OgreCamera::TypeNameStatic()));
         scene->EmitEntityCreated(cam_entity);
-        ComponentPtr component_placable = cam_entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-        OgreRenderer::EC_OgreCamera *ec_camera = cam_entity->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+        ComponentPtr component_placable = cam_entity->GetComponent(EC_Placeable::TypeNameStatic());
+        EC_OgreCamera *ec_camera = cam_entity->GetComponent<EC_OgreCamera>().get();
 
         if (!component_placable.get() || !ec_camera)
             return;
@@ -397,11 +398,11 @@ namespace RexLogic
     void ObjectCameraController::Update(float frametime)
     {
         if (zoom_close_)
-            ZoomCloseToPoint(selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition());
+            ZoomCloseToPoint(selected_entity_->GetComponent<EC_Placeable>().get()->GetPosition());
 
         if (returning_to_avatar_)
         {
-            vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+            vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
             vectors_lookat_.second = camera_controllable_->GetThirdPersonLookAt();
         }
 
@@ -409,7 +410,7 @@ namespace RexLogic
         {
             if (timeline_->state() != QTimeLine::Running)
             {
-                Vector3df selected_pos = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+                Vector3df selected_pos = selected_entity_->GetComponent<EC_Placeable>().get()->GetPosition();
                 ClampCamera(selected_pos, 3.0);
             }
         }
@@ -429,19 +430,20 @@ namespace RexLogic
             position.x = (position_end.x - position_start.x) * step + position_start.x;
             position.y = (position_end.y - position_start.y) * step + position_start.y;
             position.z = (position_end.z - position_start.z) * step + position_start.z;
-            cam_ec_placable_->SetPosition(position);
+            if (object_selected_)
+                cam_ec_placable_->SetPosition(position);
         }
 
         if (vectors_lookat_.first != Vector3df::ZERO && vectors_lookat_.second != Vector3df::ZERO)
         {
             Vector3df lookat_start = vectors_lookat_.first;
             Vector3df lookat_end = vectors_lookat_.second;
-
             Vector3df look_at;
             look_at.x = (lookat_end.x - lookat_start.x) * step + lookat_start.x;
             look_at.y = (lookat_end.y - lookat_start.y) * step + lookat_start.y;
             look_at.z = (lookat_end.z - lookat_start.z) * step + lookat_start.z;
-            cam_ec_placable_->LookAt(look_at);
+            if (object_selected_)
+                cam_ec_placable_->LookAt(look_at);
         } 
     }
 
@@ -453,7 +455,7 @@ namespace RexLogic
         if (returning_to_avatar_)
         {
             returning_to_avatar_ = false;
-            camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgreCamera>().get()->SetActive();
+            camera_controllable_->GetCameraEntity()->GetComponent<EC_OgreCamera>().get()->SetActive();
 
             event_category_id_t event_category = framework_->GetEventManager()->QueryEventCategory("Input");
             framework_->GetEventManager()->SendEvent(event_category, InputEvents::INPUTSTATE_THIRDPERSON, 0);
@@ -472,18 +474,16 @@ namespace RexLogic
 
     void ObjectCameraController::ReturnToAvatarCamera()
     {
-        OgreRenderer::EC_OgrePlaceable *cam_placable = camera_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+        EC_Placeable *cam_placable = camera_entity_->GetComponent<EC_Placeable>().get();
         if (!cam_placable)
             return;
         if (timeline_->state() == QTimeLine::Running)
             return;
-        
         returning_to_avatar_ = true;
         vectors_position_.first = cam_placable->GetPosition();
-        vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
-
+        vectors_position_.second = camera_controllable_->GetCameraEntity()->GetComponent<EC_Placeable>().get()->GetPosition();
         if (selected_entity_)
-            vectors_lookat_.first = selected_entity_->GetComponent<OgreRenderer::EC_OgrePlaceable>().get()->GetPosition();
+            vectors_lookat_.first = selected_entity_->GetComponent<EC_Placeable>().get()->GetPosition();
         else
             vectors_lookat_.first = vectors_lookat_.second;
         vectors_lookat_.second = camera_controllable_->GetThirdPersonLookAt();

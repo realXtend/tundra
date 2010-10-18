@@ -78,5 +78,6 @@ private:
         description(this, "description", ""),
         userDefined(this, "user-defined", false)
     {
+        SetNetworkSyncEnabled(true);
     }
 };

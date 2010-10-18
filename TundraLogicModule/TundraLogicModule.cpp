@@ -77,6 +77,10 @@ void TundraLogicModule::PostInitialize()
         "Loads scene from a dotscene file. Optionally clears the existing scene. Replace-mode can be optionally disabled. Usage: importscene(filename,clearscene=false,replace=true)",
         Console::Bind(this, &TundraLogicModule::ConsoleImportScene)));
     
+    RegisterConsoleCommand(Console::CreateCommand("importmesh",
+        "Imports a single mesh as a new entity. Position can be specified optionally. Usage: importmesh(filename,x,y,z,xrot,yrot,zrot,xscale,yscale,zscale)",
+        Console::Bind(this, &TundraLogicModule::ConsoleImportMesh)));
+        
     // Take a pointer to KristalliProtocolModule so that we don't have to take/check it every time
     kristalliModule_ = framework_->GetModuleManager()->GetModule<KristalliProtocol::KristalliProtocolModule>().lock();
     if (!kristalliModule_.get())
@@ -93,27 +97,31 @@ void TundraLogicModule::Uninitialize()
 
 void TundraLogicModule::Update(f64 frametime)
 {
-    static bool check_default_server_start = true;
-    if (check_default_server_start)
     {
-        //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
-        ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
-        if (!loginModule.lock().get())
+        PROFILE(TundraLogicModule_Update);
+        
+        static bool check_default_server_start = true;
+        if (check_default_server_start)
         {
-            LogInfo("Started server by default");
-            server_->Start(cDefaultPort);
+            //! \todo Hack, remove and/or find better way: If there is no LoginScreenModule, assume we are running a "dedicated" server, and start the server automatically on default port
+            ModuleWeakPtr loginModule = framework_->GetModuleManager()->GetModule("LoginScreen");
+            if (!loginModule.lock().get())
+            {
+                LogInfo("Started server by default");
+                server_->Start(cDefaultPort);
+            }
+            check_default_server_start = false;
         }
-        check_default_server_start = false;
+        
+        // Update client & server
+        if (client_)
+            client_->Update(frametime);
+        if (server_)
+            server_->Update(frametime);
+        // Run scene sync
+        if (syncManager_)
+            syncManager_->Update(frametime);
     }
-    
-    // Update client & server
-    if (client_)
-        client_->Update(frametime);
-    if (server_)
-        server_->Update(frametime);
-    // Run scene sync
-    if (syncManager_)
-        syncManager_->Update(frametime);
     
     RESETPROFILER;
 }
@@ -199,6 +207,7 @@ Console::CommandResult TundraLogicModule::ConsoleSaveScene(const StringVector &p
 
 Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &params)
 {
+    ///\todo Add loadScene parameter
     Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
     if (!scene)
         return Console::ResultFailure("No active scene found.");
@@ -210,13 +219,13 @@ Console::CommandResult TundraLogicModule::ConsoleLoadScene(const StringVector &p
         useBinary = true;
     
     // Do the scene load as replicable only if we are a server
-    bool success;
+    QList<Scene::Entity *> entities;
     if (!useBinary)
-        success = scene->LoadSceneXML(params[0], AttributeChange::Default);
+        entities = scene->LoadSceneXML(params[0], true/*clearScene*/, AttributeChange::Default);
     else
-        success = scene->LoadSceneBinary(params[0], AttributeChange::Default);
+        entities = scene->LoadSceneBinary(params[0], true/*clearScene*/, AttributeChange::Default);
     
-    if (success)
+    if (!entities.empty())
     {
         //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because loadscene clears it
         Events::TundraConnectedEventData event_data;
@@ -247,9 +256,8 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     std::string dirname = path.branch_path().string();
     
     SceneImporter importer(framework_);
-    bool success = importer.Import(scene, filename, dirname, "./data/assets", AttributeChange::Default, clearscene, true, replace);
-    
-    if (success)
+    QList<Scene::Entity *> entities = importer.Import(scene, filename, dirname, "./data/assets", Transform(), AttributeChange::Default, clearscene, true, replace);
+    if (!entities.empty())
     {
         //! \todo Hack: remove and/or find a nicer way, send fake connection event again so that camera will be recreated, because import in clearscene mode clears it
         if (clearscene)
@@ -262,6 +270,46 @@ Console::CommandResult TundraLogicModule::ConsoleImportScene(const StringVector 
     }
     else
         return Console::ResultFailure("Failed to import the scene.");
+}
+
+Console::CommandResult TundraLogicModule::ConsoleImportMesh(const StringVector &params)
+{
+    Scene::ScenePtr scene = GetFramework()->GetDefaultWorldScene();
+    if (!scene)
+        return Console::ResultFailure("No active scene found.");
+    if (params.size() < 1)
+        return Console::ResultFailure("No filename given.");
+    
+    float x = 0.0f, y = 0.0f, z = 0.0f;
+    float xr = 0.0f, yr = 0.0f, zr = 0.0f;
+    float xs = 1.0f, ys = 1.0f,zs = 1.0f;
+    if (params.size() >= 4)
+    {
+        x = ParseString<float>(params[1], 0.0f);
+        y = ParseString<float>(params[2], 0.0f);
+        z = ParseString<float>(params[3], 0.0f);
+    }
+    if (params.size() >= 7)
+    {
+        xr = ParseString<float>(params[4], 0.0f);
+        yr = ParseString<float>(params[5], 0.0f);
+        zr = ParseString<float>(params[6], 0.0f);
+    }
+    if (params.size() >= 10)
+    {
+        xs = ParseString<float>(params[7], 1.0f);
+        ys = ParseString<float>(params[8], 1.0f);
+        zs = ParseString<float>(params[9], 1.0f);
+    }
+    
+    std::string filename = params[0];
+    boost::filesystem::path path(filename);
+    std::string dirname = path.branch_path().string();
+    
+    SceneImporter importer(framework_);
+    Scene::EntityPtr entity = importer.ImportMesh(scene, filename, dirname, "./data/assets", Transform(Vector3df(x,y,z), Vector3df(xr,yr,zr), Vector3df(xs,ys,zs)), std::string(), AttributeChange::Default, true);
+    
+    return Console::ResultSuccess();
 }
 
 bool TundraLogicModule::IsServer() const

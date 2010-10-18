@@ -83,23 +83,26 @@ namespace ECEditor
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;
 
-        //! Id for Framework event category
-        event_category_id_t framework_event_category_;
-
         //! Id for Scene event category
         event_category_id_t scene_event_category_;
 
         //! Id for NetworkState event category
         event_category_id_t network_state_event_category_;
 
-        //! Id for Input event category
-        event_category_id_t input_event_category_;
-
         //! EC editor window
         ECEditorWindow* editor_window_;
 
         //! EC XML editor window
         QPointer<EcXmlEditorWidget> xmlEditor_;
+
+        /// Input context.
+        boost::shared_ptr<InputContext> inputContext;
+
+    private slots:
+        /// Handles KeyPressed() signal from input context.
+        /** @param e Key event.
+        */
+        void HandleKeyPressed(KeyEvent *e);
     };
 }
 

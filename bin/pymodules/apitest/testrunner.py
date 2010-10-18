@@ -173,7 +173,7 @@ class TestDynamicProperties(TestRunner):
             yield "failure, avatar didn't appear"
             return
 
-        print 'dynamic propety stuff:'
+        print 'dynamic property stuff:'
         ent.GetOrCreateComponentRaw("EC_DynamicComponent")
         print ent, type(ent)
         d = ent.qent.EC_DynamicComponent
@@ -241,16 +241,14 @@ class TestApi(TestRunner):
         yield "success"
 
     def do_api_calls(self):
-        #yield "createMeshEntity"
-        #ent = naali.createMeshEntity("axes.mesh")
+        yield "createMeshEntity"
+        e = naali.createMeshEntity("axes.mesh")
 
-        yield "create/removeEntity"
-        e = r.createEntity("axes.mesh", 3945)
         from PythonQt.QtGui import QVector3D, QQuaternion
         e.placeable.Position = QVector3D(128, 128, 60)
         e.placeable.Scale = QVector3D(5, 5, 5)
         e.placeable.Orientation = QQuaternion(0, 0, 0, 1)
-        r.removeEntity(e.id)
+        r.removeEntity(e.Id)
 
         yield "EC_Touchable & EC_Highlight"
         for longname, shortname in [("EC_Touchable", 'touchable'), ("EC_Highlight", 'highlight')]:

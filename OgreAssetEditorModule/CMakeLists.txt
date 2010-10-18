@@ -1,10 +1,3 @@
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-#############################################################################################
-
 # Define target name and output directory
 init_target (OgreAssetEditorModule OUTPUT modules/core)
 
@@ -39,7 +32,7 @@ build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${RESOURCE_SRCS
 link_modules (Core Foundation Interfaces RexCommon OgreRenderingModule Interfaces Input)
 link_package (BOOST)
 link_package (POCO)
-link_package (OGRE)
+link_ogre()
 link_package (QT4)
 
 SetupCompileFlagsWithPCH()

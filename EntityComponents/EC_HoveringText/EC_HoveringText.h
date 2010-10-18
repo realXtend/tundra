@@ -3,7 +3,7 @@
  *
  *  @file   EC_HoveringText.h
  *  @brief  EC_HoveringText shows a hovering text attached to an entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
 */
 
 #ifndef incl_EC_HoveringText_EC_HoveringText_h
@@ -65,6 +65,10 @@ Registered by RexLogic::RexLogicModule.
 <div>Gradient start</div>
 <li>Color: gradEndAttr
 <div>Gradient End</div>
+<li>Color: borderColorAttr
+<div>define color of the border</div>
+<li>float: borderThicknessAttr
+<din>define width of border</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -90,7 +94,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on components OgrePlaceable</b>.  
+<b>Depends on components Placeable</b>.  
 </table>
 */
 
@@ -138,24 +142,31 @@ public:
     /// @note Sets the using_gradient_ boolean to true.
     void SetBackgroundGradient(const QColor &start_color, const QColor &end_color);
 
+
 	Q_PROPERTY(QString textAttr READ gettextAttr WRITE settextAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, textAttr);
 
 	Q_PROPERTY(QString fontAttr READ getfontAttr WRITE setfontAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(QString, fontAttr);
 
-	Q_PROPERTY(Color fontColorAttr READ getfontColorAttr WRITE setfontColorAttr);
-	DEFINE_QPROPERTY_ATTRIBUTE(Color, fontColorAttr);
-
 	Q_PROPERTY(int fontSizeAttr READ getfontSizeAttr WRITE setfontSizeAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(int, fontSizeAttr);
+
+	Q_PROPERTY(Color fontColorAttr READ getfontColorAttr WRITE setfontColorAttr);
+    DEFINE_QPROPERTY_ATTRIBUTE(Color, fontColorAttr);
 
 	Q_PROPERTY(Color backgroundColorAttr READ getbackgroundColorAttr WRITE setbackgroundColorAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(Color, backgroundColorAttr);
 
+	Q_PROPERTY(Color borderColorAttr READ getborderColorAttr WRITE setborderColorAttr);
+	DEFINE_QPROPERTY_ATTRIBUTE(Color, borderColorAttr);
+
+    Q_PROPERTY(float borderThicknessAttr READ getborderThicknessAttr WRITE setborderThicknessAttr);
+	DEFINE_QPROPERTY_ATTRIBUTE(float, borderThicknessAttr);
+
 	Q_PROPERTY(Vector3df positionAttr READ getpositionAttr WRITE setpositionAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, positionAttr);
-
+    
 	Q_PROPERTY(bool usingGradAttr READ getusingGradAttr WRITE setusingGradAttr);
 	DEFINE_QPROPERTY_ATTRIBUTE(bool, usingGradAttr);
 

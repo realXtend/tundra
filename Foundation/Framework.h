@@ -25,6 +25,7 @@ class QObject;
 class ISoundService;
 class UiServiceInterface;
 class Frame;
+class AssetAPI;
 class ScriptConsole;
 
 class Input;
@@ -235,15 +236,6 @@ namespace Foundation
         //! Get main QApplication
         NaaliApplication *GetNaaliApplication() const { return naaliApplication.get(); }
 
-        //! Get main window
-//        MainWindow *GetMainWindow() const;
-
-        //! Get main UI View
-//        QGraphicsView *GetUIView() const;
-
-        //! Set main UI View
-//        void SetUIView(std::auto_ptr <QGraphicsView> view);
-
         /** Returns module by class T.
             @param T class type of the module.
             @return The module, or null if the module doesn't exist. Always remember to check for null pointer.
@@ -268,6 +260,9 @@ namespace Foundation
         /// Returns the Naali core API UI object.
         NaaliUi *Ui() const;
 
+        /// Returns the old UiServiceInterface impl, which is not merged to the core UI object yet
+        UiServiceInterface *UiService();
+
         /// Returns the Naali core API Input object.
         Input *GetInput() const;
 
@@ -279,6 +274,17 @@ namespace Foundation
 
         /// Returns the Naali core API Audio object.
         ISoundService *Audio() const;
+
+        AssetAPI *Asset() const;
+        /// Stores the given QObject as a dynamic property into the Framework. This is done to implement
+        /// easier script access for QObject-based interface objects.
+        /// @param name The name to use for the property. Fails if name is an empty string.
+        /// @param object The object to register as a property. The property will be a QVariant containing this QObject.
+        /// @return If the registration succeeds, this returns true. Otherwise either 'object' pointer was null,
+        ///        or a property with that name was registered already.
+        /// \note There is no unregister option. It can be implemented if someone finds it useful, but at this point
+        ///  we are going with a "unload-only-on-close" behavior.
+        bool RegisterDynamicObject(QString name, QObject *object);
 
     signals:
         /// Emitted after new scene has been added to framework.
@@ -359,6 +365,9 @@ namespace Foundation
         boost::program_options::options_description cm_descriptions_;
 
         NaaliUi *ui;
+
+        /// This object represents the Naali core Asset API.
+        AssetAPI *asset;
 
         //! command line arguments as supplied by the operating system
         int argc_;
