@@ -57,6 +57,26 @@ Registered by Physics::PhysicsModule.
 
 <b>Exposes the following scriptable functions:</b>
 <ul>
+<li> "SetShapeFromVisibleMesh": set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
+        \return true if successful (EC_Mesh could be found and contained a mesh reference)
+<li> "SetLinearVelocity": set linear velocity and activate body
+        Note: sets also the attribute, signals a Default attribute change
+        \param velocity New linear velocity
+<li> "SetAngularVelocity": Set angular velocity and activate body
+        Note: sets also the attribute, signals a Default attribute change
+        \param angularVelocity New angular velocity, specified in degrees / sec
+<li> "ApplyForce": apply a force to the body
+        \param force Force
+        \param position Object space position, by default center
+<li> "ApplyTorque": apply a torque to the body
+        \param torque Torque
+<li> "ApplyImpulse": apply an impulse to the body
+        \param impulse Impulse
+        \param position Object space position, by default center
+<li> "ApplyTorqueImpulse": apply a torque impulse to the body
+        \param torqueImpulse Impulse
+<li> "Activate": force the body to activate (wake up)
+<li> "ResetForces": reset accumulated force & torque
 </ul>
 
 <b>Reacts on the following actions:</b>
@@ -132,6 +152,14 @@ public:
     Q_PROPERTY(bool phantom READ getphantom WRITE setphantom)
     DEFINE_QPROPERTY_ATTRIBUTE(bool, phantom)
     
+    //! Linear velocity
+    Q_PROPERTY(Vector3df linearVelocity READ getlinearVelocity WRITE setlinearVelocity)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, linearVelocity)
+    
+    //! Angular velocity
+    Q_PROPERTY(Vector3df angularVelocity READ getangularVelocity WRITE setangularVelocity)
+    DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularVelocity)
+    
     virtual ~EC_RigidBody();
     
     //! Set component as serializable.
@@ -145,10 +173,50 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
     
 public slots:
-    //! Sets collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
+    //! Set collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
     /*! \return true if successful (EC_Mesh could be found and contained a mesh reference)
      */
     bool SetShapeFromVisibleMesh();
+
+    //! Set linear velocity and activate the body
+    /*! Note: sets also the attribute, signals a Default attribute change
+        \param velocity New linear velocity
+     */
+    void SetLinearVelocity(const Vector3df& velocity);
+    
+    //! Set angular velocity and activate the body
+    /*! Note: sets also the attribute, signals a Default attribute change
+        \param angularVelocity New angular velocity, specified in degrees / sec
+     */
+    void SetAngularVelocity(const Vector3df& angularVelocity);
+    
+    //! Apply a force to the body
+    /*! \param force Force
+        \param position Object space position, by default center
+     */
+    void ApplyForce(const Vector3df& force, const Vector3df& position = Vector3df::ZERO);
+    
+    //! Apply a torque to the body
+    /*! \param torque Torque
+     */
+    void ApplyTorque(const Vector3df& torque);
+    
+    //! Apply an impulse to the body
+    /*! \param impulse Impulse
+        \param position Object space position, by default center
+     */
+    void ApplyImpulse(const Vector3df& impulse, const Vector3df& position = Vector3df::ZERO);
+    
+    //! Apply a torque impulse to the body
+    /*! \param torqueImpulse Torque impulse
+     */
+    void ApplyTorqueImpulse(const Vector3df& torqueImpulse);
+    
+    //! Force the body to activate (wake up)
+    void Activate();
+    
+    //! Reset accumulated force & torque
+    void ResetForces();
     
 private slots:
     //! Called when the parent entity has been set.
@@ -192,8 +260,8 @@ private:
     //! Placeable found-flag
     boost::weak_ptr<EC_Placeable> placeable_;
     
-    //! Placeable change disconnected-flag. Set when we're setting placeable ourselves due to Bullet update, to prevent endless loop
-    bool placeableDisconnected_; 
+    //! Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
+    bool disconnected_;
     
     //! Bullet body
     btRigidBody* body_;
