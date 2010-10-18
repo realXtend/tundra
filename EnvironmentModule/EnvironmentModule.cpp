@@ -15,6 +15,7 @@
 #include "EnvironmentEditor.h"
 #include "PostProcessWidget.h"
 
+
 #include "EC_WaterPlane.h"
 #include "EC_Fog.h"
 #include "EC_SkyPlane.h"
@@ -39,6 +40,9 @@
 
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
+#include "ConsoleCommandServiceInterface.h"
+
+#include "TerrainWeightEditor.h"
 
 #include "WorldBuildingServiceInterface.h"
 
@@ -52,6 +56,7 @@ namespace Environment
 
     EnvironmentModule::EnvironmentModule() :
         IModule(type_name_static_),
+        w_editor_(0),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -118,12 +123,19 @@ namespace Environment
             QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
             QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
+
+        w_editor_ = new TerrainWeightEditor(this);
+        w_editor_->Initialize();
+        RegisterConsoleCommand(Console::CreateCommand("TerrainTextureEditor",
+            "Shows the terrain texture weight editor.",
+            Console::Bind(w_editor_, &TerrainWeightEditor::ShowWindow)));
     }
 
     void EnvironmentModule::Uninitialize()
     {
         SAFE_DELETE(environment_editor_);
         SAFE_DELETE(postprocess_dialog_);
+        SAFE_DELETE(w_editor_);
         terrain_.reset();
         water_.reset();
         environment_.reset();
