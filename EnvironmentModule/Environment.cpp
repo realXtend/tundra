@@ -221,7 +221,15 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
         if ( entity == 0)
-            return 0;
+        {
+            ///todo Search first entity which has light environment component! this might be slow, work around somehow?
+            Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_EnvironmentLight::TypeNameStatic());
+            if ( lst.size() == 0 )
+                return 0;
+            
+            entity = lst.front().get();
+        }
+          
     }
   
     
@@ -435,8 +443,18 @@ EC_Fog* Environment::GetEnvironmentFog()
     else
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
+       
         if ( entity == 0)
-            return 0;
+        {
+            ///todo Search first entity which has light environment component! this might be slow, work around somehow?
+            Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
+            if ( lst.size() == 0 )
+                return 0;
+            
+            entity = lst.front().get();
+        }
+        
+        
     }
   
     
