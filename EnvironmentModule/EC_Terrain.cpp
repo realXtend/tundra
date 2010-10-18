@@ -757,6 +757,8 @@ void EC_Terrain::RegenerateDirtyTerrainPatches()
             if (neighborsLoaded)
                 GenerateTerrainGeometryForOnePatch(x, y);
         }
+        
+    emit TerrainRegenerated();
 }
 
 

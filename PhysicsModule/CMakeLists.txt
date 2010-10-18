@@ -29,11 +29,11 @@ use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package_bullet()
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule EnvironmentModule RexCommon)
 link_ogre()
 link_package (BOOST)
 link_package (POCO)

@@ -253,6 +253,8 @@ signals:
 
     void MaterialChanged(QString newMaterial);
 
+    void TerrainRegenerated();
+    
 private slots:
     //! Emitted when the parrent entity has been set.
     void UpdateSignals();

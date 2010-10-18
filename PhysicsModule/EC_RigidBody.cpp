@@ -4,6 +4,7 @@
 #include "EC_Mesh.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
+#include "EC_Terrain.h"
 #include "PhysicsModule.h"
 #include "PhysicsUtils.h"
 #include "PhysicsWorld.h"
@@ -14,6 +15,7 @@
 #include "ServiceManager.h"
 
 #include "btBulletDynamicsCommon.h"
+#include "BulletCollision/CollisionShapes/btHeightfieldTerrainShape.h"
 
 #include "LoggingFunctions.h"
 DEFINE_POCO_LOGGING_FUNCTIONS("EC_RigidBody");
@@ -26,6 +28,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     body_(0),
     world_(0),
     shape_(0),
+    heightField_(0),
     disconnected_(false),
     owner_(checked_static_cast<PhysicsModule*>(module)),
     mass(this, "Mass", 0.0f),
@@ -171,24 +174,36 @@ void EC_RigidBody::UpdateSignals()
     if (!parent)
         return;
     
-    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceable()));
+    connect(parent, SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(CheckForPlaceableAndTerrain()));
     
     Scene::SceneManager* scene = parent->GetScene();
     world_ = owner_->GetPhysicsWorldForScene(scene);
 }
 
-void EC_RigidBody::CheckForPlaceable()
+void EC_RigidBody::CheckForPlaceableAndTerrain()
 {
-    if (placeable_.lock().get())
-        return;
     Scene::Entity* parent = GetParentEntity();
     if (!parent)
         return;
-    boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
-    if (placeable)
+    
+    if (!placeable_.lock().get())
     {
-        placeable_ = placeable;
-        connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+        boost::shared_ptr<EC_Placeable> placeable = parent->GetComponent<EC_Placeable>();
+        if (placeable)
+        {
+            placeable_ = placeable;
+            connect(placeable.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(PlaceableUpdated(IAttribute*)));
+        }
+    }
+    if (!terrain_.lock().get())
+    {
+        boost::shared_ptr<Environment::EC_Terrain> terrain = parent->GetComponent<Environment::EC_Terrain>();
+        if (terrain)
+        {
+            terrain_ = terrain;
+            connect(terrain.get(), SIGNAL(TerrainRegenerated()), this, SLOT(OnTerrainRegenerated()));
+            connect(terrain.get(), SIGNAL(OnAttributeChanged(IAttribute*, AttributeChange::Type)), this, SLOT(TerrainUpdated(IAttribute*)));
+        }
     }
 }
 
@@ -223,6 +238,8 @@ void EC_RigidBody::CreateCollisionShape()
     case Shape_TriMesh:
         if (triangleMesh_)
             shape_ = new btBvhTriangleMeshShape(triangleMesh_.get(), true, true);
+    case Shape_HeightField:
+        CreateHeightFieldFromTerrain();
         break;
     }
     
@@ -241,6 +258,11 @@ void EC_RigidBody::RemoveCollisionShape()
         delete shape_;
         shape_ = 0;
     }
+    if (heightField_)
+    {
+        delete heightField_;
+        heightField_ = 0;
+    }
 }
 
 void EC_RigidBody::CreateBody()
@@ -248,7 +270,7 @@ void EC_RigidBody::CreateBody()
     if ((!world_) || (body_))
         return;
     
-    CheckForPlaceable();
+    CheckForPlaceableAndTerrain();
     
     btVector3 localInertia(0.0f, 0.0f, 0.0f);
     
@@ -364,6 +386,12 @@ void EC_RigidBody::setWorldTransform(const btTransform &worldTrans)
     }
     
     disconnected_ = false;
+}
+
+void EC_RigidBody::OnTerrainRegenerated()
+{
+    if (shapeType.Get() == Shape_HeightField)
+        CreateCollisionShape();
 }
 
 void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
@@ -516,6 +544,16 @@ void EC_RigidBody::PlaceableUpdated(IAttribute* attribute)
     }
 }
 
+void EC_RigidBody::TerrainUpdated(IAttribute* attribute)
+{
+    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    if (!terrain)
+        return;
+    //! \todo It is suboptimal to regenerate the whole heightfield when just the terrain's transform changes
+    if ((attribute == &terrain->nodeTransformation) && (shapeType.Get() == Shape_HeightField))
+        CreateCollisionShape();
+}
+
 bool EC_RigidBody::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData *data)
 {
     if(category_id == resource_event_category_)
@@ -569,5 +607,60 @@ void EC_RigidBody::UpdateScale()
         else
             shape_->setLocalScaling(btVector3(sizeVec.x * trans.scale.x, sizeVec.y * trans.scale.z, sizeVec.z * trans.scale.y));
     }
+}
+
+void EC_RigidBody::CreateHeightFieldFromTerrain()
+{
+    CheckForPlaceableAndTerrain();
+    
+    Environment::EC_Terrain* terrain = terrain_.lock().get();
+    if (!terrain)
+        return;
+    
+    int width = terrain->PatchWidth() * Environment::EC_Terrain::cPatchSize;
+    int height = terrain->PatchHeight() * Environment::EC_Terrain::cPatchSize;
+    
+    if ((!width) || (!height))
+        return;
+    
+    heightValues_.resize(width * height);
+    
+    float xySpacing = 1.0f;
+    float zSpacing = 1.0f;
+    float minZ = 1000000000;
+    float maxZ = -1000000000;
+    for (uint y = 0; y < height; ++y)
+    {
+        for (uint x = 0; x < width; ++x)
+        {
+            float value = terrain->GetPoint(x, y);
+            if (value < minZ)
+                minZ = value;
+            if (value > maxZ)
+                maxZ = value;
+            heightValues_[y * width + x] = value;
+        }
+    }
+    
+    Vector3df scale = terrain->nodeTransformation.Get().scale;
+    Vector3df bbMin(0, 0, minZ);
+    Vector3df bbMax(xySpacing * (width - 1), xySpacing * (height - 1), maxZ);
+    Vector3df bbCenter = scale * (bbMin + bbMax) * 0.5f;
+    
+    heightField_ = new btHeightfieldTerrainShape(width, height, &heightValues_[0], zSpacing, minZ, maxZ, 2, PHY_FLOAT, false);
+    
+    /*! \todo EC_Terrain uses its own transform that is independent of the placeable. It is not nice to support, since rest of EC_RigidBody assumes
+        the transform is in the placeable. Right now, we only support position & scaling. Here, we also counteract Bullet's nasty habit to center 
+        the heightfield on its own. Also, Bullet's collisionshapes generally do not support arbitrary transforms, so we must construct a "compound shape"
+        and add the heightfield as its child, to be able to specify the transform.
+     */
+    heightField_->setLocalScaling(ToBtVector3(scale));
+    
+    Vector3df positionAdjust = terrain->nodeTransformation.Get().position;
+    positionAdjust += bbCenter;
+    
+    btCompoundShape* compound = new btCompoundShape();
+    shape_ = compound;
+    compound->addChildShape(btTransform(btQuaternion(0,0,0,1), ToBtVector3(positionAdjust)), heightField_);
 }
 

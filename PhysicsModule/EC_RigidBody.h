@@ -11,7 +11,13 @@
 class btRigidBody;
 class btCollisionShape;
 class btTriangleMesh;
+class btHeightfieldTerrainShape;
 class EC_Placeable;
+
+namespace Environment
+{
+    class EC_Terrain;
+}
 
 namespace Physics
 {
@@ -88,7 +94,7 @@ Registered by Physics::PhysicsModule.
 
 Does not emit any actions.
 
-<b>Depends on the component Placeable</b>.
+<b>Depends on the component Placeable, and optionally on Mesh & Terrain to copy the collision shape from them</b>.
 </table>
 */
 class EC_RigidBody : public IComponent, public btMotionState
@@ -228,8 +234,14 @@ private slots:
     //! Called when attributes of the placeable have changed
     void PlaceableUpdated(IAttribute *attribute);
     
-    //! Check for placeable component and connect to its signals
-    void CheckForPlaceable();
+    //! Called when attributes of the terrain have changed
+    void TerrainUpdated(IAttribute *attribute);
+    
+    //! Check for placeable & terrain components and connect to their signals
+    void CheckForPlaceableAndTerrain();
+    
+    //! Called when EC_Terrain has been regenerated
+    void OnTerrainRegenerated();
     
 private:
     //! constructor
@@ -242,6 +254,9 @@ private:
     
     //! Remove the collisionshape
     void RemoveCollisionShape();
+    
+    //! Create a heightfield collisionshape from EC_Terrain
+    void CreateHeightFieldFromTerrain();
     
     //! Create the body. No-op if the scene is not associated with a physics world.
     void CreateBody();
@@ -257,8 +272,11 @@ private:
     //! Update scale from placeable & own size setting
     void UpdateScale();
     
-    //! Placeable found-flag
+    //! Placeable pointer
     boost::weak_ptr<EC_Placeable> placeable_;
+    
+    //! Terrain pointer
+    boost::weak_ptr<Environment::EC_Terrain> terrain_;
     
     //! Internal disconnection of attribute changes. True during the time we're setting attributes ourselves due to Bullet update, to prevent endless loop
     bool disconnected_;
@@ -287,6 +305,12 @@ private:
     
     //! Bullet triangle mesh
     boost::shared_ptr<btTriangleMesh> triangleMesh_;
+    
+    //! Bullet heightfield shape. Note: this is always put inside a compound shape (shape_)
+    btHeightfieldTerrainShape* heightField_;
+    
+    //! Heightfield values
+    std::vector<float> heightValues_;
 };
 
 
