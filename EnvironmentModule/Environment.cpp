@@ -100,12 +100,6 @@ EC_OgreEnvironment* Environment::GetEnvironmentComponent()
     
 }
 
-/*
-Scene::EntityWeakPtr Environment::GetEnvironmentEntity()
-{
-    return activeEnvEntity_;
-}
-*/
 
 void Environment::CreateEnvironment()
 {
@@ -138,11 +132,6 @@ void Environment::CreateEnvironment()
     else
     {
         enviroment =  active_scene->GetEntityByName("LocalEnvironment").get();
-        if ( enviroment == 0)
-        {
-            // Create LocalEnvironment- entity
-            //enviroment = owner_->CreateEnvironmentEntity("FogEnvironment", EC_Fog::TypeNameStatic()).get();
-        }
        
         if ( enviroment != 0 && !enviroment->HasComponent(EC_Fog::TypeNameStatic()))
             enviroment->AddComponent(owner_->GetFramework()->GetComponentManager()->CreateComponent(EC_Fog::TypeNameStatic())); 
@@ -200,8 +189,17 @@ bool Environment::HandleSimulatorViewerTimeMessage(ProtocolUtilities::NetworkEve
             if ( light->fixedTimeAttr.Get() == false)
                 light->currentTimeAttr.Set(dayphase, AttributeChange::LocalOnly);
         }
-        else
-            env->SetTime(dayphase);
+        else if ( light == 0)
+        {
+            // Create EC_EnvironmentLight 
+            QString name = "LightEnvironment";
+            owner_->CreateEnvironmentEntity(name, EC_EnvironmentLight::TypeNameStatic()); 
+            light = GetEnvironmentLight();
+            if ( light->fixedTimeAttr.Get() == false)
+                light->currentTimeAttr.Set(dayphase, AttributeChange::LocalOnly);
+        }
+        //else
+        //    env->SetTime(dayphase);
     }
     return false;
 }
@@ -220,8 +218,18 @@ EC_EnvironmentLight* Environment::GetEnvironmentLight()
     else
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
-        if ( entity == 0)
-            return 0;
+        
+        if ( entity == 0 || !entity->HasComponent(EC_EnvironmentLight::TypeNameStatic()))
+        {
+            ///todo Search first entity which has light environment component! this might be slow, work around somehow?
+            Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_EnvironmentLight::TypeNameStatic());
+            if ( lst.size() == 0 )
+                return 0;
+            
+            entity = lst.front().get();
+        }
+        
+       
     }
   
     
@@ -435,8 +443,18 @@ EC_Fog* Environment::GetEnvironmentFog()
     else
     {
         entity =  active_scene->GetEntityByName("LocalEnvironment").get();
-        if ( entity == 0)
-            return 0;
+        
+        if ( entity == 0 || !entity->HasComponent(EC_Fog::TypeNameStatic()))
+        {
+            ///todo Search first entity which has light environment component! this might be slow, work around somehow?
+            Scene::EntityList lst = active_scene->GetEntitiesWithComponent(EC_Fog::TypeNameStatic());
+            if ( lst.size() == 0 )
+                return 0;
+            
+            entity = lst.front().get();
+        }
+        
+        
     }
   
     
