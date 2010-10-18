@@ -1,6 +1,7 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "EC_Mesh.h"
 #include "EC_RigidBody.h"
 #include "EC_Placeable.h"
 #include "PhysicsModule.h"
@@ -77,6 +78,20 @@ EC_RigidBody::~EC_RigidBody()
 {
     RemoveBody();
     RemoveCollisionShape();
+}
+
+bool EC_RigidBody::SetShapeFromVisibleMesh()
+{
+    Scene::Entity* parent = GetParentEntity();
+    if (!parent)
+        return false;
+    EC_Mesh* mesh = parent->GetComponent<EC_Mesh>().get();
+    if (!mesh)
+        return false;
+    mass.Set(0.0f, AttributeChange::Default);
+    shapeType.Set(Shape_TriMesh, AttributeChange::Default);
+    collisionMeshId.Set(mesh->meshResourceId.Get(), AttributeChange::Default);
+    return true;
 }
 
 void EC_RigidBody::UpdateSignals()
@@ -320,6 +335,8 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
             else
                 requestMesh = true;
         }
+        if (!body_)
+            CreateBody();
     }
     
     if ((attribute == &collisionMeshId) && (shapeType.Get() == Shape_TriMesh))
