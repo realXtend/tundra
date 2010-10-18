@@ -38,6 +38,7 @@ EC_RigidBody::EC_RigidBody(IModule* module) :
     angularDamping(this, "Angular damping", 0.0f),
     linearFactor(this, "Linear factor", Vector3df(1,1,1)),
     angularFactor(this, "Angular factor", Vector3df(1,1,1)),
+    phantom(this, "Phantom", false),
     cachedShapeType_(-1),
     collision_mesh_tag_(0)
 {
@@ -192,8 +193,17 @@ void EC_RigidBody::CreateBody()
     if ((shape_) && (m > 0.0f))
         shape_->calculateLocalInertia(m, localInertia);
     
+    bool isDynamic = m > 0.0f;
+    bool isPhantom = phantom.Get();
+    int collisionFlags = 0;
+    if (!isDynamic)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isPhantom)
+        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    
     body_ = new btRigidBody(m, this, shape_, localInertia);
     body_->setUserPointer(this);
+    body_->setCollisionFlags(collisionFlags);
     world_->GetWorld()->addRigidBody(body_);
     body_->activate();
 }
@@ -214,6 +224,15 @@ void EC_RigidBody::ReaddBody()
         shape_->calculateLocalInertia(m, localInertia);
     body_->setCollisionShape(shape_);
     body_->setMassProps(m, localInertia);
+    
+    bool isDynamic = m > 0.0f;
+    bool isPhantom = phantom.Get();
+    int collisionFlags = 0;
+    if (!isDynamic)
+        collisionFlags |= btCollisionObject::CF_STATIC_OBJECT;
+    if (isPhantom)
+        collisionFlags |= btCollisionObject::CF_NO_CONTACT_RESPONSE;
+    body_->setCollisionFlags(collisionFlags);
     
     world_->GetWorld()->removeRigidBody(body_);
     world_->GetWorld()->addRigidBody(body_);
@@ -341,6 +360,15 @@ void EC_RigidBody::AttributeUpdated(IAttribute* attribute)
     
     if ((attribute == &collisionMeshId) && (shapeType.Get() == Shape_TriMesh))
         requestMesh = true;
+    
+    if (attribute == &phantom)
+    {
+       if (!body_)
+            CreateBody();
+        else
+            // Readd body to the world in case phantom classification changed
+            ReaddBody();
+    }
     
     if (requestMesh)
     {

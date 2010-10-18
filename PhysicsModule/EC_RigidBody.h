@@ -51,6 +51,8 @@ Registered by Physics::PhysicsModule.
 <div>Specifies the axes on which forces can act on the object, making it move</div>
 <li>Vector3df: angularFactor
 <div>Specifies the axes on which torques can act on the object, making it rotate. Set to 0,0,0 to make for example an avatar capsule that does not tip over by itself.</div>
+<li>bool: phantom
+<div>If true, contact response is disabled, ie. there is no collision interaction between this object and others.</div>
 </ul>
 
 <b>Exposes the following scriptable functions:</b>
@@ -125,6 +127,10 @@ public:
     //! Angular factor. Defines in which dimensions the object can rotate
     Q_PROPERTY(Vector3df angularFactor READ getangularFactor WRITE setangularFactor)
     DEFINE_QPROPERTY_ATTRIBUTE(Vector3df, angularFactor);
+    
+    //! Phantom flag. If true, contact response is disabled, ie. there is no collision interaction between this object and others
+    Q_PROPERTY(bool phantom READ getphantom WRITE setphantom)
+    DEFINE_QPROPERTY_ATTRIBUTE(bool, phantom)
     
     virtual ~EC_RigidBody();
     
