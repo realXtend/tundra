@@ -15,11 +15,7 @@
 
 
 class ISoundService;
-
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
+class EC_Placeable;
 
 /// Entity-component which provides sound listener position for in-world 3D audio.
 /**
@@ -30,7 +26,7 @@ namespace OgreRenderer
 Entity-component which provides sound listener position for in-world 3D audio.
 Updates parent entity's placeable component's position to the sound service each frame.
 @note   Only one entity can have active sound listener at a time.
-@todo   EC_SoundListener is currently working with avatar and freecamera. In future there
+@todo   EC_SoundListener is currently only working with avatar and freecamera. In future, there
         should be an option to apply a sound listener component to any entity that owns a
         instance of placeable component.
 
@@ -56,7 +52,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on OgrePlaceable.</b>
+<b>Depends on Placeable.</b>
 </table>
 */
 class EC_SoundListener : public IComponent
@@ -85,7 +81,7 @@ private:
     explicit EC_SoundListener(IModule *module);
 
     /// Parent entity's placeable component.
-    boost::weak_ptr<OgreRenderer::EC_OgrePlaceable> placeable_;
+    boost::weak_ptr<EC_Placeable> placeable_;
 
     /// Sound service.
     boost::weak_ptr<ISoundService> soundService_;

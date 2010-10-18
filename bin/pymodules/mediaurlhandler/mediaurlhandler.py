@@ -54,9 +54,8 @@ class MediaurlView:
         return self.__url
 
     def mouse_clicked(self):
-        #if not self.__media_player_service_used:
-        print "clicked:", self.__url
-        loadurlhandler.loadurl(self.__url)
+        if not self.__media_player_service_used:
+            loadurlhandler.loadurl(self.__url)
         
     def mouse_hover_in(self):
         pass
@@ -124,7 +123,7 @@ class MediaURLHandler(Component):
                     
             # If widget was created (texture found in scene), then apply to submeshes
             if mv.playback_widget != None:
-                affected_entitys = r.applyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
+                affected_entitys = naali._pythonscriptmodule.ApplyUICanvasToSubmeshesWithTexture(mv.playback_widget, textureuuid, mv.refreshrate)
                 # Connect affected entities Toucheble signals to to MediaurlView
                 if affected_entitys != None:
                     for entity in affected_entitys:
@@ -177,7 +176,7 @@ class MediaURLHandler(Component):
         try:
             touchable = entity.touchable
             if touchable != None:
-                touchable.connect("Clicked()", mediaurlview.mouse_clicked)
+                touchable.connect("MousePressed()", mediaurlview.mouse_clicked)
             else:
                 r.logWarning("MediaUrlHandler - Could not find touchable from entity")
         except:
@@ -190,4 +189,4 @@ class MediaURLHandler(Component):
                 if mediaurlview is None:
                     continue
                 #print tx, mediaurlview.url().toString()
-                r.applyUICanvasToSubmeshesWithTexture(mediaurlview.playback_widget, tx, mediaurlview.refreshrate)
+                naali._pythonscriptmodule.ApplyUICanvasToSubmeshesWithTexture(mediaurlview.playback_widget, tx, mediaurlview.refreshrate)

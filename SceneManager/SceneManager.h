@@ -5,7 +5,6 @@
 
 #include "ForwardDefines.h"
 #include "CoreStdIncludes.h"
-#include "CoreAnyIterator.h"
 #include "Entity.h"
 #include "IComponent.h"
 
@@ -18,10 +17,10 @@ namespace Scene
     typedef std::list<EntityPtr> EntityList;
 
     //! Acts as a generic scenegraph for all entities in the world.
-    /*! Contains all entities in the world in a generic fashion.
+    /*! Contains all entities in the world.
         Acts as a factory for all entities.
 
-        To create access and remove scenes, see Framework.
+        To create, access and remove scenes, see Framework.
 
         \ingroup Scene_group
     */
@@ -59,6 +58,9 @@ namespace Scene
 
         Scene::Entity* GetEntityByNameRaw(const QString& name) const;
 
+        //! Return a scene document with just the desired entity
+        QByteArray GetEntityXml(Scene::Entity *entity);
+
     public:
         //! destructor
         ~SceneManager();
@@ -67,10 +69,10 @@ namespace Scene
         typedef std::map<entity_id_t, EntityPtr> EntityMap;
 
         //! entity iterator, see begin() and end()
-        typedef MapIterator<EntityMap::iterator, EntityPtr> iterator;
+        typedef EntityMap::iterator iterator;
 
         //! const entity iterator. see begin() and end()
-        typedef MapIterator<EntityMap::const_iterator, const Scene::EntityPtr> const_iterator;
+        typedef EntityMap::const_iterator const_iterator;
 
         //! Returns true if the two scenes have the same name
         bool operator == (const SceneManager &other) const { return Name() == other.Name(); }
@@ -167,14 +169,14 @@ namespace Scene
         //! Return list of entities with a spesific component present.
         //! \param type_name Type name of the component
         EntityList GetEntitiesWithComponent(const QString &type_name) const;
-        
+
         //! Emit notification of an attribute changing. Called by IComponent.
         /*! \param comp Component pointer
             \param attribute Attribute pointer
             \param change Type of change (local, from network...)
          */
         void EmitAttributeChanged(IComponent* comp, IAttribute* attribute, AttributeChange::Type change);
-        
+
         //! Emit a notification of a component being added to entity. Called by the entity
         /*! \param entity Entity pointer
             \param comp Component pointer
@@ -191,6 +193,7 @@ namespace Scene
             \note This is emitted before just before the component is removed.
          */
         void EmitComponentRemoved(Scene::Entity* entity, IComponent* comp, AttributeChange::Type change);
+
         //! Emit a notification of an entity having been created
         /*! Note: local EntityCreated notifications should not be used for replicating entity creation to server, as the client 
             should not usually decide the entityID itself.
@@ -198,9 +201,8 @@ namespace Scene
             \param change Type of change (local, from network...)
          */
         void EmitEntityCreated(Scene::Entity* entity, AttributeChange::Type change = AttributeChange::LocalOnly);
-
         void EmitEntityCreated(Scene::EntityPtr entity, AttributeChange::Type change = AttributeChange::LocalOnly);
-        
+
         //! Emit a notification of an entity being removed. 
         /*! Note: the entity pointer will be invalid shortly after!
             \param entity Entity pointer
@@ -217,34 +219,70 @@ namespace Scene
         void EmitActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
 
         //! Load the scene from XML
-        /*! Note: will remove all existing entities
-            \param filename File name
+        /*! \param filename File name
+            \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-           
-            \return true if successful
+            \return List of created entities.
+
+            \todo Add replaceOnConflict parameter
          */
-        bool LoadSceneXML(const std::string& filename, AttributeChange::Type change);
-        
+        QList<Entity *> LoadSceneXML(const std::string& filename, bool clearScene, AttributeChange::Type change);
+
         //! Save the scene to XML
         /*! \param filename File name
             \return true if successful
          */
         bool SaveSceneXML(const std::string& filename);
-        
+
         //! Load the scene from binary
         /*! Note: will remove all existing entities
             \param filename File name
+            \param clearScene Do we want to clear the existing scene.
             \param change Changetype that will be used, when removing the old scene, and deserializing the new
-           
-            \return true if successful
+            \return List of created entities.
+
+            \todo Add replaceOnConflict parameter
          */
-        bool LoadSceneBinary(const std::string& filename, AttributeChange::Type change);
-        
+        QList<Entity *> LoadSceneBinary(const std::string& filename, bool clearScene, AttributeChange::Type change);
+
         //! Save the scene to binary
         /*! \param filename File name
             \return true if successful
          */
         bool SaveSceneBinary(const std::string& filename);
+
+        //! Creates scene content from XML.
+        /*! \param xml XML document as string.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return List of created entities.
+         */
+        QList<Entity *> CreateContentFromXml(const QString &xml, bool replaceOnConflict, AttributeChange::Type change);
+
+        //! This is an overloaded function.
+        /*! \param xml XML document.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return List of created entities.
+         */
+        QList<Entity *>CreateContentFromXml(const QDomDocument &xml, bool replaceOnConflict, AttributeChange::Type change);
+
+        //! Creates scene content from binary file.
+        /*! \param filename File name.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return List of created entities.
+         */
+        QList<Entity *>CreateContentFromBinary(const QString &filename, bool replaceOnConflict, AttributeChange::Type change);
+
+        //! This is an overloaded function.
+        /*! \param data Data buffer.
+            \param numBytes Data size.
+            \param replaceOnConflict In case of entity ID conflict, do we want to replace the existing entity or create a new one.
+            \param change Changetype that will be used, when removing the old scene, and deserializing the new
+            \return List of created entities.
+         */
+        QList<Entity *>CreateContentFromBinary(const char *data, int numBytes, bool replaceOnConflict, AttributeChange::Type change);
 
     signals:
         //! Signal when an attribute of a component has changed
@@ -284,7 +322,10 @@ namespace Scene
             \param type Execution type.
         */
         void ActionTriggered(Scene::Entity *entity, const QString &action, const QStringList &params, EntityAction::ExecutionType type);
-
+        
+        //! Emitted when being destroyed
+        void Removed(Scene::SceneManager* scene);
+        
     private:
         Q_DISABLE_COPY(SceneManager);
 

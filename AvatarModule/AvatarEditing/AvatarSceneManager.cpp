@@ -8,7 +8,7 @@
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarAppearance.h"
 
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 
 #include "EventManager.h"
 #include "UiServiceInterface.h"
@@ -132,7 +132,7 @@ namespace Avatar
             }
     
             // Avatar placeable
-            OgreRenderer::EC_OgrePlaceable *placeable = av_entity->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *placeable = av_entity->GetComponent<EC_Placeable>().get();
             if (!placeable)
             {
                 AvatarModule::LogDebug("Could not accuire av placeable component, cannot send av mode begin event");

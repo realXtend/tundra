@@ -10,6 +10,7 @@
 #include "MultiEditPropertyFactory.h"
 #include "LineEditPropertyFactory.h"
 #include "Transform.h"
+#include "AssetReference.h"
 
 // QtPropertyBrowser headers.
 #include <qtvariantproperty.h>
@@ -67,7 +68,6 @@ namespace ECEditor
                 useMultiEditor_ = false;
                 Initialize();
             }
-            //emit AttributeChanged(attributeName_.toStdString());
         }
         else if(attributes_.size() > 1)
         {
@@ -96,7 +96,6 @@ namespace ECEditor
                 Update(); 
                 listenEditorChangedSignal_ = true;
             }
-            //emit AttributeChanged(attributeName_.toStdString()); 
         }
     }
 
@@ -215,7 +214,7 @@ namespace ECEditor
             if(rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(realPropertyManager, variantFactory);
         }
@@ -223,6 +222,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
 
@@ -288,7 +288,7 @@ namespace ECEditor
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
         {
-            //Check if int need to have min and max value setted and also enum types are presented as a int value.
+            //Check if int need to have min and max value set and also enum types are presented as a int value.
             AttributeMetadata *metaData = (*attributes_.begin())->GetMetadata();
             if(metaData)
             {
@@ -337,7 +337,7 @@ namespace ECEditor
             if(rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(intPropertyManager, variantFactory);
         }
@@ -345,6 +345,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<int>::Set(QtProperty *property)
@@ -382,7 +383,7 @@ namespace ECEditor
             if(rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(boolPropertyManager, variantFactory);
         }
@@ -390,6 +391,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<bool>::Set(QtProperty *property)
@@ -475,7 +477,7 @@ namespace ECEditor
                 childProperty = variantManager->addProperty(QVariant::Double, "z");
                 rootProperty_->addSubProperty(childProperty);
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
@@ -483,6 +485,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Vector3df>::Set(QtProperty *property)
@@ -573,7 +576,7 @@ namespace ECEditor
                 variantManager->setAttribute(childProperty, "maximum", QVariant(255));
 
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
@@ -581,6 +584,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Color>::Set(QtProperty *property)
@@ -625,7 +629,7 @@ namespace ECEditor
             if(rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
@@ -633,6 +637,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QString>::Set(QtProperty *property)
@@ -681,7 +686,7 @@ namespace ECEditor
             if(rootProperty_)
             {
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(qStringPropertyManager, lineEditFactory);
         }
@@ -689,6 +694,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QVariant>::Set(QtProperty *property)
@@ -755,12 +761,13 @@ namespace ECEditor
                 rootProperty_->addSubProperty(childProperty);
 
                 Update();
-                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(stringManager, lineEditFactory);
         }
         else
             InitializeMultiEditor();
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<QVariantList >::Set(QtProperty *property)
@@ -815,7 +822,7 @@ namespace ECEditor
 
     //-------------------------ASSETREFERENCE ATTRIBUTE TYPE-------------------------
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Update()
+    template<> void ECAttributeEditor<AssetReference>::Update()
     {
         if(!useMultiEditor_)
         {
@@ -823,20 +830,19 @@ namespace ECEditor
             if(children.size() == 2)
             {
                 QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
-                Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Attribute<Foundation::AssetReference> *>(*(attributes_.begin()));
+                Attribute<AssetReference> *attribute = dynamic_cast<Attribute<AssetReference> *>(*(attributes_.begin()));
                 if(!attribute || !stringManager)
                     return;
 
-                Foundation::AssetReference value = attribute->Get();
-                stringManager->setValue(children[0], QString::fromStdString(value.id_));
-                stringManager->setValue(children[1], QString::fromStdString(value.type_));
+                stringManager->setValue(children[0], attribute->Get().id);
+                stringManager->setValue(children[1], attribute->Get().type);
             }
         }
         else
             UpdateMultiEditorValue();
     }
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Initialize()
+    template<> void ECAttributeEditor<AssetReference>::Initialize()
     {
         ECAttributeEditorBase::PreInitialize();
         if(!useMultiEditor_)
@@ -860,30 +866,28 @@ namespace ECEditor
                 rootProperty_->addSubProperty(childProperty);
 
                 Update();
-                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(stringManager, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(stringManager, lineEditFactory);
         }
         else
             InitializeMultiEditor();
+        emit EditorChanged(attributeName_);
     }
 
-    template<> void ECAttributeEditor<Foundation::AssetReference>::Set(QtProperty *property)
+    template<> void ECAttributeEditor<AssetReference>::Set(QtProperty *property)
     {
         if(listenEditorChangedSignal_)
         {
             QList<QtProperty*> children = rootProperty_->subProperties();
             if(children.size() == 2)
             {
-                QtStringPropertyManager *stringManager = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
-                Attribute<Foundation::AssetReference> *attribute = dynamic_cast<Attribute<Foundation::AssetReference> *>(*(attributes_.begin()));
-                if(!attribute || !stringManager)
+                QtStringPropertyManager *strMgr = dynamic_cast<QtStringPropertyManager *>(children[0]->propertyManager());
+                Attribute<AssetReference> *attribute = dynamic_cast<Attribute<AssetReference> *>(*(attributes_.begin()));
+                if(!attribute || !strMgr)
                     return;
 
-                Foundation::AssetReference value;
-                value.id_ = stringManager->value(children[0]).toStdString();
-                value.type_ = stringManager->value(children[1]).toStdString();
-                SetValue(value);
+                SetValue(AssetReference(strMgr->value(children[0]), strMgr->value(children[1])));
             }
         }
     }
@@ -973,7 +977,7 @@ namespace ECEditor
                 scaleProperty->addSubProperty(childProperty);
 
                 Update();
-                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(SetAttribute(QtProperty*)));
+                QObject::connect(propertyMgr_, SIGNAL(propertyChanged(QtProperty*)), this, SLOT(PropertyChanged(QtProperty*)));
             }
             owner_->setFactoryForManager(variantManager, variantFactory);
         }
@@ -981,6 +985,7 @@ namespace ECEditor
         {
             InitializeMultiEditor();
         }
+        emit EditorChanged(attributeName_);
     }
 
     template<> void ECAttributeEditor<Transform>::Set(QtProperty *property)

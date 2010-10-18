@@ -1,15 +1,3 @@
-# Macro for mocfolder
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-macro (UiFolder)
-    file (GLOB GENERATED_UI_H ui_*.h)
-    source_group ("Generated UI" FILES ${GENERATED_UI_H})
-endmacro (UiFolder)
-
-
 # Define target name and output directory
 init_target (CAVEStereoModule OUTPUT modules/core)
 
@@ -18,7 +6,6 @@ file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB UI_FILES ui/*.ui)
-
 
 # SubFolders to project with filtering
 
@@ -52,7 +39,7 @@ link_package (QT4)
 link_package (POCO)
 link_package (XMLRPC)
 link_package (CURL)
-link_package (OGRE)
+link_ogre()
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()

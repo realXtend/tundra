@@ -39,6 +39,8 @@ namespace ECEditor
     {
         if(!IsValid())
             return false;
+
+        PROFILE(ComponentGroup_IsSameComponent);
         /*if(components_[0].expired())
             return false;
         // Make sure that attribute type and name is same in both components.
@@ -127,20 +129,4 @@ namespace ECEditor
     { 
         return editor_->RootProperty() == property;
     }
-
-    /*bool ComponentGroup::operator< (const ComponentGroup &comp)
-    {
-        if(comp.typeName_ < typeName_)
-            return true;
-        if(comp.name_ < name_)
-            return true;
-        return false;
-    }
-
-    bool ComponentGroup::operator== (const ComponentGroup &comp)
-    {
-        if(comp.name_ == name_ && comp.typeName_ == typeName_)
-            return true;
-        return false;
-    }*/
 }

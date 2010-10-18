@@ -54,16 +54,22 @@ namespace OpenSimProtocol
         const QString& address,
         const QString& port,
         const QString& start_location,
-        ProtocolUtilities::ConnectionThreadState *thread_state )
+        ProtocolUtilities::ConnectionThreadState *thread_state)
     {
         boost::shared_ptr<ProtocolModuleOpenSim> spOpenSim = networkOpensim_.lock();
         if (spOpenSim.get())
         {
             spOpenSim->SetAuthenticationType(ProtocolUtilities::AT_OpenSim);
             OpenSimLoginThread *loginWorker = spOpenSim->GetLoginWorker();
+            if (!loginWorker)
+                return false;
+            if (loginWorker->GetState() == ProtocolUtilities::Connection::STATE_CONNECTED)
+            {
+                ProtocolModuleOpenSim::LogInfo("OpenSimWorldSession::LoginToServer() - Already in connected state. Something went bad on diconnect before you got here!");
+                return false;
+            }
             loginWorker->PrepareOpenSimLogin(first_name, last_name, password, address, port, start_location, thread_state);
-
-            connect(loginWorker, SIGNAL(LoginStateChanged(int)), SLOT(HandleLoginStateChange(int)));
+            connect(loginWorker, SIGNAL(LoginStateChanged(int)), SLOT(HandleLoginStateChange(int)), Qt::UniqueConnection);
 
             // Start the thread.
             boost::thread(boost::ref(*loginWorker));
@@ -151,7 +157,11 @@ namespace OpenSimProtocol
         ProtocolModuleOpenSim::LogDebug("OpenSim login in process: " + NetworkStateToString(loginState));
         if (loginState == ProtocolUtilities::Connection::STATE_LOGIN_FAILED)
         {
-            emit LoginFailed(networkOpensim_.lock()->GetLoginWorker()->GetErrorMessage().c_str());
+            // Dont emit this if we are already connected, the state change might be false from
+            // another worker thread "instance" or thread run of the constuctor. 
+            // Caused crashes after teleports without the check!
+            if (networkOpensim_.lock()->GetLoginWorker()->GetState() != ProtocolUtilities::Connection::STATE_CONNECTED)
+                emit LoginFailed(networkOpensim_.lock()->GetLoginWorker()->GetErrorMessage().c_str());
         }
         else if (loginState == ProtocolUtilities::Connection::STATE_CONNECTED)
         {

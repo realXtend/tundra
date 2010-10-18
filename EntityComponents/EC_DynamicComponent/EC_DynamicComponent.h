@@ -75,6 +75,9 @@ Does not emit any actions.
 
 struct DeserializeData;
 
+
+class QScriptValue;
+
 class EC_DynamicComponent : public IComponent
 {
     DECLARE_EC(EC_DynamicComponent);
@@ -136,6 +139,13 @@ public slots:
     */
     QVariant GetAttribute(const QString &name) const;
 
+    /// Inserts new attribute value to attribute. Note: this is only meant to be used through javascripts.
+    /** @param name Name of the attribute.
+     *  @param value Value of the attribe.
+     *  @param change Change type.
+     *  @todo remove this from dynamic component when possible.
+     */
+    void SetAttributeQScript(const QString &name, const QScriptValue &value, AttributeChange::Type change);
     /// Inserts new attribute value to attribute.
     /** @param index Index for the attribute.
         @param value Value of the attribute.
@@ -167,7 +177,7 @@ public slots:
     /// Remove attribute from the component.
     /** @param name Name of the attirbute.
     */
-    void RemoveAttribute(const QString &name);
+    void RemoveAttribute(const QString &name, AttributeChange::Type change = AttributeChange::Default);
 
     /// Check if component is holding an attribute by the @c name.
     /** @param name Name of attribute that we are looking for.
@@ -176,12 +186,18 @@ public slots:
 
 signals:
     /// Emitted when a new attribute is added to this component.
-    /** @param name Name of the attribute.
+    /** @param attr New attribute.
     */
-    void AttributeAdded(const QString &name);
+    void AttributeAdded(IAttribute *attr);
+
+    /// Emitted when attribute is about to be removed.
+    /** @param attr Attribute about to be removed.
+    */
+    void AttributeAboutToBeRemoved(IAttribute *attr);
 
     /// Emitted when attribute is removed from this component.
     /** @param name Name of the attribute.
+        @todo REMOVE
     */
     void AttributeRemoved(const QString &name);
 

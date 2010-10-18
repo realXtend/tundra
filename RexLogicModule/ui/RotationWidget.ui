@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>RotationWidget</class>
+ <widget class="QWidget" name="RotationWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>131</width>
+    <height>131</height>
+   </rect>
+  </property>
+  <property name="minimumSize">
+   <size>
+    <width>131</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>131</width>
+    <height>131</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <property name="styleSheet">
+   <string notr="true">QFrame.LeftFrame { border-image: url(./data/ui/images/cameracontrol/widget_no_arrows.png);}
+
+QPushButton.up {border-image: url(./data/ui/images/cameracontrol/widget1_up_white2.png); }
+
+QPushButton.up:hover {border-image: url(./data/ui/images/cameracontrol/widget1_up_grey2.png);}
+
+QPushButton.up:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_up_green2.png);}
+
+QPushButton.right {border-image: url(./data/ui/images/cameracontrol/widget1_right_white2.png); }
+
+QPushButton.right:hover {border-image: url(./data/ui/images/cameracontrol/widget1_right_grey2.png);}
+
+QPushButton.right:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_right_green2.png);}
+
+QPushButton.left {border-image: url(./data/ui/images/cameracontrol/widget1_left_white2.png); }
+
+QPushButton.left:hover {border-image: url(./data/ui/images/cameracontrol/widget1_left_grey2.png);}
+
+QPushButton.left:pressed {border-image: url(./data/ui/images/cameracontrol/widget1_left_green2.png);}
+
+QPushButton.down {border-image: url(./data/ui/images/cameracontrol/widget1_down_white2.png); }
+
+QPushButton.down:hover {border-image: url(./data/ui/images/cameracontrol/widget1_down_grey2.png);}</string>
+  </property>
+  <widget class="QFrame" name="frame_4">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>131</width>
+     <height>131</height>
+    </rect>
+   </property>
+   <property name="minimumSize">
+    <size>
+     <width>131</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="maximumSize">
+    <size>
+     <width>131</width>
+     <height>131</height>
+    </size>
+   </property>
+   <property name="frameShape">
+    <enum>QFrame::StyledPanel</enum>
+   </property>
+   <property name="frameShadow">
+    <enum>QFrame::Raised</enum>
+   </property>
+   <property name="class" stdset="0">
+    <string>LeftFrame</string>
+   </property>
+   <widget class="QPushButton" name="cameraLEFT_button">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>50</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>left</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="cameraUP_button">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>10</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="mouseTracking">
+     <bool>false</bool>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="checkable">
+     <bool>false</bool>
+    </property>
+    <property name="checked">
+     <bool>false</bool>
+    </property>
+    <property name="flat">
+     <bool>false</bool>
+    </property>
+    <property name="class" stdset="0">
+     <string>up</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="cameraDOWN_button">
+    <property name="geometry">
+     <rect>
+      <x>50</x>
+      <y>90</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>down</string>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="cameraRIGHT_button">
+    <property name="geometry">
+     <rect>
+      <x>90</x>
+      <y>50</y>
+      <width>31</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+    <property name="class" stdset="0">
+     <string>right</string>
+    </property>
+   </widget>
+  </widget>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

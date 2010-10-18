@@ -10,6 +10,8 @@
 #include <QApplication>
 #include <QFontDatabase>
 #include <QDebug>
+#include <QStyleFactory>
+
 #include "MemoryLeakCheck.h"
 
 namespace CoreUi
@@ -27,7 +29,8 @@ namespace CoreUi
     }
 
     ChangeThemeWidget::~ChangeThemeWidget()
-    {}
+    {
+    }
 
     void ChangeThemeWidget::ChangeTheme()
     {        
@@ -36,13 +39,11 @@ namespace CoreUi
         //If theme not changed, return.
         if (!currentTheme.isEmpty() && theme == currentTheme)
             return;
+        currentTheme = theme;
 
-        if (currentTheme.isEmpty())        
-            currentTheme = theme;        
-
-        if (theme == "Naali dark blue") {
+        if (theme.toLower() == "naali dark blue") 
+        {
             QApplication::setStyle(new UiServices::UiDarkBlueStyle());
-            
             QFontDatabase::addApplicationFont("./media/fonts/FACEB.TTF");
         } 
         else
@@ -51,9 +52,7 @@ namespace CoreUi
             QApplication::setStyle(QStyleFactory::create(theme));
             QApplication::setPalette(QApplication::style()->standardPalette());
         }
-        
         QApplication::setPalette(QApplication::style()->standardPalette());
-         
     }
 
 

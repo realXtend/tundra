@@ -16,13 +16,11 @@ namespace CoreUi
         : QStateMachine(parent),
           view_(view),
           current_scene_(view->scene()),
-          current_scene_name_(""),
+          current_scene_name_("Inworld"),
           connection_state_(UiServices::Disconnected)
     {
         state_ether_ = new QState(this);
         state_inworld_ = new QState(this);
-        state_connecting_ = new QState(this);
-        state_animating_change_ = new QState(this);
 
         SetTransitions();
         setInitialState(state_inworld_);
@@ -33,20 +31,11 @@ namespace CoreUi
 
     void UiStateMachine::SetTransitions()
     {
-        state_ether_->addTransition(this, SIGNAL( EtherTogglePressed()), state_inworld_);
-        state_inworld_->addTransition(this, SIGNAL( EtherTogglePressed()), state_ether_);
+        state_ether_->addTransition(this, SIGNAL(EtherTogglePressed()), state_inworld_);
+        state_inworld_->addTransition(this, SIGNAL(EtherTogglePressed()), state_ether_);
 
-        connect(state_ether_, SIGNAL( exited() ), SLOT( StateSwitch() ));
-        connect(state_inworld_, SIGNAL( exited() ), SLOT( StateSwitch() ));
-        connect(view_, SIGNAL( ViewKeyPressed(QKeyEvent *) ), SLOT( ViewKeyEvent(QKeyEvent *) ));
-    }
-
-    void UiStateMachine::ViewKeyEvent(QKeyEvent *key_event)
-    {
-        if (key_event->isAutoRepeat())
-            return;      
-        if (ether_toggle_seq_list_.contains(QKeySequence(key_event->key() + key_event->modifiers())))
-            ToggleEther();
+        connect(state_ether_, SIGNAL(exited()), SLOT(StateSwitch()));
+        connect(state_inworld_, SIGNAL(exited()), SLOT(StateSwitch()));
     }
 
     void UiStateMachine::StateSwitch()
@@ -199,8 +188,7 @@ namespace CoreUi
         }
         else
         {
-            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( SceneChange() ));
-
+            disconnect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( HandleSceneChanged(const QList<QRectF> &)));
             QString old_scene_name = current_scene_name_;
             current_scene_ = scene_map_[name];
             current_scene_name_ = name;
@@ -212,7 +200,7 @@ namespace CoreUi
             if (view_->scene() != current_scene_)
                 view_->setScene(current_scene_);
 
-            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT(HandleSceneChanged(const QList<QRectF> &) ));
+            connect(current_scene_, SIGNAL( changed(const QList<QRectF> &) ), view_, SLOT( HandleSceneChanged(const QList<QRectF> &)));
 
             if (animations_map_.contains(current_scene_))
             {
@@ -249,8 +237,11 @@ namespace CoreUi
                 SwitchToEtherScene();
                 break;
             case UiServices::Connected:
-                // Ether notifies when its animations are done after we are connected
-                // and switch will happen then
+                // Dynamic ether notifies when its animations are done after we are connected
+                // and switch will happen then. If static ether is enabled we do the switch here.
+#ifndef DYNAMIC_LOGIN_SCENE
+                SwitchToInworldScene();
+#endif
                 break;
             case UiServices::Failed:
                 connection_state_ = UiServices::Disconnected;
@@ -258,12 +249,6 @@ namespace CoreUi
             default:
                 return;
         }
-    }
-
-    void UiStateMachine::SetServiceGetter(QObject *service_getter)
-    {
-        connect(service_getter, SIGNAL(KeyBindingsChanged(Foundation::KeyBindings*)),
-                SLOT(UpdateKeyBindings(Foundation::KeyBindings*)));
     }
 
     void UiStateMachine::RegisterUniversalWidget(const QString &name, QGraphicsProxyWidget *widget)

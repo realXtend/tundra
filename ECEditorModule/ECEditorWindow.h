@@ -20,8 +20,10 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-#include <set>
 
+#include <QMap>
+#include <QSet>
+#include <QPointer>
 #include <QWidget>
 
 extern std::vector<std::string> AttributeTypenames;
@@ -42,28 +44,39 @@ struct EntityComponentSelection
 namespace ECEditor
 {
     class ECBrowser;
-    
-    //! ECEditorWindow
-    /*! /todo add description.
-     *  \ingroup ECEditorModuleClient.
-     */
+    class AddComponentDialog;
+
+    /// Entity-component editor window.
+    /** @todo add description.
+        \ingroup ECEditorModuleClient.
+    */
     class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
     {
         Q_OBJECT
 
     public:
         /// Constructor
-        /// @param framework Framework.
+        /** @param framework Framework.
+        */
         explicit ECEditorWindow(Foundation::Framework* framework);
 
         /// Destructor.
         ~ECEditorWindow();
 
         /// Adds new entity to the entity list.
-        void AddEntity(entity_id_t entity_id);
+        /** @param id Entity ID.
+        */
+        void AddEntity(entity_id_t id);
 
         /// Removes entity from the entity list.
-        void RemoveEntity(entity_id_t entity_id);
+        /** @param id Entity ID.
+        */
+        void RemoveEntity(entity_id_t id);
+
+        /// Sets which entities are selected in the editor window.
+        /** @param ids List of entity ID's.
+        */
+        void SetSelectedEntities(const QList<entity_id_t> &ids);
 
         /// Clears entity list.
         void ClearEntities();
@@ -84,7 +97,7 @@ namespace ECEditor
         /// Copy serializable component values to clipboard.
         void CopyEntity();
 
-        /// Paste serializable component 
+        /// Paste create a new entity and add serializable components.
         void PasteEntity();
 
         /// Highlights all entities from the list that owns the component.
@@ -137,9 +150,12 @@ namespace ECEditor
 
     private slots:
         void SceneAdded(const QString &name);
+        
+        //When user have pressed ok or cancel button in component dialog this mehtod is called.
+        void ComponentDialogFinnished(int result);
 
     private:
-        void BoldEntityListItem(entity_id_t entity_id, bool bold = true);
+        void BoldEntityListItem(entity_id_t, bool bold = true);
         /// Initializes the widget.
         void Initialize();
 
@@ -155,8 +171,12 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         ECBrowser *browser_;
-        typedef std::set<entity_id_t> EntityIdSet;
+        typedef QMap<QString, QString> EntityIdToNameMap;
+        /// To keep book what entity_id belongs to switch name.
+        EntityIdToNameMap entity_id_to_name_;
+        typedef QSet<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
+        QPointer<AddComponentDialog> component_dialog_;
     };
 }
 

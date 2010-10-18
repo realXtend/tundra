@@ -7,9 +7,9 @@ GetEntityComponents()
 file (GLOB CPP_FILES *.cpp)
 file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
-file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h EC_SerializationTest.h ECAttributeEditor.h
+file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h
     ECBrowser.h EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h
-    ECComponentEditor.h LineEditPropertyFactory.h)
+    ECComponentEditor.h LineEditPropertyFactory.h AddComponentDialog.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
@@ -29,16 +29,16 @@ use_package (POCO)
 use_package (QT4)
 use_package (OGRE)
 use_package (QT_PROPERTY_BROWSER)
-use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities)
+use_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules ProtocolUtilities Input)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS})
 
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)
-link_package (OGRE)
+link_ogre()
 link_package (QT_PROPERTY_BROWSER)
-link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules)
+link_modules (Core Foundation Interfaces SceneManager OgreRenderingModule RexCommon SupportModules Input)
 
 LinkEntityComponent(EntityComponents/EC_DynamicComponent EC_DynamicComponent)
 

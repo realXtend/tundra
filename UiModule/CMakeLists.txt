@@ -20,7 +20,6 @@ AddSourceFolder (Inworld)
 AddSourceFolder (Inworld/View)
 AddSourceFolder (Inworld/Menus)
 AddSourceFolder (Inworld/ControlPanel)
-#AddSourceFolder (Inworld/Console)
 AddSourceFolder (Inworld/Notifications)
 
 # Qt4 Moc files to "CMake Moc" subgroup
@@ -54,7 +53,7 @@ link_package (QT4)
 link_package (POCO)
 link_package (XMLRPC)
 link_package (CURL)
-link_package (OGRE)
+link_ogre()
 
 # ETHER TYPE DEFINE
 if (DYNAMIC_LOGIN_SCENE)

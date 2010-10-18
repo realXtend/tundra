@@ -22,17 +22,20 @@ set (FILES_TO_TRANSLATE ${FILES_TO_TRANSLATE} ${H_FILES} ${CPP_FILES} PARENT_SCO
 # Qt4 Wrap
 QT4_WRAP_CPP(MOC_SRCS ${MOC_FILES})
 
+add_definitions (-DTUNDRALOGIC_MODULE_EXPORTS)
+
 use_package (BOOST)
 use_package (POCO)
 use_package (OGRE)
 use_package (QT4)
 use_package_knet()
-use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon EntityComponents/EC_DynamicComponent)
+use_package_bullet()
+use_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule PhysicsModule RexCommon EntityComponents/EC_DynamicComponent)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS})
 
-link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule RexCommon)
-link_package (OGRE)
+link_modules (Core Foundation Interfaces SceneManager KristalliProtocolModule OgreRenderingModule PhysicsModule RexCommon)
+link_ogre()
 link_package (BOOST)
 link_package (POCO)
 link_package (QT4)

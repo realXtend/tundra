@@ -3,7 +3,7 @@
  *
  *  @file   EC_ChatBubble.h
  *  @brief  EC_ChatBubble Chat bubble component wich shows billboard with chat bubble and text on entity.
- *  @note   The entity must have EC_OgrePlaceable component available in advance.
+ *  @note   The entity must have EC_Placeable component available in advance.
 */
 
 #ifndef incl_EC_ChatBubble_EC_ChatBubble_h
@@ -63,7 +63,7 @@ Registered by Naali::InWorldChatModule.
 
 Does not emit any actions.
 
-<b>Depends on components OgrePlaceable</b>.
+<b>Depends on components Placeable</b>.
 </table>
 */
 class EC_ChatBubble : public IComponent

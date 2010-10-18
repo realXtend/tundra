@@ -1,21 +1,22 @@
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
+#include "Sky.h"
+
 #include "Foundation.h"
 #include "OgreRenderingModule.h"
-#include "EnvironmentModule.h"
-#include "Sky.h"
-#include "SceneManager.h"
+
 #include "CoreTypes.h"
 #include "OgreTextureResource.h"
 #include "NetworkEvents.h"
 #include "ServiceManager.h"
 #include "NetworkMessages/NetInMessage.h"
 
+
 namespace Environment
 {
         
-Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(OgreRenderer::SKYTYPE_BOX), skyBoxImageCount_(0)
+Sky::Sky(EnvironmentModule *owner) : owner_(owner), skyEnabled_(false), type_(SKYTYPE_BOX) 
 {
 }
 
@@ -40,8 +41,8 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
     }
 
     // 1st instance contains the sky type.
-    OgreRenderer::SkyType type = OgreRenderer::SKYTYPE_NONE;
-    type = (OgreRenderer::SkyType)boost::lexical_cast<int>(msg.ReadString());
+    SkyType type = SKYTYPE_NONE;
+    type = (SkyType)boost::lexical_cast<int>(msg.ReadString());
 
     // 2nd instance contains the texture uuid's
     std::string image_string = msg.ReadString();
@@ -73,265 +74,283 @@ bool Sky::HandleRexGM_RexSky(ProtocolUtilities::NetworkEventInboundData* data)
     return false;
 }
 
-void Sky::UpdateSky(const OgreRenderer::SkyType &type, std::vector<std::string> images,
+void Sky::UpdateSky(const SkyType &type, std::vector<std::string> images,
     const float &curvature, const float &tiling)
 {
     type_ = type;
-    if (type_ == OgreRenderer::SKYTYPE_NONE)
+    if (type_ == SKYTYPE_NONE)
     {
-        Scene::EntityPtr sky = GetSkyEntity().lock();
-        if (sky)
-        {
-            OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
-            sky_component->DisableSky();
-            return;
-        }
+        DisableSky();       
+        emit SkyTypeChanged();
+        return;
+       
     }
 
-    // Suffixes are used to identify different texture positions on the skybox.
-    std::map<std::string, int> indexMap;
-    std::map<std::string, int>::const_iterator suffixIter;
-    indexMap["_fr"] = 0; // front
-    indexMap["_bk"] = 1; // back
-    indexMap["_lf"] = 2; // left
-    indexMap["_rt"] = 3; // right
-    indexMap["_up"] = 4; // up
-    indexMap["_dn"] = 5; // down
+    boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
+        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
+    boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
 
-    currentSkyBoxImageCount_ = 0;
-    skyBoxImageCount_ = 0;
-
-    size_t max = std::min(images.size(), (size_t)SKYBOX_TEXTURE_COUNT);
-    for(size_t n = 0; n < max; ++n)
+    switch (type_ )
     {
-        std::string image_str = images[n];
-        size_t index = n;
-        if (image_str.size() < 4)
-            break;
-
-        switch(type_)
+        case SKYTYPE_BOX:
         {
-        case OgreRenderer::SKYTYPE_BOX:
-        {
-            std::string suffix = image_str.substr(image_str.size() - 3);
-            suffixIter = indexMap.find(suffix);
-            if (suffixIter == indexMap.end())
-                break;
+            // Assure that there exist skybox
+            if ( !ExistSky<EC_SkyBox>() )
+                CreateSky<EC_SkyBox>();
             
-            index = suffixIter->second;
-            image_str = image_str.substr(0, image_str.size() - 3);
-
-            if (RexTypes::IsNull(image_str))
-                break;
-
-            ++skyBoxImageCount_;
-            skyBoxTextures_[index] = image_str;
+            // Request textures. 
+            for ( int i = 0;  i < images.size() && i <= 6; ++i)
+            {
+                int tag = renderer->RequestResource(images[i], OgreRenderer::OgreTextureResource::GetTypeStatic());     
+                QString str(images[i].c_str());
+                
+                if ( str.contains("_fr") )
+                {
+                    requestMap_[tag] = 0;
+                }
+                else if ( str.contains("_bk") )
+                {
+                    requestMap_[tag] = 1;   
+                }
+                else if ( str.contains("_lf") )
+                {
+                    requestMap_[tag] = 2;   
+                }
+                else if ( str.contains("_rt") )
+                {
+                    requestMap_[tag] = 3;   
+                }
+                else if ( str.contains("_up") )
+                {
+                    requestMap_[tag] = 4;   
+                }
+                else if ( str.contains("_dn") )
+                {
+                    requestMap_[tag] = 5;   
+                }
+                
+                lstRequestTags_.append(tag);
+           
+            }
             break;
         }
-        case OgreRenderer::SKYTYPE_DOME:
-            skyDomeTexture_ = image_str;
-            break;
-        case OgreRenderer::SKYTYPE_PLANE:
-            skyPlaneTexture_ = image_str;
-            break;
-        }
-    }
-    
-    RequestSkyTextures();
-
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if (sky) //send changes on curvature and tiling to EC_OgreSky.
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        switch(type)
+        case SKYTYPE_DOME:
         {
-        case OgreRenderer::SKYTYPE_BOX:
-            // Noting to send for sky box so we leave this empty.
+            //Assure that there exist skydome
+            if ( !ExistSky<EC_SkyDome>())
+                CreateSky<EC_SkyDome>();
+            
+            // Request textures
+            lstRequestTags_.append(renderer->RequestResource(images[0], OgreRenderer::OgreTextureResource::GetTypeStatic()));
             break;
-        case OgreRenderer::SKYTYPE_DOME:
+        }
+        case SKYTYPE_PLANE:
+        {
+            //Assure that there exist skyplane
+
+            if ( !ExistSky<EC_SkyPlane>())
+                CreateSky<EC_SkyPlane>();
+
+            EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+            float component_tiling = sky->tilingAttr.Get();
+            if (component_tiling != tiling )
             {
-                OgreRenderer::SkyDomeParameters param = sky_component->GetSkyDomeParameters();
-                if(param.curvature != curvature || param.tiling != tiling)
-                {
-                    param.curvature = curvature;
-                    param.tiling = tiling;
-                    sky_component->SetSkyDomeParameters(param);
-                }
-            break;
+                sky->tilingAttr.Set(tiling, AttributeChange::LocalOnly);
             }
-        case OgreRenderer::SKYTYPE_PLANE:
-            {
-                OgreRenderer::SkyPlaneParameters param = sky_component->GetSkyPlaneParameters();
-                if(param.tiling != tiling)
-                {
-                    param.tiling = tiling;
-                    sky_component->SetSkyPlaneParameters(param);
-                }
+
+            lstRequestTags_.append(renderer->RequestResource(images[0], OgreRenderer::OgreTextureResource::GetTypeStatic()));
             break;
-            }
         }
         
-        /*OgreRenderer::SkyImageData imageData; //= new OgreRenderer::SkyImageData;
-        //imageData.index = index;
-        imageData.type = type;
-        imageData.curvature = curvature;
-        imageData.tiling = tiling;
-        sky_component->SetSkyParameters(imageData);*/
+        default:
+            break;
+
     }
+  
 
     emit SkyTypeChanged();
 }
 
 void Sky::CreateDefaultSky(const bool &show)
 {
-    type_ = OgreRenderer::SKYTYPE_BOX;
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if (sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
-        assert(sky_component);
-        sky_component->CreateSky();
-        EnableSky(sky_component->IsSkyEnabled());
-        std::vector<std::string> items = sky_component->GetMaterialTextureNames();
-        for(uint i = 0; i < 6; i++)
-            skyBoxTextures_[i] = items[i];
-    }
+    type_ = SKYTYPE_BOX;
+    // Exist sky? 
+    if ( !ExistSky<EC_SkyBox>() )
+        CreateSky<EC_SkyBox>();
+
+    EnableSky(true);
+ 
 }
 
 void Sky::DisableSky()
 {
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_component->DisableSky();
-        EnableSky(sky_component->IsSkyEnabled());
-    }
+    RemoveSky<EC_SkyBox>();
+    RemoveSky<EC_SkyPlane>();
+    RemoveSky<EC_SkyDome >();
+    
+    
+   
 }
 
-bool Sky::IsSkyEnabled() const
+void Sky::Update()
 {
-    return skyEnabled_;
+   switch (type_)
+   {    
+       case SKYTYPE_BOX:
+           {
+                EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
+                if (sky == 0)
+                {
+                    CreateSky<EC_SkyBox >();
+                    EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
+            
+                }
+                break;
+           }
+       case SKYTYPE_PLANE:
+           {
+                EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+                if (sky == 0)
+                {
+                    CreateSky<EC_SkyPlane>();
+                    EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+               
+                }
+                break;       
+           }
+       case SKYTYPE_DOME:
+           {
+                EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                if (sky == 0)
+                {
+                    CreateSky<EC_SkyDome>();
+                    EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                
+                }
+               
+                break;
+           }
+       default:
+           break;
+
+   }
+
 }
 
-void Sky::RequestSkyTextures()
+bool Sky::IsSkyEnabled() 
 {
-    boost::weak_ptr<OgreRenderer::Renderer> w_renderer = owner_->GetFramework()->GetServiceManager()->GetService
-        <OgreRenderer::Renderer>(Foundation::Service::ST_Renderer);
-    boost::shared_ptr<OgreRenderer::Renderer> renderer = w_renderer.lock();
-
-    switch(type_)
+    bool exist = false;
+    switch (type_ )
     {
-    case OgreRenderer::SKYTYPE_BOX:
-        for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
-            skyBoxTextureRequests_[i] = renderer->RequestResource(skyBoxTextures_[i],
-                OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case OgreRenderer::SKYTYPE_DOME:
-        skyDomeTextureRequest_ = renderer->RequestResource(skyDomeTexture_,
-            OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case OgreRenderer::SKYTYPE_PLANE:
-        skyPlaneTextureRequest_ = renderer->RequestResource(skyPlaneTexture_,
-            OgreRenderer::OgreTextureResource::GetTypeStatic());
-        break;
-    case OgreRenderer::SKYTYPE_NONE:
-    default:
-        break;
+        case SKYTYPE_BOX:
+            {
+                exist = ExistSky<EC_SkyBox >();
+
+                break;
+            }
+         case SKYTYPE_PLANE:
+            {
+                exist = ExistSky<EC_SkyPlane >();
+                break;
+            }
+         case SKYTYPE_DOME:
+             {
+                 exist = ExistSky<EC_SkyDome >();
+                 break;
+             }
+
     }
+    return exist;
+   
 }
 
 void Sky::OnTextureReadyEvent(Resource::Events::ResourceReady *tex)
 {
     assert(tex);
+    int tags = lstRequestTags_.size();
 
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if (!sky)
+    for (int i = 0; i < tags; ++i)
     {
-        EnvironmentModule::LogDebug("Could not get SkyEntityPtr!");
-        return;
-    }
-
-    OgreRenderer::EC_OgreSky *sky_component = sky->GetComponent<OgreRenderer::EC_OgreSky>().get();
-    assert(sky_component);
-
-    switch(type_)
-    {
-    case OgreRenderer::SKYTYPE_BOX:
-        for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
-            if (tex->tag_ == skyBoxTextureRequests_[i])
-                sky_component->SetSkyBoxMaterialTexture(i, tex->id_.c_str(), skyBoxImageCount_);
-        break;
-    case OgreRenderer::SKYTYPE_DOME:
-        if (tex->tag_ == skyDomeTextureRequest_)
-            sky_component->SetSkyDomeMaterialTexture(tex->id_.c_str());
-        break;
-    case OgreRenderer::SKYTYPE_PLANE:
-        if (tex->tag_ == skyPlaneTextureRequest_)
-            sky_component->SetSkyPlaneMaterialTexture(tex->id_.c_str());
-        break;
-    default:
-        break;
-    }
-    EnableSky(sky_component->IsSkyEnabled());
-}
-
-void Sky::SetSkyTexture(const RexAssetID &texture_id)
-{
-    switch(type_)
-    {
-    case OgreRenderer::SKYTYPE_DOME:
-        skyDomeTexture_ = texture_id;
-        break;
-    case OgreRenderer::SKYTYPE_PLANE:
-        skyPlaneTexture_ = texture_id;
-        break;
-    default:
-        EnvironmentModule::LogError("SetSkyTexture can be used only for SkyDome and SkyPlane!");
-        break;
-    }
-}
-    
-void Sky::SetSkyBoxTextures(const RexAssetID textures[SKYBOX_TEXTURE_COUNT])
-{
-    if (type_ != OgreRenderer::SKYTYPE_BOX)
-    {
-        EnvironmentModule::LogError("SetSkyBoxTextures can be used only for SkyBox!");
-        return;
-    }
-
-    skyBoxImageCount_ = 0;
-
-    for(int i = 0; i < SKYBOX_TEXTURE_COUNT; ++i)
-    {
-        if(skyBoxTextures_[i] != textures[i] && textures[i] != "")
+        if ( lstRequestTags_[i] == tex->tag_ )
         {
-            skyBoxTextures_[i] = textures[i];
-            skyBoxImageCount_++;
+            switch ( type_ )
+            {
+                 case SKYTYPE_BOX:
+                     {
+                         EC_SkyBox* sky = GetEnviromentSky<EC_SkyBox >();
+                         if ( sky != 0)
+                         {
+                             QVariantList lstTextures = sky->textureAttr.Get();
+                             if ( requestMap_.contains(tex->tag_) )
+                             {
+                                 int index = requestMap_[tex->tag_];
+                                 if ( index >= 0 && index <= 6)
+                                 {
+                                    lstTextures[requestMap_[tex->tag_]] = QString(tex->id_.c_str());
+                                    sky->textureAttr.Set(lstTextures, AttributeChange::Default);
+                                 
+                                 }
+                                 else
+                                    EnvironmentModule::LogWarning("Tried to change texture which index was higher then 6 or less then 0");
+
+                             }
+                                
+                         }
+                         break;
+                     }
+
+                 case SKYTYPE_PLANE:
+                     {
+                         EC_SkyPlane* sky = GetEnviromentSky<EC_SkyPlane >();
+                         if ( sky != 0)
+                         {
+                             QString texture = sky->textureAttr.Get();
+                             QString strDownloaded(tex->id_.c_str());
+                             if ( texture != strDownloaded )
+                             {
+                                 sky->textureAttr.Set(strDownloaded, AttributeChange::Default);
+                               
+                             }
+
+                         }
+                         
+                         break;
+                     }
+                 case SKYTYPE_DOME:
+                     {
+                         EC_SkyDome* sky = GetEnviromentSky<EC_SkyDome >();
+                         if ( sky != 0)
+                         {
+                             QString texture = sky->textureAttr.Get();
+                             QString strDownloaded(tex->id_.c_str());
+                             if ( texture != strDownloaded )
+                             {
+                                 sky->textureAttr.Set(strDownloaded, AttributeChange::Default);
+                                
+                             }
+
+                         }
+
+                         break;
+                     }
+                 default:
+                     break;
+
+
+            }
+
+            lstRequestTags_.removeAt(i);
+            // Now all done. 
+            return;
         }
+
     }
+
+   
 }
 
-void Sky::FindCurrentlyActiveSky()
-{
-    Scene::ScenePtr scene = owner_->GetFramework()->GetDefaultWorldScene();
-    for(Scene::SceneManager::iterator iter = scene->begin();
-        iter != scene->end(); ++iter)
-    {
-        Scene::Entity &entity = **iter;
-        ComponentPtr sky_component = entity.GetComponent(OgreRenderer::EC_OgreSky::TypeNameStatic());
-        if (sky_component.get())
-            cachedSkyEntity_ = scene->GetEntity(entity.GetId());
-    }
-}
-
-Scene::EntityWeakPtr Sky::GetSkyEntity()
-{
-    return cachedSkyEntity_;
-}
-
-OgreRenderer::SkyType Sky::GetSkyType() const
+    
+SkyType Sky::GetSkyType() const
 {
     return type_;
 }
@@ -345,143 +364,42 @@ void Sky::EnableSky(bool enabled)
     }
 }
 
-void Sky::ChangeSkyType(OgreRenderer::SkyType type, bool update_sky)
+void Sky::ChangeSkyType(SkyType type, bool update_sky)
 {
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
+    if ( type == type_ && update_sky )
+            return;
+
+    DisableSky();
+    
+    switch(type )
     {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        EnableSky(update_sky);
-        sky_component->SetSkyType(type, update_sky);
-        type_ = type;
+      
+        case SKYTYPE_BOX:
+            {
+                CreateSky<EC_SkyBox>();
+                EC_SkyBox* box = GetEnviromentSky<EC_SkyBox>();
+               
+                break;
+            }
+        case SKYTYPE_PLANE:
+            {
+               CreateSky<EC_SkyPlane>();
+               EC_SkyPlane* plane = GetEnviromentSky<EC_SkyPlane>();
         
-        switch(type_)
-        {
-        case OgreRenderer::SKYTYPE_BOX:
-            for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
-                skyBoxTextures_[i] = sky_component->GetSkyBoxTextureID(i);
-            break;
-        case OgreRenderer::SKYTYPE_PLANE:
-            skyPlaneTexture_ = sky_component->GetSkyDomeTextureID();
-            break;
-        case OgreRenderer::SKYTYPE_DOME:
-            skyDomeTexture_ = sky_component->GetSkyDomeTextureID();
-            break;
-        }
+               break;
+            }          
+        case SKYTYPE_DOME:
+            {
+                CreateSky<EC_SkyDome>();
+                EC_SkyDome* plane = GetEnviromentSky<EC_SkyDome >();
+        
+                break;
+            }
 
-        emit SkyTypeChanged();
     }
-}
-
-RexTypes::RexAssetID Sky::GetSkyTextureID(OgreRenderer::SkyType sky_type, int index) const
-{
-    if(index < 0) index = 0;
-    else if(index > SKYBOX_TEXTURE_COUNT - 1) index = SKYBOX_TEXTURE_COUNT - 1;
-
-    if(sky_type == OgreRenderer::SKYTYPE_BOX)
-    {
-        return skyBoxTextures_[index];
-    }
-    else if(sky_type == OgreRenderer::SKYTYPE_DOME)
-    {
-        return skyDomeTexture_;
-    }
-    else if(sky_type == OgreRenderer::SKYTYPE_PLANE)
-    {
-        return skyPlaneTexture_;
-    }
-    return 0;
-}
-
-OgreRenderer::SkyDomeParameters Sky::GetSkyDomeParameters()
-{
-    OgreRenderer::SkyDomeParameters sky_dome_param;
-    sky_dome_param.Reset();
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_dome_param = sky_component->GetSkyDomeParameters();
-    }
-    return sky_dome_param;
-}
-
-OgreRenderer::SkyPlaneParameters Sky::GetSkyPlaneParameters()
-{
-    OgreRenderer::SkyPlaneParameters sky_plane_param;
-    sky_plane_param.Reset();
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_plane_param = sky_component->GetSkyPlaneParameters();
-    }
-    return sky_plane_param;
-}
-
-OgreRenderer::SkyBoxParameters Sky::GetSkyBoxParameters()
-{
-    OgreRenderer::SkyBoxParameters sky_param;
-    sky_param.Reset();
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_param = sky_component->GetBoxSkyParameters();
-    }
-    return sky_param;
-}
-
-void Sky::SetSkyDomeParameters(const OgreRenderer::SkyDomeParameters &params, bool update_sky)
-{
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_component->SetSkyDomeParameters(params, update_sky);
-        if(update_sky)
-        {
-            type_ = OgreRenderer::SKYTYPE_DOME;
-            emit SkyTypeChanged();
-        }
-    }
-}
-
-void Sky::SetSkyPlaneParameters(const OgreRenderer::SkyPlaneParameters &params, bool update_sky)
-{
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_component->SetSkyPlaneParameters(params, update_sky);
-        if(update_sky)
-        {
-            type_ = OgreRenderer::SKYTYPE_PLANE;
-            emit SkyTypeChanged();
-        }
-    }
-}
-
-void Sky::SetSkyBoxParameters(const OgreRenderer::SkyBoxParameters &params, bool update_sky)
-{
-    Scene::EntityPtr sky = GetSkyEntity().lock();
-    if(sky)
-    {
-        OgreRenderer::EC_OgreSky *sky_component = checked_static_cast<OgreRenderer::EC_OgreSky*>(sky->GetComponent("EC_OgreSky").get());
-        assert(sky_component);
-        sky_component->SetSkyBoxParameters(params, update_sky);
-        if(update_sky)
-        {
-            type_ = OgreRenderer::SKYTYPE_BOX;
-            emit SkyTypeChanged();
-        }
-    }
+    
+    type_ = type;
+  
 }
 
 } // namespace RexLogic

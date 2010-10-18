@@ -17,10 +17,7 @@
 #include <QObject>
 #include <QPointer>
 
-namespace OgreRenderer
-{
-    class EC_OgrePlaceable;
-}
+class EC_Placeable;
 
 namespace ProtocolUtilities
 {
@@ -66,6 +63,8 @@ namespace DebugStats
         /// Starts profiling if the profiler (proxy) widget is visible.
         /// @param bool visible Visibility.
         void StartProfiling(bool visible);
+
+        void HandleKeyPressed(KeyEvent *e);
 
     private:
         Q_DISABLE_COPY(DebugStatsModule);
@@ -116,6 +115,9 @@ namespace DebugStats
 
         /// World stream pointer.
         ProtocolUtilities::WorldStreamPtr current_world_stream_;
+
+        /// DebugStatsModules registers an InputContext to be able to do a Shift-P - Profiler window shortcut.
+        boost::shared_ptr<InputContext> inputContext;
 
         /// Is god mode on.
         bool godMode_;

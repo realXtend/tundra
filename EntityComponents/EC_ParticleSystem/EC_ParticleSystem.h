@@ -52,7 +52,7 @@ Registered by RexLogic::RexLogicModule.
 
 Does not emit any actions.
 
-<b>Depends on the component OgrePlaceable</b>.
+<b>Depends on the component Placeable</b>.
 </table>
 
 */

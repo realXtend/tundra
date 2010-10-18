@@ -13,6 +13,8 @@
 #include "Environment.h"
 #include "EC_OgreEnvironment.h"
 
+#include "SceneManager.h"
+
 #include "ModuleManager.h"
 #include "ServiceManager.h"
 #include "OgreMaterialUtils.h"
@@ -61,7 +63,7 @@ namespace Environment
         action_(Flatten),
         brush_size_(Small),
         terrainPaintMode_(INACTIVE),
-        sky_type_(OgreRenderer::SKYTYPE_NONE),
+        sky_type_(SKYTYPE_NONE),
         ambient_(false),
         edit_terrain_active_(false),
         sun_color_picker_(0),
@@ -262,18 +264,6 @@ namespace Environment
         QTabWidget *tab_widget = editor_widget_->findChild<QTabWidget *>("tabWidget");
         if(tab_widget)
             QObject::connect(tab_widget, SIGNAL(currentChanged(int)), this, SLOT(TabWidgetChanged(int)));
-
-        QObject::connect(&terrain_paint_timer_, SIGNAL(timeout()), this, SLOT(TerrainEditTimerTick()));
-
-       // bool s = QObject::connect(editor_widget_, SIGNAL(open()), this, SLOT(InitializeTabs()));
-       // if ( s == false)
-       //     return;
-
-        /*TerrainPtr terrain = environment_module_->GetTerrainHandler();
-        if(terrain.get())
-        {
-            QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
-        }*/
     }
 
     void EnvironmentEditor::changeEvent(QEvent* e)
@@ -302,15 +292,21 @@ namespace Environment
         QWidget *map_widget = editor_widget_->findChild<QWidget *>("map_widget");
         if(map_widget)
         {
+            editor_widget_->hide();
             TerrainLabel *label = new TerrainLabel(map_widget);
             label->setObjectName("map_label");
-//            QObject::connect(label, SIGNAL(SendMouseEvent(QMouseEvent*)), this, SLOT(HandleMouseEvent(QMouseEvent*)));
 
             // Create a QImage object and set it in label.
             QImage heightmap(cHeightmapImageWidth, cHeightmapImageHeight, QImage::Format_RGB32);
             heightmap.fill(0);
             label->setPixmap(QPixmap::fromImage(heightmap));
+            editor_widget_->show();
         }
+
+        // Update height map image when terrain object emit GeometryUpdated signal.
+        TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(terrain.get())
+            QObject::connect(terrain.get(), SIGNAL(HeightmapGeometryUpdated()), this, SLOT(UpdateTerrain()));
 
         // Button Signals
         QPushButton *update_button = editor_widget_->findChild<QPushButton *>("button_update");
@@ -321,43 +317,37 @@ namespace Environment
         if(paint_terrain_button)
             QObject::connect(paint_terrain_button, SIGNAL(clicked()), this, SLOT(ToggleTerrainPaintMode()));
 
+        QObject::connect(&terrain_paint_timer_, SIGNAL(timeout()), this, SLOT(TerrainEditTimerTick()));
 
         // RadioButton Signals
-        QRadioButton *rad_button_flatten = editor_widget_->findChild<QRadioButton *>("rad_button_flatten");
-        if(rad_button_flatten)
-            QObject::connect(rad_button_flatten, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
+        QVector<QString> radio_buttons;
+        radio_buttons.push_back("rad_button_flatten");
+        radio_buttons.push_back("rad_button_raise");
+        radio_buttons.push_back("rad_button_lower");
+        radio_buttons.push_back("rad_button_smooth");
+        radio_buttons.push_back("rad_button_roughen");
+        radio_buttons.push_back("rad_button_revert");
+        for(uint i = 0; i < radio_buttons.size(); i++)
+        {
+            QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>(radio_buttons[i]);
+            if(rad_button)
+                QObject::connect(rad_button, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
+            else
+                EnvironmentModule::LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
+        }
+        radio_buttons.clear();
 
-        QRadioButton *rad_button_raise = editor_widget_->findChild<QRadioButton *>("rad_button_raise");
-        if(rad_button_raise)
-            QObject::connect(rad_button_raise, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
-
-        QRadioButton *rad_button_lower = editor_widget_->findChild<QRadioButton *>("rad_button_lower");
-        if(rad_button_lower)
-            QObject::connect(rad_button_lower, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
-
-        QRadioButton *rad_button_smooth = editor_widget_->findChild<QRadioButton *>("rad_button_smooth");
-        if(rad_button_smooth)
-            QObject::connect(rad_button_smooth, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
-
-        QRadioButton *rad_button_roughen = editor_widget_->findChild<QRadioButton *>("rad_button_roughen");
-        if(rad_button_roughen)
-            QObject::connect(rad_button_roughen, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
-
-        QRadioButton *rad_button_revert = editor_widget_->findChild<QRadioButton *>("rad_button_revert");
-        if(rad_button_revert)
-            QObject::connect(rad_button_revert, SIGNAL(clicked()), this, SLOT(PaintActionChanged()));
-
-        QRadioButton *rad_button_small = editor_widget_->findChild<QRadioButton *>("rad_button_small");
-        if(rad_button_small)
-            QObject::connect(rad_button_small, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
-
-        QRadioButton *rad_button_medium = editor_widget_->findChild<QRadioButton *>("rad_button_medium");
-        if(rad_button_medium)
-            QObject::connect(rad_button_medium, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
-
-        QRadioButton *rad_button_large = editor_widget_->findChild<QRadioButton *>("rad_button_large");
-        if(rad_button_large)
-            QObject::connect(rad_button_large, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
+        radio_buttons.push_back("rad_button_small");
+        radio_buttons.push_back("rad_button_medium");
+        radio_buttons.push_back("rad_button_large");
+        for(uint i = 0; i < radio_buttons.size(); i++)
+        {
+            QRadioButton *rad_button = editor_widget_->findChild<QRadioButton *>(radio_buttons[i]);
+            if(rad_button)
+                QObject::connect(rad_button, SIGNAL(clicked()), this, SLOT(BrushSizeChanged()));
+            else
+                EnvironmentModule::LogError("Cannot find " + radio_buttons[i].toStdString() + " radio button.");
+        }
     }
 
     void EnvironmentEditor::InitTerrainTextureTabWindow()
@@ -366,38 +356,31 @@ namespace Environment
             return;
 
         // Texture apply buttons
-        QPushButton *apply_button_one = editor_widget_->findChild<QPushButton *>("apply_texture_button_1");
-        if(apply_button_one)
-            QObject::connect(apply_button_one, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_two = editor_widget_->findChild<QPushButton *>("apply_texture_button_2");
-        if(apply_button_two)
-            QObject::connect(apply_button_two, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_three = editor_widget_->findChild<QPushButton *>("apply_texture_button_3");
-        if(apply_button_three)
-            QObject::connect(apply_button_three, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
-
-        QPushButton *apply_button_four = editor_widget_->findChild<QPushButton *>("apply_texture_button_4");
-        if(apply_button_four)
-            QObject::connect(apply_button_four, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+        for(uint i = 0; i < 4; i++)
+        {
+            QPushButton *apply_button = editor_widget_->findChild<QPushButton *>("apply_texture_button_" + QString::number(i + 1));
+            if(apply_button)
+                QObject::connect(apply_button, SIGNAL(clicked()), this, SLOT(ChangeTerrainTexture()));
+            else
+                EnvironmentModule::LogError("Fail to find apply_texture_button_" + QString::number(i + 1).toStdString() + " widget.");
+        }
 
         // Line Edit signals
-        QLineEdit *line_edit_one = editor_widget_->findChild<QLineEdit *>("texture_line_edit_1");
-        if(line_edit_one)
-            QObject::connect(line_edit_one, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+        for(uint i = 0; i < 4; i++)
+        {
+            QLineEdit *line_edit = editor_widget_->findChild<QLineEdit *>("texture_line_edit_" + QString::number(i + 1));
+            if(line_edit)
+                QObject::connect(line_edit, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+            else
+                EnvironmentModule::LogError("Fail to find texture_line_edit_" + QString::number(i + 1).toStdString() + " widget.");
+        }
 
-        QLineEdit *line_edit_two = editor_widget_->findChild<QLineEdit *>("texture_line_edit_2");
-        if(line_edit_two)
-            QObject::connect(line_edit_two, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
-
-        QLineEdit *line_edit_three = editor_widget_->findChild<QLineEdit *>("texture_line_edit_3");
-        if(line_edit_three)
-            QObject::connect(line_edit_three, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
-
-        QLineEdit *line_edit_four = editor_widget_->findChild<QLineEdit *>("texture_line_edit_4");
-        if(line_edit_four)
-            QObject::connect(line_edit_four, SIGNAL(returnPressed()), this, SLOT(LineEditReturnPressed()));
+        // Making sure that when terrain textures are changed we load new terrain textures to editor window aswell.
+        TerrainPtr terrain = environment_module_->GetTerrainHandler();
+        if(terrain.get())
+            QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
+        else
+            EnvironmentModule::LogError("Fail to connect TerrainTextureChanged signal cause terrain pointer was null.");
     }
 
     void EnvironmentEditor::InitWaterTabWindow()
@@ -459,7 +442,8 @@ namespace Environment
             if(sky_type_combo)
             {
                 QObject::connect(sky_type_combo, SIGNAL(activated(int)), this, SLOT(SkyTypeChanged(int)));
-
+                // Clear
+                sky_type_combo->clear();
                 QString sky_type_name;
                 sky_type_name = "Sky box";
                 sky_type_combo->addItem(sky_type_name);
@@ -472,13 +456,13 @@ namespace Environment
                 int index = -1;
                 switch(sky->GetSkyType())
                 {
-                case OgreRenderer::SKYTYPE_BOX:
+                case SKYTYPE_BOX:
                     index = 0;
                     break;
-                case OgreRenderer::SKYTYPE_DOME:
+                case SKYTYPE_DOME:
                     index = 1;
                     break;
-                case OgreRenderer::SKYTYPE_PLANE:
+                case SKYTYPE_PLANE:
                     index = 2;
                     break;
                 }
@@ -750,7 +734,7 @@ namespace Environment
         }
     }
 
-    void EnvironmentEditor::CreateSkyProperties(OgreRenderer::SkyType sky_type)
+    void EnvironmentEditor::CreateSkyProperties(SkyType sky_type)
     {
         if(!environment_module_)
             return;
@@ -766,7 +750,8 @@ namespace Environment
 
         QScrollArea *scroll_area = editor_widget_->findChild<QScrollArea *>("scroll_sky_options");
         scroll_area->setWidgetResizable(true);
-        if(sky_type == OgreRenderer::SKYTYPE_BOX)
+        
+        if(sky_type == SKYTYPE_BOX)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
@@ -795,7 +780,10 @@ namespace Environment
                 if(!properties_frame)
                     return;
                 // Get sky parameters so we can fill our widgets with the spesific sky information.
-                OgreRenderer::SkyBoxParameters param = sky->GetSkyBoxParameters();
+                //OgreRenderer::SkyBoxParameters param = sky->GetSkyBoxParameters();
+                
+                EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+          
 
                 QLabel *text_label = new QLabel(properties_frame);
                 text_label->setText("Distance");
@@ -807,7 +795,9 @@ namespace Environment
                 d_spin_box->move(150, 25);
                 d_spin_box->setRange(0, 9999);
                 d_spin_box->show();
-                d_spin_box->setValue(param.distance);
+                //d_spin_box->setValue(param.distance);
+                if ( skyBox != 0)
+                    d_spin_box->setValue(skyBox->distanceAttr.Get());
 
                 apply_button = new QPushButton(properties_frame);
                 apply_button->setObjectName("apply_properties_button");
@@ -820,11 +810,14 @@ namespace Environment
                 //widget->resize(scroll_area->width(), 15 + edit_line->pos().y() + edit_line->height());
             }
         }
-        else if(sky_type == OgreRenderer::SKYTYPE_PLANE)
+        else if(sky_type == SKYTYPE_PLANE)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
             {
+         
+                EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+               
                 QLineEdit *edit_line = 0;
                 QPushButton *apply_button = 0;
                 for(uint i = 0; i < 1; i++)
@@ -855,7 +848,7 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                OgreRenderer::SkyPlaneParameters param = sky->GetSkyPlaneParameters();
+                //OgreRenderer::SkyPlaneParameters param = sky->GetSkyPlaneParameters();
 
                 // Create properties for sky plane.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
@@ -873,7 +866,8 @@ namespace Environment
                     spin_box->move(10, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    spin_box->setValue(param.xSegments);
+                    if ( skyPlane != 0 )
+                        spin_box->setValue(skyPlane->xSegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -891,7 +885,8 @@ namespace Environment
                     spin_box->move(50, 25);
                     spin_box->setRange(0, 999);
                     spin_box->show();
-                    spin_box->setValue(param.ySegments);
+                    if ( skyPlane != 0 )
+                        spin_box->setValue(skyPlane->ySegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -909,7 +904,8 @@ namespace Environment
                     d_spin_box->move(90, 25);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.scale);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->scaleAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -927,7 +923,8 @@ namespace Environment
                     d_spin_box->move(150, 25);
                     d_spin_box->setRange(0, 9999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.distance);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->distanceAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -945,7 +942,8 @@ namespace Environment
                     d_spin_box->move(10, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.tiling);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->tilingAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -963,7 +961,8 @@ namespace Environment
                     d_spin_box->move(70, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.bow);
+                    if ( skyPlane != 0 )
+                        d_spin_box->setValue(skyPlane->bowAttr.Get());
                 }
 
                 apply_button = new QPushButton(properties_frame);
@@ -979,11 +978,13 @@ namespace Environment
                 //widget->resize(scroll_area->width(), 15 + edit_line->pos().y() + edit_line->height());
             }
         }
-        else if(sky_type == OgreRenderer::SKYTYPE_DOME)
+        else if(sky_type == SKYTYPE_DOME)
         {
             QWidget *widget = editor_widget_->findChild<QWidget *>("panel_materials");
             if(scroll_area && widget)
             {
+                EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome>();
+
                 QLineEdit *edit_line = 0;
                 QPushButton *apply_button = 0;
                 for(uint i = 0; i < 1; i++)
@@ -1014,8 +1015,8 @@ namespace Environment
                 if(!properties_frame)
                     return;
 
-                OgreRenderer::SkyDomeParameters param = sky->GetSkyDomeParameters();
-
+                //SkyDomeParameters param = sky->GetSkyDomeParameters();
+                
                 // Create properties for sky dome.
                 QSpinBox *spin_box = new QSpinBox(properties_frame);
                 QLabel *text_label = new QLabel(properties_frame);
@@ -1032,7 +1033,7 @@ namespace Environment
                     spin_box->move(10, 25);
                     spin_box->setRange(-99, 99);
                     spin_box->show();
-                    spin_box->setValue(param.ySegmentsKeep);
+                    spin_box->setValue(skyDome->ySegmentsKeepAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1050,7 +1051,7 @@ namespace Environment
                     spin_box->move(50, 25);
                     spin_box->setRange(0, 99);
                     spin_box->show();
-                    spin_box->setValue(param.xSegments);
+                    spin_box->setValue(skyDome->xSegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1068,7 +1069,7 @@ namespace Environment
                     spin_box->move(90, 25);
                     spin_box->setRange(0, 99);
                     spin_box->show();
-                    spin_box->setValue(param.ySegments);
+                    spin_box->setValue(skyDome->ySegmentsAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1086,7 +1087,7 @@ namespace Environment
                     d_spin_box->move(150, 25);
                     d_spin_box->setRange(0, 9999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.distance);
+                    d_spin_box->setValue(skyDome->distanceAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1104,7 +1105,7 @@ namespace Environment
                     d_spin_box->move(10, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.curvature);
+                    d_spin_box->setValue(skyDome->curvatureAttr.Get());
                 }
 
                 text_label = new QLabel(properties_frame);
@@ -1122,7 +1123,7 @@ namespace Environment
                     d_spin_box->move(70, 60);
                     d_spin_box->setRange(0, 999);
                     d_spin_box->show();
-                    d_spin_box->setValue(param.tiling);
+                    d_spin_box->setValue(skyDome->tilingAttr.Get());
                 }
 
                 apply_button = new QPushButton(properties_frame);
@@ -1436,12 +1437,46 @@ namespace Environment
         if(!sky.get())
             return;
 
+        
         switch(state)
         {
         case Qt::Checked:
-            if(!sky->IsSkyEnabled())
-                sky->ChangeSkyType(sky_type_, true);
-            break;
+            {
+                // Read current sky-type from combobox? 
+                QComboBox *sky_type_combo = editor_widget_->findChild<QComboBox *>("sky_type_combo");
+                if(!sky_type_combo)
+                    return;
+                
+                bool showSky = true;
+                QString text = sky_type_combo->currentText();
+                if(text == "Sky box")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                    
+                    CreateSkyProperties(SKYTYPE_BOX);
+                    UpdateSkyTextureNames();
+                }
+                else if(text == "Sky dome")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                    
+                    CreateSkyProperties(SKYTYPE_DOME);
+                    UpdateSkyTextureNames();
+                }
+                else if(text == "Sky plane")
+                {
+                    if ( showSky )
+                        sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                    
+                
+                    CreateSkyProperties(SKYTYPE_PLANE);
+                    UpdateSkyTextureNames();
+                }
+                 sky->ChangeSkyType(sky_type_, true);
+                break;
+            }
         case Qt::Unchecked:
             sky->DisableSky();
             break;
@@ -1458,13 +1493,13 @@ namespace Environment
         int index = -1;
         switch(sky->GetSkyType())
         {
-        case OgreRenderer::SKYTYPE_BOX:
+        case SKYTYPE_BOX:
             index = 0;
             break;
-        case OgreRenderer::SKYTYPE_DOME:
+        case SKYTYPE_DOME:
             index = 1;
             break;
-        case OgreRenderer::SKYTYPE_PLANE:
+        case SKYTYPE_PLANE:
             index = 2;
             break;
         }
@@ -1498,19 +1533,27 @@ namespace Environment
             {
                 if(text_field->text() != "")
                 {
-                    if(sky_type_ == OgreRenderer::SKYTYPE_BOX)
+                    if(sky_type_ == SKYTYPE_BOX)
                     {
-                        RexTypes::RexAssetID sky_textures[6];
-                        for(uint i = 0; i < 6; i++)
-                            sky_textures[i] = sky->GetSkyTextureID(OgreRenderer::SKYTYPE_BOX, i);
-                        sky_textures[index - 1] = text_field->text().toStdString();
-                        sky->SetSkyBoxTextures(sky_textures);
-                        sky->RequestSkyTextures();
+                        EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+                        if ( skyBox != 0)
+                        {
+                           QVariantList lst = skyBox->textureAttr.Get();
+                           lst[index-1] = text_field->text();
+                           skyBox->textureAttr.Set(lst, AttributeChange::Default);
+                        }
                     }
-                    else if(sky_type_ == OgreRenderer::SKYTYPE_DOME || sky_type_ == OgreRenderer::SKYTYPE_PLANE)
+                    else if ( sky_type_ == SKYTYPE_PLANE)
                     {
-                        sky->SetSkyTexture(text_field->text().toStdString());
-                        sky->RequestSkyTextures();
+                        EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+                        if ( skyPlane != 0 )
+                            skyPlane->textureAttr.Set(text_field->text(), AttributeChange::Default);
+                    }
+                    else if(sky_type_ == SKYTYPE_DOME )
+                    {
+                        EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
+                        if ( skyDome != 0 )
+                            skyDome->textureAttr.Set(text_field->text(), AttributeChange::Default);
                     }
                 }
             }
@@ -1524,29 +1567,40 @@ namespace Environment
         if(!sky.get())
             return;
 
-        if(sky_type_ == OgreRenderer::SKYTYPE_BOX)
+        if(sky_type_ == SKYTYPE_BOX)
         {
-            for(uint i = 0; i < SKYBOX_TEXTURE_COUNT; i++)
+            EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox >();
+            if ( skyBox != 0)
             {
-                QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
-                QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-                if(texture_line_edit)
-                    texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_BOX, i)));
+                QVariantList lst = skyBox->textureAttr.Get();
+                for ( int i =0; i < lst.size() && i < 6; ++i)
+                {
+                    QString line_edit_name = "sky_texture_line_edit_" + QString("%1").arg(i + 1);
+                    QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
+                    if ( texture_line_edit != 0)
+                        texture_line_edit->setText(lst[i].toString());
+                }
             }
         }
-        else if(sky_type_ == OgreRenderer::SKYTYPE_DOME)
+        else if(sky_type_ == SKYTYPE_DOME)
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-            if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_DOME, 0)));
+             
+            EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome >();
+           
+            if(texture_line_edit != 0 && skyDome != 0)
+                texture_line_edit->setText(skyDome->textureAttr.Get());
         }
-        else if(sky_type_ == OgreRenderer::SKYTYPE_PLANE)
+        else if(sky_type_ == SKYTYPE_PLANE)
         {
             QString line_edit_name = "sky_texture_line_edit_1";
             QLineEdit *texture_line_edit = editor_widget_->findChild<QLineEdit *>(line_edit_name);
-            if(texture_line_edit)
-                texture_line_edit->setText(QString::fromStdString(sky->GetSkyTextureID(OgreRenderer::SKYTYPE_PLANE, 0)));
+            EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane >();
+            if ( skyPlane != 0 && texture_line_edit != 0)
+            {
+                texture_line_edit->setText(skyPlane->textureAttr.Get());
+            }
         }
     }
 
@@ -1563,79 +1617,98 @@ namespace Environment
             // Make sure that the signal sender was some of those apply buttons.
             if(sender->objectName() == "apply_properties_button")
             {
-                OgreRenderer::SkyType sky_type = sky->GetSkyType();
+                SkyType sky_type = sky->GetSkyType();
                 switch(sky_type)
                 {
-                case OgreRenderer::SKYTYPE_BOX:
+                case SKYTYPE_BOX:
                     {
-                        OgreRenderer::SkyBoxParameters sky_param;
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
 
-                        sky->SetSkyBoxParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        EC_SkyBox* skyBox = sky->GetEnviromentSky<EC_SkyBox>();
+                        if ( skyBox != 0 && dspin_box != 0)
+                        {
+                            skyBox->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
+                        }
+                            
+                        break;
                     }
-                case OgreRenderer::SKYTYPE_DOME:
+                case SKYTYPE_DOME:
                     {
-                        OgreRenderer::SkyDomeParameters sky_param;
+                        //SkyDomeParameters sky_param;
+                        EC_SkyDome* skyDome = sky->GetEnviromentSky<EC_SkyDome>();
+                        if ( skyDome == 0)
+                            return;
+
                         QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
-                        if(spin_box)
-                            sky_param.xSegments = spin_box->value();
+                        
+                        if(spin_box != 0)
+                            skyDome->xSegmentsAttr.Set(spin_box->value(), AttributeChange::Disconnected);
                         spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
-                        if(spin_box)
-                            sky_param.ySegments = spin_box->value();
+                        
+                        if(spin_box != 0)
+                            skyDome->ySegmentsAttr.Set(spin_box->value(), AttributeChange::Disconnected);
+                        
                         spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_keep_spin");
-                        if(spin_box)
-                            sky_param.ySegmentsKeep = spin_box->value();
+                        
+                        if(spin_box != 0)
+                            skyDome->ySegmentsKeepAttr.Set(spin_box->value(), AttributeChange::Disconnected);
+                        
                         QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("curvature_double_spin");
-                        if(dspin_box)
-                            sky_param.curvature = dspin_box->value();
+                        
+                        if(dspin_box != 0)
+                            skyDome->curvatureAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+                        
                         dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
-                        if(dspin_box)
-                            sky_param.tiling = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
 
-                        sky->SetSkyDomeParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        if(dspin_box != 0)
+                            skyDome->tilingAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+                        
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
+                        
+                        if(dspin_box != 0)
+                            skyDome->distanceAttr.Set(dspin_box->value(), AttributeChange::Disconnected);
+
+                        skyDome->ComponentChanged(AttributeChange::Replicate);
+
+                        break;
                     }
-                case OgreRenderer::SKYTYPE_PLANE:
+                case SKYTYPE_PLANE:
                     {
-                        OgreRenderer::SkyPlaneParameters sky_param;
-                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
-                        if(spin_box)
-                            sky_param.xSegments = spin_box->value();
-                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
-                        if(spin_box)
-                            sky_param.ySegments = spin_box->value();
-                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("scale_double_spin");
-                        if(dspin_box)
-                            sky_param.scale = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
-                        if(dspin_box)
-                            sky_param.tiling = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("bow_double_spin");
-                        if(dspin_box)
-                            sky_param.bow = dspin_box->value();
-                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
-                        if(dspin_box)
-                            sky_param.distance = dspin_box->value();
+                        //OgreRenderer::SkyPlaneParameters sky_param;
+                        EC_SkyPlane* skyPlane = sky->GetEnviromentSky<EC_SkyPlane>();
+                        if ( skyPlane == 0 )
+                            break;
 
-                        sky->SetSkyPlaneParameters(sky_param, sky->IsSkyEnabled());
-                    break;
+                        QSpinBox *spin_box = editor_widget_->findChild<QSpinBox *>("x_segments_spin");
+                        if(spin_box != 0)
+                            skyPlane->xSegmentsAttr.Set(spin_box->value(), AttributeChange::Default);
+                             
+                        spin_box = editor_widget_->findChild<QSpinBox *>("y_segments_spin");
+                        if(spin_box != 0)
+                            skyPlane->ySegmentsAttr.Set(spin_box->value(), AttributeChange::Default);
+                         
+                        QDoubleSpinBox *dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("scale_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->scaleAttr.Set(dspin_box->value(), AttributeChange::Default);
+
+
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("tiling_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->tilingAttr.Set(dspin_box->value(), AttributeChange::Default);
+
+
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("bow_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->bowAttr.Set(dspin_box->value(), AttributeChange::Default);
+
+                        dspin_box = editor_widget_->findChild<QDoubleSpinBox *>("distance_double_spin");
+                        if(dspin_box != 0)
+                            skyPlane->distanceAttr.Set(dspin_box->value(), AttributeChange::Default);
+                        break;
                     }
                 }
             }
         }
-
-        QString start_height("Texture_height_doubleSpinBox_" + QString("%1").arg(button_number + 1));
-        QString height_range("Texture_height_range_doubleSpinBox_" + QString("%1").arg(button_number + 1));
-        QDoubleSpinBox *start_height_spin = editor_widget_->findChild<QDoubleSpinBox*>(start_height);
-        QDoubleSpinBox *height_range_spin = editor_widget_->findChild<QDoubleSpinBox*>(height_range);
-        if(start_height_spin && height_range_spin)
-            environment_module_->SendTextureHeightMessage(start_height_spin->value(), height_range_spin->value(), button_number);
     }
 
    
@@ -1848,7 +1921,6 @@ namespace Environment
         if(!terrain.get())
             return;
 
-        QObject::connect(terrain.get(), SIGNAL(TerrainTextureChanged()), this, SLOT(UpdateTerrainTextures()));
         CreateHeightmapImage();
         if(edit_terrain_active_) //Display terrain paint area only when user is painting the terrain.
         {
@@ -1901,7 +1973,6 @@ namespace Environment
             assert(label);
 
             // If we are pointing the mouse over the 2D map image, no need to raycast.
-//            QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse->globalX, mouse->globalY));
             QPoint posOnLabel = label->mapFromGlobal(QPoint(mouse->x, mouse->y));
             if (posOnLabel.x() >= 0 && posOnLabel.y() >= 0 && posOnLabel.x() < label->size().width() && posOnLabel.y() < label->size().height())
             {
@@ -2004,10 +2075,9 @@ namespace Environment
 
         if(tab->objectName() == "edit_terrain") // Map tab
         {
-            UpdateTerrain();
-
+            //UpdateTerrain();
             if(!editor_widget_)
-            return;
+                return;
 
             QLabel *textLabel = editor_widget_->findChild<QLabel*>("terrain_paint_3d_label");
             if(!textLabel)
@@ -2461,26 +2531,40 @@ namespace Environment
         if(!sky.get())
             return;
 
+        QCheckBox *enable_sky_checkbox = editor_widget_->findChild<QCheckBox *>("sky_toggle_box");
+        
+
+        bool showSky = false;
+        if ( enable_sky_checkbox != 0)
+            showSky = enable_sky_checkbox->isChecked();
+        
         const QComboBox *sender = qobject_cast<QComboBox *>(QObject::sender());
         if(sender)
         {
             QString text = sender->itemText(index);
             if(text == "Sky box")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_BOX, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_BOX);
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_BOX, sky->IsSkyEnabled());
+                
+                CreateSkyProperties(SKYTYPE_BOX);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky dome")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_DOME, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_DOME);
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_DOME, sky->IsSkyEnabled());
+                
+                CreateSkyProperties(SKYTYPE_DOME);
                 UpdateSkyTextureNames();
             }
             else if(text == "Sky plane")
             {
-                sky->ChangeSkyType(OgreRenderer::SKYTYPE_PLANE, sky->IsSkyEnabled());
-                CreateSkyProperties(OgreRenderer::SKYTYPE_PLANE);
+                if ( showSky )
+                    sky->ChangeSkyType(SKYTYPE_PLANE, sky->IsSkyEnabled());
+                
+            
+                CreateSkyProperties(SKYTYPE_PLANE);
                 UpdateSkyTextureNames();
             }
         }
@@ -2524,8 +2608,20 @@ namespace Environment
             return;
         if (!environment->GetTimeOverride())
             return;
+        
+        EC_EnvironmentLight* light = environment->GetEnvironmentLight();
+        if ( light != 0)
+        {
+            light->fixedTimeAttr.Set(true, AttributeChange::LocalOnly);
+            
+            qreal float_time = new_value;
+            float_time /= 100;
+            
+            light->currentTimeAttr.Set(float_time, AttributeChange::LocalOnly);
+            return;
+        }
 
-        OgreRenderer::EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
+        EC_OgreEnvironment* ec_ogre_env = environment->GetEnvironmentComponent();
         if (ec_ogre_env)
         {
             qreal float_time = new_value;

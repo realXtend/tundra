@@ -13,8 +13,8 @@
 
 #include "Renderer.h"
 #include "EC_OgreCamera.h"
-#include "EC_OgrePlaceable.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
+#include "EC_Placeable.h"
 #include "EC_Mesh.h"
 
 #include "InputEvents.h"
@@ -39,9 +39,10 @@ namespace RA = RexTypes::Actions;
 
 namespace RexLogic
 {
-    CameraControllable::CameraControllable(Foundation::Framework *fw) :
-        framework_(fw),
-        action_event_category_(fw->GetEventManager()->QueryEventCategory("Action")),
+    CameraControllable::CameraControllable(RexLogicModule *rex_logic) :
+        rex_logic_(rex_logic),
+        framework_(rex_logic->GetFramework()),
+        action_event_category_(rex_logic->GetFramework()->GetEventManager()->QueryEventCategory("Action")),
         current_state_(ThirdPerson),
         firstperson_pitch_(0),
         firstperson_yaw_(0),
@@ -86,19 +87,9 @@ namespace RexLogic
         action_trans_[RexTypes::Actions::MoveRight] = Vector3df::UNIT_X;
         action_trans_[RexTypes::Actions::MoveUp] = Vector3df::UNIT_Y;
         action_trans_[RexTypes::Actions::MoveDown] = Vector3df::NEGATIVE_UNIT_Y;
-
+    
         movement_.x_.rel_ = 0;
         movement_.y_.rel_ = 0;
-
-		camera_control_widget_ = new CameraControl();
-        /*
-		Foundation::UiServiceInterface *ui_service = framework_->GetService<Foundation::UiServiceInterface>();
-        if (ui_service)
-		{
-			ui_service->AddWidgetToScene(camera_control_widget_);
-			ui_service->AddWidgetToMenu(camera_control_widget_);
-		}
-        */
     }
 
     void CameraControllable::SetCameraEntity(Scene::EntityPtr camera)
@@ -118,8 +109,6 @@ namespace RexLogic
 
     bool CameraControllable::HandleInputEvent(event_id_t event_id, IEventData* data)
     {
-        camera_control_widget_->HandleInputEvent(event_id, data);
-
         if (event_id == InputEvents::INPUTSTATE_THIRDPERSON && current_state_ != ThirdPerson)
         {
             current_state_ = ThirdPerson;
@@ -186,7 +175,7 @@ namespace RexLogic
     {
         if (event_id == RexTypes::Actions::Zoom)
         {
-            OgreRenderer::EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<OgreRenderer::EC_OgreCamera>().get();
+            EC_OgreCamera *cam_comp = camera_entity_.lock()->GetComponent<EC_OgreCamera>().get();
             if (!cam_comp)     
                 return false;
             if (cam_comp->IsActive())
@@ -238,7 +227,7 @@ namespace RexLogic
         // Note: On Tundra we don't have the target. Hack the freelook cam to work in such case also.
         if (renderer && /*target && */camera)
         {
-            OgreRenderer::EC_OgrePlaceable *camera_placeable = camera->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+            EC_Placeable *camera_placeable = camera->GetComponent<EC_Placeable>().get();
             // hack begin
             if (!target)
             {
@@ -260,7 +249,7 @@ namespace RexLogic
             {
                 // for smoothness, we apparently need to get rotation from network position and position from placeable. Go figure. -cm
                 EC_NetworkPosition *netpos = target->GetComponent<EC_NetworkPosition>().get();
-                OgreRenderer::EC_OgrePlaceable *placeable = target->GetComponent<OgreRenderer::EC_OgrePlaceable>().get();
+                EC_Placeable *placeable = target->GetComponent<EC_Placeable>().get();
                 if (netpos && placeable)
                 {
                     Vector3df avatar_pos = placeable->GetPosition();
@@ -281,7 +270,7 @@ namespace RexLogic
                     if (current_state_ == FirstPerson)
                     {
                         // Try to use head bone from target entity to get the first person camera position
-                        OgreRenderer::EC_Mesh *mesh = target->GetComponent<OgreRenderer::EC_Mesh>().get();
+                        EC_Mesh *mesh = target->GetComponent<EC_Mesh>().get();
                         EC_AvatarAppearance *appearance = target->GetComponent<EC_AvatarAppearance>().get();
                         bool fallback = true;
                         if (mesh && appearance)
@@ -353,7 +342,6 @@ namespace RexLogic
                         camera_placeable->SetPitch(drag_pitch_ * firstperson_sensitivity_);
                         camera_placeable->SetYaw(drag_yaw_ * firstperson_sensitivity_);
                     }
-
                     if (current_state_ == Tripod)
                     {
                         const float trans_dt = (float)frametime * sensitivity_;

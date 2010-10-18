@@ -31,6 +31,7 @@
 #include "UiProxyWidget.h"
 #include "EC_OpenSimPresence.h"
 #include "Console.h"
+#include "Input.h"
 
 #include <utility>
 #include <QDebug>
@@ -113,6 +114,9 @@ void DebugStatsModule::PostInitialize()
 
     frameworkEventCategory_ = framework_->GetEventManager()->QueryEventCategory("Framework");
 
+    inputContext = framework_->GetInput()->RegisterInputContext("DebugStatsInput", 90);
+    connect(inputContext.get(), SIGNAL(KeyPressed(KeyEvent *)), this, SLOT(HandleKeyPressed(KeyEvent *)));
+
 
 //#ifdef Q_WS_WIN
 // 
@@ -121,6 +125,18 @@ void DebugStatsModule::PostInitialize()
 //#endif 
 
     AddProfilerWidgetToUi();
+}
+
+void DebugStatsModule::HandleKeyPressed(KeyEvent *e)
+{
+    if (e->eventType != KeyEvent::KeyPressed || e->keyPressCount > 1)
+        return;
+
+    Input &input = *framework_->GetInput();
+
+    const QKeySequence showProfiler = input.KeyBinding("ShowProfilerWindow", QKeySequence(Qt::ShiftModifier + Qt::Key_P));
+    if (QKeySequence(e->keyCode | e->modifiers) == showProfiler)
+        ShowProfilingWindow();
 }
 
 void DebugStatsModule::AddProfilerWidgetToUi()
@@ -501,20 +517,20 @@ Console::CommandResult DebugStatsModule::Exec(const StringVector &params)
     Scene::EntityPtr entity = scene->GetEntity(id);
     if (!entity)
         return Console::ResultFailure("No entity found for entity ID " + params[0]);
-/*
-    QStringList execParameters;
-    for(size_t i = 2; i < params.size(); ++i)
-        execParameters << params[i].c_str();
-*/
 
-    if (params.size() == 3)
+    QStringList execParameters;
+    
+    if (params.size() >= 3)
     {
         int type = ParseString<int>(params[2], 0);
+        for(size_t i = 3; i < params.size(); ++i)
+            execParameters << params[i].c_str();
+        
         if (id != 0)
-            entity->Exec((EntityAction::ExecutionType)type, params[1].c_str());
+            entity->Exec((EntityAction::ExecutionType)type, params[1].c_str(), execParameters);
     }
     else
-        entity->Exec(EntityAction::Local, params[1].c_str());
+        entity->Exec(EntityAction::Local, params[1].c_str(), execParameters);
 
     return Console::ResultSuccess();
 }

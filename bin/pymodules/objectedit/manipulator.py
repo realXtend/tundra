@@ -56,7 +56,7 @@ class Manipulator:
     CURSOR_HOVER_SHAPE = Qt.OpenHandCursor
     CURSOR_HOLD_SHAPE = Qt.ClosedHandCursor
     
-    MANIPULATORORIENTATION = QQuaternion(1, 0, 0, 0)
+    MANIPULATORORIENTATION = QQuaternion(1, 1, 0, 0)
     MANIPULATORSCALE = QVector3D(1, 1, 1)
 
     MANIPULATOR_RULER_TYPE = EC_Ruler.Rotation
@@ -252,11 +252,12 @@ class Manipulator:
             for ent in ents:
                 self._manipulate(ent, amountx, amounty, changevec)
                 self.controller.soundRuler(ent)
-            if len(ents) > 0:
-                placeable = ents[0].placeable
-                self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
+            if not self.manipulator is None:
+                if len(ents) > 0 and self.NAME!="FreeMoveManipulator":
+                    placeable = ents[0].placeable
+                    self.manipulator.ruler.DoDrag(placeable.Position, placeable.Orientation, placeable.Scale)
 
-            self.manipulator.ruler.UpdateRuler()
+                self.manipulator.ruler.UpdateRuler()
                 
             if self.usesManipulator:
                 self.moveTo(ents)

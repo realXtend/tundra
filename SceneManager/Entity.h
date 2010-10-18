@@ -9,8 +9,13 @@
 #include "IAttribute.h"
 #include "EntityAction.h"
 
+#include "kNetFwd.h"
+
 #include <QObject>
 #include <QMap>
+
+class QDomDocument;
+class QDomElement;
 
 namespace Scene
 {
@@ -33,9 +38,9 @@ namespace Scene
         is accessable through Q_PROERTY and if you want to edit other same type of components
         you should use GetComponent mehtod instead.
 
-        When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        When component is removed from the entity a Q_PROPERTY connection is destroyed from
         the component. Incase there are several components that typename is same, there is 
-        a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+        a name check that ensures that both components names are same before Q_PROPERTY destroyed.
 
         \note   Entity can have multiple components with same component type name as long as
                 the component names are unique.
@@ -93,9 +98,10 @@ namespace Scene
         /*! 
             \param type_name type of the component
             \param change Network replication mode, in case component has to be created
+            \param syncEnabled Whether new component will have networksync enabled
         */
-        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly);
-        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
+        ComponentPtr GetOrCreateComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly, bool syncEnabled = true);
         ComponentPtr GetOrCreateComponent(uint type_hash, AttributeChange::Type change = AttributeChange::LocalOnly);
         ComponentPtr GetOrCreateComponent(uint type_hash, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly);
         
@@ -137,9 +143,9 @@ namespace Scene
         void AddComponent(const ComponentPtr &component, AttributeChange::Type change = AttributeChange::LocalOnly);
 
         //! Remove the component from this entity.
-        /*! When component is removed from the entity a Q_PROPERTY connection is destoyed from
+        /*! When component is removed from the entity a Q_PROPERTY connection is destroyed from
             the component. Incase there are several components that typename is same, there is 
-            a name check that ensures that both components names are same before Q_PROPERTY destoyed.
+            a name check that ensures that both components names are same before Q_PROPERTY destroyed.
             
             \param component Pointer to the component to remove
         */
@@ -266,7 +272,32 @@ namespace Scene
         */
         AttributeVector GetAttributes(const std::string &name) const;
 
+        /// In the following, deserialization functions are now disabled since deserialization can't safely
+        /// process the exact same data that was serialized, or it risks receiving entity ID conflicts in the scene.
+        /// \todo Implement a deserialization flow that takes that into account. In the meanwhile, use SceneManager
+        /// functions for achieving the same.
+
+        void SerializeToBinary(kNet::DataSerializer &dst) const;
+//        void DeserializeFromBinary(kNet::DataDeserializer &src, AttributeChange::Type change);
+
+    signals:
+        //! A component has been added to the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentAdded(IComponent* component, AttributeChange::Type change);
+        
+        //! A component has been removed from the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentRemoved(IComponent* component, AttributeChange::Type change);
+
     public slots:
+        void SerializeToXML(QDomDocument& doc, QDomElement& base_element) const;
+//        void DeserializeFromXML(QDomElement& element, AttributeChange::Type change);
+
+        QString SerializeToXMLString() const;
+//        bool DeserializeFromXMLString(const QString &src, AttributeChange::Type change);
+
         IComponent* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
         IComponent* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
         
@@ -276,38 +307,46 @@ namespace Scene
         void RemoveComponent(const QString &type_name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name), change); }
         void RemoveComponent(const QString &type_name, const QString &name, AttributeChange::Type change = AttributeChange::LocalOnly) { RemoveComponent(GetComponent(type_name, name), change); }
 
-        //! Returns list of components with type 'type_name' or if typename is empty return all components
+        //! Returns list of components with type @c type_name or if @c type_name is empty return all components
         //! \param type_name type of the component
         QObjectList GetComponentsRaw(const QString &type_name) const
         {
             QObjectList ret;
-            if(type_name.isNull())
-            {
+            if (type_name.isNull())
                 for(size_t i = 0; i < components_.size() ; ++i)
                     ret.push_back(components_[i].get());
-            }
             else
-            {
                 for(size_t i = 0; i < components_.size() ; ++i)
                     if (components_[i]->TypeName() == type_name)
                         ret.push_back(components_[i].get());
-            }
             return ret;
         }
 
         //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name Type of the component.
+        /*! \param type_name Type of the component.
+        */
         bool HasComponent(const QString &type_name) const;
         bool HasComponent(uint type_hash) const;
-        
+
         //! Returns whether or not this entity has a component with certain type and name.
-        //! \param type_name type of the component
-        //! \param name name of the component
+        /*! \param type_name type of the component
+            \param name name of the component
+        */
         bool HasComponent(const QString &type_name, const QString &name) const;
         bool HasComponent(uint type_hash, const QString &name) const;
 
+        //! Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param name Name.
+        */
+        void SetName(const QString &name);
+
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
         QString GetName() const;
+
+        //! Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param desc Description.
+        */
+        void SetDescription(const QString &desc);
 
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;

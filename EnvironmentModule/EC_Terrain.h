@@ -276,12 +276,14 @@ private:
     void CreateRootNode();
 
     /// For all terrain patches, we maintain a global parent/root node to be able to transform the whole terrain at one go.
-    ///\todo Perhaps this should be unified with the ECOgrePlaceable.
+    ///\todo Perhaps this should be unified with the ECPlaceable.
     Ogre::SceneNode *rootNode;
 
     int patchWidth;
-
     int patchHeight;
+    /// Specifies the asset source from which the height map is currently loaded from. Used to shadow the heightMap attribute so that if
+    /// the same value is received from the network, reloading the terrain can be avoided.
+    QString currentHeightmapAssetSource;
 
     /// Stores the actual height patches.
     std::vector<Patch> patches;
@@ -290,6 +292,9 @@ private:
 
     /// Sets the given patch to use the currently set material and textures.
     void UpdateTerrainPatchMaterial(int patchX, int patchY);
+
+    /// Updates the root node transform from the current attribute values, if the root node exists.
+    void UpdateRootNodeTransform();
 
     void ResizeTerrain(int newPatchWidth, int newPatchHeight);
 

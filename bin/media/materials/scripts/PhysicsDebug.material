@@ -1,0 +1,12 @@
+material PhysicsDebug
+{
+	receive_shadows off
+	technique
+	{
+		pass
+		{
+			lighting off
+			diffuse vertexcolour
+		}
+	}
+}

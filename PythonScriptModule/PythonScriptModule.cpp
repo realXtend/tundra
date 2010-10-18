@@ -32,7 +32,6 @@
 #include "DebugOperatorNew.h"
 
 #include "PythonScriptModule.h"
-#include "PyEntity.h"
 #include "RexPythonQt.h"
 #include "PythonScriptInstance.h"
 
@@ -61,7 +60,6 @@
 
 #include "Avatar/AvatarHandler.h"
 #include "Avatar/AvatarControllable.h"
-#include "EC_NetworkPosition.h"
 
 #include "RexLogicModule.h" //much of the api is here
 #include "Camera/CameraControllable.h"
@@ -72,7 +70,7 @@
 //for CreateEntity. to move to an own file (after the possible prob with having api code in diff files is solved)
 //#include "../OgreRenderingModule/EC_Mesh.h"
 #include "Renderer.h"
-#include "EC_OgrePlaceable.h"
+#include "EC_Placeable.h"
 #include "EC_OgreCamera.h"
 #include "EC_Mesh.h"
 #include "EC_OgreCustomObject.h"
@@ -81,7 +79,6 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
-#include "EC_OpenSimPresence.h"
 #include "EC_OpenSimPrim.h"
 #include "EC_3DCanvas.h"
 #include "EC_Touchable.h"
@@ -103,9 +100,10 @@
 #include <MediaPlayerService.h>
 #include <WorldBuildingServiceInterface.h>
 
+#include "PythonQtScriptingConsole.h"
+
 #include "KeyEvent.h"
 #include "MouseEvent.h"
-#include "PythonQtScriptingConsole.h"
 
 //#include <QDebug>
 
@@ -630,6 +628,109 @@ namespace PythonScript
         qobj->setProperty(propname, QVariant());
     }
 
+    //this whole thing could be probably implemented in py now as well, but perhaps ok in c++ for speed
+  QList<Scene::Entity*> PythonScriptModule::ApplyUICanvasToSubmeshesWithTexture(QWidget* qwidget_ptr, QObject* qobject_ptr, QString uuidstr, uint refresh_rate)
+    {
+        // Iterate the scene to find all submeshes that use this texture uuid
+        QList<uint> submeshes_;
+        QList<Scene::Entity*> affected_entitys_;
+
+        if (!qwidget_ptr)
+            return affected_entitys_;
+
+        RexUUID texture_uuid = RexUUID();
+        texture_uuid.FromString(uuidstr.toStdString());
+
+        Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
+        if (!scene)
+        {
+            //PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
+            return affected_entitys_;
+        }
+
+        Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
+        /* was wrong way, how did this work? if (!worldLogic)
+        {
+          //PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
+          return;
+          }*/
+
+        Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
+        foreach(Scene::EntityPtr e, prims)
+        {
+            submeshes_.clear();
+
+            EC_OpenSimPrim *prim = e->GetComponent<EC_OpenSimPrim>().get();
+
+            if (prim->DrawType == RexTypes::DRAWTYPE_MESH || prim->DrawType == RexTypes::DRAWTYPE_PRIM)
+            {
+                ComponentPtr mesh = e->GetComponent(EC_Mesh::TypeNameStatic());
+                ComponentPtr custom_object = e->GetComponent(EC_OgreCustomObject::TypeNameStatic());
+            
+                EC_Mesh *meshptr = 0;
+                EC_OgreCustomObject *custom_object_ptr = 0;
+
+                if (mesh) 
+                {
+                    meshptr = checked_static_cast<EC_Mesh*>(mesh.get());
+                    if (!meshptr)
+                        continue;
+                    if (!meshptr->GetEntity())
+                        continue;
+                }
+                else if (custom_object)
+                {
+                    custom_object_ptr = checked_static_cast<EC_OgreCustomObject*>(custom_object.get());
+                    if (!custom_object_ptr)
+                        continue;
+                    if (!custom_object_ptr->GetEntity())
+                      continue;
+                }
+                else
+                    continue;
+            
+                // Iterate mesh materials map
+                if (meshptr)
+                {
+                    MaterialMap material_map = prim->Materials;
+                    MaterialMap::const_iterator i = material_map.begin();
+                    while (i != material_map.end())
+                    {
+                        // Store sumbeshes to list where we want to apply the new widget as texture
+                        uint submesh_id = i->first;
+                        if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
+                            submeshes_.append(submesh_id);
+                        ++i;
+                    }
+                }
+                // Iterate custom object texture map
+                else if (custom_object_ptr && prim->PrimTextures.size() > 0 )
+                {
+                    TextureMap texture_map = prim->PrimTextures;
+                    TextureMap::const_iterator i = texture_map.begin();
+
+                    while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
+                    {
+                        uint submesh_id = i->first;
+                        if (i->second == texture_uuid.ToString())
+                            submeshes_.append(submesh_id);
+                        ++i;
+                    }
+                }
+                else
+                    continue;
+
+                if (submeshes_.size() > 0)
+                {
+                    PythonScriptModule::Add3DCanvasComponents(e.get(), qwidget_ptr, submeshes_, refresh_rate);
+                    affected_entitys_.append(e.get());
+                }
+            }
+        }
+
+        return affected_entitys_;
+    }
+
     void PythonScriptModule::LoadScript(const QString &filename)
     {
         EC_Script *script = dynamic_cast<EC_Script *>(sender());
@@ -750,16 +851,7 @@ static PyObject* RayCast(PyObject *self, PyObject *args)
         else
             Py_RETURN_NONE;
     }
-    /*
-    if (result)
-    {
-        //Scene::Events::SceneEventData event_data(entity->GetId());
-        //framework_->GetEventManager()->SendEvent(scene_event_category_, Scene::Events::EVENT_ENTITY_GRAB, &event_data);
-        return entity_create(entity->GetId());
-    }
-    else 
-        Py_RETURN_NONE;
-    */
+
     Py_RETURN_NONE;
 }
 
@@ -827,48 +919,6 @@ static PyObject* SendEvent(PyObject *self, PyObject *args)
     Py_RETURN_TRUE;
 }
 
-//returns an Entity wrapper, is in actual use
-PyObject* GetEntity(PyObject *self, PyObject *args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
-        return NULL;   
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-
-    Scene::ScenePtr scene = owner->GetScenePtr();
-
-    if (scene == 0)
-    {
-        PyErr_SetString(PyExc_ValueError, "Scene is none.");
-        return NULL;   
-    }
-
-    //PythonScript::foo(); 
-    /*
-    const Scene::EntityPtr entity = scene->GetEntity(ent_id);
-    if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-        return entity_create(ent_id, entity);
-    //the ptr is stored in a separate map now, so also id needs to passed to entity_create
-    */
-    //if would just store the id and always re-get ptr, would do this:
-    if (scene->HasEntity(ent_id))
-        return owner->entity_create(ent_id);
-
-    else
-    {
-        PyErr_SetString(PyExc_ValueError, "No entity with the ent_id found.");
-        return NULL;   
-    }
-}
-
 PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
 {
     char* uuidstr;
@@ -890,7 +940,7 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         Scene::EntityPtr entity = rexlogic_->GetPrimEntity(ruuid);
         if (entity)
         {
-            return owner->entity_create(entity->GetId());
+            return PythonScriptModule::GetInstance()->WrapQObject(entity.get());
         }
         else
         {
@@ -904,137 +954,6 @@ PyObject* GetEntityByUUID(PyObject *self, PyObject *args)
         PyErr_SetString(PyExc_RuntimeError, "RexLogic module not there?");
         return NULL;   
     }
-}
-
-PyObject* ApplyUICanvasToSubmeshesWithTexture(PyObject* self, PyObject* args)
-{
-    PyObject* qwidget;
-    char* uuidstr;
-    uint refresh_rate;
-
-    if(!PyArg_ParseTuple(args, "OsI", &qwidget, &uuidstr, &refresh_rate))
-        Py_RETURN_NONE;
-    if (!PyObject_TypeCheck(qwidget, &PythonQtInstanceWrapper_Type))
-        Py_RETURN_NONE;
-
-    // Prepare QWidget and texture UUID
-    PythonQtInstanceWrapper* wrapped_qwidget = (PythonQtInstanceWrapper*)qwidget;
-    QObject* qobject_ptr = wrapped_qwidget->_obj;
-    QWidget* qwidget_ptr = (QWidget*)qobject_ptr;
-    
-    if (!qwidget_ptr)
-        Py_RETURN_NONE;
-
-    RexUUID texture_uuid = RexUUID();
-    texture_uuid.FromString(std::string(uuidstr));
-
-    Scene::ScenePtr scene = PythonScript::self()->GetFramework()->GetDefaultWorldScene();
-    if (!scene)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in GetEntityMatindicesWithTexture.");
-        Py_RETURN_NONE;
-    }
-
-    Foundation::WorldLogicInterface *worldLogic = PythonScript::self()->GetWorldLogic();
-    if (worldLogic)
-    {
-        PyErr_SetString(PyExc_RuntimeError, "Could not get world logic.");
-        Py_RETURN_NONE;
-    }
-
-    // Iterate the scene to find all submeshes that use this texture uuid
-    QList<uint> submeshes_;
-    QList<entity_id_t> affected_entitys_;
-    Scene::EntityList prims = scene->GetEntitiesWithComponent("EC_OpenSimPrim");
-    foreach(Scene::EntityPtr e, prims)
-    {
-        Scene::Entity &entity = *e.get();
-        submeshes_.clear();
-
-        EC_OpenSimPrim &prim = *entity.GetComponent<EC_OpenSimPrim>().get();
-
-        if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
-        {
-            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
-            
-            OgreRenderer::EC_Mesh *meshptr = 0;
-            OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
-
-            if (mesh) 
-            {
-                meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
-                if (!meshptr)
-                    continue;
-                if (!meshptr->GetEntity())
-                    continue;
-            }
-            else if (custom_object)
-            {
-                custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
-                if (!custom_object_ptr)
-                    continue;
-                if (!custom_object_ptr->GetEntity())
-                    continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
-            }
-            else
-                continue;
-            
-            // Iterate mesh materials map
-            if (meshptr)
-            {
-                MaterialMap material_map = prim.Materials;
-                MaterialMap::const_iterator i = material_map.begin();
-                while (i != material_map.end())
-                {
-                    // Store sumbeshes to list where we want to apply the new widget as texture
-                    uint submesh_id = i->first;
-                    if ((i->second.Type == RexTypes::RexAT_Texture) && (i->second.asset_id.compare(texture_uuid.ToString()) == 0))
-                        submeshes_.append(submesh_id);
-                    ++i;
-                }
-            }
-            // Iterate custom object texture map
-            else if (custom_object_ptr && prim.PrimTextures.size() > 0 )
-            {
-                TextureMap texture_map = prim.PrimTextures;
-                TextureMap::const_iterator i = texture_map.begin();
-
-                while (i != texture_map.end()) /// @todo This causes unresolved crash in some cases!
-                {
-                    uint submesh_id = i->first;
-                    if (i->second == texture_uuid.ToString())
-                        submeshes_.append(submesh_id);
-                    ++i;
-                }
-            }
-            else
-                continue;
-
-            if (submeshes_.size() > 0)
-            {
-                PythonScriptModule::Add3DCanvasComponents(&entity, qwidget_ptr, submeshes_, refresh_rate);
-                affected_entitys_.append(entity.GetId());
-            }
-        }
-    }
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    if (owner && affected_entitys_.count() > 0)
-    {
-        PyObject *py_ent_ptr_list = PyList_New(affected_entitys_.size());
-        int i = 0;
-        foreach(entity_id_t entity_id, affected_entitys_)
-        {
-            PyList_SET_ITEM(py_ent_ptr_list, i, owner->entity_create(entity_id));
-            ++i;
-        }
-        return py_ent_ptr_list;
-    }
-    else
-        Py_RETURN_NONE;
 }
 
 PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
@@ -1066,15 +985,15 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
 
         if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
         {
-            ComponentPtr mesh = entity.GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-            ComponentPtr custom_object = entity.GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+            ComponentPtr mesh = entity.GetComponent(EC_Mesh::TypeNameStatic());
+            ComponentPtr custom_object = entity.GetComponent(EC_OgreCustomObject::TypeNameStatic());
 
-            OgreRenderer::EC_Mesh *meshptr = 0;
-            OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
+            EC_Mesh *meshptr = 0;
+            EC_OgreCustomObject *custom_object_ptr = 0;
 
             if (mesh)
             {
-                meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
+                meshptr = checked_static_cast<EC_Mesh*>(mesh.get());
                 if (!meshptr)
                     continue;
                 if (!meshptr->GetEntity())
@@ -1082,13 +1001,11 @@ PyObject* CheckSceneForTexture(PyObject* self, PyObject* args)
             }
             else if (custom_object)
             {
-                custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
+                custom_object_ptr = checked_static_cast<EC_OgreCustomObject*>(custom_object.get());
                 if (!custom_object_ptr)
                     continue;
                 if (!custom_object_ptr->GetEntity())
                     continue;
-                Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-                custom_object_ptr->CommitChanges(manual);
             }
             else
                 continue;
@@ -1202,6 +1119,7 @@ PyObject* ApplyUICanvasToSubmeshes(PyObject* self, PyObject* args)
     Py_RETURN_NONE;
 }
 
+//XXX \todo remove and use the generic component adding mechanism from core directly. remove (canvas &) touchable deps from py module then
 void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *widget, const QList<uint> &submeshes, int refresh_rate)
 {
     if (submeshes.isEmpty())
@@ -1229,11 +1147,12 @@ void PythonScriptModule::Add3DCanvasComponents(Scene::Entity *entity, QWidget *w
     {
         entity->AddComponent(PythonScript::self()->GetFramework()->GetComponentManager()->CreateComponent(EC_Touchable::TypeNameStatic()));
         ec_touchable = entity->GetComponent<EC_Touchable>().get();
+        ec_touchable->SetNetworkSyncEnabled(false);
     }
     if (ec_touchable)
     {
-        ec_touchable->highlightOnHover.Set(false, AttributeChange::Default);
-        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::Default);
+        ec_touchable->highlightOnHover.Set(false, AttributeChange::LocalOnly);
+        ec_touchable->hoverCursor.Set(Qt::PointingHandCursor, AttributeChange::LocalOnly);
     }
 }
 
@@ -1262,15 +1181,15 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
     if (prim.DrawType == RexTypes::DRAWTYPE_MESH || prim.DrawType == RexTypes::DRAWTYPE_PRIM)
     {
         QList<uint> submeshes_;
-        ComponentPtr mesh = primentity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-        ComponentPtr custom_object = primentity->GetComponent(OgreRenderer::EC_OgreCustomObject::TypeNameStatic());
+        ComponentPtr mesh = primentity->GetComponent(EC_Mesh::TypeNameStatic());
+        ComponentPtr custom_object = primentity->GetComponent(EC_OgreCustomObject::TypeNameStatic());
 
-        OgreRenderer::EC_Mesh *meshptr = 0;
-        OgreRenderer::EC_OgreCustomObject *custom_object_ptr = 0;
+        EC_Mesh *meshptr = 0;
+        EC_OgreCustomObject *custom_object_ptr = 0;
 
         if (mesh)
         {
-            meshptr = checked_static_cast<OgreRenderer::EC_Mesh*>(mesh.get());
+            meshptr = checked_static_cast<EC_Mesh*>(mesh.get());
             if (!meshptr)
                 Py_RETURN_NONE;
             if (!meshptr->GetEntity())
@@ -1278,13 +1197,11 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         }
         else if (custom_object)
         {
-            custom_object_ptr = checked_static_cast<OgreRenderer::EC_OgreCustomObject*>(custom_object.get());
+            custom_object_ptr = checked_static_cast<EC_OgreCustomObject*>(custom_object.get());
             if (!custom_object_ptr)
                 Py_RETURN_NONE;
             if (!custom_object_ptr->GetEntity())
                 Py_RETURN_NONE;
-            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
-            custom_object_ptr->CommitChanges(manual);
         }
         else
             Py_RETURN_NONE;
@@ -1306,6 +1223,11 @@ PyObject* GetSubmeshesWithTexture(PyObject* self, PyObject* args)
         // Iterate custom object texture map
         else if (custom_object_ptr)
         {
+            //! todo: fix this shit, find a smarter way than regenerating the prims multiple times without optimisation
+            //! so that we get the correct submesh indexes from it.
+            Ogre::ManualObject* manual = RexLogic::CreatePrimGeometry(PythonScript::self()->GetFramework(), prim, false);
+            custom_object_ptr->CommitChanges(manual);
+
             TextureMap texture_map = prim.PrimTextures;
             TextureMap::const_iterator i = texture_map.begin();
             if (i == texture_map.end())
@@ -1353,46 +1275,7 @@ PyObject* GetApplicationDataDirectory(PyObject *self)
     //return QString(cache_path.c_str());
 }
 
-//returns the internal Entity that's now a QObject, 
-//with no manual wrapping (just PythonQt exposing qt things)
-//experimental now, may replace the PyType in Entity.h used above
-//largely copy-paste from above now, is an experiment
-/*PyObject* GetQEntity(PyObject *self, PyObject *args)
-{
-    unsigned int ent_id_int;
-    entity_id_t ent_id;
-    const Scene::EntityPtr entityptr;
-    const Scene::Entity entity;
-
-    if(!PyArg_ParseTuple(args, "I", &ent_id_int))
-    {
-        PyErr_SetString(PyExc_ValueError, "Getting an entity failed, param should be an integer.");
-        return NULL;   
-    }
-
-    ent_id = (entity_id_t) ent_id_int;
-
-    Scene::ScenePtr scene = PythonScript::GetScenePtr();
-
-    if (scene == 0)
-    {
-        PyErr_SetString(PyExc_ValueError, "Scene is none.");
-        return NULL;   
-    }
-
-    entityptr = scene->GetEntity(ent_id);
-    if (entity.get() != 0) //same that scene->HasEntity does, i.e. it first does GetEntity too, so not calling HasEntity here to not do GetEntity twice.
-    {
-        return PythonQt::self()->wrapQObject(entity.get());
-    }
-
-    else
-    {
-        PyErr_SetString(PyExc_ValueError, "No entity with the given id found."); //XXX add the id to msg
-        return NULL;   
-    }
-}*/
-
+//XXX remove, use SceneManager
 PyObject* RemoveEntity(PyObject *self, PyObject *value)
 {
     int ent_id;
@@ -1403,64 +1286,13 @@ PyObject* RemoveEntity(PyObject *self, PyObject *value)
     }
     PythonScriptModule *owner = PythonScriptModule::GetInstance();
     Scene::ScenePtr scene = owner->GetScenePtr();
-    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
+    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(EC_Placeable::TypeNameStatic()))
         PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in RemoveEntity.");
         return NULL;   
     }
     scene->RemoveEntity(ent_id);
     //PyErr_SetString(PyExc_ValueError, "no error.");
     Py_RETURN_NONE;
-}
-
-PyObject* CreateEntity(PyObject *self, PyObject *value)
-{
-    Foundation::Framework *framework_ = PythonScript::self()->GetFramework();//PythonScript::staticframework;
-
-    std::string meshname;
-    const char* c_text;
-    float prio = 0;
-    //PyObject_Print(value, stdout, 0);
-    if(!PyArg_ParseTuple(value, "sf", &c_text, &prio))
-    {
-        PyErr_SetString(PyExc_ValueError, "mesh name is a string"); //XXX change the exception
-        return NULL;
-    }
-
-    meshname = std::string(c_text);
-
-    PythonScriptModule *owner = PythonScriptModule::GetInstance();
-    Scene::ScenePtr scene = owner->GetScenePtr();
-    if (!scene){ //XXX enable the check || !rexlogicmodule_->GetFramework()->GetComponentManager()->CanCreate(OgreRenderer::EC_OgrePlaceable::TypeNameStatic()))
-        PyErr_SetString(PyExc_RuntimeError, "Default scene is not there in CreateEntity.");
-        return NULL;   
-    }
-
-    entity_id_t ent_id = scene->GetNextFreeId(); //instead of using the id given
-    
-    QStringList defaultcomponents;
-    defaultcomponents.append(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    //defaultcomponents.append(OgreRenderer::EC_OgreMovableTextOverlay::TypeNameStatic());
-    defaultcomponents.append(OgreRenderer::EC_Mesh::TypeNameStatic());
-    //defaultcomponents.append(OgreRenderer::EC_OgreAnimationController::TypeNameStatic());
-        
-    Scene::EntityPtr entity = scene->CreateEntity(ent_id, defaultcomponents);
-
-    ComponentPtr placeable = entity->GetComponent(OgreRenderer::EC_OgrePlaceable::TypeNameStatic());
-    ComponentPtr component_meshptr = entity->GetComponent(OgreRenderer::EC_Mesh::TypeNameStatic());
-    if (placeable)
-    {
-        OgreRenderer::EC_OgrePlaceable &ogrepos = *checked_static_cast<OgreRenderer::EC_OgrePlaceable*>(placeable.get());
-        if (prio != 0)
-            ogrepos.SetSelectPriority(prio);
-        OgreRenderer::EC_Mesh &ogremesh = *checked_static_cast<OgreRenderer::EC_Mesh*>(component_meshptr.get());
-        ogremesh.SetPlaceable(placeable);
-        ogremesh.SetMesh(meshname, true);
-        scene->EmitEntityCreated(entity);
-        return owner->entity_create(ent_id); //return the py wrapper for the new entity
-    }
-    
-    PyErr_SetString(PyExc_ValueError, "placeable not found."); //XXX change the exception
-    return NULL;   
 }
 
 /*
@@ -1828,16 +1660,10 @@ static PyMethodDef EmbMethods[] = {
     {"getQWorldBuildingHandler", (PyCFunction)GetQWorldBuildingHandler, METH_NOARGS,
     "Get the World Building Modules python handler as a QObject"},
 
-    {"getEntity", (PyCFunction)GetEntity, METH_VARARGS,
-    "Gets the entity with the given ID."},
-
     {"getEntityByUUID", (PyCFunction)GetEntityByUUID, METH_VARARGS,
     "Gets the entity with the given UUID."},
 
     {"removeEntity", (PyCFunction)RemoveEntity, METH_VARARGS,
-    "Creates a new entity with the given ID, and returns it."},
-
-    {"createEntity", (PyCFunction)CreateEntity, METH_VARARGS,
     "Creates a new entity with the given ID, and returns it."},
 
     {"getCameraYawPitch", (PyCFunction)GetCameraYawPitch, METH_VARARGS,
@@ -1912,9 +1738,6 @@ static PyMethodDef EmbMethods[] = {
 //    {"getEntityMatindicesWithTexture", (PyCFunction)GetEntityMatindicesWithTexture, METH_VARARGS, 
 //    "Finds all entities with material indices which are using the given texture"},
 
-    {"applyUICanvasToSubmeshesWithTexture", (PyCFunction)ApplyUICanvasToSubmeshesWithTexture, METH_VARARGS, 
-    "Applies a ui canvas to all the entity submeshes where the given texture is used. Parameters: uicanvas (internal mode required), textureuuid"},
-
     {"checkSceneForTexture", (PyCFunction)CheckSceneForTexture, METH_VARARGS, 
     "Return true if texture exists in scene, otherwise false: Parameters: textureuuid"},
 
@@ -1953,12 +1776,6 @@ namespace PythonScript
         //event constants are now put in PostInit so that the other modules have registered theirs already.
         //XXX what about new event types defined in py-written modules?
 
-        entity_init(apiModule); 
-        /* this is planned to be vice versa: 
-           the implementing modules, like here scene for Entity,
-           would call something here to get a ref to the module, or something?
-        */
-
         //init PythonQt, implemented in RexPythonQt.cpp
         if (!pythonqt_inited)
         {
@@ -1986,8 +1803,8 @@ namespace PythonScript
             PythonQt::self()->registerClass(&Input::staticMetaObject);
 
             //add placeable and friends when PyEntity goes?
-            PythonQt::self()->registerClass(&OgreRenderer::EC_OgreCamera::staticMetaObject);
-            PythonQt::self()->registerClass(&OgreRenderer::EC_Mesh::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_OgreCamera::staticMetaObject);
+            PythonQt::self()->registerClass(&EC_Mesh::staticMetaObject);
             PythonQt::self()->registerClass(&RexLogic::EC_AttachedSound::staticMetaObject);
             PythonQt::self()->registerClass(&AttributeChange::staticMetaObject);
             PythonQt::self()->registerClass(&KeyEvent::staticMetaObject);
