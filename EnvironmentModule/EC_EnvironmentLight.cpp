@@ -181,6 +181,8 @@ namespace Environment
         if (renderer_.expired())
             return;
         
+        if ( caelumSystem_ == 0)
+            return;
      
         OgreRenderer::RendererPtr renderer = renderer_.lock();
         Ogre::Camera *camera = renderer->GetCurrentCamera();
@@ -270,6 +272,9 @@ namespace Environment
     
     void EC_EnvironmentLight::UpdateTime()
     {
+        if ( caelumSystem_ == 0)
+            return;
+
         float time = currentTimeAttr.Get();
 
         if (time < 0.0)
