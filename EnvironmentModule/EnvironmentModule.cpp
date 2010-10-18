@@ -33,6 +33,8 @@
 #include "UiServiceInterface.h"
 #include "UiProxyWidget.h"
 
+#include "TerrainWeightEditor.h"
+
 #include "WorldBuildingServiceInterface.h"
 
 #include "../TundraLogicModule/TundraEvents.h"
@@ -45,6 +47,7 @@ namespace Environment
 
     EnvironmentModule::EnvironmentModule() :
         IModule(type_name_static_),
+        w_editor_(0),
         waiting_for_regioninfomessage_(false),
         environment_editor_(0),
         postprocess_dialog_(0),
@@ -107,12 +110,17 @@ namespace Environment
             QObject::connect(wb_service.get(), SIGNAL(OverrideServerTime(int)), environment_editor_, SLOT(TimeOfDayOverrideChanged(int)));
             QObject::connect(wb_service.get(), SIGNAL(SetOverrideTime(int)), environment_editor_, SLOT(TimeValueChanged(int)));
         }
+
+        w_editor_ = new TerrainWeightEditor(this);
+        w_editor_->Initialize();
+        
     }
 
     void EnvironmentModule::Uninitialize()
     {
         SAFE_DELETE(environment_editor_);
         SAFE_DELETE(postprocess_dialog_);
+        SAFE_DELETE(w_editor_);
         terrain_.reset();
         water_.reset();
         environment_.reset();
