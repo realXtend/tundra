@@ -468,22 +468,26 @@ namespace Scene
                         QString name = comp_elem.attribute("name");
                         ComponentPtr new_comp = entity->GetOrCreateComponent(type_name, name);
                         if (new_comp)
-                            // Trigger no signal yet when entity is in incoherent state
+                            // Trigger no signal yet when scene is in incoherent state
                             new_comp->DeserializeFrom(comp_elem, AttributeChange::Disconnected);
 
                         comp_elem = comp_elem.nextSiblingElement("component");
                     }
-                    EmitEntityCreated(entity, change);
-
-                    // All components have been loaded. Trigger change for them now.
-                    const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
-                    for(uint i = 0; i < components.size(); ++i)
-                        components[i]->ComponentChanged(change);
 
                     ret.append(entity.get());
                 }
             }
             ent_elem = ent_elem.nextSiblingElement("entity");
+        }
+
+        for (uint i = 0; i < ret.size(); ++i)
+        {
+            Entity* entity = ret[i];
+            EmitEntityCreated(entity, change);
+            // All entities & components have been loaded. Trigger change for them now.
+            const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+            for(uint j = 0; j < components.size(); ++j)
+                components[j]->ComponentChanged(change);
         }
 
         return ret;
@@ -568,7 +572,8 @@ namespace Scene
                             if (data_size)
                             {
                                 DataDeserializer comp_source(comp_bytes.data(), comp_bytes.size());
-                                new_comp->DeserializeFromBinary(comp_source, change);
+                                // Trigger no signal yet when scene is in incoherent state
+                                new_comp->DeserializeFromBinary(comp_source, AttributeChange::Disconnected);
                             }
                         }
                         else
@@ -580,20 +585,25 @@ namespace Scene
                     }
                 }
 
-                EmitEntityCreated(entity, change);
-                // Kind of a "hack", call OnChanged to the components only after all components have been loaded
-                // This allows to resolve component references to the same entity (for example to the Placeable) at this point
-                foreach(ComponentPtr component, entity->GetComponentVector())
-                    component->ComponentChanged(change);
-
                 ret.append(entity.get());
             }
         }
         catch (...)
         {
+            // Note: if exception happens, no change signals are emitted
             return QList<Entity *>();
         }
 
+        for (uint i = 0; i < ret.size(); ++i)
+        {
+            Entity* entity = ret[i];
+            EmitEntityCreated(entity, change);
+            // All entities & components have been loaded. Trigger change for them now.
+            const Scene::Entity::ComponentVector &components = entity->GetComponentVector();
+            for(uint j = 0; j < components.size(); ++j)
+                components[j]->ComponentChanged(change);
+        }
+        
         return ret;
     }
 

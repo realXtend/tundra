@@ -139,6 +139,10 @@ public:
     virtual void setWorldTransform(const btTransform &worldTrans);
     
 public slots:
+    //! Sets collision mesh from visible mesh. Also sets mass 0 (static) because trimeshes cannot move in Bullet
+    /*! \return true if successful (EC_Mesh could be found and contained a mesh reference)
+     */
+    bool SetShapeFromVisibleMesh();
     
 private slots:
     //! Called when the parent entity has been set.
