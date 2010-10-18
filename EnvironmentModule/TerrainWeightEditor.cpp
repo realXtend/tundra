@@ -14,6 +14,8 @@
 #include "SceneManager.h"
 #include "UiProxyWidget.h"
 #include "UiServiceInterface.h"
+
+#include "ConsoleCommandServiceInterface.h"
 namespace Environment
 {
     TerrainWeightEditor::TerrainWeightEditor(EnvironmentModule* env_module)
@@ -57,7 +59,6 @@ namespace Environment
         ui->AddWidgetToMenu(this, tr("Terrain Texture Weightmap Editor"));
         ui->RegisterUniversalWidget("Weights", editor_proxy);
 
-        ui->BringWidgetToFront(this);
 
         QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");
         if(box)
@@ -79,6 +80,17 @@ namespace Environment
         InitializeCanvases();
         InitializeConnections();
         emit BrushValueChanged();
+    }
+
+
+    Console::CommandResult TerrainWeightEditor::ShowWindow(const StringVector &params)
+    {
+        UiServiceInterface *ui = env_module_->GetFramework()->GetService<UiServiceInterface>();
+        if (!ui) 
+            return Console::ResultFailure("Failed to acquire UiModule pointer!");;
+
+        ui->BringWidgetToFront(this);
+        return Console::ResultSuccess();
     }
 
     void TerrainWeightEditor::DecomposeImageToCanvases(const QImage& image)
