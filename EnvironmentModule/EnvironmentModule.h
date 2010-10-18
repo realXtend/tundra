@@ -20,6 +20,7 @@ namespace Environment
     class Sky;
     class EnvironmentEditor;
     class PostProcessWidget;
+    class TerrainWeightEditor;
 
     typedef boost::shared_ptr<Terrain> TerrainPtr;
     typedef boost::shared_ptr<Water> WaterPtr;
@@ -157,6 +158,9 @@ namespace Environment
         void ReleaseWater();
         void ReleaseEnvironment();
         void ReleaseSky();
+
+        //! Editor for terrain texture weights
+        TerrainWeightEditor* w_editor_;
 
         //! Event manager pointer.
         Foundation::EventManagerPtr event_manager_;

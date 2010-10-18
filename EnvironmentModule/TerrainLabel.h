@@ -19,6 +19,7 @@ namespace Environment
     signals:
         //! Emitted when mouse event has triggered inside this label.
         void SendMouseEvent(QMouseEvent *ev);
+        void SendMouseEventWithCanvasName(QMouseEvent *ev, QString name);
 
     protected:
         void mousePressEvent(QMouseEvent *event);
