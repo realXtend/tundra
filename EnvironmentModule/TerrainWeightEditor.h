@@ -1,5 +1,8 @@
 #include <QWidget>
 #include "CoreTypes.h"
+
+#include "IModule.h"
+#include "ModuleLoggingFunctions.h"
 namespace Scene
 {
     class SceneManager;
@@ -45,6 +48,8 @@ namespace Environment
         void BrushSizeChanged(int val);
         void BrushFalloffChanged(double val);
         void BrushModifierChanged(int val);
+
+        Console::CommandResult ShowWindow(const StringVector &params);
 
         void HandleMouseEventFromCanvas(QMouseEvent *ev, QString name);
 
