@@ -9,7 +9,7 @@ file (GLOB H_FILES *.h)
 file (GLOB XML_FILES *.xml)
 file (GLOB MOC_FILES ECEditorModule.h ECEditorWindow.h ECAttributeEditor.h
     ECBrowser.h EcXmlEditorWidget.h MultiEditPropertyFactory.h MultiEditPropertyManager.h EntityPlacer.h
-    ECComponentEditor.h LineEditPropertyFactory.h)
+    ECComponentEditor.h LineEditPropertyFactory.h AddComponentDialog.h)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
 # Qt4 Moc files to subgroup "CMake Moc"
