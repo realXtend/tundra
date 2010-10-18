@@ -18,7 +18,12 @@ namespace Environment
 {
     TerrainWeightEditor::TerrainWeightEditor(EnvironmentModule* env_module)
         :env_module_(env_module)
-        ,scene_manager_(0)
+        ,scene_manager_(0),
+        brush_size_(1),
+        brush_modifier_(1),
+        falloff_percentage_(0),
+        neutral_color_(128),
+        brush_size_max_(800)
     {
         
     }
@@ -53,10 +58,27 @@ namespace Environment
         ui->RegisterUniversalWidget("Weights", editor_proxy);
 
         ui->BringWidgetToFront(this);
+
+        QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");
+        if(box)
+        {
+            brush_size_max_ = box->maximum();
+            brush_size_ = box->value();
+        }
+        box = editor_widget_->findChild<QSpinBox*>("brush_modifier");
+        if(box)
+            brush_modifier_ = box->maximum();
+
+        QDoubleSpinBox *dbox = editor_widget_->findChild<QDoubleSpinBox*>("brush_falloff");
+        if(dbox)
+            falloff_percentage_ = dbox->value();
+
+
+
         
         InitializeCanvases();
         InitializeConnections();
-        
+        emit BrushValueChanged();
     }
 
     void TerrainWeightEditor::DecomposeImageToCanvases(const QImage& image)
@@ -142,8 +164,10 @@ namespace Environment
         QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
         QLabel *canvas3 = editor_widget_->findChild<QLabel *>("canvas_3");
         QLabel *canvas4 = editor_widget_->findChild<QLabel *>("canvas_4");
+
+        QLabel *brush_canvas = editor_widget_->findChild<QLabel *>("brush_label");
         
-        assert(canvas1 && canvas2 && canvas3 && canvas4);
+        assert(canvas1 && canvas2 && canvas3 && canvas4 && brush_canvas);
         QPixmap basic(1024,1024);
         basic.fill(Qt::black);
 
@@ -151,6 +175,73 @@ namespace Environment
         canvas2->setPixmap(basic);
         canvas3->setPixmap(basic);
         canvas4->setPixmap(basic);
+
+        QPixmap brush(256, 256);
+        brush.fill(QColor(neutral_color_,neutral_color_,neutral_color_));
+        brush_canvas->setPixmap(brush);
+    }
+
+    void TerrainWeightEditor::HandleMouseEventFromCanvas(QMouseEvent *ev, QString name)
+    {
+        if(ev->buttons() && Qt::LeftButton)
+        {
+            QLabel *canvas = editor_widget_->findChild<QLabel *>(name);
+            if(!canvas)
+                return;
+            QImage image = canvas->pixmap()->toImage();
+            
+            
+
+            //in canvas space, between [0,1]
+            qreal brush_pos_x = ev->posF().x()/canvas->width();
+            qreal brush_pos_y = ev->posF().y()/canvas->height();
+
+            //in image space (texel coordinates)
+            brush_pos_x = brush_pos_x*image.width();
+            brush_pos_y = brush_pos_y*image.height();
+
+            qreal half_brush_size = brush_size_*0.5f;
+
+            int start_pos_x = brush_pos_x-half_brush_size;
+            int start_pos_y = brush_pos_y-half_brush_size;
+            int end_pos_x = brush_pos_x+half_brush_size;
+            int end_pos_y = brush_pos_y+half_brush_size;
+
+            //check limits
+            start_pos_x = start_pos_x<0?0:start_pos_x;
+            start_pos_y = start_pos_y<0?0:start_pos_y;
+            end_pos_x = end_pos_x<image.width()? end_pos_x:image.width();
+            end_pos_y = end_pos_y<image.height()? end_pos_y:image.height();
+
+            for(int x = start_pos_x; x<end_pos_x;x++)
+            {
+                for(int y = start_pos_y; y<end_pos_y;y++)
+                {
+                    QRgb color = image.pixel(x,y);
+
+                    f32 dist = sqrt(pow(x-brush_pos_x,2)+pow(y-brush_pos_y,2));
+                    if(dist>half_brush_size)
+                        continue;
+
+                    int mod = abs(brush_modifier_) - abs(dist*(brush_modifier_*falloff_percentage_));
+
+                    if(mod<1)
+                        continue;
+
+                    if(brush_modifier_<0)
+                        mod = -mod;
+                    int new_col = qBlue(color)+mod;
+                    
+                    //Limits (again)
+                    new_col = new_col>255?255:new_col;
+                    new_col = new_col<0?0:new_col;
+
+                    image.setPixel(x,y, QColor(new_col,new_col,new_col).rgb());
+
+                }
+            }
+            canvas->setPixmap(QPixmap::fromImage(image));
+        }
     }
 
     QImage TerrainWeightEditor::CreateImageFromCanvases()
@@ -188,8 +279,21 @@ namespace Environment
 
     void TerrainWeightEditor::InitializeConnections()
     {
+
+        connect(this, SIGNAL(BrushValueChanged()), this, SLOT(RecreateBrush()));
+
         if(!editor_widget_)
             return;
+
+        QLabel *canvas1 = editor_widget_->findChild<QLabel *>("canvas_1");
+        QLabel *canvas2 = editor_widget_->findChild<QLabel *>("canvas_2");
+        QLabel *canvas3 = editor_widget_->findChild<QLabel *>("canvas_3");
+        QLabel *canvas4 = editor_widget_->findChild<QLabel *>("canvas_4");
+
+        connect(canvas1, SIGNAL(SendMouseEventWithCanvasName(QMouseEvent*, QString)), this, SLOT(HandleMouseEventFromCanvas(QMouseEvent*, QString)));
+        connect(canvas2, SIGNAL(SendMouseEventWithCanvasName(QMouseEvent*, QString)), this, SLOT(HandleMouseEventFromCanvas(QMouseEvent*, QString)));
+        connect(canvas3, SIGNAL(SendMouseEventWithCanvasName(QMouseEvent*, QString)), this, SLOT(HandleMouseEventFromCanvas(QMouseEvent*, QString)));
+        connect(canvas4, SIGNAL(SendMouseEventWithCanvasName(QMouseEvent*, QString)), this, SLOT(HandleMouseEventFromCanvas(QMouseEvent*, QString)));
 
         QPushButton *load_button = editor_widget_->findChild<QPushButton *>("loadfromfilebutton");
         if(load_button)
@@ -203,7 +307,74 @@ namespace Environment
         if(group)
             connect(group, SIGNAL(toggled(bool)),this, SLOT(SetUseWeights(bool)));
 
+        QSpinBox *box = editor_widget_->findChild<QSpinBox*>("brush_size");
+        if(box)
+            connect(box, SIGNAL(valueChanged(int)), this, SLOT(BrushSizeChanged(int)));
 
+        QDoubleSpinBox *boxd = editor_widget_->findChild<QDoubleSpinBox*>("brush_falloff");
+        if(boxd)
+            connect(boxd, SIGNAL(valueChanged(double)), this, SLOT(BrushFalloffChanged(double)));
+
+        box = editor_widget_->findChild<QSpinBox*>("brush_modifier");
+        if(box)
+            connect(box, SIGNAL(valueChanged(int)), this, SLOT(BrushModifierChanged(int)));
+
+
+    }
+
+    void TerrainWeightEditor::BrushSizeChanged(int val)
+    {
+        brush_size_ = val;
+        emit BrushValueChanged();
+    }
+    void TerrainWeightEditor::BrushFalloffChanged(double val)
+    {
+        falloff_percentage_ = val;
+        emit BrushValueChanged();
+    }
+    void TerrainWeightEditor::BrushModifierChanged(int val)
+    {
+        brush_modifier_ = val;
+        emit BrushValueChanged();
+    }
+
+    void TerrainWeightEditor::RecreateBrush()
+    {
+        QLabel *brush_canvas = editor_widget_->findChild<QLabel *>("brush_label");
+        if(!brush_canvas)
+            return;
+        QPixmap map(brush_canvas->pixmap()->width(),brush_canvas->pixmap()->height()) ;
+        map.fill(QColor(neutral_color_, neutral_color_, neutral_color_));
+        QImage image = map.toImage();
+        
+        QPoint middle(image.width()*0.5f, image.height()*0.5f);
+        f32 scale = static_cast<f32>(brush_size_max_)/image.width();
+        for(int x=0; x<image.width();x++)
+        {
+            for(int y=0; y<image.height();y++)
+            {
+                int col;
+                f32 dist = sqrt(pow(static_cast<f32>(x-middle.x()),2)+pow(static_cast<f32>(y-middle.y()),2));
+
+                if((dist*scale)>(brush_size_*0.5f))
+                {
+                    col = neutral_color_;
+                }
+                else
+                {
+                    int mod = abs(brush_modifier_) - abs(dist*(brush_modifier_*falloff_percentage_));
+
+                    if(mod<1)
+                        mod = 0;
+
+                    if(brush_modifier_<0)
+                        mod = -mod;
+                    int col = neutral_color_ + mod;
+                    image.setPixel(x,y, QColor(col,col,col).rgb());
+                }
+            }
+        }
+        brush_canvas->setPixmap(QPixmap::fromImage(image));
     }
 
     void TerrainWeightEditor::ApplyWeightTexture()
