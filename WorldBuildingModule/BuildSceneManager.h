@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #ifndef incl_WorldBuildingModule_BuildSceneManager_h
@@ -20,6 +21,9 @@
 #include <QObject>
 #include <QTimer>
 #include <QPair>
+//$ BEGIN_MOD $
+#include <QDockWidget>
+//$ END_MOD $
 
 class QtAbstractPropertyBrowser;
 class QtProperty;
@@ -33,6 +37,13 @@ namespace CoreUi
 {
     class UiStateMachine;
 }
+
+//$ BEGIN_MOD $
+namespace Foundation
+{
+	class UiExternalServiceInterface;
+}
+//$ END_MOD $
 
 namespace WorldBuilding
 {
@@ -140,6 +151,11 @@ namespace WorldBuilding
         bool prim_selected_;
 
         QMap<QString, TransferPair > tranfer_widgets_;
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION Variables used to save inventory and ec editor if we use UiExternalModule  $
+		QPair<QDockWidget*, QWidget*> inventory_wid_;
+		QPair<QDockWidget*, QWidget*> component_wid_;
+		//$ EMD_MOD $
     };
 }
 

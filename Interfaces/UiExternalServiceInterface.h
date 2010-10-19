@@ -14,6 +14,7 @@
 
 #include <QObject>
 #include <QWidget>
+#include <QDockWidget>
 
 
 namespace Foundation
@@ -92,6 +93,11 @@ namespace Foundation
          *  @param widget Widget.
          */
         virtual void HideWidget(QWidget *widget) = 0;       
+
+		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
+         *  \param widget Name of the widget.
+         */
+		virtual QDockWidget* GetExternalMenuPanel(QString *widget) = 0;
     };
 }
 

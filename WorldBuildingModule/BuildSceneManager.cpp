@@ -1,3 +1,4 @@
+//$ HEADER_MOD_FILE $
 // For conditions of distribution and use, see copyright notice in license.txt
 
 #include "StableHeaders.h"
@@ -19,6 +20,11 @@
 #include <QDebug>
 
 #include "MemoryLeakCheck.h"
+
+//$ BEGIN_MOD $
+#include "UiExternalServiceInterface.h"
+#include <QString>
+//$ END_MOD $
 
 namespace WorldBuilding
 {
@@ -187,11 +193,33 @@ namespace WorldBuilding
         QString name_compare = name.toLower();
         if (name_compare == "components")
         {
-            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
-            widget->setWidget(0);
-            object_info_ui.components_layout->addWidget(tranfer_widgets_[name].first);
-            tranfer_widgets_[name].first->show();
-            scene_widget = false;
+			//$ BEGIN_MOD $
+			//$ MOD_DESCRIPTION If UiExternalService is available, we have to get EC Editor from the QDockWidget in spite of getting it from the Scene $
+			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+			if (uiExternal) {
+				//Get QDockWidget from the UiExternalService
+				QString *namewid = new QString("Entity-component Editor");
+				QDockWidget *aux = uiExternal->GetExternalMenuPanel(namewid);
+				if(aux) {
+					//Save it in the new variables and put it in the scene
+					QWidget *wid = aux->widget();
+					component_wid_.first = aux;
+					component_wid_.second = wid;					
+					object_info_ui.components_layout->addWidget(wid);
+					aux->setWidget(0);
+					wid->show();
+					scene_widget = false;					
+				}
+			}
+			else {
+				//If there is not UiExternalService, we get it from the scene
+				tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+				widget->setWidget(0);
+				object_info_ui.components_layout->addWidget(tranfer_widgets_[name].first);
+				tranfer_widgets_[name].first->show();
+				scene_widget = false;
+			}
+			//$ END_MOD $
         }
         else if (name_compare == "console")
         {
@@ -200,12 +228,31 @@ namespace WorldBuilding
         }
         else if (name_compare == "inventory")
         {
-            tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
-            widget->setWidget(0);
-            object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
-            tranfer_widgets_[name].first->show();
-            scene_widget = false;
-        }
+			//$ BEGIN_MOD $
+			//$ MOD_DESCRIPTION If UiExternalService is available, we have to get Inventory from the QDockWidget in spite of getting it from the Scene $
+			Foundation::UiExternalServiceInterface *uiExternal= framework_->GetService<Foundation::UiExternalServiceInterface>();
+			if (uiExternal) {
+				QString *namewid = new QString("Inventory");
+				QDockWidget *aux = uiExternal->GetExternalMenuPanel(namewid);
+				if(aux) {
+					QWidget *wid = aux->widget();
+					inventory_wid_.first = aux;
+					inventory_wid_.second = wid;
+					object_manip_ui.tab_widget->addTab(wid, name);
+					aux->setWidget(0);
+					wid->show();
+					scene_widget = false;
+				}
+			}
+			else {
+				tranfer_widgets_[name] = TransferPair(widget->widget(), widget);
+				widget->setWidget(0);
+				object_manip_ui.tab_widget->addTab(tranfer_widgets_[name].first, name);
+				tranfer_widgets_[name].first->show();
+				scene_widget = false;
+			}
+			//$ END_MOD $
+		}
 
         if (scene_widget)
         {
@@ -243,6 +290,12 @@ namespace WorldBuilding
         }
         tranfer_widgets_.clear();
         object_manip_ui.tab_widget->clear();
+
+		//$ BEGIN_MOD $
+		//$ MOD_DESCRIPTION We have to put the widgets in the QDockWidgets to use them in the external QMainWindow $
+		component_wid_.first->setWidget(component_wid_.second);
+		inventory_wid_.first->setWidget(inventory_wid_.second);
+
     }
 
     void BuildSceneManager::HandlePythonWidget(const QString &type, QWidget *widget)

@@ -490,6 +490,9 @@ void InventoryModule::CreateInventoryWindow()
 	if (uiex){
 		QWidget *aux = uiex->AddExternalPanel(inventoryWindow_,"Inventory");
 		uiex->AddExternalMenuPanel(aux,"Inventory", "Panels");
+		//Used to register as universal widget, to use it in WorldBuildingModule
+		UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);
+		ui->RegisterUniversalWidget("Inventory", inv_proxy);
 	}
 	else {
 		UiProxyWidget *inv_proxy = ui->AddWidgetToScene(inventoryWindow_);

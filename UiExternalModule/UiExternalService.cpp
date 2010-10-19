@@ -35,6 +35,10 @@ namespace UiExternalServices
 		return owner_->GetExternalMenuManager()->RemoveExternalMenuPanel(widget);
 	}
 
+	QDockWidget* UiExternalService::GetExternalMenuPanel(QString *widget){
+		return owner_->GetExternalPanelManager()->GetExternalMenuPanel(widget);
+	}
+
 	void UiExternalService::ShowWidget(QWidget *widget){
 		//find qdockwidget with this widget and make show()
 		owner_->GetExternalPanelManager()->ShowWidget(widget);	

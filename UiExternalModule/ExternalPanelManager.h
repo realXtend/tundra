@@ -34,6 +34,9 @@ namespace UiExternalServices
         //! Destructor.
         ~ExternalPanelManager();
 
+		//! Internal list of proxy widgets in scene.
+		QList<QDockWidget*> all_qdockwidgets_in_window_;
+
     public slots:
         /*! \brief	Adds widget to the main Window in a QDockWidget.
          *
@@ -63,18 +66,35 @@ namespace UiExternalServices
 		void ShowWidget(QWidget *widget);
 
 		/*! Hides the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
 		void HideWidget(QWidget *widget);
 
+		/*!Disable all the dockwidgets in the qmainwindow
+		 * 
+		 */
+		void DisableDockWidgets();
 
+		/*!Enable all the dockwidgets in the qmainwindow
+		 * 
+		 */
+		void EnableDockWidgets();
+
+		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable all QdockWidgets
+		 * \param old_name Old Scene
+		 * \param new_name New Scene
+		 */
+		void SceneChanged(const QString &old_name, const QString &new_name);
+
+		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
+         *  \param widget Name of the widget.
+         */
+		QDockWidget* GetExternalMenuPanel(QString *widget);
+		
     private:
 
         //! Pointer to main QMainWindow
         QMainWindow *qWin_;
-
-        //! Internal list of proxy widgets in scene.
-		QList<QDockWidget *> all_qdockwidgets_in_window_;
     };
 }
 

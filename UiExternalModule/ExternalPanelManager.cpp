@@ -27,6 +27,7 @@ namespace UiExternalServices
 
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setWidget(widget);
+		wid->setDisabled(true);
         if (!AddQDockWidget(wid))
         {
             SAFE_DELETE(wid);
@@ -81,4 +82,34 @@ namespace UiExternalServices
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
 			widget->parentWidget()->hide();		
 	}
+
+	void ExternalPanelManager::EnableDockWidgets(){
+		//Enable QDockWidgets
+		QDockWidget *s;
+		foreach( s , all_qdockwidgets_in_window_ )
+			s->setEnabled(true);
+	}
+
+	void ExternalPanelManager::DisableDockWidgets(){
+		//Disable QDockWidgets
+		QDockWidget *s;
+		foreach( s , all_qdockwidgets_in_window_ )
+			s->setEnabled(false);
+	}
+
+	void ExternalPanelManager::SceneChanged(const QString &old_name, const QString &new_name)
+    {
+        if (new_name == "Ether")
+			DisableDockWidgets();            
+    }
+
+	QDockWidget* ExternalPanelManager::GetExternalMenuPanel(QString *widget){
+		QDockWidget *s;
+		foreach( s , all_qdockwidgets_in_window_ )
+			if (s->windowTitle() == widget)
+				return s;
+		return false;
+
+	}
+
 }

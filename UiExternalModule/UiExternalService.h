@@ -71,8 +71,7 @@ namespace UiExternalServices
          */
 		bool AddExternalMenuAction(QAction *action, const QString &name, const QString &menu, const QString &icon = 0);
 
-		/*! TODO!!
-		 *	\brief	Remove the Action that is connected to the given widget
+		/*! \brief	Remove the Action that is connected to the given widget
          *  \param	widget widget.
          *  \return	true if everything is ok (Action deleted)
          *
@@ -81,14 +80,19 @@ namespace UiExternalServices
         bool RemoveExternalMenuPanel(QWidget *widget);
 
         /*! Shows the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
 		void ShowWidget(QWidget *widget);
 
 		/*! Hides the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
         void HideWidget(QWidget *widget);
+
+		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
+         *  \param widget Name of the widget.
+         */
+		QDockWidget* GetExternalMenuPanel(QString *widget);
 
     private:
         //! Owner UI module.

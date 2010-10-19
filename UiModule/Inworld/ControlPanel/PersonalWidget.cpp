@@ -25,7 +25,7 @@ namespace CoreUi
         CheckStyle(false, "avatarToggle");
 		//$ BEGIN_MOD $
 		//$ MOD_DESCRIPTION Commented to use the new EXTERNAL ui module $
-        // CheckStyle(false, "inventoryToggle");
+        //CheckStyle(false, "inventoryToggle");
 		//$ END_MOD $
     }
 
@@ -37,6 +37,9 @@ namespace CoreUi
     {
         inventory_widget_ = inventory_widget;
         connect(inventory_widget_, SIGNAL(Visible(bool)), SLOT(InventoryVisibilityChanged(bool)));
+		//$ BEGIN_MOD $
+		CheckStyle(false, "inventoryToggle");
+		//$ END_MOD $ 
     }
 
     void PersonalWidget::AvatarToggle()
@@ -90,7 +93,7 @@ namespace CoreUi
 
     void PersonalWidget::InventoryVisibilityChanged(bool visible)
     {
-        //ENNE CheckStyle(visible, "inventoryToggle");
+        CheckStyle(visible, "inventoryToggle");
     }
 
     void PersonalWidget::CheckStyle(bool pressed_down, QString type)

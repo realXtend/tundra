@@ -18,6 +18,7 @@
 #include "MainWindow.h"
 #include "IEventData.h"
 #include "UiServiceInterface.h"
+#include "LoginServiceInterface.h"
 
 #include <QObject>
 #include <QApplication>
@@ -98,6 +99,18 @@ namespace UiExternalServices
 
 	void UiExternalModule::createStaticContent()
 	{
+		//Get login handler and connect signals
+        Foundation::LoginServiceInterface *handler = framework_->GetService<Foundation::LoginServiceInterface>();
+		if (handler)
+		{
+			connect(handler, SIGNAL(LoginFailed(const QString &)), panel_manager_, SLOT(DisableDockWidgets()));
+			connect(handler, SIGNAL(LoginSuccessful()), panel_manager_, SLOT(EnableDockWidgets()));
+        }
+
+		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
+        if (ui_service) 
+            connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
+
 		//Create Static Toolbar
 		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
 		qWin_->addToolBar(staticToolBar_);
