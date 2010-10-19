@@ -25,6 +25,7 @@ class QObject;
 class ISoundService;
 class UiServiceInterface;
 class Frame;
+class Input;
 class AssetAPI;
 class ScriptConsole;
 
@@ -234,7 +235,7 @@ namespace Foundation
         void UnloadModules();
 
         //! Get main QApplication
-        NaaliApplication *GetNaaliApplication() const { return naaliApplication.get(); }
+        NaaliApplication *GetNaaliApplication() const;
 
         /** Returns module by class T.
             @param T class type of the module.
@@ -348,12 +349,6 @@ namespace Foundation
         //! Current 'default' scene
         Scene::ScenePtr default_scene_;
 
-        /// Naali implementation of the main QApplication object.
-        std::auto_ptr<NaaliApplication> naaliApplication;
-
-        /// Provides a pimpl-guard to hide all core API implementation code.
-        std::auto_ptr<FrameworkImpl> impl;
-
 #ifdef PROFILING
         //! profiler
         Profiler profiler_;
@@ -363,11 +358,6 @@ namespace Foundation
 
         //! program option descriptions
         boost::program_options::options_description cm_descriptions_;
-
-        NaaliUi *ui;
-
-        /// This object represents the Naali core Asset API.
-        AssetAPI *asset;
 
         //! command line arguments as supplied by the operating system
         int argc_;
@@ -382,11 +372,24 @@ namespace Foundation
         //! Sends log prints for multiple channels.
         Poco::SplitterChannel *splitterchannel;
 
+        /// Naali implementation of the main QApplication object.
+        NaaliApplication *naaliApplication;
+
         //! Exposes Naali framework's update tick.
-        Frame *frame_;
+        Frame *frame;
 
         //! Provides console access for scripting languages.
-        ScriptConsole *console_;
+        ScriptConsole *console;
+
+        //! The Naali UI API.
+        NaaliUi *ui;
+
+        //! The Naali Input API.
+        Input *input;
+
+        /// This object represents the Naali core Asset API.
+        AssetAPI *asset;
+
     };
 
     ///\todo Refactor-remove these. -jj.
