@@ -123,9 +123,6 @@ NaaliUi::NaaliUi(Foundation::Framework *owner_)
 
 NaaliUi::~NaaliUi()
 {
-    delete graphicsView;
-    delete graphicsScene;
-    delete mainWindow;    
 }
 
 NaaliMainWindow *NaaliUi::MainWindow() const

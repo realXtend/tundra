@@ -232,8 +232,9 @@ class ObjectEditWindow:
         try:
             ac = ent.animationcontroller
         except:
-            ent.createComponent('EC_AnimationController')
+            ent.GetOrCreateComponentRaw('EC_AnimationController')
             ac = ent.animationcontroller
+            ac.SetNetworkSyncEnabled(False)
             ac.SetMeshEntity(ent.mesh)
         # Update rest of the ui
         current_animation = ent.prim.AnimationName
