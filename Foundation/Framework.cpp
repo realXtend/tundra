@@ -46,16 +46,6 @@
 
 #include "MemoryLeakCheck.h"
 
-class FrameworkImpl
-{
-public:
-    explicit FrameworkImpl(Foundation::Framework *owner)
-    :input(owner)
-    {
-    }
-    Input input;
-};
-
 namespace Resource
 {
     namespace Events
@@ -90,9 +80,12 @@ namespace Foundation
         initialized_(false),
         log_formatter_(0),
         splitterchannel(0),
-        asset(0),
-        frame_(new Frame(this)),
-        console_(new ScriptConsole(this))
+        naaliApplication(0),
+        frame(new Frame(this)),
+        console(new ScriptConsole(this)),
+        ui(0),
+        input(0),
+        asset(0)
     {
         ParseProgramOptions();
         if (cm_options_.count("help")) 
@@ -148,7 +141,7 @@ namespace Foundation
             Resource::Events::RegisterResourceEvents(event_manager_);
             Task::Events::RegisterTaskEvents(event_manager_);
 
-            naaliApplication = std::auto_ptr<NaaliApplication>(new NaaliApplication(this, argc_, argv_));
+            naaliApplication = new NaaliApplication(this, argc_, argv_);
 
             initialized_ = true;
 
@@ -156,19 +149,18 @@ namespace Foundation
             asset = new AssetAPI(this);
             connect(ui->MainWindow(), SIGNAL(WindowCloseEvent()), this, SLOT(Exit()));
 
-            impl = std::auto_ptr<FrameworkImpl>(new FrameworkImpl(this));
+            input = new Input(this);
 
             RegisterDynamicObject("ui", ui);
-            RegisterDynamicObject("frame", frame_);
-            RegisterDynamicObject("input", &impl->input);
-            RegisterDynamicObject("console", console_);
+            RegisterDynamicObject("frame", frame);
+            RegisterDynamicObject("input", input);
+            RegisterDynamicObject("console", console);
             RegisterDynamicObject("asset", asset);
         }
     }
 
     Framework::~Framework()
     {
-        naaliApplication.reset();
         thread_task_manager_.reset();
         event_manager_.reset();
         service_manager_.reset();
@@ -187,8 +179,16 @@ namespace Foundation
         if (log_formatter_)
             log_formatter_->release();
 
-        SAFE_DELETE(ui);
-        SAFE_DELETE(asset);
+        delete frame;
+        delete console;
+        delete ui;
+        delete input;
+        delete asset;
+
+        // This delete must be the last one in Framework since naaliApplication derives QApplication.
+        // When we delete QApplication, we must have ensured that all QObjects have been deleted.
+        ///\bug Framework is itself a QObject and we should delete naaliApplication only after Framework has been deleted. A refactor is required.
+        delete naaliApplication;
     }
 
     void Framework::CreateLoggingSystem()
@@ -347,7 +347,7 @@ namespace Foundation
                 renderer.lock()->Render();
             }
 
-            frame_->Update(frametime);
+            frame->Update(frametime);
         }
 
         RESETPROFILER
@@ -369,14 +369,14 @@ namespace Foundation
     void Framework::Exit()
     {
         exit_signal_ = true;
-        if (naaliApplication.get())
+        if (naaliApplication)
             naaliApplication->AboutToExit();
     }
     
     void Framework::ForceExit()
     {
         exit_signal_ = true;
-        if (naaliApplication.get())
+        if (naaliApplication)
             naaliApplication->quit();
     }
     
@@ -407,6 +407,11 @@ namespace Foundation
         event_manager_->ClearDelayedEvents();
         module_manager_->UninitializeModules();
         module_manager_->UnloadModules();
+    }
+
+    NaaliApplication *Framework::GetNaaliApplication() const
+    { 
+        return naaliApplication;
     }
 
     Scene::ScenePtr Framework::CreateScene(const QString &name)
@@ -677,12 +682,12 @@ namespace Foundation
 
     Frame *Framework::GetFrame() const
     {
-        return frame_;
+        return frame;
     }
 
     Input *Framework::GetInput() const
     {
-        return &impl->input;
+        return input;
     }
 
     NaaliUi *Framework::Ui() const
@@ -697,7 +702,7 @@ namespace Foundation
 
     ScriptConsole *Framework::Console() const
     { 
-        return console_;
+        return console;
     }
 
     ISoundService *Framework::Audio() const
