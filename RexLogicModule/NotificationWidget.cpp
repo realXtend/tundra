@@ -2,7 +2,7 @@
 
 #include "StableHeaders.h"
 #include "NotificationWidget.h"
-#include "NaaliUI.h"
+#include "NaaliUi.h"
 #include "Framework.h"
 #include "Renderer.h"
 
