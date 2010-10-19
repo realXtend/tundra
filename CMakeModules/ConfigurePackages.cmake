@@ -455,7 +455,11 @@ endmacro()
 
 macro(use_package_bullet)
     if ("$ENV{BULLET_DIR}" STREQUAL "")
-       set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/Bullet)
+       if (WIN32)
+          set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/Bullet)
+       else # todo: This should be temporary? Always just use the above directory.
+          set(BULLET_DIR ${ENV_NAALI_DEP_PATH}/bullet-2.77)
+       endif()        
     else()           
        set(BULLET_DIR $ENV{BULLET_DIR})
     endif()
