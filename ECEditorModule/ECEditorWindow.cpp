@@ -12,6 +12,7 @@
 #include "ECEditorModule.h"
 #include "ECBrowser.h"
 #include "EntityPlacer.h"
+#include "AddComponentDialog.h"
 
 #include "ModuleManager.h"
 #include "SceneManager.h"
@@ -22,6 +23,7 @@
 #include "EventManager.h"
 #include "EC_Placeable.h"
 #include "AddComponentDialog.h"
+#include "Input.h"
 
 #include <QUiLoader>
 #include <QDomDocument>
@@ -98,7 +100,8 @@ namespace ECEditor
         framework_(framework),
         toggle_entities_button_(0),
         entity_list_(0),
-        browser_(0)
+        browser_(0),
+        component_dialog_(0)
     {
         Initialize();
     }
@@ -111,14 +114,21 @@ namespace ECEditor
     {
         if (entity_list_)
         {
-            //If entity don't have EC_Name component, then use it's id as name.
+            //If entity don't have EC_Name then entity_name is same as it's id.
             QString entity_name = QString::number(entity_id);
             Scene::EntityPtr entity = framework_->GetDefaultWorldScene()->GetEntity(entity_id);
             if(entity && entity->HasComponent("EC_Name"))
                 entity_name = dynamic_cast<EC_Name*>(entity->GetComponent("EC_Name").get())->name.Get();
             entity_id_to_name_.insert(QString::number(entity_id), entity_name);
 
-            entity_list_->setCurrentRow(AddUniqueListItem(entity_list_, entity_name));
+            //! @todo This will now work if we loose windows focus and previos key state stays, replace this with InputContext.
+            if(!framework_->GetInput()->IsKeyDown(Qt::Key_Control))
+                entity_list_->clearSelection();
+
+            int row = AddUniqueListItem(entity_list_, entity_name);
+            QListWidgetItem *item = entity_list_->item(row);
+            // Toggle selection.
+            item->setSelected(!item->isSelected());
         }
     }
 
@@ -216,29 +226,6 @@ namespace ECEditor
             connect(component_dialog_, SIGNAL(finished(int)), this, SLOT(ComponentDialogFinnished(int)));
             component_dialog_->show();
         }
-        /*bool ok;
-        QString typeName = QInputDialog::getItem(this, tr("Create Component"), tr("Component:"), GetAvailableComponents(), 0, false, &ok);
-        if (!ok || typeName.isEmpty())
-            return;
-        QString name = QInputDialog::getText(this, tr("Set component name (optional)"), tr("Name:"), QLineEdit::Normal, QString(), &ok);
-        if (!ok)
-            return;
-
-        foreach(Scene::EntityPtr entity, GetSelectedEntities())
-        {
-            ComponentPtr comp = entity->GetComponent(typeName, name);
-            // Check if component has been already added to a entity.
-            if(comp.get())
-                continue;
-            // We (mis)use the GetOrCreateComponent function to avoid adding the same EC multiple times, since identifying multiple EC's of similar type
-            // is problematic with current API
-            if(!name.isEmpty())
-                comp = framework_->GetComponentManager()->CreateComponent(typeName, name);
-            else
-                comp = framework_->GetComponentManager()->CreateComponent(typeName); 
-            if (comp)
-                entity->AddComponent(comp, AttributeChange::Default);
-        }*/
     }
 
     void ECEditorWindow::DeleteEntity()
@@ -655,7 +642,7 @@ namespace ECEditor
                 Scene::ScenePtr scene = framework_->GetDefaultWorldScene();
                 if(!scene)
                 {
-                    //Add log warning.
+                    ECEditorModule::LogWarning("Fail to add new component to entity, since default world scene was null");
                     return;
                 }
                 QList<entity_id_t> entities = dialog->GetEntityIds();
@@ -664,19 +651,20 @@ namespace ECEditor
                     Scene::EntityPtr entity = scene->GetEntity(entities[i]);
                     if(!entity)
                     {
-                        //Add log warning
+                        ECEditorModule::LogWarning("Fail to add new component to entity, since couldn't find a entity with ID:" + ::ToString<entity_id_t>(entities[i]));
                         continue;
                     }
                     ComponentPtr comp = entity->GetComponent(dialog->GetTypename(), dialog->GetName());
                     // Check if component has been already added to a entity.
                     if(comp)
                     {
-                        //Add log warning
+                        ECEditorModule::LogWarning("Fail to add a new component, cause there was already a component with a same name and a type");
                         continue;
                     }
                     comp = framework_->GetComponentManager()->CreateComponent(dialog->GetTypename(), dialog->GetName());
+                    comp->SetNetworkSyncEnabled(dialog->GetSynchronization());
                     if (comp)
-                        entity->AddComponent(comp, dialog->GetSynchronization());
+                        entity->AddComponent(comp, AttributeChange::Default);
                 }
             }
         }
