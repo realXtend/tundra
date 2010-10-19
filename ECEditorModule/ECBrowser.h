@@ -8,6 +8,7 @@
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
 #include "ComponentGroup.h"
+#include "AttributeChangeType.h"
 
 #include <QtTreePropertyBrowser>
 #include <map>
@@ -133,17 +134,17 @@ namespace ECEditor
         //! QTreeWidget has changed it's focus and we need to highlight new entities from the editor window.
         void SelectionChanged();
 
-        //! a new component have been added to entity.
-        /*! @param entity Entity that owns the component
-         *  @param comp a new component that has added into the entity.
+        //! Called when a new component have been added to a entity.
+        /*! @param comp a new component that has added into the entity.
+         *  @param type attribute change type
          */
-        void NewComponentAdded(Scene::Entity* entity, IComponent* comp);
+        void OnComponentAdded(IComponent* comp, AttributeChange::Type type);
 
-        //! Component have been removed from the entity.
-        /*! @param entity Entity that owns the component
-         *  @param comp Component that is planned to be removed from the entity.
+        //! Called when component have been removed from the entity.
+        /*! @param comp Component that will soon get removed from the entity.
+         *  @param type attribute change type
          */
-        void ComponentRemoved(Scene::Entity* entity, IComponent* comp);
+        void OnComponentRemoved(IComponent* comp, AttributeChange::Type type);
 
         //! User has selected xml edit action from a QMenu.
         void OpenComponentXmlEditor();
@@ -178,9 +179,6 @@ namespace ECEditor
         ComponentGroupList componentGroups_;
         typedef QList<Scene::EntityWeakPtr> EntityWeakPtrList;
         EntityWeakPtrList entities_;
-        //! @todo It's dangerous to hold entity raw pointers replace to weak pointers when have time.
-        /*typedef std::set<Scene::Entity *> EntitySet;
-        EntitySet selectedEntities_;*/
         QMenu *menu_;
         QTreeWidget *treeWidget_;
         Foundation::Framework *framework_;

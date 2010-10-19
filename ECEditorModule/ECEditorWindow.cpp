@@ -205,11 +205,8 @@ namespace ECEditor
     
     void ECEditorWindow::CreateComponent()
     {
-        if(component_dialog_)
-            component_dialog_->deleteLater();
-
         QList<Scene::EntityPtr> entities = GetSelectedEntities();
-        if(entities.size())//selectedEntities_.size())
+        if(entities.size())
         {
             QList<entity_id_t> entity_ids;
             for(uint i = 0; i < entities.size(); i++)
@@ -317,7 +314,6 @@ namespace ECEditor
                         if(attribute)
                             attribute->FromString(attributes[j]->ToString(), AttributeChange::Default);
                     }
-                    //component->ComponentChanged(AttributeChange::Default);
                 }
             }
             if(hasPlaceable)
@@ -381,13 +377,6 @@ namespace ECEditor
         // Check what entities need to get removed and what need to get added to borwser.
         QList<Scene::EntityPtr>::iterator iter1 = old_entities.begin();
         QList<Scene::EntityPtr>::iterator iter2 = entities.begin();
-        std::cout << "New List:" << std::endl;
-        foreach(Scene::EntityPtr ent, entities)
-            std::cout << ToString<entity_id_t>(ent->GetId()) << std::endl;
-        std::cout << "Old List:" << std::endl;
-        foreach(Scene::EntityPtr ent, old_entities)
-            std::cout << ToString<entity_id_t>(ent->GetId()) << std::endl;
-
         while(iter1 != old_entities.end() || iter2 != entities.end())
         {
             // No point to continue the iteration if old_entities list is empty. We can just push all new entitites into the browser.
@@ -534,14 +523,9 @@ namespace ECEditor
 
     void ECEditorWindow::EntityRemoved(Scene::Entity* entity)
     {
-        /*EntityIdSet::iterator iter = selectedEntities_.find(entity->GetId());
-        if(iter != selectedEntities_.end())
-            selectedEntities_.erase(iter);*/
-
         QList<QListWidgetItem*> items = entity_list_->findItems(QString::number(entity->GetId()), Qt::MatchExactly);
         for(uint i = 0; i < items.size(); i++)
             SAFE_DELETE(items[i]);
-        //RefreshPropertyBrowser();
     }
 
     void ECEditorWindow::hideEvent(QHideEvent* hide_event)
@@ -635,10 +619,7 @@ namespace ECEditor
             QObject::connect(browser_, SIGNAL(ComponentSelected(IComponent *)), 
                              this, SLOT(HighlightEntities(IComponent *)));
         }
-/*
-        if (component_list_ && browser_)
-            connect(browser_, SIGNAL(AttributesChanged()), this, SLOT(RefreshComponentXmlData()));
-*/
+
         if (entity_list_)
         {
             entity_list_->setSelectionMode(QAbstractItemView::ExtendedSelection);
@@ -750,4 +731,3 @@ namespace ECEditor
         return ret;
     }
 }
-
