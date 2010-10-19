@@ -11,6 +11,8 @@ file (GLOB MOC_FILES OgreAssetEditorModule.h EditorManager.h OgreScriptEditor.h 
 file (GLOB RESOURCE_FILES resource/*.qrc)
 set (SOURCE_FILES ${CPP_FILES} ${H_FILES})
 
+add_definitions (-DASSET_EDITOR_MODULE_EXPORTS)
+
 # Qt4 Moc files to subgroup "CMake Moc"
 MocFolder ()
 

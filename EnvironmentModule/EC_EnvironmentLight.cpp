@@ -272,9 +272,7 @@ namespace Environment
     
     void EC_EnvironmentLight::UpdateTime()
     {
-        if ( caelumSystem_ == 0)
-            return;
-
+     
         float time = currentTimeAttr.Get();
 
         if (time < 0.0)
@@ -287,6 +285,10 @@ namespace Environment
         int seconds = ((int)(time * 24.0*60.0*60.0)) % 60;
     
 #ifdef CAELUM
+        
+        if ( caelumSystem_ == 0)
+            return;
+
         // Note: we actually don't use year/month/day, because then worlds would look different
         // based on real-life time of year
         caelumSystem_->getUniversalClock()->setGregorianDateTime(
