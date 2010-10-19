@@ -27,7 +27,6 @@ namespace UiExternalServices
     {
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setWidget(widget);
-		wid->setDisabled(true);
         if (!AddQDockWidget(wid))
         {
             SAFE_DELETE(wid);
@@ -40,8 +39,6 @@ namespace UiExternalServices
     {
 		if (all_qdockwidgets_in_window_.contains(widget))
 			return false;
-		//TODO Check if it is in menuBar???
-
 
         //Configure zones for the dockwidget
 		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
