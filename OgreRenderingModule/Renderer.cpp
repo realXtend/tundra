@@ -32,8 +32,8 @@
 
 #ifdef USE_D3D9_SUBSURFACE_BLIT
 #include <d3d9.h>
-#include <RenderSystems/Direct3D9/include/OgreD3D9HardwarePixelBuffer.h>
-#include <RenderSystems/Direct3D9/include/OgreD3D9RenderWindow.h>
+#include <OgreD3D9HardwarePixelBuffer.h>
+#include <OgreD3D9RenderWindow.h>
 #endif
 
 #include <QApplication>
