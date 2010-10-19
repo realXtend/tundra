@@ -38,38 +38,50 @@ namespace ECEditor
         clear();
     }
 
-    void ECBrowser::AddNewEntity(Scene::Entity *entity)
+    void ECBrowser::AddEntity(Scene::EntityPtr entity)
     {
         PROFILE(ECBrowser_AddNewEntity);
 
         assert(entity);
         if(!entity)
             return;
-        if(selectedEntities_.find(entity) != selectedEntities_.end())
+
+        //If entity is already added to browser no point to continue.
+        if(HasEntity(entity))
             return;
+        entities_.push_back(Scene::EntityPtr(entity));
 
-        selectedEntities_.insert(entity);
+        //! @todo merge entity.h and entity.cpp from tundra to develope and begin to use their ComponentAdded and ComponentRemoved signals.
+        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
 
-        connect(entity->GetScene(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
-
-        connect(entity->GetScene(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
+        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 
-    void ECBrowser::RemoveEntity(Scene::Entity *entity)
+    void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
     {
-        PROFILE(ECBrowser_RemoveEntity);
-
-        if(!entity)
-            return;
-        if(selectedEntities_.find(entity) == selectedEntities_.end())
+        if (!entity)
             return;
 
-        Scene::Entity::ComponentVector components = entity->GetComponentVector();
-        for(uint i = 0; i < components.size(); i++)
-            RemoveComponentFromGroup(components[i].get());
-        selectedEntities_.erase(entity);
+        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
+        {
+            if (!(*iter).expired() && (*iter).lock().get() == entity.get())
+            {
+                Scene::Entity::ComponentVector components = (*iter).lock()->GetComponentVector();
+                for(uint i = 0; i < components.size(); i++)
+                    RemoveComponentFromGroup(components[i].get());
+                entities_.erase(iter);
+                break;
+            }
+        }
+    }
+
+    QList<Scene::EntityPtr> ECBrowser::GetEntities() const
+    {
+        QList<Scene::EntityPtr> ret;
+        for(uint i = 0; i < entities_.size(); i++)
+            if(!entities_[i].expired())
+                ret.push_back(entities_[i].lock());
+        return ret;
     }
 
     void ECBrowser::clear()
@@ -79,7 +91,7 @@ namespace ECEditor
             SAFE_DELETE(componentGroups_.back())
             componentGroups_.pop_back();
         }
-        selectedEntities_.clear();
+        entities_.clear();
         QtTreePropertyBrowser::clear();
     }
 
@@ -90,26 +102,18 @@ namespace ECEditor
         // Sorting tend to be heavy operation so we disable it until we have made all changes to a ui.
         if(treeWidget_)
             treeWidget_->setSortingEnabled(false);
-        EntitySet::iterator iter = selectedEntities_.begin();
-        for(;iter != selectedEntities_.end(); iter++)
-        {
-            const Scene::Entity::ComponentVector components = (*iter)->GetComponentVector();
-            for(uint i = 0; i < components.size(); i++)
-            {
-                AddNewComponentToGroup(components[i]);
-            }
-        }
 
-        // Update component editors ui.
-        /*ComponentGroupList::iterator compIter = componentGroups_.begin();
-        for(; compIter != componentGroups_.end(); compIter++)
+        for(EntityWeakPtrList::iterator iter = entities_.begin(); iter != entities_.end(); iter++)
         {
-            (*compIter)->editor_->UpdateEditorUI();
-        }*/
+            if((*iter).expired())
+                continue;
+
+            const Scene::Entity::ComponentVector components = (*iter).lock()->GetComponentVector();
+            for(uint i = 0; i < components.size(); i++)
+                AddNewComponentToGroup(components[i]);
+        }
         if(treeWidget_)
             treeWidget_->setSortingEnabled(true);
-        /*if(treeWidget_)
-            treeWidget_->sortItems(0, Qt::AscendingOrder);*/
     }
 
     void ECBrowser::dragEnterEvent(QDragEnterEvent *event)
@@ -413,13 +417,10 @@ namespace ECEditor
         }
     }
     
-    void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
+    void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
     {
-        PROFILE(ECBrowser_NewComponentAdded);
-
-        EntitySet::iterator iter = selectedEntities_.find(entity);
-        // We aren't interested in entities that aren't selected.
-        if(iter == selectedEntities_.end())
+        Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+        if(!HasEntity(entity_ptr))
             return;
 
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
@@ -428,16 +429,15 @@ namespace ECEditor
             if((*iterComp)->ContainsComponent(comp))
                 return;
         }
-        ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+        ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
         AddNewComponentToGroup(componentPtr);
     }
 
-    void ECBrowser::ComponentRemoved(Scene::Entity* entity, IComponent* comp)
+    void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
     {
-        EntitySet::iterator iter = selectedEntities_.find(entity);
-        // We aren't interested in entities that aren't selected.
-        if(iter == selectedEntities_.end())
+        Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
+        if(!HasEntity(entity_ptr))
             return;
 
         ComponentGroupList::iterator iterComp = componentGroups_.begin();
@@ -446,7 +446,7 @@ namespace ECEditor
             if(!(*iterComp)->ContainsComponent(comp))
                 continue;
             
-            ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
             assert(componentPtr.get());
             RemoveComponentFromGroup(comp);
             return;
@@ -516,27 +516,27 @@ namespace ECEditor
             // Only single component can be pasted.
             //! @todo add suport to multi component copy/paste feature.
             QDomElement comp_elem = temp_doc.firstChildElement("component");
-            EntitySet::iterator iter = selectedEntities_.begin();
-            while(iter != selectedEntities_.end())
+            
+            for(EntityWeakPtrList::iterator iter = entities_.begin();
+                iter != entities_.end();
+                iter++)
             {
+                if((*iter).expired())
+                    continue;
+                Scene::EntityPtr entity_ptr = (*iter).lock();
+
                 ComponentPtr component;
                 QString type = comp_elem.attribute("type");
                 QString name = comp_elem.attribute("name");
-                if(!(*iter)->HasComponent(type, name))
+                if(!entity_ptr->HasComponent(type, name))
                 {
                     component = framework_->GetComponentManager()->CreateComponent(type, name);
-                    (*iter)->AddComponent(component, AttributeChange::Default);
+                    entity_ptr->AddComponent(component, AttributeChange::Default);
                 }
                 else
-                    component = (*iter)->GetComponent(type, name);
-                if(!component.get())
-                {
-                    iter++;
-                    continue;
-                }
+                    component = entity_ptr->GetComponent(type, name);
                 component->DeserializeFrom(comp_elem, AttributeChange::Default);
                 //component->ComponentChanged(AttributeChange::Default);
-                iter++;
             }
         }
     }
@@ -797,12 +797,23 @@ namespace ECEditor
         ComponentGroupList::iterator iter = componentGroups_.begin();
         for(; iter != componentGroups_.end(); iter++)
         {
-            if(componentGroup != (*iter))
+            if (componentGroup != (*iter))
                 continue;
 
             SAFE_DELETE(*iter)
             componentGroups_.erase(iter);
             break;
         }
+    }
+
+    bool ECBrowser::HasEntity(Scene::EntityPtr entity) const
+    {
+        //assert(entity);
+        for(uint i = 0; i < entities_.size(); i++)
+        {
+            if(!entities_[i].expired() && entities_[i].lock().get() == entity.get())
+                return true;
+        }
+        return false;
     }
 }

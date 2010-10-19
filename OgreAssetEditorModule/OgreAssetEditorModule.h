@@ -11,6 +11,7 @@
 
 #include "IModule.h"
 #include "ModuleLoggingFunctions.h"
+#include "OgreAssetEditorModuleApi.h"
 
 #include <QObject>
 
@@ -28,7 +29,7 @@ namespace Inventory
 class MaterialWizard;
 class EditorManager;
 
-class OgreAssetEditorModule : public QObject, public IModule
+class ASSET_EDITOR_MODULE_API OgreAssetEditorModule : public QObject, public IModule
 {
     Q_OBJECT
 

@@ -340,9 +340,9 @@ namespace Scene
         QDomElement scene_elem = scene_doc.createElement("scene");
 
         for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if (iter->second.get())
+            if ((iter->second.get()) && (!iter->second->IsTemporary()))
                 iter->second->SerializeToXML(scene_doc, scene_elem);
-        
+
         scene_doc.appendChild(scene_elem);
         
         QByteArray bytes = scene_doc.toByteArray();
@@ -392,12 +392,18 @@ namespace Scene
         bytes.resize(4 * 1024 * 1024);
         DataSerializer dest(bytes.data(), bytes.size());
         
-        dest.Add<u32>(entities_.size());
-        
+        // Count non-temporary entities
+        uint num_entities = 0;
         for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
-            if (iter->second.get())
+            if ((iter->second.get()) && (!iter->second->IsTemporary()))
+                num_entities++;
+
+        dest.Add<u32>(num_entities);
+
+        for(EntityMap::iterator iter = entities_.begin(); iter != entities_.end(); ++iter)
+            if ((iter->second.get()) && (!iter->second->IsTemporary()))
                 iter->second->SerializeToBinary(dest);
-        
+
         bytes.resize(dest.BytesFilled());
         QFile scenefile(filename.c_str());
         if (scenefile.open(QFile::WriteOnly))

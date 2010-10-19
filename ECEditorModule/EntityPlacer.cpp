@@ -14,7 +14,7 @@ namespace ECEditor
 EntityPlacer::EntityPlacer(Foundation::Framework *framework, entity_id_t entityId, QObject *parent):
     framework_(framework),
     QObject(parent),
-    finnished_(false),
+    finished_(false),
     useCustomMesh_(false),
     meshEntity_(0),
     previousScrollValue_(0)
@@ -78,8 +78,8 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
     if(mouse->eventType == MouseEvent::MousePressed && mouse->button == MouseEvent::LeftButton)
     {
         deleteLater();
-        emit Finnished(location_, orientation_);
-        finnished_ =  true;
+        emit Finished(location_, orientation_);
+        finished_ =  true;
     }
     else if(mouse->eventType == MouseEvent::MouseScroll)
     {
@@ -90,7 +90,7 @@ void EntityPlacer::OnMouseEvent(MouseEvent *mouse)
 void EntityPlacer::MouseMove(MouseEvent *mouse)
 {
     Vector3df result;
-    if(DoRayCast(mouse->x, mouse->y, result) && !finnished_)
+    if(DoRayCast(mouse->x, mouse->y, result) && !finished_)
     {
         location_ = result;
         if(placeable_)

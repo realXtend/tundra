@@ -5,6 +5,7 @@
 #include "EC_Mesh.h"
 #include "EC_Placeable.h"
 #include "EC_RigidBody.h"
+#include "EC_Terrain.h"
 #include "PhysicsModule.h"
 #include "PhysicsWorld.h"
 #include "MemoryLeakCheck.h"
@@ -96,6 +97,12 @@ Console::CommandResult PhysicsModule::ConsoleAutoCollisionMesh(const StringVecto
         {
             EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
             body->SetShapeFromVisibleMesh();
+        }
+        // Terrain mode: assign if no rigid body, but there is a terrain component
+        if ((!entity->GetComponent<EC_RigidBody>()) && (entity->GetComponent<Environment::EC_Terrain>()))
+        {
+            EC_RigidBody* body = checked_static_cast<EC_RigidBody*>(entity->GetOrCreateComponent(EC_RigidBody::TypeNameStatic(), "", AttributeChange::Default).get());
+            body->shapeType.Set(EC_RigidBody::Shape_HeightField, AttributeChange::Default);
         }
     }
     
