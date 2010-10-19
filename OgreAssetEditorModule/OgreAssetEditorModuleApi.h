@@ -10,7 +10,7 @@
 #define ASSET_EDITOR_MODULE_API __declspec(dllimport) 
 #endif
 #else
-#define ASSETEDITOR_MODULE_API
+#define ASSET_EDITOR_MODULE_API
 #endif
 
 #endif
