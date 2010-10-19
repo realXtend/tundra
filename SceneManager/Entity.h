@@ -257,6 +257,16 @@ namespace Scene
         */
         AttributeVector GetAttributes(const std::string &name) const;
 
+    signals:
+        //! A component has been added to the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentAdded(IComponent* component, AttributeChange::Type change);
+        
+        //! A component has been removed from the entity
+        /*! Note: when this signal is received on new entity creation, the attributes might not be filled yet!
+         */ 
+        void ComponentRemoved(IComponent* component, AttributeChange::Type change);
     public slots:
         IComponent* GetComponentRaw(const QString &type_name) const { return GetComponent(type_name).get(); }
         IComponent* GetComponentRaw(const QString &type_name, const QString &name) const { return GetComponent(type_name, name).get(); }
@@ -295,8 +305,18 @@ namespace Scene
         //! \param name name of the component
         bool HasComponent(const QString &type_name, const QString &name) const;
 
+        //! Sets name of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param name Name.
+        */
+        void SetName(const QString &name);
+
         //! Returns name of this entity if EC_Name is available, empty string otherwise.
         QString GetName() const;
+
+        //! Sets description of the entity to EC_Name component. If the component doesn't exist, it will be created.
+        /*! @param desc Description.
+        */
+        void SetDescription(const QString &desc);
 
         //! Returns description of this entity if EC_Name is available, empty string otherwise.
         QString GetDescription() const;

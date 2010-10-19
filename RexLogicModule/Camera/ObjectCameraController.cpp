@@ -170,6 +170,7 @@ namespace RexLogic
                 selected_entity_ = entity;
                 
                 vectors_lookat_.second = entity_ec_placable->GetPosition();
+                emit FocusOnObject();
 
                 QCursor *current_cur = QApplication::overrideCursor();
                 if (current_cur)
