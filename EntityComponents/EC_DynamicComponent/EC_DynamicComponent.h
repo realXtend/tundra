@@ -107,7 +107,7 @@ public:
         {
             IAttribute *attribute = new Attribute<T>(this, name.toStdString().c_str());
             AttributeChanged(attribute, change);
-            emit AttributeAdded(name);
+            emit AttributeAdded(attribute);
         }
     }
 

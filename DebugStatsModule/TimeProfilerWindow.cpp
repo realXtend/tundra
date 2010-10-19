@@ -27,7 +27,7 @@
 //#include "GenericMessageUtils.h"
 
 #include <utility>
-
+#include <TexturePreviewEditor.h>
 #include <QVBoxLayout>
 #include <QTreeWidget>
 #include <QUiLoader>
@@ -318,12 +318,18 @@ void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
+    TexturePreviewEditor* ed = new TexturePreviewEditor(framework_,this);
+    ed->OpenOgreTexture(item->text(0));
+    ed->show();
+
+    /*
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
     boost::shared_ptr<Foundation::EventManager> event_manager_ = framework_->GetEventManager();
     if ( event_manager_ != 0 )
     {
         event_manager_->SendEvent(asset_event_category_,Asset::Events::ASSET_OPEN, &open);
     }
+    */
 
 }
 

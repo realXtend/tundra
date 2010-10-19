@@ -23,7 +23,11 @@
 
 #include <QMap>
 #include <QSet>
+
+#include <QListWidgetItem>
 #include <QPointer>
+#include "Entity.h"
+
 #include <QWidget>
 
 extern std::vector<std::string> AttributeTypenames;
@@ -46,10 +50,26 @@ namespace ECEditor
     class ECBrowser;
     class AddComponentDialog;
 
-    /// Entity-component editor window.
-    /** @todo add description.
-        \ingroup ECEditorModuleClient.
-    */
+    //! EntityListWidgetItem contains entity pointer as QPointer. Class is used to identifie a right item using a entity id.
+    //! \ingroup ECEditorModuleClient.
+    class EntityListWidgetItem: public QListWidgetItem
+    {
+    public:
+        EntityListWidgetItem(const QString &name, QListWidget *list, Scene::Entity *entity):
+            QListWidgetItem(name, list),
+            entity_ptr_(entity)
+        {
+        }
+        QPointer<Scene::Entity> GetEntity() const {return entity_ptr_;}
+    private:
+        //Weak pointer to entity switch will get released and setted to null when QObject's destructor is called.
+        QPointer<Scene::Entity> entity_ptr_;
+    };
+    
+    //! ECEditorWindow
+    /*! /todo add description.
+     *  \ingroup ECEditorModuleClient.
+     */
     class ECEDITOR_MODULE_API ECEditorWindow : public QWidget
     {
         Q_OBJECT
@@ -152,9 +172,10 @@ namespace ECEditor
         void SceneAdded(const QString &name);
         
         //When user have pressed ok or cancel button in component dialog this mehtod is called.
-        void ComponentDialogFinnished(int result);
+        void ComponentDialogFinished(int result);
 
     private:
+        /// Find given entity from the QListWidget and if it's found, bold QListWidgetItem's font.
         void BoldEntityListItem(entity_id_t, bool bold = true);
         /// Initializes the widget.
         void Initialize();
@@ -163,7 +184,7 @@ namespace ECEditor
         QStringList GetAvailableComponents() const;
 
         /// Returns list of selected entities.
-        std::vector<Scene::EntityPtr> GetSelectedEntities() const;
+        QList<Scene::EntityPtr> GetSelectedEntities() const;
 
         /// Framework pointer.
         Foundation::Framework *framework_;
@@ -171,9 +192,6 @@ namespace ECEditor
         QPushButton* toggle_entities_button_;
         QListWidget* entity_list_;
         ECBrowser *browser_;
-        typedef QMap<QString, QString> EntityIdToNameMap;
-        /// To keep book what entity_id belongs to switch name.
-        EntityIdToNameMap entity_id_to_name_;
         typedef QSet<entity_id_t> EntityIdSet;
         EntityIdSet selectedEntities_;
         QPointer<AddComponentDialog> component_dialog_;

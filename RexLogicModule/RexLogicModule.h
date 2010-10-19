@@ -78,6 +78,7 @@ namespace RexLogic
     class LoginHandler;
     class ObjectCameraController;
     class CameraControl;
+    class NotificationWidget;
 
     namespace InWorldChat { class Provider; }
 
@@ -86,6 +87,7 @@ namespace RexLogic
     typedef boost::shared_ptr<CameraControllable> CameraControllablePtr;
     typedef boost::shared_ptr<ObjectCameraController> ObjectCameraControllerPtr;
     typedef boost::shared_ptr<CameraControl> CameraControlPtr;
+    typedef boost::shared_ptr<NotificationWidget> NotificationWidgetPtr;
 
     //! Camera states handled by rex logic
     enum CameraState
@@ -365,6 +367,8 @@ namespace RexLogic
     public:
         //! Creates a new camera entity to the scene.
         void CreateOpenSimViewerCamera(Scene::ScenePtr scene, bool tundra_mode);
+
+        NotificationWidgetPtr notification_widget_;
 
     private slots:
         /** Called when new component is added to the active scene.

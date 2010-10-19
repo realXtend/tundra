@@ -26,14 +26,16 @@ namespace Scene
 {
     Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
         framework_(framework),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
     
     Entity::Entity(Foundation::Framework* framework, uint id, SceneManager* scene) :
         framework_(framework),
         id_(id),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
 
@@ -293,12 +295,12 @@ namespace Scene
         const Scene::Entity::ComponentVector &components = GetComponentVector();
         uint num_serializable = 0;
         for(uint i = 0; i < components.size(); ++i)
-            if (components[i]->IsSerializable())
+            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
                 num_serializable++;
         dst.Add<u32>(num_serializable);
         for(uint i = 0; i < components.size(); ++i)
         {
-            if (components[i]->IsSerializable())
+            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
             {
                 dst.Add<u32>(components[i]->TypeNameHash());
                 dst.AddString(components[i]->Name().toStdString());
@@ -332,7 +334,7 @@ namespace Scene
 
         const Scene::Entity::ComponentVector &components = GetComponentVector();
         for(uint i = 0; i < components.size(); ++i)
-            if (components[i]->IsSerializable())
+            if ((components[i]->IsSerializable()) && (!components[i]->IsTemporary()))
                 components[i]->SerializeTo(doc, entity_elem);
 
         base_element.appendChild(entity_elem);
@@ -465,5 +467,10 @@ namespace Scene
         }
 
         return true;
+    }
+    
+    void Entity::SetTemporary(bool enable)
+    {
+        temporary_ = enable;
     }
 }
