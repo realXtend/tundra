@@ -89,6 +89,9 @@ namespace RexLogic
 
         void Update(float);
 
+    signals:
+        void FocusOnObject();
+
     private:
         //! Current subscribed category events
         QMap<QString, event_category_id_t> service_category_identifiers_;
