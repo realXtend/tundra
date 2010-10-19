@@ -1,10 +1,3 @@
-macro (MocFolder)
-    file (GLOB MOCS_TO_SOURCE_GROUP *.cxx */*.cxx)
-    source_group ("CMake Moc" FILES ${MOCS_TO_SOURCE_GROUP})
-endmacro (MocFolder)
-
-##############
-
 # Define target name and output directory
 init_target (PhysicsModule OUTPUT modules/core)
 
@@ -59,6 +52,8 @@ if (MSVC)
     endforeach(src_file ${CPP_FILES})
 endif (MSVC)
 
+if (WIN32)
 target_link_libraries (${TARGET_NAME} ws2_32.lib)
+endif()
 
 final_target ()
