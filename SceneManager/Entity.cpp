@@ -21,14 +21,16 @@ namespace Scene
 {
     Entity::Entity(Foundation::Framework* framework, SceneManager* scene) :
         framework_(framework),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
     
     Entity::Entity(Foundation::Framework* framework, uint id, SceneManager* scene) :
         framework_(framework),
         id_(id),
-        scene_(scene)
+        scene_(scene),
+        temporary_(false)
     {
     }
 
@@ -327,5 +329,10 @@ namespace Scene
         }
 
         return true;
+    }
+    
+    void Entity::SetTemporary(bool enable)
+    {
+        temporary_ = enable;
     }
 }
