@@ -11,8 +11,9 @@
 
 namespace UiExternalServices
 {
-    ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
-          qWin_(qWin)
+	ExternalPanelManager::ExternalPanelManager(QMainWindow *qWin):
+          qWin_(qWin),
+		  edit_mode_(false)
     {
         assert(qWin_);
 		//Define QDockAreas allowed, or configuration staff
@@ -24,7 +25,6 @@ namespace UiExternalServices
 
 	QWidget* ExternalPanelManager::AddExternalPanel(QWidget *widget, QString title, Qt::WindowFlags flags)
     {
-
         QDockWidget *wid = new QDockWidget(title, qWin_, flags);
 		wid->setWidget(widget);
 		wid->setDisabled(true);
@@ -41,6 +41,7 @@ namespace UiExternalServices
 		if (all_qdockwidgets_in_window_.contains(widget))
 			return false;
 		//TODO Check if it is in menuBar???
+
 
         //Configure zones for the dockwidget
 		qWin_->addDockWidget(Qt::LeftDockWidgetArea, widget, Qt::Vertical);
@@ -72,7 +73,6 @@ namespace UiExternalServices
 			return false;		
     }
     
-
 	void ExternalPanelManager::ShowWidget(QWidget *widget){
 		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))
 			widget->parentWidget()->show();	
@@ -111,5 +111,4 @@ namespace UiExternalServices
 		return false;
 
 	}
-
-}
+	void ExternalPanelManager::SetEnableEditMode(bool b){		edit_mode_=b;		emit changeEditMode(edit_mode_);	}	void ExternalPanelManager::AddToEditMode(QWidget* widget){		if (all_qdockwidgets_in_window_.contains(dynamic_cast<QDockWidget*>(widget->parentWidget())))			connect(this,SIGNAL(changeEditMode(bool)),widget,SLOT(setEnabled(bool)));	}	bool ExternalPanelManager::IsEditModeEnable(){		return edit_mode_;	}}

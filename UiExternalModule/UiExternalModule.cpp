@@ -65,7 +65,7 @@ namespace UiExternalServices
 			LogDebug("Ui External service READY");
 			
 			//Get Event Category 
-			scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+			// scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 
 			//Configure Static Stuff of the main window
 			createStaticContent();
@@ -92,28 +92,32 @@ namespace UiExternalServices
 
     bool UiExternalModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        if (category_id == scene_event_category_)
-			staticToolBar_->HandleEvent(category_id, event_id, data);
+        /*if (category_id == scene_event_category_)
+			staticToolBar_->HandleEvent(category_id, event_id, data);*/
 		return false;
     }
 
 	void UiExternalModule::createStaticContent()
 	{
+		//Create Static Toolbar
+		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
+		qWin_->addToolBar(staticToolBar_);
+
 		//Get login handler and connect signals
         Foundation::LoginServiceInterface *handler = framework_->GetService<Foundation::LoginServiceInterface>();
 		if (handler)
 		{
 			connect(handler, SIGNAL(LoginFailed(const QString &)), panel_manager_, SLOT(DisableDockWidgets()));
 			connect(handler, SIGNAL(LoginSuccessful()), panel_manager_, SLOT(EnableDockWidgets()));
+			connect(handler, SIGNAL(LoginFailed(const QString &)), staticToolBar_, SLOT(Disabled()));
+			connect(handler, SIGNAL(LoginSuccessful()), staticToolBar_, SLOT(Enabled()));
         }
 
 		UiServiceInterface *ui_service = framework_->GetService<UiServiceInterface>();
-        if (ui_service) 
-            connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
-
-		//Create Static Toolbar
-		staticToolBar_ = new StaticToolBar("Control Bar",qWin_,framework_);
-		qWin_->addToolBar(staticToolBar_);
+		if (ui_service){
+			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), panel_manager_, SLOT(SceneChanged(const QString&, const QString&)));
+			connect(ui_service, SIGNAL(SceneChanged(const QString&, const QString&)), staticToolBar_, SLOT(SceneChanged(const QString&, const QString&)));
+		}
 		
 		//File -> Enter World
 		QAction *action = new QAction("Enter World", qWin_);

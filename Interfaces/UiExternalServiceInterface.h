@@ -85,14 +85,29 @@ namespace Foundation
         virtual bool RemoveExternalMenuPanel(QWidget *widget) = 0; 
 
         /*! Shows the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
         virtual void ShowWidget(QWidget *widget)= 0;
 
         /*! Hides the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
-        virtual void HideWidget(QWidget *widget) = 0;       
+        virtual void HideWidget(QWidget *widget) = 0;    
+
+		/*! Switch on/off the edit mode
+		 *  \param b Enable/disable the edit mode
+		 */
+		virtual void SetEnableEditMode(bool b) = 0;
+
+		/*! Return if the Edit Mode is enabled
+		 *  \return true if Edit Mode is enabled
+		 */
+		virtual bool IsEditModeEnable() = 0;
+
+		/*! Add the panel to the Edit Mode configuration
+		 *  \param widget Widget
+		 */
+		virtual void AddPanelToEditMode(QWidget* widget) = 0;
 
 		/*! Returns the QDockWidget where the widget with the name widget is in the QMainWindow. Used (at least) to use WorldBuildingModule with this module.
          *  \param widget Name of the widget.

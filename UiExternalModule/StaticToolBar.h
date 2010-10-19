@@ -27,9 +27,9 @@ namespace UiExternalServices
 	public:
 
 		/*! Constructor
-		*	@param title Name of toolbar
-		*	@param parent Pointer to QWidget parent of toolbar
-		*	@param framework Pointer to framework
+		*	\param title Name of toolbar
+		*	\param parent Pointer to QWidget parent of toolbar
+		*	\param framework Pointer to framework
 		*/
 		StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework);
 		
@@ -39,6 +39,20 @@ namespace UiExternalServices
 		//! Handle the scene events to take the entity which has been clicked when the edit mode is active
 		void HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
+	public slots:
+
+		/*! Enable the toolbar */
+		void Enabled();
+
+		/*! Disable the toolbar */
+		void Disabled();
+
+		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the toolbar
+		 * \param old_name Old Scene
+		 * \param new_name New Scene
+		 */
+		void SceneChanged(const QString &old_name, const QString &new_name);
+
 	private slots:
 
 		//! Switch between flying and walking mode
@@ -46,7 +60,7 @@ namespace UiExternalServices
 		//! Switch between free camera and avatar camera
 		void freeCameraMode();
 		//! Switch between play and edit mode.
-		void editEntity();
+		void editMode();
 
 	private:
 
@@ -66,13 +80,10 @@ namespace UiExternalServices
 		Foundation::Framework *framework_;
 
 		//! Query category of events
-		event_category_id_t scene_event_category_;
-
-		//! Edit mode enable/disable
-		bool editMode_;
-		
+		// event_category_id_t scene_event_category_;
+	
 		//! Entity selected
-		entity_id_t entitySelected_;
+		// entity_id_t entitySelected_;
 	};
 }
 
