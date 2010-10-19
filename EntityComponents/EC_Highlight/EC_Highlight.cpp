@@ -126,9 +126,8 @@ void EC_Highlight::Create()
         return;
     }
 
-    assert(originalEntity);
     if (!originalEntity)
-        return;
+        return; 
 
     assert(sceneNode_);
     if (!sceneNode_)
