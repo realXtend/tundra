@@ -10,7 +10,6 @@
 
 #include "ForwardDefines.h"
 #include "CoreTypes.h"
-//#include <set>
 #include <QMap>
 #include <QSet>
 
@@ -40,6 +39,8 @@ namespace ECEditor
     class ECBrowser;
     class AddComponentDialog;
 
+    //! EntityListWidgetItem contains entity pointer as QPointer. Class is used to identifie a right item using a entity id.
+    //! \ingroup ECEditorModuleClient.
     class EntityListWidgetItem: public QListWidgetItem
     {
     public:
@@ -153,6 +154,7 @@ namespace ECEditor
         void ComponentDialogFinished(int result);
 
     private:
+        /// Find given entity from the QListWidget and if it's found, bold QListWidgetItem's font.
         void BoldEntityListItem(entity_id_t, bool bold = true);
         /// Initializes the widget.
         void Initialize();

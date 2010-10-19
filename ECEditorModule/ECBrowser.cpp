@@ -38,7 +38,7 @@ namespace ECEditor
         clear();
     }
 
-    void ECBrowser::AddEntity(Scene::EntityPtr entity)//Scene::Entity *entity)
+    void ECBrowser::AddEntity(Scene::EntityPtr entity)
     {
         assert(entity);
         if(!entity)
@@ -50,11 +50,9 @@ namespace ECEditor
         entities_.push_back(Scene::EntityPtr(entity));
 
         //! @todo merge entity.h and entity.cpp from tundra to develope and begin to use their ComponentAdded and ComponentRemoved signals.
-        connect(entity->GetScene(), SIGNAL(ComponentAdded(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(NewComponentAdded(Scene::Entity*, IComponent*)));
+        connect(entity.get(), SIGNAL(ComponentAdded(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentAdded(IComponent*, AttributeChange::Type)));
 
-        connect(entity->GetScene(), SIGNAL(ComponentRemoved(Scene::Entity*, IComponent*, AttributeChange::Type)),
-            SLOT(ComponentRemoved(Scene::Entity*, IComponent*)));
+        connect(entity.get(), SIGNAL(ComponentRemoved(IComponent*, AttributeChange::Type)), this, SLOT(OnComponentRemoved(IComponent*, AttributeChange::Type)));
     }
 
     void ECBrowser::RemoveEntity(Scene::EntityPtr entity)
@@ -92,7 +90,6 @@ namespace ECEditor
             componentGroups_.pop_back();
         }
         entities_.clear();
-        //selectedEntities_.clear();
         QtTreePropertyBrowser::clear();
     }
 
@@ -413,9 +410,9 @@ namespace ECEditor
         }
     }
     
-    void ECBrowser::NewComponentAdded(Scene::Entity* entity, IComponent* comp) 
+    void ECBrowser::OnComponentAdded(IComponent* comp, AttributeChange::Type type) 
     {
-        Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(entity->GetId());
+        Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
         if(!HasEntity(entity_ptr))
             return;
 
@@ -425,14 +422,14 @@ namespace ECEditor
             if((*iterComp)->ContainsComponent(comp))
                 return;
         }
-        ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+        ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
         assert(componentPtr.get());
         AddNewComponentToGroup(componentPtr);
     }
 
-    void ECBrowser::ComponentRemoved(Scene::Entity* entity, IComponent* comp)
+    void ECBrowser::OnComponentRemoved(IComponent* comp, AttributeChange::Type type)
     {
-        Scene::EntityPtr entity_ptr = entity->GetSharedPtr();
+        Scene::EntityPtr entity_ptr = framework_->GetDefaultWorldScene()->GetEntity(comp->GetParentEntity()->GetId());
         if(!HasEntity(entity_ptr))
             return;
 
@@ -442,7 +439,7 @@ namespace ECEditor
             if(!(*iterComp)->ContainsComponent(comp))
                 continue;
             
-            ComponentPtr componentPtr = entity->GetComponent(comp->TypeName(), comp->Name());
+            ComponentPtr componentPtr = entity_ptr->GetComponent(comp->TypeName(), comp->Name());
             assert(componentPtr.get());
             RemoveComponentFromGroup(comp);
             return;
