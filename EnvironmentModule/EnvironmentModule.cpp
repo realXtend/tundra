@@ -463,8 +463,17 @@ namespace Environment
                       {
                           // Because of caelum defines environment light values normally we need to set it off. 
                           light->useCaelumAttr.Set(false, AttributeChange::LocalOnly);
+                      } 
+                      else
+                      {
+                        // Create EC_EnvironmentLight 
+                        QString name = "LightEnvironment";
+                        CreateEnvironmentEntity(name, EC_EnvironmentLight::TypeNameStatic()); 
+                        light = environment_->GetEnvironmentLight();
+                        light->useCaelumAttr.Set(false, AttributeChange::LocalOnly);
+                      
                       }
-
+                      
                       environment_->SetSunDirection(environment_->ConvertToQVector<float>(sun_light_direction));
                       environment_->SetSunColor(environment_->ConvertToQVector<float>(sun_light_color));
                       environment_->SetAmbientLight(environment_->ConvertToQVector<float>(ambient_light_color));

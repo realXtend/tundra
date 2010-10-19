@@ -40,8 +40,9 @@ namespace ECEditor
         //! Get component name
         QString GetName() const;
 
-        //! Get synchronization mode from dialog. If combobox text is invalid return AttrbuteChange::Default.
-        AttributeChange::Type GetSynchronization() const;
+        //! Get synchronization true if synchronization is setted to replicate and false if it's local only.
+        //! If for some reason combo box provides invalid synch mode, the mehtod will return true as a default value.
+        bool GetSynchronization() const;
 
         //! Get the entity that component is added to.
         QList<entity_id_t> GetEntityIds() const;
