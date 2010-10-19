@@ -39,6 +39,20 @@ namespace UiExternalServices
 		//! Handle the scene events to take the entity which has been clicked when the edit mode is active
 		void HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data);
 
+	public slots:
+
+		/*! Enable the toolbar */
+		void Enabled();
+
+		/*! Disable the toolbar */
+		void Disabled();
+
+		/*!Slot used when the scene is changed, if we "go" to ether Scene, then disable the toolbar
+		 * \param old_name Old Scene
+		 * \param new_name New Scene
+		 */
+		void SceneChanged(const QString &old_name, const QString &new_name);
+
 	private slots:
 
 		//! Switch between flying and walking mode

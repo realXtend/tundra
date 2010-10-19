@@ -66,7 +66,7 @@ namespace UiExternalServices
 		uiExternal->SetEnableEditMode(!uiExternal->IsEditModeEnable());
 	}
 
-	 void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
+	void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
    //     if (category_id == scene_event_category_)
    //     {
@@ -89,5 +89,21 @@ namespace UiExternalServices
    //             break;
    //         }
    //     }
-	 }
+	}
+
+	void StaticToolBar::Enabled(){
+		setEnabled(true);
+	}
+
+	void StaticToolBar::Disabled(){
+		setEnabled(false);
+	}
+
+	void StaticToolBar::SceneChanged(const QString &old_name, const QString &new_name)
+    {
+        if (new_name == "Ether")
+			Disabled();     
+		else
+			Enabled();
+    }
 }
