@@ -20,7 +20,8 @@ IComponent::IComponent(Foundation::Framework* framework) :
     parent_entity_(0),
     framework_(framework),
     network_sync_(true),
-    updatemode_(AttributeChange::Replicate)
+    updatemode_(AttributeChange::Replicate),
+    temporary_(false)
 {
 }
 
@@ -28,7 +29,8 @@ IComponent::IComponent(const IComponent &rhs) :
     framework_(rhs.framework_),
     parent_entity_(rhs.parent_entity_),
     network_sync_(rhs.network_sync_),
-    updatemode_(rhs.updatemode_)
+    updatemode_(rhs.updatemode_),
+    temporary_(false)
 {
 }
 
@@ -226,4 +228,16 @@ void IComponent::ComponentChanged(AttributeChange::Type change)
     
     //! \todo: this is deprecated and will be removed in the future. Do not rely on OnChanged() signal.
     OnChanged();
+}
+
+void IComponent::SetTemporary(bool enable)
+{
+    temporary_ = enable;
+}
+
+bool IComponent::IsTemporary() const
+{
+    if ((parent_entity_) && (parent_entity_->IsTemporary()))
+        return true;
+    return temporary_;
 }
