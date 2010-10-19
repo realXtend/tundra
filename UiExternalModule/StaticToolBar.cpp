@@ -5,6 +5,7 @@
 #include "ServiceManager.h"
 #include "SceneEvents.h"
 #include "InputEvents.h"
+#include "UiExternalServiceInterface.h"
 
 #include "StaticToolBar.h"
 
@@ -13,13 +14,12 @@ namespace UiExternalServices
 
 	StaticToolBar::StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework): 
 		QToolBar(title,parent), 
-		framework_(framework),
-		editMode_(false)
+		framework_(framework)
 	{
 		createActions();
 		addActions();
 
-		scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+		// scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 	}
 
 	StaticToolBar::~StaticToolBar()
@@ -38,7 +38,7 @@ namespace UiExternalServices
 
 		editAction_ = new QAction(tr("&Edit Mode"), this);
 		editAction_->setStatusTip(tr("Set edit mode to modify entity properties"));
-		connect(editAction_, SIGNAL(triggered()), this, SLOT(editEntity()));
+		connect(editAction_, SIGNAL(triggered()), this, SLOT(editMode()));
 	}
 
 	void StaticToolBar::addActions()
@@ -60,33 +60,34 @@ namespace UiExternalServices
 		framework_->GetEventManager()->SendEvent(event_category, Input::Events::SWITCH_CAMERA_STATE, 0);
 	}
 
-	void StaticToolBar::editEntity()
+	void StaticToolBar::editMode()
 	{
-		editMode_=!editMode_;
+		Foundation::UiExternalServiceInterface *uiExternal = framework_->GetService<Foundation::UiExternalServiceInterface>();
+		uiExternal->SetEnableEditMode(!uiExternal->IsEditModeEnable());
 	}
 
 	 void StaticToolBar::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        if (category_id == scene_event_category_)
-        {
-            switch(event_id)
-            {
-            case Scene::Events::EVENT_ENTITY_CLICKED:
-            {
-                //! \todo support multiple entity selection
-                Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
-                if (editMode_ && entity_clicked_data)
-                    entitySelected_=entity_clicked_data->entity->GetId();
-                break;
-            }
-			case Scene::Events::EVENT_ENTITY_NONE_CLICKED:
-            {
-				entitySelected_=0;
-                break;
-            }
-            default:
-                break;
-            }
-        }
+   //     if (category_id == scene_event_category_)
+   //     {
+   //         switch(event_id)
+   //         {
+   //         case Scene::Events::EVENT_ENTITY_CLICKED:
+   //         {
+   //             //! \todo support multiple entity selection
+   //             Scene::Events::EntityClickedData *entity_clicked_data = dynamic_cast<Scene::Events::EntityClickedData *>(data);
+   //             if (editMode_ && entity_clicked_data)
+   //                 entitySelected_=entity_clicked_data->entity->GetId();
+   //             break;
+   //         }
+   //		  case Scene::Events::EVENT_ENTITY_NONE_CLICKED:
+   //         {
+   //			  entitySelected_=0;
+   //             break;
+   //         }
+   //         default:
+   //             break;
+   //         }
+   //     }
 	 }
 }

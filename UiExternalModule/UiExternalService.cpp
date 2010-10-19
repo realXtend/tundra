@@ -44,4 +44,16 @@ namespace UiExternalServices
 		//find qdockwidget with this widget and make hide()	
 		owner_->GetExternalPanelManager()->HideWidget(widget);
 	}
+
+	void UiExternalService::SetEnableEditMode(bool b){
+		owner_->GetExternalPanelManager()->SetEnableEditMode(b);
+	}
+
+	void UiExternalService::AddPanelToEditMode(QWidget* widget){
+		owner_->GetExternalPanelManager()->AddToEditMode(widget);
+	}
+
+	bool UiExternalService::IsEditModeEnable(){
+		return owner_->GetExternalPanelManager()->IsEditModeEnable();
+	}
 }

@@ -145,6 +145,7 @@ namespace ECEditor
 
 		if (uiExternal){
 				uiExternal->AddExternalMenuPanel(uiExternal->AddExternalPanel(editor_window_,"Entity-component Editor"),"EC Editor","Panels");
+				uiExternal->AddPanelToEditMode(editor_window_);
 		}else{
 			UiProxyWidget *editor_proxy = ui->AddWidgetToScene(editor_window_);
 			ui->AddWidgetToMenu(editor_window_, tr("Entity-component Editor"), "", "./data/ui/images/menus/edbutton_OBJED_normal.png");

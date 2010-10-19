@@ -27,9 +27,9 @@ namespace UiExternalServices
 	public:
 
 		/*! Constructor
-		*	@param title Name of toolbar
-		*	@param parent Pointer to QWidget parent of toolbar
-		*	@param framework Pointer to framework
+		*	\param title Name of toolbar
+		*	\param parent Pointer to QWidget parent of toolbar
+		*	\param framework Pointer to framework
 		*/
 		StaticToolBar(const QString &title, QWidget *parent, Foundation::Framework* framework);
 		
@@ -46,7 +46,7 @@ namespace UiExternalServices
 		//! Switch between free camera and avatar camera
 		void freeCameraMode();
 		//! Switch between play and edit mode.
-		void editEntity();
+		void editMode();
 
 	private:
 
@@ -66,13 +66,10 @@ namespace UiExternalServices
 		Foundation::Framework *framework_;
 
 		//! Query category of events
-		event_category_id_t scene_event_category_;
-
-		//! Edit mode enable/disable
-		bool editMode_;
-		
+		// event_category_id_t scene_event_category_;
+	
 		//! Entity selected
-		entity_id_t entitySelected_;
+		// entity_id_t entitySelected_;
 	};
 }
 

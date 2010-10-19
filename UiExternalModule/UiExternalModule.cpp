@@ -64,7 +64,7 @@ namespace UiExternalServices
 			LogDebug("Ui External service READY");
 			
 			//Get Event Category 
-			scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
+			// scene_event_category_ = framework_->GetEventManager()->QueryEventCategory("Scene");
 
 			//Configure Static Stuff of the main window
 			createStaticContent();
@@ -91,8 +91,8 @@ namespace UiExternalServices
 
     bool UiExternalModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
     {
-        if (category_id == scene_event_category_)
-			staticToolBar_->HandleEvent(category_id, event_id, data);
+        /*if (category_id == scene_event_category_)
+			staticToolBar_->HandleEvent(category_id, event_id, data);*/
 		return false;
     }
 

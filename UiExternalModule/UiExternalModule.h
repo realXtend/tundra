@@ -72,26 +72,26 @@ namespace UiExternalServices
 		//! External Ui Service.
 		UiExternalServicePtr ui_external_scene_service_;
 
-		//!MainWindow
-		QMainWindow* qWin_;
-
-		//!Managers of the Module
-		ExternalMenuManager* menu_manager_;
-		ExternalPanelManager* panel_manager_;
-
 	private slots:
 		//!Slots used to implement static menus
 		void SwitchToEtherScene();
 		void ExitApp();
 
     private:
-		//! Type name of this module.
-        static std::string type_name_static_;
 		//! Method to configure static content of the MainWindow
 		void createStaticContent();
+
+		//!MainWindow
+		QMainWindow* qWin_;
+		//!Managers of the Module
+		ExternalMenuManager* menu_manager_;
+		ExternalPanelManager* panel_manager_;
+		//! Type name of this module.
+        static std::string type_name_static_;
 		//!Static toolbar
 		StaticToolBar* staticToolBar_;
-		event_category_id_t scene_event_category_;
+		
+		//event_category_id_t scene_event_category_;
     };
 }
 

@@ -17,7 +17,7 @@ namespace UiExternalServices
      *  main window and managing different UI items like menus or actions.
      *  All the services are done by the module managers
      */
-	class UIEXTERNAL_MODULE_API UiExternalService : public QObject, public Foundation::UiExternalServiceInterface
+	class UIEXTERNAL_MODULE_API UiExternalService : public Foundation::UiExternalServiceInterface
     {
         Q_OBJECT
 
@@ -81,14 +81,29 @@ namespace UiExternalServices
         bool RemoveExternalMenuPanel(QWidget *widget);
 
         /*! Shows the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
 		void ShowWidget(QWidget *widget);
 
 		/*! Hides the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
         void HideWidget(QWidget *widget);
+
+		/*! Switch on/off the edit mode
+		 *  \param b Enable/disable the edit mode
+		 */
+		void SetEnableEditMode(bool b);
+
+		/*! Return if the Edit Mode is enabled
+		 *  \return true if Edit Mode is enabled
+		 */
+		bool IsEditModeEnable();
+	
+		/*! Add the panel to the Edit Mode configuration
+		 *  \param widget Widget
+		 */
+		void AddPanelToEditMode(QWidget* widget);
 
     private:
         //! Owner UI module.

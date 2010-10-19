@@ -29,7 +29,7 @@ namespace UiExternalServices
         /*! Constructor.
          *	\param qWin MainWindow pointer.
 		 */
-        ExternalPanelManager(QMainWindow *qWin);
+		ExternalPanelManager(QMainWindow *qWin);
 
         //! Destructor.
         ~ExternalPanelManager();
@@ -58,15 +58,35 @@ namespace UiExternalServices
         bool RemoveExternalPanel(QWidget *widget);
 
 		/*! Shows the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
 		void ShowWidget(QWidget *widget);
 
 		/*! Hides the widget's DockWidget in the main window.
-         *  @param widget Widget.
+         *  \param widget Widget.
          */
 		void HideWidget(QWidget *widget);
 
+		/*! Switch on/off the edit mode and emit the signal to connected panels
+		 *  \param b Enable/disable the edit mode
+		 */
+		void SetEnableEditMode(bool b);
+
+		/*! Connect the panel to the signal for enable or disable with the edit mode
+		 *  \param widget Widget
+		 */
+		void AddToEditMode(QWidget* widget);
+
+		/*! Return if the Edit Mode is enabled
+		 *  \return True if Edit Mode is enabled
+		 */
+		bool IsEditModeEnable();
+
+	signals:
+		/*! Signal to connect with the panels 
+		 *  \param b Enable/disable the panel
+		 */
+		void changeEditMode(bool b);
 
     private:
 
@@ -75,6 +95,9 @@ namespace UiExternalServices
 
         //! Internal list of proxy widgets in scene.
 		QList<QDockWidget *> all_qdockwidgets_in_window_;
+
+		//! Edit Mode
+		bool edit_mode_;
     };
 }
 
