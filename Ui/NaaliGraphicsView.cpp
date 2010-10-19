@@ -160,3 +160,20 @@ void NaaliGraphicsView::HandleSceneChanged(const QList<QRectF> &rectangles)
     dirtyRectangle.setRight(min<int>(dirtyRectangle.right(), width()));
     dirtyRectangle.setBottom(min<int>(dirtyRectangle.bottom(), height()));
 }
+
+void NaaliGraphicsView::dropEvent (QDropEvent * e)
+{        
+    emit DropEvent(e);
+}
+
+void NaaliGraphicsView::dragEnterEvent (QDragEnterEvent * e)
+{           
+    e->accept();
+    emit DragEnterEvent(e);
+}   
+
+void NaaliGraphicsView::dragMoveEvent (QDragMoveEvent * e)
+{
+    e->accept();
+    emit DragMoveEvent(e);
+}
