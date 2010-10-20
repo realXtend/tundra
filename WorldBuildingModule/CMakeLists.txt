@@ -33,7 +33,7 @@ use_package (CURL)    # NEEDED BY ProtocolUtilities
 use_package (XMLRPC)  # NEEDED BY ProtocolUtilities
 use_package (QT_PROPERTY_BROWSER)
 use_modules (WorldBuildingModule Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities OgreRenderingModule InventoryModule Input
-             EntityComponents/EC_OpenSimPrim EntityComponents/EC_DynamicComponent EntityComponents/EC_HighLight)
+             EntityComponents/EC_OpenSimPrim EntityComponents/EC_DynamicComponent EntityComponents/EC_Highlight)
 
 build_library (${TARGET_NAME} SHARED ${SOURCE_FILES} ${MOC_SRCS} ${UI_SRCS} ${RESOURCE_SRCS})
 

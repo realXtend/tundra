@@ -15,6 +15,7 @@
 #include "OgreSceneNode.h"
 #include "OgreEntity.h"
 
+#include <QFile>
 #include <QDomDocument>
 #include <QDomElement>
 
@@ -242,7 +243,7 @@ namespace WorldBuilding
             }
 
             QDomNodeList children = node_element.childNodes();
-            for(int i=0; i< children.length(); i++)
+            for (uint i=0; i< children.length(); i++)
                 ProcessElement(children.at(i).toElement(), adjust_pos);
         }
     }
