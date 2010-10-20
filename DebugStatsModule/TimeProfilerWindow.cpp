@@ -27,7 +27,7 @@
 //#include "GenericMessageUtils.h"
 
 #include <utility>
-#include <TexturePreviewEditor.h>
+
 #include <QVBoxLayout>
 #include <QTreeWidget>
 #include <QUiLoader>
@@ -251,6 +251,8 @@ TimeProfilerWindow::TimeProfilerWindow(Foundation::Framework *fw) : framework_(f
         QObject::connect(copyAssetName, SIGNAL(triggered()), this, SLOT(CopyMaterialAssetName()));
         menu_material_assets_->addAction(copyAssetName);
     }
+
+    tex_preview_ = 0;
 }
 
 namespace
@@ -319,9 +321,13 @@ void TimeProfilerWindow::ShowMeshAsset(QTreeWidgetItem* item, int column)
 
 void TimeProfilerWindow::ShowTextureAsset(QTreeWidgetItem* item, int column)
 {
-    TexturePreviewEditor* ed = new TexturePreviewEditor(framework_,this);
-    ed->OpenOgreTexture(item->text(0));
-    ed->show();
+    if ( tex_preview_ == 0)
+    {
+        tex_preview_ = new TexturePreviewEditor(framework_,this);
+    }
+        
+    tex_preview_->OpenOgreTexture(item->text(0));
+    tex_preview_->show();
 
     /*
     Asset::Events::AssetOpen open(item->text(0), QString::number(RexAT_Texture));
