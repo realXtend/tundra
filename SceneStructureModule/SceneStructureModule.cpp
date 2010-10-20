@@ -54,7 +54,7 @@ void SceneStructureModule::PostInitialize()
     connect(framework_->Ui()->GraphicsView(), SIGNAL(DropEvent(QDropEvent *)), SLOT(HandleDropEvent(QDropEvent *)));
 }
 
-QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene)
+QList<Scene::Entity *> SceneStructureModule::InstantiateContent(const QString &filename, Vector3df worldPos, bool clearScene)
 {
     QList<Scene::Entity *> ret;
     const Scene::ScenePtr &scene = framework_->GetDefaultWorldScene();
