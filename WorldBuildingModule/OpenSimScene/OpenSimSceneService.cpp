@@ -51,7 +51,8 @@ namespace WorldBuilding
         if (ui)
         {
             ui->AddWidgetToScene(scene_widget_);
-            ui->AddWidgetToMenu(scene_widget_, "OpenSim Scene Tool", "Server Tools");
+            ui->AddWidgetToMenu(scene_widget_, "OpenSim Scene Tool", "Server Tools", "./data/ui/images/menus/edbutton_LSCENE_normal.png");
+            ui->RegisterUniversalWidget("OpenSim Scene", scene_widget_);
         }
         else
             WorldBuildingModule::LogWarning("OpenSimSceneService: Failed to add OpenSim Scene Tool to scene and menu");

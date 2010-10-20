@@ -15,6 +15,8 @@ namespace WorldBuilding
     {
         internal_widget_ = widget();
         setupUi(internal_widget_);
+        setWindowTitle(internal_widget_->windowTitle());
+
         label_caps_fail->hide();
         label_export_help->setText("Click 'Start Exporting' and start selecting inworld object");
 
