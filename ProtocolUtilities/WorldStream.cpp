@@ -453,6 +453,12 @@ void WorldStream::SendObjectSelectPacket(std::vector<entity_id_t> object_id_list
     FinishMessageBuilding(m);
 }
 
+void WorldStream::SendObjectDeselectPacket(const unsigned long ent_id)
+{
+    entity_id_t object_id = ent_id;
+    SendObjectDeselectPacket(object_id);
+}
+
 void WorldStream::SendObjectDeselectPacket(entity_id_t object_id)
 {
     if (!connected_)
