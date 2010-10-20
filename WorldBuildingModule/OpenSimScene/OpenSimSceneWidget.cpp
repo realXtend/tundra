@@ -5,7 +5,9 @@
 #include "Entity.h"
 
 #include "EC_Highlight.h"
+
 #include <QFileDialog>
+#include <QMessageBox>
 
 namespace WorldBuilding
 {
