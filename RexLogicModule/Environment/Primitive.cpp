@@ -746,6 +746,8 @@ void Primitive::HandleRexPrimDataBlob(entity_id_t entityid, const uint8_t* primd
             {
                 uint8_t material_index = material_indexes[i];
                 materials[material_index].asset_id = rex_material_url;
+                if (QString(rex_material_url.c_str()).endsWith(".material"))
+                    materials[material_index].Type = 45;
             }
         }
         prim->Materials = materials;
