@@ -9,6 +9,7 @@
 #include "SceneEvents.h"
 
 #include "BuildSceneManager.h"
+#include "OpenSimScene/OpenSimSceneService.h"
 
 #include <QDebug>
 #include <QTimer>
@@ -28,26 +29,32 @@ namespace WorldBuilding
     WorldBuildingModule::~WorldBuildingModule()
     {
         build_scene_manager_.reset();
+        opensim_scene_service_.reset();
     }
 
     // Module interface
 
     void WorldBuildingModule::Initialize()
     {        
-        // Init building scene manager and register as service
+        // Init and register services
         build_scene_manager_ = BuildServicePtr(new BuildSceneManager(this, GetFramework()));
         GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_WorldBuilding, build_scene_manager_);
+
+        opensim_scene_service_ = OpenSimSceneServicePtr(new OpenSimSceneService(this, GetFramework()));
+        GetFramework()->GetServiceManager()->RegisterService(Foundation::Service::ST_OpenSimScene, opensim_scene_service_);
     }
 
     void WorldBuildingModule::PostInitialize()
     {
         // Get all category id's that we are interested in
         SubscribeToEventCategories();
+        opensim_scene_service_->PostInitialize();
 
         // Register building key context
         input_context_ = GetFramework()->GetInput()->RegisterInputContext("WorldBuildingContext", 90);
         connect(input_context_.get(), SIGNAL(KeyPressed(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyPressed(KeyEvent*)));
         connect(input_context_.get(), SIGNAL(KeyReleased(KeyEvent*)), build_scene_manager_.get(), SLOT(KeyReleased(KeyEvent*)));
+        connect(input_context_.get(), SIGNAL(MouseLeftPressed(MouseEvent*)), opensim_scene_service_.get(), SLOT(MouseLeftPressed(MouseEvent*)));
     }
 
     bool WorldBuildingModule::HandleEvent(event_category_id_t category_id, event_id_t event_id, IEventData* data)
@@ -58,7 +65,12 @@ namespace WorldBuilding
         
         if (category == "Framework")
         {
-            // Might need world stream later from here...
+            if (event_id == Foundation::WORLD_STREAM_READY)
+            {
+                ProtocolUtilities::WorldStreamReadyEvent *event_data = checked_static_cast<ProtocolUtilities::WorldStreamReadyEvent *>(data);
+                if (event_data)
+                    opensim_scene_service_->SetWorldStream(event_data->WorldStream);
+            }
         }
         else if (category == "Scene")
         {
@@ -92,6 +104,7 @@ namespace WorldBuilding
                     build_scene_manager_->inworld_state = false;
                     build_scene_manager_->ResetCamera();
                     build_scene_manager_->ResetEditing();
+                    opensim_scene_service_->ResetWorldStream();
                     break;
                 case ProtocolUtilities::Events::EVENT_CONNECTION_FAILED:
                     build_scene_manager_->inworld_state = false;
@@ -99,6 +112,7 @@ namespace WorldBuilding
                     build_scene_manager_->ResetEditing();
                     break;
                 case ProtocolUtilities::Events::EVENT_CAPS_FETCHED:
+                    opensim_scene_service_->CheckForCapability();
                     break;
                 default:
                     break;
