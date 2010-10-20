@@ -46,7 +46,7 @@ link_package (CURL)   # NEEDED BY ProtocolUtilities
 link_package (XMLRPC) # NEEDED BY ProtocolUtilities
 link_package (QT_PROPERTY_BROWSER)
 link_modules (Core Foundation Interfaces SceneManager RexCommon SupportModules ProtocolUtilities OgreRenderingModule InventoryModule Input
-              EC_OpenSimPrim EC_DynamicComponent EC_HighLight)
+              EC_OpenSimPrim EC_DynamicComponent EC_Highlight)
 
 SetupCompileFlagsWithPCH()
 CopyModuleXMLFile()
