@@ -204,7 +204,8 @@ void EC_DynamicComponent::AddQVariantAttribute(const QString &name, AttributeCha
         AttributeChanged(attribute, change);
         emit AttributeAdded(name);
     }
-    LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
+    else
+        LogWarning("Failed to add a new QVariant in name of " + name.toStdString() + ", cause there already is an attribute in that name.");
 }
 
 QVariant EC_DynamicComponent::GetAttribute(int index) const
