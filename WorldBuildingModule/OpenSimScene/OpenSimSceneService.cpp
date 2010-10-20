@@ -15,6 +15,8 @@
 #include "OgreSceneNode.h"
 #include "OgreEntity.h"
 
+#include <QFile>
+
 namespace WorldBuilding
 {
     OpenSimSceneService::OpenSimSceneService(QObject *parent, Foundation::Framework *framework) :
