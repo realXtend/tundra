@@ -47,6 +47,8 @@ namespace WorldBuilding
 
         void ShowFunctionality(bool enabled);
 
+        QWidget *GetInternalWidget() { return internal_widget_; }
+
     private slots:
         void ToggleExporting();
         void ResetExporting();
@@ -54,6 +56,8 @@ namespace WorldBuilding
         void ExportSelected();
         void PublishFile();
         void VisibilityChange(bool visible);
+
+        void InternalDestroyed(QObject *obj);
 
     signals:
         void PublishFromFile(const QString &filename, bool adjust_pos_to_avatar);

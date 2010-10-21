@@ -35,7 +35,11 @@ namespace WorldBuilding
 
     OpenSimSceneService::~OpenSimSceneService()
     {
-        scene_widget_->widget()->deleteLater();
+        if (!scene_widget_)
+            return;
+        // scene_widget_ is a proxy, lets not delete it but its internal qwidget
+        if (scene_widget_->GetInternalWidget())
+            scene_widget_->GetInternalWidget()->deleteLater();
     }
 
     void OpenSimSceneService::CheckForCapability()
