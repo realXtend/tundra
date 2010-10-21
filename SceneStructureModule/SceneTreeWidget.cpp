@@ -204,6 +204,10 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
     const QMimeData *data = e->mimeData();
     if (data->hasUrls())
     {
+        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        if (!sceneStruct)
+            LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
+
         foreach(QUrl url, data->urls())
         {
             QString filename = url.path();
@@ -212,7 +216,8 @@ void SceneTreeWidget::dropEvent(QDropEvent *e)
             // is not identified as a file properly. But on other platforms the '/' is valid/required.
             filename = filename.mid(1);
 #endif
-            framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), false);
+            if (sceneStruct)
+                sceneStruct->InstantiateContent(filename, Vector3df(), false);
         }
 
         e->acceptProposedAction();
@@ -389,10 +394,15 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
     EntityItem *eItem = dynamic_cast<EntityItem *>(item);
     if (eItem)
     {
-        QString newName = eItem->text(0);
-        disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
-        // We don't need to set text to the item here. It's done when be SceneStructureWindow.
-        scene->GetEntity(eItem->id)->SetName(newName);
+        Scene::EntityPtr entity = scene->GetEntity(eItem->id);
+        assert(entity);
+        if (entity)
+        {
+            QString newName = eItem->text(0);
+            disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+            // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
+            entity->SetName(newName);
+        }
     }
 }
 
@@ -699,7 +709,11 @@ void SceneTreeWidget::OpenFileDialogClosed(int result)
         if (dialog->windowTitle() == tr("Open New Scene"))
             clearScene = true;
 
-        framework->GetModule<SceneStructureModule>()->InstantiateContent(filename, Vector3df(), clearScene);
+        SceneStructureModule *sceneStruct = framework->GetModule<SceneStructureModule>();
+        if (sceneStruct)
+            sceneStruct->InstantiateContent(filename, Vector3df(), clearScene);
+        else
+            LogError("Could not retrieve SceneStructureModule. Cannot instantiate content.");
     }
 }
 

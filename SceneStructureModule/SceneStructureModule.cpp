@@ -29,10 +29,8 @@ DEFINE_POCO_LOGGING_FUNCTIONS("SceneStructure");
 
 #include "MemoryLeakCheck.h"
 
-std::string SceneStructureModule::typeNameStatic = "SceneStructure";
-
 SceneStructureModule::SceneStructureModule() :
-    IModule(typeNameStatic),
+    IModule("SceneStructure"),
     sceneWindow(0)
 {
 }
