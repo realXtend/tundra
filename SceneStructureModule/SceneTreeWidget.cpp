@@ -179,6 +179,36 @@ void SceneTreeWidget::contextMenuEvent(QContextMenuEvent *e)
     menu->addAction(importAction);
     menu->addAction(openNewSceneAction);
 
+    // Entity action menu. Quick'n'dirty test implementation.
+    Selection sel = GetSelection();
+    if (sel.entities.size() == 1)
+    {
+        const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+        assert(scene.get());
+        if (scene)
+        {
+            Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
+            if (entity)
+            {
+                if (entity->Actions().size() > 0)
+                {
+                    menu->addSeparator();
+                    QMenu *actionMenu = new QMenu(tr("Actions"), menu);
+                    menu->addMenu(actionMenu);
+
+                    Scene::Entity::ActionMap::const_iterator it = entity->Actions().begin();
+                    while(it != entity->Actions().end())
+                    {
+                        QAction *entityAction = new QAction((*it)->Name(), actionMenu);
+                        connect(entityAction, SIGNAL(triggered()), SLOT(EntityActionTriggered()));
+                        actionMenu->addAction(entityAction);
+                        ++it;
+                    }
+                }
+            }
+        }
+    }
+
     // Show menu.
     menu->popup(e->globalPos());
 }
@@ -294,7 +324,7 @@ QString SceneTreeWidget::GetSelectionAsXml() const
                 if (entity)
                 {
                     ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
-                    if (component->IsSerializable())
+                    if (component && component->IsSerializable())
                         component->SerializeTo(scene_doc, scene_elem);
                 }
             }
@@ -372,16 +402,29 @@ void SceneTreeWidget::Rename()
     if (!scene)
         return;
 
-    Selection sel = GetSelection();
     QModelIndex index = selectionModel()->currentIndex();
-    if (sel.entities.size() == 1 && index.isValid())
+    if (!index.isValid())
+        return;
+
+    Selection sel = GetSelection();
+    if (sel.entities.size() == 1)
     {
         EntityItem *eItem = sel.entities[0];
         // Remove the entity ID from the text when user is editing entity's name.
         eItem->setText(0, scene->GetEntity(eItem->id)->GetName());
-        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
         edit(index);
+        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
     }
+/*
+    else if (sel.components.size() == 1)
+    {
+        ComponentItem *cItem = sel.components[0];
+        // Remove the type name from the text when user is editing entity's name.
+        cItem->setText(0, cItem->name);
+        edit(index);
+//        connect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), SLOT(OnItemEdited(QTreeWidgetItem *)), Qt::UniqueConnection);
+    }
+*/
 }
 
 void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
@@ -402,8 +445,23 @@ void SceneTreeWidget::OnItemEdited(QTreeWidgetItem *item)
             disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
             // We don't need to set item text here. It's done when SceneStructureWindow gets AttributeChanged() signal from Scene.
             entity->SetName(newName);
+            return;
         }
     }
+/*
+    ComponentItem *cItem = dynamic_cast<ComponentItem *>(item);
+    EntityItem *parentItem = dynamic_cast<EntityItem *>(cItem->parent());
+    if (cItem && parentItem)
+    {
+        Scene::EntityPtr entity = scene->GetEntity(parentItem->id);
+        QString newName = cItem->text(0);
+        disconnect(this, SIGNAL(itemChanged(QTreeWidgetItem *, int)), this, SLOT(OnItemEdited(QTreeWidgetItem *)));
+        ComponentPtr component = entity->GetComponent(cItem->typeName, cItem->name);
+        if (component)
+            component->SetName(newName);
+        //cItem->typeName
+    }
+*/
 }
 
 void SceneTreeWidget::New()
@@ -552,7 +610,7 @@ void SceneTreeWidget::Import()
     if (fileDialog)
         fileDialog->close();
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
-        cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter + ";;" + cOgreMeshFileFilter,
+        cOgreSceneFileFilter + ";;"  + cOgreMeshFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Import"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
 }
 
@@ -563,6 +621,27 @@ void SceneTreeWidget::OpenNewScene()
     fileDialog = Foundation::QtUtils::OpenFileDialogNonModal(cAllSupportedTypesFileFilter + ";;" +
         cOgreSceneFileFilter + ";;" + cNaaliXmlFileFilter + ";;" + cNaaliBinaryFileFilter,
         tr("Open New Scene"), "", 0, this, SLOT(OpenFileDialogClosed(int)));
+}
+
+void SceneTreeWidget::EntityActionTriggered()
+{
+    QAction *action = dynamic_cast<QAction *>(sender());
+    assert(action);
+    if (!action)
+        return;
+
+    Selection sel = GetSelection();
+    if (sel.entities.size() !=  1)
+        return;
+
+    const Scene::ScenePtr &scene = framework->GetDefaultWorldScene();
+    assert(scene.get());
+    if (!scene)
+        return;
+
+    Scene::EntityPtr entity = scene->GetEntity(sel.entities[0]->id);
+    if (entity)
+        entity->Exec(EntityAction::Local, action->text());
 }
 
 void SceneTreeWidget::SaveSelectionDialogClosed(int result)

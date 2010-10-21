@@ -198,6 +198,9 @@ private slots:
     /// Loads new scene.
     void OpenNewScene();
 
+    /// 
+    void EntityActionTriggered();
+
     /// Called by "Save Selection" save file dialog when it's closed.
     /** @param result Result of dialog closure. Save is 1, Cancel is 0.
     */
