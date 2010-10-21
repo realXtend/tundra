@@ -208,9 +208,12 @@ void SceneStructureWindow::AddEntity(Scene::Entity* entity)
     EntityItem *item = new EntityItem(entity->GetId());
     item->setFlags(Qt::ItemIsSelectable | Qt::ItemIsEnabled | Qt::ItemIsEditable);
     item->setText(0, QString("%1 %2").arg(entity->GetId()).arg(entity->GetName()));
-    // Set local entity's font color blue
-    if (entity->IsLocal())
+
+    if (entity->IsTemporary()) // Set temporary entity's font color red
+        item->setTextColor(0, QColor(Qt::red));
+    else if (entity->IsLocal()) // Set local entity's components font color blue
         item->setTextColor(0, QColor(Qt::blue));
+
     treeWidget->addTopLevelItem(item);
 
     foreach(ComponentPtr c, entity->GetComponentVector())
@@ -240,6 +243,12 @@ void SceneStructureWindow::AddComponent(Scene::Entity* entity, IComponent* comp)
             ComponentItem *cItem = new ComponentItem(comp->TypeName(), comp->Name(), eItem);
             cItem->setText(0, QString("%1 %2").arg(comp->TypeName()).arg(comp->Name()));
             cItem->setHidden(!showComponents);
+
+            if (comp->IsTemporary()) // Set temporary component's font color red
+                cItem->setTextColor(0, QColor(Qt::red));
+            else if (entity->IsLocal()) // Set local entity's components font color blue
+                cItem->setTextColor(0, QColor(Qt::blue));
+
             eItem->addChild(cItem);
 
             connect(comp, SIGNAL(OnComponentNameChanged(const QString &, const QString &)), SLOT(UpdateComponentName(const QString &, const QString &)));

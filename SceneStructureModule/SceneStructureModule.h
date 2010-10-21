@@ -44,9 +44,6 @@ public slots:
     QList<Scene::Entity *> InstantiateContent(const QString &filename, Vector3df &worldPos, bool clearScene);
 
 private:
-    //! Type name of the module.
-    static std::string typeNameStatic;
-
     /// Scene structure window.
     SceneStructureWindow *sceneWindow;
 
