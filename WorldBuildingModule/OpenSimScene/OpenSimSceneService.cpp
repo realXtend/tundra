@@ -82,7 +82,31 @@ namespace WorldBuilding
         }
     }
 
-    void OpenSimSceneService::PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar)
+    void OpenSimSceneService::PublishToServer(QUrl xml_url, Vector3df drop_position)
+    {
+        if (!current_stream_)
+            return;
+        if (current_stream_->GetCapability(capability_name_).isEmpty())
+        {
+            WorldBuildingModule::LogInfo("OpenSimSceneService: Will not process url to xml scene, capability for upload missing.");
+            return;
+        }
+
+        if (drop_position == Vector3df::ZERO)
+        {
+            drop_position = GetAvatarDropPosition();
+            if (drop_position == Vector3df::ZERO)
+            {
+                WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar position, cant upload scene in front of avatar.");
+                return;
+            }
+        }
+
+        url_to_position_[xml_url] = drop_position;
+        network_manager_->get(QNetworkRequest(xml_url));
+    }
+
+    void OpenSimSceneService::PublishToServer(const QString &load_filename, bool adjust_pos_to_avatar, Vector3df drop_position)
     {
         QFile scene_content(load_filename);
         if (!scene_content.open(QIODevice::ReadOnly))
@@ -97,7 +121,7 @@ namespace WorldBuilding
         }
     }
 
-    void OpenSimSceneService::PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar)
+    void OpenSimSceneService::PublishToServer(const QByteArray &content, bool adjust_pos_to_avatar, Vector3df drop_position)
     {
         if (current_stream_)
         {
@@ -111,33 +135,23 @@ namespace WorldBuilding
             QByteArray publish_data;
             if (adjust_pos_to_avatar)
             {
-                Foundation::WorldLogicInterface *world_logic = framework_->GetService<Foundation::WorldLogicInterface>();
-                if (!world_logic)
+                Vector3df av_vector = GetAvatarDropPosition();
+                if (av_vector == Vector3df::ZERO)
                 {
-                    WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get world logic to resolve avatar position, cant upload scene.");
+                    WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar position, cant upload scene in front of avatar.");
                     return;
                 }
-
-                Scene::EntityPtr user = world_logic->GetUserAvatarEntity();
-                if (!user)
-                {
-                    WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar entity to resolve avatar position, cant upload scene.");
-                    return;
-                }
-
-                EC_Placeable *av_placeable = user->GetComponent<EC_Placeable>().get();
-                if (!av_placeable)
-                {
-                    WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar placeable component, cant upload scene.");
-                    return;
-                }
-
-                // Get a pos in front of avatar
-                Ogre::Vector3 av_pos = av_placeable->GetLinkSceneNode()->_getDerivedPosition();
-                Vector3df av_vector(av_pos.x, av_pos.y, av_pos.z);
-                av_vector += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 3.0f));
 
                 publish_data = scene_parser_->ParseAndAdjust(content, av_vector);
+                if (publish_data.isEmpty())
+                {
+                    WorldBuildingModule::LogInfo("OpenSimSceneService: Something went wrong when adjusting pos to xml, aborting upload.");
+                    return;
+                }
+            }
+            else if (drop_position != Vector3df::ZERO)
+            {
+                publish_data = scene_parser_->ParseAndAdjust(content, drop_position);
                 if (publish_data.isEmpty())
                 {
                     WorldBuildingModule::LogInfo("OpenSimSceneService: Something went wrong when adjusting pos to xml, aborting upload.");
@@ -163,10 +177,55 @@ namespace WorldBuilding
         scene_parser_->ExportToFile(save_filename, entities);
     }
 
+    Vector3df OpenSimSceneService::GetAvatarDropPosition()
+    {
+        Vector3df return_pos = Vector3df::ZERO;
+        Foundation::WorldLogicInterface *world_logic = framework_->GetService<Foundation::WorldLogicInterface>();
+        if (!world_logic)
+        {
+            WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get world logic to resolve avatar position, cant upload scene.");
+            return return_pos;
+        }
+
+        Scene::EntityPtr user = world_logic->GetUserAvatarEntity();
+        if (!user)
+        {
+            WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar entity to resolve avatar position, cant upload scene.");
+            return return_pos;
+        }
+
+        EC_Placeable *av_placeable = user->GetComponent<EC_Placeable>().get();
+        if (!av_placeable)
+        {
+            WorldBuildingModule::LogInfo("OpenSimSceneService: Could not get avatar placeable component, cant upload scene.");
+            return return_pos;
+        }
+
+        // Get a pos in front of avatar
+        Ogre::Vector3 av_pos = av_placeable->GetLinkSceneNode()->_getDerivedPosition();
+        return_pos = Vector3df(av_pos.x, av_pos.y, av_pos.z);
+        return_pos += (av_placeable->GetOrientation() * Vector3df(3.0f, 0.0f, 3.0f));
+        return return_pos;
+    }
+
     void OpenSimSceneService::SceneUploadResponse(QNetworkReply *reply)
     {
         if (reply->error() != QNetworkReply::NoError)
             WorldBuildingModule::LogInfo(QString("OpenSimSceneService: Network error while publishing scene: %1").arg(reply->errorString()).toStdString().c_str());
+
+        QUrl reply_url = reply->url();
+        if (reply_url.toString().endsWith(".xml"))
+        {
+            if (url_to_position_.contains(reply_url))
+            {
+                Vector3df drop_position = url_to_position_[reply_url];
+                if (drop_position != Vector3df::ZERO)
+                {
+                    PublishToServer(reply->readAll(), false, drop_position);
+                }
+                url_to_position_.remove(reply_url);
+            }
+        }
         reply->close();
         reply->deleteLater();
     }

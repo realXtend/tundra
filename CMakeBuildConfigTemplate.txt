@@ -138,4 +138,4 @@ endif()
 add_subdirectory(WorldBuildingModule)   # Implements the world building mode. Requires UiModule (UISERVICE_TEST not defined). Depends on OgreRenderingModule and InventoryModule. 
 add_subdirectory(PhononPlayerModule)    # Implements Qt Phonon -based video playback capabilities.
 add_subdirectory(WorldMapModule)        # Implements OpenSim grid world map. Depends on OgreRenderingModule and UiModule.
-#add_subdirectory(LibraryModule)        # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
+add_subdirectory(LibraryModule)         # Implements drag & drop url meshes, materials and textures from webview to scene. Part of WorldBuildingModule
