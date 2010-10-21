@@ -291,7 +291,28 @@ QList<Scene::Entity *> SceneImporter::Import(Scene::ScenePtr scene, const std::s
         
         // Write out the needed assets
         TundraLogicModule::LogInfo("Saving needed assets");
-        ProcessAssets(filename, in_asset_dir, out_asset_dir, localassets);
+        // By default, assume the material file is scenename.material if scene is scenename.scene. However, if an external reference exists, use that.
+        std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
+        QDomElement externals_elem = scene_elem.firstChildElement("externals");
+        if (!externals_elem.isNull())
+        {
+            QDomElement item_elem = externals_elem.firstChildElement("item");
+            while (!item_elem.isNull())
+            {
+                if (item_elem.attribute("type") == "material")
+                {
+                    QDomElement file_elem = item_elem.firstChildElement("file");
+                    if (!file_elem.isNull())
+                    {
+                        matfilename = in_asset_dir + file_elem.attribute("name").toStdString();
+                        break;
+                    }
+                }
+                item_elem = item_elem.nextSiblingElement();
+            }
+        }
+        
+        ProcessAssets(matfilename, in_asset_dir, out_asset_dir, localassets);
         
         // Second pass: build scene hierarchy and actually create entities. This assumes assets are available
         TundraLogicModule::LogInfo("Creating entities");
@@ -355,10 +376,8 @@ void SceneImporter::ProcessNodeForAssets(QDomElement node_elem, const std::strin
     }
 }
 
-void SceneImporter::ProcessAssets(const std::string& filename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets)
+void SceneImporter::ProcessAssets(const std::string& matfilename, const std::string& in_asset_dir, const std::string& out_asset_dir, bool localassets)
 {
-    std::string matfilename = ReplaceSubstring(filename, ".scene", ".material");
-    
     std::set<std::string> used_textures = ProcessMaterialFile(matfilename, material_names_, out_asset_dir, localassets);
     ProcessTextures(used_textures, in_asset_dir, out_asset_dir);
     
